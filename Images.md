@@ -1,11 +1,10 @@
 Images
 =============================
-[TOC]
 
-Wisteria supports using @c wxBitmapBundles for displaying images. Images can be used for
+Wisteria supports using `wxBitmapBundles` for displaying images. Images can be used for
 canvases' backgrounds and watermarks, bar charts' bars, stipple brushes, etc.
 
-Also, the class @c Wisteria::GraphItems::Image provides additional image loading and effect functions.
+Also, the class `Wisteria::GraphItems::Image` provides additional image loading and effect functions.
 For example, `LoadFile()` will load a JPEG and adjust its orientation (if necessary).
 
 Other features include creating silhouettes, drawing a glassy effect,

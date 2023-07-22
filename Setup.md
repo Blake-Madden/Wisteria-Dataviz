@@ -1,6 +1,5 @@
 Setting up the Library
 =============================
-[TOC]
 
 There are a few library and related wxWidgts features that can be enabled when your application starts up.
 
@@ -29,7 +28,7 @@ Debug Information
 If designing your own graph type, drawing debug information can be helpful. For example, you can
 enable features such as drawing bounding boxes when you select items, showing useful information
 about the plot (e.g., its current scaling), etc. These features are toggled via preprocessor flags;
-refer to @c Wisteria::DebugSettings for an explanation of these flags and which features they enable.
+refer to `Wisteria::DebugSettings` for an explanation of these flags and which features they enable.
 
-Note that @c DEBUG_BOXES, @c DEBUG_FILE_IO, and @c DEBUG_LOG_INFO are enabled by default if @c wxDEBUG_LEVEL is defined as @c 2 or higher.
+Note that `DEBUG_BOXES`, `DEBUG_FILE_IO`, and `DEBUG_LOG_INFO` are enabled by default if `wxDEBUG_LEVEL` is defined as `2` or higher.
 All other features are disabled.

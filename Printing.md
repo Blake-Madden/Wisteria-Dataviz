@@ -1,6 +1,5 @@
 Printing
 =============================
-[TOC]
 
 The `Wisteria::Canvas` object has print support built into it. To initiate a print (or print preview,
 under Microsoft Windows) operation, send a `wxID_PRINT` (or `wxID_PREVIEW`) event to a `Wisteria::Canvas` window.
@@ -25,9 +24,9 @@ When printing a canvas, the default is to draw its content as-is onto the paper,
 A canvas can also auto-fit to the page size by calling
 `Wisteria::Canvas::FitToPageWhenPrinting()`. This results in the canvas temporarily adjusting its
  aspect ratio to match the page and filling it entirely when being printed. If a canvas only
- contains a single graph, then this is only recommended if printing in @c wxLANDSCAPE; otherwise, the graph will
+ contains a single graph, then this is only recommended if printing in `wxLANDSCAPE`; otherwise, the graph will
  appear stretched vertically. This can be useful, however, if a canvas contains multiple graphs vertically
- and you are printing in @c wxPORTRAIT; this results in a report-like appearance which more precisely fits the page.
+ and you are printing in `wxPORTRAIT`; this results in a report-like appearance which more precisely fits the page.
 
 Headers & Footers
 ----------------------------

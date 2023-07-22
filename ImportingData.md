@@ -1,6 +1,5 @@
 Importing Data
 =============================
-[TOC]
 
 A `Wisteria::Data::Dataset` object is available for importing data, as well as connecting the data to
 various graph types. When you import data, you can select which columns to use and specify
@@ -52,7 +51,7 @@ should be in C locale (i.e., US format), where '.' is the radix separator.
 
 Although data is imported and stored as floating point values, discrete/integer values can also be read into these columns.
 
-Missing data in a continuous column will be imported as NaN (@c std::numeric_limits<double>::quiet_NaN()), so `std::isnan()`
+Missing data in a continuous column will be imported as NaN, so `std::isnan()`
 should be used when working with imported data.
 
 Categorical and Grouping Data
@@ -234,10 +233,10 @@ commentsData->ImportCSV(L"/home/dmoon/data/Comments.csv",
 Subsetting
 =============================
 
-A dataset can be subsetted using the `Wisteria::Data::Subset` class. This class's @c Subset()
+A dataset can be subsetted using the `Wisteria::Data::Subset` class. This class's `Subset()`
 method accepts a filter criterion based on a column, the value to filter with, and how to compare with
 that value. For example, the following will create a subset where it filtered a dataset on the
-column @c Gender equaling @c Female.
+column **Gender** equaling **Female**.
 
 ```cpp
 auto theData = std::make_shared<Data::Dataset>();

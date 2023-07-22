@@ -1,1 +1,0 @@
-Wisteria Syntax Reference Manual

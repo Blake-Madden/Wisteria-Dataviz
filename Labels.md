@@ -1,6 +1,5 @@
 Labels
 =============================
-[TOC]
 
 Labels are objects used to display text throughout the system. This applies to titles, axis labels, legends,
 annotations, decals, etc. Labels are self-contained text boxes that manage attributes such as:

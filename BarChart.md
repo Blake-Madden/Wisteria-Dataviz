@@ -1,6 +1,5 @@
 Bar Chart
 =============================
-[TOC]
 
 Note: this overview is meant for those designing a new chart derived from the `BarChart` class. For a simplified API to
 create a bar chart from a dataset, refer to `Wisteria::Graphs::Histogram` and `Wisteria::Graphs::CategoricalBarChart`.
