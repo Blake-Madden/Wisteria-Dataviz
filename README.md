@@ -62,67 +62,67 @@ Basic
 
 | Bar Chart (Wisteria::Graphs::BarChart) | Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/BarChart.svg) | ![](docs/doxygen/images/LinePlot.svg) |
+| ![](docs/images/BarChart.svg) | ![](docs/images/LinePlot.svg) |
 
 | Pie Chart (Wisteria::Graphs::PieChart) | Donut Chart (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/PieChart.svg) | ![](docs/doxygen/images/DonutChart.svg) |
+| ![](docs/images/PieChart.svg) | ![](docs/images/DonutChart.svg) |
 
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
-| ![](docs/doxygen/images/TableMajors.svg) |
+| ![](docs/images/TableMajors.svg) |
 
 | Sankey Diagram (Wisteria::Graphs::SankeyDiagram) |
 | :-------------- |
-| ![](docs/doxygen/images/grouped-sankey.png) |
+| ![](docs/images/grouped-sankey.png) |
 
 | Word Cloud (Wisteria::Graphs::WordCloud) |
 | :-------------- |
-| ![](docs/doxygen/images/wordcloud.png) |
+| ![](docs/images/wordcloud.png) |
 
 Business
 -----------------------------
 
 | Gantt Chart (Wisteria::Graphs::GanttChart) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/GanttChart.png) |
+| ![](docs/images/GanttChart.png) |
 
 | Candlestick Plot (Wisteria::Graphs::CandlestickPlot) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/CandlestickPlot.svg) |
+| ![](docs/images/CandlestickPlot.svg) |
 
 Statistical
 -----------------------------
 
 | Histogram (Wisteria::Graphs::Histogram) | Box Plot (Wisteria::Graphs::BoxPlot) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/Histogram.svg) | ![](docs/doxygen/images/BoxPlot.svg) |
+| ![](docs/images/Histogram.svg) | ![](docs/images/BoxPlot.svg) |
 
 | Discrete Heat Map (Wisteria::Graphs::HeatMap) | Grouped Discrete Heat Map (Wisteria::Graphs::HeatMap) |
 | :-------------- | :-------------------------------- |
-| ![](docs/doxygen/images/Heatmap.svg) | ![](docs/doxygen/images/HeatmapGrouped.svg) |
+| ![](docs/images/Heatmap.svg) | ![](docs/images/HeatmapGrouped.svg) |
 
 Survey Data
 -----------------------------
 
 | 3-Point Likert Chart (Wisteria::Graphs::LikertChart) |
 | :-------------- |
-| ![](docs/doxygen/images/Likert7Point.png) |
+| ![](docs/images/Likert7Point.png) |
 
 | Pro & Con Roadmap (Wisteria::Graphs::ProConRoadmap) |
 | :-------------- |
-| ![](docs/doxygen/images/SWOTRoadmap.svg) |
+| ![](docs/images/SWOTRoadmap.svg) |
 
 Social Sciences
 -----------------------------
 
 | W-Curve Plot (Wisteria::Graphs::WCurvePlot) |
 | :-------------- |
-| ![](docs/doxygen/images/WCurve.svg) |
+| ![](docs/images/WCurve.svg) |
 
 | Linear Regression Roadmap (Wisteria::Graphs::LRRoadmap) |
 | :-------------- |
-| ![](docs/doxygen/images/LRRoadmapFirstYear.svg) |
+| ![](docs/images/LRRoadmapFirstYear.svg) |
 
 See more in the [graphs gallery](Gallery.md).
 

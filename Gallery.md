@@ -7,122 +7,122 @@ Basic
 
 | Bar Chart (Wisteria::Graphs::BarChart) | Stylized Bar Chart (Wisteria::Graphs::BarChart) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/BarChart.svg) | ![](docs/doxygen/images/BarChartStylized.svg) |
+| ![](docs/images/BarChart.svg) | ![](docs/images/BarChartStylized.svg) |
 
 | Image-based Bar Chart (Wisteria::Graphs::BarChart) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/BarChartImage.svg) |
+| ![](docs/images/BarChartImage.svg) |
 
 | Categorized Bar Chart (Wisteria::Graphs::CategoricalBarChart) | Categorized, Grouped Bar Chart (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/CatagorizedBarChart.svg) | ![](docs/doxygen/images/GroupedCatagorizedBarChart.svg) |
+| ![](docs/images/CatagorizedBarChart.svg) | ![](docs/images/GroupedCatagorizedBarChart.svg) |
 
 | Categorized Bar Chart with Stipple Brush (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/CatagorizedBarChartStipple.svg) |
+| ![](docs/images/CatagorizedBarChartStipple.svg) |
 
 | Categorized Bar Chart with Watercolor Effect (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/WatercolorBarchart.png) |
+| ![](docs/images/WatercolorBarchart.png) |
 
 | Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/LinePlot.svg) | ![](docs/doxygen/images/LinePlotCustomized.svg) |
+| ![](docs/images/LinePlot.svg) | ![](docs/images/LinePlotCustomized.svg) |
 
 | Pie Chart (Wisteria::Graphs::PieChart) | Pie Chart with Subgroups (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/PieChart.svg) | ![](docs/doxygen/images/PieChartSubgrouped.svg) |
+| ![](docs/images/PieChart.svg) | ![](docs/images/PieChartSubgrouped.svg) |
 
 | Donut Chart (Wisteria::Graphs::PieChart) | Donut Chart with Subgroups (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/DonutChart.svg) | ![](docs/doxygen/images/DonutChartSubgrouped.svg) |
+| ![](docs/images/DonutChart.svg) | ![](docs/images/DonutChartSubgrouped.svg) |
 
 | Table (Wisteria::Graphs::Table) |
 | :-------------- |
-| ![](docs/doxygen/images/TableMajors.svg) |
+| ![](docs/images/TableMajors.svg) |
 
 | Sankey Diagram (Wisteria::Graphs::SankeyDiagram) |
 | :-------------- |
-| ![](docs/doxygen/images/grouped-sankey.png) |
+| ![](docs/images/grouped-sankey.png) |
 
 | Word Cloud (Wisteria::Graphs::WordCloud) |
 | :-------------- |
-| ![](docs/doxygen/images/wordcloud.png) |
+| ![](docs/images/wordcloud.png) |
 
 Business
 -----------------------------
 
 | Gantt Chart (Wisteria::Graphs::GanttChart) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/GanttChart.png) |
+| ![](docs/images/GanttChart.png) |
 
 | Candlestick Plot (Wisteria::Graphs::CandlestickPlot) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/CandlestickPlot.svg) |
+| ![](docs/images/CandlestickPlot.svg) |
 
 Statistical
 -----------------------------
 
 | Histogram (Wisteria::Graphs::Histogram) | Grouped Histogram (Wisteria::Graphs::Histogram) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/Histogram.svg) | ![](docs/doxygen/images/GroupedHistogram.svg) |
+| ![](docs/images/Histogram.svg) | ![](docs/images/GroupedHistogram.svg) |
 
 | Box Plot (Wisteria::Graphs::BoxPlot) | Grouped Box Plot (Wisteria::Graphs::BoxPlot) |
 | :-------------- | :-------------------------------- |
-| ![](docs/doxygen/images/BoxPlot.svg) | ![](docs/doxygen/images/GroupedBoxPlot.svg) |
+| ![](docs/images/BoxPlot.svg) | ![](docs/images/GroupedBoxPlot.svg) |
 
 | Discrete Heat Map (Wisteria::Graphs::HeatMap) | Grouped Discrete Heat Map (Wisteria::Graphs::HeatMap) |
 | :-------------- | :-------------------------------- |
-| ![](docs/doxygen/images/Heatmap.svg) | ![](docs/doxygen/images/HeatmapGrouped.svg) |
+| ![](docs/images/Heatmap.svg) | ![](docs/images/HeatmapGrouped.svg) |
 
 Survey Data
 -----------------------------
 
 | 3-Point Likert Chart (Wisteria::Graphs::LikertChart) |
 | :-------------- |
-| ![](docs/doxygen/images/Likert3Point.png) |
+| ![](docs/images/Likert3Point.png) |
 
 | 7-Point Likert Chart (Wisteria::Graphs::LikertChart) |
 | :-------------- |
-| ![](docs/doxygen/images/Likert7Point.png) |
+| ![](docs/images/Likert7Point.png) |
 
 | Pro & Con Roadmap (Wisteria::Graphs::ProConRoadmap) |
 | :-------------- |
-| ![](docs/doxygen/images/SWOTRoadmap.svg) |
+| ![](docs/images/SWOTRoadmap.svg) |
 
 Social Sciences
 -----------------------------
 
 | W-Curve Plot (Wisteria::Graphs::WCurvePlot) |
 | :-------------- |
-| ![](docs/doxygen/images/WCurve.svg) |
+| ![](docs/images/WCurve.svg) |
 
 | Linear Regression Roadmap (Wisteria::Graphs::LRRoadmap) |
 | :-------------- |
-| ![](docs/doxygen/images/LRRoadmapFirstYear.svg) |
+| ![](docs/images/LRRoadmapFirstYear.svg) |
 
 | Linear Regression Roadmap (Wisteria::Graphs::LRRoadmap) |
 | :-------------- |
-| ![](docs/doxygen/images/LRRoadmapFirstYearNegative.svg) |
+| ![](docs/images/LRRoadmapFirstYearNegative.svg) |
 
 Readability Formulas
 -----------------------------
 
 | Lix Gauge (Wisteria::Graphs::LixGauge) | German Lix Gauge (Wisteria::Graphs::LixGaugeGerman) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/LixGauge.svg) | ![](docs/doxygen/images/LixGaugeGerman.svg) |
+| ![](docs/images/LixGauge.svg) | ![](docs/images/LixGaugeGerman.svg) |
 
 | Danielson-Bryan 2 Plot (Wisteria::Graphs::DanielsonBryan2Plot) | Crawford Graph (Wisteria::Graphs::CrawfordGraph) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/DanielsonBryan2Plot.svg) | ![](docs/doxygen/images/CrawfordGraph.svg) |
+| ![](docs/images/DanielsonBryan2Plot.svg) | ![](docs/images/CrawfordGraph.svg) |
 
 | Flesch Reading Ease Chart (Wisteria::Graphs::FleschChart) |
 | :-------------- |
-| ![](docs/doxygen/images/FleschChart.png) |
+| ![](docs/images/FleschChart.png) |
 
 Multi-plot Layouts
 -----------------------------
 
 | Multiple Plots | Multiple Plots with a Common Axis |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/MultiPlot.svg) | ![](docs/doxygen/images/MultiPlotCommonAxis.svg) |
+| ![](docs/images/MultiPlot.svg) | ![](docs/images/MultiPlotCommonAxis.svg) |

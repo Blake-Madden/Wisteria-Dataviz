@@ -369,7 +369,7 @@ Properties common to all bar-chart derived graphs:
   only including two bars that need to be contrasted.
 - `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
 
-::: {.notesection}
+::: {.notesection data-latex=""}
 Bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
 any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
 if specifying start and end points for your brackets, be aware that the bars will already be sorted.

@@ -57,7 +57,7 @@ Each dataset property will contain the following properties (loaded in the follo
 - `"format"`: If `"parser"` is set to `"strptime-format"`,
     then this is the user-defined format to parse with.
 
-::: {.notesection}
+::: {.notesection data-latex=""}
 The `"parser"` and `"format"` options are ignored if importing an *Excel* file.
 *Excel* stores dates and times as serial dates, and these will be converted accordingly.
 
@@ -176,7 +176,7 @@ The following example would return the total of the last continuous column:
 Total({{ContinuousColumn(`last`)}})
 ```
 
-::: {.tipsection}
+::: {.tipsection data-latex=""}
 Along with the dataset-related functions, [additional functions](#additional-functions) are also available.
 :::
 
@@ -211,7 +211,7 @@ contain the following properties:
 - `"filter-and"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
   are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
   
-::: {.notesection}
+::: {.notesection data-latex=""}
 Subset nodes can contain their own transformation and formula sections, same as a dataset node.
 :::
 ::::
@@ -236,7 +236,7 @@ contain the following properties:
 - `"suffix"`: If columns in the right dataset already appear in the left dataset, then append this suffix to
   to column to make it unique.
   
-::: {.notesection}
+::: {.notesection data-latex=""}
 Merge nodes can contain their own transformation and formula sections, same as a dataset node.
 :::
 ::::
@@ -277,7 +277,7 @@ If pivoting longer, the following options are available:
 - `"values-to"`: A string specifying the column to move the values from the `"from-columns"` into.
 - `"names-pattern"`: An optional string specifying a regular expression to split the `"from-columns"` names into.
 
-::: {.notesection}
+::: {.notesection data-latex=""}
 Pivot nodes can contain their own transformation and formula sections, same as a dataset node.
 :::
 ::::
