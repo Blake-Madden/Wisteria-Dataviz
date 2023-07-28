@@ -79,8 +79,8 @@ namespace Wisteria::Graphs
             if (IsUsingGrouping())
                 {
                 const auto pos = m_groupIds.find(Id);
-                wxASSERT_MSG((pos != m_groupIds.cend()),
-                             L"Error finding scheme index for group!");
+                assert((pos != m_groupIds.cend()) &&
+                        L"Error finding scheme index for group!");
                 if (pos != m_groupIds.cend())
                     { return pos->second; }
                 else

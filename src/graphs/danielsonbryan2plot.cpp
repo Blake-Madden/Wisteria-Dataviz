@@ -199,7 +199,7 @@ namespace Wisteria::Graphs
                                     is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
                                     8;
             wxCoord yPt{ 0 };
-            wxASSERT_MSG(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt),
+            assert(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt) &&
                 L"Unable to find point on DB2 Plot!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).

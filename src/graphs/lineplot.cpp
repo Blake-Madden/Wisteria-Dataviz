@@ -123,7 +123,7 @@ namespace Wisteria::Graphs
     bool LinePlot::IsDataSingleDirection(std::shared_ptr<const Data::Dataset>& data,
                                          const Data::GroupIdType group) const noexcept
         {
-        wxASSERT_MSG(data, L"Null dataset passed to IsDataSingleDirection()");
+        assert(data && L"Null dataset passed to IsDataSingleDirection()");
         // this only makes sense with numeric data
         if (data == nullptr ||
             data->GetRowCount() == 0 ||
@@ -287,7 +287,7 @@ namespace Wisteria::Graphs
                 }
             wxString currentLabel =
                 GetGroupColumn()->GetLabelFromID(line.m_groupId);
-            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+            assert(Settings::GetMaxLegendTextLength() >= 1 &&
                 L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)

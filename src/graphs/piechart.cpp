@@ -1155,15 +1155,15 @@ namespace Wisteria::Graphs
         std::sort(outerTopRightLabelAndLines.begin(), outerTopRightLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
-            wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
-            wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+            assert(lhv.first && L"Invalid pie label when sorting!");
+            assert(rhv.first && L"Invalid pie label when sorting!");
             return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
             });
         std::sort(outerBottomRightLabelAndLines.begin(), outerBottomRightLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
-            wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
-            wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+            assert(lhv.first && L"Invalid pie label when sorting!");
+            assert(rhv.first && L"Invalid pie label when sorting!");
             return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
             });
 
@@ -2005,8 +2005,8 @@ namespace Wisteria::Graphs
     std::shared_ptr<GraphItems::Label> PieChart::CreateInnerPieLegend(
         const LegendCanvasPlacementHint hint)
         {
-        wxASSERT_MSG(GetInnerPie().size() > 1,
-                     L"Inner ring of pie chart empty, cannot create legend!");
+        assert(GetInnerPie().size() > 1 &&
+               L"Inner ring of pie chart empty, cannot create legend!");
         if (GetInnerPie().size() == 0)
             { return nullptr; }
 
@@ -2048,7 +2048,7 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = GetInnerPie().at(i).GetGroupLabel();
-            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
+            assert(Settings::GetMaxLegendTextLength() >= 1 && L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
@@ -2106,8 +2106,8 @@ namespace Wisteria::Graphs
     std::shared_ptr<GraphItems::Label> PieChart::CreateOuterPieLegend(
         const LegendCanvasPlacementHint hint)
         {
-        wxASSERT_MSG(GetOuterPie().size() > 1,
-                     L"Outer ring of pie chart empty, cannot create legend!");
+        assert(GetOuterPie().size() > 1 &&
+               L"Outer ring of pie chart empty, cannot create legend!");
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
@@ -2122,7 +2122,7 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = GetOuterPie().at(i).GetGroupLabel();
-            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
+            assert(Settings::GetMaxLegendTextLength() >= 1 && L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)
                 {

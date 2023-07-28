@@ -14,7 +14,7 @@ namespace Wisteria::Data
     ColumnFilter::ColumnFilter(const std::shared_ptr<const Dataset>& fromDataset,
         const ColumnFilterInfo& subsetCriterion)
         {
-        wxASSERT_MSG(fromDataset, L"Invalid dataset passed to column filter.");
+        assert(fromDataset && L"Invalid dataset passed to column filter.");
         // reset everything
         m_idColumn = nullptr;
         m_continuousColumn = fromDataset->GetContinuousColumns().cend();

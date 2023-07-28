@@ -41,7 +41,7 @@ namespace Wisteria
             @param[out] selPageTo The ending page.*/
         void GetPageInfo(int *minPage, int *maxPage, int *selPageFrom, int *selPageTo) final
             {
-            wxASSERT_MSG(m_canvases.size(), L"No pages in ReportPrintout!");
+            assert(m_canvases.size() && L"No pages in ReportPrintout!");
             *minPage = (m_canvases.size() ? 1 : 0);
             *maxPage = (m_canvases.size() ? m_canvases.size() : 0);
             *selPageFrom = (m_canvases.size() ? 1 : 0);

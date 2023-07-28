@@ -179,7 +179,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         SideBarItem& GetFolder(const size_t item)
             {
-            wxASSERT_MSG(item < m_folders.size(), L"Invalid item in call to GetFolder()!");
+            assert(item < m_folders.size() && L"Invalid item in call to GetFolder()!");
             return m_folders.at(item);
             }
 
@@ -464,7 +464,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         const SideBarItem& GetFolder(const size_t item) const
             {
-            wxASSERT_MSG(item < m_folders.size(), L"Invalid item in call to GetFolder()!");
+            assert(item < m_folders.size() && L"Invalid item in call to GetFolder()!");
             return m_folders.at(item);
             }
         /// @private

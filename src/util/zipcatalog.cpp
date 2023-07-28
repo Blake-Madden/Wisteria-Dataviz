@@ -288,7 +288,7 @@ void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, con
     wxCharBuffer fileTextConvertedBuffer = text.mb_str(wxConvUTF8);
     zip.Write(lily_of_the_valley::unicode_extract_text::get_bom_utf8(),
               std::strlen(lily_of_the_valley::unicode_extract_text::get_bom_utf8()));
-    wxASSERT_MSG(fileTextConvertedBuffer.length() == std::strlen(fileTextConvertedBuffer.data()),
+    assert(fileTextConvertedBuffer.length() == std::strlen(fileTextConvertedBuffer.data()) &&
         L"Invalid buffer size when writing from ZipCatalog!");
     zip.Write(fileTextConvertedBuffer.data(), fileTextConvertedBuffer.length());
     txt.Close();

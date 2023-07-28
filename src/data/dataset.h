@@ -127,7 +127,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         const T& GetValue(const size_t index) const
             {
-            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::GetValue()");
+            assert(index < m_data.size() && L"Invalid index in call to Column::GetValue()");
             return m_data.at(index);
             }
         /** @brief Sets a value in the data.
@@ -135,7 +135,7 @@ namespace Wisteria::Data
             @param val The new value.*/
         void SetValue(const size_t index, const T& val)
             {
-            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::SetValue()");
+            assert(index < m_data.size() && L"Invalid index in call to Column::SetValue()");
             if (index >= m_data.size())
                 { return; }
             m_data.at(index) = val;
@@ -145,7 +145,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         virtual bool IsMissingData(const size_t index) const
             {
-            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::IsMissingData()");
+            assert(index < m_data.size() && L"Invalid index in call to Column::IsMissingData()");
             if (index >= m_data.size())
                 { return false; }
             if constexpr (std::is_floating_point<T>())
@@ -949,7 +949,7 @@ namespace Wisteria::Data
                     column.GetStringTable().insert(
                         std::make_pair(column.GetNextKey(), wxEmptyString));
                     MDCode = column.FindMissingDataCode();
-                    wxASSERT_MSG(MDCode, L"Error creating MD label when resizing column!");
+                    assert(MDCode && L"Error creating MD label when resizing column!");
                     }
                 column.Resize(rowCount, MDCode.value_or(0) );
                 }
@@ -995,7 +995,7 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddContinuousColumn(const wxString& columnName)
             {
-            wxASSERT_MSG(columnName.length(),
+            assert(columnName.length() &&
                 L"Column name is empty in call to AddContinuousColumn()!");
             // see if already in the dataset
             auto foundColumn = GetContinuousColumn(columnName);
@@ -1031,7 +1031,7 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddDateColumn(const wxString& columnName)
             {
-            wxASSERT_MSG(columnName.length(),
+            assert(columnName.length() &&
                 L"Date name is empty in call to AddDateColumn()!");
             // see if already in the dataset
             auto foundColumn = GetDateColumn(columnName);

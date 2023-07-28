@@ -16,7 +16,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     wxRect FillableShape::Draw(wxDC& dc) const
         {
-        wxASSERT_MSG(GetBrush().IsOk(), L"Fillable shape must have a valid brush!");
+        assert(GetBrush().IsOk() && L"Fillable shape must have a valid brush!");
         if (!GetBrush().IsOk())
             { return wxRect(); }
         const auto drawArea = GetBoundingBox(dc);

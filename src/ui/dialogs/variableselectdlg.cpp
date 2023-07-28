@@ -35,7 +35,7 @@ void VariableSelectDlg::UpdateButtonStates()
     // enable/disable the Add/Remove
     for (const auto& varList : m_varLists)
         {
-        wxASSERT_MSG(m_mainVarlist, L"Main variable list not created!");
+        assert(m_mainVarlist && L"Main variable list not created!");
         auto* button = FindWindowById(varList.m_removeId);
         if (button && m_mainVarlist)
             { button->Enable(varList.m_list->GetSelectedItemCount()); }
@@ -48,8 +48,8 @@ void VariableSelectDlg::UpdateButtonStates()
 //-------------------------------------------------------------
 void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list, wxListView* otherList)
     {
-    wxASSERT_MSG(list, "Invalid list control!");
-    wxASSERT_MSG(otherList, "Invalid list control!");
+    assert(list && "Invalid list control!");
+    assert(otherList && "Invalid list control!");
     if (list == nullptr || otherList == nullptr)
         { return; }
     // if target list only supports having one variable, then ensure that it won't
@@ -216,7 +216,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
     // connect the Add & Remove button events
     for (const auto& varList : m_varLists)
         {
-        wxASSERT_MSG(varList.m_list, L"User-defined list not created!");
+        assert(varList.m_list && L"User-defined list not created!");
         Bind(wxEVT_BUTTON,
             [&, this](wxCommandEvent&)
                 {

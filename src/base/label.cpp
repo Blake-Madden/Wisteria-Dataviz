@@ -1713,7 +1713,7 @@ namespace Wisteria::GraphItems
                     L"Helvetica Neue", L"Lucida Grande", L"Calibri", L"Arial", L"Courier New"
                     }));
             }
-        wxASSERT_MSG(theFont.GetFaceName().length(), L"Corrected font facename is empty.");
+        assert(theFont.GetFaceName().length() && L"Corrected font facename is empty.");
         // if font is still messed up, fall back to system default
         assert(theFont.IsOk());
         if (!theFont.IsOk())

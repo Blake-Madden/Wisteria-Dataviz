@@ -13,8 +13,8 @@ namespace Wisteria::Data
     //---------------------------------------------------
     void PivotedWiderRow::Combine(const PivotedWiderRow& that)
         {
-        wxASSERT_MSG(m_Id.CmpNoCase(that.m_Id) == 0,
-                     L"Combining pivot rows with mismatching IDs!");
+        assert(m_Id.CmpNoCase(that.m_Id) == 0 &&
+               L"Combining pivot rows with mismatching IDs!");
         if (m_Id.CmpNoCase(that.m_Id) != 0)
             { return; }
 
@@ -212,7 +212,7 @@ namespace Wisteria::Data
             if (IdColumnsIters.m_IdColumn != nullptr)
                 {
                 auto strVal = std::get_if<wxString>(&pivotedRow.m_idColumns[0].second);
-                wxASSERT_MSG(strVal, L"String conversion failure with ID column while pivoting!");
+                assert(strVal && L"String conversion failure with ID column while pivoting!");
                 if (strVal != nullptr)
                     { ri.Id(*strVal); }
                 ++currentIdColumnIndex;
@@ -225,7 +225,7 @@ namespace Wisteria::Data
                 {
                 auto groupId = std::get_if<GroupIdType>(
                     &pivotedRow.m_idColumns[currentIdColumnIndex].second);
-                wxASSERT_MSG(groupId, L"Group ID conversion failure with ID column while pivoting!");
+                assert(groupId && L"Group ID conversion failure with ID column while pivoting!");
                 if (groupId != nullptr)
                     { groupIdsForCurrentRow.push_back(*groupId); }
                 }

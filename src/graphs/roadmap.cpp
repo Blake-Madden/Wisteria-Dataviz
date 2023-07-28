@@ -155,7 +155,7 @@ namespace Wisteria::Graphs
             { pts.push_back({ xPt, GetBoundingBox(dc).GetTop() }); }
 
         // the road pavement
-        wxASSERT_MSG(m_roadPen.IsOk(), L"Valid road pen needed to draw road!");
+        assert(m_roadPen.IsOk() && L"Valid road pen needed to draw road!");
         wxPen scaledRoadPen = m_roadPen;
         scaledRoadPen.SetWidth(ScaleToScreenAndCanvas(scaledRoadPen.GetWidth()));
         auto pavement = std::make_shared<GraphItems::Points2D>(scaledRoadPen);

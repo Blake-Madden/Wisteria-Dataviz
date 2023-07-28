@@ -178,7 +178,7 @@ namespace Wisteria::Graphs
 
                 const auto startPt = GetScalingAxis().FindDatePosition(taskInfo.m_start);
                 const auto endPt = GetScalingAxis().FindDatePosition(taskInfo.m_end);
-                wxASSERT_MSG(startPt.has_value() && endPt.has_value(),
+                assert(startPt.has_value() && endPt.has_value() &&
                     L"Valid dates not found on axis in Gantt chart?!");
                 if (!startPt.has_value() || !endPt.has_value())
                     { continue; }

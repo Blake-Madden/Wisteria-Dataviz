@@ -208,8 +208,8 @@ int SideBarBook::DoSetSelection(size_t nPage, int flags)
 //---------------------------------------------------
 wxWindow* SideBarBook::DoRemovePage(size_t nPage)
     {
-    wxASSERT_MSG(nPage < m_pages.size(),
-                 L"invalid page index in SideBarBook::DoRemovePage()");
+    assert(nPage < m_pages.size() &&
+           L"invalid page index in SideBarBook::DoRemovePage()");
 
     wxWindow *pageRemoved = m_pages[nPage];
     m_pages.erase(m_pages.begin() + nPage);
@@ -395,7 +395,7 @@ void SideBarBook::DoSize()
         wxWindow * const page = m_pages[i];
         if ( !page )
         {
-            wxASSERT_MSG(false,
+            assert(false &&
                 L"Null page in a control that does not allow null pages?");
             continue;
         }

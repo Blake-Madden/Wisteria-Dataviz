@@ -407,8 +407,8 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
             {
-            wxASSERT_MSG(IsXDates(),
-                         L"GetXMinMaxDates() should only be called if X axis is date based!");
+            assert(IsXDates() &&
+                   L"GetXMinMaxDates() should only be called if X axis is date based!");
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
                     m_xColumnDate->GetValues().cbegin(),
                     m_xColumnDate->GetValues().cend());
@@ -419,7 +419,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::pair<double, double> GetXMinMax() const
             {
-            wxASSERT_MSG(!IsXDates(), L"GetXMinMaxDates() should be called instead!");
+            assert(!IsXDates() && L"GetXMinMaxDates() should be called instead!");
             if (GetDataset()->GetRowCount() == 0)
                 {
                 return std::make_pair(std::numeric_limits<double>::quiet_NaN(),

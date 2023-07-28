@@ -52,8 +52,8 @@ public:
             if (*pos == window)
                 { return; }
             }
-        wxASSERT_MSG(static_cast<size_t>(position) <= GetWindowCount(),
-            wxString(__WXFUNCTION__) + L": position is larger than container.");
+        assert(static_cast<size_t>(position) <= GetWindowCount() &&
+            L"InsertWindow: position is larger than container.");
         // shouldn't happen, but work around a bad insert
         if (static_cast<size_t>(position) > GetWindowCount())
             { AddWindow(window); }

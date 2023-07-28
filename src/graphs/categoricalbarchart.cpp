@@ -124,8 +124,8 @@ namespace Wisteria::Graphs
             if (m_useIDColumnForBars)
                 {
                 const auto ID = m_IDsMap.find(m_idColumn->GetValue(i));
-                wxASSERT_MSG((ID != m_IDsMap.cend()),
-                             L"Error finding bar index for ID value!");
+                assert((ID != m_IDsMap.cend()) &&
+                        L"Error finding bar index for ID value!");
                 if (ID != m_IDsMap.cend())
                     {
                     groups.insert(

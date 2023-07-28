@@ -2662,7 +2662,7 @@ namespace Wisteria::GraphItems
         {
         if (bracketType == BracketType::FiscalQuarterly)
             {
-            wxASSERT_MSG((m_firstDay.IsValid() && m_lastDay.IsValid()),
+            assert((m_firstDay.IsValid() && m_lastDay.IsValid()) &&
                 L"Date interval should be set via SetRange() if adding FY brackets!");
             if (m_firstDay.IsValid() && m_lastDay.IsValid())
                 {
@@ -2717,7 +2717,7 @@ namespace Wisteria::GraphItems
     void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                         const DateInterval displayInterval, const FiscalYear FYtype)
         {
-        wxASSERT_MSG(startDate.IsValid() && endDate.IsValid(),
+        assert(startDate.IsValid() && endDate.IsValid() &&
             L"Invalid date used for axis range!");
         // can't do much with this range if invalid, so have to ignore it
         if (!startDate.IsValid() || !endDate.IsValid())

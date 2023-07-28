@@ -65,7 +65,7 @@ public:
     /// @private
     void SetValue([[maybe_unused]] int row, [[maybe_unused]] int col,
                   [[maybe_unused]] const wxString& s) final
-        { wxASSERT_MSG(0, L"SetValue not supported in ExcelTable class."); }
+        { assert(0 && L"SetValue not supported in ExcelTable class."); }
 private:
     lily_of_the_valley::xlsx_extract_text::worksheet* m_wrk{ nullptr };
     lily_of_the_valley::xlsx_extract_text* m_excelFile{ nullptr };
