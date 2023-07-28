@@ -613,10 +613,10 @@ namespace Wisteria
     //---------------------------------------------------
     void Canvas::CalcAllSizes(wxDC& dc)
         {
-        wxASSERT_MSG(
+        assert(
             (std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
                 [](const auto initVal, const auto val) noexcept
-                    { return initVal + val.GetHeightProportion(); })) <= 1,
+                    { return initVal + val.GetHeightProportion(); })) <= 1 &&
             L"Canvas row proportions are more than 100%!");
 
         /* The rendering area must have a minimum size of 700x500;
@@ -682,7 +682,7 @@ namespace Wisteria
             {
             auto& currentRow = *fixedObjectsRowPos;
             const auto currentRowIndex = std::distance(GetFixedObjects().begin(), fixedObjectsRowPos);
-            wxASSERT_MSG(currentRowIndex < static_cast<ptrdiff_t>(m_rowsInfo.size()),
+            assert(currentRowIndex < static_cast<ptrdiff_t>(m_rowsInfo.size()) &&
                 L"Canvas row out of range!");
 
             const size_t rowHeightGridArea = fixedObjectRect.GetHeight() *
@@ -1002,8 +1002,8 @@ namespace Wisteria
         // This will only work when the canvas is at the default 1.0 scaling
         // because it needs to call CalcMinHeightProportion().
         // These are just sanity tests, the above should force the scaling to 1.0.
-        wxASSERT_MSG(compare_doubles(GetScaling(), 1.0),
-                     L"Scaling of canvas must be one when calling CalcRowDimensions()!");
+        assert(compare_doubles(GetScaling(), 1.0) &&
+               L"Scaling of canvas must be one when calling CalcRowDimensions()!");
         if (!compare_doubles(GetScaling(), 1.0))
             { return; }
         // clear the current specs, as we will be resetting them here

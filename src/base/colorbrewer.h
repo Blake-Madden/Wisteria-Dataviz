@@ -187,7 +187,7 @@ namespace Wisteria::Colors
         /// @brief Constructor.
         /// @param color The base color to contrast other colors against.
         explicit ColorContrast(const wxColour& color) : m_baseColor(color)
-            { wxASSERT_MSG(m_baseColor.IsOk(), L"Invalid base color passed to ColorContrast."); }
+            { assert(m_baseColor.IsOk() && L"Invalid base color passed to ColorContrast."); }
         /// @returns A variation of @c color that is adjusted to contrast against the base color
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
@@ -276,7 +276,7 @@ namespace Wisteria::Colors
         static bool AreColorsClose(const wxColour color1, const wxColour color2,
                                    const double delta = math_constants::tenth)
             {
-            wxASSERT_MSG(color1.IsOk() && color2.IsOk(), L"Invalid color passed to AreColorsClose().");
+            assert(color1.IsOk() && color2.IsOk() && L"Invalid color passed to AreColorsClose().");
             return (color1.IsOk() && color2.IsOk() &&
                     (std::abs(color1.GetLuminance()-color2.GetLuminance())) <=
                      std::clamp(delta, math_constants::empty, math_constants::full));

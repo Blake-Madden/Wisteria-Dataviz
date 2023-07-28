@@ -7,8 +7,8 @@ bool ReportPrintout::OnPrintPage(int page)
     {
     wxDC* dc = GetDC();
     auto canvas = GetCanvasFromPageNumber(page);
-    wxASSERT_MSG(dc, L"Invalid printing DC!");
-    wxASSERT_MSG(canvas, L"Invalid page when printing report!");
+    assert(dc && L"Invalid printing DC!");
+    assert(canvas && L"Invalid page when printing report!");
     if (dc != nullptr && canvas != nullptr)
         {
         wxWindowUpdateLocker wl(canvas);
@@ -227,8 +227,8 @@ PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
     m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
     m_originalSize(canvas ? canvas->GetSize() : wxSize())
     {
-    wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
-    wxASSERT_MSG(printOut, L"Invalid printout passed to PrintFitToPageChanger!");
+    assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
+    assert(printOut && L"Invalid printout passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr &&
         printOut != nullptr &&
         m_canvas->IsFittingToPageWhenPrinting())
@@ -273,7 +273,7 @@ FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas,
     m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
     m_originalSize(canvas ? canvas->GetSize() : wxSize())
     {
-    wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
+    assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr)
         {
         const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),

@@ -40,7 +40,7 @@ namespace Wisteria::GraphItems
 
             m_gc = wxGraphicsContext::Create(m_memDC);
             }
-        wxASSERT_MSG(m_gc, L"Failed to get graphics context!");
+        assert(m_gc && L"Failed to get graphics context!");
         }
 
     //---------------------------------------------------
@@ -1305,8 +1305,8 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawCurlyBrace(const wxRect rect, wxDC& dc, const Side side) const
         {
-        wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
-                     L"Pen should be set in Shape for curly braces!");
+        assert(GetGraphItemInfo().GetPen().IsOk() &&
+               L"Pen should be set in Shape for curly braces!");
         // just to reset when we are done
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
 

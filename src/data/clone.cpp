@@ -83,9 +83,9 @@ namespace Wisteria::Data
         // will only happen if the source was changed after SetSourceData(),
         // which the client should not be doing
         // cppcheck-suppress assertWithSideEffect
-        wxASSERT_MSG(m_fromDataset->GetContinuousColumns().size() ==
-                     m_toDataset->GetContinuousColumns().size(),
-                     L"Continuous column counts are different between datasets!");
+        assert(m_fromDataset->GetContinuousColumns().size() ==
+               m_toDataset->GetContinuousColumns().size() &&
+               L"Continuous column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetContinuousColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
@@ -100,15 +100,15 @@ namespace Wisteria::Data
         // categoricals
         m_catColumnsMap.clear();
         // cppcheck-suppress assertWithSideEffect
-        wxASSERT_MSG(m_fromDataset->GetCategoricalColumns().size() ==
-                     m_toDataset->GetCategoricalColumns().size(),
-                     L"Categorical column counts are different between datasets!");
+        assert(m_fromDataset->GetCategoricalColumns().size() ==
+               m_toDataset->GetCategoricalColumns().size() &&
+               L"Categorical column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetCategoricalColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(m_fromDataset->GetCategoricalColumn(i).GetName() ==
-                         m_toDataset->GetCategoricalColumn(i).GetName(),
-                         L"Categorical columns aren't mapped correctly!");
+            assert(m_fromDataset->GetCategoricalColumn(i).GetName() ==
+                   m_toDataset->GetCategoricalColumn(i).GetName() &&
+                   L"Categorical columns aren't mapped correctly!");
             m_catColumnsMap.insert(
                 std::make_pair(&m_fromDataset->GetCategoricalColumn(i),
                                &m_toDataset->GetCategoricalColumn(i)));

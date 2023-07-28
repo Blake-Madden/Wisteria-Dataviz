@@ -398,8 +398,8 @@ namespace Wisteria::Graphs
                            const wxString& groupColumn1Name,
                            std::optional<const wxString> groupColumn2Name /*= std::nullopt*/)
         {
-        wxASSERT_MSG(data->GetCategoricalColumns().size() > 0,
-                     L"At least one grouping column required for pie chart!");
+        assert(data->GetCategoricalColumns().size() > 0 &&
+               L"At least one grouping column required for pie chart!");
         // at least one group column needed
         if (data == nullptr || data->GetCategoricalColumns().size() == 0)
             { return; }
@@ -798,7 +798,7 @@ namespace Wisteria::Graphs
                 auto sliceBmp = bmp.GetBitmap(wxSize(bmpSize.first, bmpSize.second));
                 if (GetOuterPie().at(i).IsGhosted())
                     { Image::SetOpacity(sliceBmp, GetGhostOpacity()); }
-                wxASSERT_MSG(sliceBmp.IsOk(), L"Unable to create pie slice image!");
+                assert(sliceBmp.IsOk() && L"Unable to create pie slice image!");
                 if (sliceBmp.IsOk())
                     { pSlice->GetBrush() = wxBrush(sliceBmp); }
                 }
@@ -979,16 +979,16 @@ namespace Wisteria::Graphs
         std::sort(outerTopLeftLabelAndLines.begin(), outerTopLeftLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
-            wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
-            wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+            assert(lhv.first && L"Invalid pie label when sorting!");
+            assert(rhv.first && L"Invalid pie label when sorting!");
             return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
             });
         // reverse bottom quadrant sort labels (bottom-to-top)
         std::sort(outerBottomLeftLabelAndLines.begin(), outerBottomLeftLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
-            wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
-            wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+            assert(lhv.first && L"Invalid pie label when sorting!");
+            assert(rhv.first && L"Invalid pie label when sorting!");
             return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
             });
         // Make the left-side outer labels (for both rings) have a common font size.

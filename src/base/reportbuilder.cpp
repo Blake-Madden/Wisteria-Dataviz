@@ -26,7 +26,7 @@ namespace Wisteria
         std::vector<Canvas*> reportPages;
         std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
 
-        wxASSERT_MSG(parent, L"Parent window must not be null when building a canvas!");
+        assert(parent && L"Parent window must not be null when building a canvas!");
         if (parent == nullptr)
             { return reportPages; }
         const auto json = wxSimpleJSON::LoadFile(m_configFilePath);
@@ -2684,8 +2684,8 @@ namespace Wisteria
                     auto& blocks = barChart->GetBars()[i].GetBlocks();
                     if (blocks.size())
                         {
-                        wxASSERT_MSG(
-                            barChart->GetBrushScheme()->GetBrushes().size() >= (1 + i),
+                        assert(
+                            barChart->GetBrushScheme()->GetBrushes().size() >= (1 + i) &&
                             L"Bad brush mapping for bar chart!");
                         blocks.front().GetBrush() =
                             barChart->GetBrushScheme()->GetBrush(
