@@ -99,7 +99,7 @@ TARGET_INCLUDE_DIRECTORIES(WisteriaLib PUBLIC ${wxWidgets_INCLUDE_DIRS})
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 IF(MSVC)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
-        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+        $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
     # C++ version is 98 always (for compatibility reasons).
@@ -118,18 +118,18 @@ IF(MSVC)
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 ELSEIF(MINGW OR MSYS)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__
-            $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+            $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 # TODO: Experimental code for macOS (undergoing testing currently)
 ELSEIF(APPLE)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__
-        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+        $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ELSEIF(UNIX)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__
-        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+        $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ENDIF()
