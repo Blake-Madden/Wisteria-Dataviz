@@ -116,7 +116,7 @@ namespace Wisteria::Graphs
         {
         if (GetScalingAxis().IsReversed())
             { return std::nullopt; }
-        wxASSERT_MSG(barIndex < GetBars().size(), L"Bar index out of range!");
+        assert(barIndex < GetBars().size() && L"Bar index out of range!");
         if (barIndex >= GetBars().size())
             { return std::nullopt; }
 
@@ -137,7 +137,7 @@ namespace Wisteria::Graphs
         {
         if (GetScalingAxis().IsReversed())
             { return std::nullopt; }
-        wxASSERT_MSG(barIndex < GetBars().size(), L"Bar index out of range!");
+        assert(barIndex < GetBars().size() && L"Bar index out of range!");
         if (barIndex >= GetBars().size())
             { return std::nullopt; }
 
@@ -156,7 +156,7 @@ namespace Wisteria::Graphs
     void BarChart::AddFirstBarBracket(const wxString& firstBarBlock,
                                       const wxString& lastBarBlock, const wxString& bracketLabel)
         {
-        wxASSERT_MSG(GetBars().size(), L"No bars available when adding an axis bracket!");
+        assert(GetBars().size() && L"No bars available when adding an axis bracket!");
         if (GetBars().size() == 0)
             {
             throw std::runtime_error(
@@ -192,7 +192,7 @@ namespace Wisteria::Graphs
                                         const wxString& lastBarBlockPattern,
                                         const wxString& bracketLabel)
         {
-        wxASSERT_MSG(GetBars().size(), L"No bars available when adding an axis bracket!");
+        assert(GetBars().size() && L"No bars available when adding an axis bracket!");
         if (GetBars().size() == 0)
             {
             throw std::runtime_error(
@@ -222,7 +222,7 @@ namespace Wisteria::Graphs
     void BarChart::AddLastBarBracket(const wxString& firstBarBlock,
                                      const wxString& lastBarBlock, const wxString& bracketLabel)
         {
-        wxASSERT_MSG(GetBars().size(), L"No bars when adding an axis bracket!");
+        assert(GetBars().size() && L"No bars when adding an axis bracket!");
         if (GetBars().size() == 0)
             {
             throw std::runtime_error(
@@ -263,7 +263,7 @@ namespace Wisteria::Graphs
                                        const wxString& lastBarBlockPattern,
                                        const wxString& bracketLabel)
         {
-        wxASSERT_MSG(GetBars().size(), L"No bars when adding an axis bracket!");
+        assert(GetBars().size() && L"No bars when adding an axis bracket!");
         if (GetBars().size() == 0)
             {
             throw std::runtime_error(

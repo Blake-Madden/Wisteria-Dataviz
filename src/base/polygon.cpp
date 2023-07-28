@@ -261,8 +261,8 @@ namespace Wisteria::GraphItems
             !GetGraphItemInfo().IsShowingBottomOutline() ||
             !GetGraphItemInfo().IsShowingLeftOutline());
 
-        wxASSERT_MSG(
-            !(GetShape() == PolygonShape::WaterColorRectangle && !GetBrush().IsOk()),
+        assert(
+            !(GetShape() == PolygonShape::WaterColorRectangle && !GetBrush().IsOk()) &&
             L"Brush must be set when using watercolor-filled rectangle!");
 
         // using a color fill (possibly a gradient)
@@ -331,7 +331,7 @@ namespace Wisteria::GraphItems
                     if (dc.IsKindOf(wxCLASSINFO(wxGCDC)))
                         {
                         wxGraphicsContext* gc = dynamic_cast<wxGCDC&>(dc).GetGraphicsContext();
-                        wxASSERT_MSG(gc, L"Failed to get graphics context from polygon renderer!");
+                        assert(gc && L"Failed to get graphics context from polygon renderer!");
                         if (gc)
                             {
                             wxPoint start;
@@ -410,7 +410,7 @@ namespace Wisteria::GraphItems
                 {
                 GraphicsContextFallback gcf{ &dc, boundingBox };
                 auto gc = gcf.GetGraphicsContext();
-                wxASSERT_MSG(gc, L"Failed to get graphics context for curvy rectangle!");
+                assert(gc && L"Failed to get graphics context for curvy rectangle!");
                 // If drawing commands can't be used, then switch to drawing as
                 // a regular polypon. These shapes often overlap each other (e.g., Sankey diagram),
                 // so using bitmaps won't work.
@@ -481,7 +481,7 @@ namespace Wisteria::GraphItems
     void Polygon::DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
                             const wxSize arrowHeadSize)
         {
-        wxASSERT_MSG(arrowHeadSize.IsFullySpecified(), L"Arrowhead size not fully specified.");
+        assert(arrowHeadSize.IsFullySpecified() && L"Arrowhead size not fully specified.");
         if (!arrowHeadSize.IsFullySpecified())
             { return; }
         const float dx = static_cast<float>(pt2.x - pt1.x);

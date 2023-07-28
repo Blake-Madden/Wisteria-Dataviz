@@ -22,7 +22,7 @@ namespace Wisteria::GraphItems
         {
         m_gc = nullptr;
         m_drawingToBitmap = false; // reset
-        wxASSERT_MSG(dc, L"Invalid DC for graphics context!");
+        assert(dc && L"Invalid DC for graphics context!");
         if (dc == nullptr)
             { return; }
         m_rect = rect;
@@ -360,7 +360,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for sun icon!");
+        assert(gc && L"Failed to get graphics context for sun icon!");
         if (gc)
             {
             gc->SetPen(wxPen(ColorBrewer::GetColor(Color::SunsetOrange),
@@ -410,7 +410,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for flower icon!");
+        assert(gc && L"Failed to get graphics context for flower icon!");
         if (gc)
             {
             gc->SetPen(wxPen(ColorContrast::Shade(ColorBrewer::GetColor(Color::Wisteria)),
@@ -666,7 +666,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for geo marker!");
+        assert(gc && L"Failed to get graphics context for geo marker!");
         if (gc)
             {
             wxPen scaledPen = GetGraphItemInfo().GetPen();
@@ -1029,7 +1029,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for asterisk icon!");
+        assert(gc && L"Failed to get graphics context for asterisk icon!");
         if (gc)
             {
             wxPen scaledPen = GetGraphItemInfo().GetPen();
@@ -1110,7 +1110,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
+        assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc)
             {
             // draw the leaf
@@ -1160,7 +1160,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for water color effect!");
+        assert(gc && L"Failed to get graphics context for water color effect!");
         if (gc)
             {
             const auto strayLinesAlongTopBottom =
@@ -1314,7 +1314,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");
+        assert(gc && L"Failed to get graphics context for curly braces!");
         if (gc && (side == Side::Left || side == Side::Right))
             {
             if (GetGraphItemInfo().GetPen().IsOk())
@@ -1434,7 +1434,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for male outline!");
+        assert(gc && L"Failed to get graphics context for male outline!");
         if (gc)
             {
             if (GetGraphItemInfo().GetPen().IsOk())
@@ -1605,7 +1605,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
+        assert(gc && L"Failed to get graphics context for female outline!");
         if (gc)
             {
             if (GetGraphItemInfo().GetPen().IsOk())
@@ -1751,7 +1751,7 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
+        assert(gc && L"Failed to get graphics context for female outline!");
         if (gc)
             {
             if (GetGraphItemInfo().GetPen().IsOk())

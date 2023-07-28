@@ -254,10 +254,10 @@ namespace Wisteria::GraphItems
                         }
                     }
 
-                wxASSERT_MSG(nMaxIndex >= 0 && nMaxIndex < rgbBufferSize,
+                assert(nMaxIndex >= 0 && nMaxIndex < rgbBufferSize &&
                     L"Invalid buffer index in oil painting effect!");
-                wxASSERT_MSG(((nX) * 3 + (nY)*nBytesInARow + 2) <
-                    (image.GetWidth() * image.GetHeight() * 3),
+                assert(((nX) * 3 + (nY)*nBytesInARow + 2) <
+                    (image.GetWidth() * image.GetHeight() * 3) &&
                     L"Invalid image data index in oil painting effect!");
 
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow] = nSumR[nMaxIndex] / nCurMax;
@@ -337,14 +337,14 @@ namespace Wisteria::GraphItems
 
                     // source pixel
                     auto w1 = image.GetWidth() * 3 * y + x;
-                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     const auto r = imgInData[w1];
                     const auto g = imgInData[w1 + 1];
                     const auto b = imgInData[w1 + 2];
 
                     // target pixel
                     w1 = w2 + columCounter;
-                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     imgOutData[w1] = r;
                     imgOutData[w1 + 1] = g;
                     imgOutData[w1 + 2] = b;
@@ -366,14 +366,14 @@ namespace Wisteria::GraphItems
 
                     // Source pixel
                     auto w1 = image.GetWidth() * 3 * y + x;
-                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     const auto r = imgInData[w1];
                     const auto g = imgInData[w1 + 1];
                     const auto b = imgInData[w1 + 2];
 
                     // Target pixel
                     w1 = image.GetWidth() * 3 * rowCounter + columnCounter;
-                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     imgOutData[w1] = r;
                     imgOutData[w1 + 1] = g;
                     imgOutData[w1 + 2] = b;
@@ -491,7 +491,7 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(image);
         wxMemoryDC memDC(bmp);
         auto gc = wxGraphicsContext::Create(memDC);
-        wxASSERT_MSG(gc, L"Failed to get graphics context for filtered image!");
+        assert(gc && L"Failed to get graphics context for filtered image!");
         if (gc)
             {
             gc->SetBrush(wxBrush(Colors::ColorContrast::ChangeOpacity(color, opacity)));

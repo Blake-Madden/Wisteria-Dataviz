@@ -138,7 +138,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     // add MD label at the bottom if there are missing data
     if (GetGroupColumn()->ContainsMissingData())
         {
-        wxASSERT_MSG(mdCode.has_value(),
+        assert(mdCode.has_value() &&
             L"Cat. column has MD, but string table has no MD code?!");
         if (mdCode.has_value())
             {

@@ -21,7 +21,7 @@ namespace Wisteria::Data
             GetStringTable().insert(std::make_pair(GetNextKey(), wxEmptyString));
             mdCode = FindMissingDataCode();
             }
-        wxASSERT_MSG(mdCode, L"Error creating MD code for categorical column!");
+        assert(mdCode && L"Error creating MD code for categorical column!");
         if (mdCode.has_value())
             { Fill(mdCode.value()); }
         else
@@ -48,7 +48,7 @@ namespace Wisteria::Data
     //----------------------------------------------
     bool ColumnWithStringTable::IsMissingData(const size_t index) const
         {
-        wxASSERT_MSG(index < GetRowCount(), L"Invalid index in call to Column::IsMissingData()");
+        assert(index < GetRowCount() && L"Invalid index in call to Column::IsMissingData()");
         if (index >= GetRowCount())
             { return false; }
         auto mdCode = FindMissingDataCode();
@@ -219,8 +219,8 @@ namespace Wisteria::Data
                 {
                 auto foundPos = GetStringTable().find(id);
                 // cppcheck-suppress assertWithSideEffect
-                wxASSERT_MSG(foundPos != GetStringTable().cend(),
-                             L"Unable to find key in string table!");
+                assert(foundPos != GetStringTable().cend() &&
+                       L"Unable to find key in string table!");
                 if (foundPos != GetStringTable().cend())
                     { foundPos->second = otherLabel; }
                 recodingNeeded = true;
@@ -920,7 +920,7 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::AddCategoricalColumn(const wxString& columnName)
         {
-        wxASSERT_MSG(columnName.length(),
+        assert(columnName.length() &&
             L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);
@@ -943,7 +943,7 @@ namespace Wisteria::Data
     void Dataset::AddCategoricalColumn(const wxString& columnName,
         const ColumnWithStringTable::StringTableType& stringTable)
         {
-        wxASSERT_MSG(columnName.length(),
+        assert(columnName.length() &&
             L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);

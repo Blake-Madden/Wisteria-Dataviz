@@ -117,15 +117,15 @@ namespace Wisteria::Data
         // dates
         m_dateColumnsMap.clear();
         // cppcheck-suppress assertWithSideEffect
-        wxASSERT_MSG(m_fromDataset->GetDateColumns().size() ==
-                     m_toDataset->GetDateColumns().size(),
-                     L"Date column counts are different between datasets!");
+        assert(m_fromDataset->GetDateColumns().size() ==
+               m_toDataset->GetDateColumns().size() &&
+               L"Date column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetDateColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(m_fromDataset->GetDateColumn(i).GetName() ==
-                         m_toDataset->GetDateColumn(i).GetName(),
-                         L"Date columns aren't mapped correctly!");
+            assert(m_fromDataset->GetDateColumn(i).GetName() ==
+                   m_toDataset->GetDateColumn(i).GetName() &&
+                   L"Date columns aren't mapped correctly!");
             m_dateColumnsMap.insert(
                 std::make_pair(&m_fromDataset->GetDateColumn(i),
                                &m_toDataset->GetDateColumn(i)));

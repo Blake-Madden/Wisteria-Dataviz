@@ -199,7 +199,7 @@ namespace Wisteria::Colors
         [[nodiscard]]
         static wxColour ChangeOpacity(const wxColour& color, const uint8_t opacity)
             {
-            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to ChangeOpacity().");
+            assert(color.IsOk() && L"Invalid color passed to ChangeOpacity().");
             return (color.IsOk() ?
                     wxColor(color.Red(), color.Green(), color.Blue(), opacity) :
                     color);
@@ -215,7 +215,7 @@ namespace Wisteria::Colors
         [[nodiscard]]
         static bool IsDark(const wxColour& color)
             {
-            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark().");
+            assert(color.IsOk() && L"Invalid color passed to IsDark().");
             return (color.IsOk() &&
                     color.Alpha() > 32 &&
                     color.GetLuminance() < math_constants::half);
@@ -235,7 +235,7 @@ namespace Wisteria::Colors
         static wxColour Shade(wxColour color,
             const double minimumLuminance = math_constants::half)
             {
-            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Shade().");
+            assert(color.IsOk() && L"Invalid color passed to Shade().");
             int darkenValue{ 100 };
             while (color.GetLuminance() > std::clamp(minimumLuminance, math_constants::empty,
                                                      math_constants::full) &&
@@ -385,13 +385,13 @@ namespace Wisteria::Colors
                 @param color The color to add.*/
             void AddColor(const wxColour color)
                 {
-                wxASSERT_MSG(color.IsOk(), L"Invalid color passed to AddColor().");
+                assert(color.IsOk() && L"Invalid color passed to AddColor().");
                 m_colors.push_back(color);
                 }
             /// @private
             void AddColor(wxColour&& color)
                 {
-                wxASSERT_MSG(color.IsOk(), L"Invalid color passed to AddColor().");
+                assert(color.IsOk() && L"Invalid color passed to AddColor().");
                 m_colors.push_back(color);
                 }
             /// @brief Removes all colors from the collection.

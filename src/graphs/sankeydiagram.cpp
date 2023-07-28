@@ -135,7 +135,7 @@ namespace Wisteria::Graphs
             size_t groupOffset{ 0 };
             for (const auto& groups : fromGrouping.get_data())
                 {
-                wxASSERT_MSG(groups.second.first.size(), L"No groups in column group info!");
+                assert(groups.second.first.size() && L"No groups in column group info!");
                 m_fromAxisGroups.push_back(
                     SankeyAxisGroup{ groups.first, groupOffset, groupOffset + (groups.second.first.size() - 1) });
                 groupOffset += groups.second.first.size();
@@ -143,8 +143,8 @@ namespace Wisteria::Graphs
                     {
                     const auto subGroupPos = std::find(m_sankeyColumns[0].cbegin(),
                                                        m_sankeyColumns[0].cend(), SankeyGroup{ gr });
-                    wxASSERT_MSG(subGroupPos != m_sankeyColumns[0].cend(),
-                                 L"Unable to find group in Sankey column!");
+                    assert(subGroupPos != m_sankeyColumns[0].cend() &&
+                           L"Unable to find group in Sankey column!");
                     if (subGroupPos != m_sankeyColumns[0].cend())
                         { tempColumn.push_back(*subGroupPos); }
                     }
@@ -593,8 +593,8 @@ namespace Wisteria::Graphs
             {
             for (const auto& aGr : m_fromAxisGroups)
                 {
-                wxASSERT_MSG(aGr.m_startGroup < m_sankeyColumns[0].size(), L"Axis group start out of range!");
-                wxASSERT_MSG(aGr.m_endGroup < m_sankeyColumns[0].size(), L"Axis group start out of range!");
+                assert(aGr.m_startGroup < m_sankeyColumns[0].size() && L"Axis group start out of range!");
+                assert(aGr.m_endGroup < m_sankeyColumns[0].size() && L"Axis group start out of range!");
                 const auto groupTop = m_sankeyColumns[0].at(aGr.m_startGroup).m_yAxisTopPosition;
                 const auto groupBottom = m_sankeyColumns[0].at(aGr.m_endGroup).m_yAxisBottomPosition;
                 GetLeftYAxis().AddBracket(
