@@ -65,7 +65,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Polygon::IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N)
         {
-        wxASSERT_LEVEL_2(N > 0 && polygon);
+        assert(N > 0 && polygon);
         if (N == 0 || polygon == nullptr)
             { return false; }
 
@@ -162,7 +162,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxRect Polygon::GetPolygonBoundingBox(const wxPoint* polygon, const size_t N)
         {
-        wxASSERT_LEVEL_2(N > 0 && polygon);
+        assert(N > 0 && polygon);
         if (N == 0 || polygon == nullptr)
             { return wxRect(); }
 
@@ -180,7 +180,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxRect Polygon::GetPolygonBoundingBox(const std::vector<wxPoint>& polygon)
         {
-        wxASSERT_LEVEL_2(polygon.size());
+        assert(polygon.size());
         if (polygon.size() == 0)
             { return wxRect(); }
 

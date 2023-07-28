@@ -124,7 +124,7 @@ wxShowEffect InfoBarEx::GetHideEffect() const
 void InfoBarEx::UpdateParent()
     {
     wxWindow* const parent = GetParent();
-    wxASSERT_LEVEL_2(parent);
+    assert(parent);
     if (parent)
         { parent->Layout(); }
     }

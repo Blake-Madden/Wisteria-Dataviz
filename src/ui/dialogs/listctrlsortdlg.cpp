@@ -72,7 +72,7 @@ void ListCtrlSortDlg::CreateControls()
 void ListCtrlSortDlg::FillSortCriteria(
     const std::vector<std::pair<size_t,Wisteria::SortDirection>>& sortColumns)
     {
-    wxASSERT(sortColumns.size() <= m_columnChoices.size());
+    assert(sortColumns.size() <= m_columnChoices.size());
     m_columnList->SetVirtualDataSize(m_columnChoices.Count(), 2);
     // if no sort columns, then just use the first column in ascending order, it looks
     // odd not having any sort criteria when this dialog is shown.

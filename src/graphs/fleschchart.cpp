@@ -324,9 +324,9 @@ namespace Wisteria::Graphs
                 std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i)*100, 120, 200);
 
             wxCoord coord1{ 0 }, coord2{ 0 }, coord3{ 0 };
-            wxASSERT_LEVEL_2(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
-            wxASSERT_LEVEL_2(middleRuler.GetPhysicalCoordinate(score, coord2));
-            wxASSERT_LEVEL_2(syllablesRuler.GetPhysicalCoordinate(syllablesPerWord, coord3));
+            assert(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
+            assert(middleRuler.GetPhysicalCoordinate(score, coord2));
+            assert(syllablesRuler.GetPhysicalCoordinate(syllablesPerWord, coord3));
             if (wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1) &&
                 middleRuler.GetPhysicalCoordinate(score, coord2) &&
                 syllablesRuler.GetPhysicalCoordinate(syllablesPerWord, coord3))

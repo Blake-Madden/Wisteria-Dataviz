@@ -85,8 +85,8 @@ namespace Wisteria::UI
             @param selected The radio button to select.*/
         void SetSelection(const int selected)
             {
-            wxASSERT(m_choices.GetCount());
-            wxASSERT(selected >= 0);
+            assert(m_choices.GetCount());
+            assert(selected >= 0);
             if (selected < 0)
                 { m_selected = 0; }
             else if (selected >= static_cast<int>(m_choices.GetCount()))

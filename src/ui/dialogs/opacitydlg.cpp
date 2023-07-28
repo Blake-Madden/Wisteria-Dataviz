@@ -42,7 +42,7 @@ void OpacityDlg::CreateControls()
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxASSERT(m_image.IsOk());
+    assert(m_image.IsOk());
     if (m_image.IsOk())
         {
         const wxSize scaledSize = FromDIP(wxSize(300, 300));

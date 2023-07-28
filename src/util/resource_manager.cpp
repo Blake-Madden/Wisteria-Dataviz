@@ -145,7 +145,7 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
         memDC.Clear();
         memDC.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight());
         memDC.SelectObject(wxNullBitmap);
-        wxASSERT_LEVEL_2(bmp.IsOk());
+        assert(bmp.IsOk());
         };
 
     std::for_each(bmps.begin(), bmps.end(), fillIcon);

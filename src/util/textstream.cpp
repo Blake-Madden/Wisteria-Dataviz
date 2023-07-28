@@ -15,7 +15,7 @@ namespace Wisteria
                                                const char* text, size_t length)
         {
         wxLogWarning(L"Possible broken UTF-8 stream encountered.");
-        wxASSERT_LEVEL_2(text && length && dest && destLength);
+        assert(text && length && dest && destLength);
         if (text == nullptr || dest == nullptr || length == 0 || destLength == 0)
             { return false; }
         // skip BOM before reading text
@@ -35,8 +35,8 @@ namespace Wisteria
                 { break; }
             const size_t copiedSize = wxConvUTF8.ToWChar(dest, destLength, startOfCurrentSequence,
                                                          (invalidSequence - startOfCurrentSequence));
-            wxASSERT_LEVEL_2(copiedSize != wxCONV_FAILED);
-            wxASSERT_LEVEL_2(destLength >= copiedSize);
+            assert(copiedSize != wxCONV_FAILED);
+            assert(destLength >= copiedSize);
             if (copiedSize == wxCONV_FAILED || copiedSize > destLength)
                 { return false; }
             dest += copiedSize;
@@ -47,8 +47,8 @@ namespace Wisteria
         const size_t copiedSize = wxConvUTF8.ToWChar(dest, destLength,
                                                      startOfCurrentSequence,
                                                      (text+length) - startOfCurrentSequence);
-        wxASSERT_LEVEL_2(copiedSize != wxCONV_FAILED);
-        wxASSERT_LEVEL_2(destLength > copiedSize);
+        assert(copiedSize != wxCONV_FAILED);
+        assert(destLength > copiedSize);
         if (copiedSize == wxCONV_FAILED || copiedSize > destLength)
             { return false; }
         dest += copiedSize;
@@ -179,7 +179,7 @@ namespace Wisteria
             }
         // if conversion was successful, verify that the amount written wasn't more
         // than the destination size+space for a null terminator.
-        wxASSERT_LEVEL_2(((conversionResult != wxCONV_FAILED) ?
+        assert(((conversionResult != wxCONV_FAILED) ?
                          (conversionResult < destLength) : true));
         // null terminate the string if we converted it successfully
         if (conversionResult != wxCONV_FAILED && conversionResult < destLength)

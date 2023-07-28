@@ -432,7 +432,7 @@ void XmlFormat::GetStringsWithExtraInfo(const wchar_t* sectionStart,
     {
     strings.clear();
 
-    wxASSERT(sectionStart && sectionEnd && entityTag.length() && attributeTag.length());
+    assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length());
     if (!sectionStart || !sectionEnd || entityTag.length() == 0 || attributeTag.length() == 0)
         { return; }
 

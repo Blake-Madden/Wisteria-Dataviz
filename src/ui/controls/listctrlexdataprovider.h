@@ -397,7 +397,7 @@ public:
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                            const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
         {
-        wxASSERT(m_columnsToCompare.size());
+        assert(m_columnsToCompare.size());
         if (m_columnsToCompare.size() == 1)
             {
             const int result =
@@ -441,7 +441,7 @@ public:
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                            const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
         {
-        wxASSERT(m_columnsToCompare.size());
+        assert(m_columnsToCompare.size());
         if (m_columnsToCompare.size() == 1)
             {
             return (Compare(row1[m_columnsToCompare[0].first], row2[m_columnsToCompare[0].first]) < 0);
@@ -482,7 +482,7 @@ public:
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                            const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
         {
-        wxASSERT(m_columnsToCompare.size());
+        assert(m_columnsToCompare.size());
         if (m_columnsToCompare.size() == 1)
             { return (Compare(row1[m_columnsToCompare[0].first], row2[m_columnsToCompare[0].first]) > 0); }
         else
@@ -520,7 +520,7 @@ public:
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                            const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
         {
-        wxASSERT(m_columnsToCompare.size());
+        assert(m_columnsToCompare.size());
         if (m_columnsToCompare.size() == 1)
             {
             if (m_columnsToCompare[0].second == Wisteria::SortDirection::SortAscending)
@@ -566,7 +566,7 @@ public:
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                            const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
         {
-        wxASSERT(m_columnsToCompare.size());
+        assert(m_columnsToCompare.size());
         if (m_columnsToCompare.size() == 1)
             { return row1[m_columnsToCompare[0]] < row2[m_columnsToCompare[0]]; }
         else
@@ -604,7 +604,7 @@ public:
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                            const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
         {
-        wxASSERT(m_columnsToCompare.size());
+        assert(m_columnsToCompare.size());
         if (m_columnsToCompare.size() == 1)
             { return row1[m_columnsToCompare[0]] > row2[m_columnsToCompare[0]]; }
         else
@@ -645,15 +645,15 @@ public:
     [[nodiscard]]
     wxString GetItemTextFormatted(const size_t row, const size_t column) const final
         {
-        wxASSERT_LEVEL_2(row < m_virtualData.size());
-        wxASSERT_LEVEL_2(column < m_virtualData.operator[](row).size());
+        assert(row < m_virtualData.size());
+        assert(column < m_virtualData.operator[](row).size());
         const ListCellString& cell = m_virtualData.operator[](row).operator[](column);
         if (cell.GetNumberFormatType().m_type ==
             Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
             { return cell.m_strVal.c_str(); }
         else
             {
-            wxASSERT_LEVEL_2(m_formatNumber);
+            assert(m_formatNumber);
             return m_formatNumber ?
                 m_formatNumber->GetFormattedValue(cell.m_strVal.c_str(), cell.GetNumberFormatType()) :
                 wxString(cell.m_strVal.c_str());
@@ -958,8 +958,8 @@ public:
     [[nodiscard]]
     wxString GetItemTextFormatted(const size_t row, const size_t column) const final
         {
-        wxASSERT_LEVEL_2(row < m_virtualData.size());
-        wxASSERT_LEVEL_2(column < m_virtualData.operator[](row).size());
+        assert(row < m_virtualData.size());
+        assert(column < m_virtualData.operator[](row).size());
         const DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
         if (cell.GetNumberFormatType().m_type ==
                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting ||
@@ -989,7 +989,7 @@ public:
             }
         else
             {
-            wxASSERT_LEVEL_2(m_formatNumber);
+            assert(m_formatNumber);
             if (cell.IsDisplayingLabel())
                 {
                 return m_formatNumber ?

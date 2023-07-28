@@ -1167,7 +1167,7 @@ wxString FormattedTextCtrl::GetFormattedTextHtml(
         lily_of_the_valley::rtf_extract_text::rtf_extraction_type::rtf_to_html);
     filter_rtf.set_style_prefix(CssStylePrefix.wc_str());
     wxCharBuffer buf = rtfText.mb_str();
-    wxASSERT_LEVEL_2(buf.length() == std::strlen(buf.data()));
+    assert(buf.length() == std::strlen(buf.data()));
     const wchar_t* htmlBody = filter_rtf(buf.data(), buf.length());
     if (!htmlBody)
         { return wxString{}; }

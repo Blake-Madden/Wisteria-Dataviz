@@ -199,7 +199,7 @@ void FunctionBrowserDlg::InsertFunction()
         wxString paramText;
         const bool hasParams = SplitFunctionAndParams(functionStr, paramText);
         wxStyledTextCtrl* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
-        wxASSERT(styleWindow);
+        assert(styleWindow);
         if (hasParams)
             {
             styleWindow->AddText(functionStr + L"(");

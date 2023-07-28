@@ -127,7 +127,7 @@ public:
     [[nodiscard]]
     wxWindow* FindWindowById(const wxWindowID id, const wxClassInfo* classInfo)
         {
-        wxASSERT_LEVEL_2(classInfo);
+        assert(classInfo);
         for (auto pos = m_windows.begin();
              pos != m_windows.end();
              ++pos)
@@ -157,7 +157,7 @@ public:
     [[nodiscard]]
     wxWindow* FindWindowByType(const wxClassInfo* classInfo)
         {
-        wxASSERT_LEVEL_2(classInfo);
+        assert(classInfo);
         for (auto win : m_windows)
             {
             wxASSERT_LEVEL_2_MSG(win, "NULL window in window container!");
@@ -171,7 +171,7 @@ public:
     [[nodiscard]]
     wxWindow* RFindWindowByType(const wxClassInfo* classInfo)
         {
-        wxASSERT_LEVEL_2(classInfo);
+        assert(classInfo);
         for (auto win = m_windows.crbegin(); win != m_windows.crend(); ++win)
             {
             wxASSERT_LEVEL_2_MSG(*win, "NULL window in window container!");
@@ -201,7 +201,7 @@ public:
     [[nodiscard]]
     int FindWindowPositionById(const wxWindowID id, const wxClassInfo* classInfo)
         {
-        wxASSERT_LEVEL_2(classInfo);
+        assert(classInfo);
         for (auto pos = m_windows.begin();
              pos != m_windows.end();
              ++pos)

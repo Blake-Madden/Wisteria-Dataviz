@@ -1114,9 +1114,9 @@ namespace Wisteria
     std::shared_ptr<GraphItems::GraphItemBase>
         Canvas::GetFixedObject(const size_t row, const size_t column)
         {
-        wxASSERT(GetFixedObjects().size());
-        wxASSERT(row < GetFixedObjects().size());
-        wxASSERT(column < GetFixedObjects().at(0).size());
+        assert(GetFixedObjects().size());
+        assert(row < GetFixedObjects().size());
+        assert(column < GetFixedObjects().at(0).size());
         if (GetFixedObjects().size() == 0 ||
             row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
@@ -1143,9 +1143,9 @@ namespace Wisteria
     const std::shared_ptr<GraphItems::GraphItemBase>
         Canvas::GetFixedObject(const size_t row, const size_t column) const
         {
-        wxASSERT(GetFixedObjects().size());
-        wxASSERT(row < GetFixedObjects().size());
-        wxASSERT(column < GetFixedObjects().at(0).size());
+        assert(GetFixedObjects().size());
+        assert(row < GetFixedObjects().size());
+        assert(column < GetFixedObjects().at(0).size());
         if (GetFixedObjects().size() == 0 ||
             row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
@@ -1762,7 +1762,7 @@ namespace Wisteria
     //------------------------------------------------------
     void Canvas::ZoomIn()
         {
-        wxASSERT(m_zoomLevel >= 0);
+        assert(m_zoomLevel >= 0);
         if (m_zoomLevel >= 40) // don't allow zooming into a nonsensical depth
             { return; }
         ++m_zoomLevel;
@@ -1779,7 +1779,7 @@ namespace Wisteria
     //------------------------------------------------------
     void Canvas::ZoomOut()
         {
-        wxASSERT(m_zoomLevel >= 0);
+        assert(m_zoomLevel >= 0);
         if (m_zoomLevel <= 0)
             { return; }
         --m_zoomLevel;
@@ -1796,7 +1796,7 @@ namespace Wisteria
     //------------------------------------------------------
     void Canvas::ZoomReset()
         {
-        wxASSERT(m_zoomLevel >= 0);
+        assert(m_zoomLevel >= 0);
         if (m_zoomLevel == 0)
             { return; }
         m_zoomLevel = 0;

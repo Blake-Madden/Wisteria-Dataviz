@@ -572,7 +572,7 @@ namespace Wisteria::GraphItems
         SetOpacity(bkImage, opacity, colorToPreserve);
 
         bmp = wxBitmap(bkImage);
-        wxASSERT_LEVEL_2(bmp.IsOk());
+        assert(bmp.IsOk());
         }
 
     //-------------------------------------------

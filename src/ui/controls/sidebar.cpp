@@ -306,7 +306,7 @@ std::pair<std::optional<size_t>, std::optional<size_t>>
 //---------------------------------------------------
 size_t SideBar::GetFolderWidth(const size_t item)
     {
-    wxASSERT_LEVEL_2(item < GetFolderCount());
+    assert(item < GetFolderCount());
     if (item >= GetFolderCount())
         { return 0; }
     wxClientDC dc(this);

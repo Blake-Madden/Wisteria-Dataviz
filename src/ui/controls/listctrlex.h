@@ -605,7 +605,7 @@ public:
     /// @param columnSize The number of columns to resize to.
     void SetVirtualDataSize(size_t rowSize, size_t columnSize)
         {
-        wxASSERT(IsVirtual() );
+        assert(IsVirtual() );
         if (m_virtualData)
             { m_virtualData->SetSize(rowSize, columnSize); }
         SetItemCount(static_cast<long>(rowSize));
@@ -616,7 +616,7 @@ public:
     /// @param rowSize The number of rows to resize to.
     void SetVirtualDataSize(size_t rowSize)
         {
-        wxASSERT(IsVirtual() );
+        assert(IsVirtual() );
         if (m_virtualData)
             { m_virtualData->SetSize(rowSize); }
         SetItemCount(static_cast<long>(rowSize));

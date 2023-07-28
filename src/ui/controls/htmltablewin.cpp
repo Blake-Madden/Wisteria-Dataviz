@@ -256,7 +256,7 @@ bool HtmlTableWindow::Save(const wxFileName& path)
 
     wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
     wxFile file(path.GetFullPath(), wxFile::write);
-    wxASSERT(GetParser());
+    assert(GetParser());
     std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
     lily_of_the_valley::html_format::strip_body_atributes(htmlText);
     lily_of_the_valley::html_format::strip_hyperlinks(htmlText);

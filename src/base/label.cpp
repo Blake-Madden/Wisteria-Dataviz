@@ -322,7 +322,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Label::GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const
         {
-        wxASSERT(GetFont().IsOk());
+        assert(GetFont().IsOk());
 
         width = height = 0;
 
@@ -1715,7 +1715,7 @@ namespace Wisteria::GraphItems
             }
         wxASSERT_MSG(theFont.GetFaceName().length(), L"Corrected font facename is empty.");
         // if font is still messed up, fall back to system default
-        wxASSERT(theFont.IsOk());
+        assert(theFont.IsOk());
         if (!theFont.IsOk())
             {
             theFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);

@@ -230,7 +230,7 @@ namespace Wisteria::Graphs
             const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), 0, 100);
 
             wxCoord yPt{ 0 };
-            wxASSERT_LEVEL_2(middleRuler.GetPhysicalCoordinate(currentScore, yPt));
+            assert(middleRuler.GetPhysicalCoordinate(currentScore, yPt));
 
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).

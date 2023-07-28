@@ -50,7 +50,7 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate **temp
         // Yes, this will be slow, but template lists
         // are typically short.
         int j;
-        wxASSERT(noTemplates >= static_cast<int>(strings.Count()));
+        assert(noTemplates >= static_cast<int>(strings.Count()));
         n = std::min<int>(strings.Count(), noTemplates);
         for (i = 0; i < n; i++)
         {

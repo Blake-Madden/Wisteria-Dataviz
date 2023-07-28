@@ -62,7 +62,7 @@ bool SideBarBook::AddPage(wxWindow *page,
                        bool bSelect,
                        const int imageId)
     {
-    wxASSERT(page);
+    assert(page);
     const size_t position = GetPageCount();
     if (!DoInsertPage(position, page, text, bSelect, imageId) )
         return false;
@@ -101,7 +101,7 @@ bool SideBarBook::AddPage(wxWindow *page,
 bool SideBarBook::AddSubPage(wxWindow* page, const wxString& text, const wxWindowID Id,
         bool bSelect /*= false*/, int imageId /*= wxNOT_FOUND*/)
     {
-    wxASSERT(page);
+    assert(page);
     if (!DoInsertPage(GetPageCount(), page, text, bSelect, imageId) )
         return false;
     GetSideBar()->InsertSubItemById(GetSideBar()->GetFolder(

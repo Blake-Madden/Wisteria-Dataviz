@@ -344,7 +344,7 @@ namespace Wisteria::Graphs
             }
         const double BinSize = safe_divide<double>((maxVal-minVal), numOfBins);
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
-            { wxASSERT(!has_fractional_part(BinSize)); }
+            { assert(!has_fractional_part(BinSize)); }
 
         // calculate how many observations are in each group
         using valuesCounter = std::pair<double, std::set<wxString, Data::wxStringLessNoCase>>;

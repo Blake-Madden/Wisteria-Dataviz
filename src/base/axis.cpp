@@ -2499,8 +2499,8 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     void Axis::CalcMaxLabelWidth()
         {
-        wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
-        wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
+        assert(GetTopPoint().IsFullySpecified());
+        assert(GetBottomPoint().IsFullySpecified());
         const auto plotSize = IsVertical() ?
             std::abs(GetTopPoint().y - GetBottomPoint().y) :
             std::abs(GetBottomPoint().x - GetTopPoint().x);
@@ -2532,8 +2532,8 @@ namespace Wisteria::GraphItems
             GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
             { return GetScaling(); }
 
-        wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
-        wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
+        assert(GetTopPoint().IsFullySpecified());
+        assert(GetBottomPoint().IsFullySpecified());
 
         // If the biggest label is bigger than the width of the graph divided
         // by the number of displayed labels, then suggest a lower font-size scaling
@@ -2579,8 +2579,8 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     bool Axis::ShouldLabelsBeStackedToFit(wxDC& dc) const
         {
-        wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
-        wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
+        assert(GetTopPoint().IsFullySpecified());
+        assert(GetBottomPoint().IsFullySpecified());
 
         // nothing to stack if not showing labels
         if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
@@ -2932,7 +2932,7 @@ namespace Wisteria::GraphItems
 
         if (IsStartingAtZero())
             { rangeStart = std::min<double>(0, rangeStart); }
-        wxASSERT(rangeEnd >= rangeStart);
+        assert(rangeEnd >= rangeStart);
         if (rangeEnd < rangeStart)
             { return; }
         m_displayPrecision = precision;

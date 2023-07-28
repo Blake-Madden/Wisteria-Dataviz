@@ -918,7 +918,7 @@ namespace Wisteria::Graphs
                                     arrowPoints, std::size(arrowPoints));
                                 }
 
-                            wxASSERT_LEVEL_2(box);
+                            assert(box);
 
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
@@ -1328,7 +1328,7 @@ namespace Wisteria::Graphs
                                     arrowPoints, std::size(arrowPoints));
                                 }
 
-                            wxASSERT_LEVEL_2(box);
+                            assert(box);
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
                             else

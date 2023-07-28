@@ -39,21 +39,21 @@ public:
     [[nodiscard]]
     int GetNumberRows() final
         {
-        wxASSERT_LEVEL_2(m_wrk && m_excelFile);
+        assert(m_wrk && m_excelFile);
         return m_wrk ? static_cast<int>(m_wrk->size()) : 0;
         }
     /// @private
     [[nodiscard]]
     int GetNumberCols() final
         {
-        wxASSERT_LEVEL_2(m_wrk && m_excelFile);
+        assert(m_wrk && m_excelFile);
         return (m_wrk && m_wrk->size()) ? (*m_wrk)[0].size() : 0;
         }
     /// @private
     [[nodiscard]]
     wxString GetValue(int row, int col) final
         {
-        wxASSERT_LEVEL_2(m_wrk && m_excelFile);
+        assert(m_wrk && m_excelFile);
         wxCHECK_MSG( (row >= 0 && row < GetNumberRows()) &&
                  (col >= 0 && col < GetNumberCols()),
                  wxString{},

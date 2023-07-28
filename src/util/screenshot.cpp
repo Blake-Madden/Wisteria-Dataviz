@@ -111,7 +111,7 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
         { return false; }
 
     auto ribbonBar = dynamic_cast<wxRibbonBar*>(foundWindow);
-    wxASSERT(ribbonBar);
+    assert(ribbonBar);
 
     ribbonBar->SetActivePage(pageToSelect);
     wxTheApp->Yield();
@@ -195,7 +195,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath,
             { return false; }
         }
     auto listCtrl = dynamic_cast<wxListCtrl*>(windowToCapture);
-    wxASSERT(listCtrl);
+    assert(listCtrl);
 
     long columnsWidth{0};
     for (auto i = 0; i < listCtrl->GetColumnCount(); ++i)
