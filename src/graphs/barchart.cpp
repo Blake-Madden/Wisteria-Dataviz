@@ -459,32 +459,40 @@ namespace Wisteria::Graphs
         if (!IsSortable() || direction == SortDirection::NoSort ||
             GetBarAxis().IsReversed())
             { return; }
+
+        // verify that provided labels are in the existing bars
+        // (if not, then add a empty bar for it)
+        for (const auto& label : labels)
+            {
+            const auto foundPos = std::find_if(GetBars().cbegin(), GetBars().cend(),
+                [&label](const auto& bar)
+                    {
+                    return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0;
+                    });
+            // if bar with label not found, then add an empty one
+            if (foundPos == GetBars().cend())
+                {
+                const auto maxAxisPos = GetBars().size() ?
+                    std::max_element(GetBars().cbegin(), GetBars().cend(),
+                        [](const auto& lhv, const auto& rhv) noexcept
+                        { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })->GetAxisPosition() :
+                    0.0;
+                AddBar(
+                    Bar{ maxAxisPos + 1.0, { BarBlock{} }, label, Label{ label },
+                            GetBarEffect(), GetBarOpacity() });
+                }
+            }
+        // resort in case bars were added
+        std::sort(GetBars().begin(), GetBars().end(),
+            [](const auto& lhv, const auto& rhv) noexcept
+            {
+                return lhv.GetAxisPosition() < rhv.GetAxisPosition();
+            });
         // if not all labels were provided, then get the other bar labels that weren't
         // provided and sort those, pushing them all beneath the provided bars
         if (labels.size() != GetBars().size())
             {
             std::vector<wxString> otherLabelBars;
-            // verify that provided labels are in the existing bars
-            for (const auto& label : labels)
-                {
-                const auto foundPos = std::find_if(GetBars().cbegin(), GetBars().cend(),
-                    [&label](const auto& bar)
-                        {
-                        return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0;
-                        });
-                // if bar with label not found, then add an empty one
-                if (foundPos == GetBars().cend())
-                    {
-                    const auto maxAxisPos = GetBars().size() ?
-                        std::max_element(GetBars().cbegin(), GetBars().cend(),
-                            [](const auto& lhv, const auto& rhv) noexcept
-                            { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })->GetAxisPosition() :
-                        0.0;
-                    AddBar(
-                        Bar{ maxAxisPos + 1.0, { BarBlock{} }, label, Label{ label },
-                             GetBarEffect(), GetBarOpacity() });
-                    }
-                }
             // get the bar labels that the caller did not specify
             for (const auto& bar : GetBars())
                 {
@@ -999,7 +1007,8 @@ namespace Wisteria::Graphs
                             }
                         }
                     // add the decal (if there is one)
-                    if (barBlock.IsShown() && barBlock.GetDecal().GetText().length())
+                    if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
+                        barBlock.GetDecal().GetText().length())
                         {
                         const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
                         wxRect decalRect(barNeckRect); decalRect.Deflate(leftPadding, 0);
@@ -1407,7 +1416,8 @@ namespace Wisteria::Graphs
                             }
                         }
                     // add the decal (if there is one)
-                    if (barBlock.IsShown() && barBlock.GetDecal().GetText().length())
+                    if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
+                        barBlock.GetDecal().GetText().length())
                         {
                         const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
                         // rectangle is inverted
