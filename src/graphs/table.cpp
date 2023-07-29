@@ -139,9 +139,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Table::TableCell& Table::GetCell(const size_t row, const size_t column)
         {
-        wxASSERT_MSG(row < GetRowCount(),
+        wxASSERT_LEVEL_2_MSG(row < GetRowCount(),
             wxString::Format(L"Invalid row index (%zu)!", row));
-        wxASSERT_MSG(column < m_table[row].size(),
+        wxASSERT_LEVEL_2_MSG(column < m_table[row].size(),
             wxString::Format(L"Invalid column index (%zu)!", column));
         if (row >= GetRowCount() || column >= m_table[row].size())
             {
@@ -209,9 +209,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     wxRect Table::GetCachedCellRect(const size_t row, const size_t column)
         {
-        wxASSERT_MSG(row < m_cachedCellRects.size(),
+        wxASSERT_LEVEL_2_MSG(row < m_cachedCellRects.size(),
             wxString::Format(L"Invalid row index (%zu)!", row));
-        wxASSERT_MSG(column < m_cachedCellRects[row].size(),
+        wxASSERT_LEVEL_2_MSG(column < m_cachedCellRects[row].size(),
             wxString::Format(L"Invalid column index (%zu)!", column));
         if (row >= m_cachedCellRects.size() || column >= m_cachedCellRects[row].size())
             {

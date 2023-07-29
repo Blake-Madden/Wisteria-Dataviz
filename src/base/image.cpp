@@ -82,7 +82,7 @@ namespace Wisteria::GraphItems
                 scaledCommonImg = scaledCommonImg.GetSubImage(
                     wxRect(wxPoint(0, centerImage ? std::floor(safe_divide<double>(crop, 2)) : 0),
                            rect.GetSize()));
-                wxASSERT_MSG((scaledCommonImg.GetSize().GetHeight() >=
+                wxASSERT_LEVEL_2_MSG((scaledCommonImg.GetSize().GetHeight() >=
                     rect.GetSize().GetHeight()),
                     wxString::Format(L"Common image not scaled height-wise large enough! %d vs %d",
                         scaledCommonImg.GetSize().GetHeight(),
@@ -102,7 +102,7 @@ namespace Wisteria::GraphItems
                 scaledCommonImg = scaledCommonImg.GetSubImage(
                     wxRect(wxPoint(centerImage ? std::floor(safe_divide<double>(crop, 2)) : 0, 0),
                            rect.GetSize()));
-                wxASSERT_MSG((scaledCommonImg.GetSize().GetWidth() >=
+                wxASSERT_LEVEL_2_MSG((scaledCommonImg.GetSize().GetWidth() >=
                               rect.GetSize().GetWidth()),
                              wxString::Format(L"Common image not scaled width-wise large enough! %d vs %d",
                                               scaledCommonImg.GetSize().GetWidth(),
