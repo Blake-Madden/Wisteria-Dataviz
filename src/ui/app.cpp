@@ -142,7 +142,7 @@ int Wisteria::UI::BaseApp::OnExit()
     wxDELETE(m_docManager);
 
 #ifdef __WXMSW__
-    #if wxDEBUG_LEVEL >= 2
+    #ifndef NDEBUG
         // dump max memory usage
         // https://docs.microsoft.com/en-us/windows/win32/psapi/collecting-memory-usage-information-for-a-process?redirectedfrom=MSDN
         PROCESS_MEMORY_COUNTERS memCounter;
