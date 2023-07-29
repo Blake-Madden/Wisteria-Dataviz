@@ -194,8 +194,8 @@ namespace Wisteria::GraphItems
             {
             // make sure this was cached properly
             assert(
-                (GetText().length() == 0 && m_longestLineLength == 0) ||
-                (GetText().length() > 0 && m_longestLineLength > 0) &&
+                ((GetText().length() == 0 && m_longestLineLength == 0) ||
+                (GetText().length() > 0 && m_longestLineLength > 0)) &&
                 L"Longest line length in label was not calculated!");
             return m_longestLineLength;
             }
