@@ -350,8 +350,8 @@ namespace Wisteria::GraphItems
                                  wxDC& dc,
                                  [[maybe_unused]] const double parentScaling)
         {
-        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
-                             L"SetBoundingBox() should only be called on fixed objects!");
+        assert(!IsFreeFloating() &&
+               L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             { return; }
         SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),

@@ -129,7 +129,7 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
 //-------------------------------------------------------
 wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     {
-    wxASSERT_LEVEL_2(color.IsOk());
+    assert(color.IsOk());
 
     wxVector<wxBitmap> bmps;
     bmps.push_back(wxBitmap(16, 16));

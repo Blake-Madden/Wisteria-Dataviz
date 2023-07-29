@@ -89,9 +89,9 @@ namespace Wisteria::Data
         for (size_t i = 0; i < m_fromDataset->GetContinuousColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
-            wxASSERT_MSG(m_fromDataset->GetContinuousColumn(i).GetName() ==
-                         m_toDataset->GetContinuousColumn(i).GetName(),
-                         L"Continuous columns aren't mapped correctly!");
+            assert(m_fromDataset->GetContinuousColumn(i).GetName() ==
+                   m_toDataset->GetContinuousColumn(i).GetName() &&
+                   L"Continuous columns aren't mapped correctly!");
             m_continuousColumnsMap.insert(
                 std::make_pair(&m_fromDataset->GetContinuousColumn(i),
                                &m_toDataset->GetContinuousColumn(i)));

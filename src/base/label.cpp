@@ -124,8 +124,8 @@ namespace Wisteria::GraphItems
         {
         InvalidateCachedBoundingBox();
 
-        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
-                             L"SetBoundingBox() should only be called on fixed objects!");
+        assert(!IsFreeFloating() &&
+               L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             { return; }
 
@@ -852,8 +852,8 @@ namespace Wisteria::GraphItems
         if (GetClippingRect())
             { dc.SetClippingRegion(GetClippingRect().value()); }
 
-        wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 ||
-            (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal),
+        assert((GetLegendIcons().size() == 0 ||
+            (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal)) &&
             L"Vertical legend not supported!");
         wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 || !HasLegendIcons() ||
             (GetTextOrientation() == Orientation::Horizontal &&
@@ -862,7 +862,7 @@ namespace Wisteria::GraphItems
                 "if using legend icons! It is currently %d.",
                 GetMinLegendWidthDIPs(), GetLeftPadding()));
 
-        wxASSERT_LEVEL_2_MSG(GetFont().IsOk(), L"Invalid font in label!");
+        assert(GetFont().IsOk() && L"Invalid font in label!");
         DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
 
         const wxRect boundingBox = GetBoundingBox(dc);

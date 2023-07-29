@@ -452,9 +452,9 @@ namespace Wisteria::Graphs
     void BarChart::SortBars(std::vector<wxString> labels,
                             const Wisteria::SortDirection direction)
         {
-        wxASSERT_LEVEL_2_MSG(IsSortable(),
-                             L"Bars are not sortable. "
-                              "Call SetSortable(true) prior to calling SortBars().");
+        assert(IsSortable() &&
+                L"Bars are not sortable. "
+                "Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort ||
             GetBarAxis().IsReversed())
@@ -584,9 +584,9 @@ namespace Wisteria::Graphs
     void BarChart::SortBars(const BarSortComparison sortMethod,
                             const Wisteria::SortDirection direction)
         {
-        wxASSERT_LEVEL_2_MSG(IsSortable(),
-                             L"Bars are not sortable. "
-                              "Call SetSortable(true) prior to calling SortBars().");
+        assert(IsSortable() &&
+                L"Bars are not sortable. "
+                "Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort ||
             GetBarAxis().IsReversed())
@@ -837,9 +837,9 @@ namespace Wisteria::Graphs
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
                                  GetStippleBrush().IsOk() )
                             {
-                            wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently "
-                                                  "supported with stipple bar effect.");
+                            assert((bar.GetShape() == BarShape::Rectangle) &&
+                                    L"Non-rectangular shapes not currently "
+                                    "supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
@@ -898,8 +898,8 @@ namespace Wisteria::Graphs
                                 }
                             else if (bar.GetShape() == BarShape::Arrow)
                                 {
-                                wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoDisplay),
-                                                     L"Drop shadow not supported for arrow shape currently.");
+                                assert(!(GetShadowType() != ShadowType::NoDisplay) &&
+                                         L"Drop shadow not supported for arrow shape currently.");
                                 barNeckRect.Deflate(wxSize(0,safe_divide(barNeckRect.GetHeight(), 5)) );
                                 barNeckRect.SetRight(barNeckRect.GetRight()-(safe_divide(barNeckRect.GetWidth(),10)));
                                 arrowPoints[0] = barNeckRect.GetTopLeft();
@@ -1248,9 +1248,9 @@ namespace Wisteria::Graphs
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
                                  GetStippleBrush().IsOk() )
                             {
-                            wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently "
-                                                  "supported with stipple bar effect.");
+                            assert((bar.GetShape() == BarShape::Rectangle) &&
+                                    L"Non-rectangular shapes not currently "
+                                    "supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
@@ -1306,7 +1306,7 @@ namespace Wisteria::Graphs
                                 }
                             else if (bar.GetShape() == BarShape::Arrow)
                                 {
-                                wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoDisplay),
+                                assert(!(GetShadowType() != ShadowType::NoDisplay) &&
                                      L"Drop shadow not supported for arrow shape currently.");
                                 barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(),5), 0) );
                                 const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(),10);

@@ -193,9 +193,9 @@ namespace Wisteria::GraphItems
         size_t GetLongestLineLength() const noexcept
             {
             // make sure this was cached properly
-            wxASSERT_LEVEL_2_MSG(
+            assert(
                 (GetText().length() == 0 && m_longestLineLength == 0) ||
-                (GetText().length() > 0 && m_longestLineLength > 0),
+                (GetText().length() > 0 && m_longestLineLength > 0) &&
                 L"Longest line length in label was not calculated!");
             return m_longestLineLength;
             }

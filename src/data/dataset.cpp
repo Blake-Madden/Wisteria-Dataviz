@@ -625,7 +625,7 @@ namespace Wisteria::Data
         // check grouping parameters
         const auto groupColumnIterator = (groupColumn.has_value() ?
             GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
-        wxASSERT_MSG(!groupColumn || groupId,
+        assert((!groupColumn || groupId) &&
                  L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
@@ -682,7 +682,7 @@ namespace Wisteria::Data
         // check grouping parameters
         const auto groupColumnIterator = (groupColumn.has_value() ?
             GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
-        wxASSERT_MSG(!groupColumn || groupId,
+        assert((!groupColumn || groupId) &&
                  L"Group ID must be provided if using grouping for GetCategoricalColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
@@ -735,7 +735,7 @@ namespace Wisteria::Data
         // check grouping parameters
         const auto groupColumnIterator = (groupColumn.has_value() ?
             GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
-        wxASSERT_MSG(!groupColumn || groupId,
+        assert((!groupColumn || groupId) &&
                  L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
@@ -787,7 +787,7 @@ namespace Wisteria::Data
         // check grouping parameters
         const auto groupColumnIterator = (groupColumn.has_value() ?
             GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
-        wxASSERT_MSG(!groupColumn || groupId,
+        assert((!groupColumn || groupId) &&
                  L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
@@ -832,7 +832,7 @@ namespace Wisteria::Data
         // check grouping parameters
         const auto groupColumnIterator = (groupColumn.has_value() ?
             GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
-        wxASSERT_MSG(!groupColumn || groupId,
+        assert((!groupColumn || groupId) &&
                  L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {

@@ -17,7 +17,7 @@ using namespace Wisteria::Icons;
 void GroupGraph2D::SetGroupColumn(
     const std::optional<const wxString> groupColumnName /*= std::nullopt*/)
     {
-    wxASSERT_MSG(GetDataset(), L"You must call SetDataset() before calling SetGroupColumn()!");
+    assert(GetDataset() && L"You must call SetDataset() before calling SetGroupColumn()!");
     if (GetDataset() == nullptr)
         {
         throw std::runtime_error(wxString(
@@ -103,7 +103,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             break;
             }
         wxString currentLabel = GetGroupColumn()->GetLabelFromID(groupId);
-        wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+        assert(Settings::GetMaxLegendTextLength() >= 1 &&
             L"Max legend text length is zero?!");
         if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
             Settings::GetMaxLegendTextLength() >= 1)
@@ -113,7 +113,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             }
         legendText.append(currentLabel.c_str()).append(L"\n");
 
-        wxASSERT_MSG(GetBrushScheme() || GetColorScheme(),
+        assert((GetBrushScheme() || GetColorScheme()) &&
             L"Legend needs either a brush scheme or color scheme!");
         // Graphs usually use the brush as the primary, but some may
         // only use the color scheme; fallback to that if necessary.

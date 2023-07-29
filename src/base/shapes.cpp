@@ -271,7 +271,7 @@ namespace Wisteria::GraphItems
             { m_renderer.m_graphInfo = GraphItemBase::GetGraphItemInfo(); }
         m_rendererNeedsUpdating = false;
 
-        wxASSERT_LEVEL_2_MSG(m_shape == IconShape::Blank || m_drawFunction,
+        assert((m_shape == IconShape::Blank || m_drawFunction) &&
             L"Shape failed to set drawing function!");
         if (m_drawFunction != nullptr)
             {

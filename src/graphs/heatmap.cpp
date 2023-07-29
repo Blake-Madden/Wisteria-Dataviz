@@ -102,10 +102,10 @@ namespace Wisteria::Graphs
                     currentColumn = 0;
                     currentGroupId = GetGroupColumn()->GetValue(i);
                     }
-                wxASSERT_LEVEL_2_MSG(currentRow < m_matrix.size(),
+                assert(currentRow < m_matrix.size() &&
                     L"Invalid row when filling heatmap matrix! "
                     "Data should be sorted by group before calling SetData().!");
-                wxASSERT_LEVEL_2_MSG(currentColumn < m_matrix[currentRow].size(),
+                assert(currentColumn < m_matrix[currentRow].size() &&
                     L"Invalid column when filling heatmap matrix!");
                 // should not happen, just do this to prevent crash if data was not sorted by
                 // value and then by group first. What's displayed if this happens is the data
@@ -154,10 +154,10 @@ namespace Wisteria::Graphs
                     ++currentRow;
                     currentColumn = 0;
                     }
-                wxASSERT_LEVEL_2_MSG(currentRow < m_matrix.size(),
-                                     L"Invalid row when filling heatmap matrix!");
-                wxASSERT_LEVEL_2_MSG(currentColumn < m_matrix[currentRow].size(),
-                                     L"Invalid column when filling heatmap matrix!");
+                assert(currentRow < m_matrix.size() &&
+                       L"Invalid row when filling heatmap matrix!");
+                assert(currentColumn < m_matrix[currentRow].size() &&
+                       L"Invalid column when filling heatmap matrix!");
                 // shouldn't happen, just done as sanity check
                 if (currentRow >= m_matrix.size() || currentColumn >= m_matrix[currentRow].size())
                     { break; }
