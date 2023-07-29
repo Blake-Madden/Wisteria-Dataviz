@@ -303,7 +303,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         BoxAndWhisker& GetBox(const size_t index)
             {
-            wxASSERT_LEVEL_2_MSG(index < m_boxes.size(), L"Invalid index in GetBox()!");
+            assert(index < m_boxes.size() && L"Invalid index in GetBox()!");
             return m_boxes.at(index);
             }
         /// @returns The number of boxes (i.e., data distributions) being plotted.

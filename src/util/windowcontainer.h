@@ -160,7 +160,7 @@ public:
         assert(classInfo);
         for (auto win : m_windows)
             {
-            wxASSERT_LEVEL_2_MSG(win, "NULL window in window container!");
+            assert(win && "NULL window in window container!");
             if (win && win->IsKindOf(classInfo))
                 { return win; }
             }
@@ -174,7 +174,7 @@ public:
         assert(classInfo);
         for (auto win = m_windows.crbegin(); win != m_windows.crend(); ++win)
             {
-            wxASSERT_LEVEL_2_MSG(*win, "NULL window in window container!");
+            assert(*win && "NULL window in window container!");
             if (*win && (*win)->IsKindOf(classInfo))
                 { return *win; }
             }

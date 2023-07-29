@@ -672,7 +672,7 @@ public:
                      const double sortableValue =
                         std::numeric_limits<double>::quiet_NaN()/*Not used here*/) final
         {
-        wxASSERT_LEVEL_2_MSG(std::isnan(sortableValue),
+        assert(std::isnan(sortableValue) &&
             L"Numeric sortable value not supported by ListCtrlExDataProvider, "
              "use ListCtrlExNumericDataProvider instead.");
         wxUnusedVar(sortableValue);
@@ -687,7 +687,7 @@ public:
                      const double sortableValue =
                         std::numeric_limits<double>::quiet_NaN()/*Not used here*/) final
         {
-        wxASSERT_LEVEL_2_MSG(std::isnan(sortableValue),
+        assert(std::isnan(sortableValue) &&
             L"Numeric sortable value not supported by ListCtrlExDataProvider, "
              "use ListCtrlExNumericDataProvider instead.");
         wxUnusedVar(sortableValue);

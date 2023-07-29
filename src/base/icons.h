@@ -96,8 +96,8 @@ namespace Wisteria::Icons
         explicit LegendIcon(const std::vector<wxColour>& colors) :
             m_shape(IconShape::ColorGradient), m_colors(colors)
             {
-            wxASSERT_LEVEL_2_MSG(m_colors.size() >= 2,
-                L"Color gradient legend created with only one color!");
+            assert(m_colors.size() >= 2 &&
+                   L"Color gradient legend created with only one color!");
             }
         /** @brief Constructs legend icon.
             @param img The image to draw as an icon.*/

@@ -1503,8 +1503,8 @@ namespace Wisteria
 
         if (event.LeftDown())
             {
-            wxASSERT_LEVEL_2_MSG(currentlyDraggedShape == nullptr,
-                                 L"Item being dragged should be null upon left mouse down!");
+            assert(currentlyDraggedShape == nullptr &&
+                   L"Item being dragged should be null upon left mouse down!");
             // unselect any selected items (if Control/Command isn't held down),
             // as we are now selecting (and possibly dragging) something else.
             if (!wxGetMouseState().CmdDown())
@@ -1548,8 +1548,8 @@ namespace Wisteria
                 }
             else
                 {
-                wxASSERT_LEVEL_2_MSG(currentlyDraggedShape == nullptr,
-                                     L"Item being dragged should be null upon left mouse down!");
+                assert(currentlyDraggedShape == nullptr &&
+                       L"Item being dragged should be null upon left mouse down!");
                 currentlyDraggedShape = nullptr;
                 }
             // ...or the fixed items connected to the canvas's grid
@@ -1590,9 +1590,9 @@ namespace Wisteria
             // finished dragging
             dragMode = DragMode::DraggingNone;
 
-            wxASSERT_LEVEL_2_MSG(currentlyDraggedShape,
-                                 "Drag image is null while mouse up, "
-                                 "although drag mode isn't set to none!");
+            assert(currentlyDraggedShape &&
+                   "Drag image is null while mouse up, "
+                   "although drag mode isn't set to none!");
             if (m_dragImage != nullptr)
                 {
                 m_dragImage->Hide();
@@ -1600,9 +1600,9 @@ namespace Wisteria
                 m_dragImage = nullptr;
                 }
 
-            wxASSERT_LEVEL_2_MSG(currentlyDraggedShape,
-                                 "Item being dragged is null while mouse up, "
-                                 "although drag mode isn't set to none!");
+            assert(currentlyDraggedShape &&
+                   "Item being dragged is null while mouse up, "
+                   "although drag mode isn't set to none!");
             if (currentlyDraggedShape)
                 {
                 const wxPoint movePt(unscrolledPosition-dragStartPos);
@@ -1617,9 +1617,9 @@ namespace Wisteria
             }
         else if (event.Dragging() && dragMode != DragMode::DraggingNone)
             {
-            wxASSERT_LEVEL_2_MSG(currentlyDraggedShape,
-                                 "Item being dragged is null while mouse drag, "
-                                 "although drag mode isn't set to none!");
+            assert(currentlyDraggedShape &&
+                   "Item being dragged is null while mouse drag, "
+                   "although drag mode isn't set to none!");
             if (dragMode == DragMode::DragStart && currentlyDraggedShape)
                 {
                 dragStartPos = unscrolledPosition;

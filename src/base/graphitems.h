@@ -774,16 +774,16 @@ namespace Wisteria
                 {
                 m_itemInfo.m_text = label;
                 m_itemInfo.m_scaling = scaling;
-                wxASSERT_LEVEL_2_MSG(m_itemInfo.m_scaling > 0,
-                                     L"Scaling in canvas object is <= 0?!");
+                assert(m_itemInfo.m_scaling > 0 &&
+                       L"Scaling in canvas object is <= 0?!");
                 }
             /// @private
             GraphItemBase(const double scaling, wxString&& label)
                 {
                 m_itemInfo.m_text = std::move(label);
                 m_itemInfo.m_scaling = scaling;
-                wxASSERT_LEVEL_2_MSG(m_itemInfo.m_scaling > 0,
-                                     L"Scaling in canvas object is <= 0?!");
+                assert(m_itemInfo.m_scaling > 0 &&
+                       L"Scaling in canvas object is <= 0?!");
                 }
             /** @brief Constructor.
                 @param itemInfo Extended information to construct this item with.*/
@@ -801,8 +801,8 @@ namespace Wisteria
                     maintain its size and position; scaling will not affect it.*/
             virtual void SetScaling(const double scaling)
                 {
-                wxASSERT_LEVEL_2_MSG(scaling > 0,
-                                     L"Scaling in canvas object is less than or equal to zero?!");
+                assert(scaling > 0 &&
+                       L"Scaling in canvas object is less than or equal to zero?!");
                 if (scaling <= 0)
                     { return; }
                 m_itemInfo.m_scaling = scaling;
@@ -820,8 +820,8 @@ namespace Wisteria
                 @param scaling The scaling factor.*/
             virtual void SetDPIScaleFactor(const double scaling)
                 {
-                wxASSERT_LEVEL_2_MSG(scaling > 0,
-                                     L"DPI Scaling in canvas object is less than or equal to zero?!");
+                assert(scaling > 0 &&
+                       L"DPI Scaling in canvas object is less than or equal to zero?!");
                 if (scaling <= 0)
                     { return; }
                 m_itemInfo.m_dpiScaleFactor = scaling;
@@ -1728,8 +1728,8 @@ namespace Wisteria
                 @param scaling The object's initial scaling factor.*/
              void SetOriginalCanvasScaling(const double scaling)
                 {
-                wxASSERT_LEVEL_2_MSG(scaling > 0,
-                                     L"Scaling in canvas object is less than or equal to zero?!");
+                assert(scaling > 0 &&
+                       L"Scaling in canvas object is less than or equal to zero?!");
                 if (scaling <= 0)
                     { return; }
                 m_itemInfo.m_originalCanvasScaling = scaling;

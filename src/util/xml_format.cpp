@@ -579,8 +579,8 @@ long XmlFormat::GetLong(const wchar_t* sectionStart,
                         const wchar_t* entityTag,
                         const long defaultValue)
     {
-    wxASSERT_MSG(sectionStart && sectionEnd && entityTag,
-        wxString::Format(L"Invalid pointer passed to %s", __WXFUNCTION__));
+    assert(sectionStart && sectionEnd && entityTag &&
+           L"Invalid pointer passed to GetLong()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
         entityTag == nullptr)
         { return defaultValue; }
@@ -622,8 +622,8 @@ double XmlFormat::GetDouble(const wchar_t* sectionStart,
                             const wchar_t* entityTag,
                             const double defaultValue)
     {
-    wxASSERT_MSG(sectionStart && sectionEnd && entityTag,
-        wxString::Format(L"Invalid pointer passed to %s", __WXFUNCTION__));
+    assert(sectionStart && sectionEnd && entityTag &&
+           L"Invalid pointer passed to GetDouble()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
         entityTag == nullptr)
         { return defaultValue; }
