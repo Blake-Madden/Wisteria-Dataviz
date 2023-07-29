@@ -487,14 +487,10 @@ void SideBar::OnDraw(wxDC& dc)
         };
 
     // draw the folders and subitems
-    wxASSERT_MSG(firstFolderToDraw.value() < m_folders.size(),
-        wxString::Format(
-            L"Sidebar first folder index out of range! (Folder %zu.)",
-            firstFolderToDraw.value()));
-    wxASSERT_MSG(lastFolderToDraw.value() < m_folders.size(),
-        wxString::Format(
-            L"Sidebar last folder index out of range! (Folder %zu.)",
-            lastFolderToDraw.value()));
+    assert(firstFolderToDraw.value() < m_folders.size() &&
+           L"Sidebar first folder index out of range!");
+    assert(lastFolderToDraw.value() < m_folders.size() &&
+           L"Sidebar last folder index out of range!");
     for (size_t i = firstFolderToDraw.value();
         i <= lastFolderToDraw.value();
         ++i)
