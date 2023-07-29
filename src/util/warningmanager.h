@@ -177,8 +177,8 @@ public:
         std::vector<WarningMessage>::iterator warningPos =
             std::lower_bound(m_warningManager.begin(), m_warningManager.end(),
                 WarningMessage(messageId));
-        wxASSERT_LEVEL_2_MSG(messageId.IsEmpty() || (warningPos != m_warningManager.end() &&
-                             warningPos->GetId() == messageId), messageId);
+        assert(messageId.empty() || (warningPos != m_warningManager.end() &&
+                             warningPos->GetId() == messageId));
         return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId) ?
             warningPos : m_warningManager.end();
         }
@@ -190,8 +190,8 @@ public:
         std::vector<WarningMessage>::iterator warningPos =
             std::lower_bound(m_warningManager.begin(), m_warningManager.end(),
                 WarningMessage(messageId));
-        wxASSERT_LEVEL_2_MSG(messageId.IsEmpty() || (warningPos != m_warningManager.end() &&
-            warningPos->GetId() == messageId), messageId);
+        assert(messageId.empty() || (warningPos != m_warningManager.end() &&
+            warningPos->GetId() == messageId));
         return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId);
         }
 private:

@@ -70,9 +70,8 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
         else
             {
             wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
-            wxASSERT_LEVEL_2_MSG(bmp.IsOk(),
-                wxString::Format(L"%s: failed to load image from resources.",
-                                 filePath));
+            assert(bmp.IsOk() &&
+                   "Failed to load image from resources!");
             wxLogVerbose(wxString::Format(L"%s extracted from resource file. Width=%d, Height=%d",
                                           filePath, bmp.GetWidth(), bmp.GetHeight()));
             return m_imageMap[filePath] = bmp;
@@ -91,8 +90,8 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
         // load bitmap from disk if a local file
         if (wxFile::Exists(path))
             {
-            wxASSERT_MSG(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).IsOk(),
-                wxString::Format(L"Failed to load '%s' SVG icon", path));
+            assert(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).IsOk() &&
+                   L"Failed to load SVG icon!");
 
             wxVector<wxBitmap> bmps;
             bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).GetBitmap(wxSize(16, 16)));
@@ -107,8 +106,8 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
             }
         else
             {
-            wxASSERT_MSG(m_zipCatalog.ReadSVG(path, wxSize(16, 16)).IsOk(),
-                wxString::Format(L"Failed to load '%s' SVG icon", path));
+            assert(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).IsOk() &&
+                   L"Failed to load SVG icon!");
 
             wxVector<wxBitmap> bmps;
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(16, 16)));
