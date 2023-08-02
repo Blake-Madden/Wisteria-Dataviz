@@ -12,11 +12,7 @@
 #ifndef __MEMMAPPEDFILE_H__
 #define __MEMMAPPEDFILE_H__
 
-#ifdef __WXMSW__
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-    #include <wx/msw/winundef.h>
-#else
+#ifdef __UNIX__
     #include <unistd.h>
     #include <sys/mman.h>
     #include <sys/fcntl.h>
