@@ -106,9 +106,6 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
             }
         else
             {
-            assert(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).IsOk() &&
-                   L"Failed to load SVG icon!");
-
             wxVector<wxBitmap> bmps;
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(16, 16)));
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(32, 32)));
