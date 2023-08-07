@@ -30,7 +30,7 @@ void WarningMessagesDlg::CreateControls()
         }
     for (auto& warningLabel : warningsSortedByLabel)
         {
-        wxCheckBox* checkBox = new wxCheckBox(this, wxID_ANY, warningLabel.second->GetDescription(),
+        wxCheckBox* checkBox = new wxCheckBox(checksBoxSizer->GetStaticBox(), wxID_ANY, warningLabel.second->GetDescription(),
             wxDefaultPosition, wxDefaultSize, 0,
             wxGenericValidator(&warningLabel.second->ShouldBeShown()) );
         checksBoxSizer->Add(checkBox, 0, wxALL, wxSizerFlags::GetDefaultBorder());
