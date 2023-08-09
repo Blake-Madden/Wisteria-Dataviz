@@ -33,14 +33,10 @@ PROJECT(WisteriaGuiTestRunner)
 # Setup wxWidgets
 ########################
 
-# Linx: install the wxWidgets development files to your system
-# Windows: set wxWidgets_ROOT_DIR to the wxWidgets root path
-
-# Find wxWidgets and select its components
-FIND_PACKAGE(wxWidgets REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
-INCLUDE(${wxWidgets_USE_FILE})
-MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
-MESSAGE(STATUS "Adding wxWidgets configuration file: ${wxWidgets_CONFIGURATION}/wx/setup.h")
+# Find wxWidgets (wxWidgetsConfig.cmake, specifically) and select its components
+SET(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
+SET(wxWidgets_USE_STATIC 1)
+FIND_PACKAGE(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net REQUIRED CONFIG)
 
 IF(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
