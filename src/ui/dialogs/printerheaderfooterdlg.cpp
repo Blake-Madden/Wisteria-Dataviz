@@ -124,7 +124,8 @@ void PrinterHeaderFooterDlg::CreateControls()
     choiceStrings.Add(_(L"Page @PAGENUM@ of @PAGESCNT@"));
     choiceStrings.Add(DONTTRANSLATE(L"@DATE@"));
     choiceStrings.Add(DONTTRANSLATE(L"@TIME@"));
-    leftHeaderPrinterCombo = new wxComboBox(headerFrameSizer->GetStaticBox(), ControlIDs::ID_LEFT_HEADER_COMBOBOX, wxEmptyString,
+    leftHeaderPrinterCombo = new wxComboBox(headerFrameSizer->GetStaticBox(),
+        ControlIDs::ID_LEFT_HEADER_COMBOBOX, wxString{},
         wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_leftPrinterHeader));
     headerLeftSizer->Add(leftHeaderPrinterCombo, 1, wxEXPAND);
@@ -137,7 +138,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     headerCenterSizer->Add(centerHeaderTextLabel, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     centerHeaderPrinterCombo = new wxComboBox(headerFrameSizer->GetStaticBox(), ControlIDs::ID_CENTER_HEADER_COMBOBOX,
-        wxEmptyString, wxDefaultPosition, wxDefaultSize,
+        wxString{}, wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_centerPrinterHeader));
     headerCenterSizer->Add(centerHeaderPrinterCombo, 1, wxEXPAND);
 
@@ -149,7 +150,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     headerRightSizer->Add(rightHeaderTextLabel, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     rightHeaderPrinterCombo = new wxComboBox(headerFrameSizer->GetStaticBox(), ControlIDs::ID_RIGHT_HEADER_COMBOBOX,
-        wxEmptyString, wxDefaultPosition, wxDefaultSize,
+        wxString{}, wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_rightPrinterHeader));
     headerRightSizer->Add(rightHeaderPrinterCombo, 1, wxEXPAND);
 
@@ -165,7 +166,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     footerLeftSizer->Add(leftFooterPrinterText, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     leftFooterPrinterCombo = new wxComboBox(footerSizer->GetStaticBox(), ControlIDs::ID_LEFT_FOOTER_COMBOBOX,
-        wxEmptyString, wxDefaultPosition, wxDefaultSize,
+        wxString{}, wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_leftPrinterFooter));
     footerLeftSizer->Add(leftFooterPrinterCombo, 1, wxEXPAND);
 
@@ -177,7 +178,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     footerCenterSizer->Add(centerFooterPrinterText, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     centerFooterPrinterCombo = new wxComboBox(footerSizer->GetStaticBox(), ControlIDs::ID_CENTER_FOOTER_COMBOBOX,
-        wxEmptyString, wxDefaultPosition, wxDefaultSize,
+        wxString{}, wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_centerPrinterFooter));
     footerCenterSizer->Add(centerFooterPrinterCombo, 1, wxEXPAND);
 
@@ -189,7 +190,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     footerRightSizer->Add(rightFooterPrinterText, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     rightFooterPrinterCombo = new wxComboBox(footerSizer->GetStaticBox(), ControlIDs::ID_RIGHT_FOOTER_COMBOBOX,
-        wxEmptyString, wxDefaultPosition, wxDefaultSize,
+        wxString{}, wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_rightPrinterFooter));
     footerRightSizer->Add(rightFooterPrinterCombo, 1, wxEXPAND);
 
