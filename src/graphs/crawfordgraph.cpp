@@ -78,9 +78,6 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
-        if (GetDataset() == nullptr)
-            { return; }
-
         wxPoint pt;
         if (GetPhysicalCoordinates(2.0, 218, pt) )
             {
@@ -1020,6 +1017,9 @@ namespace Wisteria::Graphs
                 Text(wxNumberFormatter::ToString(1.0, 1, wxNumberFormatter::Style::Style_None)).
                 AnchorPoint(pt)));
             }
+
+        if (GetDataset() == nullptr)
+            { return; }
 
         // plot the data
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
