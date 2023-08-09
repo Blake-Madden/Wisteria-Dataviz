@@ -35,8 +35,16 @@ PROJECT(WisteriaGuiTestRunner)
 
 # Find wxWidgets (wxWidgetsConfig.cmake, specifically) and select its components
 SET(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
+MESSAGE(STATUS "Adding wxWidgets CMake cofig folder: ${wxWidgets_DIR}")
+IF(NOT EXISTS "${wxWidgets_DIR}/wxWidgetsConfig.cmake" AND NOT EXISTS "${wxWidgets_DIR}/wxwidgets-config.cmake")
+    MESSAGE(STATUS "Warning: cannot find wxWidgets CMake configuration. (Looked in ${wxWidgets_DIR}.)")
+ENDIF()
 SET(wxWidgets_USE_STATIC 1)
-FIND_PACKAGE(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net REQUIRED CONFIG)
+FIND_PACKAGE(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net richtext REQUIRED CONFIG)
+
+IF(wxWidgets_USE_FILE)
+    INCLUDE(${wxWidgets_USE_FILE})
+ENDIF()
 
 IF(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
@@ -51,23 +59,30 @@ ENDIF()
 ADD_COMPILE_OPTIONS("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
-# Build Wisteria library
+# Build Wisteria GUI test runner
 ########################
+SET(TEST_APP WisteriaGuiTestRunner)
 # (run "tools/Build CMake Files List.R" to update this)
-INCLUDE(${CMAKE_SOURCE_DIR}/../../tools/guilibfiles_testing.cmake)
-ADD_LIBRARY(Wisteria STATIC ${WISTERIA_SRC})
-# Add OpenMP for mutlithreading
-FIND_PACKAGE(OpenMP)
-IF(OpenMP_CXX_FOUND)
-    MESSAGE(STATUS "OpenMP available; will be included.")
-    TARGET_LINK_LIBRARIES(Wisteria PUBLIC OpenMP::OpenMP_CXX)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/guilibfiles_testing.cmake)
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/guitestfiles.cmake)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+ADD_EXECUTABLE(${TEST_APP} WIN32 MACOSX_BUNDLE ${WISTERIA_SRC} ${TEST_SRC_FILES})
+
+MESSAGE(STATUS "Finding Catch2...")
+# place Catch2 at the same folder level as this repo if it isn't installed
+# (you will need to do this on Windows or macOS or if version 3 of Catch2 isn't installed)
+GET_FILENAME_COMPONENT(_fullpath "${_dir}" REALPATH)
+IF(EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/../../../Catch2")
+    ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../../Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
+ELSE()
+    # ...otherwise, see if it is installed
+    FIND_PACKAGE(Catch2 3 REQUIRED)
 ENDIF()
-TARGET_INCLUDE_DIRECTORIES(Wisteria PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 IF(MSVC)
-    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS __UNITTEST
-        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+    TARGET_COMPILE_DEFINITIONS(${TEST_APP} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS __UNITTEST _UNICODE
+        $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
     # C++ version is 98 always (for compatibility reasons).
@@ -82,45 +97,34 @@ IF(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
+    TARGET_COMPILE_OPTIONS(${TEST_APP} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 # Placeholder code for macOS (needs testing)
 #ELSEIF(APPLE)
-#    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXOSX__ __UNITTEST
+#    TARGET_COMPILE_DEFINITIONS(${TEST_APP} PUBLIC __WXOSX__ __UNITTEST
 #        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-#    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
+#    TARGET_COMPILE_OPTIONS(${TEST_APP} PUBLIC -Wall -Wextra -Wpedantic
 #                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ELSEIF(UNIX)
-    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXGTK__ __UNITTEST
+    TARGET_COMPILE_DEFINITIONS(${TEST_APP} PUBLIC __WXGTK__ __UNITTEST
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
+    TARGET_COMPILE_OPTIONS(${TEST_APP} PUBLIC -Wall -Wextra -Wpedantic
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ENDIF()
 
-MESSAGE(STATUS "Finding Catch2...")
-# place Catch2 at the same folder level as this repo if it isn't installed
-# (you will need to do this on Windows or macOS or if version 3 of Catch2 isn't installed)
-GET_FILENAME_COMPONENT(_fullpath "${_dir}" REALPATH)
-IF(EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/../../../Catch2")
-    ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../../Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
-ELSE()
-    # ...otherwise, see if it is installed
-    FIND_PACKAGE(Catch2 3 REQUIRED)
-ENDIF()
-
-# Define the build target for the executable
-MESSAGE(STATUS "Preparing the test runner...")
-SET(TEST_APP WisteriaGuiTestRunner)
-INCLUDE(${CMAKE_SOURCE_DIR}/../../tools/guitestfiles.cmake)
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-ADD_EXECUTABLE(${TEST_APP} WIN32 MACOSX_BUNDLE ${TEST_SRC_FILES})
-
 # Link required libraries to the executable
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(${TEST_APP} PRIVATE Catch2::Catch2 Wisteria ${wxWidgets_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${TEST_APP} PRIVATE Catch2::Catch2 ${wxWidgets_LIBRARIES})
 ELSEIF(UNIX)
     FIND_LIBRARY(TBB_LIB tbb)
-    TARGET_LINK_LIBRARIES(${TEST_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2)
+    TARGET_LINK_LIBRARIES(${TEST_APP} ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2)
+ENDIF()
+
+# Add OpenMP for mutlithreading
+FIND_PACKAGE(OpenMP)
+IF(OpenMP_CXX_FOUND)
+    MESSAGE(STATUS "OpenMP available; will be included.")
+    TARGET_LINK_LIBRARIES(${TEST_APP} PUBLIC OpenMP::OpenMP_CXX)
 ENDIF()
 
 # Copy datasets into build folder
@@ -128,7 +132,7 @@ MESSAGE(STATUS "Copying datasets...")
 ADD_CUSTOM_COMMAND(TARGET ${CMAKE_PROJECT_NAME}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/../../datasets $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/datasets)
+                   ${CMAKE_CURRENT_SOURCE_DIR}/../../datasets $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/datasets)
 
 # load the test cases into the runner
 INCLUDE(CTest)
