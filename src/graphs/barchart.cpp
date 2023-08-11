@@ -492,7 +492,7 @@ namespace Wisteria::Graphs
         std::sort(GetBars().begin(), GetBars().end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
-                return lhv.GetAxisPosition() < rhv.GetAxisPosition();
+            return lhv.GetAxisPosition() < rhv.GetAxisPosition();
             });
         // if not all labels were provided, then get the other bar labels that weren't
         // provided and sort those, pushing them all beneath the provided bars
@@ -519,6 +519,7 @@ namespace Wisteria::Graphs
                 { std::reverse(otherLabelBars.begin(), otherLabelBars.end()); }
             std::copy(otherLabelBars.cbegin(), otherLabelBars.cend(), std::back_inserter(labels));
             }
+        // shouldn't happen, sanity test
         if (labels.size() != GetBars().size())
             {
             throw std::runtime_error(wxString::Format(
@@ -550,7 +551,9 @@ namespace Wisteria::Graphs
                     });
             };
 
-        // reorder the provided labels (if necessary) to match the sorting direction
+        // Reorder the provided labels (if necessary) to match the sorting direction
+        // along the Y axis. The Y axis origin is at the bottom and goes upwards,
+        // making it necessary to reverse the order of the labels to match that.
         if ((direction == SortDirection::SortDescending && GetBarOrientation() == Orientation::Vertical) ||
             (direction == SortDirection::SortAscending && GetBarOrientation() == Orientation::Horizontal))
             { std::reverse(labels.begin(), labels.end()); }
@@ -562,6 +565,7 @@ namespace Wisteria::Graphs
                     {
                     return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0;
                     });
+            // shouldn't happen, sanity test
             if (foundPos == GetBars().cend())
                 {
                 throw std::runtime_error(wxString::Format(
