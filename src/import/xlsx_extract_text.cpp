@@ -119,9 +119,10 @@ namespace lily_of_the_valley
             m_html_text = endTag;
             if (m_removeNewlinesAndTabs)
                 {
+                // will also replace non-breaking spaces
                 std::transform(currentString.begin(), currentString.end(), currentString.begin(),
                     [](auto& ch) noexcept
-                    { return (ch == L'\n' || ch == L'\r' || ch == L'\t') ? L' ' : ch; });
+                    { return (ch == L'\n' || ch == L'\r' || ch == L'\t' || ch == L'\x00A0') ? L' ' : ch; });
                 }
             return std::make_pair(true, currentString);
             }
@@ -549,10 +550,10 @@ namespace lily_of_the_valley
             // in case file has nonsense in it, don't allocate more than
             // max number of rows for the strings table
             else
-                { m_shared_strings.reserve(std::min<size_t>(stringCount,ExcelMaxRows)); }
+                { m_shared_strings.reserve(std::min<size_t>(stringCount, ExcelMaxRows)); }
             }
         xlsx_string_table_parse tableParse(text, text_length, m_removeNewlinesAndTabs);
-        std::pair<bool,std::wstring> nextString;
+        std::pair<bool, std::wstring> nextString;
         while ((nextString = tableParse()).first)
             {
             if (truncate && nextString.second.length() > 256)
