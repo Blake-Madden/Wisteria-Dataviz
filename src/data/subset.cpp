@@ -461,4 +461,71 @@ namespace Wisteria::Data
 
         return GetClone();
         }
+
+    //---------------------------------------------------
+    std::shared_ptr<Dataset> Subset::SubsetSection(
+        const std::shared_ptr<const Dataset>& fromDataset,
+        const wxString& column,
+        const wxString& startRowLabel,
+        const wxString& endRowLabel,
+        const bool includeSentinelLabels)
+        {
+        if (fromDataset == nullptr)
+            { return nullptr; }
+
+        SetSourceData(fromDataset);
+
+        ColumnFilter startFilter(GetSource(), ColumnFilterInfo{ column, Comparison::Equals, { startRowLabel } });
+        ColumnFilter endFilter(GetSource(), ColumnFilterInfo{ column, Comparison::Equals, { endRowLabel } });
+
+        // get to the starting point
+        bool foundStartRow{ false };
+        while (HasMoreRows())
+            {
+            const auto nextRow = GetNextRowPosition();
+            if (nextRow.has_value())
+                {
+                if (startFilter.MeetsCriterion(nextRow.value()))
+                    {
+                    if (includeSentinelLabels)
+                        { CopyNextRow(); }
+                    else
+                        { SkipNextRow(); }
+                    foundStartRow = true;
+                    break;
+                    }
+                else
+                    { SkipNextRow(); }
+                }
+            // shouldn't happen
+            else
+                { break; }
+            }
+
+        if (!foundStartRow)
+            { return nullptr; }
+
+        // read until we find the requested end row or we read the end of the dataset 
+        while (HasMoreRows())
+            {
+            const auto nextRow = GetNextRowPosition();
+            if (nextRow.has_value())
+                {
+                if (!endFilter.MeetsCriterion(nextRow.value()))
+                    { CopyNextRow(); }
+                // copy the end sentinel row, but then stop
+                else
+                    {
+                    if (includeSentinelLabels)
+                        { CopyNextRow(); }
+                    break;
+                    }
+                }
+            // shouldn't happen
+            else
+                { break; }
+            }
+
+        return GetClone();
+        }
     }

@@ -210,6 +210,13 @@ contain the following properties:
   are `OR`ed together, meaning that if any condition for a row is true, then it will be included in the subset.
 - `"filter-and"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
   are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
+- `"section"`: Creates a subset from a contiguous block of rows based on sentinel values. \
+  Available options are:
+  - `"column"`: The name of the column to filter on.
+  - `"start-label"`: The start label to begin the subset.
+  - `"end-label"`: The label in the column that marks the end of the subset.
+  - `"include-sentinel-labels"`: `true` to include the `"start-label"` and `"end-label"` rows in the subset. \
+    The default is `true`.
   
 ::: {.notesection data-latex=""}
 Subset nodes can contain their own transformation and formula sections, same as a dataset node.

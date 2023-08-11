@@ -1534,6 +1534,7 @@ namespace Wisteria
                 {
                 if (subset->IsOk())
                     {
+                    const auto sectionNode = subset->GetProperty(L"section");
                     const auto filterNode = subset->GetProperty(L"filter");
                     const auto filterAndNode = subset->GetProperty(L"filter-and");
                     const auto filterOrNode = subset->GetProperty(L"filter-or");
@@ -1546,10 +1547,10 @@ namespace Wisteria
                         throw std::runtime_error(
                             _(L"Only one filter type allowed for a subset.").ToUTF8());
                         }
-                    else if (validFilterTypeNodes == 0)
+                    else if (validFilterTypeNodes == 0 && sectionNode->IsNull())
                         {
                         throw std::runtime_error(
-                            _(L"Subset missing filters.").ToUTF8());
+                            _(L"Subset missing filters or section definition.").ToUTF8());
                         }
 
                     Subset dataSubsetter;
@@ -1589,6 +1590,14 @@ namespace Wisteria
                             { cf.emplace_back(loadColumnFilter(filternode)); }
 
                         subsettedDataset = dataSubsetter.SubsetOr(parentToSubset, cf);
+                        }
+                    else if (sectionNode->IsOk())
+                        {
+                        subsettedDataset = dataSubsetter.SubsetSection(
+                                parentToSubset, sectionNode->GetProperty(_DT(L"column"))->GetValueString(),
+                                sectionNode->GetProperty(L"start-label")->GetValueString(),
+                                sectionNode->GetProperty(L"end-label")->GetValueString(),
+                                sectionNode->GetProperty(L"include-sentinel-labels")->GetValueBool(true));
                         }
 
                     if (subsettedDataset)
@@ -3294,6 +3303,27 @@ namespace Wisteria
 
         table->SetData(foundPos->second, variables,
             graphNode->GetProperty(L"transpose")->GetValueBool());
+
+        // sorting
+        const auto sortNode = graphNode->GetProperty(L"row-sort");
+        if (sortNode->IsOk())
+            {
+            const auto sortDirection =
+                sortNode->GetProperty(L"direction")->GetValueString().CmpNoCase(_DT(L"descending")) == 0 ?
+                SortDirection::SortDescending : SortDirection::SortAscending;
+            const std::optional<size_t> sortColumn =
+                LoadTablePosition(sortNode->GetProperty(L"column"), table);
+
+            // if sorting by a list of labels with a custom order
+            if (sortColumn)
+                {
+                if (const auto labelsNode = sortNode->GetProperty(L"labels");
+                    labelsNode->IsOk() && labelsNode->IsValueArray())
+                    { table->Sort(sortColumn.value(), labelsNode->GetValueStringVector(), sortDirection); }
+                else
+                    { table->Sort(sortColumn.value(), sortDirection); }
+                }
+            }
 
         if (graphNode->HasProperty(L"link-id"))
             {

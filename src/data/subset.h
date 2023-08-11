@@ -139,6 +139,28 @@ namespace Wisteria::Data
         std::shared_ptr<Dataset> SubsetAnd(
             const std::shared_ptr<const Dataset>& fromDataset,
             const std::vector<ColumnFilterInfo>& columnFilters);
+        /** @brief Creates a subset from a contiguous block of rows based on sentinel values.
+            @details Given a column and pair of start and end labels, will create a subset
+                which only includes the rows that match the start and end labels and all
+                data in between. (The sentinel rows can optionally be excluded.)
+            @param fromDataset The source datasource to subset.
+            @param column The column to filter on.
+            @param startRowLabel The start label to begin the subset.
+            @param endRowLabel The label in the column that marks the end of the subset.
+            @param includeSentinelLabels @c true to include @c startRowLabel and
+                @c endRowLabel
+            @returns The subset dataset.
+            @throws std::runtime_error If the column can't be found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        std::shared_ptr<Dataset> SubsetSection(
+            const std::shared_ptr<const Dataset>& fromDataset,
+            const wxString& column,
+            const wxString& startRowLabel,
+            const wxString& endRowLabel,
+            const bool includeSentinelLabels);
         };
     }
 
