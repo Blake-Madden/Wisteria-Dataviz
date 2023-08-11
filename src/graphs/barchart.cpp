@@ -484,7 +484,7 @@ namespace Wisteria::Graphs
                         { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })->GetAxisPosition() :
                     0.0;
                 AddBar(
-                    Bar{ maxAxisPos + 1.0, { BarBlock{} }, label, Label{ label },
+                    Bar{ maxAxisPos + GetScalingAxis().GetTickMarkInterval(), {BarBlock{}}, label, Label{label},
                             GetBarEffect(), GetBarOpacity() });
                 }
             }
