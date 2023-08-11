@@ -536,6 +536,8 @@ namespace Wisteria::Graphs
         /// @brief Sorts the the table by the provided column (based on a specified order of labels in the column).
         ///     This is similar to what @c forcats::fct_relevel() does in R.
         /// @param columnToSort The column to sort by.
+        /// @param labels The labels in the column, sorted in the new order that they should
+        ///     appear going downwards.
         /// @param direction The direction to sort by.
         /// @warning Call this immediately after calling SetData and before any other functions.\n
         ///     Calling this will clear all aggregations, footnotes, formatting commands, etc.
