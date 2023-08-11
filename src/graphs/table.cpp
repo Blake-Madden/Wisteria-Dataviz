@@ -335,6 +335,108 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::Sort(const size_t columnToSort, std::vector<wxString> labels, const SortDirection direction)
+        {
+        if (m_table.size() == 0)
+            { return; }
+
+        // insert the column header at the top of the labels
+        labels.insert(labels.cbegin(), 1, m_table[0][columnToSort].GetDisplayValue());
+        std::set<wxString> columnLabels;
+        // make sure all cell labels are unique in the column
+        for (size_t i = 0; i < m_table.size(); ++i)
+            { columnLabels.insert(m_table[i][columnToSort].GetDisplayValue()); }
+        if (columnLabels.size() != m_table.size())
+            { return; }
+
+        ClearTableInformation();
+
+        std::vector<wxString> otherLabels;
+        // get the cells labels that the caller did not specify
+        for (size_t i = 0; i < m_table.size(); ++i)
+            {
+            const auto& cellLabel{ m_table[i][columnToSort] };
+            const auto foundPos = std::find_if(labels.cbegin(), labels.cend(),
+                [&cellLabel](const auto& label)
+                    {
+                    return label.CmpNoCase(cellLabel.GetDisplayValue()) == 0;
+                    });
+            if (foundPos == labels.cend())
+                { otherLabels.push_back(cellLabel.GetDisplayValue()); }
+            }
+        // sort them, set the expected order, and copy them after the labels the caller provided
+        std::sort(otherLabels.begin(), otherLabels.end(),
+            [](const auto& lhv, const auto& rhv)
+            { return lhv.CmpNoCase(rhv) < 0; });
+        if (direction == SortDirection::SortDescending)
+            { std::reverse(otherLabels.begin(), otherLabels.end()); }
+        std::copy(otherLabels.cbegin(), otherLabels.cend(), std::back_inserter(labels));
+
+        // adapted from https://stackoverflow.com/questions/69764803/how-to-sort-reorder-a-vec-by-indices
+        std::vector<size_t> indices;
+        const auto reorderRows = [&indices, this]()
+            {
+            for (size_t idx = 0; idx < m_table.size(); ++idx)
+                {
+                if (indices[idx] != idx)
+                    {
+                    auto current_idx = idx;
+                    while (true)
+                        {
+                        auto target_idx = indices[current_idx];
+                        indices[current_idx] = current_idx;
+                        if (indices[target_idx] == target_idx)
+                            { break; }
+                        std::swap(m_table[current_idx], m_table[target_idx]);
+                        current_idx = target_idx;
+                        }
+                    }
+                }
+            };
+
+        // get the indices into the rows based on the order of the provided labels
+        for (const auto& label : labels)
+            {
+            std::optional<size_t> foundRow{ std::nullopt };
+            for (size_t i = 0; i < m_table.size(); ++i)
+                {
+                const auto& cellLabel{ m_table[i][columnToSort] };
+                if (label.CmpNoCase(cellLabel.GetDisplayValue()) == 0)
+                    {
+                    foundRow = i;
+                    break;
+                    }
+                }
+            if (foundRow)
+                { indices.push_back(foundRow.value()); }
+            else // shouldn't happen
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': cell label not found when sorting."), label).ToUTF8());
+                }
+            }
+
+        reorderRows();
+        }
+
+    //----------------------------------------------------------------
+    void Table::Sort(const size_t columnToSort, const SortDirection direction)
+        {
+        if (m_table.size() == 0)
+            { return; }
+
+        ClearTableInformation();
+
+        std::sort(m_table.begin() + 1 /* don't sort header */, m_table.end(),
+            [&columnToSort, &direction](const auto& lhv, const auto& rhv)
+            {
+            return (direction == SortDirection::SortAscending) ?
+                lhv[columnToSort].GetDisplayValue().CmpNoCase(rhv[columnToSort].GetDisplayValue()) < 0 :
+                rhv[columnToSort].GetDisplayValue().CmpNoCase(lhv[columnToSort].GetDisplayValue()) < 0;
+            });
+        }
+
+    //----------------------------------------------------------------
     void Table::CalculateAggregate(const AggregateInfo& aggInfo,
                                    Table::TableCell& aggCell,
                                    const std::vector<double>& values)

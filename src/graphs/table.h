@@ -522,6 +522,29 @@ namespace Wisteria::Graphs
                      const std::vector<wxString>& columns,
                      const bool transpose = false);
 
+        /// @name Sort Functions
+        /// @brief Functions relating to sorting the table.
+        /// @{
+
+        /** @brief Sorts the table by the provided column.
+            @param columnToSort The column to sort by.
+            @param direction The direction to sort by.
+            @warning Call this immediately after calling SetData and before any other functions.\n
+                Calling this will clear all aggregations, footnotes, formatting commands, etc.*/
+        void Sort(const size_t columnToSort, const SortDirection direction);
+
+        /// @brief Sorts the the table by the provided column (based on a specified order of labels in the column).
+        ///     This is similar to what @c forcats::fct_relevel() does in R.
+        /// @param columnToSort The column to sort by.
+        /// @param direction The direction to sort by.
+        /// @warning Call this immediately after calling SetData and before any other functions.\n
+        ///     Calling this will clear all aggregations, footnotes, formatting commands, etc.
+        /// @note All cell labels in the provided column must be unique for the label ordering to work;
+        ///     otherwise, the sort could not be deterministic. If there are multiple cells
+        ///     with the same label, then this will return without sorting.
+        void Sort(const size_t columnToSort, std::vector<wxString> labels, const SortDirection direction);
+        /// @}
+
         /// @name Table Functions
         /// @brief Functions for editing the table as a whole.
         /// @note Use `GetPen()` to change the outline of the table's cells.
@@ -579,6 +602,13 @@ namespace Wisteria::Graphs
         void ClearTable() noexcept
             {
             m_table.clear();
+            ClearTableInformation();
+            }
+
+        /// @brief Resets the table's aggregates, notes, and footnotes.
+        /// @note The table's data will stay intact.
+        void ClearTableInformation() noexcept
+            {
             m_aggregateColumns.clear();
             m_aggregateRows.clear();
             m_cellAnnotations.clear();

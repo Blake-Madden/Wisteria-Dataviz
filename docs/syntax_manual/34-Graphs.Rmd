@@ -780,7 +780,22 @@ Properties for `"table"` nodes:
       regular expression pattern *value*. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
 - `"transpose"`: `true` to transpose the data at the time of import. This means that the columns will become
-      the rows and vice versa.
+      the rows and vice versa. \
+      This is performed immediately after loading the data.
+- `"row-sort"`: Properties specifying how to sort the table. \
+  Available options are:
+  - `"direction"`: The direction to sort the rows. \
+    Available options are:
+    - `"ascending"`
+    - `"descending"`
+  - `"column"`: Which column to sort the rows by. \
+       Refer to [position](#position-properties) for available properties.
+  - `"labels"`: The cell labels, specified in the order they should be sorted. \
+       If `"direction"` is `"ascending"`, then the rows will be sorted top-to-bottom or
+       left-to-right (based on the order of the provided labels). Otherwise, they will be
+       sorted bottom-to-top or right-to-left. \
+       Note that cell labels in the provided must be unique; otherwise, the sorting will not be performed. \
+       Also, any provided labels that are not found in the column will be ignored.
 - `"min-width-proportion"`: The minimum percent of the drawing area's width that the table should consume
       (between `0.0` to `1.0`, representing 0% to 100%).
 - `"min-height-proportion"`: The minimum percent of the drawing area's height that the table should consume
