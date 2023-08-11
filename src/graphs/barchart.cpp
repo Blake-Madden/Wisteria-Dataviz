@@ -459,6 +459,12 @@ namespace Wisteria::Graphs
         if (!IsSortable() || direction == SortDirection::NoSort ||
             GetBarAxis().IsReversed())
             { return; }
+        std::set<wxString> barLabels;
+        // make sure all bar labels are unique
+        for (const auto& bar : GetBars())
+            { barLabels.insert(bar.GetAxisLabel().GetText()); }
+        if (barLabels.size() != GetBars().size())
+            { return; }
 
         // verify that provided labels are in the existing bars
         // (if not, then add a empty bar for it)

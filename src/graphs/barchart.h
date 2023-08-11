@@ -997,8 +997,10 @@ namespace Wisteria::Graphs
         ///     to the top (or left) and the rest of the bars will be sorted after those
         ///     alphabetically.\n
         ///     Also, if no bar can be found for a provided label, then an empty bar
-        ///     with that label will be added.
-        /// @throws std::runtime_error If a provided label isn't found, throws an exception.
+        ///     with that label will be added.\n
+        ///     Finally, all bar labels must be unique for the label ordering to work;
+        ///     otherwise, the sort could not be deterministic. If there are multiple bars
+        ///     with the same axis label, then this will return without sorting.
         virtual void SortBars(std::vector<wxString> labels, const SortDirection direction);
         /// @returns @c true if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept
