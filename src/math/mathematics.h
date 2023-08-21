@@ -146,14 +146,14 @@ public:
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared.*/
     [[nodiscard]]
-    bool operator<(const comparable_first_pair<T1,T2>& that) const
+    bool operator<(const comparable_first_pair<T1,T2>& that) const noexcept
         { return first < that.first; }
     /** @returns @c true if this is equal to another pair.
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared. The second items can be different.
             This is a key difference from `std::pair`.*/
     [[nodiscard]]
-    bool operator==(const comparable_first_pair<T1,T2>& that) const
+    bool operator==(const comparable_first_pair<T1,T2>& that) const noexcept
         { return first == that.first; }
     /// @brief The first item in the pair.
     T1 first;
@@ -167,12 +167,12 @@ template<typename T>
 [[nodiscard]]
 constexpr std::basic_string<T> coalesce(std::initializer_list<std::basic_string_view<T>> list)
     {
-    for (const auto item : list)
+    for (const auto& item : list)
         {
         if (item.length())
             { return std::basic_string<T>(item); }
         }
-    return std::basic_string<T>();
+    return std::basic_string<T>{};
     }
 
 /// @returns The first item with a size (length) from a list.
@@ -181,12 +181,12 @@ template<typename T>
 [[nodiscard]]
 constexpr T coalesce(std::initializer_list<T> list)
     {
-    for (const auto item : list)
+    for (const auto& item : list)
         {
         if (item.length())
             { return item; }
         }
-    return T();
+    return T{};
     }
 
 /** @brief Rescales a value from one range into another range.
