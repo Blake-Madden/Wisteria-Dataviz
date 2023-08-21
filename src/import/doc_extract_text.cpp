@@ -1122,23 +1122,23 @@ namespace lily_of_the_valley
         // returns the offset of a CFB object based on the sector
         const auto get_offset =
             [this]
-            (const file_system_entry* cfbObj, const size_t sectorIndex) noexcept -> size_t
+            (const file_system_entry* cfbObjEntry, const size_t sectorIndex) noexcept -> size_t
             {
-            if (cfbObj == nullptr)
+            if (cfbObjEntry == nullptr)
                 { return 0; }
-            if (!cfbObj->is_in_small_blocks())
+            if (!cfbObjEntry->is_in_small_blocks())
                 {
                 return BAT_SECTOR_SIZE +
                        // step over initial sector
-                       (cfbObj->m_sectors[sectorIndex] * m_sector_size);
+                       (cfbObjEntry->m_sectors[sectorIndex] * m_sector_size);
                 }
             else
                 {
                 const size_t sbatSectorNumber =
-                    safe_divide<size_t>(cfbObj->m_sectors[sectorIndex], get_sbats_per_sector());
+                    safe_divide<size_t>(cfbObjEntry->m_sectors[sectorIndex], get_sbats_per_sector());
                 return BAT_SECTOR_SIZE +
                     (m_root_storage->m_sectors[sbatSectorNumber]*m_sector_size) +
-                    (safe_modulus<size_t>(cfbObj->m_sectors[sectorIndex], get_sbats_per_sector()) *
+                    (safe_modulus<size_t>(cfbObjEntry->m_sectors[sectorIndex], get_sbats_per_sector()) *
                         m_short_sector_size);
                 }
             };
