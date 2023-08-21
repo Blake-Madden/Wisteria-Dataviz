@@ -631,8 +631,8 @@ namespace lily_of_the_valley
                 const auto dataType = read_int(propBuffer.data(), property.first);
                 std::wstring propertyValue;
                 // Multi-byte character string
-                if (dataType == static_cast<decltype(dataType)>(property_data_type::vt_bstr) ||
-                    dataType == static_cast<decltype(dataType)>(property_data_type::vt_lpstr))
+                if (dataType == static_cast<int32_t>(property_data_type::vt_bstr) ||
+                    dataType == static_cast<int32_t>(property_data_type::vt_lpstr))
                     {
                     const auto strBtyeCount = read_int(propBuffer.data(), static_cast<size_t>(property.first) + 4);
                     if ((static_cast<size_t>(property.first) + 8 + strBtyeCount) > sectionSize)
@@ -658,7 +658,7 @@ namespace lily_of_the_valley
                         }
                     }
                 // UTF-16 string
-                if (dataType == static_cast<decltype(dataType)>(property_data_type::vt_lpwstr))
+                if (dataType == static_cast<int32_t>(property_data_type::vt_lpwstr))
                     {
                     const auto strBtyeCount = read_int(propBuffer.data(), static_cast<size_t>(property.first) + 4);
                     if ((static_cast<size_t>(property.first) + 8 + strBtyeCount) > sectionSize)
@@ -672,15 +672,15 @@ namespace lily_of_the_valley
                 // Set the value to the respective property.
                 // Note that there may be embedded nulls in the string if the input was trash,
                 // so copy it in as a wchar_t* buffer so that it stops on the null terminator.
-                if (property.second == static_cast<decltype(dataType)>(property_format_id::pid_title))
+                if (property.second == static_cast<int32_t>(property_format_id::pid_title))
                     { m_title.assign(propertyValue.c_str()); }
-                else if (property.second == static_cast<decltype(dataType)>(property_format_id::pid_subject))
+                else if (property.second == static_cast<int32_t>(property_format_id::pid_subject))
                     { m_subject.assign(propertyValue.c_str()); }
-                else if (property.second == static_cast<decltype(dataType)>(property_format_id::pid_author))
+                else if (property.second == static_cast<int32_t>(property_format_id::pid_author))
                     { m_author.assign(propertyValue.c_str()); }
-                else if (property.second == static_cast<decltype(dataType)>(property_format_id::pid_keywords))
+                else if (property.second == static_cast<int32_t>(property_format_id::pid_keywords))
                     { m_keywords.assign(propertyValue.c_str()); }
-                else if (property.second == static_cast<decltype(dataType)>(property_format_id::pid_comments))
+                else if (property.second == static_cast<int32_t>(property_format_id::pid_comments))
                     { m_comments.assign(propertyValue.c_str()); }
                 }
             }
