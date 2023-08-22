@@ -137,13 +137,13 @@
 
 #ifdef ENABLE_PROFILING
     #define PROFILE() \
-        __debug::__profiler __debug__profiled__function__(__DEBUG_FUNCTION_NAME__)
+        __debug::__profiler __debug_profiled_function__(__DEBUG_FUNCTION_NAME__)
     #define PROFILE_WITH_INFO(info) \
-        __debug::__profiler __debug__profiled__function__(__DEBUG_FUNCTION_NAME__, (info))
+        __debug::__profiler __debug_profiled_function__info__(__DEBUG_FUNCTION_NAME__, (info))
     #define PROFILE_SECTION_START(section_name) \
-        { __debug::__profiler __debug__profiled__function__(section_name)
+        { __debug::__profiler __debug_profiled_section__(section_name)
     #define PROFILE_SECTION_WITH_INFO_START(section_name, info) \
-        { __debug::__profiler __debug__profiled__function__(section_name, (info))
+        { __debug::__profiler __debug_profiled_function__info__(section_name, (info))
     #define PROFILE_SECTION_END() }
     #define SET_PROFILER_REPORT_PATH(path) \
                     __debug::__profile_reporter::set_output_path((path))
