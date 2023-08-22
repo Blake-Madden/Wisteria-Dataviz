@@ -62,6 +62,7 @@
 #include <algorithm>
 #include <string>
 #include <ctime>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <sstream>
