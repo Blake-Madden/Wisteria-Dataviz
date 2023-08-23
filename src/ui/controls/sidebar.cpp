@@ -508,7 +508,8 @@ void SideBar::OnDraw(wxDC& dc)
             if (IsValidImageId(m_folders[i].m_iconIndex))
                 {
                 dc.DrawLabel(m_folders[i].m_label,
-                             GetImageList()[m_folders[i].m_iconIndex.value()].GetBitmap(GetIconSize()),
+                             GetImageList()[m_folders[i].m_iconIndex.value()].
+                                 GetBitmap(GetIconSize()).ConvertToImage(),
                              wxRect(m_folders[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
                              wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
                 }
@@ -604,7 +605,7 @@ void SideBar::OnDraw(wxDC& dc)
                         dc.DrawLabel(m_folders[i].m_subItems[j].m_label,
                                      GetImageList()
                                         [m_folders[i].m_subItems[j].m_iconIndex.value()].
-                                        GetBitmap(GetIconSize()),
+                                        GetBitmap(GetIconSize()).ConvertToImage(),
                                      wxRect(m_folders[i].m_subItems[j].m_Rect).
                                         Deflate(wxSizerFlags::GetDefaultBorder()),
                                      wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
