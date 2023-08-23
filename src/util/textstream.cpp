@@ -215,6 +215,10 @@ namespace Wisteria
     bool TextStream::ReadFile(wxString& filePath, wxString& textBuffer,
                               const wxString& srcCharSet /*= wxEmptyString*/)
         {
+        // can't do anything with an empty path, even prompting the user
+        // won't make any sense
+        if (filePath.empty())
+            { return false; }
         while (true)
             {
             // if the file doesn't exist, then keep prompting the user for it
