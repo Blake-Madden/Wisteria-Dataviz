@@ -99,7 +99,7 @@ public:
     ///     This is necessary for some programs that don't support the "highlight" or "cb"
     ///     command (e.g., LibreOffice).
     [[nodiscard]]
-    wxString GetUnthemedFormattedTextRtf(const bool fixHighlightingTags = true) const;
+    wxString GetUnthemedFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags = true) const;
     /// @brief Inserts formatted text into the control.
     /// @param formattedText The formatted text.
     /// @details On Windows and Mac this is RTF text, on Linux, it is Pango markup.
@@ -146,7 +146,7 @@ public:
         @param caseSensitiveSearch Whether the search should be case-sensitive.
         @returns The index of the found text, or wxNOT_FOUND if not found.*/
     long FindText(const wchar_t* textToFind, const bool searchDown,
-                  const bool matchWholeWord, const bool caseSensitiveSearch);
+                  [[maybe_unused]] const bool matchWholeWord, const bool caseSensitiveSearch);
 
     /// @private
     void OnFind(wxFindDialogEvent& myEvent);
@@ -368,7 +368,8 @@ private:
         HtmlFormat,
         RtfFormat
         };
-    void GetFormattedTextGtk(wxString& text, const GtkFormat format) const;
+    [[nodiscard]]
+    wxString GetFormattedTextGtk(const GtkFormat format) const;
 #endif
     /* Fix highlighting so that it appears in programs that don't support the various
        background color tags. Basically, we add all variations of background color tags.

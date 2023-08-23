@@ -9,6 +9,13 @@
 #include <wx/paper.h>
 #ifdef __WXOSX__
     #include "wx/osx/private.h"
+#elif defined(__WXGTK__)
+    #include <gtk/gtk.h>
+    #include <gtk/gtktextiter.h>
+    #include <gtk/gtktexttag.h>
+    #include <gtk/gtktextchild.h>
+    #include <gtk/gtktextiter.h>
+    #include "gtk/gtktextview-helper.h"
 #endif
 #include "formattedtextctrl.h"
 #include "../dialogs/radioboxdlg.h"
@@ -438,7 +445,6 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         {
         *m_printData = printer.GetPrintDialogData().GetPrintData();
         }
-    wxDELETE(dc);
     wxDELETE(printOut);
 #else
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
@@ -600,8 +606,7 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
             GetRightPrinterFooter() + L"</td></tr></table>";
         }
 
-    wxString outputText;
-    GetFormattedTextHtml(outputText);
+    wxString outputText = GetFormattedTextHtml();
     wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
     wxHtmlPrintout* printOutForPrinting = new wxHtmlPrintout(GetTitleName());
     printOut->SetHtmlText(outputText);
@@ -1020,7 +1025,7 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
 
 //-----------------------------------------------------------
 long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDown,
-        const bool matchWholeWord, const bool caseSensitiveSearch)
+    [[maybe_unused]] const bool matchWholeWord, const bool caseSensitiveSearch)
     {
 #ifdef __WXMSW__
     // set up the flags
@@ -1070,7 +1075,9 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         }
     return retval;
 #elif defined(__WXGTK__)
-    GtkTextSearchFlags flags = GTK_TEXT_SEARCH_TEXT_ONLY;
+    GtkTextSearchFlags flags = static_cast<GtkTextSearchFlags>(caseSensitiveSearch ?
+        GTK_TEXT_SEARCH_TEXT_ONLY :
+        (GTK_TEXT_SEARCH_TEXT_ONLY | GTK_TEXT_SEARCH_CASE_INSENSITIVE));
 
     GtkWidget* text_view = gtk_bin_get_child(GTK_BIN(GTK_SCROLLED_WINDOW(GetHandle())));
     GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view) );
@@ -1088,11 +1095,10 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
     if (searchDown)
         {
         // search forward, beginning at the end of the selected text
-        const GtkTextIter selStart = selectionStart;
         const GtkTextIter selEnd = selectionEnd;
-        found = gtk_text_iter_forward_search_ex(&selEnd,
+        found = gtk_text_iter_forward_search(&selEnd,
             wxConvUTF8.cWC2MB(textToFind),
-            flags, caseSensitiveSearch, matchWholeWord, &selectionStart, &selectionEnd, nullptr);
+            flags, &selectionStart, &selectionEnd, nullptr);
         // if not found and searching down, ask if they would like to start
         // from the beginning and try again.
         /// @bug When this wraps around, it finds the word but doesn't highlight it.
@@ -1105,19 +1111,19 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
             gtk_text_buffer_get_start_iter(buffer, &textStart);
             gtk_text_buffer_get_selection_bounds(buffer, &selectionStart, &selectionEnd);
             // does this fix it? If not then give up.
-            const GtkTextIter selStart2 = selectionStart;
-            found = gtk_text_iter_forward_search_ex(&textStart,
+            const GtkTextIter selStart = selectionStart;
+            found = gtk_text_iter_forward_search(&textStart,
                 wxConvUTF8.cWC2MB(textToFind),
-                flags, caseSensitiveSearch, matchWholeWord, &selectionStart, &selectionEnd, &selStart2);
+                flags, &selectionStart, &selectionEnd, &selStart);
             }
         }
     else
         {
         // search backwards, starting at the start of the selected text
         const GtkTextIter selStart = selectionStart;
-        found = gtk_text_iter_backward_search_ex(&selStart,
+        found = gtk_text_iter_backward_search(&selStart,
             wxConvUTF8.cWC2MB(textToFind),
-            flags, caseSensitiveSearch, matchWholeWord, &selectionStart, &selectionEnd, nullptr);
+            flags, &selectionStart, &selectionEnd, nullptr);
         }
     if (found)
         {
@@ -1192,20 +1198,21 @@ wxString FormattedTextCtrl::GetFormattedTextHtml(
     text += L"\n</p>\n</body>";
     return text;
 #elif defined(__WXGTK__)
-    GetFormattedTextGtk(text, HtmlFormat);
+    return GetFormattedTextGtk(HtmlFormat);
 #endif
     }
 
 //-----------------------------------------------------------
 wxString FormattedTextCtrl::GetUnthemedFormattedTextRtf(
-    const bool fixHighlightingTags /*= true*/) const
+    [[maybe_unused]] const bool fixHighlightingTags /*= true*/) const
     {
 #if defined (__WXMSW__) || defined (__WXOSX__)
     return fixHighlightingTags ?
         FixHighlightingTags(GetUnthemedFormattedText()) :
         GetUnthemedFormattedText();
 #elif defined(__WXGTK__)
-    ???
+    /// @todo fix me, needs theming support
+    return GetFormattedTextGtk(RtfFormat);
 #endif
     }
 
@@ -1237,7 +1244,7 @@ wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /
     buffer.clear();
 #elif defined(__WXGTK__)
     wxUnusedVar(fixHighlightingTags);
-    GetFormattedTextGtk(text, RtfFormat);
+    return GetFormattedTextGtk(RtfFormat);
 #else
     text = GetTextPeer()->GetRtfValue();
 #endif
@@ -1317,15 +1324,14 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
     correctedText.Append(text.substr(previousPos));
     return correctedText;
 #elif defined(__WXGTK__)
-    // nothing to do here
+    return text;
 #endif
     }
 
 #ifdef __WXGTK__
 //-----------------------------------------------------------
-void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat format) const
+wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format) const
     {
-    text.Clear();
     GtkWidget* text_view = gtk_bin_get_child(GTK_BIN(GTK_SCROLLED_WINDOW(GetHandle())));
     GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view) );
 
@@ -1334,13 +1340,14 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
     gtk_text_buffer_get_end_iter(buffer, &end);
     gchar* bufferedUTF8Text = gtk_text_buffer_get_text(buffer, &start, &end, false);
     if (!bufferedUTF8Text)
-        { return; }
+        { return wxString{}; }
     /* Always convert this UTF8 text to unicode in here while we format it. This makes
        things much easier because the GTK offset functions treat offsets as characters instead
        of bytes.*/
     const std::wstring bufferedText(
         static_cast<const wchar_t*>(wxConvUTF8.cMB2WC(bufferedUTF8Text)));
     g_free(bufferedUTF8Text);
+    wxString text;
     text.reserve(bufferedText.length()*2);
 
     // read in the tags
@@ -1351,11 +1358,10 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
     std::wstring currentTagText;
     gtk_text_buffer_get_start_iter(buffer, &start);
     gtk_text_buffer_get_end_iter(buffer, &end);
-    wxString textBetweenTags;
     gint offset = 0;
     gint previousStart = 0;
     // handle the first tag that defines the default formatting for all of the text
-    if (gtk_text_iter_begins_tag(&start, nullptr))
+    if (gtk_text_iter_starts_tag(&start, nullptr))
         {
         GSList* tags = gtk_text_iter_get_toggled_tags(&start, true);
         wxString firstTag;
@@ -1375,6 +1381,8 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
         previousStart = gtk_text_iter_get_offset(&start);
         g_slist_free(tags);
         }
+    lily_of_the_valley::html_encode_text htmlEncode;
+    lily_of_the_valley::rtf_encode_text rtfEncode;
     while (gtk_text_iter_compare (&start, &end) < 0)
         {
         if (!gtk_text_iter_forward_to_tag_toggle(&start, nullptr))
@@ -1391,7 +1399,7 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
             GtkTextTag* tag = GTK_TEXT_TAG(tagp->data);
             // any tags at the current iterator that might start a new formatting block
             // (there might be more than one, though unlikely)
-            if (gtk_text_iter_begins_tag(&start, tag))
+            if (gtk_text_iter_starts_tag(&start, tag))
                 {
                 if (format == HtmlFormat)
                     { currentTagText += wxGtkTextTagToHtmlSpanTag(tag); }
@@ -1416,12 +1424,11 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
         offset = gtk_text_iter_get_offset(&start);
 
         // get the text between the previous format statement and the current one and encode it
-        textBetweenTags = bufferedText.substr(previousStart, offset-previousStart).c_str();
+        const std::wstring_view textBetweenTags = std::wstring_view(bufferedText).substr(previousStart, offset - previousStart);
         if (format == HtmlFormat)
-            { textBetweenTags = htmlEncode(textBetweenTags, textBetweenTags.length()).c_str(); }
+            { text += htmlEncode(textBetweenTags, true).c_str(); }
         else if (format == RtfFormat)
-            { textBetweenTags = rtfEncode(textBetweenTags,textBetweenTags.length()).c_str(); }
-        text += textBetweenTags;
+            { text += rtfEncode(textBetweenTags).c_str(); }
         // insert the format statement(s) (that either begin or end a format block).
         text += currentTagText;
         previousStart = offset;
@@ -1457,6 +1464,7 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
         text.Prepend(headerText);
         text += L"\\par\n}";
         }
+    return text;
     }
 #endif
 
@@ -1474,7 +1482,7 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
        If you pass in unicode text, then the control's RTF parser
        never gets called and your formatting code is actually
        displayed in the control! Just make sure that the text you pass
-       in here has extended ASCII characters RTF encoded--
+       in here has extended ASCII characters RTF encoded;
        that way you won't lose anything in the conversion.*/
     ::SendMessage(GetHwnd(), EM_SETTEXTEX, (WPARAM)&textInfo,
         (LPARAM)static_cast<const char*>(wxConvCurrent->cWX2MB(formattedText)));
