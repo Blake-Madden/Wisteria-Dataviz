@@ -390,6 +390,7 @@ wxString Wisteria::UI::BaseApp::FindResourceFile(const wxString& subFile) const
     if (wxFileName::FileExists(foundFile))
         { return foundFile; }
     // give up, can't find it anywhere
+    wxLogWarning(L"'%s': unable to find resource file.", subFile);
     return wxString{};
     }
 
