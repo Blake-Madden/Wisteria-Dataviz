@@ -16,8 +16,8 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    m_search = new wxSearchCtrl(this, ControlIDs::ID_SEARCH_TEXT_ENTRY, wxEmptyString,
-        wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    m_search = new wxSearchCtrl(this, ControlIDs::ID_SEARCH_TEXT_ENTRY, wxString{},
+        wxDefaultPosition, FromDIP(wxSize(200, -1)), wxTE_PROCESS_ENTER);
     mainSizer->Add(m_search, 0, wxTOP|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     wxBitmapButton* nextButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
@@ -55,7 +55,7 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
 //---------------------------------------------------
 bool SearchPanel::SetBackgroundColour(const wxColour& color)
     {
-    auto controls = GetSizer()->GetChildren();
+    auto& controls = GetSizer()->GetChildren();
     for (size_t i = 0; i < controls.size(); ++i)
         {
         if (controls.Item(i)->GetData()->IsWindow() &&
