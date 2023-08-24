@@ -276,7 +276,7 @@ void MemoryMappedFile::UnmapFile()
 //-----------------------------------------------
 bool MemoryMappedFile::Buffer()
     {
-    wxLogMessage(L"Unable to map file, switching to buffering mode: %s", GetFilePath());
+    wxLogDebug(L"Unable to map file, switching to buffering mode: %s", GetFilePath());
     Reset(true);
     wxFile theFile;
     // best to fall back to read only mode if we had to buffer
