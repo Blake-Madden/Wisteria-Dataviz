@@ -404,7 +404,7 @@ private:
         that->m_leftPrinterFooter = m_leftPrinterFooter;
         that->m_centerPrinterFooter = m_centerPrinterFooter;
         that->m_rightPrinterFooter = m_rightPrinterFooter;
-        this->m_waterMark = m_waterMark;
+        that->m_waterMark = m_waterMark;
         }
 
     wxMenu* m_menu{ nullptr };
