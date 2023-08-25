@@ -163,7 +163,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxStaticBoxSizer* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
         m_previewThumbnail =
             new Thumbnail(previewSizer->GetStaticBox(), m_originalBitmap, Thumbnail::ClickMode::DoNothing,
-            false, wxID_ANY, wxDefaultPosition, wxSize(128,128));
+            false, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(512, 512)) );
         previewSizer->Add(m_previewThumbnail);
         column2Sizer->Add(previewSizer);
         }
