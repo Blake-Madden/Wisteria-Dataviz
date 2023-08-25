@@ -1497,7 +1497,7 @@ namespace Wisteria::Graphs
             auto gutterLabel = std::make_shared<Label>(GetLeftMarginNote());
             gutterLabel->GetGraphItemInfo().
                 Scaling(GetScaling()).
-                DPIScaling(this->GetDPIScaleFactor()).
+                DPIScaling(GetDPIScaleFactor()).
                 Padding(4, 4, 4, 4).
                 Selectable(true).Anchoring(Anchoring::TopLeftCorner).
                 AnchorPoint(GetPlotAreaBoundingBox().GetTopLeft());
@@ -1516,7 +1516,7 @@ namespace Wisteria::Graphs
             auto gutterLabel = std::make_shared<Label>(GetRightMarginNote());
             gutterLabel->GetGraphItemInfo().
                 Scaling(GetScaling()).
-                DPIScaling(this->GetDPIScaleFactor()).
+                DPIScaling(GetDPIScaleFactor()).
                 Padding(4, 4, 4, 4).
                 Selectable(true).Anchoring(Anchoring::TopRightCorner).
                 AnchorPoint(GetPlotAreaBoundingBox().GetTopRight());
