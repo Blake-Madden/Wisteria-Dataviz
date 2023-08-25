@@ -17,7 +17,7 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_search = new wxSearchCtrl(this, ControlIDs::ID_SEARCH_TEXT_ENTRY, wxString{},
-        wxDefaultPosition, FromDIP(wxSize(200, -1)), wxTE_PROCESS_ENTER);
+        wxDefaultPosition, FromDIP(wxSize(200, -1)), 0);
     mainSizer->Add(m_search, 0, wxTOP|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     wxBitmapButton* nextButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
@@ -47,7 +47,7 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
 
     m_search->SetMenu(searchOptionsMenu);
 
-    Bind(wxEVT_TEXT_ENTER, &SearchPanel::OnSearch, this, ControlIDs::ID_SEARCH_TEXT_ENTRY);
+    Bind(wxEVT_SEARCH, &SearchPanel::OnSearch, this, ControlIDs::ID_SEARCH_TEXT_ENTRY);
     Bind(wxEVT_BUTTON, &SearchPanel::OnSearchButton, this, ControlIDs::ID_SEARCH_NEXT);
     Bind(wxEVT_BUTTON, &SearchPanel::OnSearchButton, this, ControlIDs::ID_SEARCH_PREVIOUS);
     }
