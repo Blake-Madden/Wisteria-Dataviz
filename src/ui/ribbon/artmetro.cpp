@@ -415,14 +415,15 @@ void RibbonMetroArtProvider::DrawTab(
             dc.GetTextExtent(label, &text_width, &text_height);
             int width = tab.rect.width - 5;
             int x = tab.rect.x + 3;
-            if(m_flags & wxRIBBON_BAR_SHOW_PAGE_ICONS)
+            if ((m_flags & wxRIBBON_BAR_SHOW_PAGE_ICONS) &&
+                tab.page->GetIcon().IsOk())
             {
                 x += 3 + tab.page->GetIcon().GetWidth();
                 width -= 3 + tab.page->GetIcon().GetWidth();
             }
             const int y = tab.rect.y + (tab.rect.height - text_height) / 2;
 
-            if(width <= text_width)
+            if (width <= text_width)
             {
                 dc.SetClippingRegion(x, tab.rect.y, width, tab.rect.height);
                 dc.DrawText(label, x, y);
