@@ -106,6 +106,8 @@ bool Wisteria::UI::BaseApp::OnInit()
     logSystemColor(wxSYS_COLOUR_HIGHLIGHTTEXT, DONTTRANSLATE(L"Highlighted Text Color"));
     logSystemColor(wxSYS_COLOUR_GRAYTEXT, DONTTRANSLATE(L"Grayed Text Color"));
     logSystemColor(wxSYS_COLOUR_HOTLIGHT, DONTTRANSLATE(L"Hyperlink Color"));
+    logSystemColor(wxSYS_COLOUR_INFOBK, DONTTRANSLATE(L"Info Background Color"));
+    logSystemColor(wxSYS_COLOUR_INFOTEXT, DONTTRANSLATE(L"Info Text Color"));
 
     // fix color mapping on Windows
     wxSystemOptions::SetOption(DONTTRANSLATE(L"msw.remap"), 0);
