@@ -22,6 +22,7 @@
 #include <vector>
 #include <wx/wx.h>
 #include <wx/string.h>
+#include <wx/log.h>
 
 inline guint8 UintToByte(const guint16 value)
     { return (value == 0) ? 0 : value/256u; }

@@ -24,6 +24,12 @@ text_buffer_insert_markup_real (GtkTextBuffer *buffer,
     GError             *error = nullptr;
     gchar              *text;
 
+    assert(GTK_IS_TEXT_BUFFER(buffer) && "Invalid text buffer!");
+    assert(textiter && "Invalid iterator in text_buffer_insert_markup_real()!");
+    assert(markup && "Invalid markup in text_buffer_insert_markup_real()!");
+    assert(gtk_text_iter_get_buffer(textiter) == buffer &&
+        "Iterator is not pointing to the correct buffer in text_buffer_insert_markup_real()!");
+
     g_return_if_fail (GTK_IS_TEXT_BUFFER (buffer));
     g_return_if_fail (textiter != NULL);
     g_return_if_fail (markup != NULL);
@@ -36,6 +42,7 @@ text_buffer_insert_markup_real (GtkTextBuffer *buffer,
     if (!pango_parse_markup(markup, len, 0, &attrlist, &text, NULL, &error))
     {
         g_warning("Invalid markup string: %s", error->message);
+        wxLogError("Invalid markup string: %s", error->message);
         g_error_free(error);
         return;
     }
@@ -173,7 +180,8 @@ text_buffer_set_markup_with_tag (GtkTextBuffer *buffer,
                                  gint           len,
                                  GtkTextTag    *tag)
 {
-    GtkTextIter start, end;
+    assert(GTK_IS_TEXT_BUFFER(buffer) && "Invalid text buffer!");
+    assert(markup && "Null markup passed to text_buffer_set_markup_with_tag()!");
 
     g_return_if_fail (GTK_IS_TEXT_BUFFER (buffer));
     g_return_if_fail (markup != nullptr);
@@ -181,8 +189,9 @@ text_buffer_set_markup_with_tag (GtkTextBuffer *buffer,
     if (len < 0)
         len = strlen (markup);
 
+    // clear current content
+    GtkTextIter start, end;
     gtk_text_buffer_get_bounds (buffer, &start, &end);
-
     gtk_text_buffer_delete (buffer, &start, &end);
 
     if (len > 0)
