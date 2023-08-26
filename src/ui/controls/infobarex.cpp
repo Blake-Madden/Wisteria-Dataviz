@@ -36,6 +36,7 @@ bool InfoBarEx::Create(wxWindow *parent, wxWindowID winid)
     m_dontShowAgainCheckbox = new wxCheckBox(this, wxID_ANY, _(L"Do not show this again."),
                                              wxDefaultPosition, wxDefaultSize, 0,
                                              wxGenericValidator(&m_dontShowAgain));
+    m_dontShowAgainCheckbox->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOTEXT));
 
     // center the text inside the sizer with an icon to the left of it and a
     // button at the very right
