@@ -25,7 +25,7 @@ namespace Wisteria
         - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
         - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
         - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawInformationOnSelection and @ DrawExtraInformation.
-        - @c DEBUG_DRAW_EXP_CODE enables @ IncludeExperimentalCode.
+        - @c DEBUG_EXPERIMENTAL_CODE enables @ IncludeExperimentalCode.
         - @c DEBUG_FILE_IO enables @ AllowFileIO.
 
             By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES, @c DEBUG_FILE_IO,
@@ -53,7 +53,7 @@ namespace Wisteria
                 be wrapped in @c IncludeExperimentalCode blocks.\n
                 This is a preferred replacement for `#ifdef 0` code blocks as this
                 can easily be enabled/disabled globally
-                (based on how @c DEBUG_DRAW_EXP_CODE is defined).*/
+                (based on how @c DEBUG_EXPERIMENTAL_CODE is defined).*/
         IncludeExperimentalCode = (1 << 3),
         /** @brief Allows various file output options that should not be available in
                 production releases. For example, allowing configuration files to
@@ -175,7 +175,7 @@ namespace Wisteria
 #ifdef DEBUG_DRAW_EXTRA_INFO
         DebugSettings::DrawExtraInformation|
 #endif
-#ifdef DEBUG_DRAW_EXP_CODE
+#ifdef DEBUG_EXPERIMENTAL_CODE
         DebugSettings::IncludeExperimentalCode|
 #endif
 #ifdef DEBUG_FILE_IO
