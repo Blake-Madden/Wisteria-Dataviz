@@ -250,7 +250,7 @@ wxString wxGtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         styleParams += wxString::Format(L" color: rgb(%u, %u, %u);",
             UintToByte(fgColor->red), UintToByte(fgColor->green), UintToByte(fgColor->blue));
         }
-    styleParams += wxString::Format(L" font-family: %s;", wxString(family, *wxConvCurrent));
+    styleParams += wxString::Format(L" font-family: %s;", wxString(family, *wxConvUTF8));
     if (sizeSet && size > 0)
         { styleParams += wxString::Format(L" font-size: %upt;", static_cast<guint>(size)); }
     if (weigthSet &&
