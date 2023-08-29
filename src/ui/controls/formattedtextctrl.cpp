@@ -1488,9 +1488,16 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
         (LPARAM)static_cast<const char*>(wxConvCurrent->cWX2MB(formattedText)));
 
 #elif defined(__WXGTK__)
-    GtkWidget* text_view = gtk_bin_get_child(GTK_BIN(GTK_SCROLLED_WINDOW(GetHandle())));
-    GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view) );
-    text_buffer_set_markup(buffer, wxConvUTF8.cWC2MB(formattedText), -1);
+    if (IsMultiLine())
+        {
+        // multiple events may get fired while editing text, so block those
+            {
+            EventsSuppressor noevents(this);
+            text_buffer_set_markup(GtkGetTextObject(),
+                wxConvUTF8.cWC2MB(formattedText), -1);
+            }
+        SendTextUpdatedEvent(GetEditableWindow());
+        }
 #else
     GetTextPeer()->SetRtfValue(formattedText);
 #endif
