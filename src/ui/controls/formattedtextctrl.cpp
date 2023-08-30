@@ -1501,6 +1501,8 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
 #else
     GetTextPeer()->SetRtfValue(formattedText);
 #endif
+
+    SetInsertionPoint(0);
     }
 
 #ifdef __WXMSW__
