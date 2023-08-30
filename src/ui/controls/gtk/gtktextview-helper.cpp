@@ -7,8 +7,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "gtktextview-helper.h"
+#include "../../../debug/debug_profile.h"
 
 #ifdef __WXGTK__
+
+constexpr wxColourBase::ChannelType FloatingPointChannelToByteChannel(const double val)
+    { return static_cast<wxColourBase::ChannelType>(std::floor(val >= 1.0 ? 255 : val * 256.0)); }
 
 //-------------------------------------------------
 void
@@ -18,6 +22,7 @@ text_buffer_insert_markup_real (GtkTextBuffer *buffer,
                                 gint           len,
                                 GtkTextTag    *extratag)
 {
+    PROFILE();
     PangoAttrIterator  *paiter;
     PangoAttrList      *attrlist;
     GtkTextMark        *mark;
@@ -211,7 +216,7 @@ text_buffer_set_markup (GtkTextBuffer *buffer,
 }
 
 //-------------------------------------------------
-wxString wxGtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
+wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     {
     wxString text = L"<span";
     wxString styleParams = L" style=\"";
@@ -231,8 +236,8 @@ wxString wxGtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         "underline-set", &underlineSet,
         "weight-set", &weigthSet,
         "style-set", &styleSet,
-        "background-gdk", &bkColor,
-        "foreground-gdk", &fgColor,
+        "background-rgba", &bkColor,
+        "foreground-rgba", &fgColor,
         "font", &font,
         "family", &family,
         "size-points", &size,
@@ -243,14 +248,18 @@ wxString wxGtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     if (bkColorSet && bkColor)
         {
         styleParams += wxString::Format(L"background-color: rgb(%u, %u, %u);",
-            UintToByte(bkColor->red), UintToByte(bkColor->green), UintToByte(bkColor->blue));
+            FloatingPointChannelToByteChannel(bkColor->red),
+            FloatingPointChannelToByteChannel(bkColor->green),
+            FloatingPointChannelToByteChannel(bkColor->blue));
         }
     if (fgColorSet && fgColor)
         {
         styleParams += wxString::Format(L" color: rgb(%u, %u, %u);",
-            UintToByte(fgColor->red), UintToByte(fgColor->green), UintToByte(fgColor->blue));
+            FloatingPointChannelToByteChannel(fgColor->red),
+            FloatingPointChannelToByteChannel(fgColor->green),
+            FloatingPointChannelToByteChannel(fgColor->blue));
         }
-    styleParams += wxString::Format(L" font-family: %s;", wxString(family, *wxConvUTF8));
+    styleParams += wxString::Format(L" font-family: %s;", wxString(family, wxConvUTF8));
     if (sizeSet && size > 0)
         { styleParams += wxString::Format(L" font-size: %upt;", static_cast<guint>(size)); }
     if (weigthSet &&
@@ -276,9 +285,9 @@ wxString wxGtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     }
 
 //-------------------------------------------------
-wxString wxGtkTextTagToRtfTag(const GtkTextTag* tag,
-                              std::vector<wxColour>& colorTable,
-                              std::vector<wxString>& fontTable)
+wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
+                            std::vector<wxColour>& colorTable,
+                            std::vector<wxString>& fontTable)
     {
     wxString text = L" ";
     // indicators as to whether a tag is set or not
@@ -297,8 +306,8 @@ wxString wxGtkTextTagToRtfTag(const GtkTextTag* tag,
         "underline-set", &underlineSet,
         "weight-set", &weigthSet,
         "style-set", &styleSet,
-        "background-gdk", &bkColor,
-        "foreground-gdk", &fgColor,
+        "background-rgba", &bkColor,
+        "foreground-rgba", &fgColor,
         "font", &font,
         "family", &family,
         "size-points", &size,
@@ -309,7 +318,9 @@ wxString wxGtkTextTagToRtfTag(const GtkTextTag* tag,
     if (bkColorSet && bkColor)
         {
         // search for the color to see if it's already in the color table
-        wxColour backgroundColor(UintToByte(bkColor->red), UintToByte(bkColor->green), UintToByte(bkColor->blue));
+        wxColour backgroundColor(FloatingPointChannelToByteChannel(bkColor->red),
+            FloatingPointChannelToByteChannel(bkColor->green),
+            FloatingPointChannelToByteChannel(bkColor->blue));
         auto colorPos = std::find(colorTable.cbegin(), colorTable.cend(), backgroundColor);
         if (colorPos == colorTable.cend())
             {
@@ -324,7 +335,9 @@ wxString wxGtkTextTagToRtfTag(const GtkTextTag* tag,
     if (fgColorSet && fgColor)
         {
         // search for the color to see if it's already in the color table
-        wxColour foregroundColor(UintToByte(fgColor->red), UintToByte(fgColor->green), UintToByte(fgColor->blue));
+        wxColour foregroundColor(FloatingPointChannelToByteChannel(fgColor->red),
+            FloatingPointChannelToByteChannel(fgColor->green),
+            FloatingPointChannelToByteChannel(fgColor->blue));
         auto colorPos = std::find(colorTable.cbegin(), colorTable.cend(), foregroundColor);
         if (colorPos == colorTable.cend())
             {
@@ -337,7 +350,7 @@ wxString wxGtkTextTagToRtfTag(const GtkTextTag* tag,
             }
         }
     if (sizeSet && size > 0)
-        { text += wxString::Format(L"\\fs%zu", static_cast<guint>(size)*2); }
+        { text += wxString::Format(L"\\fs%u", static_cast<guint>(size)*2); }
     if (weigthSet &&
         (weigth == PANGO_WEIGHT_BOLD ||
          weigth == PANGO_WEIGHT_ULTRABOLD ||

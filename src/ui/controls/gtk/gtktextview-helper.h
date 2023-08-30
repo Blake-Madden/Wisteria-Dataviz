@@ -24,13 +24,10 @@
 #include <wx/string.h>
 #include <wx/log.h>
 
-inline guint8 UintToByte(const guint16 value)
-    { return (value == 0) ? 0 : value/256u; }
-
 /// @returns A GTK text tag into HTML text.
-wxString wxGtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
+wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
 /// @returns A GTK text tag into RTF text.
-wxString wxGtkTextTagToRtfTag(const GtkTextTag* tag,
+wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
                               std::vector<wxColour>& colorTable,
                               std::vector<wxString>& fontTable);
 
