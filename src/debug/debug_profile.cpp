@@ -100,7 +100,7 @@ namespace __debug
             // write out the profiled blocked
             std::stringstream stream;
             stream.imbue(std::locale{""}); // show thousands separator for milliseconds
-            for (auto pos : m_profiles)
+            for (auto& pos : m_profiles)
                 {
                 stream.clear();
                 stream.str(std::string());
