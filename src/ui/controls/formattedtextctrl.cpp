@@ -1332,8 +1332,7 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
 //-----------------------------------------------------------
 wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
     {
-    GtkWidget* text_view = gtk_bin_get_child(GTK_BIN(GTK_SCROLLED_WINDOW(GetHandle())));
-    GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view) );
+    GtkTextBuffer* buffer = GtkGetTextObject();
 
     GtkTextIter start, end;
     gtk_text_buffer_get_start_iter(buffer, &start);
