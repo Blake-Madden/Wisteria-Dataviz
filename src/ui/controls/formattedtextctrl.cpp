@@ -1027,6 +1027,8 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
 long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDown,
     const bool matchWholeWord, const bool caseSensitiveSearch)
     {
+    std::wstring_view textToFindView{ textToFind };
+
 #ifdef __WXMSW__
     // set up the flags
     unsigned int flags = 0;
@@ -1057,7 +1059,10 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
     findText.lpstrText = textToFind;
     long retval = SendMessage(GetHwnd(), EM_FINDTEXTW, flags, (LPARAM)&findText);
     if (retval != wxNOT_FOUND)
-        { SetSelection(retval, retval + static_cast<long>(std::wcslen(textToFind))); }
+        {
+        SetSelection(retval, retval + static_cast<long>(textToFindView.length()));
+        ShowPosition(retval);
+        }
     // if not found and searching down, ask if they would like to start
     // from the beginning and try again
     if ((retval == wxNOT_FOUND) &&
@@ -1071,7 +1076,10 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         findText.chrg.cpMax = startOfSelection;
         retval = SendMessage(GetHwnd(), EM_FINDTEXTW, flags, (LPARAM)&findText);
         if (retval != wxNOT_FOUND)
-            { SetSelection(retval, retval + static_cast<long>(std::wcslen(textToFind))); }
+            {
+            SetSelection(retval, retval + static_cast<long>(textToFindView.length()));
+            ShowPosition(retval);
+        }
         }
     return retval;
 #elif defined(__WXGTK__)
@@ -1138,7 +1146,10 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
 #else
     long location = GetTextPeer()->Find(textToFind, caseSensitiveSearch, searchDown, matchWholeWord);
     if (location != wxNOT_FOUND)
-        { SetSelection(location, location + static_cast<long>(std::wcslen(textToFind))); }
+        {
+        SetSelection(location, location + static_cast<long>(textToFindView.length()));
+        ShowPosition(location);
+        }
     // if not found and searching down, ask if they would like to start
     // from the beginning and try again
     long startOfSelection, endOfSelection;
@@ -1153,9 +1164,15 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         SetSelection(0, 0);
         location = GetTextPeer()->Find(textToFind, caseSensitiveSearch, searchDown, matchWholeWord);
         if (location != wxNOT_FOUND)
-            { SetSelection(location, location + static_cast<long>(std::wcslen(textToFind))); }
+            {
+            SetSelection(location, location + static_cast<long>(textToFindView.length()));
+            ShowPosition(location);
+            }
         else
-            { SetSelection(startOfSelection, endOfSelection); }
+            {
+            SetSelection(startOfSelection, endOfSelection);
+            ShowPosition(startOfSelection);
+            }
         }
     return location;
 #endif
