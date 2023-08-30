@@ -99,7 +99,7 @@ public:
     ///     This is necessary for some programs that don't support the "highlight" or "cb"
     ///     command (e.g., LibreOffice).
     [[nodiscard]]
-    wxString GetUnthemedFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags = true) const;
+    wxString GetUnthemedFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags = true);
     /// @brief Inserts formatted text into the control.
     /// @param formattedText The formatted text.
     /// @details On Windows and Mac this is RTF text, on Linux, it is Pango markup.
@@ -110,13 +110,13 @@ public:
     ///     This is necessary for some programs that don't support the "highlight" or "cb"
     ///     command (e.g., LibreOffice).
     [[nodiscard]]
-    wxString GetFormattedTextRtf(const bool fixHighlightingTags = true) const;
+    wxString GetFormattedTextRtf(const bool fixHighlightingTags = true);
     /// @returns The window's content as HTML.
     /// @param CssStylePrefix A prefix to append to the CSS classes defined in the style section.
     /// @note This is useful to prevent duplicate CSS classes when combining
     ///     HTML output from multiple controls.
     [[nodiscard]]
-    wxString GetFormattedTextHtml(const wxString& CssStylePrefix = wxString{}) const;
+    wxString GetFormattedTextHtml(const wxString& CssStylePrefix = wxString{});
     /// @returns The length of the formatted text (this includes the length of all markup tags).
     [[nodiscard]]
     unsigned long GetFormattedTextLength() const noexcept
@@ -146,7 +146,7 @@ public:
         @param caseSensitiveSearch Whether the search should be case-sensitive.
         @returns The index of the found text, or wxNOT_FOUND if not found.*/
     long FindText(const wchar_t* textToFind, const bool searchDown,
-                  [[maybe_unused]] const bool matchWholeWord, const bool caseSensitiveSearch);
+                  const bool matchWholeWord, const bool caseSensitiveSearch);
 
     /// @private
     void OnFind(wxFindDialogEvent& myEvent);
@@ -170,15 +170,15 @@ public:
     /// @brief Saves the text control as a file, based on its extension.
     /// @param path The filepath to save to.
     /// @returns @c true if successful.
-    bool Save(const wxFileName& path) const;
+    bool Save(const wxFileName& path);
     /// @brief Saves the text control as an HTML file.
     /// @param path The filepath to save to.
     /// @returns @c true if successful.
-    bool SaveAsHtml(const wxFileName& path) const;
+    bool SaveAsHtml(const wxFileName& path);
     /// @brief Saves the text control as an RTF file.
     /// @param path The filepath to save to.
     /// @returns @c true if successful.
-    bool SaveAsRtf(const wxFileName& path) const;
+    bool SaveAsRtf(const wxFileName& path);
     /// @}
 
     /** @brief Sets the title for the document.
@@ -369,7 +369,7 @@ private:
         RtfFormat
         };
     [[nodiscard]]
-    wxString GetFormattedTextGtk(const GtkFormat format) const;
+    wxString GetFormattedTextGtk(const GtkFormat format);
 #endif
     /* Fix highlighting so that it appears in programs that don't support the various
        background color tags. Basically, we add all variations of background color tags.

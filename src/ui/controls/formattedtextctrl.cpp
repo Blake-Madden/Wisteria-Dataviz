@@ -904,7 +904,7 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
     }
 
 //------------------------------------------------------
-bool FormattedTextCtrl::Save(const wxFileName& path) const
+bool FormattedTextCtrl::Save(const wxFileName& path)
     {
     // create the folder to the filepath, if necessary
     wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
@@ -916,7 +916,7 @@ bool FormattedTextCtrl::Save(const wxFileName& path) const
     }
 
 //------------------------------------------------------
-bool FormattedTextCtrl::SaveAsHtml(const wxFileName& path) const
+bool FormattedTextCtrl::SaveAsHtml(const wxFileName& path)
     {
     wxString htmlBody = GetFormattedTextHtml();
 
@@ -936,7 +936,7 @@ bool FormattedTextCtrl::SaveAsHtml(const wxFileName& path) const
     }
 
 //------------------------------------------------------
-bool FormattedTextCtrl::SaveAsRtf(const wxFileName& path) const
+bool FormattedTextCtrl::SaveAsRtf(const wxFileName& path)
     {
     wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
     wxFile file(path.GetFullPath(), wxFile::write);
@@ -1025,7 +1025,7 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
 
 //-----------------------------------------------------------
 long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDown,
-    [[maybe_unused]] const bool matchWholeWord, const bool caseSensitiveSearch)
+    const bool matchWholeWord, const bool caseSensitiveSearch)
     {
 #ifdef __WXMSW__
     // set up the flags
@@ -1163,7 +1163,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
 
 //-----------------------------------------------------------
 wxString FormattedTextCtrl::GetFormattedTextHtml(
-    const wxString& CssStylePrefix /*= wxString{}*/) const
+    const wxString& CssStylePrefix /*= wxString{}*/)
     {
 #if defined (__WXMSW__) || defined (__WXOSX__)
     wxString rtfText = GetUnthemedFormattedText().length() ?
@@ -1204,7 +1204,7 @@ wxString FormattedTextCtrl::GetFormattedTextHtml(
 
 //-----------------------------------------------------------
 wxString FormattedTextCtrl::GetUnthemedFormattedTextRtf(
-    [[maybe_unused]] const bool fixHighlightingTags /*= true*/) const
+    [[maybe_unused]] const bool fixHighlightingTags /*= true*/)
     {
 #if defined (__WXMSW__) || defined (__WXOSX__)
     return fixHighlightingTags ?
@@ -1217,7 +1217,7 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextRtf(
     }
 
 //-----------------------------------------------------------
-wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /*= true*/) const
+wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /*= true*/)
     {
     wxString text;
 #ifdef __WXMSW__
@@ -1330,7 +1330,7 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
 
 #ifdef __WXGTK__
 //-----------------------------------------------------------
-wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format) const
+wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
     {
     GtkWidget* text_view = gtk_bin_get_child(GTK_BIN(GTK_SCROLLED_WINDOW(GetHandle())));
     GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view) );
@@ -1366,10 +1366,10 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format) const
         GSList* tags = gtk_text_iter_get_toggled_tags(&start, true);
         wxString firstTag;
         if (format == HtmlFormat)
-            { firstTag = wxGtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data)); }
+            { firstTag = GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data)); }
         else
             {
-            firstTag = wxGtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
+            firstTag = GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
             // just get the font family. The face name in Pango includes other
             // descriptives strings that we don't use here
             g_object_get(G_OBJECT(tags->data),
@@ -1402,7 +1402,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format) const
             if (gtk_text_iter_starts_tag(&start, tag))
                 {
                 if (format == HtmlFormat)
-                    { currentTagText += wxGtkTextTagToHtmlSpanTag(tag); }
+                    { currentTagText += GtkTextTagToHtmlSpanTag(tag); }
                 else
                     { currentTagText += wxGtkTextTagToRtfTag(tag, colorTable, fontTable); }
                 }
