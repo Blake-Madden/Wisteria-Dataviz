@@ -1079,7 +1079,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
             {
             SetSelection(retval, retval + static_cast<long>(textToFindView.length()));
             ShowPosition(retval);
-        }
+            }
         }
     return retval;
 #elif defined(__WXGTK__)
@@ -1094,43 +1094,96 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
     gtk_text_buffer_get_start_iter(buffer, &textStart);
     gtk_text_buffer_get_end_iter(buffer, &textEnd);
 
-    // get the selection in the text buffer
-    GtkTextIter selectionStart, selectionEnd;
+    // get the selection in the text buffer, or move to start of text if nothing is selected
+    GtkTextIter selectionStart, selectionEnd, selectionSearchPos;
     gtk_text_buffer_get_selection_bounds(buffer, &selectionStart, &selectionEnd);
 
-    gboolean found = false;
+    gboolean found = FALSE;
+
+    // verifies if the current match meets our "find whole word" criterion
+    // (whether it's enabled or not)
+    const auto confirmWholeWordMatch =
+        [&selectionStart, &selectionEnd, &found, &selectionSearchPos, &matchWholeWord]()
+        {
+        // not searching for whole words, so we found what we were looking for
+        if (!matchWholeWord)
+            { return true; }
+        // are searching for whole words and this meets that criterion, so we're good
+        else if (gtk_text_iter_starts_word(&selectionStart) && gtk_text_iter_ends_word(&selectionEnd))
+            { return true; }
+        // Searching for whole word, but this isn't it. Step to the end of this match and search further.
+        else
+            {
+            found = FALSE;
+            selectionSearchPos = selectionEnd;
+            return false;
+            }
+        };
+
     if (searchDown)
         {
-        // search forward, beginning at the end of the selected text
-        const GtkTextIter selEnd = selectionEnd;
-        found = gtk_text_iter_forward_search(&selEnd,
-            wxConvUTF8.cWC2MB(textToFind),
-            flags, &selectionStart, &selectionEnd, nullptr);
-        // if not found and searching down, ask if they would like to start
-        // from the beginning and try again.
-        /// @bug When this wraps around, it finds the word but doesn't highlight it.
-        /// You have to hit F3 to highlight it.
-        if (!found &&
-            (wxMessageBox(_(L"Search has reached the end of the document. "
-                            "Do you wish to restart the search from the beginning?"),
-                _(L"Continue Search"), wxYES_NO|wxICON_QUESTION) == wxYES))
+        // search forward, beginning at the start of the selected text
+        selectionSearchPos = selectionEnd;
+        while (!found)
             {
-            gtk_text_buffer_get_start_iter(buffer, &textStart);
-            gtk_text_buffer_get_selection_bounds(buffer, &selectionStart, &selectionEnd);
+            found = gtk_text_iter_forward_search(&selectionSearchPos,
+                wxConvUTF8.cWC2MB(textToFind),
+                flags, &selectionStart, &selectionEnd, NULL);
+            if (found)
+                {
+                if (confirmWholeWordMatch())
+                    { break; }
+                else
+                    { continue; }
+                }
+            // if not found and searching down, ask if they would like to start
+            // from the beginning and try again.
+            if (!found &&
+                (wxMessageBox(_(L"Search has reached the end of the document. "
+                                 "Do you wish to restart the search from the beginning?"),
+                    _(L"Continue Search"), wxYES_NO|wxICON_QUESTION) == wxYES))
+                {
+                gtk_text_buffer_get_start_iter(buffer, &textStart);
+                gtk_text_buffer_get_selection_bounds(buffer, &selectionStart, &selectionEnd);
 
                 GtkTextIter selStart = selectionStart;
-            found = gtk_text_iter_forward_search(&textStart,
-                wxConvUTF8.cWC2MB(textToFind),
-                flags, &selectionStart, &selectionEnd, &selStart);
+                found = gtk_text_iter_forward_search(&textStart,
+                    wxConvUTF8.cWC2MB(textToFind),
+                    flags, &selectionStart, &selectionEnd, &selStart);
+                if (found)
+                    {
+                    if (confirmWholeWordMatch())
+                        { break; }
+                    else
+                        { continue; }
+                    }
+                // not found between the text's beginning and last starting point, so give up
+                else
+                    { break; }
+                }
+            else
+                { break; }
             }
         }
     else
         {
         // search backwards, starting at the start of the selected text
-        const GtkTextIter selStart = selectionStart;
-        found = gtk_text_iter_backward_search(&selStart,
-            wxConvUTF8.cWC2MB(textToFind),
-            flags, &selectionStart, &selectionEnd, nullptr);
+        selectionSearchPos = selectionStart;
+        while (!found)
+            {
+            found = gtk_text_iter_backward_search(&selectionSearchPos,
+                wxConvUTF8.cWC2MB(textToFind),
+                flags, &selectionStart, &selectionEnd, NULL);
+            if (found)
+                {
+                if (confirmWholeWordMatch())
+                    { break; }
+                else
+                    { continue; }
+                }
+            else
+                { break; }
+            }
         }
 
     if (found)
@@ -1157,7 +1210,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         searchDown &&
         (startOfSelection > 0) &&
         (wxMessageBox(_(L"Search has reached the end of the document. "
-                        "Do you wish to restart the search from the beginning?"),
+                         "Do you wish to restart the search from the beginning?"),
                       _(L"Continue Search"), wxYES_NO|wxICON_QUESTION) == wxYES))
         {
         SetSelection(0, 0);
