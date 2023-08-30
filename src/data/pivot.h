@@ -105,12 +105,15 @@ namespace Wisteria::Data
                 These columns can be of any type, including the ID column.\n
                 Note that the output will be sorted based on the ordering of these columns.
             @param fromColumns The continuous column(s) to pivot into longer format.
-            @param namesTo The target column(s) to move the names from the @c fromColumns into.
-            @param valuesTo The column to move the values from the @c fromColumns into.
+            @param namesTo The target column(s) to move the names from the @c fromColumns into.\n
+                Basically, this will be a grouping column that uses the original column names as its groups.
+            @param valuesTo The column to move the values from the @c fromColumns into.\n
+                This will essentially be the values from the @c fromColumns stacked on top of each other.
+                The original column name for each value will appear next to it in the @c namesTo column.
             @param namesPattern If needing to split the names of the columns into multiple target columns,
                 this regular expression can be used. It should contain capture groups, where each group
                 will be the name of a new target column.\n
-                Leave blank (the default) to use the full name of @c fromColumns as the labels.
+                Leave blank (the default) to use the full name(s) of the @c fromColumns as the labels.
             @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
