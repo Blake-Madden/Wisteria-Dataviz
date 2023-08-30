@@ -1404,7 +1404,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
                 if (format == HtmlFormat)
                     { currentTagText += GtkTextTagToHtmlSpanTag(tag); }
                 else
-                    { currentTagText += wxGtkTextTagToRtfTag(tag, colorTable, fontTable); }
+                    { currentTagText += GtkTextTagToRtfTag(tag, colorTable, fontTable); }
                 }
             // any tags at the current iterator that might end a formatting block
             // (there might be more than one, though unlikely)
@@ -1415,7 +1415,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
                 else
                     {
                     currentTagText +=
-                        wxString::Format(L" \\cf0\\ulnone\\b0\\i0\\f0\\fs%u ",
+                        wxString::Format(L" \\highlight0\\cf0\\ulnone\\b0\\i0\\f0\\fs%u ",
                                          static_cast<guint>(defaultFontSize)*2).wc_str();
                     }
                 }
