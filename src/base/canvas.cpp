@@ -1018,7 +1018,6 @@ namespace Wisteria
             // Go through the items in the row and see if there are any having the row fit their content.
             // If so, use the tallest one in the row when we are done.
             std::optional<double> rowHeightProportion;
-            size_t currentColumn{ 0 };
             size_t validObjectsInRow{ 0 };
             for (auto& object : row)
                 {
@@ -1035,7 +1034,6 @@ namespace Wisteria
                     CalcColumnWidths(currentRow);
                     }
                 validObjectsInRow += ((object != nullptr) ? 1 : 0);
-                ++currentColumn;
                 }
             GetRowInfo(currentRow).RowCount((validObjectsInRow >= 1) ? 1 : 0);
             // set the row height if an item's content is setting its height
