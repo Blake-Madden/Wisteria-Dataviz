@@ -211,9 +211,6 @@ namespace Wisteria::UI
         // Whether to shrink to fit current page
         bool m_fitToCurrentPage{ false };
 
-        // the sizer containing the control
-        wxSizer* m_controlSizer{ nullptr };
-
         // The currently selected page (in range 0..m_pages.size()-1 inclusive) or
         // wxNOT_FOUND if none (this can normally only be the case for an empty
         // control without any pages).
