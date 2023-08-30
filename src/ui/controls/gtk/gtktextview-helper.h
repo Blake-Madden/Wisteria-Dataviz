@@ -44,7 +44,7 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
  * 
  *  Note that as of GTK 3.16 there is a gtk_text_buffer_insert_markup() function,
  *  but its performance is remarkably slower than this patch. I suspect it handles
- *  numberous Pango features that we don't; this is fine, as this function handles
+ *  numerous Pango features that we don't; this is fine, as this function handles
  *  just what is needed for our simple text control's purposes.
  */
 void

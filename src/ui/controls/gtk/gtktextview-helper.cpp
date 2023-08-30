@@ -221,12 +221,12 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     wxString text = L"<span";
     wxString styleParams = L" style=\"";
     // indicators as to whether a tag is set or not
-    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weigthSet, styleSet;
+    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet;
     // values to write to
     GdkRGBA* bkColor = nullptr;
     GdkRGBA* fgColor = nullptr;
     gdouble size = 0;
-    gboolean weigth, style, underline;
+    gboolean weight, style, underline;
     gchar* family = NULL;
     gchar* font = NULL;
     g_object_get(G_OBJECT(tag),
@@ -234,14 +234,14 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         "foreground-set", &fgColorSet,
         "size-set", &sizeSet,
         "underline-set", &underlineSet,
-        "weight-set", &weigthSet,
+        "weight-set", &weightSet,
         "style-set", &styleSet,
         "background-rgba", &bkColor,
         "foreground-rgba", &fgColor,
         "font", &font,
         "family", &family,
         "size-points", &size,
-        "weight", &weigth,
+        "weight", &weight,
         "style", &style,
         "underline", &underline,
         NULL);
@@ -262,10 +262,10 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     styleParams += wxString::Format(L" font-family: %s;", wxString(family, wxConvUTF8));
     if (sizeSet && size > 0)
         { styleParams += wxString::Format(L" font-size: %upt;", static_cast<guint>(size)); }
-    if (weigthSet &&
-        (weigth == PANGO_WEIGHT_BOLD ||
-         weigth == PANGO_WEIGHT_ULTRABOLD ||
-         weigth == PANGO_WEIGHT_HEAVY))
+    if (weightSet &&
+        (weight == PANGO_WEIGHT_BOLD ||
+         weight == PANGO_WEIGHT_ULTRABOLD ||
+         weight == PANGO_WEIGHT_HEAVY))
         { styleParams += L" font-weight: bold;"; }
     if (styleSet &&
         (style == PANGO_STYLE_ITALIC ||
@@ -291,12 +291,12 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
     {
     wxString text = L" ";
     // indicators as to whether a tag is set or not
-    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weigthSet, styleSet;
+    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet;
     // values to write to
     GdkRGBA* bkColor = nullptr;
     GdkRGBA* fgColor = nullptr;
     gdouble size = 0;
-    gboolean weigth, style, underline;
+    gboolean weight, style, underline;
     gchar* family = nullptr;
     gchar* font = nullptr;
     g_object_get(G_OBJECT(tag),
@@ -304,14 +304,14 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
         "foreground-set", &fgColorSet,
         "size-set", &sizeSet,
         "underline-set", &underlineSet,
-        "weight-set", &weigthSet,
+        "weight-set", &weightSet,
         "style-set", &styleSet,
         "background-rgba", &bkColor,
         "foreground-rgba", &fgColor,
         "font", &font,
         "family", &family,
         "size-points", &size,
-        "weight", &weigth,
+        "weight", &weight,
         "style", &style,
         "underline", &underline,
         NULL);
@@ -351,10 +351,10 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
         }
     if (sizeSet && size > 0)
         { text += wxString::Format(L"\\fs%u", static_cast<guint>(size)*2); }
-    if (weigthSet &&
-        (weigth == PANGO_WEIGHT_BOLD ||
-         weigth == PANGO_WEIGHT_ULTRABOLD ||
-         weigth == PANGO_WEIGHT_HEAVY))
+    if (weightSet &&
+        (weight == PANGO_WEIGHT_BOLD ||
+         weight == PANGO_WEIGHT_ULTRABOLD ||
+         weight == PANGO_WEIGHT_HEAVY))
         { text += L"\\b"; }
     if (styleSet &&
         (style == PANGO_STYLE_ITALIC ||
