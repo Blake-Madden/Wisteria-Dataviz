@@ -1492,7 +1492,8 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
         offset = gtk_text_iter_get_offset(&start);
 
         // get the text between the previous format statement and the current one and encode it
-        const std::wstring_view textBetweenTags = std::wstring_view(bufferedText).substr(previousStart, offset - previousStart);
+        const std::wstring_view textBetweenTags =
+            std::wstring_view(bufferedText).substr(previousStart, offset - previousStart);
         if (format == HtmlFormat)
             { text += htmlEncode(textBetweenTags, true).c_str(); }
         else if (format == RtfFormat)
