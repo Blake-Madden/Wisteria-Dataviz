@@ -400,7 +400,9 @@ namespace lily_of_the_valley
                                     // -----------------------------
                                     // if a shared string (type == 's'), convert the value
                                     // (which is an index into the string table)
-                                    if (typeTag.second == 1 && *typeTag.first == L's')
+                                    if (typeTag.second == 1 &&
+                                        typeTag.first != nullptr &&
+                                        *typeTag.first == L's')
                                         {
                                         const int stringTableIndex =
                                             string_util::atoi(valueStr.c_str());
@@ -412,7 +414,9 @@ namespace lily_of_the_valley
                                             }
                                         }
                                     // - 'b' (boolean): will be 0 or 1, so convert to 'FALSE' or 'TRUE'
-                                    else if (typeTag.second == 1 && *typeTag.first == L'b')
+                                    else if (typeTag.second == 1 &&
+                                        typeTag.first != nullptr &&
+                                        *typeTag.first == L'b')
                                         {
                                         const bool bVal =
                                             static_cast<bool>(string_util::atoi(valueStr.c_str()));
@@ -423,7 +427,9 @@ namespace lily_of_the_valley
                                         }
                                     // - 'e' (error): an error message (e.g., "#DIV/0!");
                                     //                treat this as missing data.
-                                    else if (typeTag.second == 1 && *typeTag.first == L'e')
+                                    else if (typeTag.second == 1 &&
+                                        typeTag.first != nullptr &&
+                                        *typeTag.first == L'e')
                                         { currentCell.set_value(std::wstring{}); }
                                     // These other types will just have their values read:
                                     // - 'n' (number): read its value (and maybe convert to date
