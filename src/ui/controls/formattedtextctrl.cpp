@@ -1083,12 +1083,11 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         }
     return retval;
 #elif defined(__WXGTK__)
-    GtkTextSearchFlags flags = static_cast<GtkTextSearchFlags>(caseSensitiveSearch ?
+    const GtkTextSearchFlags flags = static_cast<GtkTextSearchFlags>(caseSensitiveSearch ?
         GTK_TEXT_SEARCH_TEXT_ONLY :
         (GTK_TEXT_SEARCH_TEXT_ONLY | GTK_TEXT_SEARCH_CASE_INSENSITIVE));
 
-    GtkWidget* text_view = gtk_bin_get_child(GTK_BIN(GTK_SCROLLED_WINDOW(GetHandle())));
-    GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view) );
+    GtkTextBuffer* buffer = GtkGetTextObject();
 
     // get the beginning and end of text buffer
     GtkTextIter textStart, textEnd;
@@ -1118,8 +1117,8 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
             {
             gtk_text_buffer_get_start_iter(buffer, &textStart);
             gtk_text_buffer_get_selection_bounds(buffer, &selectionStart, &selectionEnd);
-            // does this fix it? If not then give up.
-            const GtkTextIter selStart = selectionStart;
+
+                GtkTextIter selStart = selectionStart;
             found = gtk_text_iter_forward_search(&textStart,
                 wxConvUTF8.cWC2MB(textToFind),
                 flags, &selectionStart, &selectionEnd, &selStart);
@@ -1133,12 +1132,12 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
             wxConvUTF8.cWC2MB(textToFind),
             flags, &selectionStart, &selectionEnd, nullptr);
         }
+
     if (found)
         {
         // if found, then highlight the text
-        gtk_text_buffer_select_range(buffer, &selectionStart, &selectionEnd);
-        gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(text_view), &selectionStart,
-                                     0.0, FALSE, 0.5, 0.5);
+        SetSelection(gtk_text_iter_get_offset(&selectionStart), gtk_text_iter_get_offset(&selectionEnd));
+        ShowPosition(gtk_text_iter_get_offset(&selectionStart));
         return gtk_text_iter_get_offset(&selectionStart);
         }
     else
