@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <algorithm>
 #include "gtktextview-helper.h"
 #include "../../../debug/debug_profile.h"
 
@@ -13,6 +14,17 @@
 
 constexpr wxColourBase::ChannelType FloatingPointChannelToByteChannel(const double val)
     { return static_cast<wxColourBase::ChannelType>(std::floor(val >= 1.0 ? 255 : val * 256.0)); }
+
+constexpr GdkRGBA PangoAttributeToGdkRGBA(const PangoAttribute* attr)
+    {
+    return GdkRGBA
+        {
+        std::clamp(static_cast<double>(((PangoAttrColor*)attr)->color.red) / 65535.0,   0.0, 1.0),
+        std::clamp(static_cast<double>(((PangoAttrColor*)attr)->color.green) / 65535.0, 0.0, 1.0),
+        std::clamp(static_cast<double>(((PangoAttrColor*)attr)->color.blue) / 65535.0,  0.0, 1.0),
+        1.0,
+        };
+    }
 
 //-------------------------------------------------
 void
@@ -102,24 +114,16 @@ text_buffer_insert_markup_real (GtkTextBuffer *buffer,
 
         if ((attr = pango_attr_iterator_get(paiter, PANGO_ATTR_FOREGROUND)))
         {
-            GdkColor col = { 0,
-                             ((PangoAttrColor*)attr)->color.red,
-                             ((PangoAttrColor*)attr)->color.green,
-                             ((PangoAttrColor*)attr)->color.blue
-                           };
+            GdkRGBA col = PangoAttributeToGdkRGBA(attr);
 
-            g_object_set(tag, "foreground-gdk", &col, NULL);
+            g_object_set(tag, "foreground-rgba", &col, NULL);
         }
 
         if ((attr = pango_attr_iterator_get(paiter, PANGO_ATTR_BACKGROUND)))
         {
-            GdkColor col = { 0,
-                             ((PangoAttrColor*)attr)->color.red,
-                             ((PangoAttrColor*)attr)->color.green,
-                             ((PangoAttrColor*)attr)->color.blue
-                           };
+            GdkRGBA col = PangoAttributeToGdkRGBA(attr);
 
-            g_object_set(tag, "background-gdk", &col, NULL);
+            g_object_set(tag, "background-rgba", &col, NULL);
         }
 
         if ((attr = pango_attr_iterator_get(paiter, PANGO_ATTR_UNDERLINE)))
