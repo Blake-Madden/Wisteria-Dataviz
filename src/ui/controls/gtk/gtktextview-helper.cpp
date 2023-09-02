@@ -231,8 +231,8 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     GdkRGBA* fgColor = nullptr;
     gdouble size = 0;
     gboolean weight, style, underline;
-    gchar* family = NULL;
-    gchar* font = NULL;
+    gchar* family = nullptr;
+    gchar* font = nullptr;
     g_object_get(G_OBJECT(tag),
         "background-set", &bkColorSet,
         "foreground-set", &fgColorSet,
@@ -248,7 +248,7 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         "weight", &weight,
         "style", &style,
         "underline", &underline,
-        NULL);
+        nullptr);
     if (bkColorSet && bkColor)
         {
         styleParams += wxString::Format(L"background-color: rgb(%u, %u, %u);",
@@ -263,7 +263,8 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
             FloatingPointChannelToByteChannel(fgColor->green),
             FloatingPointChannelToByteChannel(fgColor->blue));
         }
-    styleParams += wxString::Format(L" font-family: %s;", wxString(family, wxConvUTF8));
+    if (family != nullptr)
+        { styleParams += wxString::Format(L" font-family: %s;", wxString(family, wxConvUTF8)); }
     if (sizeSet && size > 0)
         { styleParams += wxString::Format(L" font-size: %upt;", static_cast<guint>(size)); }
     if (weightSet &&
@@ -318,7 +319,7 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
         "weight", &weight,
         "style", &style,
         "underline", &underline,
-        NULL);
+        nullptr);
     if (bkColorSet && bkColor)
         {
         // search for the color to see if it's already in the color table
