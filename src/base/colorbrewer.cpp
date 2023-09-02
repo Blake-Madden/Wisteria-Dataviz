@@ -75,7 +75,7 @@ wxColour ColorContrast::Contrast(const wxColour& color)
     const auto colorLuminance = color.GetLuminance();
     const auto luminanceDifference = std::abs(bgLuminance-colorLuminance);
     const auto adjustmentNeeded = m_tolerance - luminanceDifference;
-    if (adjustmentNeeded > 0)
+    if (!compare_doubles(adjustmentNeeded, 0))
         {
         // if background is lighter or the same...
         if (bgLuminance >= colorLuminance)
