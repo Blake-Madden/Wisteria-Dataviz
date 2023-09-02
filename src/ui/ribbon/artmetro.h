@@ -32,6 +32,7 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
 
 #include <wx/defs.h>
 #include <wx/ribbon/art.h>
+#include <wx/aui/aui.h>
 #include <wx/brush.h>
 #include <wx/colour.h>
 #include <wx/font.h>
@@ -45,6 +46,16 @@ class WXDLLIMPEXP_FWD_CORE wxWindow;
 
 namespace Wisteria::UI
     {
+    /// @brief Applies a color to an AUI toolbar.
+    class ThemedAuiToolbarArt : public wxAuiGenericToolBarArt
+        {
+    public:
+        /// @brief Sets the background color of the toolbar.
+        /// @param color The background color.
+        void SetThemeColor(const wxColour& color)
+            { m_baseColour = color; }
+        };
+
     /// @brief Ribbon art provider that emulates the Windows 8 "metro" look.
     class RibbonMetroArtProvider : public wxRibbonMSWArtProvider
         {
