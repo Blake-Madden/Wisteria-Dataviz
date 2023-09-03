@@ -181,6 +181,12 @@ public:
     /// @param path The filepath to save to.
     /// @returns @c true if successful.
     bool SaveAsRtf(const wxFileName& path);
+#ifdef __WXGTK__
+    /// @brief Saves the text control as a Pango file.
+    /// @param path The filepath to save to.
+    /// @returns @c true if successful.
+    bool GtkSaveAsPango(const wxFileName& path);
+#endif
     /// @}
 
     /** @brief Sets the title for the document.
@@ -370,8 +376,13 @@ private:
         HtmlFormat,
         RtfFormat
         };
+    /// @returns The Pango buffer from the control directly.
+    /// @note Call @c GetUnthemedFormattedText() to get the unthemed Pango text under GTK+.
+    ///     (This is appropriate for exporting as Pango.)
     [[nodiscard]]
-    wxString GetFormattedTextGtk(const GtkFormat format);
+    wxString GtkGetThemedPangoText();
+    [[nodiscard]]
+    wxString GtkGetFormattedText(const GtkFormat format, const bool useThemed = false);
 #endif
     /* Fix highlighting so that it appears in programs that don't support the various
        background color tags. Basically, we add all variations of background color tags.

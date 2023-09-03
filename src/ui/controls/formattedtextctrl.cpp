@@ -854,6 +854,11 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
     choices.Add(_DT(L"RTF"));
     descriptions.Add(_DT(L"<span style='font-weight:bold;'>Rich Text Format</span><br />") +
         _(L"This format can be displayed in most word-processing programs."));
+#ifdef __WXGTK__
+    choices.Add(_DT(L"Pango"));
+    descriptions.Add(_DT(L"<span style='font-weight:bold;'>Pango</span><br />") +
+        _(L"This format is for rendering text within libraries such as Cairo or FreeType."));
+#endif
     RadioBoxDlg exportTypesDlg(this,
         _(L"Select Document Format"), wxString{}, _(L"Document formats:"), _(L"Export Document"),
         choices, descriptions);
@@ -868,6 +873,11 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
     case 1:
         fileFilter = _DT(L"Rich Text Format (*.rtf)|*.rtf");
         break;
+#ifdef __WXGTK__
+    case 2:
+        fileFilter = _DT(L"Pango Format (*.pango)|*.pango");
+        break;
+#endif
     default:
         fileFilter = _DT(L"HTML (*.htm;*.html)|*.htm;*.html");
         };
@@ -891,6 +901,11 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
         case 1:
             filePath.SetExt(L"rtf");
             break;
+#ifdef __WXGTK__
+        case 2:
+            filePath.SetExt(L"pango");
+            break;
+#endif
         default:
             filePath.SetExt(L"htm");
             };
@@ -907,9 +922,32 @@ bool FormattedTextCtrl::Save(const wxFileName& path)
 
     if (path.GetExt().CmpNoCase(L"RTF") == 0)
         { return SaveAsRtf(path); }
+#ifdef __WXGTK__
+    else if (path.GetExt().CmpNoCase(L"PANGO") == 0)
+        { return GtkSaveAsPango(path); }
+#endif
     else
         { return SaveAsHtml(path); }
     }
+
+#ifdef __WXGTK__
+//------------------------------------------------------
+bool FormattedTextCtrl::GtkSaveAsPango(const wxFileName& path)
+    {
+    const wxString pangoBody = GetUnthemedFormattedText();
+
+    wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
+    wxFile file(path.GetFullPath(), wxFile::write);
+    const bool retVal = file.Write(pangoBody);
+    if (!retVal)
+        {
+        wxMessageBox(
+            wxString::Format(_(L"Failed to save document\n(%s)."), path.GetFullPath()),
+            _(L"Error"), wxOK|wxICON_EXCLAMATION);
+        }
+    return retVal;
+    }
+#endif
 
 //------------------------------------------------------
 bool FormattedTextCtrl::SaveAsHtml(const wxFileName& path)
@@ -1263,7 +1301,7 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextHtml(
     text += L"\n</p>\n</body>";
     return text;
 #elif defined(__WXGTK__)
-    return GetFormattedTextGtk(HtmlFormat);
+    return GtkGetFormattedText(GtkFormat::HtmlFormat, false);
 #endif
     }
 
@@ -1276,8 +1314,7 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextRtf(
         FixHighlightingTags(GetUnthemedFormattedText()) :
         GetUnthemedFormattedText();
 #elif defined(__WXGTK__)
-    /// @todo fix me, needs theming support
-    return GetFormattedTextGtk(RtfFormat);
+    return GtkGetFormattedText(GtkFormat::RtfFormat, false);
 #endif
     }
 
@@ -1309,7 +1346,7 @@ wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /
     buffer.clear();
 #elif defined(__WXGTK__)
     wxUnusedVar(fixHighlightingTags);
-    return GetFormattedTextGtk(RtfFormat);
+    return GtkGetFormattedText(GtkFormat::RtfFormat, true);
 #else
     text = GetTextPeer()->GetRtfValue();
 #endif
@@ -1395,7 +1432,7 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
 
 #ifdef __WXGTK__
 //-----------------------------------------------------------
-wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
+wxString FormattedTextCtrl::GtkGetThemedPangoText()
     {
     GtkTextBuffer* buffer = GtkGetTextObject();
 
@@ -1408,8 +1445,35 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
     /* Always convert this UTF8 text to unicode in here while we format it. This makes
        things much easier because the GTK offset functions treat offsets as characters instead
        of bytes.*/
-    const std::wstring bufferedText(
-        static_cast<const wchar_t*>(wxConvUTF8.cMB2WC(bufferedUTF8Text)));
+    const wxString bufferedText = wxString::FromUTF8(bufferedUTF8Text);
+    g_free(bufferedUTF8Text);
+
+    return bufferedText;
+    }
+
+//-----------------------------------------------------------
+wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format, const bool useThemed /*= false*/)
+    {
+    GtkTextBuffer* buffer{ nullptr };
+    
+    if (useThemed)
+        { buffer = GtkGetTextObject(); }
+    else
+        {
+        buffer = gtk_text_buffer_new(nullptr);
+        text_buffer_set_markup(buffer, m_unthemedContent.utf8_str(), -1);
+        }
+
+    GtkTextIter start, end;
+    gtk_text_buffer_get_start_iter(buffer, &start);
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    gchar* bufferedUTF8Text = gtk_text_buffer_get_text(buffer, &start, &end, false);
+    if (!bufferedUTF8Text)
+        { return wxString{}; }
+    /* Always convert this UTF8 text to unicode in here while we format it. This makes
+       things much easier because the GTK offset functions treat offsets as characters instead
+       of bytes.*/
+    const wxString bufferedText = wxString::FromUTF8(bufferedUTF8Text);
     g_free(bufferedUTF8Text);
     wxString text;
     text.reserve(bufferedText.length() * 2);
@@ -1529,6 +1593,10 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
         text.Prepend(headerText);
         text += L"\\par\n}";
         }
+    // use g_object_unref() (instead of g_free()) according to GTK+'s own testing scripts
+    if (!useThemed)
+        { g_object_unref(buffer); }
+
     return text;
     }
 #endif
