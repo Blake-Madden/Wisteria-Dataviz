@@ -214,14 +214,15 @@ void HtmlTablePrintout::OnPreparePrinting()
         // should be on which page
         wxHtmlDCRenderer htmlRenderer;
         wxMemoryDC dummyDC(dc);
-        htmlRenderer.SetDC(&dummyDC);
+        wxGCDC gcdc(dc);
+        htmlRenderer.SetDC(&gcdc);
         htmlRenderer.SetSize(drawingWidth, drawingHeight);
-        int currentPageHeight = 0;
-        int currentPageFirstTable = 0;
+        int currentPageHeight{ 0 };
+        int currentPageFirstTable{ 0 };
         std::vector<wxString>::const_iterator tablesIter;
-        for (tablesIter = m_htmlTables.begin();
-                tablesIter != m_htmlTables.end();
-                ++tablesIter)
+        for (tablesIter = m_htmlTables.cbegin();
+             tablesIter != m_htmlTables.cend();
+             ++tablesIter)
             {
             htmlRenderer.SetHtmlText(*tablesIter);
             // note that we are rendering to a memory DC when calculating the page layout;
@@ -233,8 +234,8 @@ void HtmlTablePrintout::OnPreparePrinting()
                 {
                 m_pageStarts.push_back(
                     std::make_pair(currentPageFirstTable,
-                                    std::max(static_cast<int>(tablesIter-m_htmlTables.begin()),1)-1) );
-                currentPageFirstTable = static_cast<int>(tablesIter-m_htmlTables.begin());
+                                    std::max(static_cast<int>(tablesIter - m_htmlTables.cbegin()),1)-1) );
+                currentPageFirstTable = static_cast<int>(tablesIter - m_htmlTables.cbegin());
                 currentPageHeight = currentTableHeight;
                 }
             else
@@ -243,6 +244,6 @@ void HtmlTablePrintout::OnPreparePrinting()
         // add the last page
         m_pageStarts.push_back(
             std::make_pair(currentPageFirstTable,
-                            std::max(static_cast<int>(tablesIter-m_htmlTables.begin()),1)-1) );
+                            std::max(static_cast<int>(tablesIter - m_htmlTables.cbegin()),1)-1) );
         }
     }
