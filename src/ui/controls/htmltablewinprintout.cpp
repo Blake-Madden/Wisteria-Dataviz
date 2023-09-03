@@ -17,12 +17,12 @@ bool HtmlTablePrintout::OnPrintPage(int page)
         wxDC* dc = GetDC();
         if (dc)
             {
-            float scaleX ,scaleY;
+            float scaleX{ 0 }, scaleY{ 0 };
             GetScreenToPageScaling(scaleX, scaleY);
 
             // set a suitable scaling factor
-            const float scaleXReciprocal = safe_divide<float>(1.0f,scaleX);
-            const float scaleYReciprocal = safe_divide<float>(1.0f,scaleY);
+            const float scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
+            const float scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
             dc->SetUserScale(scaleX, scaleY);
 
             // get the size of the DC's drawing area in pixels
@@ -42,7 +42,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
             int topMargin = marginY;
             int bottomMargin = marginY;
             // remove space for the headers and footers (if being used)
-            wxCoord textWidth(0), textHeight(0);
+            wxCoord textWidth{ 0 }, textHeight{ 0 };
             wxCoord bodyStart = marginY;
             dc->GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
             if (GetLeftPrinterHeader().length() ||
@@ -82,7 +82,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
                 (wxDC& drawDC)
                 {
                 // draw the headers
-                drawDC.SetDeviceOrigin(0,0);
+                drawDC.SetDeviceOrigin(0, 0);
                 if (GetLeftPrinterHeader().length() ||
                     GetCenterPrinterHeader().length() ||
                     GetRightPrinterHeader().length())
@@ -181,7 +181,7 @@ void HtmlTablePrintout::OnPreparePrinting()
     if (dc)
         {
         // adjust user scaling
-        float scaleX ,scaleY;
+        float scaleX{ 0 }, scaleY{ 0 };
         GetScreenToPageScaling(scaleX, scaleY);
         const float scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
         const float scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
