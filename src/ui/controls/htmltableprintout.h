@@ -177,7 +177,8 @@ namespace Wisteria::UI
                         };
 
                     // need to use wxGCDC for any color transparency
-                    if (m_printCanvas.GetSize() != wxSize(dcWidth, dcHeight))
+                    if (!m_printCanvas.IsOK() ||
+                        m_printCanvas.GetSize() != wxSize(dcWidth, dcHeight))
                         { m_printCanvas.Create(dcWidth, dcHeight); }
                     wxMemoryDC memDc(m_printCanvas);
                     memDc.Clear();
