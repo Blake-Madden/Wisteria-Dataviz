@@ -100,6 +100,14 @@ public:
     ///     command (e.g., LibreOffice).
     [[nodiscard]]
     wxString GetUnthemedFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags = true);
+    /// @returns The window's content as HTML.
+    ///     (This is HTML meant for white background and black text.)
+    /// @param CssStylePrefix A prefix to append to the CSS classes defined in the style section.\n
+    ///     This is useful to prevent duplicate CSS classes when combining HTML output from multiple controls.\n
+    ///     This is only used for macOS and Windows where the RTF converts its color table to a CSS table.
+    ///     For GTK+, all the formatting is done in place.
+    [[nodiscard]]
+    wxString GetUnthemedFormattedTextHtml([[maybe_unused]] const wxString& CssStylePrefix = wxString{});
     /// @brief Inserts formatted text into the control.
     /// @param formattedText The formatted text.
     /// @details On Windows and Mac this is RTF text, on Linux, it is Pango markup.
@@ -111,12 +119,6 @@ public:
     ///     command (e.g., LibreOffice).
     [[nodiscard]]
     wxString GetFormattedTextRtf(const bool fixHighlightingTags = true);
-    /// @returns The window's content as HTML.
-    /// @param CssStylePrefix A prefix to append to the CSS classes defined in the style section.
-    /// @note This is useful to prevent duplicate CSS classes when combining
-    ///     HTML output from multiple controls.
-    [[nodiscard]]
-    wxString GetFormattedTextHtml(const wxString& CssStylePrefix = wxString{});
     /// @returns The length of the formatted text (this includes the length of all markup tags).
     [[nodiscard]]
     unsigned long GetFormattedTextLength() const noexcept
@@ -350,6 +352,7 @@ private:
     [[nodiscard]]
     wxString ExpandMacPrintString(const wxString& printString) const
         {
+        const wxDateTime now = wxDateTime::Now();
         wxString expandedString = printString;
 
         expandedString.Replace(L"@PAGENUM@", _DT(L"@PN"), true);

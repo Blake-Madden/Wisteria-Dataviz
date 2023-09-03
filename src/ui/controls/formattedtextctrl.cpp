@@ -104,11 +104,11 @@ private:
     [[nodiscard]]
     wxString ExpandPrintString(const wxString& printString) const
         {
+        const wxDateTime now = wxDateTime::Now();
         wxString expandedString = printString;
 
         expandedString.Replace(L"@PAGENUM@", std::to_wstring(m_currentPage), true);
         expandedString.Replace(L"@PAGESCNT@", std::to_wstring(GetPageCount()), true);
-        const wxDateTime now = wxDateTime::Now();
         expandedString.Replace(L"@TITLE@", m_control->GetTitleName(), true);
         expandedString.Replace(L"@DATE@", now.FormatDate(), true);
         expandedString.Replace(L"@TIME@", now.FormatTime(), true);
@@ -324,7 +324,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
        background to white, copy in RFT meant for a white background,
        and use that for printing.
 
-       Note that Windows has a windowless RichEdit control via the
+       Note that Windows has a headerless RichEdit control via the
        ITextServices interface, but that API is a poorly documented
        COM interface that requires implementing a lot of boilerplate
        interface functionality. It's simpler to just create a
@@ -417,7 +417,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
             GetRightPrinterFooter() + "</td></tr></table>";
         }
 
-    wxString outputText = GetFormattedTextHtml();
+    wxString outputText = GetUnthemedFormattedTextHtml();
     wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
     printOut->SetHtmlText(outputText);
     if (headerText.length())
@@ -606,7 +606,7 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
             GetRightPrinterFooter() + L"</td></tr></table>";
         }
 
-    wxString outputText = GetFormattedTextHtml();
+    wxString outputText = GetUnthemedFormattedTextHtml();
     wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
     wxHtmlPrintout* printOutForPrinting = new wxHtmlPrintout(GetTitleName());
     printOut->SetHtmlText(outputText);
@@ -918,7 +918,7 @@ bool FormattedTextCtrl::Save(const wxFileName& path)
 //------------------------------------------------------
 bool FormattedTextCtrl::SaveAsHtml(const wxFileName& path)
     {
-    wxString htmlBody = GetFormattedTextHtml();
+    wxString htmlBody = GetUnthemedFormattedTextHtml();
 
     wxString htmlText = L"<!DOCTYPE html>\n<html>" +
                         htmlBody + L"\n</html>";
@@ -1007,7 +1007,7 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
         wxTheClipboard->Close();
         }
 #elif defined(__WXGTK__)
-    FormattedText = GetFormattedTextHtml();
+    FormattedText = GetUnthemedFormattedTextHtml();
     if (wxTheClipboard->Open())
         {
         if (FormattedText.length() )
@@ -1231,8 +1231,8 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
     }
 
 //-----------------------------------------------------------
-wxString FormattedTextCtrl::GetFormattedTextHtml(
-    const wxString& CssStylePrefix /*= wxString{}*/)
+wxString FormattedTextCtrl::GetUnthemedFormattedTextHtml(
+    [[maybe_unused]] const wxString& CssStylePrefix /*= wxString{}*/)
     {
 #if defined (__WXMSW__) || defined (__WXOSX__)
     wxString rtfText = GetUnthemedFormattedText().length() ?
@@ -1416,7 +1416,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
         static_cast<const wchar_t*>(wxConvUTF8.cMB2WC(bufferedUTF8Text)));
     g_free(bufferedUTF8Text);
     wxString text;
-    text.reserve(bufferedText.length()*2);
+    text.reserve(bufferedText.length() * 2);
 
     // read in the tags
     std::vector<wxColour> colorTable;
