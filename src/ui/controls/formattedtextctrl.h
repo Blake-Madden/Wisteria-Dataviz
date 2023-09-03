@@ -357,7 +357,6 @@ private:
 
         expandedString.Replace(L"@PAGENUM@", _DT(L"@PN"), true);
         expandedString.Replace(L"@PAGESCNT@", _DT(L"@PC"), true);
-        wxDateTime now = wxDateTime::Now();
         expandedString.Replace(L"@TITLE@", GetTitleName(), true);
         expandedString.Replace(L"@DATE@", now.FormatDate(), true);
         expandedString.Replace(L"@TIME@", now.FormatTime(), true);
@@ -382,8 +381,8 @@ private:
        3. LibreOffice, Word, and WordPad don't understand "cb".*/
     [[nodiscard]]
     static wxString FixHighlightingTags(const wxString& text);
-    /// @returns The formatted text meant for white backgrounds.
-    /// @todo Add GTK support, currently only works with RFT being fed in.
+    /// @returns The formatted text meant for white backgrounds (e.g., paper).
+    /// @note This will be in the native format (RTF for Windows and macOS, Pango for other UNIX systems).
     [[nodiscard]]
     const wxString& GetUnthemedFormattedText() const noexcept
         { return m_unthemedContent; }
