@@ -493,12 +493,12 @@ public:
                 {
                 dc->SetFont(m_list->GetFont());
 
-                double scaleX{0}, scaleY{0};
+                double scaleX{ 0 }, scaleY{ 0 };
                 GetScreenToPageScaling(scaleX, scaleY);
 
                 // set a suitable scaling factor
-                const double scaleXReciprical = safe_divide<double>(1.0f,scaleX);
-                const double scaleYReciprical = safe_divide<double>(1.0f,scaleY);
+                const double scaleXReciprical = safe_divide<double>(1.0f, scaleX);
+                const double scaleYReciprical = safe_divide<double>(1.0f, scaleY);
                 dc->SetUserScale(scaleX, scaleY);
 
                 // get the size of the DC's drawing area in pixels
@@ -825,16 +825,16 @@ public:
             {
             dc->SetFont(m_list->GetFont());
 
-            double scaleDownX{0}, scaleDownY{0};
-            GetPageToScreenScaling(scaleDownX,scaleDownY);
+            double scaleDownX{ 0 }, scaleDownY{ 0 };
+            GetPageToScreenScaling(scaleDownX, scaleDownY);
 
             // get the size of the DC's drawing area in pixels
-            wxCoord dcWidth{0}, dcHeight{0};
+            wxCoord dcWidth{ 0 }, dcHeight{ 0 };
             dc->GetSize(&dcWidth, &dcHeight);
-            dc->SetUserScale(safe_divide<double>(1.0f,scaleDownX), safe_divide<double>(1.0f, scaleDownX));
+            dc->SetUserScale(safe_divide<double>(1.0f, scaleDownX), safe_divide<double>(1.0f, scaleDownX));
 
             const wxCoord drawingWidth =
-                static_cast<wxCoord>(dcWidth*scaleDownX)-(2*GetMarginPadding())/*side margins*/;
+                static_cast<wxCoord>(dcWidth*scaleDownX) - (2*GetMarginPadding())/*side margins*/;
 
             // measure a standard line of text
             wxCoord textWidth, textHeight;
