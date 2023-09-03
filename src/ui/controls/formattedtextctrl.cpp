@@ -1455,7 +1455,7 @@ wxString FormattedTextCtrl::GtkGetThemedPangoText()
 wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format, const bool useThemed /*= false*/)
     {
     GtkTextBuffer* buffer{ nullptr };
-    
+
     if (useThemed)
         { buffer = GtkGetTextObject(); }
     else
