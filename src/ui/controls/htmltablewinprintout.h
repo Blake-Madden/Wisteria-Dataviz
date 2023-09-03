@@ -94,27 +94,27 @@ private:
         { return 10 * m_dpiScaling; }
     /// Gets the scaling factor going from the page size to the screen size
     /// This falls back to a 1:1 ratio upon failure
-    void GetScreenToPageScaling(float& scaleX, float&scaleY) const
+    void GetScreenToPageScaling(double& scaleX, double&scaleY) const
         {
         int ppiPrinterX, ppiPrinterY, ppiScreenX, ppiScreenY;
         GetPPIPrinter(&ppiPrinterX, &ppiPrinterY);
         GetPPIScreen(&ppiScreenX, &ppiScreenY);
 
-        scaleX = safe_divide<float>(ppiPrinterX,ppiScreenX);
-        scaleY = safe_divide<float>(ppiPrinterY,ppiScreenY);
+        scaleX = safe_divide<double>(ppiPrinterX,ppiScreenX);
+        scaleY = safe_divide<double>(ppiPrinterY,ppiScreenY);
         if (scaleX == 0)
             { scaleX = 1; }
         if (scaleY == 0)
             { scaleY = 1; }
         }
-    void GetPageToScreenScaling(float& scaleX, float&scaleY) const
+    void GetPageToScreenScaling(double& scaleX, double&scaleY) const
         {
         int ppiPrinterX, ppiPrinterY, ppiScreenX, ppiScreenY;
         GetPPIPrinter(&ppiPrinterX, &ppiPrinterY);
         GetPPIScreen(&ppiScreenX, &ppiScreenY);
 
-        scaleX = safe_divide<float>(ppiScreenX, ppiPrinterX);
-        scaleY = safe_divide<float>(ppiScreenY, ppiPrinterY);
+        scaleX = safe_divide<double>(ppiScreenX, ppiPrinterX);
+        scaleY = safe_divide<double>(ppiScreenY, ppiPrinterY);
         if (scaleX == 0)
             { scaleX = 1; }
         if (scaleY == 0)
