@@ -366,7 +366,7 @@ private:
         }
 #endif
 #ifdef __WXGTK__
-    enum GtkFormat
+    enum class GtkFormat
         {
         HtmlFormat,
         RtfFormat

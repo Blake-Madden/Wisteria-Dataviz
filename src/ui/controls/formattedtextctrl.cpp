@@ -1433,7 +1433,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
         {
         GSList* tags = gtk_text_iter_get_toggled_tags(&start, true);
         wxString firstTag;
-        if (format == HtmlFormat)
+        if (format == GtkFormat::HtmlFormat)
             { firstTag = GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data)); }
         else
             {
@@ -1469,7 +1469,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
             // (there might be more than one, though unlikely)
             if (gtk_text_iter_starts_tag(&start, tag))
                 {
-                if (format == HtmlFormat)
+                if (format == GtkFormat::HtmlFormat)
                     { currentTagText += GtkTextTagToHtmlSpanTag(tag); }
                 else
                     { currentTagText += GtkTextTagToRtfTag(tag, colorTable, fontTable); }
@@ -1478,7 +1478,7 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
             // (there might be more than one, though unlikely)
             else if (gtk_text_iter_ends_tag(&start, tag))
                 {
-                if (format == HtmlFormat)
+                if (format == GtkFormat::HtmlFormat)
                     { currentTagText += L"</span>"; }
                 else
                     {
@@ -1494,9 +1494,9 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
         // get the text between the previous format statement and the current one and encode it
         const std::wstring_view textBetweenTags =
             std::wstring_view(bufferedText).substr(previousStart, offset - previousStart);
-        if (format == HtmlFormat)
+        if (format == GtkFormat::HtmlFormat)
             { text += htmlEncode(textBetweenTags, true).c_str(); }
-        else if (format == RtfFormat)
+        else if (format == GtkFormat::RtfFormat)
             { text += rtfEncode(textBetweenTags).c_str(); }
         // insert the format statement(s) (that either begin or end a format block).
         text += currentTagText;
@@ -1504,11 +1504,11 @@ wxString FormattedTextCtrl::GetFormattedTextGtk(const GtkFormat format)
         g_slist_free(tags);
         }
 
-    if (format == HtmlFormat)
+    if (format == GtkFormat::HtmlFormat)
         {
         text += L"</span>";
         }
-    else if (format == RtfFormat)
+    else if (format == GtkFormat::RtfFormat)
         {
         wxString defaultFontFamily(family, *wxConvCurrent);
         g_free(family);
