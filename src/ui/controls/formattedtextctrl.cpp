@@ -896,11 +896,7 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
             };
         }
 
-    if (filePath.GetExt().CmpNoCase(L"rtf") == 0)
-        { SaveAsRtf(filePath); }
-    else if (filePath.GetExt().CmpNoCase(L"htm") == 0 ||
-             filePath.GetExt().CmpNoCase(L"html") == 0)
-        { SaveAsHtml(filePath); }
+    Save(filePath);
     }
 
 //------------------------------------------------------
