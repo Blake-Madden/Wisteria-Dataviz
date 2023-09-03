@@ -189,6 +189,8 @@ void HtmlTablePrintout::OnPreparePrinting()
         // Get the size of the DC's drawing area in pixels
         wxCoord dcWidth, dcHeight;
         dc->GetSize(&dcWidth, &dcHeight);
+        dc->SetUserScale(scaleX, scaleY);
+
         const wxCoord drawingWidth = (dcWidth*scaleXReciprocal) -
                                         (GetMarginPadding()*2)/*side margins*/;
 
