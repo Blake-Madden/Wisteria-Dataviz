@@ -1543,7 +1543,7 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format, const bo
                 else
                     {
                     currentTagText +=
-                        wxString::Format(L" \\highlight0\\cf0\\ulnone\\b0\\i0\\f0\\fs%u ",
+                        wxString::Format(L" \\strike0\\highlight0\\cf0\\ulnone\\b0\\i0\\f0\\fs%u ",
                                          static_cast<guint>(defaultFontSize)*2).wc_str();
                     }
                 }

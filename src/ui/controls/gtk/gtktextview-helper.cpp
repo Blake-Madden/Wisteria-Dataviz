@@ -225,12 +225,15 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     wxString text = L"<span";
     wxString styleParams = L" style=\"";
     // indicators as to whether a tag is set or not
-    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet;
+    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
+             strikeThroughSet;
     // values to write to
     GdkRGBA* bkColor = nullptr;
     GdkRGBA* fgColor = nullptr;
     gdouble size = 0;
-    gboolean weight, style, underline;
+    gint weight;
+    PangoStyle style;
+    gboolean underline, strikeThrough;
     gchar* family = nullptr;
     gchar* font = nullptr;
     g_object_get(G_OBJECT(tag),
@@ -240,6 +243,7 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         "underline-set", &underlineSet,
         "weight-set", &weightSet,
         "style-set", &styleSet,
+        "strikethrough-set", &strikeThroughSet,
         "background-rgba", &bkColor,
         "foreground-rgba", &fgColor,
         "font", &font,
@@ -248,6 +252,7 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         "weight", &weight,
         "style", &style,
         "underline", &underline,
+        "strikethrough", &strikeThrough,
         nullptr);
     if (bkColorSet && bkColor)
         {
@@ -276,8 +281,20 @@ wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         (style == PANGO_STYLE_ITALIC ||
          style == PANGO_STYLE_OBLIQUE))
         { styleParams += L" font-style: italic;"; }
+    std::vector<wxString> textDecorations;
     if (underlineSet && underline)
-        { styleParams += L" text-decoration: underline;"; }
+        { textDecorations.push_back(L"underline"); }
+    if (strikeThroughSet && strikeThrough)
+        { textDecorations.push_back(L"line-through"); }
+    if (textDecorations.size())
+        {
+        styleParams += L" text-decoration: ";
+        for (const auto& decor : textDecorations)
+            { styleParams += decor + L","; }
+        // replace final , with a ;
+        if (styleParams.length())
+            { styleParams[styleParams.length() - 1] = L';'; }
+        }
     styleParams += L"\"";
 
     text += styleParams + L">";
@@ -296,12 +313,15 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
     {
     wxString text = L" ";
     // indicators as to whether a tag is set or not
-    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet;
+    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
+        strikeThroughSet;
     // values to write to
     GdkRGBA* bkColor = nullptr;
     GdkRGBA* fgColor = nullptr;
     gdouble size = 0;
-    gboolean weight, style, underline;
+    gint weight;
+    PangoStyle style;
+    gboolean underline, strikeThrough;
     gchar* family = nullptr;
     gchar* font = nullptr;
     g_object_get(G_OBJECT(tag),
@@ -311,6 +331,7 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
         "underline-set", &underlineSet,
         "weight-set", &weightSet,
         "style-set", &styleSet,
+        "strikethrough-set", &strikeThroughSet,
         "background-rgba", &bkColor,
         "foreground-rgba", &fgColor,
         "font", &font,
@@ -319,6 +340,7 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
         "weight", &weight,
         "style", &style,
         "underline", &underline,
+        "strikethrough", &strikeThrough,
         nullptr);
     if (bkColorSet && bkColor)
         {
@@ -367,6 +389,8 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
         { text += L"\\i"; }
     if (underlineSet && underline)
         { text += L"\\ul"; }
+    if (strikeThroughSet && strikeThrough)
+        { text += L"\\strike"; }
 
     text += L" ";
 
