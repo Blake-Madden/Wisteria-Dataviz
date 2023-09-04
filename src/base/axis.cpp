@@ -1224,6 +1224,26 @@ namespace Wisteria::GraphItems
         if (GetTitle().IsShown() && GetTitle().GetText().length())
             {
             titleLabel.SetScaling(GetScaling());
+            const auto titleBox = titleLabel.GetBoundingBox(dc);
+            // downscale the title if it is going outside of the axis
+            if (IsVertical())
+                {
+                if (titleBox.GetHeight() > axisRect.GetHeight())
+                    {
+                    const double downscaleFactor =
+                        safe_divide<double>(axisRect.GetHeight(), titleBox.GetHeight());
+                    titleLabel.SetScaling(titleLabel.GetScaling() * downscaleFactor);
+                    }
+                }
+            else
+                {
+                if (titleBox.GetWidth() > axisRect.GetWidth())
+                    {
+                    const double downscaleFactor =
+                        safe_divide<double>(axisRect.GetWidth(), titleBox.GetWidth());
+                    titleLabel.SetScaling(titleLabel.GetScaling() * downscaleFactor);
+                    }
+                }
 
             if (GetAxisType() == AxisType::LeftYAxis)
                 {
