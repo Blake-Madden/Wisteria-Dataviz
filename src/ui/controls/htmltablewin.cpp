@@ -126,6 +126,7 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
 //------------------------------------------------------
 void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
     {
+#if defined(__WXMSW__)
     HtmlTablePrintout* printOut = new HtmlTablePrintout(GetLabel());
     printOut->SetDPIScaleFactor(GetDPIScaleFactor());
     printOut->SetLeftPrinterHeader(GetLeftPrinterHeader());
@@ -173,33 +174,18 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
             lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
                                                                 _DT(L"table"), 5, false);
         }
-#if defined(__WXMSW__) || defined(__WXOSX__)
     wxPrinterDC* dc = nullptr;
     wxPrinterDC* dc2 = nullptr;
-#else
-    wxPostScriptDC* dc = nullptr;
-    wxPostScriptDC* dc2 = nullptr;
-#endif
     if (m_printData)
         {
-    #if defined(__WXMSW__) || defined(__WXOSX__)
         dc = new wxPrinterDC(*m_printData);
         dc2 = new wxPrinterDC(*m_printData);
-    #else
-        dc = new wxPostScriptDC(*m_printData);
-        dc2 = new wxPostScriptDC(*m_printData);
-    #endif
         }
     else
         {
         wxPrintData pd;
-    #if defined(__WXMSW__) || defined(__WXOSX__)
         dc = new wxPrinterDC(pd);
         dc2 = new wxPrinterDC(pd);
-    #else
-        dc = new wxPostScriptDC(pd);
-        dc2 = new wxPostScriptDC(pd);
-    #endif
         }
     printOut->SetDC(dc);
     printOutForPrinting->SetDC(dc2);
@@ -213,7 +199,7 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
                      _(L"Print Preview"), wxOK|wxICON_WARNING);
         return;
         }
-    int x, y, width, height;
+    int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
     wxClientDisplayRect(&x, &y, &width, &height);
     wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
                                                 wxDefaultPosition, wxSize(width, height));
@@ -223,6 +209,9 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
     frame->Show(true);
 
     delete dc; delete dc2;
+#else
+    wxFAIL_MSG(L"Print preview is Windows only!");
+#endif
     }
 
 //------------------------------------------------------

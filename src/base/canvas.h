@@ -179,6 +179,7 @@ namespace Wisteria
         /// @private
         void OnSave([[maybe_unused]] wxCommandEvent& event);
         /// @private
+        /// @warning Only available on Windows.
         void OnPreview([[maybe_unused]] wxCommandEvent& event);
         /// @private
         void OnPrint([[maybe_unused]] wxCommandEvent& event);

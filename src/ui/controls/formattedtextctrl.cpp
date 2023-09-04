@@ -514,7 +514,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
 //------------------------------------------------------
 void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
     {
-    // note that previewing isn't done on macOS as it has its own native previewing
+    // note that previewing isn't done on macOS or GTK+ as it has its own native previewing
     // built into its print dialog
 #if defined(__WXMSW__)
     if (m_printWindow == nullptr)
@@ -568,7 +568,7 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
                      _(L"Print Preview"), wxOK|wxICON_QUESTION);
         return;
         }
-    int x, y, width, height;
+    int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
     wxClientDisplayRect(&x, &y, &width, &height);
     wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
                                                 wxDefaultPosition, wxSize(width, height));
@@ -578,66 +578,8 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
     frame->Show(true);
 
     wxDELETE(dc); wxDELETE(dc2);
-#elif defined(__WXGTK__)
-    // format the header
-    wxString headerText;
-    if (GetLeftPrinterHeader().length() ||
-        GetCenterPrinterHeader().length() ||
-        GetRightPrinterHeader().length())
-        {
-        headerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
-            GetLeftPrinterHeader() + L"</td>";
-        headerText += L"<td width=\"33%\" align=\"center\">" +
-            GetCenterPrinterHeader() + L"</td>";
-        headerText += L"<td width=\"33%\" align=\"right\">" +
-            GetRightPrinterHeader() + L"</td></tr></table>";
-        }
-    // format the footer
-    wxString footerText;
-    if (GetLeftPrinterFooter().length() ||
-        GetCenterPrinterFooter().length() ||
-        GetRightPrinterFooter().length())
-        {
-        footerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
-            GetLeftPrinterFooter() + L"</td>";
-        footerText += L"<td width=\"33%\" align=\"center\">" +
-            GetCenterPrinterFooter() + L"</td>";
-        footerText += L"<td width=\"33%\" align=\"right\">" +
-            GetRightPrinterFooter() + L"</td></tr></table>";
-        }
-
-    wxString outputText = GetUnthemedFormattedTextHtml();
-    wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
-    wxHtmlPrintout* printOutForPrinting = new wxHtmlPrintout(GetTitleName());
-    printOut->SetHtmlText(outputText);
-    printOutForPrinting->SetHtmlText(outputText);
-    if (headerText.length())
-        {
-        printOut->SetHeader(headerText);
-        printOutForPrinting->SetHeader(headerText);
-        }
-    if (footerText.length())
-        {
-        printOut->SetFooter(footerText);
-        printOutForPrinting->SetFooter(footerText);
-        }
-    wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting, m_printData);
-    if (!preview->Ok())
-        {
-        wxDELETE(preview);
-        wxMessageBox(_(L"An error occurred while previewing.\n"
-                       "Your default printer may not be set correctly."),
-                     _(L"Print Preview"), wxOK|wxICON_QUESTION);
-        return;
-        }
-    int x, y, width, height;
-    wxClientDisplayRect(&x, &y, &width, &height);
-    wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
-                                                wxDefaultPosition, wxSize(width, height));
-
-    frame->Centre(wxBOTH);
-    frame->Initialize();
-    frame->Show(true);
+#else
+    wxFAIL_MSG(L"Print preview is Windows only!");
 #endif
     }
 

@@ -76,6 +76,9 @@ namespace Wisteria
     //------------------------------------------------------
     void Canvas::OnPreview([[maybe_unused]] wxCommandEvent& event)
         {
+        // note that previewing isn't done on macOS or GTK+ as it has its own native previewing
+        // built into its print dialog
+#if defined(__WXMSW__)
         // From wxWidgets's docs:
         // Do not explicitly delete the printout objects once this constructor has been called,
         // since they will be deleted in the wxPrintPreview destructor.
@@ -84,13 +87,9 @@ namespace Wisteria
             new ReportPrintout(std::vector<Canvas*>{ this }, GetLabel());
         ReportPrintout* printOutForPrinting =
             new ReportPrintout(std::vector<Canvas*>{ this }, GetLabel());
-    #if defined(__WXMSW__) || defined(__WXOSX__)
         wxPrinterDC dc = wxPrinterDC(GetPrinterSettings());
         wxPrinterDC dc2 = wxPrinterDC(GetPrinterSettings());
-    #else
-        wxPostScriptDC dc = wxPostScriptDC(GetPrinterSettings());
-        wxPostScriptDC dc2 = wxPostScriptDC(GetPrinterSettings());
-    #endif
+
         printOut->SetUp(dc);
         printOutForPrinting->SetUp(dc2);
 
@@ -113,6 +112,9 @@ namespace Wisteria
         frame->Centre(wxBOTH);
         frame->Initialize();
         frame->Show();
+#else
+        wxFAIL_MSG(L"Print preview is Windows only!");
+#endif
         }
 
     //------------------------------------------------------
