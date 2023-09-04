@@ -181,17 +181,15 @@ void HtmlTablePrintout::OnPreparePrinting()
     if (dc)
         {
         // adjust user scaling
-        double scaleX{ 0 }, scaleY{ 0 };
-        GetScreenToPageScaling(scaleX, scaleY);
-        const double scaleXReciprocal = safe_divide<double>(1.0f, scaleX);
-        const double scaleYReciprocal = safe_divide<double>(1.0f, scaleY);
+        double scaleDownX{ 0 }, scaleDownY{ 0 };
+        GetPageToScreenScaling(scaleDownX, scaleDownY);
 
         // Get the size of the DC's drawing area in pixels
         wxCoord dcWidth, dcHeight;
         dc->GetSize(&dcWidth, &dcHeight);
-        dc->SetUserScale(scaleX, scaleY);
+        dc->SetUserScale(safe_divide<double>(1.0f, scaleDownX), safe_divide<double>(1.0f, scaleDownX));
 
-        const wxCoord drawingWidth = (dcWidth*scaleXReciprocal) -
+        const wxCoord drawingWidth = (dcWidth*scaleDownX) -
                                         (GetMarginPadding()*2)/*side margins*/;
 
         // Measure a standard line of text
@@ -209,13 +207,18 @@ void HtmlTablePrintout::OnPreparePrinting()
             GetCenterPrinterFooter().length() ||
             GetRightPrinterFooter().length())
             { heightMargin += textHeight+GetMarginPadding(); }
-        const wxCoord drawingHeight = (dcHeight*scaleYReciprocal)-heightMargin;
+        const wxCoord drawingHeight = (dcHeight*scaleDownY)-heightMargin;
 
         // paginate by measuring each table and storing which tables
         // should be on which page
+        if (!m_printCanvas.IsOk() ||
+            m_printCanvas.GetSize() != wxSize(dcWidth, dcHeight))
+            { m_printCanvas.Create(dcWidth, dcHeight); }
+        wxMemoryDC memDc(m_printCanvas);
+        memDc.Clear();
+        wxGCDC gcdc(memDc);
+        gcdc.SetUserScale(safe_divide<double>(1.0f, scaleDownX), safe_divide<double>(1.0f, scaleDownX));
         wxHtmlDCRenderer htmlRenderer;
-        wxMemoryDC dummyDC(dc);
-        wxGCDC gcdc(dc);
         htmlRenderer.SetDC(&gcdc);
         htmlRenderer.SetSize(drawingWidth, drawingHeight);
         int currentPageHeight{ 0 };
