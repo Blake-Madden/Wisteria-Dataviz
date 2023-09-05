@@ -60,6 +60,11 @@ namespace Wisteria
 
         wxPrinter printer;
         printer.GetPrintDialogData().SetPrintData(GetPrinterSettings());
+        printer.GetPrintDialogData().SetAllPages(true);
+        printer.GetPrintDialogData().SetFromPage(1);
+        printer.GetPrintDialogData().SetMinPage(1);
+        printer.GetPrintDialogData().EnableSelection(false);
+        
         if (!printer.Print(this, printOut.get(), true) )
             {
             // just show a message if a real error occurred. They may have just cancelled.
@@ -96,6 +101,12 @@ namespace Wisteria
         // wxPreviewFrame make take ownership, don't use smart pointer here
         wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting,
                                                      &GetPrinterSettings());
+        preview->GetPrintDialogData().SetPrintData(GetPrinterSettings());
+        preview->GetPrintDialogData().SetAllPages(true);
+        preview->GetPrintDialogData().SetFromPage(1);
+        preview->GetPrintDialogData().SetMinPage(1);
+        preview->GetPrintDialogData().EnableSelection(false);
+
         if (!preview->IsOk())
             {
             wxDELETE(preview);
