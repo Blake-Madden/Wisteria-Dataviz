@@ -105,6 +105,10 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
         {
         printer.GetPrintDialogData().SetPrintData(*m_printData);
         }
+    printer.GetPrintDialogData().SetAllPages(true);
+    printer.GetPrintDialogData().SetFromPage(1);
+    printer.GetPrintDialogData().SetMinPage(1);
+    printer.GetPrintDialogData().EnableSelection(false);
     if (!printer.Print(this, printOut, true) )
         {
         // just show a message if a real error occurred. They may have just cancelled.
@@ -191,6 +195,10 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
     printOutForPrinting->SetDC(dc2);
 
     wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting, m_printData);
+    preview->GetPrintDialogData().SetAllPages(true);
+    preview->GetPrintDialogData().SetFromPage(1);
+    preview->GetPrintDialogData().SetMinPage(1);
+    preview->GetPrintDialogData().EnableSelection(false);
     if (!preview->IsOk())
         {
         wxDELETE(preview); wxDELETE(dc); wxDELETE(dc2);
