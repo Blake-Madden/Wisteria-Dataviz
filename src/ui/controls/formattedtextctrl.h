@@ -213,25 +213,25 @@ public:
     /// @param size The size to use.
     void SetPaperSizeInTwips(const wxSize size)
         {
-        // if landscape then "turn the page on its side" by flipping the page size
+        // if landscape, then "turn the page on its side" by flipping the page size
         if (m_printOrientation == wxLANDSCAPE)
             { m_paperSize.Set(size.y, size.x); }
         else
             { m_paperSize = size; }
         }
     /// @brief Sets the paper size in inches.
-    /// @param x The width to use.
-    /// @param y The height to use.
-    void SetPaperSizeInInches(const double x, const double y)
+    /// @param widthInInches The width to use.
+    /// @param heightInInches The height to use.
+    void SetPaperSizeInInches(const double widthInInches, const double heightInInches)
         {
-        SetPaperSizeInTwips(wxSize(static_cast<int>(x*TWIPS_PER_INCH),
-                                   static_cast<int>(y*TWIPS_PER_INCH)));
+        SetPaperSizeInTwips(wxSize(static_cast<int>(widthInInches * TWIPS_PER_INCH),
+                                   static_cast<int>(heightInInches * TWIPS_PER_INCH)));
         }
     /// @brief Sets the paper size in millimeters.
     /// @param size The size to use.
     void SetPaperSizeInMillimeters(const wxSize size)
         {
-        SetPaperSizeInInches(size.x*0.0393700787, size.y*0.0393700787);
+        SetPaperSizeInInches(size.x * 0.0393700787, size.y * 0.0393700787);
         }
     /// @brief Sets the paper size.
     /// @param size The paper size to use.
@@ -242,11 +242,11 @@ public:
         { return wxRect(wxPoint(0, 0), m_paperSize); }
     /// @returns The width of the printing area.
     [[nodiscard]]
-    int GetPrintWidth() const
+    int GetPageContentAreaWidth() const
         { return m_paperSize.x - m_rectMargin.GetLeft() - m_rectMargin.GetRight(); }
     /// @returns The actual area being printed (page minus the margins).
     [[nodiscard]]
-    wxRect GetPrintRect() const
+    wxRect GetPageContentRect() const
         {
         wxRect printRect(m_rectMargin.GetLeft(), m_rectMargin.GetTop(),
                     m_paperSize.x - m_rectMargin.GetRight(),
@@ -378,18 +378,18 @@ private:
         };
     /// @returns The Pango buffer from the control directly.
     /// @note Call @c GetUnthemedFormattedText() to get the unthemed Pango text under GTK+.
-    ///     (This is appropriate for exporting as Pango.)
+    ///     (This is appropriate for exporting as Pango or printing.)
     [[nodiscard]]
     wxString GtkGetThemedPangoText();
     [[nodiscard]]
     wxString GtkGetFormattedText(const GtkFormat format, const bool useThemed = false);
 #endif
-    /* Fix highlighting so that it appears in programs that don't support the various
-       background color tags. Basically, we add all variations of background color tags.
-       Here is the reasoning:
-       1. LibreOffice and TextEdit (macOS) don't understand "highlight".
-       2. Wordpad doesn't understand "chcbpat".
-       3. LibreOffice, Word, and WordPad don't understand "cb".*/
+    /** Fix highlighting so that it appears in programs that don't support the various
+        background color tags. Basically, we add all variations of background color tags.
+        Here is the reasoning:
+        1. LibreOffice and TextEdit (macOS) don't understand "highlight".
+        2. Wordpad doesn't understand "chcbpat".
+        3. LibreOffice, Word, and WordPad don't understand "cb".*/
     [[nodiscard]]
     static wxString FixHighlightingTags(const wxString& text);
     /// @returns The formatted text meant for white backgrounds (e.g., paper).
@@ -397,11 +397,11 @@ private:
     [[nodiscard]]
     const wxString& GetUnthemedFormattedText() const noexcept
         { return m_unthemedContent; }
-    // Copies print information from this control to its
-    // "dummy" control used for printing. We use a different
-    // text control for printing that is meant for showing
-    // black text on a white background (if this control is themed,
-    // then it can't be used for printing).
+    /// Copies print information from this control to its
+    /// "dummy" control used for printing. We use a different
+    /// text control for printing that is meant for showing
+    /// black text on a white background (if this control is themed,
+    /// then it can't be used for printing).
     void CopyPrintSettings(FormattedTextCtrl* that)
         {
         if (!that)

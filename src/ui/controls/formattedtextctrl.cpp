@@ -26,12 +26,10 @@ using namespace Wisteria::UI;
 
 wxIMPLEMENT_DYNAMIC_CLASS(FormattedTextCtrl, wxTextCtrl)
 
-/** @brief Printing system for Windows and Linux.
+/** @brief Printing system for Windows.
     @note macOS's text control has its own printing mechanism that we
         patch into wxWidgets and use, so we don't have a dedicated printout
-        interface for that platform.
-    @todo Eventually Linux should have native printer interface too,
-        not wxHTML printer interface which is slow.*/
+        interface for that platform.*/
 #if defined(__WXMSW__)
 class wxFormattedTextCtrlPrintout final : public wxPrintout
     {
@@ -199,7 +197,7 @@ private:
                 fr.hdcTarget = fr.hdc = HCD.GetHDC();
 
                 wxCopyRectToRECT(m_control->GetPageRect(), fr.rcPage);
-                wxCopyRectToRECT(m_control->GetPrintRect(), fr.rc);
+                wxCopyRectToRECT(m_control->GetPageContentRect(), fr.rc);
 
                 fr.chrg.cpMin = charStart;
                 fr.chrg.cpMax = -1;
@@ -460,7 +458,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
                      wxFontStyle::wxFONTSTYLE_NORMAL, wxFontWeight::wxFONTWEIGHT_NORMAL,
                      false, L"Courier New" );
     dc.SetFont(fixedFont);
-    wxCoord textWidth, textHeight;
+    wxCoord textWidth{ 0 }, textHeight{ 0 };
     dc.GetTextExtent(L" ", &textWidth, &textHeight);
     const size_t spacesCount = (m_printData->GetOrientation() == wxPORTRAIT)?
         safe_divide<size_t>((PaperWidthInInches- .5f) * 72, textWidth) :
