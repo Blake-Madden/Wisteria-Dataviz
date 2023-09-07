@@ -24,6 +24,19 @@
 #include <wx/string.h>
 #include <wx/log.h>
 
+/// @todo EXPERIMENTAL and INCOMPLETE!
+class GtkPrinter
+    {
+public:
+    /// @brief Paginates a Pango markup buffer.
+    /// @param markup The Pango text to paginate.
+    /// @param pageDrawingArea The pixel size of the area to draw inside of
+    ///     (excluding margins, headers, footers, etc.).
+    void Paginate(const gchar* markup, const wxSize pageDrawingArea);
+private:
+    std::vector<gint> m_lineHeights;
+    };
+
 /// @returns A GTK text tag into HTML text.
 wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
 /// @returns A GTK text tag into RTF text.

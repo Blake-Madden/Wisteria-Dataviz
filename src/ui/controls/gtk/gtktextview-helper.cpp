@@ -27,6 +27,41 @@ constexpr GdkRGBA PangoAttributeToGdkRGBA(const PangoAttribute* attr)
     }
 
 //-------------------------------------------------
+void GtkPrinter::Paginate(const gchar* markup, const wxSize pageDrawingArea)
+    {
+    PangoFontMap* fontmap = pango_cairo_font_map_new_for_font_type(CAIRO_FONT_TYPE_FT);
+    if (fontmap == nullptr)
+        { wxLogWarning(L"Freetype not supported in text window printer."); }
+
+    pango_cairo_font_map_set_resolution(PANGO_CAIRO_FONT_MAP(fontmap), 96);
+    PangoContext* context = pango_font_map_create_context(fontmap);
+    g_object_unref(fontmap);
+
+    PangoLayout* layout = pango_layout_new(context);
+    g_object_unref(context);
+
+    pango_layout_set_width(layout, pageDrawingArea.GetWidth() * PANGO_SCALE); // ???
+    pango_layout_set_markup(layout, markup, -1);
+
+    PangoRectangle rect;
+    std::vector<gint> lineHeights;
+    gulong totalHeight{ 0 };
+    for (auto lines = pango_layout_get_lines_readonly(layout);
+        lines != nullptr;
+        lines = lines->next)
+        {
+        PangoLayoutLine* line{ static_cast<PangoLayoutLine*>(lines->data) };
+        pango_layout_line_get_pixel_extents(line, nullptr, &rect);
+        lineHeights.push_back(rect.height);
+        totalHeight += rect.height;
+        }
+    wxLogDebug("Page content area: %d x %d", pageDrawingArea.GetWidth(), pageDrawingArea.GetHeight());
+    wxLogDebug("Total lines and height: %zu and %ld", lineHeights.size(), totalHeight);
+
+    g_object_unref(layout);
+    }
+
+//-------------------------------------------------
 void
 text_buffer_insert_markup_real (GtkTextBuffer *buffer,
                                 GtkTextIter   *textiter,

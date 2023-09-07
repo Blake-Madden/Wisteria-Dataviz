@@ -389,65 +389,87 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     wxDELETE(printOut);
 #elif defined(__WXGTK__)
     // format the header
-    wxString headerText;
-    if (GetLeftPrinterHeader().length() ||
-        GetCenterPrinterHeader().length() ||
-        GetRightPrinterHeader().length())
-        {
-        headerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
-            GetLeftPrinterHeader() + L"</td>";
-        headerText += L"<td width=\"33%\" align=\"center\">" +
-            GetCenterPrinterHeader() + L"</td>";
-        headerText += L"<td width=\"33%\" align=\"right\">" +
-            GetRightPrinterHeader() + L"</td></tr></table>";
-        }
-    // format the footer
-    wxString footerText;
-    if (GetLeftPrinterFooter().length() ||
-        GetCenterPrinterFooter().length() ||
-        GetRightPrinterFooter().length())
-        {
-        footerText = "<table style=\"width:100%;\"><tr><td width=\"33%\">" +
-            GetLeftPrinterFooter() + L"</td>";
-        footerText += "<td width=\"33%\" align=\"center\">" +
-            GetCenterPrinterFooter() + L"</td>";
-        footerText += "<td width=\"33%\" align=\"right\">" +
-            GetRightPrinterFooter() + "</td></tr></table>";
-        }
+    //wxString headerText;
+    //if (GetLeftPrinterHeader().length() ||
+    //    GetCenterPrinterHeader().length() ||
+    //    GetRightPrinterHeader().length())
+    //    {
+    //    headerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
+    //        GetLeftPrinterHeader() + L"</td>";
+    //    headerText += L"<td width=\"33%\" align=\"center\">" +
+    //        GetCenterPrinterHeader() + L"</td>";
+    //    headerText += L"<td width=\"33%\" align=\"right\">" +
+    //        GetRightPrinterHeader() + L"</td></tr></table>";
+    //    }
+    //// format the footer
+    //wxString footerText;
+    //if (GetLeftPrinterFooter().length() ||
+    //    GetCenterPrinterFooter().length() ||
+    //    GetRightPrinterFooter().length())
+    //    {
+    //    footerText = "<table style=\"width:100%;\"><tr><td width=\"33%\">" +
+    //        GetLeftPrinterFooter() + L"</td>";
+    //    footerText += "<td width=\"33%\" align=\"center\">" +
+    //        GetCenterPrinterFooter() + L"</td>";
+    //    footerText += "<td width=\"33%\" align=\"right\">" +
+    //        GetRightPrinterFooter() + "</td></tr></table>";
+    //    }
 
-    wxString outputText = GetUnthemedFormattedTextHtml();
-    wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
-    printOut->SetHtmlText(outputText);
-    if (headerText.length())
-        { printOut->SetHeader(headerText); }
-    if (footerText.length())
-        { printOut->SetFooter(footerText); }
+    //wxString outputText = GetUnthemedFormattedTextHtml();
+    //wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
+    //printOut->SetHtmlText(outputText);
+    //if (headerText.length())
+    //    { printOut->SetHeader(headerText); }
+    //if (footerText.length())
+    //    { printOut->SetFooter(footerText); }
 
-    wxPrinter printer;
+    //wxPrinter printer;
+    //if (m_printData)
+    //    {
+    //    printer.GetPrintDialogData().SetPrintData(*m_printData);
+    //    }
+    //printer.GetPrintDialogData().SetAllPages(true);
+    //printer.GetPrintDialogData().SetFromPage(1);
+    //printer.GetPrintDialogData().SetMinPage(1);
+    //printer.GetPrintDialogData().EnableSelection(false);
+    //if (!printer.Print(this, printOut, true) )
+    //    {
+    //    // just show a message if a real error occurred.
+    //    // They may have just cancelled.
+    //    if (printer.GetLastError() == wxPRINTER_ERROR)
+    //        {
+    //        wxMessageBox(_(L"An error occurred while printing.\n"
+    //                       "Your default printer may not be set correctly."),
+    //                    _(L"Print"), wxOK|wxICON_QUESTION);
+    //        }
+    //    }
+    //if (m_printData)
+    //    {
+    //    *m_printData = printer.GetPrintDialogData().GetPrintData();
+    //    }
+    //wxDELETE(printOut);
+
+    // UNDER CONSTRUCTION!!!
     if (m_printData)
         {
-        printer.GetPrintDialogData().SetPrintData(*m_printData);
-        }
-    printer.GetPrintDialogData().SetAllPages(true);
-    printer.GetPrintDialogData().SetFromPage(1);
-    printer.GetPrintDialogData().SetMinPage(1);
-    printer.GetPrintDialogData().EnableSelection(false);
-    if (!printer.Print(this, printOut, true) )
-        {
-        // just show a message if a real error occurred.
-        // They may have just cancelled.
-        if (printer.GetLastError() == wxPRINTER_ERROR)
+        SetPrintOrientation(m_printData->GetOrientation());
+        if (m_printData->GetPaperId() == wxPAPER_NONE)
             {
-            wxMessageBox(_(L"An error occurred while printing.\n"
-                           "Your default printer may not be set correctly."),
-                        _(L"Print"), wxOK|wxICON_QUESTION);
+            SetPaperSizeInMillimeters(m_printData->GetPaperSize());
+            }
+        else
+            {
+            /* values in here are hard coded, so a little more precise than
+               converting from millimeters to twips*/
+            SetPaperSize(m_printData->GetPaperId());
             }
         }
-    if (m_printData)
-        {
-        *m_printData = printer.GetPrintDialogData().GetPrintData();
-        }
-    wxDELETE(printOut);
+    const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
+    const double PaperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
+    const double PaperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
+
+    GtkPrinter printer;
+    printer.Paginate(GetUnthemedFormattedText().utf8_str(), wxSize(PaperWidthInInches*96, PaperHeightInInches*96));
 #else
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
     const double PaperWidthInInches = (paperSize.GetWidth()/10) * 0.0393700787;
