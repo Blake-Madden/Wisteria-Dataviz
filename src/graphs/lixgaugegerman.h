@@ -64,6 +64,8 @@ namespace Wisteria::Graphs
             @param scoreColumnName The column containing the documents' scores
                 (a continuous column).
             @param groupColumnName The (optional) categorical column to use for grouping.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/

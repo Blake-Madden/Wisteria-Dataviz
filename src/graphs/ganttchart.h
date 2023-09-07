@@ -149,6 +149,8 @@ namespace Wisteria::Graphs
             @param groupColumnName The grouping column to use.\n
                 This will set the colors of the task's bars, based on their groups.
                 Note that this can be the same column as the resource or task name columns.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,

@@ -593,7 +593,7 @@ namespace Wisteria
 
         /// @brief Calculates the sizes of all objects on the canvas.
         /// @param dc The DC to measure content with.
-        /// @details Call this if customizations have been made to a subobject
+        /// @details Call this if changes have been made to a subobject
         ///     (e.g., a plot) and you wish to refresh the content.
         void CalcAllSizes(wxDC& dc);
         /** @brief The scaling of the canvas's size compared to the minimum size.

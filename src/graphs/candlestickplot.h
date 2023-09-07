@@ -110,9 +110,11 @@ namespace Wisteria::Graphs
             @param lowColumnName The column containing the lowest price during the day.
             @param highColumnName The column containing the highest price during the day.
             @param closeColumnName The column containing the closing price.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-                 The exception's @c what() message is UTF-8 encoded, so pass it to
-                 @c wxString::FromUTF8() when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& dateColumnName,
                      const wxString& openColumnName, const wxString& highColumnName,

@@ -406,6 +406,8 @@ namespace Wisteria::Graphs
             @param groupColumn2Name The (optional) second grouping ring.\n
                 This inner ring will be shown as subgroups within each slice
                 along the (parent) outer ring.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

@@ -116,6 +116,8 @@ namespace Wisteria::Graphs
             @param blDisplay Which type of labels to display at the end of the bars.\n
                 Note that numeric labels (value or percentages) will be shown as integers
                 (i.e., no precision) for simplicity.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/

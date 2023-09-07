@@ -141,6 +141,8 @@ namespace Wisteria::Graphs
                 Note that if a group from @c fromWeightColumnName occurs with multiple values
                 from this column, then it will be sorted by the first value from this column
                 that it encountered.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 Also throws an exception if only @c fromWeightColumnName is provided but
                 @c toWeightColumnName was not (or vice versa).\n

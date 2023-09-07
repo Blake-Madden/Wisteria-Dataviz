@@ -518,7 +518,9 @@ namespace Wisteria::Graphs
             @param questionColumns The vector of categorical columns to use as questions.
             @param groupColumnName The (optional) group column.
             @sa SetLabels().
-            @note Grouping is used if the chart type is categorized (see GetSurveyType()).
+            @note Grouping is used if the chart type is categorized (see GetSurveyType()).\n
+                Also, call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @warning The string tables in the categorical columns need to be synchronized prior
                 to calling this. In other works, ensure that the columns use the same string
                 and integral code assignments.\n

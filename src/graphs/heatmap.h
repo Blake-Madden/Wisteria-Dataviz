@@ -147,6 +147,8 @@ namespace Wisteria::Graphs
                 It is assumed that it is sorted by the value that the caller
                 wants to display left to right, but then also by group. These
                 groups will be drawn top-to-bottom.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

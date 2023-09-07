@@ -69,6 +69,8 @@ namespace Wisteria::Graphs
                 the syllables-per-word ruler, showing the document names under each bracket.\n
                 This will only be applied if there are 1-50 documents on the
                 graph, and the document names must be in the dataset's ID column.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/

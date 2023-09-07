@@ -514,6 +514,8 @@ namespace Wisteria::Graphs
                 The columns will appear in the order that you specify here.
             @param transpose @c true to transpose the data (i.e., display the columns
                 from the data as rows).
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

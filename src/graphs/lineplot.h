@@ -258,7 +258,9 @@ namespace Wisteria::Graphs
             @param groupColumnName The (optional) categorical column to use for grouping.
                 This will split the data into separate lines based on this grouping column.
             @note To add missing points to the data so that a gap in the line will appear,
-                set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).
+                set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).\n
+                Also, call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @warning The data points are drawn in the order that they appear in the dataset.
                 The plot will make no effort to sort the data or ensure that it is.\n
                 This is by design in case you need a line series to go backwards in certain

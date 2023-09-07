@@ -260,7 +260,9 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @note Observation names are pulled from the dataset's ID column and the first few are
-                implicitly added to the bins' selection label.*/
+                implicitly added to the bins' selection label.\n
+                Also, call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
                      const std::optional<const wxString> groupColumnName = std::nullopt,

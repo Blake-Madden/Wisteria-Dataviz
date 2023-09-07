@@ -121,6 +121,8 @@ namespace Wisteria::Graphs
                 This is a bitmask that can include multiple flags. The default is to include all IVs.
             @param dvName The name of the dependent variable from the original analysis.\n
                 This will be used on the legend and default caption.
+            @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
+                re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
                 when formatting it for an error message.*/
