@@ -64,7 +64,7 @@ namespace Wisteria
         printer.GetPrintDialogData().SetFromPage(1);
         printer.GetPrintDialogData().SetMinPage(1);
         printer.GetPrintDialogData().EnableSelection(false);
-        
+
         if (!printer.Print(this, printOut.get(), true) )
             {
             // just show a message if a real error occurred. They may have just cancelled.
