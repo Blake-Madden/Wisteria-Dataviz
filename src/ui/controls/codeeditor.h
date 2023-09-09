@@ -83,7 +83,8 @@ namespace Wisteria::UI
         CodeEditor& operator=(const CodeEditor&) = delete;
 
         /** @brief Sets the language used in this editor.
-            @param lang The language. @c wxSTC_LEX_LUA is currently supported.*/
+            @param lang The language.\n
+                @c wxSTC_LEX_LUA, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE are currently supported.*/
         void SetLanguage(const int lang);
         /** @brief Adds a library and its functions/classes.
                 This information is used for autocompletion.
@@ -237,7 +238,7 @@ namespace Wisteria::UI
         wchar_t m_libraryAccessor{ L'.' };
         wchar_t m_objectAccessor{ L':' };
 
-        wxColour m_commentColor{ 49, 250, 65 };
+        wxColour m_commentColor{ L"#008000" };
         wxColour m_keywordColor{ L"#0000FF" };
         wxColour m_operatorColor{ L"#B928C1" };
         wxColour m_stringColor{ L"#A31515" };

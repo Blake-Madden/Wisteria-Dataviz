@@ -107,18 +107,49 @@ void CodeEditor::SetLanguage(const int lang)
         SetFileFilter(_(L"Lua Script (*.lua)|*.lua"));
         SetLibraryAccessor(L'.');
         SetObjectAccessor(L':');
+
+        // highlighting for all supported languages
+        StyleSetForeground(wxSTC_LUA_WORD, m_keywordColor);
+        StyleSetForeground(wxSTC_LUA_WORD2, m_keywordColor);
+        StyleSetForeground(wxSTC_LUA_STRING, m_stringColor);
+        StyleSetForeground(wxSTC_LUA_OPERATOR, m_operatorColor);
+        StyleSetForeground(wxSTC_LUA_COMMENTLINE, m_commentColor);
+
+        StyleSetBold(wxSTC_LUA_WORD, true);
+        StyleSetBold(wxSTC_LUA_WORD2, true);
+        StyleSetBold(wxSTC_LUA_OPERATOR, true);
         }
+    if (wxSTC_LEX_CPP == lang ||
+        wxSTC_LEX_CPPNOCASE == lang)
+        {
+        // core language keywords
+        SetLexer(lang);
+        SetKeyWords(0,
+            _DT(L"alignas alignof and and_eq asm atomic_cancel atomic_commit atomic_noexcept auto bitand "
+                "bitor bool break case catch char char8_t char16_t "
+                "char32_t class compl concept const consteval constexpr constinit const_cast continue co_await co_return co_yield decltype default delete "
+                "do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept "
+                "not not_eq nullptr operator or or_eq private protected public reflexpr register reinterpret_cast requires return short signed "
+                "sizeof static static_assert static_cast struct switch synchronized template this thread_local throw true try typedef typeid typename "
+                "union unsigned using virtual void volatile wchar_t while xor xor_eq final override import module"));
+        // other language settings
+        SetFileFilter(_(L"C++ Source Files (*.cpp)|*.cpp"));
+        SetLibraryAccessor(L':');
+        SetObjectAccessor(L'.');
 
-    // highlighting for all supported languages
-    StyleSetForeground(wxSTC_LUA_WORD, m_keywordColor);
-    StyleSetForeground(wxSTC_LUA_WORD2, m_keywordColor);
-    StyleSetForeground(wxSTC_LUA_STRING, m_stringColor);
-    StyleSetForeground(wxSTC_LUA_OPERATOR, m_operatorColor);
-    StyleSetForeground(wxSTC_LUA_COMMENTLINE, m_commentColor);
+        // highlighting for all supported languages
+        StyleSetForeground(wxSTC_C_WORD, m_keywordColor);
+        StyleSetForeground(wxSTC_C_WORD2, m_keywordColor);
+        StyleSetForeground(wxSTC_C_STRING, m_stringColor);
+        StyleSetForeground(wxSTC_C_OPERATOR, m_operatorColor);
+        StyleSetForeground(wxSTC_C_COMMENTLINE, m_commentColor);
+        StyleSetForeground(wxSTC_C_COMMENT, m_commentColor);
 
-    StyleSetBold(wxSTC_LUA_WORD, true);
-    StyleSetBold(wxSTC_LUA_WORD2, true);
-    StyleSetBold(wxSTC_LUA_OPERATOR, true);
+        StyleSetBold(wxSTC_C_WORD, true);
+        StyleSetBold(wxSTC_C_WORD2, true);
+        StyleSetBold(wxSTC_C_OPERATOR, true);
+        }
+    
     }
 
 //-------------------------------------------------------------
