@@ -354,9 +354,8 @@ public:
         { return m_waterMark; }
     /// @}
 private:
-#ifdef __WXOSX__
     [[nodiscard]]
-    wxString ExpandMacPrintString(const wxString& printString) const
+    wxString ExpandUnixPrintString(const wxString& printString) const
         {
         const wxDateTime now = wxDateTime::Now();
         wxString expandedString = printString;
@@ -369,7 +368,6 @@ private:
 
         return expandedString;
         }
-#endif
 #ifdef __WXGTK__
     enum class GtkFormat
         {

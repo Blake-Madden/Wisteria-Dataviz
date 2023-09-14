@@ -388,67 +388,6 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     wxDELETE(dc);
     wxDELETE(printOut);
 #elif defined(__WXGTK__)
-    // format the header
-    //wxString headerText;
-    //if (GetLeftPrinterHeader().length() ||
-    //    GetCenterPrinterHeader().length() ||
-    //    GetRightPrinterHeader().length())
-    //    {
-    //    headerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
-    //        GetLeftPrinterHeader() + L"</td>";
-    //    headerText += L"<td width=\"33%\" align=\"center\">" +
-    //        GetCenterPrinterHeader() + L"</td>";
-    //    headerText += L"<td width=\"33%\" align=\"right\">" +
-    //        GetRightPrinterHeader() + L"</td></tr></table>";
-    //    }
-    //// format the footer
-    //wxString footerText;
-    //if (GetLeftPrinterFooter().length() ||
-    //    GetCenterPrinterFooter().length() ||
-    //    GetRightPrinterFooter().length())
-    //    {
-    //    footerText = "<table style=\"width:100%;\"><tr><td width=\"33%\">" +
-    //        GetLeftPrinterFooter() + L"</td>";
-    //    footerText += "<td width=\"33%\" align=\"center\">" +
-    //        GetCenterPrinterFooter() + L"</td>";
-    //    footerText += "<td width=\"33%\" align=\"right\">" +
-    //        GetRightPrinterFooter() + "</td></tr></table>";
-    //    }
-
-    //wxString outputText = GetUnthemedFormattedTextHtml();
-    //wxHtmlPrintout* printOut = new wxHtmlPrintout(GetTitleName());
-    //printOut->SetHtmlText(outputText);
-    //if (headerText.length())
-    //    { printOut->SetHeader(headerText); }
-    //if (footerText.length())
-    //    { printOut->SetFooter(footerText); }
-
-    //wxPrinter printer;
-    //if (m_printData)
-    //    {
-    //    printer.GetPrintDialogData().SetPrintData(*m_printData);
-    //    }
-    //printer.GetPrintDialogData().SetAllPages(true);
-    //printer.GetPrintDialogData().SetFromPage(1);
-    //printer.GetPrintDialogData().SetMinPage(1);
-    //printer.GetPrintDialogData().EnableSelection(false);
-    //if (!printer.Print(this, printOut, true) )
-    //    {
-    //    // just show a message if a real error occurred.
-    //    // They may have just cancelled.
-    //    if (printer.GetLastError() == wxPRINTER_ERROR)
-    //        {
-    //        wxMessageBox(_(L"An error occurred while printing.\n"
-    //                       "Your default printer may not be set correctly."),
-    //                    _(L"Print"), wxOK|wxICON_QUESTION);
-    //        }
-    //    }
-    //if (m_printData)
-    //    {
-    //    *m_printData = printer.GetPrintDialogData().GetPrintData();
-    //    }
-    //wxDELETE(printOut);
-
     // UNDER CONSTRUCTION!!!
     if (m_printData)
         {
@@ -465,11 +404,66 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
             }
         }
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
-    const double PaperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
-    const double PaperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
+    const double paperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
+    const double paperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
 
-    GtkPrinter printer;
-    printer.Paginate(GetUnthemedFormattedText().utf8_str(), wxSize(PaperWidthInInches*96, PaperHeightInInches*96));
+    GtkPrintOperation* operation = gtk_print_operation_new();
+
+    GtkPrintSettings* settings = gtk_print_settings_new();
+    gtk_print_settings_set_paper_width(settings, paperWidthInInches, GTK_UNIT_INCH);
+    gtk_print_settings_set_paper_height(settings, paperHeightInInches, GTK_UNIT_INCH);
+    if (m_printData)
+        {
+        gtk_print_settings_set_orientation(settings,
+            (m_printData->GetOrientation() == wxLANDSCAPE ?
+                GTK_PAGE_ORIENTATION_LANDSCAPE : GTK_PAGE_ORIENTATION_PORTRAIT));
+        gtk_print_settings_set_n_copies(settings, m_printData->GetNoCopies());
+        }
+    gtk_print_operation_set_print_settings(operation, settings);
+
+    _GtkPrintData printData;
+    printData.m_markupContent = GetUnthemedFormattedText().utf8_string();
+
+    printData.m_leftPrintHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
+    printData.m_centerPrintHeader = ExpandUnixPrintString(GetCenterPrinterHeader());
+    printData.m_rightPrintHeader = ExpandUnixPrintString(GetRightPrinterHeader());
+    printData.m_leftPrintFooter = ExpandUnixPrintString(GetLeftPrinterFooter());
+    printData.m_centerPrintFooter = ExpandUnixPrintString(GetCenterPrinterFooter());
+    printData.m_rightPrintFooter = ExpandUnixPrintString(GetRightPrinterFooter());
+
+    g_signal_connect(G_OBJECT(operation), "begin-print",
+        G_CALLBACK(_GtkBeginPrint), static_cast<gpointer>(&printData));
+    g_signal_connect(G_OBJECT(operation), "draw-page",
+        G_CALLBACK(_GtkDrawPage), static_cast<gpointer>(&printData));
+    g_signal_connect(G_OBJECT(operation), "end-print",
+        G_CALLBACK(_GtkEndPrint), static_cast<gpointer>(&printData));
+
+    GError* error{ nullptr };
+    const gint printResult = gtk_print_operation_run(operation, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+        GTK_WINDOW(GetHandle()), &error);
+
+    if (printResult == GTK_PRINT_OPERATION_RESULT_APPLY)
+        {
+        if (settings != nullptr)
+            { g_object_unref(settings); }
+        settings = g_object_ref(gtk_print_operation_get_print_settings(operation));
+        m_printData->SetNoCopies(gtk_print_settings_get_n_copies(settings));
+        m_printData->SetOrientation(
+            (gtk_print_settings_get_orientation(settings) == GTK_PAGE_ORIENTATION_LANDSCAPE) ?
+             wxLANDSCAPE : wxPORTRAIT);
+        }
+    else if (error)
+        {
+        wxMessageBox(wxString::Format(
+            _(L"An error occurred while printing.\n%s"),
+                error->message),
+            _(L"Print"), wxOK|wxICON_QUESTION);
+
+        g_error_free(error);
+        }
+
+    g_object_unref(operation);
+    g_object_unref(settings);
 #else
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
     const double PaperWidthInInches = (paperSize.GetWidth()/10) * 0.0393700787;
@@ -487,9 +481,9 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         safe_divide<size_t>((PaperHeightInInches- .5f) * 72, textWidth);
 
     // format the header
-    wxString expandedLeftHeader = ExpandMacPrintString(GetLeftPrinterHeader());
-    wxString expandedCenterHeader = ExpandMacPrintString(GetCenterPrinterHeader());
-    wxString expandedRightHeader = ExpandMacPrintString(GetRightPrinterHeader());
+    wxString expandedLeftHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
+    wxString expandedCenterHeader = ExpandUnixPrintString(GetCenterPrinterHeader());
+    wxString expandedRightHeader = ExpandUnixPrintString(GetRightPrinterHeader());
 
     wxString fullHeader = expandedLeftHeader;
     if (spacesCount >=
@@ -509,9 +503,9 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         }
 
     // format the footer
-    wxString expandedLeftFooter = ExpandMacPrintString(GetLeftPrinterFooter());
-    wxString expandedCenterFooter = ExpandMacPrintString(GetCenterPrinterFooter());
-    wxString expandedRightFooter = ExpandMacPrintString(GetRightPrinterFooter());
+    wxString expandedLeftFooter = ExpandUnixPrintString(GetLeftPrinterFooter());
+    wxString expandedCenterFooter = ExpandUnixPrintString(GetCenterPrinterFooter());
+    wxString expandedRightFooter = ExpandUnixPrintString(GetRightPrinterFooter());
 
     wxString fullFooter = expandedLeftFooter;
     if (spacesCount >=
@@ -1464,10 +1458,10 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format, const bo
         GSList* tags = gtk_text_iter_get_toggled_tags(&start, true);
         wxString firstTag;
         if (format == GtkFormat::HtmlFormat)
-            { firstTag = GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data)); }
+            { firstTag = _GtkTextTagToHtmlSpanTag(GTK_TEXT_TAG(tags->data)); }
         else
             {
-            firstTag = GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
+            firstTag = _GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
             // just get the font family. The face name in Pango includes other
             // descriptives strings that we don't use here
             g_object_get(G_OBJECT(tags->data),
@@ -1500,9 +1494,9 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format, const bo
             if (gtk_text_iter_starts_tag(&start, tag))
                 {
                 if (format == GtkFormat::HtmlFormat)
-                    { currentTagText += GtkTextTagToHtmlSpanTag(tag); }
+                    { currentTagText += _GtkTextTagToHtmlSpanTag(tag); }
                 else
-                    { currentTagText += GtkTextTagToRtfTag(tag, colorTable, fontTable); }
+                    { currentTagText += _GtkTextTagToRtfTag(tag, colorTable, fontTable); }
                 }
             // any tags at the current iterator that might end a formatting block
             // (there might be more than one, though unlikely)

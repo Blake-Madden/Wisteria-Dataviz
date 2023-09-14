@@ -23,26 +23,261 @@
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/log.h>
+#include <wx/gtk/print.h>
 
 /// @todo EXPERIMENTAL and INCOMPLETE!
-class GtkPrinter
+struct _GtkPageLines
     {
-public:
-    /// @brief Paginates a Pango markup buffer.
-    /// @param markup The Pango text to paginate.
-    /// @param pageDrawingArea The pixel size of the area to draw inside of
-    ///     (excluding margins, headers, footers, etc.).
-    void Paginate(const gchar* markup, const wxSize pageDrawingArea);
-private:
-    std::vector<gint> m_lineHeights;
+    gint m_page{ 0 };
+    GSList* m_linesStart{ nullptr };
+    gint m_numberOfLines{ 0 };
     };
 
+struct _GtkPrintData
+    {
+    std::string m_markupContent;
+    PangoLayout* m_layout{ nullptr };
+    GSList* m_lines{ nullptr };
+    std::vector<_GtkPageLines> m_pageLines;
+    gint m_headerAreaHeight{ 0 };
+    gint m_footerAreaHeight{ 0 };
+    wxString m_leftPrintHeader;
+    wxString m_centerPrintHeader;
+    wxString m_rightPrintHeader;
+    wxString m_leftPrintFooter;
+    wxString m_centerPrintFooter;
+    wxString m_rightPrintFooter;
+    };
+
+
+// GTK+ callbacks need C linkage
+extern "C"
+{
+// GCC complains about these functions being unused, although we do use them as callbacks.
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+//-------------------------------------------------
+static void _GtkBeginPrint(GtkPrintOperation* operation,
+                           GtkPrintContext* context,
+                           _GtkPrintData* printData)
+    {
+    printData->m_layout = nullptr;
+    printData->m_lines = nullptr;
+    printData->m_pageLines.clear();
+    printData->m_headerAreaHeight = 0;
+    printData->m_layout = gtk_print_context_create_pango_layout(context);
+
+    const gdouble contextWidth{ gtk_print_context_get_width(context) };
+    gdouble contextHeight{ gtk_print_context_get_height(context) };
+
+    pango_layout_set_width(printData->m_layout, contextWidth * PANGO_SCALE);
+    // measure headers
+    if (printData->m_leftPrintHeader.length())
+        {
+        pango_layout_set_text(printData->m_layout, printData->m_leftPrintHeader, -1);
+        pango_layout_get_size(printData->m_layout, nullptr, &printData->m_headerAreaHeight);
+        printData->m_headerAreaHeight =
+            std::max(40.0, (printData->m_headerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
+        }
+    if (printData->m_centerPrintHeader.length())
+        {
+        pango_layout_set_text(printData->m_layout, printData->m_centerPrintHeader, -1);
+        pango_layout_get_size(printData->m_layout, nullptr, &printData->m_headerAreaHeight);
+        printData->m_headerAreaHeight =
+            std::max(40.0, (printData->m_headerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
+        }
+    if (printData->m_rightPrintHeader.length())
+        {
+        pango_layout_set_text(printData->m_layout, printData->m_rightPrintHeader, -1);
+        pango_layout_get_size(printData->m_layout, nullptr, &printData->m_headerAreaHeight);
+        printData->m_headerAreaHeight =
+            std::max(40.0, (printData->m_headerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
+        }
+    // ...and footers
+    if (printData->m_leftPrintFooter.length())
+        {
+        pango_layout_set_text(printData->m_layout, printData->m_leftPrintFooter, -1);
+        pango_layout_get_size(printData->m_layout, nullptr, &printData->m_footerAreaHeight);
+        printData->m_footerAreaHeight =
+            std::max(40.0, (printData->m_footerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
+        }
+    if (printData->m_centerPrintFooter.length())
+        {
+        pango_layout_set_text(printData->m_layout, printData->m_centerPrintFooter, -1);
+        pango_layout_get_size(printData->m_layout, nullptr, &printData->m_footerAreaHeight);
+        printData->m_footerAreaHeight =
+            std::max(40.0, (printData->m_footerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
+        }
+    if (printData->m_rightPrintFooter.length())
+        {
+        pango_layout_set_text(printData->m_layout, printData->m_rightPrintFooter, -1);
+        pango_layout_get_size(printData->m_layout, nullptr, &printData->m_footerAreaHeight);
+        printData->m_footerAreaHeight =
+            std::max(40.0, (printData->m_footerAreaHeight / static_cast<gdouble>(PANGO_SCALE)) * 3);
+        }
+    contextHeight -= printData->m_headerAreaHeight + printData->m_footerAreaHeight;
+
+    // Set the actual text now.
+    pango_layout_set_markup(printData->m_layout, printData->m_markupContent.c_str(), -1);
+
+    // Paginate by going through all the lines and measuring them.
+    gint layoutHeight{ 0 };
+    gint currentPageHeight{ 0 };
+    printData->m_lines = pango_layout_get_lines_readonly(printData->m_layout);
+    _GtkPageLines currentPageLines{ 0, printData->m_lines, 0 };
+    for (auto lines = printData->m_lines;
+        lines != nullptr;
+        lines = lines->next)
+        {
+        PangoLayoutLine* line{ static_cast<PangoLayoutLine*>(lines->data) };
+
+        pango_layout_line_get_height(line, &layoutHeight);
+        currentPageHeight += layoutHeight / static_cast<gdouble>(PANGO_SCALE);
+
+        // Current line won't fit on this page, so start a new page and put
+        // that line at the top of it.
+        if (currentPageHeight > contextHeight)
+            {
+            printData->m_pageLines.push_back(currentPageLines);
+            currentPageLines.m_linesStart = lines;
+            ++currentPageLines.m_page;
+            currentPageLines.m_numberOfLines = 1;
+            currentPageHeight = layoutHeight / static_cast<gdouble>(PANGO_SCALE);
+            }
+        else
+            { ++currentPageLines.m_numberOfLines; }
+        }
+    // add the last straggling page and then set the number of pages for our printout
+    printData->m_pageLines.push_back(currentPageLines);
+
+    gtk_print_operation_set_n_pages(operation, static_cast<gint>(printData->m_pageLines.size()));
+    }
+
+//-------------------------------------------------
+static void _GtkDrawPage([[maybe_unused]] GtkPrintOperation* operation,
+                         GtkPrintContext* context,
+                         gint pageNr,
+                         _GtkPrintData* printData)
+    {
+    cairo_t* cr = gtk_print_context_get_cairo_context(context);
+    const gdouble pageWidth = gtk_print_context_get_width(context);
+    const gdouble pageHeight = gtk_print_context_get_height(context);
+
+    const auto expandPrinterString = [pageNr, printData](wxString str)
+        {
+        str.Replace(L"@PN", std::to_wstring(pageNr + 1), true);
+        str.Replace(L"@PC", std::to_wstring(printData->m_pageLines.size()), true);
+        return str;
+        };
+
+    // Render headers
+    auto layout = gtk_print_context_create_pango_layout(context);
+    pango_layout_set_width(layout, -1);
+    if (printData->m_leftPrintHeader.length())
+        {
+        pango_layout_set_text(layout, expandPrinterString(printData->m_leftPrintHeader), -1);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
+
+        cairo_move_to(cr, 0, 0);
+        pango_cairo_show_layout(cr, layout);
+        }
+    if (printData->m_centerPrintHeader.length())
+        {
+        gint textWidth{ 0 };
+        pango_layout_set_text(layout, expandPrinterString(printData->m_centerPrintHeader), -1);
+        pango_layout_get_size(layout, &textWidth, nullptr);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+
+        cairo_move_to(cr, (pageWidth / 2) - ((textWidth / static_cast<gdouble>(PANGO_SCALE)) / 2), 0);
+        pango_cairo_show_layout(cr, layout);
+        }
+    if (printData->m_rightPrintHeader.length())
+        {
+        gint textWidth{ 0 };
+        pango_layout_set_text(layout, expandPrinterString(printData->m_rightPrintHeader), -1);
+        pango_layout_get_size(layout, &textWidth, nullptr);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+
+        cairo_move_to(cr, pageWidth - (textWidth / static_cast<gdouble>(PANGO_SCALE)), 0);
+        pango_cairo_show_layout(cr, layout);
+        }
+    if (printData->m_leftPrintFooter.length())
+        {
+        gint textWidth{ 0 }, textHeight{ 0 };
+        pango_layout_set_text(layout, expandPrinterString(printData->m_leftPrintFooter), -1);
+        pango_layout_get_size(layout, &textWidth, &textHeight);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
+
+        cairo_move_to(cr, 0, pageHeight - (textHeight / static_cast<gdouble>(PANGO_SCALE)) );
+        pango_cairo_show_layout(cr, layout);
+        }
+    if (printData->m_centerPrintFooter.length())
+        {
+        gint textWidth{ 0 }, textHeight{ 0 };
+        pango_layout_set_text(layout, expandPrinterString(printData->m_centerPrintFooter), -1);
+        pango_layout_get_size(layout, &textWidth, &textHeight);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+
+        cairo_move_to(cr,
+                      (pageWidth / 2) - ((textWidth / static_cast<gdouble>(PANGO_SCALE)) / 2),
+                      pageHeight - (textHeight / static_cast<gdouble>(PANGO_SCALE)) );
+        pango_cairo_show_layout(cr, layout);
+        }
+    if (printData->m_rightPrintFooter.length())
+        {
+        gint textWidth{ 0 }, textHeight{ 0 };
+        pango_layout_set_text(layout, expandPrinterString(printData->m_rightPrintFooter), -1);
+        pango_layout_get_size(layout, &textWidth, &textHeight);
+        pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+
+        cairo_move_to(cr,
+                      pageWidth - (textWidth / static_cast<gdouble>(PANGO_SCALE)),
+                      pageHeight - (textHeight / static_cast<gdouble>(PANGO_SCALE)) );
+        pango_cairo_show_layout(cr, layout);
+        }
+
+    // Render the text on the page, line-by-line.
+    cairo_move_to(cr, 0, printData->m_headerAreaHeight);
+    auto lines = printData->m_pageLines[pageNr].m_linesStart;
+    gint layoutHeight{ 0 };
+    for (gint i = 0;
+         i < printData->m_pageLines[pageNr].m_numberOfLines;
+         ++i, lines = lines->next)
+        {
+        // Draw the line text.
+        PangoLayoutLine* line{ static_cast<PangoLayoutLine*>(lines->data) };
+        pango_cairo_show_layout_line(cr, line);
+        // Move down to the next line.
+        pango_layout_line_get_height(line, &layoutHeight);
+        cairo_rel_move_to(cr, 0, (layoutHeight / static_cast<gdouble>(PANGO_SCALE)) );
+        }
+
+    g_object_unref(layout);
+    }
+
+//-------------------------------------------------
+static void _GtkEndPrint(
+                  [[maybe_unused]] GtkPrintOperation* operation,
+                  [[maybe_unused]] GtkPrintContext* context,
+                  _GtkPrintData* printData)
+    {
+    g_object_unref(printData->m_layout);
+    }
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+}
+
+/// END EXPERIMENTAL
+
 /// @returns A GTK text tag into HTML text.
-wxString GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
+wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
 /// @returns A GTK text tag into RTF text.
-wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
-                              std::vector<wxColour>& colorTable,
-                              std::vector<wxString>& fontTable);
+wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
+                             std::vector<wxColour>& colorTable,
+                             std::vector<wxString>& fontTable);
 
 /*  Suggestion for bug #59390 on http://bugs.gnome.org,
  *  "load Pango Markup into GtkTextBuffer"
