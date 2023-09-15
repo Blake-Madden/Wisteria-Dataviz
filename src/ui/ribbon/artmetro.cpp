@@ -32,10 +32,12 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
 #ifdef __WXMSW__
     #include <wx/msw/private.h>
 #endif
+#include "../../base/colorbrewer.h"
 
 using namespace Wisteria::UI;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Icons;
+using namespace Wisteria::Colors;
 
 RibbonMetroArtProvider::RibbonMetroArtProvider(bool set_colour_scheme) :
     wxRibbonMSWArtProvider (set_colour_scheme)
@@ -902,8 +904,13 @@ void RibbonMetroArtProvider::DrawButtonBarButtonForeground(
                         const wxBitmap& bitmap_large,
                         const wxBitmap& bitmap_small)
 {
-    const wxColour paintingColour = (state & wxRIBBON_BUTTONBAR_BUTTON_HOVER_MASK) ?
+    wxColour paintingColour = (state & wxRIBBON_BUTTONBAR_BUTTON_HOVER_MASK) ?
         m_tab_highlight_colour : m_button_bar_label_colour;
+
+    if (state & wxRIBBON_BUTTONBAR_BUTTON_TOGGLED)
+        {
+        paintingColour = Colors::ColorContrast::BlackOrWhiteContrast(m_page_toggle_face_colour);
+        }
     wxDCTextColourChanger cc(dc, paintingColour);
 
     switch (state & wxRIBBON_BUTTONBAR_BUTTON_SIZE_MASK)
