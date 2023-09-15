@@ -229,6 +229,8 @@ namespace Wisteria::UI
         std::set<wxString, wxStringPartialCmpNoCase> m_libaryAndClassNames;
         wxString m_libaryAndClassNamesStr;
 
+        int m_lexer{ wxSTC_LEX_LUA };
+
         wxString m_scriptFilePath;
 
         wxString m_defaultHeader;
@@ -239,9 +241,11 @@ namespace Wisteria::UI
         wchar_t m_objectAccessor{ L':' };
 
         wxColour m_commentColor{ L"#008000" };
-        wxColour m_keywordColor{ L"#0000FF" };
-        wxColour m_operatorColor{ L"#B928C1" };
-        wxColour m_stringColor{ L"#A31515" };
+        wxColour m_commentDocColor{ L"#BEB7E7" };
+        wxColour m_keywordColor1{ L"#559CD6" };
+        wxColour m_keywordColor2{ L"#4EC9B0" };
+        wxColour m_operatorColor{ L"#909EA9" };
+        wxColour m_stringColor{ L"#D69D85" };
 
         wxDECLARE_CLASS(CodeEditor);
         };

@@ -26,9 +26,9 @@ CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id/*=wxID_ANY*/,
     wxStyledTextCtrl(parent, id, pos, size, style, name)
     {
     StyleClearAll();
-    const wxFont font(wxFontInfo(10).Family(wxFONTFAMILY_MODERN));
+    const wxFont font{ wxFontInfo().Family(wxFONTFAMILY_MODERN) };
     for (auto i = 0; i < wxSTC_STYLE_LASTPREDEFINED; ++i)
-        { StyleSetFont(i, font); }
+        { StyleSetFont(i, font.Larger().Larger().Bold()); }
 
     // code-folding options
     SetProperty(L"fold", L"1");
@@ -76,11 +76,22 @@ void CodeEditor::SetThemeColor(const wxColour& background)
         StyleSetForeground(i, foreground);
         }
 
-    StyleSetForeground(wxSTC_LUA_WORD, contrast.Contrast(m_keywordColor));
-    StyleSetForeground(wxSTC_LUA_WORD2, contrast.Contrast(m_keywordColor));
+    StyleSetForeground(wxSTC_LUA_WORD, contrast.Contrast(m_keywordColor1));
+    StyleSetForeground(wxSTC_LUA_WORD2, contrast.Contrast(m_keywordColor2));
     StyleSetForeground(wxSTC_LUA_STRING, contrast.Contrast(m_stringColor));
     StyleSetForeground(wxSTC_LUA_OPERATOR, contrast.Contrast(m_operatorColor));
     StyleSetForeground(wxSTC_LUA_COMMENTLINE, contrast.Contrast(m_commentColor));
+
+    StyleSetForeground(wxSTC_C_WORD, contrast.Contrast(m_keywordColor1));
+    StyleSetForeground(wxSTC_C_WORD2, contrast.Contrast(m_keywordColor2));
+    StyleSetForeground(wxSTC_C_STRING, contrast.Contrast(m_stringColor));
+    StyleSetForeground(wxSTC_C_OPERATOR, contrast.Contrast(m_operatorColor));
+    StyleSetForeground(wxSTC_C_COMMENTLINE, contrast.Contrast(m_commentColor));
+    StyleSetForeground(wxSTC_C_COMMENT, contrast.Contrast(m_commentColor));
+    StyleSetForeground(wxSTC_C_COMMENTLINEDOC, contrast.Contrast(m_commentColor));
+    StyleSetForeground(wxSTC_C_COMMENTDOC, contrast.Contrast(m_commentColor));
+    StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORD, contrast.Contrast(m_commentDocColor));
+    StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORDERROR, contrast.Contrast(m_commentDocColor));
 
     MarkerDefine(wxSTC_MARKNUM_FOLDER, wxSTC_MARK_DOTDOTDOT, foreground, background);
     MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_ARROWDOWN, foreground, background);
@@ -96,36 +107,33 @@ void CodeEditor::SetThemeColor(const wxColour& background)
 //-------------------------------------------------------------
 void CodeEditor::SetLanguage(const int lang)
     {
-    if (wxSTC_LEX_LUA == lang)
+    m_lexer = lang;
+    if (wxSTC_LEX_LUA == m_lexer)
         {
         // core language keywords
-        SetLexer(lang);
+        SetLexer(m_lexer);
         SetKeyWords(0,
             _DT(L"and break do else elseif end false for function if in local "
-                 "nil not or repeat return then true until while"));
+                 "nil not or repeat return then true until while dofile"));
         // other language settings
         SetFileFilter(_(L"Lua Script (*.lua)|*.lua"));
         SetLibraryAccessor(L'.');
         SetObjectAccessor(L':');
 
-        // highlighting for all supported languages
-        StyleSetForeground(wxSTC_LUA_WORD, m_keywordColor);
-        StyleSetForeground(wxSTC_LUA_WORD2, m_keywordColor);
+        // highlighting for Lua
+        StyleSetForeground(wxSTC_LUA_WORD, m_keywordColor1);
+        StyleSetForeground(wxSTC_LUA_WORD2, m_keywordColor2);
         StyleSetForeground(wxSTC_LUA_STRING, m_stringColor);
         StyleSetForeground(wxSTC_LUA_OPERATOR, m_operatorColor);
         StyleSetForeground(wxSTC_LUA_COMMENTLINE, m_commentColor);
-
-        StyleSetBold(wxSTC_LUA_WORD, true);
-        StyleSetBold(wxSTC_LUA_WORD2, true);
-        StyleSetBold(wxSTC_LUA_OPERATOR, true);
         }
-    if (wxSTC_LEX_CPP == lang ||
-        wxSTC_LEX_CPPNOCASE == lang)
+    if (wxSTC_LEX_CPP == m_lexer ||
+        wxSTC_LEX_CPPNOCASE == m_lexer)
         {
         // core language keywords
-        SetLexer(lang);
+        SetLexer(m_lexer);
         SetKeyWords(0,
-            _DT(L"alignas alignof and and_eq asm atomic_cancel atomic_commit atomic_noexcept auto bitand "
+            _DT(L"alignas alignof and_eq asm atomic_cancel atomic_commit atomic_noexcept auto bitand "
                 "bitor bool break case catch char char8_t char16_t "
                 "char32_t class compl concept const consteval constexpr constinit const_cast continue co_await co_return co_yield decltype default delete "
                 "do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept "
@@ -137,19 +145,18 @@ void CodeEditor::SetLanguage(const int lang)
         SetLibraryAccessor(L':');
         SetObjectAccessor(L'.');
 
-        // highlighting for all supported languages
-        StyleSetForeground(wxSTC_C_WORD, m_keywordColor);
-        StyleSetForeground(wxSTC_C_WORD2, m_keywordColor);
+        // highlighting for C/C++
+        StyleSetForeground(wxSTC_C_WORD, m_keywordColor1);
+        StyleSetForeground(wxSTC_C_WORD2, m_keywordColor2);
         StyleSetForeground(wxSTC_C_STRING, m_stringColor);
         StyleSetForeground(wxSTC_C_OPERATOR, m_operatorColor);
         StyleSetForeground(wxSTC_C_COMMENTLINE, m_commentColor);
         StyleSetForeground(wxSTC_C_COMMENT, m_commentColor);
-
-        StyleSetBold(wxSTC_C_WORD, true);
-        StyleSetBold(wxSTC_C_WORD2, true);
-        StyleSetBold(wxSTC_C_OPERATOR, true);
+        StyleSetForeground(wxSTC_C_COMMENTLINEDOC, m_commentColor);
+        StyleSetForeground(wxSTC_C_COMMENTDOC, m_commentColor);
+        StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORD, m_commentDocColor);
+        StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORDERROR, m_commentDocColor);
         }
-    
     }
 
 //-------------------------------------------------------------
@@ -166,7 +173,7 @@ void CodeEditor::New()
     SetModified(false);
     SetFocus();
 
-    SetScriptFilePath(wxEmptyString);
+    SetScriptFilePath(wxString{});
     }
 
 //-------------------------------------------------------------
@@ -180,7 +187,7 @@ bool CodeEditor::Open()
         }
     wxFileDialog dialogOpen
             (this, _(L"Select Script to Open"),
-            wxEmptyString, wxEmptyString,
+            wxString{}, wxString{},
             GetFileFilter(),
             wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_PREVIEW);
     if (dialogOpen.ShowModal() != wxID_OK)
@@ -203,7 +210,7 @@ bool CodeEditor::Save()
         {
         wxFileDialog dialogSave
                 (this, _(L"Save Script As"),
-                wxEmptyString, wxEmptyString,
+                wxString{}, wxString{},
                 GetFileFilter(),
                 wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 
@@ -253,7 +260,7 @@ void CodeEditor::OnFind(wxFindDialogEvent &event)
 void CodeEditor::FindPrevious(const wxString& textToFind, const int searchFlags /*= 0*/)
     {
     SearchAnchor();
-    long selStart(0), selEnd(0);
+    long selStart{ 0 }, selEnd{ 0 };
     GetSelection(&selStart,&selEnd);
     int foundPos = SearchPrev(searchFlags, textToFind);
     if (foundPos == selStart && foundPos != 0)
@@ -361,9 +368,13 @@ void CodeEditor::AddClass(const wxString& theClass, NameList& functions)
 //-------------------------------------------------------------
 void CodeEditor::Finalize()
     {
+    m_libaryAndClassNamesStr.clear();
     for (const auto& className : m_libaryAndClassNames)
         { m_libaryAndClassNamesStr += L" " + className; }
-    SetKeyWords(1, m_libaryAndClassNamesStr);
+    if (wxSTC_LEX_CPPNOCASE == m_lexer)
+        { SetKeyWords(1, m_libaryAndClassNamesStr.Lower()); }
+    else
+        { SetKeyWords(1, m_libaryAndClassNamesStr); }
     }
 
 //-------------------------------------------------------------
@@ -387,7 +398,7 @@ wxString CodeEditor::GetReturnType(const wxString& function)
         return returnType;
         }
     else
-        { return wxEmptyString; }
+        { return wxString{}; }
     }
 
 //-------------------------------------------------------------
