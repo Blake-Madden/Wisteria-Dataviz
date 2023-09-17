@@ -1085,7 +1085,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         GTK_TEXT_SEARCH_TEXT_ONLY :
         (GTK_TEXT_SEARCH_TEXT_ONLY | GTK_TEXT_SEARCH_CASE_INSENSITIVE));
 
-    GtkTextBuffer* buffer = GtkGetTextObject();
+    GtkTextBuffer* buffer = GTKGetTextBuffer();
 
     // get the beginning and end of text buffer
     GtkTextIter textStart, textEnd;
@@ -1398,7 +1398,7 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
 //-----------------------------------------------------------
 wxString FormattedTextCtrl::GtkGetThemedPangoText()
     {
-    GtkTextBuffer* buffer = GtkGetTextObject();
+    GtkTextBuffer* buffer = GTKGetTextBuffer();
 
     GtkTextIter start, end;
     gtk_text_buffer_get_start_iter(buffer, &start);
@@ -1421,7 +1421,7 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format, const bo
     GtkTextBuffer* buffer{ nullptr };
 
     if (useThemed)
-        { buffer = GtkGetTextObject(); }
+        { buffer = GTKGetTextBuffer(); }
     else
         {
         buffer = gtk_text_buffer_new(nullptr);
@@ -1590,7 +1590,7 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
         // multiple events may get fired while editing text, so block those
             {
             EventsSuppressor noevents(this);
-            text_buffer_set_markup(GtkGetTextObject(),
+            text_buffer_set_markup(GTKGetTextBuffer(),
                 wxConvUTF8.cWC2MB(formattedText), -1);
             }
         SendTextUpdatedEvent(GetEditableWindow());
