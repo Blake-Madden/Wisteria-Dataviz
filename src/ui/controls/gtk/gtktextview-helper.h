@@ -3,10 +3,13 @@
     @date 2005-2023
     @copyright Blake Madden
     @author Blake Madden
+            Tim-Philipp Mueller (Gtk+ bug report patch for GtkTextView Pango-loading functionality)
+            Anthony Bretaudeau (portions of wxWidgets printing code)
     @details This program is free software; you can redistribute it and/or modify
-     it under the terms of the 3-Clause BSD License.
+     it under the terms of the 3-Clause BSD License (some portions are wxWindows licensed, where noted).
 
      SPDX-License-Identifier: BSD-3-Clause
+     SPDX-License-Identifier: wxWindows
 @{*/
 
 #ifndef __GTK_TEXTVIEW_PANGO_MARKUP__
@@ -25,7 +28,135 @@
 #include <wx/log.h>
 #include <wx/gtk/print.h>
 
-/// @todo EXPERIMENTAL and INCOMPLETE!
+// Printing system for GtkTextView
+//--------------------------------
+
+// From wxWidget's gtk/print.cpp:
+// Map wxPaperSize to GtkPaperSize names
+// Ordering must be the same as wxPaperSize enum
+static const char* const gtk_paperList[] =
+    {
+    nullptr, // wxPAPER_NONE
+    "na_letter", // wxPAPER_LETTER
+    "na_legal", // wxPAPER_LEGAL
+    "iso_a4", // wxPAPER_A4
+    "na_c", // wxPAPER_CSHEET
+    "na_d", // wxPAPER_DSHEET
+    "na_e", // wxPAPER_ESHEET
+    "na_letter", // wxPAPER_LETTERSMALL
+    "na_ledger", // wxPAPER_TABLOID
+    "na_ledger", // wxPAPER_LEDGER
+    "na_invoice", // wxPAPER_STATEMENT
+    "na_executive", // wxPAPER_EXECUTIVE
+    "iso_a3", // wxPAPER_A3
+    "iso_a4", // wxPAPER_A4SMALL
+    "iso_a5", // wxPAPER_A5
+    "jis_b4", // wxPAPER_B4 "B4 (JIS) 257 x 364 mm"
+    "jis_b5", // wxPAPER_B5 "B5 (JIS) 182 x 257 mm"
+    "om_folio", // wxPAPER_FOLIO
+    "na_quarto", // wxPAPER_QUARTO
+    "na_10x14", // wxPAPER_10X14
+    "na_ledger", // wxPAPER_11X17
+    "na_letter", // wxPAPER_NOTE
+    "na_number-9", // wxPAPER_ENV_9
+    "na_number-10", // wxPAPER_ENV_10
+    "na_number-11", // wxPAPER_ENV_11
+    "na_number-12", // wxPAPER_ENV_12
+    "na_number-14", // wxPAPER_ENV_14
+    "iso_dl", // wxPAPER_ENV_DL
+    "iso_c5", // wxPAPER_ENV_C5
+    "iso_c3", // wxPAPER_ENV_C3
+    "iso_c4", // wxPAPER_ENV_C4
+    "iso_c6", // wxPAPER_ENV_C6
+    "iso_c6c5", // wxPAPER_ENV_C65
+    "iso_b4", // wxPAPER_ENV_B4
+    "iso_b5", // wxPAPER_ENV_B5
+    "iso_b6", // wxPAPER_ENV_B6
+    "om_italian", // wxPAPER_ENV_ITALY
+    "na_monarch", // wxPAPER_ENV_MONARCH
+    "na_personal", // wxPAPER_ENV_PERSONAL
+    "na_fanfold-us", // wxPAPER_FANFOLD_US
+    "na_fanfold-eur", // wxPAPER_FANFOLD_STD_GERMAN
+    "na_foolscap", // wxPAPER_FANFOLD_LGL_GERMAN
+    "iso_b4", // wxPAPER_ISO_B4
+    "jpn_hagaki", // wxPAPER_JAPANESE_POSTCARD
+    "na_9x11", // wxPAPER_9X11
+    "na_10x11", // wxPAPER_10X11
+    "na_11x15", // wxPAPER_15X11
+    "om_invite", // wxPAPER_ENV_INVITE
+    "na_letter-extra", // wxPAPER_LETTER_EXTRA
+    "na_legal-extra", // wxPAPER_LEGAL_EXTRA
+    "na_arch-b", // wxPAPER_TABLOID_EXTRA
+    "iso_a4-extra", // wxPAPER_A4_EXTRA
+    "na_letter", // wxPAPER_LETTER_TRANSVERSE
+    "iso_a4", // wxPAPER_A4_TRANSVERSE
+    "na_letter-extra", // wxPAPER_LETTER_EXTRA_TRANSVERSE
+    "na_super-a", // wxPAPER_A_PLUS
+    "na_super-b", // wxPAPER_B_PLUS
+    "na_letter-plus", // wxPAPER_LETTER_PLUS
+    "om_folio", // wxPAPER_A4_PLUS "A4 Plus 210 x 330 mm" (no A4 Plus in PWG standard)
+    "iso_a5", // wxPAPER_A5_TRANSVERSE
+    "jis_b5", // wxPAPER_B5_TRANSVERSE "B5 (JIS) Transverse 182 x 257 mm"
+    "iso_a3-extra", // wxPAPER_A3_EXTRA
+    "iso_a5-extra", // wxPAPER_A5_EXTRA
+    "iso_b5-extra", // wxPAPER_B5_EXTRA
+    "iso_a2", // wxPAPER_A2
+    "iso_a3", // wxPAPER_A3_TRANSVERSE
+    "iso_a3-extra", // wxPAPER_A3_EXTRA_TRANSVERSE
+    "jpn_oufuku", // wxPAPER_DBL_JAPANESE_POSTCARD
+    "iso_a6", // wxPAPER_A6
+    "jpn_kaku2", // wxPAPER_JENV_KAKU2
+    "jpn_kaku3_216x277mm", // wxPAPER_JENV_KAKU3
+    "jpn_chou3", // wxPAPER_JENV_CHOU3
+    "jpn_chou4", // wxPAPER_JENV_CHOU4
+    "na_letter", // wxPAPER_LETTER_ROTATED
+    "iso_a3", // wxPAPER_A3_ROTATED
+    "iso_a4", // wxPAPER_A4_ROTATED
+    "iso_a5", // wxPAPER_A5_ROTATED
+    "jis_b4", // wxPAPER_B4_JIS_ROTATED
+    "jis_b5", // wxPAPER_B5_JIS_ROTATED
+    "jpn_hagaki", // wxPAPER_JAPANESE_POSTCARD_ROTATED
+    "jpn_oufuku", // wxPAPER_DBL_JAPANESE_POSTCARD_ROTATED
+    "iso_a6", // wxPAPER_A6_ROTATED
+    "jpn_kaku2", // wxPAPER_JENV_KAKU2_ROTATED
+    "jpn_kaku3_216x277mm", // wxPAPER_JENV_KAKU3_ROTATED
+    "jpn_chou3", // wxPAPER_JENV_CHOU3_ROTATED
+    "jpn_chou4", // wxPAPER_JENV_CHOU4_ROTATED
+    "jis_b6", // wxPAPER_B6_JIS
+    "jis_b6", // wxPAPER_B6_JIS_ROTATED
+    "na_11x12", // wxPAPER_12X11
+    "jpn_you4", // wxPAPER_JENV_YOU4
+    "jpn_you4", // wxPAPER_JENV_YOU4_ROTATED
+    "prc_16k", // wxPAPER_P16K
+    "prc_32k", // wxPAPER_P32K
+    "prc_32k", // wxPAPER_P32KBIG
+    "prc_1", // wxPAPER_PENV_1
+    "prc_2", // wxPAPER_PENV_2
+    "prc_3", // wxPAPER_PENV_3
+    "prc_4", // wxPAPER_PENV_4
+    "prc_5", // wxPAPER_PENV_5
+    "prc_6", // wxPAPER_PENV_6
+    "prc_7", // wxPAPER_PENV_7
+    "prc_8", // wxPAPER_PENV_8
+    "prc_9", // wxPAPER_PENV_9
+    "prc_10", // wxPAPER_PENV_10
+    "prc_16k", // wxPAPER_P16K_ROTATED
+    "prc_32k", // wxPAPER_P32K_ROTATED
+    "prc_32k", // wxPAPER_P32KBIG_ROTATED
+    "prc_1", // wxPAPER_PENV_1_ROTATED
+    "prc_2", // wxPAPER_PENV_2_ROTATED
+    "prc_3", // wxPAPER_PENV_3_ROTATED
+    "prc_4", // wxPAPER_PENV_4_ROTATED
+    "prc_5", // wxPAPER_PENV_5_ROTATED
+    "prc_6", // wxPAPER_PENV_6_ROTATED
+    "prc_7", // wxPAPER_PENV_7_ROTATED
+    "prc_8", // wxPAPER_PENV_8_ROTATED
+    "prc_9", // wxPAPER_PENV_9_ROTATED
+    "prc_10", // wxPAPER_PENV_10_ROTATED
+    "iso_a0", // wxPAPER_A0
+    "iso_a1"  // wxPAPER_A1
+    };
+
 struct _GtkPageLines
     {
     gint m_page{ 0 };
@@ -58,6 +189,102 @@ extern "C"
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
+
+// Based on wxWidget's gtk/print.cpp:
+//-------------------------------------------------
+static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
+    {
+    // if wxPaperSize is valid, get corresponding GtkPaperSize
+    if (paperId > 0 && size_t(paperId) < std::size(gtk_paperList))
+        { return gtk_paper_size_new(gtk_paperList[paperId]); }
+
+    // if size is not valid, use a default GtkPaperSize
+    if (size.x < 1 || size.y < 1)
+        { return gtk_paper_size_new(gtk_paper_size_get_default()); }
+
+    // look for a size match in GTK's GtkPaperSize list
+    const double w{ size.x };
+    const double h{ size.y };
+    GtkPaperSize* paperSize{ nullptr };
+    GList* list = gtk_paper_size_get_paper_sizes(TRUE);
+    for (GList* p = list; p != nullptr; p = p->next)
+        {
+        GtkPaperSize* paperSize2 = static_cast<GtkPaperSize*>(p->data);
+        if (paperSize == nullptr &&
+            std::fabs(w - gtk_paper_size_get_width(paperSize2, GTK_UNIT_MM)) < 1 &&
+            std::fabs(h - gtk_paper_size_get_height(paperSize2, GTK_UNIT_MM)) < 1)
+            { paperSize = paperSize2; }
+        else
+            { gtk_paper_size_free(paperSize2); }
+        }
+    g_list_free(list);
+
+    if (paperSize)
+        { return paperSize; }
+
+    // last resort, use a custom GtkPaperSize
+    const wxString title = _("Custom size");
+    return gtk_paper_size_new_custom(
+        name, title.utf8_str(), size.x, size.y, GTK_UNIT_MM);
+    }
+
+//-------------------------------------------------
+static void _GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
+                                                 GtkPrintOperation* settings,
+                                                 wxPrintData* printData)
+    {
+    // From wxWidget's gtk/print.cpp:
+    // 
+    // When embedding the page setup tab into the dialog, as we do, changes to
+    // the settings such as the paper size and orientation there are not
+    // reflected in the print settings, but must be retrieved from the page
+    // setup struct itself separately.
+    GtkPageSetup* defPageSetup{ nullptr };
+    g_object_get(operation, "default-page-setup", &defPageSetup, nullptr);
+    if (defPageSetup)
+        {
+        gtk_print_settings_set_orientation(settings, gtk_page_setup_get_orientation(defPageSetup));
+        gtk_print_settings_set_paper_size(settings, gtk_page_setup_get_paper_size(defPageSetup));
+        g_object_unref(defPageSetup);
+        }
+
+    printData->SetNoCopies(gtk_print_settings_get_n_copies(settings));
+    printData->SetOrientation(
+        (gtk_print_settings_get_orientation(settings) == GTK_PAGE_ORIENTATION_LANDSCAPE) ?
+        wxLANDSCAPE : wxPORTRAIT);
+
+    wxPaperSize paperId = wxPAPER_NONE;
+    GtkPaperSize* pageSetupPaperSize = gtk_print_settings_get_paper_size(settings);
+    if (pageSetupPaperSize != nullptr)
+        {
+        const char* name = gtk_paper_size_get_name(pageSetupPaperSize);
+        for (size_t i = 1; i < std::size(gtk_paperList); ++i)
+            {
+            if (std::strcmp(name, gtk_paperList[i]) == 0)
+                {
+                paperId = static_cast<wxPaperSize>(i);
+                break;
+                }
+            }
+        if (paperId == wxPAPER_NONE)
+            {
+            // look for a size match in wxThePrintPaperDatabase
+            const wxSize size(
+                static_cast<int>(10 * gtk_paper_size_get_width(pageSetupPaperSize, GTK_UNIT_MM)),
+                static_cast<int>(10 * gtk_paper_size_get_height(pageSetupPaperSize, GTK_UNIT_MM)));
+
+            paperId = wxThePrintPaperDatabase->GetSize(size);
+
+            // if no match, set custom size
+            if (paperId == wxPAPER_NONE)
+                { printData->SetPaperSize(size); }
+            }
+
+        gtk_paper_size_free(pageSetupPaperSize);
+        }
+    printData->SetPaperId(paperId);
+    }
+
 //-------------------------------------------------
 static void _GtkBeginPrint(GtkPrintOperation* operation,
                            GtkPrintContext* context,
@@ -67,6 +294,7 @@ static void _GtkBeginPrint(GtkPrintOperation* operation,
     printData->m_lines = nullptr;
     printData->m_pageLines.clear();
     printData->m_headerAreaHeight = 0;
+    printData->m_footerAreaHeight = 0;
     printData->m_layout = gtk_print_context_create_pango_layout(context);
 
     const gdouble contextWidth{ gtk_print_context_get_width(context) };
@@ -264,13 +492,17 @@ static void _GtkEndPrint(
                   _GtkPrintData* printData)
     {
     g_object_unref(printData->m_layout);
+    printData->m_layout = nullptr;
+    printData->m_lines = nullptr;
+    printData->m_pageLines.clear();
+    printData->m_headerAreaHeight = 0;
+    printData->m_footerAreaHeight = 0;
     }
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
 }
-
-/// END EXPERIMENTAL
 
 /// @returns A GTK text tag into HTML text.
 wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);

@@ -236,6 +236,14 @@ public:
     /// @brief Sets the paper size.
     /// @param size The paper size to use.
     void SetPaperSize(const wxPaperSize size);
+    /// @brief Sets the paper size.
+    /// @param size The size to use.
+    void SetPaperSize(const wxSize size)
+        { m_paperSize = size; }
+    /// @returns The paper size.
+    [[nodiscard]]
+    wxSize GetPaperSize() const noexcept
+        { return m_paperSize; }
     /// @returns The printable page's rectangle (including margins).
     [[nodiscard]]
     wxRect GetPageRect() const

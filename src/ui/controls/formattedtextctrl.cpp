@@ -388,38 +388,36 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     wxDELETE(dc);
     wxDELETE(printOut);
 #elif defined(__WXGTK__)
-    // UNDER CONSTRUCTION!!!
-    if (m_printData)
-        {
-        SetPrintOrientation(m_printData->GetOrientation());
-        if (m_printData->GetPaperId() == wxPAPER_NONE)
-            {
-            SetPaperSizeInMillimeters(m_printData->GetPaperSize());
-            }
-        else
-            {
-            /* values in here are hard coded, so a little more precise than
-               converting from millimeters to twips*/
-            SetPaperSize(m_printData->GetPaperId());
-            }
-        }
-    const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
-    const double paperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
-    const double paperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
-
     GtkPrintOperation* operation = gtk_print_operation_new();
 
     GtkPrintSettings* settings = gtk_print_settings_new();
-    gtk_print_settings_set_paper_width(settings, paperWidthInInches, GTK_UNIT_INCH);
-    gtk_print_settings_set_paper_height(settings, paperHeightInInches, GTK_UNIT_INCH);
+
     if (m_printData)
         {
         gtk_print_settings_set_orientation(settings,
             (m_printData->GetOrientation() == wxLANDSCAPE ?
                 GTK_PAGE_ORIENTATION_LANDSCAPE : GTK_PAGE_ORIENTATION_PORTRAIT));
         gtk_print_settings_set_n_copies(settings, m_printData->GetNoCopies());
+
+        GtkPaperSize* paperSize = _GtkGetPaperSize(m_printData->GetPaperId(), m_printData->GetPaperSize());
+        gtk_print_settings_set_paper_size(settings, paperSize);
+        gtk_paper_size_free(paperSize);
         }
     gtk_print_operation_set_print_settings(operation, settings);
+
+    // page setup tab
+    GtkPageSetup* pgSetup = gtk_page_setup_new();
+    gtk_page_setup_set_orientation(pgSetup, gtk_print_settings_get_orientation(settings));
+
+    GtkPaperSize* paper_size = gtk_print_settings_get_paper_size(settings);
+    if (paper_size != nullptr)
+        {
+        gtk_page_setup_set_paper_size(pgSetup, paper_size);
+        gtk_paper_size_free(paper_size);
+        }
+    gtk_print_operation_set_default_page_setup(operation, pgSetup);
+    gtk_print_operation_set_embed_page_setup(operation, TRUE);
+    g_object_unref(pgSetup);
 
     _GtkPrintData printData;
     printData.m_markupContent = GetUnthemedFormattedText().utf8_string();
@@ -447,10 +445,8 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         if (settings != nullptr)
             { g_object_unref(settings); }
         settings = g_object_ref(gtk_print_operation_get_print_settings(operation));
-        m_printData->SetNoCopies(gtk_print_settings_get_n_copies(settings));
-        m_printData->SetOrientation(
-            (gtk_print_settings_get_orientation(settings) == GTK_PAGE_ORIENTATION_LANDSCAPE) ?
-             wxLANDSCAPE : wxPORTRAIT);
+
+        _GtkUpdatePrintSettingsFromPageSetup(operation, settings, m_printData);
         }
     else if (error)
         {
@@ -477,8 +473,8 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     wxCoord textWidth{ 0 }, textHeight{ 0 };
     dc.GetTextExtent(L" ", &textWidth, &textHeight);
     const size_t spacesCount = (m_printData->GetOrientation() == wxPORTRAIT)?
-        safe_divide<size_t>((PaperWidthInInches- .5f) * 72, textWidth) :
-        safe_divide<size_t>((PaperHeightInInches- .5f) * 72, textWidth);
+        safe_divide<size_t>((PaperWidthInInches - .5f) * 72, textWidth) :
+        safe_divide<size_t>((PaperHeightInInches - .5f) * 72, textWidth);
 
     // format the header
     wxString expandedLeftHeader = ExpandUnixPrintString(GetLeftPrinterHeader());

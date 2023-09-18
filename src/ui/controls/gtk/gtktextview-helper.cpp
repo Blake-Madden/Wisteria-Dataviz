@@ -1,10 +1,14 @@
-///////////////////////////////////////////////////////////////////////////////
-// Name:        gtktextview-helper.cpp
-// Author:      Blake Madden
-// Copyright:   (c) 2005-2023 Blake Madden
-// Licence:     3-Clause BSD licence
-// SPDX-License-Identifier: BSD-3-Clause
-///////////////////////////////////////////////////////////////////////////////
+/** @date 2005-2023
+    @copyright Blake Madden
+    @author Blake Madden
+            Tim-Philipp Mueller (Gtk+ bug report patch for GtkTextView Pango functionality)
+            Anthony Bretaudeau (portions of wxWidgets printing code)
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License (some portions are wxWindows licensed, where noted).
+
+     SPDX-License-Identifier: BSD-3-Clause
+     SPDX-License-Identifier: wxWindows
+@{*/
 
 #include <algorithm>
 #include "gtktextview-helper.h"
