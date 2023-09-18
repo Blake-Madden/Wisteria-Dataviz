@@ -440,7 +440,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
 
     GError* error{ nullptr };
     const gint printResult = gtk_print_operation_run(operation, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
-        GTK_WINDOW(GetHandle()), &error);
+        GTK_WINDOW(gtk_widget_get_toplevel(this->m_widget)), &error);
 
     if (printResult == GTK_PRINT_OPERATION_RESULT_APPLY)
         {
