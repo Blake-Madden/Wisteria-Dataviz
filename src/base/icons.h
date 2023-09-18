@@ -82,7 +82,8 @@ namespace Wisteria::Icons
         Text,                          /*!< A provided string.*/
         Tack,                          /*!< A tack (i.e., pen that holds paper to a corkboard).*/
         Banner,                        /*!< A banner sign.*/
-        WaterColorRectangle            /*!< A warped rectangle that looks like a watercolor-filled box.*/
+        WaterColorRectangle,           /*!< A warped rectangle that looks like a watercolor-filled box.*/
+        GraduationCap                  /*!< A graduation cap.*/
         };
 
     /// @brief Item to draw on a legend.

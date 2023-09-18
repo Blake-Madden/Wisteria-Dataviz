@@ -270,6 +270,9 @@ namespace Wisteria::GraphItems
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
         void DrawWaterColorRectangle(wxRect rect, wxDC& dc) const;
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawGraduationCap(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,

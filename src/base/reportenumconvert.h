@@ -87,7 +87,8 @@ namespace Wisteria
                 { L"text", Icons::IconShape::Text },
                 { L"tack", Icons::IconShape::Tack },
                 { L"banner", Icons::IconShape::Banner },
-                { L"watercolor-rectangle", Icons::IconShape::WaterColorRectangle }
+                { L"watercolor-rectangle", Icons::IconShape::WaterColorRectangle },
+                { L"graduation-cap", Icons::IconShape::GraduationCap },
                 };
 
             const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
