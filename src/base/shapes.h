@@ -386,6 +386,9 @@ namespace Wisteria::GraphItems
         /// @returns The renderer.
         ShapeRenderer& GetRenderer() noexcept
             { return m_renderer; }
+    protected:
+        wxSize m_shapeSizeDIPs{ 0, 0 };
+        wxSize m_sizeDIPs{ 0, 0 };
     private:
         [[nodiscard]]
         GraphItemInfo& GetGraphItemInfo() final
@@ -409,8 +412,6 @@ namespace Wisteria::GraphItems
         bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             { return GetBoundingBox(dc).Contains(pt); }
 
-        wxSize m_shapeSizeDIPs{ 0, 0 };
-        wxSize m_sizeDIPs{ 0, 0 };
         Icons::IconShape m_shape;
         mutable ShapeRenderer m_renderer;
         mutable bool m_rendererNeedsUpdating{ true };
