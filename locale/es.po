@@ -1,0 +1,2541 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WisteriaDV\n"
+"POT-Creation-Date: 2023-09-20 05:55-0400\n"
+"PO-Revision-Date: 2023-09-20 05:57-0400\n"
+"Last-Translator: Blake Madden\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.3.2\n"
+"X-Poedit-Basepath: ../src\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: _\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: i18n-check\n"
+"X-Poedit-SearchPathExcluded-1: math\n"
+"X-Poedit-SearchPathExcluded-2: import\n"
+
+#: base/axis.cpp:2704
+#, c-format
+msgid "Q1FY%s"
+msgstr ""
+
+#: base/axis.cpp:2708
+#, c-format
+msgid "Q2FY%s"
+msgstr ""
+
+#: base/axis.cpp:2712
+#, c-format
+msgid "Q3FY%s"
+msgstr ""
+
+#: base/axis.cpp:2716
+#, c-format
+msgid "Q4FY%s"
+msgstr ""
+
+#: base/axis.cpp:3533
+#, c-format
+msgid "'%s': label column not found for line plot."
+msgstr ""
+
+#: base/canvas.cpp:73 ui/controls/formattedtextctrl.cpp:379
+#: ui/controls/htmltablewin.cpp:117 ui/controls/listctrlex.cpp:1178
+msgid ""
+"An error occurred while printing.\n"
+"Your default printer may not be set correctly."
+msgstr ""
+
+#: base/canvas.cpp:75 ui/controls/formattedtextctrl.cpp:381
+#: ui/controls/formattedtextctrl.cpp:456 ui/controls/htmltablewin.cpp:119
+#: ui/controls/listctrlex.cpp:1180 ui/dialogs/listdlg.cpp:156
+msgid "Print"
+msgstr "Imprimir"
+
+#: base/canvas.cpp:113 ui/controls/formattedtextctrl.cpp:584
+#: ui/controls/htmltablewin.cpp:205 ui/controls/listctrlex.cpp:1223
+msgid ""
+"An error occurred while previewing.\n"
+"Your default printer may not be set correctly."
+msgstr ""
+
+#: base/canvas.cpp:115 base/canvas.cpp:120
+#: ui/controls/formattedtextctrl.cpp:586 ui/controls/formattedtextctrl.cpp:591
+#: ui/controls/htmltablewin.cpp:207 ui/controls/htmltablewin.cpp:212
+#: ui/controls/listctrlex.cpp:1225 ui/controls/listctrlex.cpp:1231
+msgid "Print Preview"
+msgstr "Previsualización de la impresión"
+
+#: base/canvas.cpp:186
+msgid "Portable Network Graphic"
+msgstr ""
+
+#: base/canvas.cpp:187
+msgid ""
+"A lossless-compressed image format. The image can be compressed to a smaller "
+"size without any loss of quality."
+msgstr ""
+
+#: base/canvas.cpp:190
+msgid "Joint Photographic Experts Group"
+msgstr ""
+
+#: base/canvas.cpp:191
+msgid ""
+"A lossy-compressed image format. Some image quality may be lost, compared to "
+"other formats such as PNG."
+msgstr ""
+
+#: base/canvas.cpp:194
+msgid "Bitmap"
+msgstr "Mapa de bits"
+
+#: base/canvas.cpp:195
+msgid "An uncompressed raster (i.e., pixel based) image format."
+msgstr ""
+
+#: base/canvas.cpp:197
+msgid "Tagged Image File Format"
+msgstr ""
+
+#: base/canvas.cpp:198
+msgid ""
+"This format can either be compressed or uncompressed and offers both lossy "
+"and lossless compression. This format is generally preferred for desktop "
+"publishing."
+msgstr ""
+
+#: base/canvas.cpp:202
+msgid "Truevision Advanced Raster Graphics Adapter"
+msgstr ""
+
+#: base/canvas.cpp:203
+msgid "A raster (i.e., pixel based) image format."
+msgstr ""
+
+#: base/canvas.cpp:205
+msgid "Graphics Interchange Format"
+msgstr ""
+
+#: base/canvas.cpp:206
+msgid ""
+"A raster (i.e., pixel based) image format. Note that this image format is "
+"limited to 256 colors."
+msgstr ""
+
+#: base/canvas.cpp:209
+msgid "Scalable Vector Graphics"
+msgstr ""
+
+#: base/canvas.cpp:210
+msgid ""
+"A format that uses vector (rather than raster) drawing. Vector-based images "
+"can be scaled to much larger sizes, without the loss of quality that raster "
+"images would experience."
+msgstr ""
+
+#: base/canvas.cpp:213
+msgid "Select Image Format"
+msgstr ""
+
+#: base/canvas.cpp:214
+msgid "Image formats:"
+msgstr ""
+
+#: base/canvas.cpp:214
+msgid "Export Image"
+msgstr ""
+
+#: base/canvas.cpp:245
+msgid "Save Image"
+msgstr ""
+
+#: base/canvas.cpp:422
+#, c-format
+msgid ""
+"Failed to save image\n"
+"(%s)."
+msgstr ""
+
+#: base/canvas.cpp:424
+msgid "Save Error"
+msgstr ""
+
+#: base/colorbrewer.cpp:36
+msgid "Color scale has not been initialized in color brewer."
+msgstr ""
+
+#: base/reportbuilder.cpp:36
+msgid "Configuration File Parsing Error"
+msgstr ""
+
+#: base/reportbuilder.cpp:69
+msgid "Datasets Section Error"
+msgstr ""
+
+#: base/reportbuilder.cpp:78
+msgid "Constants Section Error"
+msgstr ""
+
+#: base/reportbuilder.cpp:276
+msgid "Canvas Item Error"
+msgstr ""
+
+#: base/reportbuilder.cpp:522
+#, c-format
+msgid "%s: dataset not found for axis brackets."
+msgstr ""
+
+#: base/reportbuilder.cpp:548
+msgid "Variables not defined for brackets."
+msgstr ""
+
+#: base/reportbuilder.cpp:554
+msgid ""
+"No dataset provided for axis brackets. Did you intend to define the brackets "
+"as an array of start and end points instead?"
+msgstr ""
+
+#: base/reportbuilder.cpp:909
+msgid ""
+"ContinuousColumn() failed. There are no continuous columns in the dataset."
+msgstr ""
+
+#: base/reportbuilder.cpp:926
+#, c-format
+msgid "'%s': unknown constant for continuous column index."
+msgstr ""
+
+#: base/reportbuilder.cpp:936
+#, c-format
+msgid "%lu: invalid continuous column index."
+msgstr ""
+
+#: base/reportbuilder.cpp:943
+#, c-format
+msgid "'%s': unable to convert value for continuous column index."
+msgstr ""
+
+#: base/reportbuilder.cpp:962 base/reportbuilder.cpp:1012
+#: base/reportbuilder.cpp:1046 base/reportbuilder.cpp:1081
+#: base/reportbuilder.cpp:1189 base/reportbuilder.cpp:1220
+#: base/reportbuilder.cpp:1260
+#, c-format
+msgid "%s: invalid dataset when calculating formula."
+msgstr ""
+
+#: base/reportbuilder.cpp:983 base/reportbuilder.cpp:1130
+#, c-format
+msgid "%s: group column not found."
+msgstr ""
+
+#: base/reportbuilder.cpp:990 base/reportbuilder.cpp:1137
+#, c-format
+msgid "Group ID for '%s' not found."
+msgstr ""
+
+#: base/reportbuilder.cpp:1242
+#, c-format
+msgid "%s: column must be continuous when totaling."
+msgstr ""
+
+#: base/reportbuilder.cpp:1344
+#, c-format
+msgid "%s: unknown parameter passed to Now()."
+msgstr ""
+
+#: base/reportbuilder.cpp:1371
+#, c-format
+msgid "%s: dataset not found for dataset merging."
+msgstr ""
+
+#: base/reportbuilder.cpp:1397
+#, c-format
+msgid "%s: unrecognized dataset merging method."
+msgstr ""
+
+#: base/reportbuilder.cpp:1454
+#, c-format
+msgid "%s: unrecognized pivot method."
+msgstr ""
+
+#: base/reportbuilder.cpp:1505
+msgid "No values were provided for subset filtering."
+msgstr ""
+
+#: base/reportbuilder.cpp:1526
+msgid "Comparison value for subset filter missing."
+msgstr ""
+
+#: base/reportbuilder.cpp:1548
+msgid "Only one filter type allowed for a subset."
+msgstr ""
+
+#: base/reportbuilder.cpp:1553
+msgid "Subset missing filters or section definition."
+msgstr ""
+
+#: base/reportbuilder.cpp:1572 base/reportbuilder.cpp:1587
+msgid "Subset missing filters."
+msgstr ""
+
+#: base/reportbuilder.cpp:1679 base/reportbuilder.cpp:1689 data/dataset.h:323
+#: data/dataset.h:331 data/dataset.h:1338 data/dataset.h:1348
+msgid "Other"
+msgstr ""
+
+#: base/reportbuilder.cpp:1752
+msgid "Dataset must have a filepath."
+msgstr ""
+
+#: base/reportbuilder.cpp:1760
+#, c-format
+msgid "'%s': dataset not found."
+msgstr ""
+
+#: base/reportbuilder.cpp:1789
+msgid "Date column must have a name."
+msgstr ""
+
+#: base/reportbuilder.cpp:1833
+msgid "Categorical column must have a name."
+msgstr ""
+
+#: base/reportbuilder.cpp:1929
+msgid "Dataset must have a valid importer specified."
+msgstr ""
+
+#: base/reportbuilder.cpp:1952
+#, c-format
+msgid "%s: dataset not found for Pro & Con Roadmap."
+msgstr ""
+
+#: base/reportbuilder.cpp:2021
+msgid "Variables not defined for Pro & Con Roadmap."
+msgstr ""
+
+#: base/reportbuilder.cpp:2036
+#, c-format
+msgid "%s: dataset not found for Gannt chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:2083
+msgid "Variables not defined for Gannt chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:2098
+#, c-format
+msgid "%s: dataset not found for Linear Regression Roadmap."
+msgstr ""
+
+#: base/reportbuilder.cpp:2175
+msgid "Variables not defined for Linear Regression Roadmap."
+msgstr ""
+
+#: base/reportbuilder.cpp:2190
+#, c-format
+msgid "%s: dataset not found for Likert chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:2288
+msgid "Variables not defined for Likert chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:2303
+#, c-format
+msgid "%s: dataset not found for W-curve plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:2330
+msgid "Variables not defined for W-curve plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:2345
+#, c-format
+msgid "%s: dataset not found for candlestick plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:2373
+msgid "Variables not defined for candlestick plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:2388
+#, c-format
+msgid "%s: dataset not found for line plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:2410
+msgid "Variables not defined for line plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:2425
+#, c-format
+msgid "%s: dataset not found for heatmap."
+msgstr ""
+
+#: base/reportbuilder.cpp:2449
+msgid "Variables not defined for heatmap."
+msgstr ""
+
+#: base/reportbuilder.cpp:2480
+#, c-format
+msgid "'%s': invalid bar sorting 'by' method."
+msgstr ""
+
+#: base/reportbuilder.cpp:2491
+msgid "Sorting method not defined for bar sort."
+msgstr ""
+
+#: base/reportbuilder.cpp:2559 base/reportbuilder.cpp:2576
+#: graphs/barchart.cpp:85
+#, c-format
+msgid "'%s': bar label not found when adding bar group."
+msgstr ""
+
+#: base/reportbuilder.cpp:2657
+#, c-format
+msgid "%s: image not found."
+msgstr ""
+
+#: base/reportbuilder.cpp:2716
+#, c-format
+msgid "%s: unknown icon for fillable shape."
+msgstr ""
+
+#: base/reportbuilder.cpp:2774
+#, c-format
+msgid "%s: unknown icon for shape."
+msgstr ""
+
+#: base/reportbuilder.cpp:2820
+#, c-format
+msgid "%s: dataset not found for histogram."
+msgstr ""
+
+#: base/reportbuilder.cpp:2878
+msgid "Variables not defined for histogram."
+msgstr ""
+
+#: base/reportbuilder.cpp:2893
+#, c-format
+msgid "%s: dataset not found for bar chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:2928
+msgid "Variables not defined for bar chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:2943
+#, c-format
+msgid "%s: dataset not found for Sankey diagram."
+msgstr ""
+
+#: base/reportbuilder.cpp:2999
+msgid "Variables not defined for Sankey diagram."
+msgstr ""
+
+#: base/reportbuilder.cpp:3014
+#, c-format
+msgid "%s: dataset not found for word cloud."
+msgstr ""
+
+#: base/reportbuilder.cpp:3036
+msgid "Variables not defined for word cloud."
+msgstr ""
+
+#: base/reportbuilder.cpp:3051
+#, c-format
+msgid "%s: dataset not found for box plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:3082
+msgid "Variables not defined for box plot."
+msgstr ""
+
+#: base/reportbuilder.cpp:3097
+#, c-format
+msgid "%s: dataset not found for pie chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:3260
+msgid "Variables not defined for pie chart."
+msgstr ""
+
+#: base/reportbuilder.cpp:3275
+#, c-format
+msgid "%s: dataset not found for table."
+msgstr ""
+
+#: base/reportbuilder.cpp:4211
+#, c-format
+msgid "%s: label side image not found."
+msgstr ""
+
+#: base/reportbuilder.cpp:4459
+#, c-format
+msgid "%s: unknown table position origin value."
+msgstr ""
+
+#: base/reportbuilder.cpp:4666
+msgid "Filepath is empty."
+msgstr ""
+
+#: base/reportbuilder.cpp:4674
+#, c-format
+msgid "%s: file not found."
+msgstr ""
+
+#: base/shapes.cpp:855
+msgid "GO"
+msgstr ""
+
+#: data/dataset.cpp:30
+#, c-format
+msgid "'%s': unable to fill column with missing data."
+msgstr ""
+
+#: data/dataset.cpp:68
+msgid "Replacement map empty for category mutation."
+msgstr ""
+
+#: data/dataset.cpp:81 data/dataset.cpp:89
+#, c-format
+msgid "'%s': column not found for category mutation."
+msgstr ""
+
+#: data/dataset.cpp:105
+#, c-format
+msgid "'%s': duplicate string replacement encountered for category mutation."
+msgstr ""
+
+#: data/dataset.cpp:131
+#, c-format
+msgid "'%s': internal error finding mapped value for category mutation."
+msgstr ""
+
+#: data/dataset.cpp:202 data/dataset.cpp:241
+#, c-format
+msgid "'%s': column not found for category collapsing."
+msgstr ""
+
+#: data/dataset.cpp:276
+#, c-format
+msgid "'%s': invalid regex used for recoding column."
+msgstr ""
+
+#: data/dataset.cpp:289
+#, c-format
+msgid "'%s': column not found for regex recoding."
+msgstr ""
+
+#: data/dataset.cpp:300 data/dataset.cpp:337 data/dataset.cpp:386
+msgid "New column name cannot be empty."
+msgstr ""
+
+#: data/dataset.cpp:309
+msgid "New column name already exists in the dataset."
+msgstr ""
+
+#: data/dataset.cpp:327 data/dataset.cpp:419
+#, c-format
+msgid "'%s': column not found for renaming."
+msgstr ""
+
+#: data/dataset.cpp:343
+#, c-format
+msgid "'%s': invalid regex used for selecting columns."
+msgstr ""
+
+#: data/dataset.cpp:392
+#, c-format
+msgid "'%s': invalid regex used for renaming column."
+msgstr ""
+
+#: data/dataset.cpp:450 data/dataset.cpp:456
+#, c-format
+msgid "'%s': regex column not found."
+msgstr ""
+
+#: data/dataset.cpp:622 data/dataset.cpp:679
+#, c-format
+msgid "'%s': column not found when calculating valid N."
+msgstr ""
+
+#: data/dataset.cpp:633 data/dataset.cpp:690 data/dataset.cpp:743
+#: data/dataset.cpp:795 data/dataset.cpp:840
+#, c-format
+msgid "'%s': grouping column not found when calculating valid N."
+msgstr ""
+
+#: data/dataset.cpp:639 data/dataset.cpp:696 data/dataset.cpp:749
+#: data/dataset.cpp:801 data/dataset.cpp:846
+#, c-format
+msgid "'%s': grouping ID not specified for column when calculating valid N."
+msgstr ""
+
+#: data/dataset.cpp:732
+msgid "Column not found when calculating min/max."
+msgstr ""
+
+#: data/dataset.cpp:784
+msgid "Column not found when calculating total."
+msgstr ""
+
+#: data/dataset.cpp:829
+msgid "Column not found when calculating valid N."
+msgstr ""
+
+#: data/dataset.cpp:1102
+#, c-format
+msgid "'%s': column name appears more than once in dataset."
+msgstr ""
+
+#: data/dataset.cpp:1357
+#, c-format
+msgid "'%s': column not found!"
+msgstr ""
+
+#: data/dataset.h:185
+msgid "Data being copied into dataset is larger than the column's row count."
+msgstr ""
+
+#: data/excelreader.cpp:67
+#, c-format
+msgid "'%s': Unable to find worksheet in Excel workbook."
+msgstr ""
+
+#: data/excelreader.cpp:89
+#, c-format
+msgid "Worksheet '%zu': worksheet out of range in Excel workbook."
+msgstr ""
+
+#: data/excelreader.cpp:96
+msgid "Unknown value specified for Excel worksheet."
+msgstr ""
+
+#: data/join.cpp:28
+msgid "Invalid left dataset when left joining."
+msgstr ""
+
+#: data/join.cpp:33
+msgid "Invalid right dataset when left joining."
+msgstr ""
+
+#: data/join.cpp:38
+msgid "No comparison columns where provided when left joining."
+msgstr ""
+
+#: data/join.cpp:43
+msgid "Suffix should not be empty when left joining."
+msgstr ""
+
+#: data/join.cpp:73
+msgid "Empty 'by' column when left joining."
+msgstr ""
+
+#: data/join.cpp:79
+#, c-format
+msgid "'%s': column not found in left dataset when left joining."
+msgstr ""
+
+#: data/join.cpp:86
+#, c-format
+msgid "'%s': column not found in right dataset when left joining."
+msgstr ""
+
+#: data/join.cpp:168
+#, c-format
+msgid ""
+"Left joining by ID columns, but '%s' is not the ID column in the right "
+"dataset."
+msgstr ""
+
+#: data/join.cpp:186
+#, c-format
+msgid ""
+"'%s': categorical column not found in right dataset when left joining. 'By' "
+"columns must be either ID or categorical columns."
+msgstr ""
+
+#: data/join.cpp:195
+#, c-format
+msgid ""
+"'%s': categorical column not found in left dataset when left joining. 'By' "
+"columns must be either ID or categorical columns."
+msgstr ""
+
+#: data/join.cpp:213 data/join.cpp:239 data/join.cpp:265
+#, c-format
+msgid "'%s': internal error finding right dataset column when left joining."
+msgstr ""
+
+#: data/join.cpp:224 data/join.cpp:250 data/join.cpp:276
+#, c-format
+msgid "'%s': internal error finding merge dataset column when left joining."
+msgstr ""
+
+#: data/pivot.cpp:53 data/pivot.cpp:260
+msgid "Invalid dataset being pivoted."
+msgstr ""
+
+#: data/pivot.cpp:58 data/pivot.cpp:265
+msgid "ID column(s) required to pivot dataset."
+msgstr ""
+
+#: data/pivot.cpp:84
+#, c-format
+msgid "'%s': ID column not found when pivoting."
+msgstr ""
+
+#: data/pivot.cpp:95
+#, c-format
+msgid "'%s': 'names from' column not found when pivoting."
+msgstr ""
+
+#: data/pivot.cpp:106
+#, c-format
+msgid "'%s': 'values from' column not found when pivoting."
+msgstr ""
+
+#: data/pivot.cpp:270
+msgid "'From' column(s) required to pivot dataset."
+msgstr ""
+
+#: data/pivot.cpp:275
+msgid "'Names to' column(s) required to pivot dataset."
+msgstr ""
+
+#: data/pivot.cpp:280
+msgid ""
+"Multiple 'names to' columns were specified, but no names pattern was "
+"provided to split the column names."
+msgstr ""
+
+#: data/pivot.cpp:286
+msgid "'Value to' column required to pivot dataset."
+msgstr ""
+
+#: data/pivot.cpp:353
+#, c-format
+msgid "%s: column not found."
+msgstr ""
+
+#: data/pivot.cpp:366
+#, c-format
+msgid "%s: continuous column not found."
+msgstr ""
+
+#: data/pivot.cpp:375
+msgid "'Names to' column name cannot be empty."
+msgstr ""
+
+#: data/pivot.cpp:383
+msgid "'Values to' column name cannot be empty."
+msgstr ""
+
+#: data/pivot.cpp:397 data/pivot.cpp:408
+msgid "Internal error building target column map."
+msgstr ""
+
+#: data/pivot.cpp:465
+msgid "Internal error mapping from columns."
+msgstr ""
+
+#: data/subset.cpp:56
+#, c-format
+msgid "'%s': column not found for filtering."
+msgstr ""
+
+#: data/subset.cpp:83
+#, c-format
+msgid "Group ID not found for '%s' column filter."
+msgstr ""
+
+#: data/subset.cpp:104
+#, c-format
+msgid "'%s': string value not found for '%s' column filter."
+msgstr ""
+
+#: data/subset.cpp:119
+#, c-format
+msgid ""
+"'%s': string value not found for '%s' column filter. Column does not have a "
+"string table, and string could not be converted to a discrete value."
+msgstr ""
+
+#: data/subset.cpp:128 data/subset.cpp:143
+msgid ""
+"Categorical column filter requires either a group ID or string value for "
+"filtering."
+msgstr ""
+
+#: data/subset.cpp:165 data/subset.cpp:171
+msgid "Continuous column filter requires a double value for filtering."
+msgstr ""
+
+#: data/subset.cpp:193
+#, c-format
+msgid "%s: string unable to be parsed for date filter."
+msgstr ""
+
+#: data/subset.cpp:199
+msgid "Date column filter requires a datetime or string value for filtering."
+msgstr ""
+
+#: data/subset.cpp:214
+msgid "ID column filter requires a string value for filtering."
+msgstr ""
+
+#: data/textclassifier.cpp:29
+#, c-format
+msgid "'%s': category column not found for text classifier."
+msgstr ""
+
+#: data/textclassifier.cpp:39
+#, c-format
+msgid "'%s': sub-category column not found for text classifier."
+msgstr ""
+
+#: data/textclassifier.cpp:46
+#, c-format
+msgid "'%s': patterns column not found for text classifier."
+msgstr ""
+
+#: data/textclassifier.cpp:115
+#, c-format
+msgid "'%s': content column not found in dataset being classified."
+msgstr ""
+
+#: graphs/barchart.cpp:163 graphs/barchart.cpp:199
+msgid "No bars available when adding an axis bracket."
+msgstr ""
+
+#: graphs/barchart.cpp:179 graphs/barchart.cpp:185 graphs/barchart.cpp:250
+#: graphs/barchart.cpp:256
+#, c-format
+msgid "Bar block '%s' not found when adding an axis bracket."
+msgstr ""
+
+#: graphs/barchart.cpp:208 graphs/barchart.cpp:214 graphs/barchart.cpp:280
+#: graphs/barchart.cpp:286
+#, c-format
+msgid "Bar block '%s' pattern not found when adding an axis bracket."
+msgstr ""
+
+#: graphs/barchart.cpp:229 graphs/barchart.cpp:270
+msgid "No bars when adding an axis bracket."
+msgstr ""
+
+#: graphs/barchart.cpp:526
+#, c-format
+msgid "Bar label count (%zu) is different from bar count (%zu) when sorting."
+msgstr ""
+
+#: graphs/barchart.cpp:572
+#, c-format
+msgid "'%s': bar label not found when sorting."
+msgstr ""
+
+#: graphs/boxplot.cpp:42 graphs/boxplot.cpp:196
+#, c-format
+msgid "'%s': group column not found for box plot."
+msgstr ""
+
+#: graphs/boxplot.cpp:49 graphs/boxplot.cpp:203
+#, c-format
+msgid "'%s': continuous column not found for box plot."
+msgstr ""
+
+#: graphs/boxplot.cpp:308
+msgid "Too many boxes. Plot cannot be drawn."
+msgstr ""
+
+#: graphs/boxplot.cpp:353
+#, c-format
+msgid "Non-outlier range: %s-%s"
+msgstr ""
+
+#: graphs/boxplot.cpp:390
+#, c-format
+msgid ""
+"75th Percentile: %s\n"
+"Median: %s\n"
+"25th Percentile: %s"
+msgstr ""
+
+#: graphs/boxplot.cpp:762
+#, c-format
+msgid ""
+"75th Percentile: %s\n"
+"Median: %s\n"
+"25th Percentile: %s\n"
+"Non-outlier Range: %s-%s"
+msgstr ""
+
+#: graphs/candlestickplot.cpp:31
+#, c-format
+msgid "'%s': date column not found for Candlestick plot."
+msgstr ""
+
+#: graphs/candlestickplot.cpp:37
+#, c-format
+msgid "'%s': opening column not found for Candlestick plot."
+msgstr ""
+
+#: graphs/candlestickplot.cpp:43
+#, c-format
+msgid "'%s': high column not found for Candlestick plot."
+msgstr ""
+
+#: graphs/candlestickplot.cpp:49
+#, c-format
+msgid "'%s': low column not found for Candlestick plot."
+msgstr ""
+
+#: graphs/candlestickplot.cpp:55
+#, c-format
+msgid "'%s': closing column not found for Candlestick plot."
+msgstr ""
+
+#: graphs/candlestickplot.cpp:159
+#, c-format
+msgid ""
+"Date: %s\n"
+"Opening: %s\n"
+"High : %s\n"
+"Low : %s\n"
+"Closing : %s"
+msgstr ""
+
+#: graphs/categoricalbarchart.cpp:50
+#, c-format
+msgid "'%s': categorical/ID column not found for categorical bar chart."
+msgstr ""
+
+#: graphs/categoricalbarchart.cpp:63
+#, c-format
+msgid "'%s': weight column not found for categorical bar chart."
+msgstr ""
+
+#: graphs/categoricalbarchart.cpp:90 graphs/histogram.cpp:93
+msgid "Frequency"
+msgstr ""
+
+#: graphs/categoricalbarchart.cpp:171
+#, c-format
+msgid "%s item(s), totaling %s"
+msgstr ""
+
+#: graphs/categoricalbarchart.cpp:176
+#, c-format
+msgid "%s item(s)"
+msgstr ""
+
+#: graphs/crawfordgraph.cpp:31 graphs/crawfordgraph.cpp:32
+msgid "Crawford Graph"
+msgstr ""
+
+#: graphs/crawfordgraph.cpp:34
+msgid "SPANISH READABILITY GRAPH"
+msgstr ""
+
+#: graphs/crawfordgraph.cpp:36
+msgid "Number of Syllables per 100 Words"
+msgstr ""
+
+#: graphs/crawfordgraph.cpp:37
+msgid "Approximate Grade Level of Reading Difficulty"
+msgstr ""
+
+#: graphs/crawfordgraph.cpp:85
+msgid ""
+"Number of Sentences\n"
+"per 100 Words"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:30 graphs/danielsonbryan2plot.cpp:31
+msgid "Danielson-Bryan Plot"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:142
+msgid "very difficult, college level"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:144
+msgid "difficult, high school level"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:146
+msgid "fairly difficult, junior high school level"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:148
+msgid "standard, sixth-grade level"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:150
+msgid "fairly easy, fifth-grade level"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:152
+msgid "easy, fourth-grade level"
+msgstr ""
+
+#: graphs/danielsonbryan2plot.cpp:154
+msgid "very easy, third-grade level"
+msgstr ""
+
+#: graphs/fleschchart.cpp:32 graphs/fleschchart.cpp:33
+msgid "Flesch Readability Chart"
+msgstr ""
+
+#: graphs/fleschchart.cpp:35
+msgid "How Easy?"
+msgstr ""
+
+#: graphs/fleschchart.cpp:60
+msgid ""
+"WORDS PER\n"
+"SENTENCE"
+msgstr ""
+
+#: graphs/fleschchart.cpp:76
+msgid "Very Easy"
+msgstr ""
+
+#: graphs/fleschchart.cpp:78
+msgid "Easy"
+msgstr ""
+
+#: graphs/fleschchart.cpp:80
+msgid "Fairly Easy"
+msgstr ""
+
+#: graphs/fleschchart.cpp:82
+msgid "Standard"
+msgstr "Estándar"
+
+#: graphs/fleschchart.cpp:84
+msgid "Fairly Difficult"
+msgstr ""
+
+#: graphs/fleschchart.cpp:86
+msgid "Difficult"
+msgstr ""
+
+#: graphs/fleschchart.cpp:88
+msgid "Very Difficult"
+msgstr ""
+
+#: graphs/fleschchart.cpp:92
+msgid ""
+"READABILITY\n"
+"SCORE"
+msgstr ""
+
+#: graphs/fleschchart.cpp:109
+msgid ""
+"SYLLABLES PER\n"
+"100 WORDS"
+msgstr ""
+
+#: graphs/fleschchart.cpp:276
+msgid ""
+"HOW TO USE THIS CHART\n"
+"       Take a pencil or ruler and connect your\n"
+"“Words per Sentence” figure (left) with your\n"
+"“Syllables per 100 Words” figure (right).  The\n"
+"intersection of the pencil or ruler with the\n"
+"center line shows your “Reading Ease” score."
+msgstr ""
+
+#: graphs/ganttchart.cpp:64
+#, c-format
+msgid "'%s': task name column not found for Gantt chart."
+msgstr ""
+
+#: graphs/ganttchart.cpp:71
+#, c-format
+msgid "'%s': start date column not found for Gantt chart."
+msgstr ""
+
+#: graphs/ganttchart.cpp:78
+#, c-format
+msgid "'%s': end date column not found for Gantt chart."
+msgstr ""
+
+#: graphs/ganttchart.cpp:196 graphs/ganttchart.cpp:203
+#, c-format
+msgid ""
+"%s\n"
+"%d days\n"
+"(%s through %s)"
+msgstr ""
+
+#: graphs/ganttchart.cpp:216
+msgid "☓ Complete"
+msgstr ""
+
+#: graphs/ganttchart.cpp:217
+#, c-format
+msgid "%d%% complete"
+msgstr ""
+
+#: graphs/ganttchart.cpp:230 graphs/ganttchart.cpp:236
+#: graphs/ganttchart.cpp:242
+#, c-format
+msgid ""
+"%s\n"
+"%d days"
+msgstr ""
+
+#: graphs/ganttchart.cpp:246
+#, c-format
+msgid "%d days"
+msgstr ""
+
+#: graphs/graph2d.h:455
+#, c-format
+msgid "'%s': continuous column not found."
+msgstr ""
+
+#: graphs/groupgraph2d.cpp:24
+msgid "Dataset not set before calling SetGroupColumn()."
+msgstr ""
+
+#: graphs/groupgraph2d.cpp:32
+#, c-format
+msgid "'%s': group column not found for graph."
+msgstr ""
+
+#: graphs/groupgraph2d.cpp:145
+msgid "[NO GROUP]"
+msgstr ""
+
+#: graphs/groupgraph2d.h:89
+#, c-format
+msgid "%zu: code not found in categorical data."
+msgstr ""
+
+#: graphs/heatmap.cpp:54
+#, c-format
+msgid "'%s': continuous column not found for heatmap."
+msgstr ""
+
+#: graphs/heatmap.h:220
+msgid "Groups"
+msgstr ""
+
+#: graphs/histogram.cpp:59
+#, c-format
+msgid "'%s': continuous column not found for histogram."
+msgstr ""
+
+#: graphs/histogram.cpp:208 graphs/histogram.cpp:468
+#, c-format
+msgid "%s item(s)\n"
+msgstr ""
+
+#: graphs/histogram.cpp:554
+msgid " and <= "
+msgstr ""
+
+#: graphs/likertchart.cpp:93 graphs/likertchart.cpp:175
+#: graphs/likertchart.cpp:209 graphs/likertchart.cpp:245
+#: graphs/likertchart.cpp:281 graphs/likertchart.cpp:382
+#: graphs/likertchart.cpp:623
+#, c-format
+msgid "'%s': categorical column not found for Likert chart."
+msgstr ""
+
+#: graphs/likertchart.cpp:311 graphs/likertchart.cpp:323
+#: graphs/likertchart.cpp:334 graphs/likertchart.cpp:344
+#: graphs/likertchart.cpp:353 graphs/likertchart.cpp:361
+msgid "No response"
+msgstr ""
+
+#: graphs/likertchart.cpp:312 graphs/likertchart.cpp:324
+msgid "Strongly disagree"
+msgstr ""
+
+#: graphs/likertchart.cpp:313 graphs/likertchart.cpp:325
+#: graphs/likertchart.cpp:335 graphs/likertchart.cpp:345
+#: graphs/likertchart.cpp:354 graphs/likertchart.cpp:362
+#: graphs/likertchart.h:1158
+msgid "Disagree"
+msgstr ""
+
+#: graphs/likertchart.cpp:314 graphs/likertchart.cpp:326
+#: graphs/likertchart.cpp:336 graphs/likertchart.cpp:346
+msgid "Somewhat disagree"
+msgstr ""
+
+#: graphs/likertchart.cpp:315 graphs/likertchart.cpp:337
+#: graphs/likertchart.cpp:355 graphs/likertchart.cpp:597
+#: graphs/likertchart.h:1149
+msgid "Neutral"
+msgstr ""
+
+#: graphs/likertchart.cpp:316 graphs/likertchart.cpp:327
+#: graphs/likertchart.cpp:338 graphs/likertchart.cpp:347
+msgid "Somewhat agree"
+msgstr ""
+
+#: graphs/likertchart.cpp:317 graphs/likertchart.cpp:328
+#: graphs/likertchart.cpp:339 graphs/likertchart.cpp:348
+#: graphs/likertchart.cpp:356 graphs/likertchart.cpp:363
+#: graphs/likertchart.h:1157
+msgid "Agree"
+msgstr ""
+
+#: graphs/likertchart.cpp:318 graphs/likertchart.cpp:329
+msgid "Strongly agree"
+msgstr ""
+
+#: graphs/likertchart.cpp:394
+#, c-format
+msgid ""
+"Invalid Likert response: %<PRIu64>\n"
+"Column: %s\n"
+"Values should not exceed 7."
+msgstr ""
+
+#: graphs/likertchart.cpp:605
+#, c-format
+msgid "'%s': group column not found for Likert chart."
+msgstr ""
+
+#: graphs/likertchart.h:1159
+msgid "No Response"
+msgstr ""
+
+#: graphs/lineplot.cpp:36
+#, c-format
+msgid "'%s': Y column not found for line plot."
+msgstr ""
+
+#: graphs/lineplot.cpp:58
+#, c-format
+msgid "'%s': X column not found for line plot."
+msgstr ""
+
+#: graphs/lixgauge.cpp:29 graphs/lixgauge.cpp:30
+msgid "Lix Gauge"
+msgstr ""
+
+#: graphs/lixgauge.cpp:41
+msgid "Lix standards"
+msgstr ""
+
+#: graphs/lixgauge.cpp:126
+msgid "Very easy text"
+msgstr ""
+
+#: graphs/lixgauge.cpp:128
+msgid "Easy text"
+msgstr ""
+
+#: graphs/lixgauge.cpp:130
+msgid "Average text"
+msgstr ""
+
+#: graphs/lixgauge.cpp:132
+msgid "Difficult text"
+msgstr ""
+
+#: graphs/lixgauge.cpp:134
+msgid "Very difficult text"
+msgstr ""
+
+#: graphs/lixgauge.cpp:174
+msgid "Books for children"
+msgstr ""
+
+#: graphs/lixgauge.cpp:176
+msgid "Fiction"
+msgstr ""
+
+#: graphs/lixgauge.cpp:178
+msgid "Factual prose"
+msgstr ""
+
+#: graphs/lixgauge.cpp:180
+msgid "Technical literature"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:31 graphs/lixgaugegerman.cpp:32
+msgid "German Lix Gauge"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:117
+msgid "very easy text"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:120
+msgid "easy text"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:123
+msgid "average text"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:126
+msgid "difficult text"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:129
+msgid "very difficult text"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:170
+msgid ""
+"children and youth\n"
+"literature (for ages 8-16)"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:175
+msgid ""
+"bellestristic texts (prose\n"
+"fiction for adults)"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:179
+msgid ""
+"informational (non fiction)\n"
+"texts (Sachliteratur)"
+msgstr ""
+
+#: graphs/lixgaugegerman.cpp:183
+msgid ""
+"technical texts\n"
+"(Fachliteratur)"
+msgstr ""
+
+#: graphs/lrroadmap.cpp:36
+#, c-format
+msgid "'%s': IV name column not found for roadmap."
+msgstr ""
+
+#: graphs/lrroadmap.cpp:43
+#, c-format
+msgid "'%s': coefficient column not found for roadmap."
+msgstr ""
+
+#: graphs/lrroadmap.cpp:52
+#, c-format
+msgid "'%s': p-value column not found for roadmap."
+msgstr ""
+
+#: graphs/lrroadmap.cpp:110
+#, c-format
+msgid ""
+"The larger the map marker and deeper the curve, the stronger the item's "
+"association with %s"
+msgstr ""
+
+#: graphs/lrroadmap.h:143
+#, c-format
+msgid "Positively associated with %s"
+msgstr ""
+
+#: graphs/lrroadmap.h:147
+#, c-format
+msgid "Negatively associated with %s"
+msgstr ""
+
+#: graphs/piechart.cpp:412
+#, c-format
+msgid "'%s': group column not found for pie chart."
+msgstr ""
+
+#: graphs/piechart.cpp:423
+#, c-format
+msgid "'%s': inner group column not found for pie chart."
+msgstr ""
+
+#: graphs/piechart.cpp:436
+#, c-format
+msgid "'%s': aggregate column not found for pie chart."
+msgstr ""
+
+#: graphs/proconroadmap.cpp:33
+#, c-format
+msgid "'%s': positive influencers name column not found for roadmap."
+msgstr ""
+
+#: graphs/proconroadmap.cpp:43
+#, c-format
+msgid "'%s': positive value column not found for roadmap."
+msgstr ""
+
+#: graphs/proconroadmap.cpp:52
+#, c-format
+msgid "'%s': negative influencers name column not found for roadmap."
+msgstr ""
+
+#: graphs/proconroadmap.cpp:62
+#, c-format
+msgid "'%s': negative value column not found for roadmap."
+msgstr ""
+
+#: graphs/proconroadmap.cpp:136
+msgid ""
+"The larger the map marker and deeper the curve, the more responses for the "
+"positive or negative sentiment"
+msgstr ""
+
+#: graphs/proconroadmap.h:219
+msgid "Pro"
+msgstr ""
+
+#: graphs/proconroadmap.h:220
+msgid "Con"
+msgstr ""
+
+#: graphs/roadmap.cpp:281
+msgid "Key\n"
+msgstr ""
+
+#: graphs/roadmap.h:216
+msgid "Goal"
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:34
+#, c-format
+msgid "'%s': 'from' column not found for diagram."
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:40
+#, c-format
+msgid "'%s': 'to' column not found for diagram."
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:47
+#, c-format
+msgid "'%s': 'from' weight column provided, but 'to' column was not."
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:53
+#, c-format
+msgid "'%s': 'to' weight column provided, but 'from' column was not."
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:65
+#, c-format
+msgid "'%s': 'from' weight column not found for diagram."
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:71
+#, c-format
+msgid "'%s': 'to' weight column not found for diagram."
+msgstr ""
+
+#: graphs/sankeydiagram.cpp:83
+#, c-format
+msgid "'%s': 'from' sort column not found for diagram."
+msgstr ""
+
+#: graphs/table.cpp:149 graphs/table.cpp:219
+#, c-format
+msgid "Invalid cell index (row %zu, column %zu)."
+msgstr ""
+
+#: graphs/table.cpp:287 graphs/table.cpp:330
+#, c-format
+msgid "'%s': column not found for table."
+msgstr ""
+
+#: graphs/table.cpp:415
+#, c-format
+msgid "'%s': cell label not found when sorting."
+msgstr ""
+
+#: graphs/table.cpp:515
+msgid "Grand Total"
+msgstr ""
+
+#: graphs/table.cpp:527 graphs/table.cpp:534
+msgid "Total"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:54
+msgid "Group column required for W-curve plot."
+msgstr ""
+
+#: graphs/wcurveplot.cpp:70
+msgid "TIME"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:71
+msgid "Level of control, satisfaction, and effectiveness"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:98
+#, c-format
+msgid "First %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:101
+#, c-format
+msgid "Second %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:104
+#, c-format
+msgid "Third %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:107
+#, c-format
+msgid "Fourth %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:110
+#, c-format
+msgid "Fifth %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:113
+#, c-format
+msgid "Sixth %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:116
+#, c-format
+msgid "Seventh %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:119
+#, c-format
+msgid "Eighth %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:122
+#, c-format
+msgid "Ninth %s"
+msgstr ""
+
+#: graphs/wcurveplot.cpp:125
+#, c-format
+msgid "Tenth %s"
+msgstr ""
+
+#: graphs/wcurveplot.h:172
+msgid "year"
+msgstr ""
+
+#: graphs/wordcloud.cpp:55
+#, c-format
+msgid "'%s': word column not found for word cloud."
+msgstr ""
+
+#: graphs/wordcloud.cpp:65
+#, c-format
+msgid "'%s': continuous weight column not found for word cloud."
+msgstr ""
+
+#: ui/app.cpp:243
+msgid "All rights reserved."
+msgstr ""
+
+#: ui/app.cpp:282
+msgid "Timestamp of this report"
+msgstr ""
+
+#: ui/app.cpp:284
+msgid "Log Report"
+msgstr ""
+
+#: ui/app.cpp:292
+msgid "Settings File"
+msgstr ""
+
+#: ui/app.cpp:302
+#, c-format
+msgid ""
+"An error report has been saved to:\n"
+"\"%s\".\n"
+"\n"
+"Please email this file to %s to have this issue reviewed. Thank you for your "
+"patience."
+msgstr ""
+
+#: ui/app.cpp:305
+msgid "Error Report"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:119
+msgid "Lua Script (*.lua)|*.lua"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:144
+msgid "C++ Source Files (*.cpp)|*.cpp"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:167 ui/controls/codeeditor.cpp:184
+msgid "Do you wish to save your unsaved changes?"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:168 ui/controls/codeeditor.cpp:185
+msgid "Save Script"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:189
+msgid "Select Script to Open"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:212
+msgid "Save Script As"
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:223
+#, c-format
+msgid "Unable to save file \"%s\"."
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:224 ui/controls/formattedtextctrl.cpp:906
+#: ui/controls/formattedtextctrl.cpp:927 ui/controls/formattedtextctrl.cpp:944
+#: ui/controls/htmltablewin.cpp:267 ui/dialogs/excelpreviewdlg.cpp:58
+#: util/resource_manager.cpp:29 util/resource_manager.cpp:41
+#: util/textstream.cpp:262 util/textstream.cpp:272 util/textstream.cpp:279
+msgid "Error"
+msgstr "Error"
+
+#: ui/controls/codeeditor.cpp:287 ui/controls/codeeditor.cpp:328
+msgid "No occurrences found."
+msgstr ""
+
+#: ui/controls/codeeditor.cpp:288 ui/controls/codeeditor.cpp:329
+msgid "Item Not Found"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:454
+#, c-format
+msgid ""
+"An error occurred while printing.\n"
+"%s"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:813
+msgid ""
+"This format can be displayed in Internet browsers and most word-processing "
+"programs."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:816
+msgid "This format can be displayed in most word-processing programs."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:820
+msgid ""
+"This format is for rendering text within libraries such as Cairo or FreeType."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:823
+msgid "Select Document Format"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:823
+msgid "Document formats:"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:823
+msgid "Export Document"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:845 ui/controls/htmltablewin.cpp:231
+#: ui/controls/listctrlex.cpp:2051
+msgid "Save As"
+msgstr "Guardar como"
+
+#: ui/controls/formattedtextctrl.cpp:905 ui/controls/formattedtextctrl.cpp:926
+#: ui/controls/htmltablewin.cpp:265
+#, c-format
+msgid ""
+"Failed to save document\n"
+"(%s)."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:943
+#, c-format
+msgid "Failed to save document (%s)."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:962 ui/controls/listctrlex.cpp:1539
+msgid "No further occurrences found."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:962 ui/controls/listctrlex.cpp:1539
+msgid "The text could not be found."
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:963 ui/controls/listctrlex.cpp:1540
+msgid "Text Not Found"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:1065
+#: ui/controls/formattedtextctrl.cpp:1136
+#: ui/controls/formattedtextctrl.cpp:1206
+msgid ""
+"Search has reached the end of the document. Do you wish to restart the "
+"search from the beginning?"
+msgstr ""
+
+#: ui/controls/formattedtextctrl.cpp:1067
+#: ui/controls/formattedtextctrl.cpp:1138
+#: ui/controls/formattedtextctrl.cpp:1208
+msgid "Continue Search"
+msgstr ""
+
+#: ui/controls/gtk/gtktextview-helper.h:226
+msgid "Custom size"
+msgstr "Tamaño personalizado"
+
+#: ui/controls/htmltablewin.cpp:321
+msgid "Find not supported in this window."
+msgstr ""
+
+#: ui/controls/htmltablewin.cpp:322
+msgid "Find"
+msgstr "Buscar"
+
+#: ui/controls/infobarex.cpp:34
+msgid "Hide this notification message."
+msgstr "Ocultar esta notificación."
+
+#: ui/controls/infobarex.cpp:36
+msgid "Do not show this again."
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:298
+msgid "Please select an item in the list to view."
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:299 ui/dialogs/listctrlitemviewdlg.h:40
+msgid "View Item"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:435
+msgid "Delete Item"
+msgstr "Eliminar lemento"
+
+#: ui/controls/listctrlex.cpp:2021
+msgid ""
+"This format will include formatting and can be displayed in Internet "
+"browsers or most word-processing programs."
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2024 ui/controls/listctrlex.cpp:2042
+msgid "Text"
+msgstr "Texto"
+
+#: ui/controls/listctrlex.cpp:2025
+msgid ""
+"This format will write the list as a tab-delimited file with no formatting."
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2028
+msgid ""
+"This format will write the list in a longtable{} environment that can be "
+"included in a larger LaTeX document."
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2031
+msgid "Select List Format"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2031
+msgid "List formats:"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2031
+msgid "Export List"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2589
+msgid "-- continued from previous page"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2592
+msgid "Continued on next page"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2611
+msgid ""
+"You requested to export only selected items, but no items are selected in "
+"the list."
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2613 ui/controls/listctrlex.cpp:2666
+msgid "Export Error"
+msgstr ""
+
+#: ui/controls/listctrlex.cpp:2665
+#, c-format
+msgid ""
+"Failed to save list\n"
+"(%s)."
+msgstr ""
+
+#: ui/controls/listctrlex.h:316 ui/dialogs/filelistdlg.cpp:178
+msgid "Do you wish to delete the selected file(s)?"
+msgstr ""
+
+#: ui/controls/searchpanel.cpp:25
+msgid "Find the next occurrence"
+msgstr ""
+
+#: ui/controls/searchpanel.cpp:30
+msgid "Find the previous occurrence"
+msgstr ""
+
+#: ui/controls/searchpanel.cpp:41
+msgid "Match Case"
+msgstr "Distinguir mayúsculas y minúsculas"
+
+#: ui/controls/searchpanel.cpp:45
+msgid "Match Whole Word"
+msgstr ""
+
+#: ui/controls/searchpanel.cpp:92
+msgid "Please enter an item to search for."
+msgstr ""
+
+#: ui/controls/searchpanel.cpp:93
+msgid "Search"
+msgstr "Buscar"
+
+#: ui/controls/thumbnail.cpp:112
+msgid "Click to enlarge..."
+msgstr ""
+
+#: ui/controls/thumbnail.cpp:117
+msgid "Click to browse for image..."
+msgstr ""
+
+#: ui/controls/thumbnail.cpp:178
+msgid ""
+"Click to browse\n"
+"for image..."
+msgstr ""
+
+#: ui/controls/thumbnail.cpp:186
+msgid ""
+"No preview\n"
+"available"
+msgstr ""
+
+#: ui/controls/thumbnail.cpp:236
+msgid "Click to close"
+msgstr ""
+
+#: ui/controls/thumbnail.cpp:259
+msgid "Select an Image"
+msgstr ""
+
+#: ui/controls/thumbnail.cpp:260
+msgid "Image Files "
+msgstr ""
+
+#: ui/dialogs/archivedlg.cpp:37
+msgid "Please select a valid archive file."
+msgstr ""
+
+#: ui/dialogs/archivedlg.cpp:37
+msgid "Invalid File"
+msgstr ""
+
+#: ui/dialogs/archivedlg.cpp:55 ui/dialogs/archivedlg.h:41
+msgid "Select Archive File"
+msgstr ""
+
+#: ui/dialogs/archivedlg.cpp:58
+msgid "Archive files (*.zip)|*.zip"
+msgstr ""
+
+#: ui/dialogs/archivedlg.cpp:87 ui/dialogs/getdirdlg.cpp:84
+msgid "File types to include:"
+msgstr ""
+
+#: ui/dialogs/edittextdlg.h:33
+msgid "Edit Text"
+msgstr ""
+
+#: ui/dialogs/excelpreviewdlg.cpp:57
+msgid "Please highlight cells to import."
+msgstr ""
+
+#: ui/dialogs/excelpreviewdlg.cpp:71
+msgid "All text cells"
+msgstr ""
+
+#: ui/dialogs/excelpreviewdlg.cpp:72
+msgid "Only highlighted cells"
+msgstr ""
+
+#: ui/dialogs/excelpreviewdlg.cpp:73
+msgid "Import:"
+msgstr ""
+
+#: ui/dialogs/excelpreviewdlg.cpp:88
+msgid ""
+"Note: only text cells are being shown and are truncated here for display "
+"purposes."
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:34
+msgid "&Open File(s)..."
+msgstr "&Abrir archivo..."
+
+#: ui/dialogs/filelistdlg.cpp:40
+msgid "Open &Folder(s)..."
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:46
+msgid "&Delete File(s)"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:51
+msgid "&Refresh List"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:62
+msgid "File"
+msgstr "Archivo"
+
+#: ui/dialogs/filelistdlg.cpp:64
+msgid "Folder"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:66
+msgid "Group"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:110
+#, c-format
+msgid ""
+"Name: %s\n"
+"Size: %s\n"
+"Created: %s %s\n"
+"Modified: %s %s"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:129
+#, c-format
+msgid "Do you wish to open the selected %d files?"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:131 ui/dialogs/filelistdlg.cpp:155
+msgid "Open Files"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:153
+#, c-format
+msgid "Do you wish to open the selected %d folders?"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:179
+msgid "Delete File"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.cpp:180
+msgid "Do not show this again"
+msgstr ""
+
+#: ui/dialogs/filelistdlg.h:39
+msgid "File List"
+msgstr ""
+
+#: ui/dialogs/functionbrowserdlg.cpp:89
+msgid "Returns the object as a "
+msgstr ""
+
+#: ui/dialogs/functionbrowserdlg.cpp:190
+msgid "Please select an item in the function list to insert."
+msgstr ""
+
+#: ui/dialogs/functionbrowserdlg.cpp:191
+msgid "Invalid Selection"
+msgstr ""
+
+#: ui/dialogs/functionbrowserdlg.cpp:285
+msgid "&Insert"
+msgstr "&Insertar"
+
+#: ui/dialogs/functionbrowserdlg.cpp:289
+msgid "&Close"
+msgstr "&Cerrar"
+
+#: ui/dialogs/functionbrowserdlg.h:70 ui/dialogs/functionbrowserdlg.h:95
+msgid "Function Browser"
+msgstr ""
+
+#: ui/dialogs/functionbrowserdlg.h:71 ui/dialogs/functionbrowserdlg.h:96
+msgid "Categories:"
+msgstr ""
+
+#: ui/dialogs/functionbrowserdlg.h:72 ui/dialogs/functionbrowserdlg.h:97
+msgid "Functions/Operators:"
+msgstr ""
+
+#: ui/dialogs/getdirdlg.cpp:40
+msgid "Please select a valid folder."
+msgstr ""
+
+#: ui/dialogs/getdirdlg.cpp:40
+msgid "Invalid Folder"
+msgstr ""
+
+#: ui/dialogs/getdirdlg.cpp:102
+msgid "&Search directories recursively"
+msgstr ""
+
+#: ui/dialogs/getdirdlg.h:45
+msgid "Select Directory"
+msgstr ""
+
+#: ui/dialogs/graphdlg.h:36 ui/dialogs/graphdlg.h:60
+msgid "View Graph"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:87
+msgid "&Include column headers"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:93
+msgid "&Export all rows"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:98
+msgid "Export &selected rows"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:103
+msgid "Export a &range of rows"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:107
+msgid "Range:"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:116
+msgid "Rows: from"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:126 ui/dialogs/gridexportdlg.cpp:146
+msgid "to"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:137
+msgid "Columns: from"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.cpp:157
+msgid "&Paginate using printer settings"
+msgstr ""
+
+#: ui/dialogs/gridexportdlg.h:78
+msgid "List Export Options"
+msgstr ""
+
+#: ui/dialogs/htmltablepanel.cpp:25
+msgid "Copy selected text"
+msgstr ""
+
+#: ui/dialogs/htmltablepanel.cpp:30 ui/dialogs/listdlg.cpp:150
+msgid "Save"
+msgstr "Guardar"
+
+#: ui/dialogs/imageexportdlg.cpp:90
+msgid "Image Size"
+msgstr ""
+
+#: ui/dialogs/imageexportdlg.cpp:95
+msgid "Width:"
+msgstr "Ancho:"
+
+#: ui/dialogs/imageexportdlg.cpp:105
+msgid "Height:"
+msgstr "Altura:"
+
+#: ui/dialogs/imageexportdlg.cpp:120
+msgid "&RGB (Color)"
+msgstr ""
+
+#: ui/dialogs/imageexportdlg.cpp:121
+msgid "&Grayscale"
+msgstr ""
+
+#: ui/dialogs/imageexportdlg.cpp:123
+msgid "Color Mode"
+msgstr ""
+
+#: ui/dialogs/imageexportdlg.cpp:131
+msgid "TIFF options:"
+msgstr ""
+
+#: ui/dialogs/imageexportdlg.cpp:139
+msgid "Compression:"
+msgstr "Compresión:"
+
+#: ui/dialogs/imageexportdlg.cpp:145
+msgid "None"
+msgstr "Ninguno"
+
+#: ui/dialogs/imageexportdlg.cpp:148
+msgid "Deflate"
+msgstr ""
+
+#: ui/dialogs/imageexportdlg.cpp:163
+msgid "Preview"
+msgstr "Previsualización"
+
+#: ui/dialogs/imageexportdlg.h:85 ui/dialogs/imageexportdlg.h:112
+msgid "Image Export Options"
+msgstr ""
+
+#: ui/dialogs/listctrlitemviewdlg.cpp:71
+msgid "Item"
+msgstr "Elemento"
+
+#: ui/dialogs/listctrlsortdlg.cpp:29
+msgid "Column"
+msgstr "Columna"
+
+#: ui/dialogs/listctrlsortdlg.cpp:32
+msgid "Order"
+msgstr ""
+
+#: ui/dialogs/listctrlsortdlg.cpp:47
+msgid "Sort by:"
+msgstr ""
+
+#: ui/dialogs/listctrlsortdlg.cpp:52
+msgid "...then by:"
+msgstr ""
+
+#: ui/dialogs/listctrlsortdlg.cpp:61
+msgid "Double click a field to add or edit a sort criterion."
+msgstr ""
+
+#: ui/dialogs/listctrlsortdlg.h:34 ui/dialogs/listctrlsortdlg.h:57
+msgid "Sort Columns"
+msgstr ""
+
+#: ui/dialogs/listctrlsortdlg.h:71
+msgid "Smallest to Largest"
+msgstr ""
+
+#: ui/dialogs/listctrlsortdlg.h:75
+msgid "Largest to Smallest"
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:143
+msgid "Export"
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:152
+msgid "Save the list."
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:158
+msgid "Print the list."
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:165
+msgid "Edit"
+msgstr "Editar"
+
+#: ui/dialogs/listdlg.cpp:172
+msgid "Copy Selection"
+msgstr "Copiar Selección"
+
+#: ui/dialogs/listdlg.cpp:174
+msgid "Copy the selected items."
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:178
+msgid "Select All"
+msgstr "Seleccionar todo"
+
+#: ui/dialogs/listdlg.cpp:180
+msgid "Select the entire list."
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:184
+msgid "Sort"
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:186
+msgid "Sort the list."
+msgstr ""
+
+#: ui/dialogs/listdlg.cpp:271
+msgid "Don't show this again"
+msgstr ""
+
+#: ui/dialogs/opacitydlg.h:37
+msgid "Set Opacity"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:85
+#, c-format
+msgid "Invalid tag: %s"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:86
+msgid "Syntax Error"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:109
+msgid "Headers"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:116
+#: ui/dialogs/printerheaderfooterdlg.cpp:164
+msgid "Left:"
+msgstr "Izquierda:"
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:124
+msgid "Page @PAGENUM@ of @PAGESCNT@"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:136
+#: ui/dialogs/printerheaderfooterdlg.cpp:176
+msgid "Center:"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:148
+#: ui/dialogs/printerheaderfooterdlg.cpp:188
+msgid "Right:"
+msgstr "Derecha:"
+
+#: ui/dialogs/printerheaderfooterdlg.cpp:157
+msgid "Footers"
+msgstr ""
+
+#: ui/dialogs/printerheaderfooterdlg.h:57
+msgid "Printer Headers & Footers"
+msgstr ""
+
+#: ui/dialogs/variableselectdlg.cpp:62
+msgid "Only one variable is allowed in this list."
+msgstr ""
+
+#: ui/dialogs/variableselectdlg.cpp:63
+msgid "Invalid Variable Selection"
+msgstr ""
+
+#: ui/dialogs/variableselectdlg.cpp:131
+msgid "Variables"
+msgstr ""
+
+#: ui/dialogs/variableselectdlg.cpp:251
+#, c-format
+msgid "Variable(s) must be selected for the %s list."
+msgstr ""
+
+#: ui/dialogs/variableselectdlg.cpp:252
+msgid "Variable Not Specified"
+msgstr ""
+
+#: ui/dialogs/variableselectdlg.h:102
+msgid "Select Variables"
+msgstr ""
+
+#: ui/dialogs/warningmessagesdlg.cpp:21
+msgid "Display the following prompts:"
+msgstr ""
+
+#: ui/dialogs/warningmessagesdlg.h:36 ui/dialogs/warningmessagesdlg.h:58
+msgid "Warnings & Prompts Display"
+msgstr ""
+
+#: ui/mainframe.cpp:88
+msgid "Select Project Type"
+msgstr ""
+
+#: ui/mainframe.cpp:88
+msgid "Project types:"
+msgstr ""
+
+#: ui/mainframe.cpp:88
+msgid "New Project"
+msgstr ""
+
+#: util/downloadfile.cpp:118 util/downloadfile.cpp:341
+#, c-format
+msgid ""
+"Please enter credentials for accessing\n"
+"%s"
+msgstr ""
+
+#: util/downloadfile.cpp:165
+msgid "Downloading "
+msgstr ""
+
+#: util/downloadfile.cpp:279
+msgid ""
+"Webpage is using Cloudflare protection and can only be accessed via an "
+"interactive browser. Please use a browser to download this page.\n"
+"\n"
+"Response from website:\n"
+msgstr ""
+
+#: util/fileutil.cpp:644 util/fileutil.cpp:654
+#, c-format
+msgid "Moving %s"
+msgstr ""
+
+#: util/fileutil.cpp:645
+msgid "Moving Folder"
+msgstr ""
+
+#: util/logfile.cpp:21
+#, c-format
+msgid "Unable to create log file at '%s'"
+msgstr ""
+
+#: util/logfile.cpp:22
+msgid "Logging Error"
+msgstr ""
+
+#: util/memorymappedfile.cpp:286
+#, c-format
+msgid ""
+"Unable to open file for buffering:\n"
+"%s"
+msgstr ""
+
+#: util/memorymappedfile.cpp:287 util/memorymappedfile.cpp:296
+#: util/zipcatalog.cpp:110 util/zipcatalog.cpp:125 util/zipcatalog.cpp:154
+#: util/zipcatalog.cpp:184 util/zipcatalog.cpp:200 util/zipcatalog.cpp:215
+msgid "Read Error"
+msgstr ""
+
+#: util/memorymappedfile.cpp:295
+#, c-format
+msgid ""
+"Not enough memory to open file:\n"
+"%s"
+msgstr ""
+
+#: util/resource_manager.cpp:28
+#, c-format
+msgid "'%s': resource archive file missing. Please reinstall."
+msgstr ""
+
+#: util/resource_manager.cpp:40
+msgid "Cannot open resource collection file."
+msgstr ""
+
+#: util/textstream.cpp:229
+#, c-format
+msgid ""
+"%s: file not found.\n"
+"Do you wish to search for it?"
+msgstr ""
+
+#: util/textstream.cpp:230
+msgid "File Not Found"
+msgstr ""
+
+#: util/textstream.cpp:234
+msgid "Select File"
+msgstr ""
+
+#: util/textstream.cpp:261 util/textstream.cpp:278
+msgid "Unable to read file."
+msgstr ""
+
+#: util/textstream.cpp:271
+msgid "Unable to open file."
+msgstr ""
+
+#: util/xml_format.cpp:418 util/xml_format.cpp:472 util/xml_format.cpp:522
+#: util/xml_format.cpp:568 util/xml_format.cpp:611 util/xml_format.cpp:654
+#, c-format
+msgid "Warning: %s section of file is ill-formatted."
+msgstr ""
+
+#: util/xml_format.cpp:419 util/xml_format.cpp:473 util/xml_format.cpp:523
+#: util/xml_format.cpp:569 util/xml_format.cpp:612 util/xml_format.cpp:655
+msgid "Warning"
+msgstr "Alerta"
+
+#: util/zipcatalog.cpp:109 util/zipcatalog.cpp:124 util/zipcatalog.cpp:153
+#: util/zipcatalog.cpp:183 util/zipcatalog.cpp:214
+#, c-format
+msgid "Error reading extracted file from temp folder: %s"
+msgstr ""
+
+#: util/zipcatalog.cpp:199
+#, c-format
+msgid "Error writing extracted file to temp folder: %s"
+msgstr ""
+
+#: util/zipcatalog.cpp:273
+msgid ""
+"Unable to read file from archive. Archive may be corrupt or password "
+"protected."
+msgstr ""
+
+#: wxSimpleJSON/src/wxSimpleJSON.cpp:288
+#, c-format
+msgid ""
+"JSON parsing error at line %s, column %s.\n"
+"\n"
+"full line:\n"
+"%s\n"
+"\n"
+"start of error:\n"
+"%s"
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:61 wxStartPage/demo/startdemo.cpp:64
+msgid "Start Page Demo"
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:112
+msgid "Open File"
+msgstr "Abrir archivo"
+
+#: wxStartPage/demo/startdemo.cpp:114
+msgid "Visit the wxWidgets Website"
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:118
+msgid "About"
+msgstr "Acerca de"
+
+#: wxStartPage/demo/startdemo.cpp:119
+msgid "Exit"
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:163
+#, c-format
+msgid ""
+"Welcome to wxStartPage demo\n"
+"running with %s\n"
+"under %s."
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:168
+msgid "About wxStartPage demo"
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:175
+msgid "Open a File"
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:180
+#, c-format
+msgid "You selected '%s'."
+msgstr ""
+
+#: wxStartPage/demo/startdemo.cpp:183
+msgid "File Open"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:87
+msgid "Documents"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:90
+msgid "Desktop"
+msgstr "Escritorio"
+
+#: wxStartPage/startpage.cpp:93
+msgid "Pictures"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:96
+msgid "Videos"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:99
+msgid "Music"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:102
+msgid "Downloads"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:157
+#, c-format
+msgid "Good morning, %s"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:159
+#, c-format
+msgid "Good afternoon, %s"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:160
+#, c-format
+msgid "Good evening, %s"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:166
+msgid "Good morning"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:168
+msgid "Good afternoon"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:169
+msgid "Good evening"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:559
+msgid "Just now"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:562
+#, c-format
+msgid "%d minutes ago"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:567
+msgid "1 hour ago"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:570
+#, c-format
+msgid "%d hours ago"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:581
+msgid "Today at "
+msgstr ""
+
+#: wxStartPage/startpage.cpp:583
+msgid "Yesterday at "
+msgstr ""
+
+#: wxStartPage/startpage.cpp:586
+#, c-format
+msgid "%s at "
+msgstr ""
+
+#: wxStartPage/startpage.cpp:899
+msgid "Do you wish to clear the list of recent files?"
+msgstr ""
+
+#: wxStartPage/startpage.cpp:900
+msgid "Clear File List"
+msgstr ""
+
+#: wxStartPage/startpage.h:322
+msgid "♻ Clear file list..."
+msgstr ""
+
+#: wxStartPage/startpage.h:324
+msgid "Recent"
+msgstr ""
