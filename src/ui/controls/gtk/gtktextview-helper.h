@@ -180,7 +180,6 @@ struct _GtkPrintData
     wxString m_rightPrintFooter;
     };
 
-
 // GTK+ callbacks need C linkage
 extern "C"
 {
