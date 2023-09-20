@@ -1,11 +1,17 @@
+# Output folders and files
 /.vs/
 /tests/gui-tests/.vs/
 /tests/gui-tests/bin/
 /tests/gui-tests/out/
+/tests/.vs
+/tests/out
+/tests/bin
 /app/
 /build/
 /out/
 /docs/doxygen/html/
+/docs/syntax_manual/_book
+/docs/syntax_anual/_main.log
 /tools/ColorCode.txt
 /tools/ColorReportMap.txt
 # Compiler helper files
@@ -14,6 +20,8 @@ cpp.hint
 
 # Compiler project files
 *.kdev4
+*.Rhistory
+.Rproj.user
 
 # Any documents
 *.docx
@@ -56,10 +64,4 @@ cpp.hint
 *.out
 *.app
 *.manifest
-*.Rhistory
-.Rproj.user
-/docs/syntax_manual/_book
-/tests/.vs
-/tests/out
-/tests/bin
-/docs/syntax_anual/_main.log
+
