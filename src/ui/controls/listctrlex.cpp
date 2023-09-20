@@ -2024,7 +2024,7 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
         wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _(L"Text"),
             _(L"This format will write the list as a tab-delimited file with no formatting.")));
     choices.Add(_DT(L"LaTeX")); descriptions.Add(
-        wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _(L"LaTeX"),
+        wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"LaTeX"),
             _(L"This format will write the list in a longtable{} environment that can be "
                "included in a larger LaTeX document.")));
     RadioBoxDlg exportTypesDlg(this,
