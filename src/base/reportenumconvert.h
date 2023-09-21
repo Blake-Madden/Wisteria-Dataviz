@@ -454,7 +454,8 @@ namespace Wisteria
                 { L"fade-from-top-to-bottom", BoxEffect::FadeFromTopToBottom },
                 { L"glassy", BoxEffect::Glassy },
                 { L"solid", BoxEffect::Solid },
-                { L"stipple", BoxEffect::Stipple },
+                { L"stipple-image", BoxEffect::StippleImage },
+                { L"stipple-shape", BoxEffect::StippleShape },
                 { L"watercolor", BoxEffect::WaterColor }
                 };
 

@@ -20,6 +20,7 @@ Properties common to all graphs:
 - `"image-scheme"`: An array of image import specifications. (See [image file properties](#image-file-properties).)
 - `"common-box-image-outline"`: A string specifying the color for the outline around the bars/boxes
      if using a common box image.
+- `"stipple-shape-color"`: A color to use for the shapes draw across bars (when shape stippling is in use).
 - `"stipple-image"`: An image import specification. (See [image file properties](#image-file-properties).)
 - `"annotations"`: Text messages that can be added on top of the graph, optionally pointing to positions
   on the graph. This is an array of annotation definitions, which contain the following properties:
@@ -306,7 +307,8 @@ Properties common to all bar-chart derived graphs:
   - `"fade-from-top-to-bottom"`
   - `"glassy"`
   - `"solid"` (the default)
-  - `"stipple"`
+  - `"stipple-image"`
+  - `"stipple-shape"`
   - `"watercolor"`
 - `"bar-label-display"`: A string specifying how to display labels on the bars. \
   Available options are:

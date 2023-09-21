@@ -428,7 +428,7 @@ namespace Wisteria::Graphs
                         ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                     AddObject(boxImage);
                     }
-                else if (box.GetBoxEffect() == BoxEffect::Stipple &&
+                else if (box.GetBoxEffect() == BoxEffect::StippleImage &&
                     GetStippleBrush().IsOk() )
                     {
                     auto boxImage = std::make_shared<Image>(
@@ -447,6 +447,26 @@ namespace Wisteria::Graphs
                     // the Image's native shadow renderer.
                     boxImage->SetShadowType(ShadowType::NoDisplay);
                     AddObject(boxImage);
+                    }
+                else if (box.GetBoxEffect() == BoxEffect::StippleShape)
+                    {
+                    wxPoint currentYTop = box.m_boxRect.GetLeftTop();
+                    while (currentYTop.y < box.m_boxRect.GetBottom())
+                        {
+                        const wxSize stippleImgSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetWidth());
+                        auto shape = std::make_shared<Shape>(
+                            GraphItemInfo{}.
+                            Pen(wxNullPen).Brush(GetStippleShapeColor()).
+                            AnchorPoint(currentYTop).
+                            Anchoring(Anchoring::TopLeftCorner).
+                            DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()),
+                            GetStippleShape(), stippleImgSize);
+                        shape->SetBoundingBox(
+                            wxRect(currentYTop,
+                                    wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetWidth())), dc, GetScaling());
+                        AddObject(shape);
+                        currentYTop.y += stippleImgSize.GetHeight();
+                        }
                     }
                 // color-filled box
                 else

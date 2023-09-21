@@ -373,8 +373,12 @@ namespace Wisteria
         FadeFromTopToBottom,
         /// @brief Color gradient, right-to-left.
         FadeFromRightToLeft = FadeFromTopToBottom,
-        /// @brief Fill with repeating images.
+        /// @private (for backward compatability, use StippleImage instead)
         Stipple,
+        /// @brief Fill with a repeating image.
+        StippleImage = Stipple,
+        /// @brief Fill with a repeating shape.
+        StippleShape,
         /// @brief A subimage of a larger image shared by all boxes.
         CommonImage,
         /// @brief An image scaled down to fit the box.

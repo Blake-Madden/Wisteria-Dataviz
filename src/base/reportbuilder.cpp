@@ -4967,6 +4967,10 @@ namespace Wisteria
             stippleImgNode->IsOk())
             { graph->SetStippleBrush(LoadImageFile(stippleImgNode)); }
 
+        if (const auto stippleShapeColor = ConvertColor(graphNode->GetProperty(L"stipple-shape-color"));
+            stippleShapeColor.IsOk())
+            { graph->SetStippleShapeColor(stippleShapeColor); }
+
         // axes
         const auto axesProperty = graphNode->GetProperty(L"axes");
         if (axesProperty->IsOk())

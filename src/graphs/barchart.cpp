@@ -844,7 +844,7 @@ namespace Wisteria::Graphs
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
-                        else if (bar.GetEffect() == BoxEffect::Stipple &&
+                        else if (bar.GetEffect() == BoxEffect::StippleImage &&
                                  GetStippleBrush().IsOk() )
                             {
                             assert((bar.GetShape() == BarShape::Rectangle) &&
@@ -867,6 +867,38 @@ namespace Wisteria::Graphs
                             barImage->SetShadowType(ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
+                            }
+                        else if (bar.GetEffect() == BoxEffect::StippleShape)
+                            {
+                            assert((bar.GetShape() == BarShape::Rectangle) &&
+                                    L"Non-rectangular shapes not currently "
+                                    "supported with stipple bar effect.");
+                            auto shapeWidth{ barWidth };
+                            // These particular icons are drawn with a ratio where the width
+                            // is 60% of the height if the drawing area is square. To prevent
+                            // having large gaps between the icons, adjust the width of the icons'
+                            // drawing areas so that they aren't drawn inside of squares.
+                            if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
+                                GetStippleShape() == Icons::IconShape::Woman ||
+                                GetStippleShape() == Icons::IconShape::Man)
+                                { shapeWidth *= 0.6; }
+                            auto currentXLeft = lineXStart;
+                            while (currentXLeft < (lineXStart + barLength))
+                                {
+                                const wxSize stippleImgSize(shapeWidth, barWidth);
+                                auto shape = std::make_shared<Shape>(
+                                    GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }.
+                                    Pen(wxNullPen).Brush(GetStippleShapeColor()).
+                                    AnchorPoint(wxPoint(currentXLeft, lineYStart)).
+                                    Anchoring(Anchoring::TopLeftCorner).
+                                    DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()),
+                                    GetStippleShape(), stippleImgSize);
+                                shape->SetBoundingBox(wxRect(wxPoint(currentXLeft, lineYStart),
+                                                      wxSize(shapeWidth, barWidth)), dc, GetScaling());
+                                shape->SetClippingRect(barRect);
+                                AddObject(shape);
+                                currentXLeft += stippleImgSize.GetWidth();
+                                }
                             }
                         // color-filled bar
                         else
@@ -1255,7 +1287,7 @@ namespace Wisteria::Graphs
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
-                        else if (bar.GetEffect() == BoxEffect::Stipple &&
+                        else if (bar.GetEffect() == BoxEffect::StippleImage &&
                                  GetStippleBrush().IsOk() )
                             {
                             assert((bar.GetShape() == BarShape::Rectangle) &&
@@ -1278,6 +1310,31 @@ namespace Wisteria::Graphs
                             barImage->SetShadowType(ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
+                            }
+                        else if (bar.GetEffect() == BoxEffect::StippleShape)
+                            {
+                            assert((bar.GetShape() == BarShape::Rectangle) &&
+                                    L"Non-rectangular shapes not currently "
+                                    "supported with stipple bar effect.");
+                            auto shapeHeight{ barWidth };
+                            auto currentYTop = lineYStart - shapeHeight;
+                            while ((currentYTop + shapeHeight) > lineYEnd)
+                                {
+                                const wxSize stippleImgSize(barWidth, shapeHeight);
+                                auto shape = std::make_shared<Shape>(
+                                    GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }.
+                                    Pen(wxNullPen).Brush(GetStippleShapeColor()).
+                                    AnchorPoint(wxPoint(lineXStart, currentYTop)).
+                                    Anchoring(Anchoring::TopLeftCorner).
+                                    DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()),
+                                    GetStippleShape(), stippleImgSize);
+                                shape->SetBoundingBox(
+                                    wxRect(wxPoint(lineXStart, currentYTop),
+                                           wxSize(barWidth, shapeHeight)), dc, GetScaling());
+                                shape->SetClippingRect(barRect);
+                                AddObject(shape);
+                                currentYTop -= stippleImgSize.GetHeight();
+                                }
                             }
                         else
                             {

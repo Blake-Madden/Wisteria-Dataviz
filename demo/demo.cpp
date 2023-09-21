@@ -1076,7 +1076,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(mpgData, L"manufacturer");
         plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir + L"/res/tobias_Blue_Twingo.svg",
             Image::GetSVGSize(appDir + L"/res/tobias_Blue_Twingo.svg")));
-        plot->SetBarEffect(BoxEffect::Stipple);
+        plot->SetBarEffect(BoxEffect::StippleImage);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
