@@ -89,6 +89,9 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     wxRect Shape::Draw(wxDC& dc) const
         {
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
         // keep drawing area inside of the full area
@@ -139,6 +142,9 @@ namespace Wisteria::GraphItems
                 dc.DrawRectangle(drawRect);
                 }
             }
+
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
 
         return bBox;
         }

@@ -19,6 +19,10 @@ namespace Wisteria::GraphItems
         assert(GetBrush().IsOk() && L"Fillable shape must have a valid brush!");
         if (!GetBrush().IsOk())
             { return wxRect(); }
+
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
         // keep drawing area inside of the full area
@@ -87,6 +91,9 @@ namespace Wisteria::GraphItems
             wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(drawRect);
             }
+
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
 
         return wxRect(dc.GetSize());
         }
