@@ -278,18 +278,26 @@ namespace Wisteria::GraphItems
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
         ///     sets the brush, then runs the rendering lambda again.
         void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const;
+        /// @brief Offsets calls to GetXPosFromLeft(). This is useful for centering the rendering
+        ///     of irregular (i.e., non-square) shapes inside of squares.
+        void SetXOffsetPercentage(const double offset) const noexcept
+            { xOffsetPercentage = offset; }
+        /// @brief Offsets calls to GetYPosFromLeft(). This is useful for centering the rendering
+        ///     of irregular (i.e., non-square) shapes inside of squares.
+        void SetYOffsetPercentage(const double offset) const noexcept
+            { yOffsetPercentage = offset; }
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside of the rect.
         [[nodiscard]]
         double GetXPosFromLeft(const wxRect rect,
-                                             const double percentFromLeft) const
-            { return rect.GetLeft() + (rect.GetWidth() * percentFromLeft); };
+                               const double percentFromLeft) const
+            { return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + xOffsetPercentage)); };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]]
         double GetYPosFromTop(const wxRect rect,
-                                            const double percentFromTop) const
-            { return rect.GetTop() + (rect.GetHeight() * percentFromTop); };
+                              const double percentFromTop) const
+            { return rect.GetTop() + (rect.GetHeight() * (percentFromTop + yOffsetPercentage)); };
 
         /// @brief Mirrors percentages passed to GetXPosFromLeft() or GetYPosFromTop().
         [[nodiscard]]
@@ -332,6 +340,8 @@ namespace Wisteria::GraphItems
 
         GraphItemInfo m_graphInfo;
         const wxBitmapBundle* m_iconImage{ nullptr };
+        mutable double xOffsetPercentage{ 0.0 };
+        mutable double yOffsetPercentage{ 0.0 };
         static std::mt19937 m_mt;
         };
 
@@ -387,7 +397,9 @@ namespace Wisteria::GraphItems
         ShapeRenderer& GetRenderer() noexcept
             { return m_renderer; }
     protected:
+        /// @private
         wxSize m_shapeSizeDIPs{ 0, 0 };
+        /// @private
         wxSize m_sizeDIPs{ 0, 0 };
     private:
         [[nodiscard]]
@@ -412,7 +424,7 @@ namespace Wisteria::GraphItems
         bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             { return GetBoundingBox(dc).Contains(pt); }
 
-        Icons::IconShape m_shape;
+        Icons::IconShape m_shape{ Icons::IconShape::Square };
         mutable ShapeRenderer m_renderer;
         mutable bool m_rendererNeedsUpdating{ true };
         ShapeRenderer::DrawFunction m_drawFunction{ nullptr };

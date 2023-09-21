@@ -566,12 +566,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawGraduationCap(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen = GetGraphItemInfo().GetPen();
-        if (scaledPen.IsOk())
-            {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) );
-            scaledPen.SetColour(ColorContrast::BlackOrWhiteContrast(GetGraphItemInfo().GetBrush().GetColour()));
-            }
+        // center the rendering vertically inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            { SetYOffsetPercentage(0.2); }
+
+        wxPen scaledPen(*wxWHITE, ScaleToScreenAndCanvas(1));
         DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 4> hatTop =
@@ -603,14 +602,14 @@ namespace Wisteria::GraphItems
             };
 
             {
-            wxBrush shadowedBrush(GetGraphItemInfo().GetBrush());
+            wxBrush shadowedBrush(*wxBLACK_BRUSH);
             shadowedBrush.SetColour(ColorContrast::Shade(shadowedBrush.GetColour(), .25));
             DCBrushChangerIfDifferent bc(dc, shadowedBrush);
             dc.DrawPolygon(hatStem.size(), &hatStem[0]);
             }
 
             {
-            DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+            DCBrushChangerIfDifferent bc(dc, ColorBrewer::GetColor(Colors::Color::SmokyBlack));
             dc.DrawPolygon(hatTop.size(), &hatTop[0]);
             }
 
@@ -621,13 +620,16 @@ namespace Wisteria::GraphItems
                                GetYPosFromTop(rect, math_constants::fourth));
 
         // button holding the thread to the top of the hat
-        dc.DrawEllipticArc(hatTopMidPoint - wxPoint(ScaleToScreenAndCanvas(10), ScaleToScreenAndCanvas(10)),
-            wxSize(ScaleToScreenAndCanvas(20), ScaleToScreenAndCanvas(20)), 0, 180);
-        dc.DrawEllipticArc(hatTopMidPoint - wxPoint(ScaleToScreenAndCanvas(9.5), ScaleToScreenAndCanvas(5)),
-            wxSize(ScaleToScreenAndCanvas(19), ScaleToScreenAndCanvas(10)), 180, 360);
+        const auto threadWidth{ std::ceil(rect.GetWidth() / 32) };
+        dc.DrawEllipticArc(
+            hatTopMidPoint - wxPoint((threadWidth*1.5), (threadWidth*1.5)),
+            wxSize((threadWidth*3), (threadWidth*3)), 0, 180);
+        dc.DrawEllipticArc(
+            hatTopMidPoint - wxPoint((threadWidth*1.5), (threadWidth)),
+            wxSize((threadWidth*3), (threadWidth*1.5)), 180, 360);
 
         // thread dangling over the hat
-        scaledPen.SetWidth(ScaleToScreenAndCanvas(5));
+        scaledPen.SetWidth(threadWidth);
         DCPenChangerIfDifferent pc3(dc, scaledPen);
         dc.DrawLine(hatTopMidPoint,
             wxPoint(GetXPosFromLeft(rect, .98),
@@ -659,6 +661,8 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(rect, .45)),
             wxPoint(GetXPosFromLeft(rect, .98),
                 GetYPosFromTop(rect, math_constants::half)));
+
+        SetYOffsetPercentage(0.0);
         }
 
     //---------------------------------------------------
