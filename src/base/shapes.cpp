@@ -1541,7 +1541,15 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        const wxRect dcRect(rect);
+        wxRect dcRect(rect);
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedWidth{ dcRect.GetWidth() * .6 };
+            const auto adjustLeft{ (dcRect.GetWidth() - adjustedWidth) * math_constants::half };
+            dcRect.SetWidth(adjustedWidth);
+            dcRect.Offset(wxPoint(adjustLeft, 0));
+            }
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
@@ -1713,6 +1721,14 @@ namespace Wisteria::GraphItems
             GetGraphItemInfo().GetPen().IsOk() ?
                 ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                 0);
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedWidth{ dcRect.GetWidth() * .6 };
+            const auto adjustLeft{ (dcRect.GetWidth() - adjustedWidth) * math_constants::half };
+            dcRect.SetWidth(adjustedWidth);
+            dcRect.Offset(wxPoint(adjustLeft, 0));
+            }
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
@@ -1859,6 +1875,14 @@ namespace Wisteria::GraphItems
             GetGraphItemInfo().GetPen().IsOk() ?
             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
             0);
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedWidth{ dcRect.GetWidth() * .6 };
+            const auto adjustLeft{ (dcRect.GetWidth() - adjustedWidth) * math_constants::half };
+            dcRect.SetWidth(adjustedWidth);
+            dcRect.Offset(wxPoint(adjustLeft, 0));
+            }
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
