@@ -301,7 +301,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
-        // bee-swarm jittering to visualize the distribution.
+        // bee-swarm jittered to visualize the distribution.
         plot->ShowAllPoints(true);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -543,6 +543,26 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 LegendOptions().
                     IncludeHeader(true).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+
+        /* A note about dataset design. If you have a dataset built like this:
+           
+           X    Y1    Y2
+           -------------
+           1    7     9
+           2    7.5   11
+           
+           and you wish to plot Y1 and Y2 as separate lines along the X values, then
+           you will need to pivot the dataset longer. To do this, call Pivot::PivotLonger() and
+           pass in the dataset to get back a "long" dataset that you can then use with the line plot.
+
+           For example:
+           
+           Pivot pv;
+           auto newDataset = pv.PivotLonger(myDataset, { L"x" }, { L"y1", L"y2" }, { L"GROUP" }, L"YValues");
+           
+           At this point, you can pass newDataset to the line plot and specify "X" and "YValues" as the X and Y
+           and "GROUP" as the grouping column. From there, this will create a line for the Y1 values and
+           another line for the Y2 values.*/
         }
     // Line Plot (customized)
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT_CUSTOMIZED)
