@@ -1056,6 +1056,7 @@ EXCLUDE                = ../../src/easyexif \
                          ../../src/CRCpp \
                          ../../src/utfcpp \
                          ../../src/ui/controls/gtk/gtktextview-helper.h
+                         ../../src/ui/controls/gtk/gtktextview-helper.cpp
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
