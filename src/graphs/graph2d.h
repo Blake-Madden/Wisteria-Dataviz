@@ -254,7 +254,7 @@ namespace Wisteria::Graphs
         /** @brief Sets the shape color to use when drawing as a stipple across bars.
             @param col The color to use.
             @note Only certain shapes have customizable colors; the rest use specific
-                colors relavent to them. In those cases, this value will be ignored.*/
+                colors relevant to them. In those cases, this value will be ignored.*/
         void SetStippleShapeColor(const wxColour col) noexcept
             { m_stippleShapeColour = col; }
         /// @returns The shape color to use when drawing as a stipple across a bar.
