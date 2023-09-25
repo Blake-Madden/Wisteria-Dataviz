@@ -48,7 +48,7 @@ namespace Wisteria::UI
             {
             RGB,       /*!< Color image.*/
             Grayscale, /*!< Shades of gray (i.e., B & W).*/
-            Greyscale = Grayscale
+            Greyscale = Grayscale /*!< Shades of gray (i.e., B & W).*/
             };
         /// @private
         ImageExportOptions() = default;

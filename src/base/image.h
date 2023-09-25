@@ -126,7 +126,7 @@ namespace Wisteria::GraphItems
             { return m_originalImg; }
 
         /** @name Image Loading Functions
-            @brief Functions related to querying, editing, and importing images.
+            @brief Functions related to querying and importing images.
             @details These are all static functions and the result of most of them
                 are `wxImage` objects that can be passed to an `Image`'s constructor.*/
         /// @{
@@ -164,6 +164,14 @@ namespace Wisteria::GraphItems
             @returns The image loaded from @c filePath.*/
         [[nodiscard]]
         static wxImage LoadFile(const wxString& filePath);
+        /// @}
+
+        /** @name Image Editing Functions
+            @brief Functions related to editing images.
+            @details These are all static functions and the result of most of them
+                are `wxImage` objects that can be passed to an `Image`'s constructor.*/
+        /// @{
+
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
             @details For example, if the height of the image is closer to the rect's than
                 the width is, then its height will be scaled to the rect's height

@@ -137,8 +137,7 @@ namespace Wisteria
     enum class ShadowType
         {
         NoDisplay,               /*!< No shadow should be drawn.*/
-        /// @private
-        NoShadow = NoDisplay,
+        NoShadow = NoDisplay,    /*!< No shadow should be drawn.*/
         RightSideShadow,         /*!< Draw a shadow on the right side.*/
         RightSideAndBottomShadow /*!< Draw a shadow on the right side and bottom.*/
         };
@@ -373,7 +372,7 @@ namespace Wisteria
         FadeFromTopToBottom,
         /// @brief Color gradient, right-to-left.
         FadeFromRightToLeft = FadeFromTopToBottom,
-        /// @private (for backward compatibility, use StippleImage instead)
+        /// @brief (for backward compatibility, use StippleImage instead)
         Stipple,
         /// @brief Fill with a repeating image.
         StippleImage = Stipple,
