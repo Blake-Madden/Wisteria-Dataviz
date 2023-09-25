@@ -2,11 +2,12 @@
     @brief Graphing classes.
     @date 2005-2023
     @copyright Blake Madden
-    @author Blake Madden
+    @author Blake Madden (portions from Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata)
     @details This program is free software; you can redistribute it and/or modify
      it under the terms of the 3-Clause BSD License.
+     (Some portions are under Code Project Open License (CPOL) 1.02, where noted.)
 
-     SPDX-License-Identifier: BSD-3-Clause
+     SPDX-License-Identifier: BSD-3-Clause, CPOL-1.02
 @{*/
 
 #ifndef __WISTERIA_GRAPHIMAGE_H__
@@ -92,7 +93,7 @@ namespace Wisteria::GraphItems
             SetOk(m_originalImg.IsOk());
             GetPen() = wxNullPen;
             }
-        /** @brief Constructor.
+        /** @brief Constructor that takes an image path.
             @param imgPath The image filepath to load.
             @note This will call LoadFile(), which will make corrections
                 such as adjusting the orientation in JPEG files.*/
