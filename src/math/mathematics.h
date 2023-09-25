@@ -588,7 +588,6 @@ namespace geometry
         @param[in,out] pt4 Corner 4 of the rectangle.
         @param deflatePercentage How much to deflate the rectangle.
             This is a percentage between `0` and `1.0`.*/
-    [[nodiscard]]
     inline void deflate_rect(std::pair<double, double>& pt1,
         std::pair<double, double>& pt2,
         std::pair<double, double>& pt3,
