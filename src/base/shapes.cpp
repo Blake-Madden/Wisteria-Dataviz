@@ -551,59 +551,62 @@ namespace Wisteria::GraphItems
         {
         // center the rendering vertically inside of square area
         if (rect.GetWidth() == rect.GetHeight())
-            { SetYOffsetPercentage(0.2); }
+            { SetYOffsetPercentage(0.05); }
 
         wxPen scaledPen(*wxWHITE, ScaleToScreenAndCanvas(1));
         DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 4> hatTop =
             {
+            wxPoint(GetXPosFromLeft(rect, 0),
+                    GetYPosFromTop(rect, math_constants::third)),
             wxPoint(GetXPosFromLeft(rect, math_constants::half),
                     GetYPosFromTop(rect, 0)),
             wxPoint(GetXPosFromLeft(rect, math_constants::full),
-                    GetYPosFromTop(rect, math_constants::fourth)),
+                    GetYPosFromTop(rect, math_constants::third)),
             wxPoint(GetXPosFromLeft(rect, math_constants::half),
-                    GetYPosFromTop(rect, math_constants::half)),
-            wxPoint(GetXPosFromLeft(rect, 0),
-                    GetYPosFromTop(rect, math_constants::fourth))
+                    GetYPosFromTop(rect, math_constants::two_thirds))
             };
+
+        const auto hatTopLeftMidPoint = geometry::point_along_line(
+            std::make_pair(hatTop[0].x, hatTop[0].y),
+            std::make_pair(hatTop[3].x, hatTop[3].y), math_constants::third);
+        const auto hatTopRightMidPoint = geometry::point_along_line(
+            std::make_pair(hatTop[3].x, hatTop[3].y),
+            std::make_pair(hatTop[2].x, hatTop[2].y), math_constants::two_thirds);
 
         const std::array<wxPoint, 6> hatStem =
             {
-            wxPoint(GetXPosFromLeft(rect, math_constants::fifth),
-                    GetYPosFromTop(rect, math_constants::fourth)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::half),
-                    GetYPosFromTop(rect, math_constants::half)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::full - math_constants::fifth),
-                    GetYPosFromTop(rect, math_constants::fourth)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::full - math_constants::fifth),
-                    GetYPosFromTop(rect, math_constants::half)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::half),
-                    GetYPosFromTop(rect, .65)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::fifth),
-                    GetYPosFromTop(rect, math_constants::half))
+            wxPoint(hatTopLeftMidPoint.first, hatTopLeftMidPoint.second),
+            hatTop[3],
+            wxPoint(hatTopRightMidPoint.first, hatTopRightMidPoint.second),
+            wxPoint(hatTopRightMidPoint.first, GetYPosFromTop(rect, math_constants::three_fourths - .1)),
+            wxPoint(hatTop[3].x,
+                    GetYPosFromTop(rect, math_constants::full - .1)),
+            wxPoint(hatTopLeftMidPoint.first, GetYPosFromTop(rect, math_constants::three_fourths - .1)),
             };
 
             {
-            wxBrush shadowedBrush(*wxBLACK_BRUSH);
-            shadowedBrush.SetColour(ColorContrast::Shade(shadowedBrush.GetColour(), .25));
+            wxBrush shadowedBrush(ApplyParentColorOpacity(*wxBLACK));
             DCBrushChangerIfDifferent bc(dc, shadowedBrush);
             dc.DrawPolygon(hatStem.size(), &hatStem[0]);
             }
 
             {
-            DCBrushChangerIfDifferent bc(dc, ColorBrewer::GetColor(Colors::Color::SmokyBlack));
+            DCBrushChangerIfDifferent bc(dc,
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Colors::Color::SmokyBlack)));
             dc.DrawPolygon(hatTop.size(), &hatTop[0]);
             }
 
-        scaledPen.SetColour(ColorBrewer::GetColor(Colors::Color::HarvestGold));
+        scaledPen.SetColour(ApplyParentColorOpacity(ColorBrewer::GetColor(Colors::Color::HarvestGold)));
         DCPenChangerIfDifferent pc2(dc, scaledPen);
-        DCBrushChangerIfDifferent bc(dc, ColorBrewer::GetColor(Colors::Color::HarvestGold));
+        DCBrushChangerIfDifferent bc(dc,
+            ApplyParentColorOpacity(ColorBrewer::GetColor(Colors::Color::HarvestGold)));
         wxPoint hatTopMidPoint(GetXPosFromLeft(rect, math_constants::half),
-                               GetYPosFromTop(rect, math_constants::fourth));
+                               GetYPosFromTop(rect, math_constants::third));
 
         // button holding the thread to the top of the hat
-        const auto threadWidth{ std::ceil(rect.GetWidth() / 32) };
+        const auto threadWidth{ std::ceil(safe_divide<double>(rect.GetWidth(), 32)) };
         dc.DrawEllipticArc(
             hatTopMidPoint - wxPoint((threadWidth*1.5), (threadWidth*1.5)),
             wxSize((threadWidth*3), (threadWidth*3)), 0, 180);
@@ -616,34 +619,35 @@ namespace Wisteria::GraphItems
         DCPenChangerIfDifferent pc3(dc, scaledPen);
         dc.DrawLine(hatTopMidPoint,
             wxPoint(GetXPosFromLeft(rect, .98),
-                    GetYPosFromTop(rect, math_constants::fourth)));
+                    GetYPosFromTop(rect, math_constants::third)));
         dc.DrawLine(
             wxPoint(GetXPosFromLeft(rect, .98),
-                GetYPosFromTop(rect, math_constants::fourth)),
+                GetYPosFromTop(rect, math_constants::third)),
             wxPoint(GetXPosFromLeft(rect, .98),
-                GetYPosFromTop(rect, math_constants::half)));
+                GetYPosFromTop(rect, math_constants::two_thirds)));
 
         // tassel
         const std::array<wxPoint, 3> tassel =
             {
             wxPoint(GetXPosFromLeft(rect, .98),
-                    GetYPosFromTop(rect, math_constants::half)),
+                    GetYPosFromTop(rect, math_constants::two_thirds)),
             wxPoint(GetXPosFromLeft(rect, .99),
-                    GetYPosFromTop(rect, math_constants::half + .1)),
+                    GetYPosFromTop(rect, math_constants::two_thirds + .1)),
             wxPoint(GetXPosFromLeft(rect, .94),
-                    GetYPosFromTop(rect, math_constants::half + .1))
+                    GetYPosFromTop(rect, math_constants::two_thirds + .1))
             };
         dc.DrawPolygon(tassel.size(), &tassel[0]);
 
-        scaledPen.SetColour(ColorContrast::Shade(ColorBrewer::GetColor(Colors::Color::Silver)));
+        scaledPen.SetColour(
+            ApplyParentColorOpacity(ColorContrast::Shade(ColorBrewer::GetColor(Colors::Color::Silver))));
         scaledPen.SetCap(wxPenCap::wxCAP_BUTT);
-        scaledPen.SetWidth(scaledPen.GetWidth() + ScaleToScreenAndCanvas(2));
+        scaledPen.SetWidth(scaledPen.GetWidth() + ScaleToScreenAndCanvas(1.5));
         DCPenChangerIfDifferent pc4(dc, scaledPen);
         dc.DrawLine(
             wxPoint(GetXPosFromLeft(rect, .98),
-                GetYPosFromTop(rect, .45)),
+                GetYPosFromTop(rect, math_constants::two_thirds - .05)),
             wxPoint(GetXPosFromLeft(rect, .98),
-                GetYPosFromTop(rect, math_constants::half)));
+                GetYPosFromTop(rect, math_constants::two_thirds)));
 
         SetYOffsetPercentage(0.0);
         }
