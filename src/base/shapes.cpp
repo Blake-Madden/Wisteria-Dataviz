@@ -401,17 +401,17 @@ namespace Wisteria::GraphItems
             {
             gc->SetPen(wxPen(ColorContrast::Shade(ColorBrewer::GetColor(Color::Wisteria)),
                        ScaleToScreenAndCanvas(1)));
-            gc->SetBrush(ColorBrewer::GetColor(Color::Wisteria));
+            gc->SetBrush(ApplyParentColorOpacity(ColorBrewer::GetColor(Color::Wisteria)));
             // a line going from the middle of the left side to the middle of the right
-            wxRect petalRect(
-                wxPoint(rect.GetLeft() + (rect.GetWidth()/2), rect.GetTop() + (rect.GetHeight()/2)),
-                wxSize(rect.GetWidth()/2, rect.GetHeight()/6));
-            petalRect.Offset(wxPoint(0, petalRect.GetHeight() / 2));
+            wxRect petalRect(centerPt,
+                wxSize(rect.GetWidth()/2 - ScaleToScreenAndCanvas(1), rect.GetHeight()/6));
+            petalRect.Offset(wxPoint(0, -(petalRect.GetHeight() / 2)));
+
             // save current transform matrix state
             gc->PushState();
             // move matrix to center of drawing area
             gc->Translate(centerPt.x, centerPt.y);
-            // draw the sun beams, which will be the horizontal line going across the middle,
+            // draw the petals, which will be the horizontal line going across the middle,
             // but rotated 45 degrees around the center
             double angle{ 0.0 };
             while (angle < 360)
@@ -428,8 +428,8 @@ namespace Wisteria::GraphItems
             // restore transform matrix
             gc->PopState();
             // draw the middle of flower
-            gc->SetBrush(ColorBrewer::GetColor(Color::BabyBlue));
-            const wxRect flowerRect = wxRect(rect).Deflate(rect.GetWidth()/4);
+            gc->SetBrush(ApplyParentColorOpacity(ColorBrewer::GetColor(Color::GoldenYellow)));
+            const wxRect flowerRect = wxRect(rect).Deflate(rect.GetWidth()/3);
             gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
                             flowerRect.GetWidth(), flowerRect.GetHeight());
             }
