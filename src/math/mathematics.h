@@ -572,9 +572,7 @@ namespace geometry
         {
         assert(segmentRatio >= 0 && segmentRatio <= 1.0 && "segmentRatio must be between 0 and 1!");
         segmentRatio = std::clamp(segmentRatio, 0.0, 1.0);
-        // distance
-        const auto distance = std::sqrt(std::pow(pt2.first - pt1.first, 2.0) +
-                                        std::pow(pt2.second - pt1.second, 2.0));
+
         // find point that divides the segment
         const auto newX = (segmentRatio * pt2.first) + ((1 - segmentRatio) * pt1.first);
         // into the ratio(1 - r) : r
