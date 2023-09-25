@@ -383,7 +383,7 @@ namespace Wisteria::GraphItems
                 ApplyParentColorOpacity(ColorBrewer::GetColor(Color::Sunglow)),
                 ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SunsetOrange)));
             gc->SetBrush(sunBrush);
-            
+
             const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y,
                 sunRect.GetWidth(), sunRect.GetHeight());
