@@ -65,7 +65,7 @@ namespace Wisteria::Icons
                                             with a sign post beneath it.*/
         WarningRoadSign,               /*!< A triangular sign containing an exclamation point,
                                             with a sign post beneath it.*/
-        Sun,                           /*!< A sun (with sunbeams).*/
+        Sun,                           /*!< A sun.*/
         Flower,                        /*!< A flower (stigma and petals).*/
         FallLeaf,                      /*!< A red leaf.*/
         LeftCurlyBrace,                /*!< A left curly brace (enclosing content to its right).*/
@@ -81,9 +81,11 @@ namespace Wisteria::Icons
         ChevronUpward,                 /*!< An upward pointing chevron.*/
         Text,                          /*!< A provided string.*/
         Tack,                          /*!< A tack (i.e., pen that holds paper to a corkboard).*/
-        Banner,                        /*!< A banner sign.*/
+        Banner,                        /*!< A banner sign (with custom text written across it).*/
         WaterColorRectangle,           /*!< A warped rectangle that looks like a watercolor-filled box.*/
-        GraduationCap                  /*!< A graduation cap.*/
+        GraduationCap,                 /*!< A graduation cap.*/
+        Book,                          /*!< A textbook.*/
+        Tire                           /*!< A car tire.*/
         };
 
     /// @brief Item to draw on a legend.

@@ -266,6 +266,12 @@ namespace Wisteria::GraphItems
             case IconShape::GraduationCap:
                 m_drawFunction = &ShapeRenderer::DrawGraduationCap;
                 break;
+            case IconShape::Book:
+                m_drawFunction = &ShapeRenderer::DrawBook;
+                break;
+            case IconShape::Tire:
+                m_drawFunction = &ShapeRenderer::DrawTire;
+                break;
             default:
                 m_drawFunction = nullptr;
                 break;
@@ -380,7 +386,7 @@ namespace Wisteria::GraphItems
             
             const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y,
-                            sunRect.GetWidth(), sunRect.GetHeight());
+                sunRect.GetWidth(), sunRect.GetHeight());
             }
         }
 
@@ -547,9 +553,241 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawBook(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        const std::array<wxPoint, 4> bookCover =
+            {
+            wxPoint(GetXPosFromLeft(rect, 0.1),
+                    GetYPosFromTop(rect, math_constants::half)),
+            wxPoint(GetXPosFromLeft(rect, 0.6),
+                    GetYPosFromTop(rect, .1)),
+            wxPoint(GetXPosFromLeft(rect, 0.9),
+                    GetYPosFromTop(rect, math_constants::third)),
+            wxPoint(GetXPosFromLeft(rect, 0.4),
+                    GetYPosFromTop(rect, 0.75))
+            };
+
+        std::array<wxPoint, 4> bookCoverBottom =
+            { bookCover };
+        const double yOffset = GetYPosFromTop(rect, 0.9) - bookCover[3].y;
+        for (auto& pt : bookCoverBottom)
+            { pt.y += yOffset; }
+
+        std::array<wxPoint, 4> spine =
+            { bookCover[0], bookCover[1], bookCoverBottom[1], bookCoverBottom[0] };
+
+        // the pages
+        auto frontOfPagesTopLeft = geometry::point_along_line(
+            std::make_pair(bookCover[0].x, bookCover[0].y),
+            std::make_pair(bookCover[3].x, bookCover[3].y),
+            .1);
+        auto frontOfPagesTopRight = geometry::point_along_line(
+            std::make_pair(bookCover[0].x, bookCover[0].y),
+            std::make_pair(bookCover[3].x, bookCover[3].y),
+            .95);
+        auto frontOfPagesBottomLeft = geometry::point_along_line(
+            std::make_pair(bookCoverBottom[0].x, bookCoverBottom[0].y),
+            std::make_pair(bookCoverBottom[3].x, bookCoverBottom[3].y),
+            .1);
+        auto frontOfPagesBottomRight = geometry::point_along_line(
+            std::make_pair(bookCoverBottom[0].x, bookCoverBottom[0].y),
+            std::make_pair(bookCoverBottom[3].x, bookCoverBottom[3].y),
+            .95);
+        std::array<wxPoint, 4> pagesFront =
+            {
+            wxPoint(frontOfPagesTopLeft.first, frontOfPagesTopLeft.second),
+            wxPoint(frontOfPagesTopRight.first, frontOfPagesTopRight.second),
+            wxPoint(frontOfPagesBottomRight.first, frontOfPagesBottomRight.second),
+            wxPoint(frontOfPagesBottomLeft.first, frontOfPagesBottomLeft.second),
+            };
+
+        auto sideOfPagesTopRight = geometry::point_along_line(
+            std::make_pair(bookCover[1].x, bookCover[1].y),
+            std::make_pair(bookCover[2].x, bookCover[2].y),
+            .95);
+        auto sideOfPagesBottomRight = geometry::point_along_line(
+            std::make_pair(bookCoverBottom[1].x, bookCoverBottom[1].y),
+            std::make_pair(bookCoverBottom[2].x, bookCoverBottom[2].y),
+            .95);
+        std::array<wxPoint, 4> pagesSide =
+            {
+            pagesFront[1],
+            wxPoint(sideOfPagesTopRight.first, sideOfPagesTopRight.second),
+            wxPoint(sideOfPagesBottomRight.first, sideOfPagesBottomRight.second),
+            pagesFront[2]
+            };
+
+        wxPen scaledPen(*wxRED, ScaleToScreenAndCanvas(1));
+        scaledPen.SetCap(wxPenCap::wxCAP_BUTT);
+        DCPenChangerIfDifferent pcMain(dc, scaledPen);
+
+        // draw the bottom of the book
+            {
+            wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
+            DCPenChangerIfDifferent pc(dc, scaledPen);
+            DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(bookCoverBottom.size(), &bookCoverBottom[0]); });
+            // a highlight along the bottom edge
+            scaledPen.SetColour(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
+            DCPenChangerIfDifferent pc2(dc, scaledPen);
+            dc.DrawLine(bookCoverBottom[0], bookCoverBottom[3]);
+
+            // gold trim on edges of book
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
+            scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
+            DCPenChangerIfDifferent pc3(dc, scaledPen);
+            auto topCornerLeft = geometry::point_along_line(
+                std::make_pair(bookCoverBottom[1].x, bookCoverBottom[1].y),
+                std::make_pair(bookCoverBottom[2].x, bookCoverBottom[2].y),
+                .9);
+            auto topCornerRight = geometry::point_along_line(
+                std::make_pair(bookCoverBottom[2].x, bookCoverBottom[2].y),
+                std::make_pair(bookCoverBottom[3].x, bookCoverBottom[3].y),
+                .1);
+            std::array<wxPoint, 3> topLeftGoldLeaf =
+                {
+                wxPoint(topCornerLeft.first, topCornerLeft.second),
+                bookCoverBottom[2],
+                wxPoint(topCornerRight.first, topCornerRight.second)
+                };
+            auto bottomCornerLeft = geometry::point_along_line(
+                std::make_pair(bookCoverBottom[2].x, bookCoverBottom[2].y),
+                std::make_pair(bookCoverBottom[3].x, bookCoverBottom[3].y),
+                .9);
+            auto bottomCornerRight = geometry::point_along_line(
+                std::make_pair(bookCoverBottom[0].x, bookCoverBottom[0].y),
+                std::make_pair(bookCoverBottom[3].x, bookCoverBottom[3].y),
+                .9);
+            std::array<wxPoint, 3> bottomLeftGoldLeaf =
+                {
+                wxPoint(bottomCornerLeft.first, bottomCornerLeft.second),
+                bookCoverBottom[3],
+                wxPoint(bottomCornerRight.first, bottomCornerRight.second)
+                };
+            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
+            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
+            DCPenChangerIfDifferent pc4(dc, scaledPen);
+            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
+            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            }
+
+        // draw the spine
+            {
+            wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
+            DCPenChangerIfDifferent pc(dc, scaledPen);
+            DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(spine.size(), &spine[0]); });
+            // a highlight along the edge
+            scaledPen.SetColour(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
+            DCPenChangerIfDifferent pc2(dc, scaledPen);
+            dc.DrawLine(spine[0], spine[3]);
+            }
+
+        // draw the pages
+            {
+            DCBrushChangerIfDifferent bc(dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::AntiqueWhite)));
+            DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
+            dc.DrawPolygon(pagesFront.size(), &pagesFront[0]);
+            }
+
+            {
+            DCBrushChangerIfDifferent bc(dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::LightGray)));
+            DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
+            dc.DrawPolygon(pagesSide.size(), &pagesSide[0]);
+            }
+
+        // draw the cover
+            {
+            wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
+            DCPenChangerIfDifferent pc(dc, scaledPen);
+            DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(bookCover.size(), &bookCover[0]); });
+            // a highlight along the bottom edge
+            scaledPen.SetColour(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
+            DCPenChangerIfDifferent pc2(dc, scaledPen);
+            dc.DrawLine(bookCover[0], bookCover[3]);
+
+            // gold leaf on cover of book
+                {
+                std::array<std::pair<double, double>, 4> goldLeafPoints =
+                    {
+                    std::make_pair(bookCover[0].x, bookCover[0].y),
+                    std::make_pair(bookCover[1].x, bookCover[1].y),
+                    std::make_pair(bookCover[2].x, bookCover[2].y),
+                    std::make_pair(bookCover[3].x, bookCover[3].y)
+                    };
+                geometry::deflate_rect(goldLeafPoints[0], goldLeafPoints[1],
+                                       goldLeafPoints[2], goldLeafPoints[3], .8);
+                std::array<wxPoint, 5> goldLeafPointsPt =
+                    {
+                    wxPoint(goldLeafPoints[0].first, goldLeafPoints[0].second),
+                    wxPoint(goldLeafPoints[1].first, goldLeafPoints[1].second),
+                    wxPoint(goldLeafPoints[2].first, goldLeafPoints[2].second),
+                    wxPoint(goldLeafPoints[3].first, goldLeafPoints[3].second),
+                    wxPoint(goldLeafPoints[0].first, goldLeafPoints[0].second)
+                    };
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+                scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
+                DCPenChangerIfDifferent pc2(dc, scaledPen);
+                dc.DrawLines(goldLeafPointsPt.size(), &goldLeafPointsPt[0]);
+                }
+
+            // gold trim on edges of book
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
+            scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
+            DCPenChangerIfDifferent pc3(dc, scaledPen);
+            auto topCornerLeft = geometry::point_along_line(
+                std::make_pair(bookCover[1].x, bookCover[1].y),
+                std::make_pair(bookCover[2].x, bookCover[2].y),
+                .9);
+            auto topCornerRight = geometry::point_along_line(
+                std::make_pair(bookCover[2].x, bookCover[2].y),
+                std::make_pair(bookCover[3].x, bookCover[3].y),
+                .1);
+            std::array<wxPoint, 3> topLeftGoldLeaf =
+                {
+                wxPoint(topCornerLeft.first, topCornerLeft.second),
+                bookCover[2],
+                wxPoint(topCornerRight.first, topCornerRight.second)
+                };
+            auto bottomCornerLeft = geometry::point_along_line(
+                std::make_pair(bookCover[2].x, bookCover[2].y),
+                std::make_pair(bookCover[3].x, bookCover[3].y),
+                .9);
+            auto bottomCornerRight = geometry::point_along_line(
+                std::make_pair(bookCover[0].x, bookCover[0].y),
+                std::make_pair(bookCover[3].x, bookCover[3].y),
+                .9);
+            std::array<wxPoint, 3> bottomLeftGoldLeaf =
+                {
+                wxPoint(bottomCornerLeft.first, bottomCornerLeft.second),
+                bookCover[3],
+                wxPoint(bottomCornerRight.first, bottomCornerRight.second)
+                };
+            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
+            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.25));
+            scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
+            DCPenChangerIfDifferent pc4(dc, scaledPen);
+            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
+            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawGraduationCap(const wxRect rect, wxDC& dc) const
         {
-        // center the rendering vertically inside of square area
         if (rect.GetWidth() == rect.GetHeight())
             { SetYOffsetPercentage(0.05); }
 
@@ -999,6 +1237,51 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawTire(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for asterisk icon!");
+        if (gc)
+            {
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            // the tire
+            const wxRect tireRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
+            auto tireBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(tireRect, 0), GetYPosFromTop(tireRect, 0),
+                GetXPosFromLeft(tireRect, 1.5), GetYPosFromTop(tireRect, 1.5),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SmokyBlack)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::DarkGray)));
+            gc->SetBrush(tireBrush);
+
+            gc->DrawEllipse(tireRect.GetTopLeft().x, tireRect.GetTopLeft().y,
+                tireRect.GetWidth(), tireRect.GetHeight());
+
+            // hubcap
+            wxRect hubCapRect = wxRect(rect).Deflate(rect.GetWidth() * math_constants::quarter);
+            auto hubCapBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(hubCapRect, 0), GetYPosFromTop(hubCapRect, 0),
+                GetXPosFromLeft(hubCapRect, 1.5), GetYPosFromTop(hubCapRect, 1.5),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::Silver)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::CoolGrey)));
+            gc->SetBrush(hubCapBrush);
+
+            gc->DrawEllipse(hubCapRect.GetTopLeft().x, hubCapRect.GetTopLeft().y,
+                hubCapRect.GetWidth(), hubCapRect.GetHeight());
+
+            hubCapRect.Deflate(hubCapRect.GetWidth() * math_constants::eighth);
+            wxPen blackPen(*wxBLACK, ScaleToScreenAndCanvas(1));
+            gc->SetPen(blackPen);
+
+            DrawAsterisk(hubCapRect, gc);
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawHexagon(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
@@ -1116,20 +1399,28 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        const auto centerPt = rect.GetTopLeft() +
-            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
-
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for asterisk icon!");
-        if (gc)
+
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk() && gc != nullptr)
             {
-            wxPen scaledPen = GetGraphItemInfo().GetPen();
-            if (scaledPen.IsOk())
-                {
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
-                }
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
             gc->SetPen(scaledPen);
+            }
+
+        DrawAsterisk(rect, gc);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const
+        {
+        if (gc != nullptr)
+            {
+            const auto centerPt = rect.GetTopLeft() +
+                wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+
             // a line going from the middle of the left side to the middle of the right
             const std::array<wxPoint2DDouble, 2> points =
                 {

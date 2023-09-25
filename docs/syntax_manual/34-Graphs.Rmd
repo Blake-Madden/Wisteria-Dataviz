@@ -117,6 +117,8 @@ Properties common to all graphs:
   - `"banner"`
   - `"watercolor-rectangle"`
   - `"graduation-cap"`
+  - `"book"`
+  - `"tire"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

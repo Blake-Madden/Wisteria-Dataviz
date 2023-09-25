@@ -270,11 +270,21 @@ namespace Wisteria::GraphItems
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
         void DrawWaterColorRectangle(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a graduation cap with tassel.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawGraduationCap(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a book.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawBook(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a car tire.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawTire(wxRect rect, wxDC& dc) const;
         /// @}
     private:
+        void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
         ///     sets the brush, then runs the rendering lambda again.
         void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const;
