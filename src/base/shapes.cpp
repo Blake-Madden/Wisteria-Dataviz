@@ -556,8 +556,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBook(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        wxDCPenChanger pcReset(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bcReset(dc, *wxBLACK_BRUSH);
 
         const std::array<wxPoint, 4> bookCover =
             {
@@ -621,9 +621,9 @@ namespace Wisteria::GraphItems
             pagesFront[2]
             };
 
-        wxPen scaledPen(*wxRED, ScaleToScreenAndCanvas(1));
-        scaledPen.SetCap(wxPenCap::wxCAP_BUTT);
-        DCPenChangerIfDifferent pcMain(dc, scaledPen);
+        wxPen scaledPenMain(*wxRED, ScaleToScreenAndCanvas(1));
+        scaledPenMain.SetCap(wxPenCap::wxCAP_BUTT);
+        DCPenChangerIfDifferent pcMain(dc, scaledPenMain);
 
         // draw the bottom of the book
             {
