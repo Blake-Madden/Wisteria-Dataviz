@@ -356,7 +356,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxColour ApplyParentColorOpacity(const wxColour col) const
             {
-            return Colors::ColorContrast::ChangeOpacity(col, GetGraphItemInfo().GetBrush().GetColour().GetAlpha());
+            return Colors::ColorContrast::ChangeOpacity(col,
+                GetGraphItemInfo().GetBrush().GetColour().GetAlpha());
             }
 
         GraphItemInfo m_graphInfo;
@@ -402,6 +403,7 @@ namespace Wisteria::GraphItems
         Icons::IconShape GetShape() const noexcept
             { return m_shape; }
         /// @returns The size in DIPs.
+        [[nodiscard]]
         wxSize GetSizeDIPS() const noexcept
             { return m_sizeDIPs; }
     protected:
@@ -415,6 +417,7 @@ namespace Wisteria::GraphItems
         void Offset(const int xToMove, const int yToMove) noexcept final
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
         /// @returns The renderer.
+        [[nodiscard]]
         ShapeRenderer& GetRenderer() noexcept
             { return m_renderer; }
     protected:
