@@ -11,6 +11,7 @@ Wisteria Dataviz contains features such as:
 - [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, and TIFF are supported)
 - Mouse- and keyboard-enabled zooming
 - Data [importing](ImportingData.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
+- Data [transformations](TransformingData.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
 - Data exporting (CSV, tab-delimited, or user-defined delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date/time, and ID columns

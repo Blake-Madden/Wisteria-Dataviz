@@ -23,7 +23,7 @@ such as:
 - Interface for displaying tabular data
 - Built-in [printing](Printing.md), copying, and exporting support
 - Data [importing](ImportingData.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
-- Data transformations, such as filtering, pivoting (both longer or wider), subsetting, and recoding
+- Data [transformations](TransformingData.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
 - Data exporting (CSV, tab-delimited, or user-defined delimited files) support
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
 - Image effects, such as oil-painting and Sepia tone

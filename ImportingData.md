@@ -47,7 +47,7 @@ Continuous Data
 =============================
 
 Columns imported as continuous will be read as double values using `wxString::ToCDouble()`. This means that the data
-should be in C locale (i.e., US format), where '.' is the radix separator.
+should be in C locale (i.e., US format), where `.` is the radix separator.
 
 Although data is imported and stored as floating point values, discrete/integer values can also be read into these columns.
 
@@ -182,83 +182,11 @@ Missing data in a date column are imported as `wxInvalidDateTime`, so `wxDateTim
 working with imported values. Also, any parsing errors (from malformed input) while importing dates are logged
 (via `wxLogWarning()`).
 
-Recoding Data
-=============================
-
-Text columns can have regular expression replacements applied to them during import. The `ImportInfo` parameter
-to the various `ImportXXX()` methods accepts a map of regex pattern and their respective replacements, which
-is performed on each categorical column as the data is read.
-
-This can be useful for recoding values to missing data (e.g., "N/A") or correcting misspellings.
-The following demonstrates this feature:
-
-```cpp
-auto commentsData = std::make_shared<Data::Dataset>();
-commentsData->ImportCSV(L"/home/rdoyle/data/Comments.csv",
-    Data::ImportInfo().CategoricalColumns({
-        { L"Comments", CategoricalImportMethod::ReadAsStrings }
-        }).
-    ReplacementStrings({
-        // replace cells that contain only something like
-        // 'NA' or 'n/a'
-        { std::make_shared<wxRegEx>(L"^[nN][/]?[aA]$"), L"" },
-        // replace 'foot ball' with 'football'
-        { std::make_shared<wxRegEx>(L"(?i)foot ball"), L"football" }
-        }));
-```
-
-These regex replacements can also be loaded from another file:
-
-```cpp
-// file that contains the regex patterns to replace
-// and what to replace them with
-auto replacementsData = std::make_shared<Data::Dataset>();
-replacementsData->ImportCSV(L"/home/dmoon/data/replacements.csv",
-    Data::ImportInfo().CategoricalColumns({
-        { L"pattern", CategoricalImportMethod::ReadAsStrings },
-        { L"replacement", CategoricalImportMethod::ReadAsStrings }
-        }));
-
-// load a file with a column of text and transform it
-auto commentsData = std::make_shared<Data::Dataset>();
-commentsData->ImportCSV(L"/home/dmoon/data/Comments.csv",
-    Data::ImportInfo().CategoricalColumns({
-        { L"Comments", CategoricalImportMethod::ReadAsStrings }
-        }).
-    ReplacementStrings(
-        ImportInfo::DatasetToRegExMap(replacementsData, L"pattern", L"replacement")
-        ));
-```
-
-Subsetting
-=============================
-
-A dataset can be subsetted using the `Wisteria::Data::Subset` class. This class's `Subset()`
-method accepts a filter criterion based on a column, the value to filter with, and how to compare with
-that value. For example, the following will create a subset where it filtered a dataset on the
-column **Gender** equaling **Female**.
-
-```cpp
-auto theData = std::make_shared<Data::Dataset>();
-theData->ImportCSV(L"/home/emma/datasets/Spelling Grades.csv",
-    ImportInfo().
-    ContinuousColumns({ L"AVG_GRADE"}).
-    CategoricalColumns({
-        { L"Gender" },
-        { L"WEEK_NAME" }
-        }));
-Subset dsSubset;
-// dataset with only female observations
-const auto subset =
-    dsSubset.SubsetSimple(theData,
-        ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" });
-// "subset" can now be exported or plotted
-```
-
 Using the Data
 =============================
 
-After importing a dataset, you then pass it to a graph's `SetData()` function and specify which columns to use.
+After importing a dataset, you can [transform](TransformingData.md) it (if needed) and pass it
+to a graph's `SetData()` function and specify which columns to use.
 For example, a `Wisteria::Graphs::BoxPlot` will use a dataset's continuous column (and optionally a group column).
 A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two continuous columns and a group column.
 
