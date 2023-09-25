@@ -364,44 +364,21 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        const auto centerPt = rect.GetTopLeft() +
-            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
-
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for sun icon!");
         if (gc)
             {
-            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::SunsetOrange),
-                       ScaleToScreenAndCanvas(1)));
-            gc->SetBrush(ColorBrewer::GetColor(Color::SunsetOrange));
-            // a line going from the middle of the left side to the middle of the right
-            const std::array<wxPoint2DDouble, 2> points =
-                {
-                wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight() / 2)),
-                wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight() / 2))
-                };
-            // save current transform matrix state
-            gc->PushState();
-            // move matrix to center of drawing area
-            gc->Translate(centerPt.x, centerPt.y);
-            // draw the sun beams, which will be the horizontal line going across the middle,
-            // but rotated 45 degrees around the center
-            double angle = 0.0;
-            while (angle < 360)
-                {
-                gc->Rotate(geometry::degrees_to_radians(angle));
-                // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over from
-                // the translated origin
-                gc->StrokeLine(points[0].m_x - centerPt.x, points[0].m_y - centerPt.y,
-                               points[1].m_x - centerPt.x, points[1].m_y - centerPt.y);
-                angle += 45;
-                }
-            // restore transform matrix
-            gc->PopState();
-            // draw the sun
-            const wxRect sunRect = wxRect(rect).Deflate(rect.GetWidth()/4);
+            // a sun with a sunset (deeper orange) color blended near the bottom
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            auto sunBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, 0),
+                GetXPosFromLeft(rect, 1.5), GetYPosFromTop(rect, 1.5),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::Sunglow)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SunsetOrange)));
+            gc->SetBrush(sunBrush);
+            
+            const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y,
                             sunRect.GetWidth(), sunRect.GetHeight());
             }
@@ -826,7 +803,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc) const
         {
-        wxDCBrushChanger bc(dc, ColorBrewer::GetColor(Color::SchoolBusYellow));
+        wxDCBrushChanger bc(dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
 
         const auto iconRadius = GetRadius(rect);
 
@@ -930,7 +907,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc) const
         {
-        wxDCBrushChanger bc(dc, ColorBrewer::GetColor(Color::SchoolBusYellow));
+        wxDCBrushChanger bc(dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
 
         const auto iconRadius = GetRadius(rect);
 

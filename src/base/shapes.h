@@ -337,6 +337,17 @@ namespace Wisteria::GraphItems
                    L"Shape should have a proper DPI scaling.");
             return m_graphInfo.GetDPIScaleFactor().value_or(1);
             }
+        /// @returns A color with the shape's brush opacity applied to it.
+        /// @param col The color to adjust.
+        /// @note This should be performed on any custom brush (but *not* outline pen) colors
+        ///     that a shape is using that a client isn't provided. This will ensure
+        ///     that if being drawn as a fillable shape, the "ghosted" portion of the
+        ///     shape will appear as expected.
+        [[nodiscard]]
+        wxColour ApplyParentColorOpacity(const wxColour col) const
+            {
+            return Colors::ColorContrast::ChangeOpacity(col, GetGraphItemInfo().GetBrush().GetColour().GetAlpha());
+            }
 
         GraphItemInfo m_graphInfo;
         const wxBitmapBundle* m_iconImage{ nullptr };
