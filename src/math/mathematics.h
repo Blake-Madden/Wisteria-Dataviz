@@ -555,20 +555,79 @@ namespace geometry
                                  const std::pair<double, double> pt2) noexcept
         { return std::sqrt(std::pow(pt1.first-pt2.first, 2) + std::pow(pt1.second-pt2.second, 2)); }
 
-    /** @brief Gets the middle point between two points.
-        @returns The middle point between two points.
+    /** @brief Finds a point along a line, passed on a percent of the line length.
+        @returns The point along the line at the provided percentage of the line's length.
             The returned pair represents the x and y values of the middle point.
-        @param pt1 The first point.
-        @param pt2 The second point.
-        @todo needs unit tested.*/
+        @param pt1 The first point of the line.
+        @param pt2 The second point of the line.
+        @param segmentRatio The percentage of the line's length to the point from.
+            For example, `0.5` will return the middle point of the line.\n
+            This value should be between `0` and `1.0`.
+        @note Adapted from https://stackoverflow.com/questions/1934210/finding-a-point-on-a-line*/
     [[nodiscard]]
-    inline constexpr std::pair<double, double> middle_point(
+    inline std::pair<double, double> point_along_line(
         const std::pair<double, double> pt1,
-        const std::pair<double, double> pt2) noexcept
+        const std::pair<double, double> pt2,
+        double segmentRatio) noexcept
         {
-        return std::make_pair(
-            safe_divide(pt1.first + pt2.first, 2.0),
-            safe_divide(pt1.second + pt2.second, 2.0));
+        assert(segmentRatio >= 0 && segmentRatio <= 1.0 && "segmentRatio must be between 0 and 1!");
+        segmentRatio = std::clamp(segmentRatio, 0.0, 1.0);
+        // distance
+        const auto distance = std::sqrt(std::pow(pt2.first - pt1.first, 2.0) +
+                                        std::pow(pt2.second - pt1.second, 2.0));
+        // find point that divides the segment
+        const auto newX = (segmentRatio * pt2.first) + ((1 - segmentRatio) * pt1.first);
+        // into the ratio(1 - r) : r
+        const auto newY = (segmentRatio * pt2.second) + ((1 - segmentRatio) * pt1.second);
+        return std::make_pair(newX, newY);
+        }
+
+    /** @brief Takes the corners of a (possibly irregular) rectangle and returns those
+            corners, deflating the rectangle by the provided percentage.
+        @param[in,out] pt1 Corner 1 of the rectangle.
+        @param[in,out] pt2 Corner 2 of the rectangle.
+        @param[in,out] pt3 Corner 3 of the rectangle.
+        @param[in,out] pt4 Corner 4 of the rectangle.
+        @param deflatePercentage How much to deflate the rectangle.
+            This is a percentage between `0` and `1.0`.*/
+    [[nodiscard]]
+    inline void deflate_rect(std::pair<double, double>& pt1,
+        std::pair<double, double>& pt2,
+        std::pair<double, double>& pt3,
+        std::pair<double, double>& pt4,
+        double deflatePercentage)
+        {
+        assert(deflatePercentage >= 0 && deflatePercentage <= 1.0 && "deflatePercentage must be between 0 and 1!");
+        deflatePercentage = std::clamp(deflatePercentage, 0.0, 1.0);
+
+        const auto getMidPoint = [deflatePercentage](const auto p1, const auto p2, const auto p3)
+            {
+            // If one of the lines is longer, then we need to adjust where the
+            // point along its edge is to truly get an evenly deflated rectangle.
+            const auto line1Length{ segment_length(p1, p2) };
+            const auto line2Length{ segment_length(p2, p3) };
+            const auto diffPercent =
+                safe_divide(std::abs(line2Length - line1Length), std::max(line1Length, line2Length));
+            const auto deflateAdjustmentForLongerLine =
+                deflatePercentage + ((1.0 - deflatePercentage) * diffPercent);
+
+            const auto linePt1 = point_along_line(p1, p2,
+                (line1Length > line2Length) ? deflateAdjustmentForLongerLine : deflatePercentage);
+            const auto linePt2 = point_along_line(p2, p3,
+                1.0 - ((line2Length > line1Length) ? deflateAdjustmentForLongerLine : deflatePercentage));
+
+            return point_along_line(linePt1, linePt2, math_constants::half);
+            };
+
+        auto lineMidPt1 = getMidPoint(pt1, pt2, pt3);
+        auto lineMidPt2 = getMidPoint(pt2, pt3, pt4);
+        auto lineMidPt3 = getMidPoint(pt3, pt4, pt1);
+        auto lineMidPt4 = getMidPoint(pt4, pt1, pt2);
+
+        pt1 = lineMidPt4;
+        pt2 = lineMidPt1;
+        pt3 = lineMidPt2;
+        pt4 = lineMidPt3;
         }
 
     /** @brief Gets the middle point between two points, where this point would
@@ -584,14 +643,14 @@ namespace geometry
         @param pt2 The second point.
         @todo needs unit tested.*/
     [[nodiscard]]
-    inline constexpr std::tuple<double, double, bool> middle_point_horizontal_spline(
+    inline std::tuple<double, double, bool> middle_point_horizontal_spline(
         const std::pair<double, double> pt1,
         const std::pair<double, double> pt2) noexcept
         {
         // see which point is which in our left-to-right flow
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
 
-        const auto [x, y] = middle_point(pt1, pt2);
+        const auto [x, y] = point_along_line(pt1, pt2, math_constants::half);
         const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
         return std::make_tuple(x, y + safe_divide(distanceBetweenMidYAndRightY, 2.0),
                                (y >= rightPt.second));
@@ -608,14 +667,14 @@ namespace geometry
         @param pt2 The second point.
         @todo needs unit tested.*/
     [[nodiscard]]
-    inline constexpr std::pair<double, double> middle_point_horizontal_upward_spline(
+    inline std::pair<double, double> middle_point_horizontal_upward_spline(
         const std::pair<double, double> pt1,
         const std::pair<double, double> pt2) noexcept
         {
         // see which point is which in our left-to-right flow
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
 
-        const auto [x, y] = middle_point(pt1, pt2);
+        const auto [x, y] = point_along_line(pt1, pt2, math_constants::half);
         const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
         return std::make_pair(x, y - std::abs(safe_divide(distanceBetweenMidYAndRightY, 2.0)) );
         }
@@ -631,14 +690,14 @@ namespace geometry
         @param pt2 The second point.
         @todo needs unit tested.*/
     [[nodiscard]]
-    inline constexpr std::pair<double, double> middle_point_horizontal_downward_spline(
+    inline std::pair<double, double> middle_point_horizontal_downward_spline(
         const std::pair<double, double> pt1,
         const std::pair<double, double> pt2) noexcept
         {
         // see which point is which in our left-to-right flow
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
 
-        const auto [x, y] = middle_point(pt1, pt2);
+        const auto [x, y] = point_along_line(pt1, pt2, math_constants::half);
         const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
         return std::make_pair(x, y + std::abs(safe_divide(distanceBetweenMidYAndRightY, 2.0)) );
         }
@@ -660,8 +719,8 @@ namespace geometry
         @todo needs unit tested.*/
     [[nodiscard]]
     inline std::pair<double, double> find_point(const double angleInDegrees,
-                                               const double length,
-                                               const std::pair<double, double> origin) noexcept
+                                                const double length,
+                                                const std::pair<double, double> origin) noexcept
         {
         return std::make_pair(origin.first + length*std::cos(degrees_to_radians(angleInDegrees)),
                               origin.second + length*std::sin(degrees_to_radians(angleInDegrees)) );
@@ -677,7 +736,7 @@ namespace geometry
             but at least try to return something sensical).*/
     [[nodiscard]]
     inline double rescaled_height(const std::pair<double, double> size,
-                                           const double newWidth) noexcept
+                                  const double newWidth) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newWidth >= 0) &&
             "size value cannot be negative");
@@ -696,7 +755,7 @@ namespace geometry
             but at least try to return something sensical).*/
     [[nodiscard]]
     inline double rescaled_width(const std::pair<double, double> size,
-                                          const double newHeight) noexcept
+                                 const double newHeight) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newHeight >= 0) &&
             "size value cannot be negative");
