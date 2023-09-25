@@ -1206,9 +1206,14 @@ namespace Wisteria::GraphItems
         if (gc)
             {
             // draw the leaf
-            gc->SetPen(wxPen(ColorContrast::Shade(ColorBrewer::GetColor(Color::ChineseRed)),
-                       ScaleToScreenAndCanvas(1)));
-            gc->SetBrush(ColorBrewer::GetColor(Color::ChineseRed));
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            auto leafBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(rect, math_constants::three_fourths), GetYPosFromTop(rect, math_constants::half),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::ChineseRed)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SunsetOrange)));
+            gc->SetBrush(leafBrush);
+
             auto leafPath = gc->CreatePath();
             // left side of leaf
             leafPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
@@ -1228,8 +1233,9 @@ namespace Wisteria::GraphItems
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
 
+            const auto stemWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
             gc->SetPen(wxPen(ColorBrewer::GetColor(Color::DarkBrown),
-                       ScaleToScreenAndCanvas(1)));
+                       ScaleToScreenAndCanvas(stemWidth)));
 
             // draw the stem
             auto stemPath = gc->CreatePath();
