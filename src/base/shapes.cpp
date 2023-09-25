@@ -738,7 +738,7 @@ namespace Wisteria::GraphItems
                     };
                 scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
                 scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
-                DCPenChangerIfDifferent pc2(dc, scaledPen);
+                DCPenChangerIfDifferent pc3(dc, scaledPen);
                 dc.DrawLines(goldLeafPointsPt.size(), &goldLeafPointsPt[0]);
                 }
 
