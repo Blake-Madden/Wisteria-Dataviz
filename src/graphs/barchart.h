@@ -986,6 +986,8 @@ namespace Wisteria::Graphs
         /// @param direction SortAscending to sort smallest-to-largest (A-Z),
         ///    going top-to-bottom or left-to-right.
         ///    SortDescending to sort largest-to-smallest (A-Z).
+        /// @warning If there are bar groups or brackets along the bar axis, then those
+        ///     will be removed when sorting.
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
         /// @brief Sorts the bars (based on a specified order of axis labels).
         ///     This is similar to what @c forcats::fct_relevel() does in R.
@@ -1001,6 +1003,8 @@ namespace Wisteria::Graphs
         ///     Finally, all bar labels must be unique for the label ordering to work;
         ///     otherwise, the sort could not be deterministic. If there are multiple bars
         ///     with the same axis label, then this will return without sorting.
+        /// @warning If there are bar groups or brackets along the bar axis, then those
+        ///     will be removed when sorting.
         virtual void SortBars(std::vector<wxString> labels, const SortDirection direction);
         /// @returns @c true if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept

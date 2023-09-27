@@ -466,6 +466,10 @@ namespace Wisteria::Graphs
         if (barLabels.size() != GetBars().size())
             { return; }
 
+        // bar groups and brackets connected to bars' positions will need to be removed
+        m_barGroups.clear();
+        GetBarAxis().ClearBrackets();
+
         // verify that provided labels are in the existing bars
         // (if not, then add a empty bar for it)
         for (const auto& label : labels)
@@ -602,8 +606,9 @@ namespace Wisteria::Graphs
             GetBarAxis().IsReversed())
             { return; }
 
-        // bar groups connected to bars' positions will need to be removed
+        // bar groups and brackets connected to bars' positions will need to be removed
         m_barGroups.clear();
+        GetBarAxis().ClearBrackets();
 
         const bool isDisplayingOuterLabels = GetBarAxis().IsShowingOuterLabels();
         GetBarAxis().ClearCustomLabels();
