@@ -503,7 +503,7 @@ namespace Wisteria::GraphItems
             AnchorPoint(GetMidPoint(rect)).Anchoring(Anchoring::Center).
             LabelAlignment(TextAlignment::Centered).
             DPIScaling(GetDPIScaleFactor()));
-        theLabel.SetFontColor(GetGraphItemInfo().GetPen().GetColour());
+        theLabel.SetFontColor(GetGraphItemInfo().GetFontColor());
         theLabel.GetFont().MakeBold();
         theLabel.SetBoundingBox(rect, dc, GetScaling());
         theLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);

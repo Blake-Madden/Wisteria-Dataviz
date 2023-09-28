@@ -670,6 +670,10 @@ namespace Wisteria
             [[nodiscard]]
             const wxString& GetText() const noexcept
                 { return m_text; }
+            /// @returns The font color.
+            [[nodiscard]]
+            wxColour GetFontColor() const
+                { return m_textColor; }
             /// @returns @c true if drawing a top border (with the object's pen).
             /// @note This is only relevant for object which are meant to draw an outline
             ///     (e.g., Labels and Graphs). This only returns the object's flag for this

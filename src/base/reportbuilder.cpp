@@ -2752,10 +2752,13 @@ namespace Wisteria
                 }
             }
 
+        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"text"), GraphItems::Label());
+
         auto sh = std::make_shared<FillableShape>(
-            GraphItemInfo(ExpandConstants(shapeNode->GetProperty(L"text")->GetValueString())).
+            GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{})).
             Anchoring(Anchoring::TopLeftCorner).
-            Pen(pen).Brush(brush),
+            Pen(pen).Brush(brush).
+            FontColor((shapeLabel != nullptr ? shapeLabel->GetFontColor() : *wxBLACK)),
             loadedShape.value(), sz, fillPercent);
         // center by default, but allow LoadItems (below) to override that
         // if client asked for something else
@@ -2794,10 +2797,13 @@ namespace Wisteria
         wxBrush brush(*wxWHITE_BRUSH);
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
+        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"text"), GraphItems::Label());
+
         auto sh = std::make_shared<Shape>(
-            GraphItemInfo(ExpandConstants(shapeNode->GetProperty(L"text")->GetValueString())).
+            GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{})).
             Anchoring(Anchoring::TopLeftCorner).
-            Pen(pen).Brush(brush),
+            Pen(pen).Brush(brush).
+            FontColor((shapeLabel != nullptr ? shapeLabel->GetFontColor() : *wxBLACK)),
             loadedShape.value(), sz);
         // center by default, but allow LoadItems (below) to override that
         // if client asked for something else
