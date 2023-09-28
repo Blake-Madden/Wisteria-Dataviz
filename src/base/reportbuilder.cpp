@@ -486,7 +486,7 @@ namespace Wisteria
             auto interval = rangeNode->GetProperty(_DT(L"interval"))->GetValueNumber(axis.GetInterval());
             auto displayInterval =
                 rangeNode->GetProperty(_DT(L"display-interval"))->GetValueNumber(axis.GetDisplayInterval());
-            
+
             axis.SetRange(rangeStart, rangeEnd,
                 precision, interval, displayInterval);
             }
