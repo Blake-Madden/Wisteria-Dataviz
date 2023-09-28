@@ -236,6 +236,16 @@ Note that instead of properties, a single string can be specified indicating a f
   - `"only-custom-labels"`
   - `"custom-labels-and-values"`
   - `"no-display"`
+- `"number-display"`: A string specifying how to display numeric axis points. \
+  Available options are:
+  - `"percentage"`
+  - `"value"`
+- `"range"`: A node describing the range to use for the axis, which contains the following properties:
+  - `"start"`: A number specifying the start of the range.
+  - `"end"`: A number specifying the end of the range.
+  - `"precision"`: A number specifying the precision to use for numbers displayed on the axis.
+  - `"interval"`: A number specifying the interval of the tickmarks along the range.
+  - `"display-interval"`: A number specifying the how often the axis points should show a label.
 - `"show-outer-labels"`: `true` to show the outer labels on the axis.
 - `"label-length"`: A number specifying the suggested maximum length for the axis labels. (Default is `100`.)
 - `"label-length-auto"`: If `true`, an attempt will be made to split longer axis labels based on

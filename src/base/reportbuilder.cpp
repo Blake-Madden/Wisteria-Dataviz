@@ -475,6 +475,22 @@ namespace Wisteria
         if (axisNode->GetProperty(L"label-length-auto")->GetValueBool())
             { axis.SetLabelLengthAuto(); }
 
+        const auto rangeNode = axisNode->GetProperty(_DT(L"range"));
+        if (rangeNode->IsOk())
+            {
+            auto [rangeStart, rangeEnd] = axis.GetRange();
+            rangeStart = rangeNode->GetProperty(_DT(L"start"))->GetValueNumber(rangeStart);
+            rangeEnd = rangeNode->GetProperty(_DT(L"end"))->GetValueNumber(rangeEnd);
+
+            auto precision = rangeNode->GetProperty(_DT(L"precision"))->GetValueNumber(axis.GetPrecision());
+            auto interval = rangeNode->GetProperty(_DT(L"interval"))->GetValueNumber(axis.GetInterval());
+            auto displayInterval =
+                rangeNode->GetProperty(_DT(L"display-interval"))->GetValueNumber(axis.GetDisplayInterval());
+            
+            axis.SetRange(rangeStart, rangeEnd,
+                precision, interval, displayInterval);
+            }
+
         // brackets
         const auto bracketsNode = axisNode->GetProperty(L"brackets");
         if (bracketsNode->IsOk())
