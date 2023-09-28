@@ -784,6 +784,20 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         const AxisLabelDisplay& GetLabelDisplay() const noexcept
             { return m_labelDisplay; }
+        /// @returns How the numeric values of the axis points are displayed.
+        [[nodiscard]]
+        const NumberDisplay& GetNumberDisplay() const noexcept
+            { return m_numberLabelDisplay; }
+        /// @brief Sets how the numeric values of the axis points are displayed.
+        /// @param display The numeric display method.
+        /// @note This will only apply if GetLabelDisplay() is using a type that includes
+        ///     the numeric value of the axis point. In other words, this will not apply
+        ///     to custom labels.
+        void SetNumerDisplay(const NumberDisplay display)
+            {
+            m_numberLabelDisplay = display;
+            SetLabelDisplay(GetLabelDisplay());
+            }
         /// @brief Sets how the labels are aligned, either flush right against the axis line,
         ///     flush left against the edge of the axis area, or centered on the axis line itself.
         /// @param alignment How to align the labels against the axis.
@@ -1647,6 +1661,7 @@ namespace Wisteria::GraphItems
         AxisLabelOrientation m_labelOrientation{ AxisLabelOrientation::Parallel };
         AxisLabelDisplay m_labelDisplay{ AxisLabelDisplay::DisplayCustomLabelsOrValues };
         AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
+        NumberDisplay m_numberLabelDisplay{ NumberDisplay::Value };
         RelativeAlignment m_labelAlignmet{ RelativeAlignment::Centered };
         AxisCapStyle m_capStyle{ AxisCapStyle::NoCap };
         bool m_stackLabelsToFit{ false };

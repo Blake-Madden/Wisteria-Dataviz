@@ -454,6 +454,11 @@ namespace Wisteria
         if (foundPos != labelDisplayValues.cend())
             { axis.SetLabelDisplay(foundPos->second); }
 
+        const auto numDisplay = ReportEnumConvert::ConvertNumberDisplay(
+            axisNode->GetProperty(_DT(L"number-display"))->GetValueString());
+        if (numDisplay)
+            { axis.SetNumerDisplay(numDisplay.value()); }
+
         axis.SetDoubleSidedAxisLabels(axisNode->GetProperty(L"double-sided-labels")->GetValueBool());
 
         // pens

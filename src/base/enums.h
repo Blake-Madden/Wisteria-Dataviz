@@ -348,6 +348,15 @@ namespace Wisteria
         NoCap  /*!< Nothing is drawn at the end of the axis line.*/
         };
 
+    /// @brief How a number should be displayed.
+    enum class NumberDisplay
+        {
+        /// @brief Display the number as-is.
+        Value,
+        /// @brief Show as a percent.
+        Percentage
+        };
+
     /// @brief How the segments between the points on a line are connected.
     /// @note Setting the drawing pen to `wxNullPen` will turn off line drawing.
     enum class LineStyle

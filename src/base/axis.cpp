@@ -3032,9 +3032,19 @@ namespace Wisteria::GraphItems
             {
             for (auto& axisPt : GetAxisPoints())
                 {
-                axisPt.SetDisplayValue(
-                    wxNumberFormatter::ToString(axisPt.GetValue(), m_displayPrecision,
-                        wxNumberFormatter::Style::Style_WithThousandsSep));
+                if (GetNumberDisplay() == NumberDisplay::Value)
+                    {
+                    axisPt.SetDisplayValue(
+                        wxNumberFormatter::ToString(axisPt.GetValue(), m_displayPrecision,
+                            wxNumberFormatter::Style::Style_WithThousandsSep));
+                    }
+                else // Percent
+                    {
+                    axisPt.SetDisplayValue(
+                        wxNumberFormatter::ToString(axisPt.GetValue() * 100, m_displayPrecision,
+                            wxNumberFormatter::Style::Style_WithThousandsSep |
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%");
+                    }
                 }
             }
         }

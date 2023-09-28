@@ -574,6 +574,23 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<NumberDisplay> ConvertNumberDisplay(const wxString& value)
+            {
+            // use standard string, wxString should not be constructed globally
+            static const std::map<std::wstring, NumberDisplay> bDisplayValues =
+                {
+                { L"percentage", NumberDisplay::Percentage },
+                { L"value", NumberDisplay::Value }
+                };
+
+            const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != bDisplayValues.cend()) ?
+                std::optional<NumberDisplay>(foundValue->second) :
+                std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Graphs::Roadmap::LaneSeparatorStyle> ConvertLaneSeparatorStyle(const wxString& value)
             {
             // use standard string, wxString should not be constructed globally
