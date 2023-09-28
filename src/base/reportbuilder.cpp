@@ -4978,9 +4978,26 @@ namespace Wisteria
             stippleImgNode->IsOk())
             { graph->SetStippleBrush(LoadImageFile(stippleImgNode)); }
 
-        if (const auto stippleShapeColor = ConvertColor(graphNode->GetProperty(L"stipple-shape-color"));
+        if (const auto stippleShapeNode = graphNode->GetProperty(L"stipple-shape");
+            stippleShapeNode->IsOk())
+            {
+            if (stippleShapeNode->IsValueString())
+                {
+                const auto iconValue = ReportEnumConvert::ConvertIcon(stippleShapeNode->GetValueString());
+                if (iconValue.has_value())
+                    { graph->SetStippleShape(iconValue.value()); }
+                }
+            else
+                {
+                const auto iconValue =
+                    ReportEnumConvert::ConvertIcon(stippleShapeNode->GetProperty(L"icon")->GetValueString());
+                if (iconValue.has_value())
+                    { graph->SetStippleShape(iconValue.value()); }
+                if (const auto stippleShapeColor = ConvertColor(stippleShapeNode->GetProperty(L"color"));
             stippleShapeColor.IsOk())
             { graph->SetStippleShapeColor(stippleShapeColor); }
+                }
+            }
 
         // axes
         const auto axesProperty = graphNode->GetProperty(L"axes");

@@ -68,7 +68,7 @@ Properties for `"common-axis"` nodes:
 Properties for `"fillable-shape"` nodes:
 
 - `"icon"`: A string specifying the icon to draw the shape as.
-- `"text"`: A string to display on the shape.
+- `"text"`: A string to display on the shape, which contains [label](#label-properties) properties.
 - `"pen"`: The pen to draw with, which includes [pen](#pen-properties) properties.
 - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
 - `"size"`: The size of the shape, which contains the following properties:
@@ -141,7 +141,7 @@ object on the canvas (i.e., not a label on another object).
 Properties for `"shape"` nodes:
 
 - `"icon"`: A string specifying the icon to draw the shape as.
-- `"text"`: A string to display on the shape.
+- `"text"`: A string to display on the shape, which contains [label](#label-properties) properties.
 - `"pen"`: The pen to draw with, which includes [pen](#pen-properties) properties.
 - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
 - `"size"`: The size of the shape, which contains the following properties:
