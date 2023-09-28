@@ -410,6 +410,26 @@ namespace Wisteria
         Image
         };
 
+    /// @brief Effects that could be applied to an image.
+    enum class ImageEffect
+        {
+        /// @brief Do no alter the image.
+        NoEffect,
+        /// @brief Shades of gray (i.e., Black & White).
+        Grayscale,
+        /// @brief A horizontal blur across the image.
+        BlurHorizontal,
+        /// @brief A vertical blur across the image.
+        BlurVertical,
+        /// @brief A sepia (i.e., faded photograph) effect.
+        Sepia,
+        /// @brief A frosted glass window effect to an image.
+        ///     In other words, the image as it may appear when viewed through frosted glass.
+        FrostedGlass,
+        /// @brief An oil painting effect.
+        OilPainting
+        };
+
     /// @brief How the corners of how various boxes are drawn.
     enum class BoxCorners
         {

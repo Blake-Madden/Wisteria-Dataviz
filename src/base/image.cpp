@@ -270,8 +270,27 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    wxImage Image::ApplyEffect(const Wisteria::ImageEffect effect, const wxImage& img)
+        {
+        if (effect == Wisteria::ImageEffect::Grayscale)
+            { return img.ConvertToGreyscale(); }
+        else if (effect == Wisteria::ImageEffect::BlurHorizontal)
+            { return img.BlurHorizontal(10); }
+        else if (effect == Wisteria::ImageEffect::BlurVertical)
+            { return img.BlurVertical(10); }
+        else if (effect == Wisteria::ImageEffect::Sepia)
+            { return Wisteria::GraphItems::Image::Sepia(img); }
+        else if (effect == Wisteria::ImageEffect::FrostedGlass)
+            { return Wisteria::GraphItems::Image::FrostedGlass(img); }
+        else if (effect == Wisteria::ImageEffect::OilPainting)
+            { return Wisteria::GraphItems::Image::OilPainting(img); }
+        else
+            { return img; }
+        }
+
+    //-------------------------------------------
     wxImage Image::FrostedGlass(const wxImage& image,
-        const Wisteria::Orientation orientation /*Orientation::Both*/,
+        const Wisteria::Orientation orientation /*= Orientation::Both*/,
         const uint8_t coarseness /*= 50*/)
         {
         if (!image.IsOk())
