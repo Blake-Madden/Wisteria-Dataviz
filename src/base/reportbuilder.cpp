@@ -3303,17 +3303,37 @@ namespace Wisteria
             }
 
         std::vector<wxString> variables;
-        const auto readVariables = graphNode->GetProperty(L"variables")->GetValueStringVector();
-        for (const auto& readVar : readVariables)
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk() && variablesNode->IsValueString())
             {
-            auto convertedVars = ExpandColumnSelections(readVar, foundPos->second);
+            auto convertedVars =
+                ExpandColumnSelections(variablesNode->GetValueString(), foundPos->second);
             if (convertedVars)
                 {
                 variables.insert(variables.cend(),
                     convertedVars.value().cbegin(), convertedVars.value().cend());
                 }
             else
-                { variables.push_back(readVar); }
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: unknown variable selection formula for table."),
+                        variablesNode->GetValueString()).ToUTF8());
+                }
+            }
+        else if (variablesNode->IsOk() && variablesNode->IsValueArray())
+            {
+            const auto readVariables = variablesNode->GetValueStringVector();
+            for (const auto& readVar : readVariables)
+                {
+                auto convertedVars = ExpandColumnSelections(readVar, foundPos->second);
+                if (convertedVars)
+                    {
+                    variables.insert(variables.cend(),
+                        convertedVars.value().cbegin(), convertedVars.value().cend());
+                    }
+                else
+                    { variables.push_back(readVar); }
+                }
             }
 
         auto table = std::make_shared<Graphs::Table>(canvas);
@@ -5010,8 +5030,8 @@ namespace Wisteria
                 if (iconValue.has_value())
                     { graph->SetStippleShape(iconValue.value()); }
                 if (const auto stippleShapeColor = ConvertColor(stippleShapeNode->GetProperty(L"color"));
-            stippleShapeColor.IsOk())
-            { graph->SetStippleShapeColor(stippleShapeColor); }
+                    stippleShapeColor.IsOk())
+                    { graph->SetStippleShapeColor(stippleShapeColor); }
                 }
             }
 
