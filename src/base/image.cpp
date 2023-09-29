@@ -882,6 +882,15 @@ namespace Wisteria::GraphItems
 
             return image;
             }
+        // weird exception that auto-buffering won't help, so explain it to the user
+        catch (const MemoryMappedFileCloudFileError&)
+            {
+            wxLogWarning(
+                wxString::Format(_(L"%s: unable to open file from Cloud service."),
+                    filePath),
+                _(L"Error"), wxOK|wxICON_EXCLAMATION);
+            return wxNullImage;
+            }
         catch (...)
             { return wxNullImage; }
         }
