@@ -649,7 +649,7 @@ Properties for `"pie-chart"` nodes:
   - `"by-group"`: If showcasing the inner pie, `true` will show the smallest/largest slice within each group.
   - `"show-outer-pie-midpoint-labels"`: If showcasing the inner pie, `true` to keep the outer pie midpoint labels shown.
   - `"outer-label-ring"`: If showcasing the outer pie, a string specifying which ring should have its group labels
-    show outside of the pie. \
+    shown outside of the pie. \
     Available options are:
     - `"inner"`
     - `"outer"`
@@ -921,9 +921,9 @@ The remaining properties are executed in the following order:
 - `"column-formatting"`: An array of column and formatting pairs, which contain the following properties:
   - `"position"`: Which column to reformat. \
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: If reformatting a range of columns, this is the starting column. \
+  - `"start"`: If reformatting a range of rows, this is the starting row. \
        Refer to [position](#position-properties) for available properties.
-  - `"end"`: If reformatting a range of columns, this is the end column. \
+  - `"end"`: If reformatting a range of rows, this is the end row. \
        Refer to [position](#position-properties) for available properties.
   - `"format"`: The formatting for the column. \
     Available options are:
