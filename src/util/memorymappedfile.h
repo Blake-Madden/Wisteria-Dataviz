@@ -24,6 +24,7 @@
 #include <wx/msgdlg.h>
 #include <wx/log.h>
 #include <exception>
+#include <stdexcept>
 #include <cstring>
 
 /// General exception that can be thrown when mapping a file.
@@ -92,11 +93,12 @@ public:
 
     /** @brief Constructor which will automatically map the file.
 
-        @exception MemoryMappedInvalidFileSize
+        @exception MemoryMappedFileException
         @exception MemoryMappedFileEmptyException
         @exception MemoryMappedFileShareViolationException
         @exception MemoryMappedInvalidFileType
         @exception MemoryMappedInvalidFileSize
+        @exception MemoryMappedFileCloudFileError
 
         @param filePath Path to the file to map.
         @param readOnly Flag specifying whether to open the file as read only.
@@ -144,11 +146,12 @@ public:
         @warning If this object is currently mapping another file then
         you need to call UnmapFile() first.
 
-        @exception MemoryMappedInvalidFileSize
+        @exception MemoryMappedFileException
         @exception MemoryMappedFileEmptyException
         @exception MemoryMappedFileShareViolationException
         @exception MemoryMappedInvalidFileType
         @exception MemoryMappedInvalidFileSize
+        @exception MemoryMappedFileCloudFileError
 
         @param filePath Path to the file to map.
         @param readOnly Flag specifying whether to open the file as read only.
