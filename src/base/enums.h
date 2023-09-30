@@ -427,7 +427,9 @@ namespace Wisteria
         ///     In other words, the image as it may appear when viewed through frosted glass.
         FrostedGlass,
         /// @brief An oil painting effect.
-        OilPainting
+        OilPainting,
+        /// @private
+        IMAGE_EFFECTS_COUNT
         };
 
     /// @brief How the corners of how various boxes are drawn.
