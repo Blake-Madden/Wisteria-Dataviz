@@ -791,7 +791,7 @@ namespace Wisteria::GraphItems
         if (rect.GetWidth() == rect.GetHeight())
             { SetYOffsetPercentage(0.05); }
 
-        wxPen scaledPen(*wxWHITE, ScaleToScreenAndCanvas(1));
+        wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray), std::min(1.0, ScaleToScreenAndCanvas(0.5)));
         DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 4> hatTop =
