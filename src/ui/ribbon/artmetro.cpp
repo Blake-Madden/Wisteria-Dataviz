@@ -907,7 +907,9 @@ void RibbonMetroArtProvider::DrawButtonBarButtonForeground(
     wxColour paintingColour = (state & wxRIBBON_BUTTONBAR_BUTTON_HOVER_MASK) ?
         m_tab_highlight_colour : m_button_bar_label_colour;
 
-    if (state & wxRIBBON_BUTTONBAR_BUTTON_TOGGLED)
+    if ((state & wxRIBBON_BUTTONBAR_BUTTON_TOGGLED) ||
+        (state & wxRIBBON_BUTTONBAR_BUTTON_DROPDOWN_ACTIVE) ||
+        (state & wxRIBBON_BUTTONBAR_BUTTON_NORMAL_ACTIVE) )
         {
         paintingColour = Colors::ColorContrast::BlackOrWhiteContrast(m_page_toggle_face_colour);
         }

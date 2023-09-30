@@ -3,9 +3,11 @@
     @date 2005-2023
     @copyright Peter Cawley, "iwbnwif", Blake Madden
     @authors Peter Cawley (wxRibbon), "iwbnwif" (wxRibbonMetroArtProvider),
-     Blake Madden (modernized code)
+     Blake Madden (modernized code, minor fixes)
     @details This program is free software; you can redistribute it and/or modify
      it under the terms of the wxWindows license.
+
+    SPDX-License-Identifier: wxWindows
 @{*/
 
 /*
