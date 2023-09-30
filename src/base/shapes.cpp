@@ -1059,13 +1059,15 @@ namespace Wisteria::GraphItems
                 rect.GetBottomLeft() +
                     wxSize(rect.GetWidth() / 2, 0)
                 };
-            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(4),
-                                                     (rect.GetWidth() / 5));
-            // white outline of sign post
+            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(3),
+                                                     (rect.GetWidth() / 15));
+            // dark gray outline of sign post
                 {
                 wxDCPenChanger pc(dc,
-                    wxPen(wxPenInfo(*wxWHITE, signPostWidth + ScaleToScreenAndCanvas(1)).
-                            Cap(wxPenCap::wxCAP_BUTT)));
+                    wxPen(wxPenInfo(
+                        ColorBrewer::GetColor(Colors::Color::DarkGray),
+                            signPostWidth + ScaleToScreenAndCanvas(1)).
+                        Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
             // actual sign post
@@ -1165,13 +1167,15 @@ namespace Wisteria::GraphItems
                 rect.GetBottomLeft() +
                     wxSize(rect.GetWidth() / 2, 0)
                 };
-            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(4),
-                                                     (rect.GetWidth() / 5));
-            // white outline of sign post used to contrast black sign post
+            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(3),
+                                                     (rect.GetWidth() / 15));
+            // dark gray outline of sign post used to contrast black sign post
             // against a possibly dark background
                 {
                 wxDCPenChanger pc(dc,
-                    wxPen(wxPenInfo(*wxWHITE, signPostWidth + ScaleToScreenAndCanvas(1)).
+                    wxPen(wxPenInfo(
+                            ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                signPostWidth + ScaleToScreenAndCanvas(1)).
                             Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
