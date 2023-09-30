@@ -46,9 +46,12 @@ namespace Wisteria::UI
         /// @brief Color modes to save an image with.
         enum class ColorMode
             {
-            RGB,       /*!< Color image.*/
-            Grayscale, /*!< Shades of gray (i.e., B & W).*/
-            Greyscale = Grayscale /*!< Shades of gray (i.e., B & W).*/
+            /// @brief Color image.
+            RGB,
+            /// @brief Shades of gray (i.e., B & W).
+            Grayscale,
+            /// @private
+            Greyscale = Grayscale
             };
         /// @private
         ImageExportOptions() = default;
