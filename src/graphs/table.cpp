@@ -67,10 +67,10 @@ namespace Wisteria::Graphs
                     *dVal < GetSuppressionThreshold().value())
                     { return GetSuppressionLabel(); }
                 return
-                    ((*dVal < 0) ? L"(" : wxString{}) +
+                    ((*dVal < 0) ? wxString{ L"(" } : wxString{}) +
                     wxNumberFormatter::ToString(*dVal, m_precision,
                         wxNumberFormatter::Style::Style_WithThousandsSep) +
-                    ((*dVal < 0) ? L")" : wxString{});
+                    ((*dVal < 0) ? wxString{ L")" } : wxString{});
                 }
             else
                 {
