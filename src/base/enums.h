@@ -382,6 +382,7 @@ namespace Wisteria
         /// @brief Color gradient, right-to-left.
         FadeFromRightToLeft = FadeFromTopToBottom,
         /// @brief For backward compatibility, use @c StippleImage instead.
+        /// @private
         Stipple,
         /// @brief Fill with a repeating image.
         StippleImage = Stipple,
