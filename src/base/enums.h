@@ -381,11 +381,11 @@ namespace Wisteria
         FadeFromTopToBottom,
         /// @brief Color gradient, right-to-left.
         FadeFromRightToLeft = FadeFromTopToBottom,
-        /// @brief (for backward compatibility, use StippleImage instead)
+        /// @brief For backward compatibility, use @c StippleImage instead.
         Stipple,
         /// @brief Fill with a repeating image.
         StippleImage = Stipple,
-        /// @brief Fill with a repeating shape.
+        /// @brief Fill with a repeating shape (Icons::IconShape).
         StippleShape,
         /// @brief A subimage of a larger image shared by all boxes.
         CommonImage,
@@ -394,7 +394,7 @@ namespace Wisteria
         /// @brief A watercolor-like effect, where the box is warped and looks
         ///     like it was filled in with watercolor paint (or a marker).\n
         ///     Note that if an outline pen is in use, it will be drawn over the
-        ///     fill color, giving the look that it showing through the "watercolor."
+        ///     fill color, giving the look that it showing through the "watercolor".
         WaterColor,
         /// @private
         EFFECTS_COUNT
