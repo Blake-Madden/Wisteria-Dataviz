@@ -529,7 +529,7 @@ namespace Wisteria::Graphs
             GetScalingAxis().SetRange(0, m_longestBarLength, 0,
                 // add a little extra padding to the scaling axis if we are using labels
                 (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay));
-            
+
             AdjustScalingAxisFromBarLength(m_longestBarLength);
             }
         }
