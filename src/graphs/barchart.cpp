@@ -1606,10 +1606,7 @@ namespace Wisteria::Graphs
                         barBlock.GetDecal().GetText().length())
                         {
                         const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
-                        // rectangle is inverted
-                        wxRect decalRect(wxPoint(0,0), wxSize(barNeckRect.GetHeight(),
-                                         barNeckRect.GetWidth()));
-                        decalRect.SetHeight(decalRect.GetHeight()-leftPadding);
+                        wxRect decalRect(barNeckRect); decalRect.Deflate(leftPadding, 0);
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
                         decalLabel->GetGraphItemInfo().Pen(wxNullPen).
