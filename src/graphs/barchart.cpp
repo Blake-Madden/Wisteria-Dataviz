@@ -376,76 +376,89 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    void BarChart::UpdateScalingAxisFromBar(const Bar& bar)
+    void BarChart::AdjustScalingAxisFromBarLength(const double barLength)
         {
-        // where the bar actually ends on the scaling axis
-        const auto barEnd = bar.GetLength() +
-            bar.GetCustomScalingAxisStartPosition().value_or(0);
-
-        // if this bar is longer than previous ones, then update the scaling
-        if (m_longestBarLength < barEnd)
-            {
-            m_longestBarLength = barEnd;
-            GetScalingAxis().SetRange(0, m_longestBarLength, 0,
-                // add a little extra padding to the scaling axis if we are using labels
-                (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay));
             const auto originalRange = GetScalingAxis().GetRange();
 
             // tweak scaling
-            if (m_longestBarLength >= 3'000'000)
+        if (barLength >= 3'000'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 7),
+                next_interval(barLength, 7),
                     GetScalingAxis().GetPrecision(), 1'000'000, 1);
                 }
-            else if (m_longestBarLength >= 1'500'000)
+        else if (barLength >= 1'500'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 7),
+                next_interval(barLength, 7),
                     GetScalingAxis().GetPrecision(), 500'000, 1);
                 }
-            else if (m_longestBarLength >= 800'000)
+        else if (barLength >= 800'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 6),
+                next_interval(barLength, 6),
                     GetScalingAxis().GetPrecision(), 100'000, 1);
                 }
-            else if (m_longestBarLength >= 400'000)
+        else if (barLength >= 400'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 6),
+                next_interval(barLength, 6),
                     GetScalingAxis().GetPrecision(), 50'000, 1);
                 }
-            else if (m_longestBarLength >= 50'000)
+        else if (barLength >= 50'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 5),
+                next_interval(barLength, 5),
                     GetScalingAxis().GetPrecision(), 10'000, 1);
                 }
-            else if (m_longestBarLength >= 20'000)
+        else if (barLength >= 20'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 4),
+                next_interval(barLength, 4),
                     GetScalingAxis().GetPrecision(), 5'000, 1);
                 }
-            else if (m_longestBarLength >= 10'000)
+        else if (barLength >= 10'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 4),
+                next_interval(barLength, 4),
                     GetScalingAxis().GetPrecision(), 1'000, 1);
                 }
-            else if (m_longestBarLength >= 1'500)
+        else if (barLength >= 1'500)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 4),
+                next_interval(barLength, 4),
                     GetScalingAxis().GetPrecision(), 500, 1);
                 }
-            else if (m_longestBarLength > 300)
+        else if (barLength > 300)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 3),
+                next_interval(barLength, 3),
                     GetScalingAxis().GetPrecision(), 100, 1);
                 }
+        else if (barLength > 100)
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                next_interval(barLength, 3),
+                GetScalingAxis().GetPrecision(), 50, 1);
+            }
+        else if (barLength > 50)
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                next_interval(barLength, 2),
+                GetScalingAxis().GetPrecision(), 10, 1);
+            }
+        else if (barLength > 10)
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                next_interval(barLength, 2),
+                GetScalingAxis().GetPrecision(), 5, 1);
+            }
+        else
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                next_interval(barLength, 1),
+                GetScalingAxis().GetPrecision(), 1, 1);
+            }
 
             // if showing labels and we just re-adjusted the range, then add an
             // extra interval for the label
@@ -468,6 +481,24 @@ namespace Wisteria::Graphs
                         GetScalingAxis().GetDisplayInterval());
                     }
                 }
+        }
+
+    //-----------------------------------
+    void BarChart::UpdateScalingAxisFromBar(const Bar& bar)
+        {
+        // where the bar actually ends on the scaling axis
+        const auto barEnd = bar.GetLength() +
+            bar.GetCustomScalingAxisStartPosition().value_or(0);
+
+        // if this bar is longer than previous ones, then update the scaling
+        if (m_longestBarLength < barEnd)
+            {
+            m_longestBarLength = barEnd;
+            GetScalingAxis().SetRange(0, m_longestBarLength, 0,
+                // add a little extra padding to the scaling axis if we are using labels
+                (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay));
+            
+            AdjustScalingAxisFromBarLength(m_longestBarLength);
             }
         }
 

@@ -714,7 +714,7 @@ namespace Wisteria::Graphs
             /// @details This is useful if the brush is using a hatched pattern.
             wxColour m_barColor{ wxNullColour };
             /// @brief Position on the axis next to the furthest out bar in the group.
-            /// @details This is relevant only when the group label place is `NextToParent`.
+            /// @details This is relevant only when the group label placement is `NextToParent`.
             std::optional<wxCoord> m_maxBarPos{ std::nullopt };
             };
 
@@ -884,8 +884,11 @@ namespace Wisteria::Graphs
             @details This is useful for giving attention to a block of smaller bars
                 that may be eclipsed by a larger bar.
             @param barGroup The bar group information.*/
-        void AddBarGroup(const BarGroup& barGroup)
-            { m_barGroups.push_back(barGroup); }
+        void AddBarGroup(BarGroup barGroup)
+            {
+            m_barGroups.push_back(std::move(barGroup));
+            AdjustScalingAxisFromBarGroups();
+            }
 
         /// @returns How the bar groups (brackets and cumulative bars) are aligned with their respective bars. 
         [[nodiscard]]
@@ -1094,9 +1097,6 @@ namespace Wisteria::Graphs
         const std::vector<Bar>& GetBars() const noexcept
             { return m_bars; }
         /// @private
-        void AddBarGroup(BarGroup&& barGroup)
-            { m_barGroups.emplace_back(barGroup); }
-        /// @private
         [[nodiscard]]
         const Wisteria::GraphItems::Axis& GetBarAxis() const noexcept
             {
@@ -1155,6 +1155,7 @@ namespace Wisteria::Graphs
                 }
             }
     private:
+        void AdjustScalingAxisFromBarLength(const double barLength);
         std::vector<Bar> m_bars;
         uint8_t m_barOopacity{ wxALPHA_OPAQUE };
         uint8_t m_ghostOpacity{ 32 }; // used for showcasing
