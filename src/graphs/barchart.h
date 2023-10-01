@@ -1156,6 +1156,7 @@ namespace Wisteria::Graphs
             }
     private:
         void AdjustScalingAxisFromBarLength(const double barLength);
+        void AdjustScalingAxisFromBarGroups();
         std::vector<Bar> m_bars;
         uint8_t m_barOopacity{ wxALPHA_OPAQUE };
         uint8_t m_ghostOpacity{ 32 }; // used for showcasing

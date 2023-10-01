@@ -85,6 +85,7 @@ namespace Wisteria::Graphs
                 _(L"'%s': bar label not found when adding bar group."),
                 firstBar.has_value() ? lastBarLabel : firstBarLabel).ToUTF8());
             }
+        AdjustScalingAxisFromBarGroups();
         }
 
     //-----------------------------------
@@ -111,6 +112,7 @@ namespace Wisteria::Graphs
             throw std::runtime_error(
                 wxString(_(L"Bar label not found when adding bar group.")).ToUTF8());
             }
+        AdjustScalingAxisFromBarGroups();
         }
 
     //-----------------------------------
@@ -348,6 +350,36 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
+    void BarChart::AdjustScalingAxisFromBarGroups()
+        {
+        for (const auto& bar : GetBars())
+            { UpdateScalingAxisFromBar(bar); }
+        double longestGroup{ 0 };
+        for (const auto& barGroup : m_barGroups)
+            {
+            double groupBarLength{ 0 };
+            double longestSubBarLength{ 0 };
+            for (size_t i = barGroup.m_barPositions.first;
+                i <= barGroup.m_barPositions.second;
+                ++i)
+                {
+                const auto& bar = GetBars().at(i);
+                // where the bar actually ends on the scaling axis
+                const auto barEnd = bar.GetLength() +
+                    bar.GetCustomScalingAxisStartPosition().value_or(0);
+                longestSubBarLength = std::max(longestSubBarLength, barEnd);
+                groupBarLength += barEnd;
+                }
+            longestGroup = std::max(longestGroup, longestSubBarLength + groupBarLength);
+            }
+        if (GetScalingAxis().GetRange().second < longestGroup)
+            {
+            // add a couple of extra intervals for the connection braces
+            AdjustScalingAxisFromBarLength(longestGroup + (GetScalingAxis().GetInterval() * 2));
+            }
+        }
+
+    //-----------------------------------
     void BarChart::AddBar(Bar bar, const bool adjustScalingAxis /*= true*/)
         {
         m_bars.push_back(bar);
@@ -378,63 +410,63 @@ namespace Wisteria::Graphs
     //-----------------------------------
     void BarChart::AdjustScalingAxisFromBarLength(const double barLength)
         {
-            const auto originalRange = GetScalingAxis().GetRange();
+        const auto originalRange = GetScalingAxis().GetRange();
 
-            // tweak scaling
+        // tweak scaling
         if (barLength >= 3'000'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 7),
-                    GetScalingAxis().GetPrecision(), 1'000'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 1'000'000, 1);
+            }
         else if (barLength >= 1'500'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 7),
-                    GetScalingAxis().GetPrecision(), 500'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 500'000, 1);
+            }
         else if (barLength >= 800'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 6),
-                    GetScalingAxis().GetPrecision(), 100'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 100'000, 1);
+            }
         else if (barLength >= 400'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 6),
-                    GetScalingAxis().GetPrecision(), 50'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 50'000, 1);
+            }
         else if (barLength >= 50'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 5),
-                    GetScalingAxis().GetPrecision(), 10'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 10'000, 1);
+            }
         else if (barLength >= 20'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 4),
-                    GetScalingAxis().GetPrecision(), 5'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 5'000, 1);
+            }
         else if (barLength >= 10'000)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 4),
-                    GetScalingAxis().GetPrecision(), 1'000, 1);
-                }
+                GetScalingAxis().GetPrecision(), 1'000, 1);
+            }
         else if (barLength >= 1'500)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 4),
-                    GetScalingAxis().GetPrecision(), 500, 1);
-                }
+                GetScalingAxis().GetPrecision(), 500, 1);
+            }
         else if (barLength > 300)
-                {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                 next_interval(barLength, 3),
-                    GetScalingAxis().GetPrecision(), 100, 1);
-                }
+                GetScalingAxis().GetPrecision(), 100, 1);
+            }
         else if (barLength > 100)
             {
             GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
@@ -460,27 +492,27 @@ namespace Wisteria::Graphs
                 GetScalingAxis().GetPrecision(), 1, 1);
             }
 
-            // if showing labels and we just re-adjusted the range, then add an
-            // extra interval for the label
-            if (const auto currentRange = GetScalingAxis().GetRange();
-                (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay) && originalRange != currentRange)
+        // if showing labels and we just re-adjusted the range, then add an
+        // extra interval for the label
+        if (const auto currentRange = GetScalingAxis().GetRange();
+            (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay) && originalRange != currentRange)
+            {
+            const auto extraSpaceAfterBar{ m_longestBarLength -
+                                            (currentRange.second - GetScalingAxis().GetInterval()) };
+            const auto barPercentOfLastInterval{
+                safe_divide<double>(extraSpaceAfterBar, GetScalingAxis().GetInterval()) };
+            // but only add a new interval if the longest bar is consuming more than
+            // 20% of the current last interval; otherwise, there already is plenty of space
+            // for the label
+            if (barPercentOfLastInterval > math_constants::fifth)
                 {
-                const auto extraSpaceAfterBar{ m_longestBarLength -
-                                               (currentRange.second - GetScalingAxis().GetInterval()) };
-                const auto barPercentOfLastInterval{
-                    safe_divide<double>(extraSpaceAfterBar, GetScalingAxis().GetInterval()) };
-                // but only add a new interval if the longest bar is consuming more than
-                // 20% of the current last interval; otherwise, there already is plenty of space
-                // for the label
-                if (barPercentOfLastInterval > math_constants::fifth)
-                    {
-                    GetScalingAxis().SetRange(currentRange.first,
-                        currentRange.second + GetScalingAxis().GetInterval(),
-                        GetScalingAxis().GetPrecision(),
-                        GetScalingAxis().GetInterval(),
-                        GetScalingAxis().GetDisplayInterval());
-                    }
+                GetScalingAxis().SetRange(currentRange.first,
+                    currentRange.second + GetScalingAxis().GetInterval(),
+                    GetScalingAxis().GetPrecision(),
+                    GetScalingAxis().GetInterval(),
+                    GetScalingAxis().GetDisplayInterval());
                 }
+            }
         }
 
     //-----------------------------------
