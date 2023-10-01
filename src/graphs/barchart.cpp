@@ -62,9 +62,9 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void BarChart::AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
-                         std::optional<wxString> decal,
-                         std::optional<wxColour> color,
-                         std::optional<wxBrush> brush)
+                               std::optional<wxString> decal,
+                               std::optional<wxColour> color,
+                               std::optional<wxBrush> brush)
         {
         const auto firstBar = FindBar(firstBarLabel);
         const auto lastBar = FindBar(lastBarLabel);
@@ -88,6 +88,32 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
+    void BarChart::AddBarGroup(const double firstBarAxisPosition, const double lastBarAxisPosition,
+                               std::optional<wxString> decal,
+                               std::optional<wxColour> color,
+                               std::optional<wxBrush> brush)
+        {
+        const auto firstBar = FindBar(firstBarAxisPosition);
+        const auto lastBar = FindBar(lastBarAxisPosition);
+        if (firstBar && lastBar)
+            {
+            m_barGroups.push_back(
+                {
+                std::make_pair(firstBar.value(), lastBar.value()),
+                decal.has_value() ? decal.value() : wxString{},
+                brush.has_value() ? brush.value() : GetBrushScheme()->GetBrush(0),
+                color.has_value() ? color.value() :
+                    (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour)
+                });
+            }
+        else
+            {
+            throw std::runtime_error(
+                wxString(_(L"Bar label not found when adding bar group.")).ToUTF8());
+            }
+        }
+
+    //-----------------------------------
     void BarChart::AddBarIcon(const wxString& bar, const wxBitmapBundle& img)
         {
         const auto barPos = FindBar(bar);
@@ -105,6 +131,17 @@ namespace Wisteria::Graphs
         for (size_t i = 0; i < GetBars().size(); ++i)
             {
             if (GetBars()[i].GetAxisLabel().GetText().CmpNoCase(axisLabel) == 0)
+                { return i; }
+            }
+        return std::nullopt;
+        }
+
+    //-----------------------------------
+    std::optional<size_t> BarChart::FindBar(const double axisPosition)
+        {
+        for (size_t i = 0; i < GetBars().size(); ++i)
+            {
+            if (compare_doubles(GetBars()[i].GetAxisPosition(), axisPosition))
                 { return i; }
             }
         return std::nullopt;
@@ -445,6 +482,20 @@ namespace Wisteria::Graphs
                     return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0;
                     });
             bar.SetOpacity((foundPos == labels.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
+            }
+        }
+
+    //-----------------------------------
+    void BarChart::ShowcaseBars(const std::vector<double>& positions)
+        {
+        for (auto& bar : GetBars())
+            {
+            const auto foundPos = std::find_if(positions.cbegin(), positions.cend(),
+                [&bar](const auto& position)
+                    {
+                    return compare_doubles(bar.GetAxisPosition(), position);
+                    });
+            bar.SetOpacity((foundPos == positions.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
             }
         }
 

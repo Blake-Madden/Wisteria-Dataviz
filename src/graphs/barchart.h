@@ -703,7 +703,8 @@ namespace Wisteria::Graphs
                 a bar is drawn representing the length of children bars (within the group) combined.*/
         struct BarGroup
             {
-            /// @brief The start and end positions of the group.
+            /// @brief The start and end positions
+            ///  (in terms of index into the bars, not axis position) of the group.
             std::pair<size_t, size_t> m_barPositions{ 0, 0 };
             /// @brief A label to draw on the group bar.
             wxString m_barDecal;
@@ -781,13 +782,20 @@ namespace Wisteria::Graphs
             for (auto& bar : GetBars())
                 { bar.SetEffect(effect); }
             }
-        /** @brief Sets the specified bars (by axis label) to be fully opaque,
+        /** @brief Sets the specified bars (by custom axis label) to be fully opaque,
                 and all other to a lighter opacity.
             @param labels The bars to showcase.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
             @sa SetGhostOpacity().*/
         void ShowcaseBars(const std::vector<wxString>& labels);
+        /** @brief Sets the specified bars (by axis position) to be fully opaque,
+                and all other to a lighter opacity.
+            @param positions The axis positions of the bars to showcase.
+            @note Call SetGhostOpacity() prior to this to control how translucent
+                the non-showcased (i.e., "ghosted") bars are.
+            @sa SetGhostOpacity().*/
+        void ShowcaseBars(const std::vector<double>& positions);
         /// @returns The opacity level applied to "ghosted" slices.
         [[nodiscard]]
         uint8_t GetGhostOpacity() const noexcept
@@ -811,11 +819,16 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::vector<Bar>& GetBars() noexcept
             { return m_bars; }
-        /// @brief Searches for a bar by axis label.
-        /// @param axisLabel The label of the bar to search for.
-        /// @returns The index the bar if found, @c std::nullopt otherwise.
+        /// @brief Searches for a bar by custom axis label.
+        /// @param axisLabel The custom axis label of the bar to search for.
+        /// @returns The index of the bar if found, @c std::nullopt otherwise.
         [[nodiscard]]
         std::optional<size_t> FindBar(const wxString& axisLabel);
+        /// @brief Searches for a bar by axis position.
+        /// @param axisPosition The axis position of the bar to search for.
+        /// @returns The index of the bar if found, @c std::nullopt otherwise.
+        [[nodiscard]]
+        std::optional<size_t> FindBar(const double axisPosition);
         /** @brief Finds the start of a bar block.
             @param barIndex Which bar to use.
             @param blockTag The tag to identify the bar block to find.
@@ -823,7 +836,7 @@ namespace Wisteria::Graphs
                 if not found.*/
         [[nodiscard]]
         std::optional<double> FindBarBlockStart(const size_t barIndex,
-                                                              const wxString& blockTag) const;
+                                                const wxString& blockTag) const;
         /** @brief Finds the end of a bar block.
             @param barIndex Which bar to use.
             @param blockTag The tag to identify the bar block to find.
@@ -831,14 +844,14 @@ namespace Wisteria::Graphs
                 if not found.*/
         [[nodiscard]]
         std::optional<double> FindBarBlockEnd(const size_t barIndex,
-                                                            const wxString& blockTag) const;
+                                              const wxString& blockTag) const;
 
         /** @brief Adds a bracket (inside the plotting area) around a range of bars
                 and draws a bar above that showing the length of the children bars combined.
             @details This is useful for giving attention to a block of smaller bars
                 that may be eclipsed by a larger bar.
-            @param firstBarLabel The first bar in the group.
-            @param lastBarLabel The last bar in the group.
+            @param firstBarLabel The (custom) axis label of the first bar in the group.
+            @param lastBarLabel The (custom) axis label of the last bar in the group.
             @param decal The label to show on the grouped bar.
             @param color The color of the grouped bar. If @c std::nullopt, the first color from
                 the color scheme will be used (or transparent color, if the color scheme is null).
@@ -846,6 +859,23 @@ namespace Wisteria::Graphs
                 the brush scheme will be used.
             @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
+                         std::optional<wxString> decal = std::nullopt,
+                         std::optional<wxColour> color = std::nullopt,
+                         std::optional<wxBrush> brush = std::nullopt);
+        /** @brief Adds a bracket (inside the plotting area) around a range of bars
+                and draws a bar above that showing the length of the children bars combined.
+            @details This is useful for giving attention to a block of smaller bars
+                that may be eclipsed by a larger bar.
+            @param firstBarAxisPosition The axis position of the first bar in the group.
+            @param lastBarAxisPosition The axis position of the last bar in the group.
+            @param decal The label to show on the grouped bar.
+            @param color The color of the grouped bar. If @c std::nullopt, the first color from
+                the color scheme will be used (or transparent color, if the color scheme is null).
+            @param brush The brush of the grouped bar. If @c std::nullopt, the first brush from
+                the brush scheme will be used.
+            @throws std::runtime_error If a provided axis positions doesn't have a bar,
+                throws an exception.*/
+        void AddBarGroup(const double firstBarAxisPosition, const double lastBarAxisPosition,
                          std::optional<wxString> decal = std::nullopt,
                          std::optional<wxColour> color = std::nullopt,
                          std::optional<wxBrush> brush = std::nullopt);
