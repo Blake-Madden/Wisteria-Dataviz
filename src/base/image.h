@@ -524,6 +524,10 @@ namespace Wisteria::Images::Schemes
         [[nodiscard]]
         const std::vector<wxBitmapBundle>& GetImages() const noexcept
             { return m_images; }
+        /// @private
+        [[nodiscard]]
+        std::vector<wxBitmapBundle>& GetImages() noexcept
+            { return m_images; }
         /** @returns The image at the given index.
             @param index The index into the image list to return. If index is outside
                 the number of images, then it will recycle (i.e., wrap around).
