@@ -496,12 +496,12 @@ namespace Wisteria
         if (customLabelsNode->IsOk() && customLabelsNode->IsValueArray())
             {
             const auto customLabels = customLabelsNode->GetValueArrayObject();
-            for (const auto& customLabels : customLabels)
+            for (const auto& customLabel : customLabels)
                 {
-                if (customLabels->HasProperty(L"value"))
+                if (customLabel->HasProperty(L"value"))
                     {
-                    axis.SetCustomLabel(customLabels->GetProperty(L"value")->GetValueNumber(),
-                        *LoadLabel(customLabels->GetProperty(L"label"), GraphItems::Label()));
+                    axis.SetCustomLabel(customLabel->GetProperty(L"value")->GetValueNumber(),
+                        *LoadLabel(customLabel->GetProperty(L"label"), GraphItems::Label()));
                     }
                 }
             }
