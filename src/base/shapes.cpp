@@ -272,6 +272,12 @@ namespace Wisteria::GraphItems
             case IconShape::Tire:
                 m_drawFunction = &ShapeRenderer::DrawTire;
                 break;
+            case IconShape::Snowflake:
+                m_drawFunction = &ShapeRenderer::DrawSnowflake;
+                break;
+            case IconShape::Newspaper:
+                m_drawFunction = &ShapeRenderer::DrawNewspaper;
+                break;
             default:
                 m_drawFunction = nullptr;
                 break;
@@ -373,7 +379,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for sun icon!");
-        if (gc)
+        if (gc != nullptr)
             {
             // a sun with a sunset (deeper orange) color blended near the bottom
             gc->SetPen(*wxTRANSPARENT_PEN);
@@ -403,7 +409,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for flower icon!");
-        if (gc)
+        if (gc != nullptr)
             {
             gc->SetPen(wxPen(ColorContrast::Shade(ColorBrewer::GetColor(Color::Wisteria)),
                        ScaleToScreenAndCanvas(1)));
@@ -997,7 +1003,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for geo marker!");
-        if (gc)
+        if (gc != nullptr)
             {
             wxPen scaledPen = GetGraphItemInfo().GetPen();
             if (scaledPen.IsOk())
@@ -1250,9 +1256,11 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for asterisk icon!");
-        if (gc)
+        if (gc != nullptr)
             {
-            gc->SetPen(*wxTRANSPARENT_PEN);
+            wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                            std::min(1.0, ScaleToScreenAndCanvas(0.5)));
+            gc->SetPen(scaledPen);
             // the tire
             const wxRect tireRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
             auto tireBrush = gc->CreateLinearGradientBrush(
@@ -1489,6 +1497,95 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawNewspaper(const wxRect rect, wxDC& dc) const
+        {
+        wxDCPenChanger pc(dc,
+            wxPen(ColorBrewer::GetColor(Colors::Color::DarkGray), ScaleToScreenAndCanvas(1)));
+        wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
+
+        wxRect frontPageRect{ rect };
+        frontPageRect.Deflate(frontPageRect.GetSize() * .2);
+
+        auto backPage{ frontPageRect };
+        backPage.SetWidth(frontPageRect.GetWidth() * 1.1);
+        backPage.SetHeight(frontPageRect.GetHeight() * math_constants::three_fourths);
+        backPage.Offset(0, frontPageRect.GetHeight() - backPage.GetHeight());
+
+        // draw the lower (folded) section of the backpage
+            {
+            auto bottomRect{ backPage };
+            bottomRect.SetHeight(bottomRect.GetHeight() * math_constants::half);
+            bottomRect.Offset(0, backPage.GetHeight() - bottomRect.GetHeight());
+            wxDCClipper clip(dc, bottomRect);
+            dc.DrawRoundedRectangle(backPage, ScaleToScreenAndCanvas(2));
+            }
+        // draw the upper half of the backpage
+            {
+            auto topRect{ backPage };
+            topRect.SetHeight(topRect.GetHeight() *
+                // avoid a gap in the lines
+                (math_constants::half + .05));
+            wxDCClipper clip(dc, topRect);
+            dc.DrawRectangle(backPage);
+            }
+        // draw the font page
+            {
+            auto topRect{ frontPageRect };
+            topRect.SetHeight(topRect.GetHeight() * .9);
+            wxDCClipper clip(dc, topRect);
+            dc.DrawRectangle(frontPageRect);
+            }
+
+        // headline
+        wxDCPenChanger pc2(dc,
+            wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), ScaleToScreenAndCanvas(0.5)));
+        auto headlineBox{ frontPageRect };
+        headlineBox.SetHeight(headlineBox.GetHeight() * math_constants::third);
+        headlineBox.Deflate(ScaleToScreenAndCanvas(2));
+        Label headline(GraphItemInfo(_("DAYTON TIMES")).
+            DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
+            Pen(wxNullPen));
+        headline.SetBoundingBox(headlineBox, dc, GetScaling());
+        headline.Draw(dc);
+        headlineBox.Offset(wxPoint(0, ScaleToScreenAndCanvas(1)));
+        dc.DrawLine(headlineBox.GetBottomLeft(), headlineBox.GetBottomRight());
+
+        // picture on the front page
+        auto pictureBox{ frontPageRect };
+        pictureBox.SetHeight(frontPageRect.GetHeight() * math_constants::third);
+        pictureBox.SetWidth(frontPageRect.GetWidth() * math_constants::fourth);
+        pictureBox.SetTop(headlineBox.GetBottom() + ScaleToScreenAndCanvas(1));
+        pictureBox.Offset(wxPoint(ScaleToScreenAndCanvas(2), 0));
+        dc.DrawRectangle(pictureBox);
+        dc.GradientFillLinear(pictureBox, ColorBrewer::GetColor(Colors::Color::BlizzardBlue),
+            ColorBrewer::GetColor(Colors::Color::PastelOrange));
+        
+        // column separator
+        wxPoint columnTop(pictureBox.GetTopRight());
+        columnTop.x += ScaleToScreenAndCanvas(1);
+        wxPoint columnBottom(columnTop.x, frontPageRect.GetBottom() - ScaleToScreenAndCanvas(2));
+        dc.DrawLine(columnTop, columnBottom);
+
+        // text on the right side
+        wxDCPenChanger pc3(dc,
+            wxPen(ColorBrewer::GetColor(Colors::Color::DarkGray), ScaleToScreenAndCanvas(1), wxPENSTYLE_SHORT_DASH));
+        auto rightTextRect{ frontPageRect };
+        rightTextRect.SetWidth(frontPageRect.GetRight() - columnTop.x - ScaleToScreenAndCanvas(2));
+        headlineBox.Offset(wxPoint(0, ScaleToScreenAndCanvas(1)));
+        rightTextRect.SetHeight(frontPageRect.GetBottom() - headlineBox.GetBottom() - ScaleToScreenAndCanvas(2));
+        rightTextRect.SetTopLeft(columnTop);
+        rightTextRect.Offset(ScaleToScreenAndCanvas(1), ScaleToScreenAndCanvas(1));
+        wxPoint textLeft{ rightTextRect.GetTopLeft() };
+        wxPoint textRight{ rightTextRect.GetTopRight() };
+        while (textLeft.y < rightTextRect.GetBottom())
+            {
+            dc.DrawLine(textLeft, textRight);
+            textLeft.y += ScaleToScreenAndCanvas(2);
+            textRight.y += ScaleToScreenAndCanvas(2);
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
@@ -1498,7 +1595,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for leaf icon!");
-        if (gc)
+        if (gc != nullptr)
             {
             // draw the leaf
             gc->SetPen(*wxTRANSPARENT_PEN);
@@ -1545,6 +1642,84 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawSnowflake(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for leaf icon!");
+        if (gc != nullptr)
+            {
+            const wxPen bodyPen(ColorBrewer::GetColor(Colors::Color::Ice),
+                                ScaleToScreenAndCanvas(2));
+            const wxPen leafPen(ColorBrewer::GetColor(Colors::Color::Ice),
+                                ScaleToScreenAndCanvas(1));
+
+            const auto centerPt = rect.GetTopLeft() +
+                wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+
+            constexpr auto penCapWiggleRoom = 0.05;
+
+            // a line going from the middle of the left side to the middle of the right
+            const std::array<wxPoint2DDouble, 2> points =
+                {
+                wxPoint(GetXPosFromLeft(rect, penCapWiggleRoom),
+                        GetYPosFromTop(rect, math_constants::half)),
+                wxPoint(GetXPosFromLeft(rect, math_constants::full - penCapWiggleRoom),
+                        GetYPosFromTop(rect, math_constants::half))
+                };
+            // save current transform matrix state
+            gc->PushState();
+            // move matrix to center of drawing area
+            gc->Translate(centerPt.x, centerPt.y);
+            // draw the lines, which will be the horizontal line going across the middle,
+            // but rotated 45 degrees around the center
+            double angle = 0.0;
+            while (angle < 360)
+                {
+                gc->Rotate(geometry::degrees_to_radians(angle));
+                // note that because we translated to the middle of the drawing area,
+                // we need to adjust the points of our middle line back and over from
+                // the translated origin
+                gc->SetPen(bodyPen);
+                gc->StrokeLine(points[0].m_x - centerPt.x, points[0].m_y - centerPt.y,
+                               points[1].m_x - centerPt.x, points[1].m_y - centerPt.y);
+                // outer leaf branch
+                gc->StrokeLine(
+                    GetXPosFromLeft(rect, math_constants::three_fourths + math_constants::twentieth) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half) - centerPt.y,
+                    GetXPosFromLeft(rect, math_constants::full - (penCapWiggleRoom * 2)) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half - math_constants::tenth) - centerPt.y);
+                gc->StrokeLine(
+                    GetXPosFromLeft(rect, math_constants::three_fourths + math_constants::twentieth) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half) - centerPt.y,
+                    GetXPosFromLeft(rect, math_constants::full - (penCapWiggleRoom * 2)) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half + math_constants::tenth) - centerPt.y);
+                // inner leaf branch
+                gc->SetPen(leafPen);
+                gc->StrokeLine(
+                    GetXPosFromLeft(rect, math_constants::three_fourths - math_constants::tenth) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half) - centerPt.y,
+                    GetXPosFromLeft(rect, math_constants::full -
+                        penCapWiggleRoom - math_constants::fifth) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half - math_constants::tenth) - centerPt.y);
+                gc->StrokeLine(
+                    GetXPosFromLeft(rect, math_constants::three_fourths - math_constants::tenth) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half) - centerPt.y,
+                    GetXPosFromLeft(rect, math_constants::full -
+                        penCapWiggleRoom - math_constants::fifth) - centerPt.x,
+                    GetYPosFromTop(rect, math_constants::half + math_constants::tenth) - centerPt.y);
+                angle += 45;
+                }
+            // restore transform matrix
+            gc->PopState();
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawWaterColorRectangle(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
@@ -1554,7 +1729,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for water color effect!");
-        if (gc)
+        if (gc != nullptr)
             {
             const auto strayLinesAlongTopBottom =
                 std::max<size_t>(safe_divide<size_t>(rect.GetWidth(),
@@ -1836,7 +2011,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for male outline!");
-        if (gc)
+        if (gc != nullptr)
             {
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
@@ -2015,7 +2190,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for female outline!");
-        if (gc)
+        if (gc != nullptr)
             {
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
@@ -2169,7 +2344,7 @@ namespace Wisteria::GraphItems
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for female outline!");
-        if (gc)
+        if (gc != nullptr)
             {
             if (GetGraphItemInfo().GetPen().IsOk())
                 {

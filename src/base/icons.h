@@ -85,7 +85,9 @@ namespace Wisteria::Icons
         WaterColorRectangle,           /*!< A warped rectangle that looks like a watercolor-filled box.*/
         GraduationCap,                 /*!< A graduation cap.*/
         Book,                          /*!< A textbook.*/
-        Tire                           /*!< A car tire.*/
+        Tire,                          /*!< A car tire.*/
+        Snowflake,                     /*!< A snowflake.*/
+        Newspaper                      /*!< A newspaper.*/
         };
 
     /// @brief Item to draw on a legend.

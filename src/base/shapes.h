@@ -282,6 +282,14 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawTire(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a snowflake.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawSnowflake(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a newspaper.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawNewspaper(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
