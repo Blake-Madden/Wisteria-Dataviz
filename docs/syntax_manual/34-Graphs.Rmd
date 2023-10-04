@@ -334,6 +334,7 @@ Properties common to all bar-chart derived graphs:
   - `"bin-name"`
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
+- `"bar-label-suffix"`: A string to add to the end of each bar label.
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
 - `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.
 - `"showcase-bars"`: An array of strings specifying which bars to showcase.

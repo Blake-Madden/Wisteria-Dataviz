@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
                 wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
                                             wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                 L"%)";
-        bar.GetLabel().SetText(labelStr);
+        bar.GetLabel().SetText(labelStr + m_binLabelSuffix);
         }
 
     //-----------------------------------

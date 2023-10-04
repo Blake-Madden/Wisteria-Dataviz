@@ -2657,6 +2657,8 @@ namespace Wisteria
         if (binLabel.has_value())
             { barChart->SetBinLabelDisplay(binLabel.value()); }
 
+        barChart->SetBinLabelSuffix(graphNode->GetProperty(L"bar-label-suffix")->GetValueString());
+
         // bar icons
         const auto barIconsNode = graphNode->GetProperty(L"bar-icons");
         if (barIconsNode->IsOk() && barIconsNode->IsValueArray())

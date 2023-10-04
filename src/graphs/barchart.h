@@ -1090,6 +1090,21 @@ namespace Wisteria::Graphs
             for (auto& bar : GetBars())
                 { UpdateBarLabel(bar); }
             }
+        /// @returns The suffix being added to each bar label.
+        [[nodiscard]]
+        wxString GetBinLabelSuffix() const
+            { return m_binLabelSuffix; }
+        /// @brief Sets the suffix being added to each bar label.
+        /// @details This is useful for adding something like `%` or ` units`
+        ///     to the bin labels.
+        /// @param suffix The suffix to add to label.
+        void SetBinLabelSuffix(wxString& suffix)
+            {
+            m_binLabelSuffix = std::move(suffix);
+            // update the bars' labels
+            for (auto& bar : GetBars())
+                { UpdateBarLabel(bar); }
+            }
         /// @}
 
         /// @private
@@ -1162,6 +1177,7 @@ namespace Wisteria::Graphs
         uint8_t m_ghostOpacity{ 32 }; // used for showcasing
         BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
+        wxString m_binLabelSuffix;
 
         double m_longestBarLength{ 0 };
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };
