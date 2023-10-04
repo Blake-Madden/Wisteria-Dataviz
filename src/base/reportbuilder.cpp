@@ -491,6 +491,21 @@ namespace Wisteria
                 precision, interval, displayInterval);
             }
 
+        // custom labels
+        const auto customLabelsNode = axisNode->GetProperty(L"custom-labels");
+        if (customLabelsNode->IsOk() && customLabelsNode->IsValueArray())
+            {
+            const auto customLabels = customLabelsNode->GetValueArrayObject();
+            for (const auto& customLabels : customLabels)
+                {
+                if (customLabels->HasProperty(L"value"))
+                    {
+                    axis.SetCustomLabel(customLabels->GetProperty(L"value")->GetValueNumber(),
+                        *LoadLabel(customLabels->GetProperty(L"label"), GraphItems::Label()));
+                    }
+                }
+            }
+
         // brackets
         const auto bracketsNode = axisNode->GetProperty(L"brackets");
         if (bracketsNode->IsOk())

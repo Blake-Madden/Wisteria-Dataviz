@@ -240,6 +240,9 @@ Note that instead of properties, a single string can be specified indicating a f
   Available options are:
   - `"percentage"`
   - `"value"`
+- `"custom-labels"`: An array of custom label specifications, which contains the following properties:
+  - `"value"`: The axis position.
+  - `"label"`: The text to display on next to the brackets, which will contain [label](#label-properties) properties.
 - `"range"`: A node describing the range to use for the axis, which contains the following properties:
   - `"start"`: A number specifying the start of the range.
   - `"end"`: A number specifying the end of the range.
