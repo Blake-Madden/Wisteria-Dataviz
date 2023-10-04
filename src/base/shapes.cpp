@@ -1495,7 +1495,7 @@ namespace Wisteria::GraphItems
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight()/2)),
                     wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
         }
-
+    
     //---------------------------------------------------
     void ShapeRenderer::DrawNewspaper(const wxRect rect, wxDC& dc) const
         {
@@ -1631,16 +1631,24 @@ namespace Wisteria::GraphItems
 
             // draw the stem
             auto stemPath = gc->CreatePath();
-            // start of middle of bottom
+            // start at the top middle top middle
             stemPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                                 rect.GetBottom());
-            // draw to the top middle
+                GetYPosFromTop(rect, .025));
+            // draw to the bottom middle of leaf
             stemPath.AddLineToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                                    rect.GetTop());
+                                    GetYPosFromTop(rect, math_constants::three_quarters));
+            // draw a curled stem at the end of the leaf
+            stemPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(rect, math_constants::half),
+                GetYPosFromTop(rect, math_constants::three_quarters +
+                    (math_constants::quarter * math_constants::half)),
+                GetXPosFromLeft(rect, .4),
+                GetYPosFromTop(rect, math_constants::full - .025));
+            
             gc->StrokePath(stemPath);
             }
         }
-
+    
     //---------------------------------------------------
     void ShapeRenderer::DrawSnowflake(const wxRect rect, wxDC& dc) const
         {
