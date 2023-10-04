@@ -1098,7 +1098,7 @@ namespace Wisteria::Graphs
         /// @details This is useful for adding something like `%` or ` units`
         ///     to the bin labels.
         /// @param suffix The suffix to add to label.
-        void SetBinLabelSuffix(wxString& suffix)
+        void SetBinLabelSuffix(wxString suffix)
             {
             m_binLabelSuffix = std::move(suffix);
             // update the bars' labels
