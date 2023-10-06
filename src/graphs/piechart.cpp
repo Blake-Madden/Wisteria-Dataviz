@@ -394,7 +394,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void PieChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                           std::optional<const wxString> aggregateColumnName,
+                           std::optional<const wxString> weightColumnName,
                            const wxString& groupColumn1Name,
                            std::optional<const wxString> groupColumn2Name /*= std::nullopt*/)
         {
@@ -426,47 +426,51 @@ namespace Wisteria::Graphs
         const bool useSubgrouping =
             (groupColumn2 != data->GetCategoricalColumns().cend());
 
-        const auto& aggregateColumn = (aggregateColumnName.has_value() ?
-            data->GetContinuousColumn(aggregateColumnName.value()) :
+        const auto& weightColumn = (weightColumnName.has_value() ?
+            data->GetContinuousColumn(weightColumnName.value()) :
             data->GetContinuousColumns().cend());
-        if (aggregateColumnName.has_value() &&
-            aggregateColumn == data->GetContinuousColumns().cend())
+        if (weightColumnName.has_value() &&
+            weightColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': aggregate column not found for pie chart.").ToUTF8(),
-                aggregateColumnName.value()));
+                weightColumnName.value()));
             }
         const bool useAggregateColumn =
-            (aggregateColumn != data->GetContinuousColumns().cend());
+            (weightColumn != data->GetContinuousColumns().cend());
 
         GetInnerPie().clear();
         GetOuterPie().clear();
 
-        using SliceAndValues = std::map<Data::GroupIdType, double>;
+        // Note that the frequencies from the aggregate column could be a
+        // double value (e.g., 3.5), so that's why the counter value
+        // for this type is a double.
+        using SliceAndCounts = std::map<Data::GroupIdType, double>;
         // the outer pie (or only pie, if a single series)
-        SliceAndValues outerGroups;
+        SliceAndCounts outerGroups;
 
         double totalValue{ 0.0 };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (useAggregateColumn && std::isnan(aggregateColumn->GetValue(i)) )
+            if (useAggregateColumn && std::isnan(weightColumn->GetValue(i)) )
                 { continue; }
 
             auto [iterator, inserted] = outerGroups.insert(std::make_pair(
                 groupColumn1->GetValue(i),
                 (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)) );
+                (useAggregateColumn ? weightColumn->GetValue(i) : 1)) );
             // increment counts for group
             if (!inserted)
                 {
-                iterator->second += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
+                iterator->second += (useAggregateColumn ? weightColumn->GetValue(i) : 1);
                 }
-            totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
+            totalValue += (useAggregateColumn ? weightColumn->GetValue(i) : 1);
             }
 
         // create slices with their percentages of the overall total
         for (const auto& group : outerGroups)
             {
-            GetOuterPie().emplace_back(
+            GetOuterPie().push_back(
                 SliceInfo{ groupColumn1->GetLabelFromID(group.first),
                            group.second,
                            safe_divide(group.second, totalValue) });
@@ -477,13 +481,13 @@ namespace Wisteria::Graphs
         // of the main group)
         if (useSubgrouping && data->GetCategoricalColumns().size() > 1)
             {
-            std::map<Data::GroupIdType, SliceAndValues> innerGroups;
+            std::map<Data::GroupIdType, SliceAndCounts> innerGroups;
             totalValue = 0;
-            auto searchValue = std::make_pair<Data::GroupIdType,
-                                              SliceAndValues>(0, SliceAndValues());
+            auto searchValue =
+                std::make_pair<Data::GroupIdType, SliceAndCounts>(0, SliceAndCounts{});
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                if (useAggregateColumn && std::isnan(aggregateColumn->GetValue(i)) )
+                if (useAggregateColumn && std::isnan(weightColumn->GetValue(i)) )
                     { continue; }
 
                 searchValue.first = groupColumn1->GetValue(i);
@@ -493,20 +497,22 @@ namespace Wisteria::Graphs
                     iterator->second.insert(std::make_pair(
                         groupColumn2->GetValue(i),
                         (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)));
+                        (useAggregateColumn ? weightColumn->GetValue(i) : 1)));
                     }
                 else
                     {
                     auto [subIterator, subInserted] = iterator->second.insert(std::make_pair(
                         groupColumn2->GetValue(i),
                         (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)));
+                        (useAggregateColumn ? weightColumn->GetValue(i) : 1)));
                     // increment counts for group
                     if (!subInserted)
                         {
                         subIterator->second +=
-                            (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
+                            (useAggregateColumn ? weightColumn->GetValue(i) : 1);
                         }
                     }
-                totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
+                totalValue += (useAggregateColumn ? weightColumn->GetValue(i) : 1);
                 }
 
             std::map<wxString, PieInfo, Data::wxStringLessNoCase> innerPie;

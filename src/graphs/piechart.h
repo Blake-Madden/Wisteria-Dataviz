@@ -396,7 +396,7 @@ namespace Wisteria::Graphs
             @param data The data to use, which can (optionally) use a continuous column
                 containing aggregate counts, the main grouping column, and (optionally)
                 a second grouping column to create an inner (subgrouped) ring.
-            @param aggregateColumnName The (optional) aggregate count column.\n
+            @param weightColumnName The (optional) weight column.\n
                 These are the values accumulated into the respective labels from
                 the group column(s). If this column is not provided, then frequency counts
                 of the labels from the group column(s) are used.\n
@@ -413,7 +413,7 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-            std::optional<const wxString> aggregateColumnName,
+            std::optional<const wxString> weightColumnName,
             const wxString& groupColumn1Name,
             std::optional<const wxString> groupColumn2Name = std::nullopt);
 
