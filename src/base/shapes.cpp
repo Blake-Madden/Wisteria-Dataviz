@@ -278,6 +278,9 @@ namespace Wisteria::GraphItems
             case IconShape::Newspaper:
                 m_drawFunction = &ShapeRenderer::DrawNewspaper;
                 break;
+            case IconShape::Car:
+                m_drawFunction = &ShapeRenderer::DrawCar;
+                break;
             default:
                 m_drawFunction = nullptr;
                 break;
@@ -1247,6 +1250,176 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawCar(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect dcRect(rect);
+        dcRect.Deflate(
+            GetGraphItemInfo().GetPen().IsOk() ?
+            ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+            0);
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedHeight{ dcRect.GetHeight() * .75 };
+            const auto adjustTop{ (dcRect.GetHeight() - adjustedHeight) * math_constants::half };
+            dcRect.SetHeight(adjustedHeight);
+            dcRect.Offset(wxPoint(0, adjustTop));
+            }
+
+        GraphicsContextFallback gcf{ &dc, dcRect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for car icon!");
+        if (gc != nullptr)
+            {
+            const wxPen outlinePen(wxTransparentColour, ScaleToScreenAndCanvas(1));
+
+            const auto bodyBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(dcRect, -math_constants::full), GetYPosFromTop(dcRect, math_constants::half),
+                GetXPosFromLeft(dcRect, math_constants::full), GetYPosFromTop(dcRect, math_constants::half),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(ColorBrewer::GetColor(Color::SmokyBlack))),
+                ApplyParentColorOpacity(GetGraphItemInfo().GetBrush().GetColour()));
+            gc->SetPen(outlinePen);
+            gc->SetBrush(bodyBrush);
+            // body of car
+            wxRect bodyRect{ dcRect };
+            bodyRect.Deflate(ScaleToScreenAndCanvas(1));
+            bodyRect.SetHeight(bodyRect.GetHeight() * .35);
+            bodyRect.Offset(0, dcRect.GetHeight() - (bodyRect.GetHeight() * 1.5));
+            // lower half (bumper area)
+            wxRect lowerBodyRect{ bodyRect };
+            lowerBodyRect.SetTop(lowerBodyRect.GetTop() + (lowerBodyRect.GetHeight() / 2));
+            lowerBodyRect.SetHeight(lowerBodyRect.GetHeight() / 2);
+
+            // upper half (headlights area)
+            // (this is drawn later, after the top area of the car so that it
+            //  covers up any seams)
+            const double backBumperOffset = bodyRect.GetWidth() * 0.025;
+            wxRect upperBodyRect{ bodyRect };
+            upperBodyRect.SetWidth(upperBodyRect.GetWidth() * 0.95);
+            upperBodyRect.Offset(wxPoint(backBumperOffset, 0));
+
+            // top of car
+            wxRect carTopRect{ bodyRect };
+            carTopRect.SetWidth(carTopRect.GetWidth() * 0.65);
+            carTopRect.SetTop(bodyRect.GetTop() - carTopRect.GetHeight() + ScaleToScreenAndCanvas(2));
+            carTopRect.SetHeight(carTopRect.GetHeight() + ScaleToScreenAndCanvas(2));
+            carTopRect.Offset(wxPoint(backBumperOffset, 0));
+            gc->DrawRoundedRectangle(
+                carTopRect.GetX(), carTopRect.GetY(), carTopRect.GetWidth(), carTopRect.GetHeight(),
+                ScaleToScreenAndCanvas(2));
+
+            // windshield
+            std::array<wxPoint2DDouble, 4> windshieldSection =
+                {
+                carTopRect.GetTopRight(),
+                wxPoint(carTopRect.GetRight() +
+                    (bodyRect.GetWidth() - carTopRect.GetWidth()) * math_constants::third,
+                    carTopRect.GetBottom()),
+                wxPoint(carTopRect.GetBottomRight().x - (carTopRect.GetWidth() / 4),
+                        carTopRect.GetBottomRight().y),
+                wxPoint(carTopRect.GetTopRight().x - (carTopRect.GetWidth() / 4),
+                        carTopRect.GetTopRight().y)
+                };
+            std::array<wxPoint2DDouble, 2> windshield =
+                {
+                wxPoint(windshieldSection[0].m_x, windshieldSection[0].m_y + ScaleToScreenAndCanvas(1)),
+                windshieldSection[1]
+                };
+            auto windshieldAreaPath = gc->CreatePath();
+            windshieldAreaPath.MoveToPoint(windshieldSection[0]);
+            windshieldAreaPath.AddLineToPoint(windshieldSection[1]);
+            windshieldAreaPath.AddLineToPoint(windshieldSection[2]);
+            windshieldAreaPath.AddLineToPoint(windshieldSection[3]);
+            gc->DrawPath(windshieldAreaPath);
+
+            gc->SetPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                 ScaleToScreenAndCanvas(1)).Cap(wxCAP_BUTT));
+            auto windshieldPath = gc->CreatePath();
+            windshieldPath.MoveToPoint(windshield[0]);
+            windshieldPath.AddLineToPoint(windshield[1]);
+            gc->StrokePath(windshieldPath);
+            gc->SetPen(outlinePen);
+
+            // side windows
+            auto windowBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(dcRect, -math_constants::half), GetYPosFromTop(dcRect, math_constants::half),
+                GetXPosFromLeft(dcRect, math_constants::three_quarters), GetYPosFromTop(dcRect, math_constants::half),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SmokyBlack)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::DarkGray)));
+            gc->SetBrush(windowBrush);
+            auto sideWindowPath = gc->CreatePath();
+            sideWindowPath.MoveToPoint(
+                wxPoint2DDouble(windshield[0].m_x - ScaleToScreenAndCanvas(2),
+                    windshield[0].m_y + ScaleToScreenAndCanvas(1)));
+            sideWindowPath.AddLineToPoint(
+                wxPoint2DDouble(windshield[1].m_x - ScaleToScreenAndCanvas(2),
+                    windshield[1].m_y + ScaleToScreenAndCanvas(1)));
+            sideWindowPath.AddLineToPoint(
+                wxPoint2DDouble(upperBodyRect.GetX() + ScaleToScreenAndCanvas(2),
+                    windshield[1].m_y + ScaleToScreenAndCanvas(1)));
+            sideWindowPath.AddLineToPoint(
+                wxPoint2DDouble(upperBodyRect.GetX() + ScaleToScreenAndCanvas(2),
+                    windshield[0].m_y + ScaleToScreenAndCanvas(1)));
+            gc->FillPath(sideWindowPath);
+            gc->SetBrush(bodyBrush);
+
+            // divider between windows
+            gc->SetPen(wxPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1)));
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            auto windowRect{ carTopRect };
+            windowRect.SetWidth(windowRect.GetWidth() * 0.4);
+            windowRect.Offset(wxPoint(carTopRect.GetWidth() * 0.2, ScaleToScreenAndCanvas(2)));
+            gc->StrokeLine(windowRect.GetX(), windowRect.GetY(),
+                           windowRect.GetX(), windowRect.GetY() + windowRect.GetHeight());
+            gc->StrokeLine(windowRect.GetX() + windowRect.GetWidth(), windowRect.GetY(),
+                           windowRect.GetX() + windowRect.GetWidth(), windowRect.GetY() + windowRect.GetHeight());
+            gc->SetBrush(bodyBrush);
+            gc->SetPen(outlinePen);
+
+            // draw upper body part on top of windshield
+            gc->DrawRoundedRectangle(
+                upperBodyRect.GetX(), upperBodyRect.GetY(), upperBodyRect.GetWidth(), upperBodyRect.GetHeight(),
+                ScaleToScreenAndCanvas(2));
+
+            // headlights
+            auto headlightsRect{ upperBodyRect };
+            headlightsRect.SetWidth(headlightsRect.GetWidth() * .05);
+            headlightsRect.SetHeight(headlightsRect.GetHeight() * .25);
+            headlightsRect.Offset(upperBodyRect.GetWidth() - headlightsRect.GetWidth(),
+                upperBodyRect.GetHeight() * .25);
+            gc->SetBrush(gc->CreateLinearGradientBrush(headlightsRect.GetLeft(), headlightsRect.GetTop() / 2,
+                headlightsRect.GetRight(), headlightsRect.GetTop() / 2,
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::OrangeYellow)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::AntiqueWhite))));
+            gc->DrawRectangle(headlightsRect.GetX(), headlightsRect.GetY(),
+                              headlightsRect.GetWidth(), headlightsRect.GetHeight());
+            gc->SetBrush(bodyBrush);
+
+            // draw bumper area now, to overlay any headlight overlap
+            gc->DrawRoundedRectangle(
+                lowerBodyRect.GetX(), lowerBodyRect.GetY(), lowerBodyRect.GetWidth(), lowerBodyRect.GetHeight(),
+                ScaleToScreenAndCanvas(2));
+
+            // the tires
+            wxRect tireRect{ dcRect };
+            tireRect.SetWidth(dcRect.GetWidth() * .25);
+            tireRect.SetHeight(tireRect.GetWidth());
+            tireRect.SetTop(dcRect.GetTop() + (dcRect.GetHeight() - tireRect.GetHeight()));
+            tireRect.SetLeft(dcRect.GetLeft() + dcRect.GetWidth() * math_constants::tenth);
+
+            DrawTire(tireRect, gc);
+
+            tireRect.SetLeft((dcRect.GetRight() - tireRect.GetWidth()) -
+                             dcRect.GetWidth() * math_constants::tenth);
+            DrawTire(tireRect, gc);
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawTire(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
@@ -1255,7 +1428,13 @@ namespace Wisteria::GraphItems
 
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
-        assert(gc && L"Failed to get graphics context for asterisk icon!");
+        assert(gc && L"Failed to get graphics context for tire icon!");
+        DrawTire(rect, gc);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawTire(wxRect rect, wxGraphicsContext* gc) const
+        {
         if (gc != nullptr)
             {
             wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),

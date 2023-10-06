@@ -1001,6 +1001,9 @@ namespace Wisteria::Graphs
                                 GetStippleShape() == Icons::IconShape::Woman ||
                                 GetStippleShape() == Icons::IconShape::Man)
                                 { shapeWidth *= 0.6; }
+                            // likewise, handle icons that are wider than others
+                            if (GetStippleShape() == Icons::IconShape::Car)
+                                { shapeWidth *= 1.25; }
                             auto currentXLeft = lineXStart;
                             while (currentXLeft < (lineXStart + barLength))
                                 {

@@ -290,9 +290,14 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawNewspaper(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a car.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawCar(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
+        void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
         ///     sets the brush, then runs the rendering lambda again.
         void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const;

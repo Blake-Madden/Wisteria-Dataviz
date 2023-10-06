@@ -165,7 +165,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"));
-    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Brush)"));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Icon)"));
     fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"));
     fileMenu->Append(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"));
     fileMenu->Append(MyApp::ID_NEW_DONUTCHART, _(L"Donut Chart"));
@@ -1050,10 +1050,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     IncludeHeader(true).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         }
-    // Bar Chart using a stippled brush
+    // Bar Chart using a stipple icon
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
         {
-        subframe->SetTitle(_(L"Bar Chart (Stipple Brush)"));
+        subframe->SetTitle(_(L"Bar Chart (Stipple Icon)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
         auto mpgData = std::make_shared<Data::Dataset>();
         try
@@ -1074,9 +1074,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas);
 
         plot->SetData(mpgData, L"manufacturer");
-        plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir + L"/res/tobias_Blue_Twingo.svg",
+
+        plot->SetBarEffect(BoxEffect::StippleShape);
+        plot->SetStippleShape(Icons::IconShape::Car);
+        plot->SetStippleShapeColor(wxColour(29, 29, 37));
+
+        // do this to use an image instead of a built-in vector icon:
+        /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir + L"/res/tobias_Blue_Twingo.svg",
             Image::GetSVGSize(appDir + L"/res/tobias_Blue_Twingo.svg")));
-        plot->SetBarEffect(BoxEffect::StippleImage);
+           plot->SetBarEffect(BoxEffect::StippleImage);*/
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
@@ -2050,10 +2056,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
         _(L"Bar Chart (Categorical Data, Grouped)"));
-    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Brush)"),
+    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Icon)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
-        _(L"Bar Chart (Stipple Brush)"));
-    
+        _(L"Bar Chart (Stipple Icon)"));
 
     toolBar->AddTool(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),
