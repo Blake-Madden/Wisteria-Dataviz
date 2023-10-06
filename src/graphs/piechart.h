@@ -193,6 +193,10 @@ namespace Wisteria::Graphs
             If `Enrollment` is not used as the aggregate column, then the frequency counts for the labels
             in `Course` and/or `College` will be used for their pie slice values.
 
+            Note that continuous columns can also be specified for the grouping columns, but their data
+            must be discrete and positive. Any negative or floating-point values will be truncated to
+            unsigned integers.
+
         @par Missing Data:
         - Missing data in the group column(s) will be shown as an empty pie & legend label.
         - Missing data in the value column will be ignored (listwise deletion).
@@ -402,10 +406,16 @@ namespace Wisteria::Graphs
                 of the labels from the group column(s) are used.\n
                 This is useful for when you have pre-computed values for each group and the
                 data just consists of unique labels and their respective totals.
-            @param groupColumn1Name The main grouping ring.
+            @param groupColumn1Name The main grouping ring.\n
+                This can either be a categorical column, or a continuous column. Note, however,
+                that if a continuous column, then all values will be truncated to unsigned 64-bit integers.
+                In other words, if only discrete, positive values should be used if providing a
+                continuous column.
             @param groupColumn2Name The (optional) second grouping ring.\n
                 This inner ring will be shown as subgroups within each slice
-                along the (parent) outer ring.
+                along the (parent) outer ring.\n
+                This can either be a categorical column, or a continuous column (with the same
+                specifications as @c groupColumn1Name).
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name,
