@@ -577,7 +577,7 @@ namespace Wisteria::GraphItems
             wxPoint(GetXPosFromLeft(rect, 0.9),
                     GetYPosFromTop(rect, math_constants::third)),
             wxPoint(GetXPosFromLeft(rect, 0.4),
-                    GetYPosFromTop(rect, 0.75))
+                    GetYPosFromTop(rect, math_constants::three_quarters))
             };
 
         std::array<wxPoint, 4> bookCoverBottom =
@@ -641,7 +641,7 @@ namespace Wisteria::GraphItems
             DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(bookCoverBottom.size(), &bookCoverBottom[0]); });
             // a highlight along the bottom edge
             scaledPen.SetColour(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
             DCPenChangerIfDifferent pc2(dc, scaledPen);
             dc.DrawLine(bookCoverBottom[0], bookCoverBottom[3]);
@@ -681,7 +681,7 @@ namespace Wisteria::GraphItems
             dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
             dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
 
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
             DCPenChangerIfDifferent pc4(dc, scaledPen);
             dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
@@ -695,7 +695,7 @@ namespace Wisteria::GraphItems
             DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(spine.size(), &spine[0]); });
             // a highlight along the edge
             scaledPen.SetColour(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
             DCPenChangerIfDifferent pc2(dc, scaledPen);
             dc.DrawLine(spine[0], spine[3]);
@@ -721,7 +721,7 @@ namespace Wisteria::GraphItems
             DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(bookCover.size(), &bookCover[0]); });
             // a highlight along the bottom edge
             scaledPen.SetColour(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
             DCPenChangerIfDifferent pc2(dc, scaledPen);
             dc.DrawLine(bookCover[0], bookCover[3]);
@@ -745,7 +745,7 @@ namespace Wisteria::GraphItems
                     wxPoint(goldLeafPoints[3].first, goldLeafPoints[3].second),
                     wxPoint(goldLeafPoints[0].first, goldLeafPoints[0].second)
                     };
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(0.5));
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
                 scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
                 DCPenChangerIfDifferent pc3(dc, scaledPen);
                 dc.DrawLines(goldLeafPointsPt.size(), &goldLeafPointsPt[0]);
@@ -786,7 +786,7 @@ namespace Wisteria::GraphItems
             dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
             dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
 
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(0.25));
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::quarter));
             scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
             DCPenChangerIfDifferent pc4(dc, scaledPen);
             dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
@@ -800,7 +800,8 @@ namespace Wisteria::GraphItems
         if (rect.GetWidth() == rect.GetHeight())
             { SetYOffsetPercentage(0.05); }
 
-        wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray), std::min(1.0, ScaleToScreenAndCanvas(0.5)));
+        wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
+            std::min(1.0, ScaleToScreenAndCanvas(math_constants::half)));
         DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 4> hatTop =
@@ -919,7 +920,7 @@ namespace Wisteria::GraphItems
 
         std::for_each(points.begin(), points.end(),
             [&iconRadius, this](auto& pt)
-            { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius/2)); });
+            { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius / 2)); });
         dc.DrawLines(points.size(), &points[0]);
 
         std::for_each(points.begin(), points.end(),
@@ -1019,8 +1020,10 @@ namespace Wisteria::GraphItems
             marker.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
                                GetYPosFromTop(dcRect, 1));
             marker.AddCurveToPoint(
-                GetXPosFromLeft(dcRect, -.75), GetYPosFromTop(dcRect, -math_constants::quarter),
-                GetXPosFromLeft(dcRect, 1.75), GetYPosFromTop(dcRect, -math_constants::quarter),
+                GetXPosFromLeft(dcRect, -math_constants::three_quarters),
+                GetYPosFromTop(dcRect, -math_constants::quarter),
+                GetXPosFromLeft(dcRect, 1.75),
+                GetYPosFromTop(dcRect, -math_constants::quarter),
                 GetXPosFromLeft(dcRect, math_constants::half),
                 GetYPosFromTop(dcRect, math_constants::full));
 
@@ -1264,7 +1267,7 @@ namespace Wisteria::GraphItems
         // adjust to center it horizontally inside of square area
         if (rect.GetWidth() == rect.GetHeight())
             {
-            const auto adjustedHeight{ dcRect.GetHeight() * .75 };
+            const auto adjustedHeight{ dcRect.GetHeight() * math_constants::three_quarters };
             const auto adjustTop{ (dcRect.GetHeight() - adjustedHeight) * math_constants::half };
             dcRect.SetHeight(adjustedHeight);
             dcRect.Offset(wxPoint(0, adjustTop));
@@ -1438,7 +1441,7 @@ namespace Wisteria::GraphItems
         if (gc != nullptr)
             {
             wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
-                            std::min(1.0, ScaleToScreenAndCanvas(0.5)));
+                            std::min(1.0, ScaleToScreenAndCanvas(math_constants::half)));
             gc->SetPen(scaledPen);
             // the tire
             const wxRect tireRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
@@ -1674,7 +1677,7 @@ namespace Wisteria::GraphItems
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight()/2)),
                     wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
         }
-    
+
     //---------------------------------------------------
     void ShapeRenderer::DrawNewspaper(const wxRect rect, wxDC& dc) const
         {
@@ -1717,7 +1720,7 @@ namespace Wisteria::GraphItems
 
         // headline
         wxDCPenChanger pc2(dc,
-            wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), ScaleToScreenAndCanvas(0.5)));
+            wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), ScaleToScreenAndCanvas(math_constants::half)));
         auto headlineBox{ frontPageRect };
         headlineBox.SetHeight(headlineBox.GetHeight() * math_constants::third);
         headlineBox.Deflate(ScaleToScreenAndCanvas(2));
@@ -1738,7 +1741,7 @@ namespace Wisteria::GraphItems
         dc.DrawRectangle(pictureBox);
         dc.GradientFillLinear(pictureBox, ColorBrewer::GetColor(Colors::Color::BlizzardBlue),
             ColorBrewer::GetColor(Colors::Color::PastelOrange));
-        
+
         // column separator
         wxPoint columnTop(pictureBox.GetTopRight());
         columnTop.x += ScaleToScreenAndCanvas(1);
@@ -1823,11 +1826,11 @@ namespace Wisteria::GraphItems
                     (math_constants::quarter * math_constants::half)),
                 GetXPosFromLeft(rect, .4),
                 GetYPosFromTop(rect, math_constants::full - .025));
-            
+
             gc->StrokePath(stemPath);
             }
         }
-    
+
     //---------------------------------------------------
     void ShapeRenderer::DrawSnowflake(const wxRect rect, wxDC& dc) const
         {
