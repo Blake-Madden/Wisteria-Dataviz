@@ -157,134 +157,54 @@ namespace Wisteria::GraphItems
         GraphItemBase(itemInfo), m_shapeSizeDIPs(sz),
         m_sizeDIPs(sz), m_shape(shape), m_renderer(itemInfo, img)
         {
-        // connect the rendering function to the shape
-        switch (m_shape)
+        const static std::map<Icons::IconShape, ShapeRenderer::DrawFunction> shapeMap =
             {
-            case IconShape::Blank:
-                // nothing to draw
-                m_drawFunction = nullptr;
-                break;
-            case IconShape::ArrowRight:
-                m_drawFunction = &ShapeRenderer::DrawRightArrow;
-                break;
-            case IconShape::HorizontalLine:
-                m_drawFunction = &ShapeRenderer::DrawHorizontalLine;
-                break;
-            case IconShape::Circle:
-                m_drawFunction = &ShapeRenderer::DrawCircle;
-                break;
-            case IconShape::Square:
-                m_drawFunction = &ShapeRenderer::DrawSquare;
-                break;
-            case IconShape::Asterisk:
-                m_drawFunction = &ShapeRenderer::DrawAsterisk;
-                break;
-            case IconShape::Plus:
-                m_drawFunction = &ShapeRenderer::DrawPlus;
-                break;
-            case IconShape::TriangleUpward:
-                m_drawFunction = &ShapeRenderer::DrawUpwardTriangle;
-                break;
-            case IconShape::TriangleDownward:
-                m_drawFunction = &ShapeRenderer::DrawDownwardTriangle;
-                break;
-            case IconShape::TriangleRight:
-                m_drawFunction = &ShapeRenderer::DrawRightTriangle;
-                break;
-            case IconShape::TriangleLeft:
-                m_drawFunction = &ShapeRenderer::DrawLeftTriangle;
-                break;
-            case IconShape::Diamond:
-                m_drawFunction = &ShapeRenderer::DrawDiamond;
-                break;
-            case IconShape::Hexagon:
-                m_drawFunction = &ShapeRenderer::DrawHexagon;
-                break;
-            case IconShape::BoxPlot:
-                m_drawFunction = &ShapeRenderer::DrawBoxPlot;
-                break;
-            case IconShape::Sun:
-                m_drawFunction = &ShapeRenderer::DrawSun;
-                break;
-            case IconShape::Flower:
-                m_drawFunction = &ShapeRenderer::DrawFlower;
-                break;
-            case IconShape::FallLeaf:
-                m_drawFunction = &ShapeRenderer::DrawFallLeaf;
-                break;
-            case IconShape::WarningRoadSign:
-                m_drawFunction = &ShapeRenderer::DrawWarningRoadSign;
-                break;
-            case IconShape::LocationMarker:
-                m_drawFunction = &ShapeRenderer::DrawGeoMarker;
-                break;
-            case IconShape::GoRoadSign:
-                m_drawFunction = &ShapeRenderer::DrawGoSign;
-                break;
-            case IconShape::Image:
-                m_drawFunction = &ShapeRenderer::DrawImage;
-                break;
-            case IconShape::LeftCurlyBrace:
-                m_drawFunction = &ShapeRenderer::DrawLeftCurlyBrace;
-                break;
-            case IconShape::RightCurlyBrace:
-                m_drawFunction = &ShapeRenderer::DrawRightCurlyBrace;
-                break;
-            case IconShape::TopCurlyBrace:
-                m_drawFunction = &ShapeRenderer::DrawTopCurlyBrace;
-                break;
-            case IconShape::BottomCurlyBrace:
-                m_drawFunction = &ShapeRenderer::DrawBottomCurlyBrace;
-                break;
-            case IconShape::Man:
-                m_drawFunction = &ShapeRenderer::DrawMan;
-                break;
-            case IconShape::Woman:
-                m_drawFunction = &ShapeRenderer::DrawWoman;
-                break;
-            case IconShape::BusinessWoman:
-                m_drawFunction = &ShapeRenderer::DrawBusinessWoman;
-                break;
-            case IconShape::ChevronDownward:
-                m_drawFunction = &ShapeRenderer::DrawChevronDownward;
-                break;
-            case IconShape::ChevronUpward:
-                m_drawFunction = &ShapeRenderer::DrawChevronUpward;
-                break;
-            case IconShape::Text:
-                m_drawFunction = &ShapeRenderer::DrawText;
-                break;
-            case IconShape::Tack:
-                m_drawFunction = &ShapeRenderer::DrawTack;
-                break;
-            case IconShape::Banner:
-                m_drawFunction = &ShapeRenderer::DrawBanner;
-                break;
-            case IconShape::WaterColorRectangle:
-                m_drawFunction = &ShapeRenderer::DrawWaterColorRectangle;
-                break;
-            case IconShape::GraduationCap:
-                m_drawFunction = &ShapeRenderer::DrawGraduationCap;
-                break;
-            case IconShape::Book:
-                m_drawFunction = &ShapeRenderer::DrawBook;
-                break;
-            case IconShape::Tire:
-                m_drawFunction = &ShapeRenderer::DrawTire;
-                break;
-            case IconShape::Snowflake:
-                m_drawFunction = &ShapeRenderer::DrawSnowflake;
-                break;
-            case IconShape::Newspaper:
-                m_drawFunction = &ShapeRenderer::DrawNewspaper;
-                break;
-            case IconShape::Car:
-                m_drawFunction = &ShapeRenderer::DrawCar;
-                break;
-            default:
-                m_drawFunction = nullptr;
-                break;
-            }
+                { IconShape::Blank, nullptr },
+                { IconShape::ArrowRight, &ShapeRenderer::DrawRightArrow },
+                { IconShape::HorizontalLine, &ShapeRenderer::DrawHorizontalLine },
+                { IconShape::Circle, &ShapeRenderer::DrawCircle },
+                { IconShape::Square, &ShapeRenderer::DrawSquare },
+                { IconShape::Asterisk, &ShapeRenderer::DrawAsterisk },
+                { IconShape::Plus, &ShapeRenderer::DrawPlus },
+                { IconShape::TriangleUpward, &ShapeRenderer::DrawUpwardTriangle },
+                { IconShape::TriangleDownward, &ShapeRenderer::DrawDownwardTriangle },
+                { IconShape::TriangleRight, &ShapeRenderer::DrawRightTriangle },
+                { IconShape::TriangleLeft, &ShapeRenderer::DrawLeftTriangle },
+                { IconShape::Diamond, &ShapeRenderer::DrawDiamond },
+                { IconShape::Hexagon, &ShapeRenderer::DrawHexagon },
+                { IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
+                { IconShape::Sun, &ShapeRenderer::DrawSun },
+                { IconShape::Flower, &ShapeRenderer::DrawFlower },
+                { IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
+                { IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
+                { IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
+                { IconShape::GoRoadSign, &ShapeRenderer::DrawGoSign },
+                { IconShape::Image, &ShapeRenderer::DrawImage },
+                { IconShape::LeftCurlyBrace, &ShapeRenderer::DrawLeftCurlyBrace },
+                { IconShape::RightCurlyBrace, &ShapeRenderer::DrawRightCurlyBrace },
+                { IconShape::TopCurlyBrace, &ShapeRenderer::DrawTopCurlyBrace },
+                { IconShape::BottomCurlyBrace, &ShapeRenderer::DrawBottomCurlyBrace },
+                { IconShape::Man, &ShapeRenderer::DrawMan },
+                { IconShape::Woman, &ShapeRenderer::DrawWoman },
+                { IconShape::BusinessWoman, &ShapeRenderer::DrawBusinessWoman },
+                { IconShape::ChevronDownward, &ShapeRenderer::DrawChevronDownward },
+                { IconShape::ChevronUpward, &ShapeRenderer::DrawChevronUpward },
+                { IconShape::Text, &ShapeRenderer::DrawText },
+                { IconShape::Tack, &ShapeRenderer::DrawTack },
+                { IconShape::Banner, &ShapeRenderer::DrawBanner },
+                { IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
+                { IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
+                { IconShape::Book, &ShapeRenderer::DrawBook },
+                { IconShape::Tire, &ShapeRenderer::DrawTire },
+                { IconShape::Snowflake, &ShapeRenderer::DrawSnowflake },
+                { IconShape::Newspaper, &ShapeRenderer::DrawNewspaper },
+                { IconShape::Car, &ShapeRenderer::DrawCar },
+            };
+
+        // connect the rendering function to the shape
+        const auto foundShape = shapeMap.find(m_shape);
+        m_drawFunction = (foundShape != shapeMap.cend()) ?
+            foundShape->second : nullptr;
         }
 
     //---------------------------------------------------
