@@ -1439,6 +1439,12 @@ namespace Wisteria::Graphs
                                     L"Non-rectangular shapes not currently "
                                     "supported with stipple bar effect.");
                             auto shapeHeight{ barWidth };
+                            // These particular icons are drawn with a ratio where the height
+                            // is 75% of the width if the drawing area is square. To prevent
+                            // having large gaps between the icons, adjust the height of the icons'
+                            // drawing areas so that they aren't drawn inside of squares.
+                            if (GetStippleShape() == Icons::IconShape::Car)
+                                { shapeHeight *= 0.75; }
                             auto currentYTop = lineYStart - shapeHeight;
                             while ((currentYTop + shapeHeight) > lineYEnd)
                                 {
