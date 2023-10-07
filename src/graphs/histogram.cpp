@@ -35,6 +35,7 @@ namespace Wisteria::Graphs
         ResetGrouping();
         GetSelectedIds().clear();
         ClearBars();
+        ClearBarGroups();
 
         if (GetDataset() == nullptr)
             { return; }

@@ -30,6 +30,7 @@ namespace Wisteria::Graphs
         m_useIDColumnForBars = false;
         GetSelectedIds().clear();
         ClearBars();
+        ClearBarGroups();
 
         if (GetDataset() == nullptr)
             { return; }

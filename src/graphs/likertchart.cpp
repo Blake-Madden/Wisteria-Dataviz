@@ -587,6 +587,7 @@ namespace Wisteria::Graphs
             { return; }
 
         GetSelectedIds().clear();
+        ClearBarGroups();
         m_positive1Label.clear();
         m_positive2Label.clear();
         m_positive3Label.clear();

@@ -889,6 +889,9 @@ namespace Wisteria::Graphs
             m_barGroups.push_back(std::move(barGroup));
             AdjustScalingAxisFromBarGroups();
             }
+        /// @brief Removes all bar groups from the bar chart.
+        void ClearBarGroups()
+            { m_barGroups.clear(); }
 
         /// @returns How the bar groups (brackets and cumulative bars) are aligned with their respective bars. 
         [[nodiscard]]

@@ -48,6 +48,7 @@ namespace Wisteria::Graphs
         SetDataset(data);
         ResetGrouping();
         ClearBars();
+        ClearBarGroups();
         GetSelectedIds().clear();
         m_legendTitle.clear();
 
