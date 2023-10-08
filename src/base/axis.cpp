@@ -3811,7 +3811,7 @@ namespace Wisteria::GraphItems
         theLabel.SetDPIScaleFactor(dpiScaling);
         const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
         wxCoord size = GetLineSpacing() * scaling * dpiScaling;
-        // If axis is vertial (e.g., a left Y axis), then the width of the bracket's text is what we are measuring
+        // If axis is vertical (e.g., a left Y axis), then the width of the bracket's text is what we are measuring
         // since the bracket is to the left or right of the vertical axis. For a horizontal (e.g., bottom X) axis,
         // then the bracket is underneath or above it, so the text's height is what we want.
         size += (parentAxisOrientation == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
