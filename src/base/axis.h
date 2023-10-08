@@ -342,12 +342,14 @@ namespace Wisteria::GraphItems
             const wxPen& GetLinePen() const noexcept
                 { return m_linePen; }
         private:
-            /** @returns The width of the bracket (including longest label and bracket lines).
+            /** @returns The width or height needed for the bracket (including the connection lines).
                 @param dc A graphics context to use for measuring the bracket.
                 @param scaling The scaling of the parent axis.
-                @param dpiScaling The DPI scaling of the parent canvas.*/
+                @param dpiScaling The DPI scaling of the parent canvas.
+                @param parentAxisOrientation The orientation of the bracket's parent axis.*/
             [[nodiscard]]
-            wxCoord CalcWidth(wxDC& dc, const double scaling, const double dpiScaling) const;
+            wxCoord CalcSpaceRequired(wxDC& dc, const double scaling, const double dpiScaling,
+                                      const Orientation parentAxisOrientation) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.\n
@@ -371,14 +373,6 @@ namespace Wisteria::GraphItems
                 return (GetBracketLineStyle() != BracketLineStyle::NoConnectionLines) ?
                         (GetTickmarkLength() + GetPadding()) : GetPadding();
                 }
-            /** @brief Sets the orientation of the bracket.
-                @param orientation The orientation to use.*/
-            void SetOrientation(const Orientation orientation) noexcept
-                { m_orientation = orientation; }
-            /// @returns The orientation of the brackets.
-            [[nodiscard]]
-            const Orientation& GetOrientation() const noexcept
-                { return m_orientation; }
             double m_startPosition{ -1 };
             double m_endPosition{ -1 };
             double m_labelPosition{ -1 };
@@ -386,7 +380,6 @@ namespace Wisteria::GraphItems
             wxCoord m_padding{ 5 };
             Label m_label;
             wxPen m_linePen{ wxPenInfo(*wxBLACK, 2) };
-            Orientation m_orientation{ Orientation::Vertical };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
             BracketLineStyle m_bracketLineStyle{ BracketLineStyle::CurlyBraces };
             };
@@ -1608,7 +1601,7 @@ namespace Wisteria::GraphItems
 
         /// @returns How much space is needed to fit the brackets.
         [[nodiscard]]
-        wxCoord CalcBracketsWidth(wxDC& dc) const;
+        wxCoord CalcBracketsSpaceRequired(wxDC& dc) const;
         /// @returns Whether the given axis position will display something.
         /// @note Relying on AxisPoint::IsShown() is not adequate because we
         ///     need to take into account if the point doesn't have a custom label

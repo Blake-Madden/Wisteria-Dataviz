@@ -475,11 +475,11 @@ namespace Wisteria::GraphItems
 
             if (GetBrackets().size())
                 {
-                topLeftCorner.x -= CalcBracketsWidth(dc) +
+                topLeftCorner.x -= CalcBracketsSpaceRequired(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
-                    bottomRightCorner.x += CalcBracketsWidth(dc) +
+                    bottomRightCorner.x += CalcBracketsSpaceRequired(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
@@ -520,11 +520,11 @@ namespace Wisteria::GraphItems
 
             if (GetBrackets().size())
                 {
-                bottomRightCorner.x += CalcBracketsWidth(dc) +
+                bottomRightCorner.x += CalcBracketsSpaceRequired(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
-                    topLeftCorner.x -= CalcBracketsWidth(dc) +
+                    topLeftCorner.x -= CalcBracketsSpaceRequired(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
@@ -556,11 +556,11 @@ namespace Wisteria::GraphItems
 
             if (GetBrackets().size())
                 {
-                bottomRightCorner.y += CalcBracketsWidth(dc) +
+                bottomRightCorner.y += CalcBracketsSpaceRequired(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
-                    topLeftCorner.y -= CalcBracketsWidth(dc) +
+                    topLeftCorner.y -= CalcBracketsSpaceRequired(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
@@ -591,11 +591,11 @@ namespace Wisteria::GraphItems
 
             if (GetBrackets().size())
                 {
-                topLeftCorner.y -= CalcBracketsWidth(dc) +
+                topLeftCorner.y -= CalcBracketsSpaceRequired(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
-                    bottomRightCorner.y += CalcBracketsWidth(dc) +
+                    bottomRightCorner.y += CalcBracketsSpaceRequired(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
@@ -1959,7 +1959,7 @@ namespace Wisteria::GraphItems
                                 x = axisRect.GetLeft();
                                 if (GetBrackets().size())
                                     {
-                                    x += CalcBracketsWidth(dc) +
+                                    x += CalcBracketsSpaceRequired(dc) +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                     }
                                 if (titleLabel.IsShown() && titleLabel.GetText().length())
@@ -1995,7 +1995,7 @@ namespace Wisteria::GraphItems
                                     x = axisRect.GetRight();
                                     if (GetBrackets().size())
                                         {
-                                        x -= CalcBracketsWidth(dc) +
+                                        x -= CalcBracketsSpaceRequired(dc) +
                                             ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
@@ -2022,7 +2022,7 @@ namespace Wisteria::GraphItems
                                 x = axisRect.GetRight();
                                 if (GetBrackets().size())
                                     {
-                                    x -= CalcBracketsWidth(dc) +
+                                    x -= CalcBracketsSpaceRequired(dc) +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                     }
                                 if (titleLabel.IsShown() && titleLabel.GetText().length())
@@ -2058,7 +2058,7 @@ namespace Wisteria::GraphItems
                                     x = axisRect.GetLeft();
                                     if (GetBrackets().size())
                                         {
-                                        x += CalcBracketsWidth(dc) +
+                                        x += CalcBracketsSpaceRequired(dc) +
                                             ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
@@ -2292,7 +2292,7 @@ namespace Wisteria::GraphItems
                             y = axisRect.GetBottom();
                             if (GetBrackets().size())
                                 {
-                                y -= CalcBracketsWidth(dc) +
+                                y -= CalcBracketsSpaceRequired(dc) +
                                      ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                 }
                             if (titleLabel.IsShown() && titleLabel.GetText().length())
@@ -2323,7 +2323,7 @@ namespace Wisteria::GraphItems
                                     y = axisRect.GetTop();
                                     if (GetBrackets().size())
                                         {
-                                        y += CalcBracketsWidth(dc) +
+                                        y += CalcBracketsSpaceRequired(dc) +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchorPoint(wxPoint(x, y));
@@ -2349,7 +2349,7 @@ namespace Wisteria::GraphItems
                                 {
                                 y = axisRect.GetTop();
                                 if (GetBrackets().size())
-                                    { y += CalcBracketsWidth(dc) +
+                                    { y += CalcBracketsSpaceRequired(dc) +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                                 if (titleLabel.IsShown() && titleLabel.GetText().length())
                                     { y += titleLabel.GetBoundingBox(dc).GetHeight(); }
@@ -2373,7 +2373,7 @@ namespace Wisteria::GraphItems
                                     y = axisRect.GetBottom();
                                     if (GetBrackets().size())
                                         {
-                                        y -= CalcBracketsWidth(dc) +
+                                        y -= CalcBracketsSpaceRequired(dc) +
                                             ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
@@ -3513,12 +3513,13 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Axis::CalcBracketsWidth(wxDC& dc) const
+    wxCoord Axis::CalcBracketsSpaceRequired(wxDC& dc) const
         {
         wxCoord spacing{ 0 };
         for (const auto& bracket : GetBrackets())
             {
-            spacing = std::max(bracket.CalcWidth(dc, GetScaling(), GetDPIScaleFactor()), spacing);
+            spacing = std::max(bracket.CalcSpaceRequired(dc, GetScaling(), GetDPIScaleFactor(),
+                               IsHorizontal() ? Orientation::Horizontal : Orientation::Vertical), spacing);
             }
         return spacing;
         }
@@ -3527,8 +3528,6 @@ namespace Wisteria::GraphItems
     void Axis::AddBracket(AxisBracket bracket)
         {
         bracket.GetLabel().SetScaling(GetScaling());
-        bracket.SetOrientation(IsHorizontal() ?
-            Orientation::Horizontal : Orientation::Vertical);
         GetBrackets().push_back(std::move(bracket));
         }
 
@@ -3805,13 +3804,17 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Axis::AxisBracket::CalcWidth(wxDC& dc, const double scaling, const double dpiScaling) const
+    wxCoord Axis::AxisBracket::CalcSpaceRequired(wxDC& dc, const double scaling, const double dpiScaling,
+                                                 const Orientation parentAxisOrientation) const
         {
         auto theLabel{ GetLabel() };
         theLabel.SetDPIScaleFactor(dpiScaling);
         const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
         wxCoord size = GetLineSpacing() * scaling * dpiScaling;
-        size += (GetOrientation() == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
+        // If axis is vertial (e.g., a left Y axis), then the width of the bracket's text is what we are measuring
+        // since the bracket is to the left or right of the vertical axis. For a horizontal (e.g., bottom X) axis,
+        // then the bracket is underneath or above it, so the text's height is what we want.
+        size += (parentAxisOrientation == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
         return size;
         }
 
