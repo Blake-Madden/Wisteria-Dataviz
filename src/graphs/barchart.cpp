@@ -354,7 +354,6 @@ namespace Wisteria::Graphs
         {
         for (const auto& bar : GetBars())
             { UpdateScalingAxisFromBar(bar); }
-        double longestGroup{ 0 };
         for (const auto& barGroup : m_barGroups)
             {
             double groupBarLength{ 0 };
@@ -370,12 +369,18 @@ namespace Wisteria::Graphs
                 longestSubBarLength = std::max(longestSubBarLength, barEnd);
                 groupBarLength += barEnd;
                 }
-            longestGroup = std::max(longestGroup, longestSubBarLength + groupBarLength);
+            m_longestBarLength = std::max(m_longestBarLength, longestSubBarLength + groupBarLength);
             }
-        if (GetScalingAxis().GetRange().second < longestGroup)
+        // Add a couple of extra intervals for the connection braces
+        // (it will consume one, but add some wiggle room) and extra space if bin labels are included.
+        // AdjustScalingAxisFromBarLength() will add an extra interval for the bin label on the longest
+        // regular bar, but we will be including another bin label on the group bar also.
+        const auto extraIntervalsNeeded = ((GetBinLabelDisplay() != BinLabelDisplay::NoDisplay) ? 3 : 2);
+        if (GetScalingAxis().GetRange().second <
+                (m_longestBarLength + (GetScalingAxis().GetInterval() * extraIntervalsNeeded)))
             {
-            // add a couple of extra intervals for the connection braces
-            AdjustScalingAxisFromBarLength(longestGroup + (GetScalingAxis().GetInterval() * 2));
+            AdjustScalingAxisFromBarLength(m_longestBarLength +
+                (GetScalingAxis().GetInterval() * extraIntervalsNeeded));
             }
         }
 
@@ -1861,7 +1866,7 @@ namespace Wisteria::Graphs
             if (grandTotal == 0)
                 { continue; }
 
-            constexpr double bracesWidth{ 30 };
+            const double bracesWidth{ DownscaleFromScreenAndCanvas(GetScalingAxis().GetIntervalPhysicalLength()) };
             double scalingAxisPos{ 0 }, barAxisPos{ 0 };
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
