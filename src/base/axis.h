@@ -1221,6 +1221,17 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         double GetPhysicalCustomXPosition() const noexcept
             { return m_physicalCustomXPosition; }
+
+        /// @returns The length of an interval along the axis in pixels.
+        [[nodiscard]]
+        double GetIntervalPhysicalLength() const
+            {
+            wxCoord axisPos1{ 0 }, axisPos2{ 0 };
+            const auto rangeStart = GetRange().first;
+            GetPhysicalCoordinate(rangeStart, axisPos1);
+            GetPhysicalCoordinate(rangeStart + GetInterval(), axisPos2);
+            return std::abs(axisPos2 - axisPos1);
+            }
         /// @}
 
         /** @name Outlining & Axis Width Functions
