@@ -1696,7 +1696,7 @@ namespace Wisteria::GraphItems
                         bracketLabel.SetAnchorPoint(
                             wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(),2),
                                     axisRect.GetBottom()) );
-                        bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                        bracketLabel.SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
                         }
                     else // AnchorWithLine
                         {
