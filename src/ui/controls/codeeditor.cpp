@@ -47,6 +47,9 @@ CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id/*=wxID_ANY*/,
     SetMarginWidth(1, FromDIP(16));
     SetMarginSensitive(1, true);
     SetFoldFlags(wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED|wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED);
+    // turn off tabs
+    SetUseTabs(false);
+    SetTabWidth(4);
     // enable auto-completion
     AutoCompSetIgnoreCase(true);
     AutoCompSetAutoHide(true);
@@ -234,8 +237,6 @@ void CodeEditor::OnKeyDown(wxKeyEvent& event)
         { Save(); }
     else if (event.ControlDown() && event.GetKeyCode() == L'O')
         { Open(); }
-    else if (event.ControlDown() && event.GetKeyCode() == L'N')
-        { New(); }
     else
         { event.Skip(); }
     }
