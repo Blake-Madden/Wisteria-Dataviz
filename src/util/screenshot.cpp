@@ -315,6 +315,8 @@ bool Screenshot::SaveScreenshotOfTextWindow(const wxString& filePath,
             { return false; }
         }
 
+    PrepareWindowForScreenshot(windowToCapture);
+
     if (highlightPoints.size())
         { dynamic_cast<wxTextCtrl*>(windowToCapture)->ShowPosition(highlightPoints[0].first); }
 
@@ -405,6 +407,8 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
     if (windowToCapture == nullptr)
         { return false; }
 
+    PrepareWindowForScreenshot(windowToCapture);
+
     wxClientDC dc(windowToCapture);
     wxMemoryDC memDC;
 
@@ -482,6 +486,8 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
         { windowToCapture = wxTopLevelWindows.GetLast()->GetData(); }
     if (windowToCapture == nullptr)
         { return false; }
+
+    PrepareWindowForScreenshot(windowToCapture);
 
     wxClientDC dc(windowToCapture);
     wxMemoryDC memDC;
@@ -564,6 +570,15 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
     // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
+    }
+
+//---------------------------------------------------
+void Screenshot::PrepareWindowForScreenshot(wxWindow* windowToCapture)
+    {
+    windowToCapture->Refresh(true);
+    windowToCapture->UpdateWindowUI(wxUPDATE_UI_RECURSE);
+    wxTheApp->Yield();
+    ::wxSleep(1);
     }
 
 //---------------------------------------------------

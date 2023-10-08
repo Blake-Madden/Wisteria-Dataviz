@@ -104,7 +104,7 @@ public:
         @returns @c true if the image was successfully converted and saved.*/
     static bool ConvertImageToPng(const wxString& filePath, const wxSize scaledSize,
         const bool removeOriginalFile = false);
-private:
+
     /// @returns The active dialog or frame.
     /// @note @c wxGetActiveWindow() always returns null on macOS, so this
     ///     uses @c wxWindow::FindFocus() and moves up to the parent dialog or frame.
@@ -114,7 +114,10 @@ private:
     ///     to get the app's main window.
     [[nodiscard]]
     static wxWindow* GetActiveDialogOrFrame();
-
+private:
+    /// @brief Ensures that everything is repainted and ready for screenshot.
+    /// @param windowToCapture The window to prepare for the screenshot.
+    static void PrepareWindowForScreenshot(wxWindow* windowToCapture);
     static void AddBorderToImage(wxBitmap& bmp);
 
     static wxPen GetScreenshotHighlightPen(const int width)
