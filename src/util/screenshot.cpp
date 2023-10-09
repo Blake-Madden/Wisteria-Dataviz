@@ -59,7 +59,27 @@ bool Screenshot::HighlightItemInScreenshot(const wxString& filePath,
                        topLeftCorner.x, topLeftCorner.y);
         memDC.SelectObject(wxNullBitmap);
 
-        wxString ext{ wxFileName(filePath).GetExt() };
+        return bmp.SaveFile(filePath, wxBitmapType::wxBITMAP_TYPE_BMP);
+        }
+    else
+        { return false; }
+    }
+
+//---------------------------------------------------
+bool Screenshot::CropScreenshot(const wxString& filePath,
+                                wxCoord width, wxCoord height)
+    {
+    wxBitmap bmp(filePath, wxBITMAP_TYPE_ANY);
+    if (bmp.IsOk())
+        {
+        if (width == wxDefaultCoord)
+            { width = bmp.GetWidth(); }
+        if (height == wxDefaultCoord)
+            { height = bmp.GetHeight(); }
+        bmp = bmp.GetSubBitmap(wxRect{ 0, 0, width, height });
+
+        AddBorderToImage(bmp);
+
         return bmp.SaveFile(filePath, wxBitmapType::wxBITMAP_TYPE_BMP);
         }
     else

@@ -96,6 +96,15 @@ public:
                                           const wxPoint topLeftCorner,
                                           const wxPoint bottomRightCorner);
 
+    /** @brief Opens a screenshot and crops to the provided dimensions.
+        @param filePath The path of the image to open.
+        @param width The width to crop the image to. Leave as @c wxDefaultCoord to not crop the width.
+        @param height The width to crop the image to. Leave as @c wxDefaultCoord to not crop the height.
+        @returns @c true if image is saved successfully.
+        @warning The file needs to be a bitmap.*/
+    static bool CropScreenshot(const wxString& filePath,
+                               wxCoord width = wxDefaultCoord, wxCoord height = wxDefaultCoord);
+
     /** @brief Converts an image to a PNG file (and downscaling it as necessary).
         @param filePath The image to convert.
         @param scaledSize The (smaller) size to convert the image to.\n
