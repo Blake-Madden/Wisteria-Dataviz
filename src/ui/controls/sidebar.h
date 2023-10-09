@@ -70,11 +70,7 @@ namespace Wisteria::UI
         /// @private
         SideBar(const SideBar&) = delete;
         /// @private
-        SideBar(SideBar&&) = delete;
-        /// @private
         SideBar& operator=(const SideBar&) = delete;
-        /// @private
-        SideBar& operator=(SideBar&&) = delete;
 
         /// @brief A child item (i.e., child of a "folder") in the sidebar.
         struct SideBarSubItem
@@ -516,6 +512,13 @@ namespace Wisteria::UI
                 }
             return false;
             }
+        /// @brief Updates the areas and positions for the items and returns
+        ///     their collective height.
+        /// @returns The total height of all items.
+        /// @internal This is only useful for clients if trying to measure the height of the content
+        ///     (for something like screenshots).
+        /// @private
+        size_t CalculateItemRects();
     private:
         /** @brief Gets the width (label, icon, and padding) of a given root item.
             @details The item's subitem width are factored into this (including their margins),
@@ -524,10 +527,6 @@ namespace Wisteria::UI
             @returns The item's width.*/
         [[nodiscard]]
         size_t GetFolderWidth(const size_t item);
-        /// @brief Updates the areas and positions for the items and returns
-        ///     their collective height.
-        /// @returns The total height of all items.
-        size_t CalculateItemRects();
         /// @brief Recalculates the control's content.
         void RecalcSizes();
         /// @brief Removes selection.
