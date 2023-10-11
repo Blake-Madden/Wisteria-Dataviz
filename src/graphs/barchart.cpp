@@ -1007,7 +1007,8 @@ namespace Wisteria::Graphs
                                 GetStippleShape() == Icons::IconShape::Man)
                                 { shapeWidth *= 0.6; }
                             // likewise, handle icons that are wider than others
-                            if (GetStippleShape() == Icons::IconShape::Car)
+                            if (GetStippleShape() == Icons::IconShape::Car ||
+                                GetStippleShape() == Icons::IconShape::Blackboard)
                                 { shapeWidth *= 1.25; }
                             auto currentXLeft = lineXStart;
                             while (currentXLeft < (lineXStart + barLength))
@@ -1448,7 +1449,8 @@ namespace Wisteria::Graphs
                             // is 75% of the width if the drawing area is square. To prevent
                             // having large gaps between the icons, adjust the height of the icons'
                             // drawing areas so that they aren't drawn inside of squares.
-                            if (GetStippleShape() == Icons::IconShape::Car)
+                            if (GetStippleShape() == Icons::IconShape::Car ||
+                                GetStippleShape() == Icons::IconShape::Blackboard)
                                 { shapeHeight *= 0.75; }
                             auto currentYTop = lineYStart - shapeHeight;
                             while ((currentYTop + shapeHeight) > lineYEnd)

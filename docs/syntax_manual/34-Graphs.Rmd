@@ -125,6 +125,8 @@ Properties common to all graphs:
   - `"snowflake"`
   - `"newspaper"`
   - `"car"`
+  - `"blackboard"`
+  - `"clock"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

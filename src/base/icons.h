@@ -88,7 +88,9 @@ namespace Wisteria::Icons
         Tire,                          /*!< A car tire.*/
         Snowflake,                     /*!< A snowflake.*/
         Newspaper,                     /*!< A newspaper.*/
-        Car                            /*!< A car (specifically, a 2006 Scion xB).*/
+        Car,                           /*!< A car (specifically, a 2006 Scion xB).*/
+        Blackboard,                    /*!< A school blackboard.*/
+        Clock,                         /*!< An analog, 12-hour clock.*/
         };
 
     /// @brief Item to draw on a legend.

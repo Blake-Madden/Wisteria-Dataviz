@@ -199,6 +199,8 @@ namespace Wisteria::GraphItems
                 { IconShape::Snowflake, &ShapeRenderer::DrawSnowflake },
                 { IconShape::Newspaper, &ShapeRenderer::DrawNewspaper },
                 { IconShape::Car, &ShapeRenderer::DrawCar },
+                { IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
+                { IconShape::Clock, &ShapeRenderer::DrawClock },
             };
 
         // connect the rendering function to the shape
@@ -1507,6 +1509,38 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawClock(wxRect rect, wxDC& dc) const
+        {
+        wxRect dcRect{ rect };
+        dcRect.Deflate(ScaleToScreenAndCanvas(2));
+        wxPoint centerPt(GetXPosFromLeft(dcRect, math_constants::half),
+                         GetYPosFromTop(dcRect, math_constants::half));
+        // draw the frame
+        DCPenChangerIfDifferent pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
+        dc.DrawCircle(centerPt, dcRect.GetWidth() * math_constants::half);
+
+        // draw the minutes
+        wxRect intervalsRect{ rect };
+        intervalsRect.Deflate(dcRect.GetWidth() * math_constants::fifth);
+        DCPenChangerIfDifferent pc2(dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+        dc.DrawCircle(centerPt, intervalsRect.GetWidth() * math_constants::half);
+
+        // draw the arms (at 4:30)
+        wxRect armsRect{ rect };
+        armsRect.Deflate(dcRect.GetWidth() * math_constants::quarter);
+        DCPenChangerIfDifferent pc3(dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(2)));
+        dc.DrawLine(centerPt,
+            wxPoint(centerPt.x + armsRect.GetWidth() * math_constants::quarter,
+                armsRect.GetBottom() - (armsRect.GetHeight() * math_constants::quarter)));
+        dc.DrawLine(centerPt, wxPoint(centerPt.x, armsRect.GetBottom()));
+
+        // seconds hand
+        DCPenChangerIfDifferent pc4(dc, wxPenInfo(*wxRED, ScaleToScreenAndCanvas(1)));
+        dc.DrawLine(wxPoint(centerPt.x + (armsRect.GetWidth() * math_constants::tenth), centerPt.y),
+                    wxPoint(centerPt.x - (armsRect.GetWidth() * math_constants::half), centerPt.y));
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
@@ -1596,6 +1630,52 @@ namespace Wisteria::GraphItems
         DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight()/2)),
                     wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawBlackboard(const wxRect rect, wxDC& dc) const
+        {
+        wxRect dcRect(rect);
+        dcRect.Deflate(ScaleToScreenAndCanvas(2));
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedHeight{ dcRect.GetHeight() * 0.6 };
+            const auto adjustTop{ (dcRect.GetHeight() - adjustedHeight) * math_constants::half };
+            dcRect.SetHeight(adjustedHeight);
+            dcRect.Offset(wxPoint(0, adjustTop));
+            }
+
+        const wxCoord frameWidth = dcRect.GetWidth() * math_constants::tenth;
+
+        dc.GradientFillLinear(dcRect, ColorBrewer::GetColor(Colors::Color::WarmGray), *wxBLACK, wxEAST);
+
+        wxDCPenChanger pc(dc,
+            wxPen(ColorBrewer::GetColor(Colors::Color::YellowPepper), frameWidth));
+        wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+        dc.DrawRectangle(dcRect);
+
+        // draw "ABC" on the board
+        wxRect textRect{ dcRect };
+        textRect.SetWidth(dcRect.GetWidth() * math_constants::half);
+        textRect.SetHeight(dcRect.GetHeight() * math_constants::half);
+        textRect.Offset(wxPoint(frameWidth, frameWidth));
+
+        Label boardText(GraphItemInfo(_("ABC")).FontColor(*wxWHITE).Pen(wxNullPen).
+            DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()));
+        boardText.GetFont().MakeBold().SetFaceName(Label::GetFirstAvailableCursiveFont());
+        boardText.SetBoundingBox(textRect, dc, GetScaling());
+        boardText.Draw(dc);
+
+        // draw a piece of chalk
+        wxDCPenChanger pc2(dc,
+            wxPenInfo(*wxWHITE, frameWidth / 2).Cap(wxCAP_BUTT));
+        wxPoint chalkRight{ dcRect.GetBottomRight() };
+        chalkRight.y -= frameWidth - (frameWidth / 4);
+        chalkRight.x -= ScaleToScreenAndCanvas(2);
+        wxPoint chalkLeft{ chalkRight };
+        chalkLeft.x -= dcRect.GetWidth() * math_constants::fifth;
+        dc.DrawLine(chalkLeft, chalkRight);
         }
 
     //---------------------------------------------------

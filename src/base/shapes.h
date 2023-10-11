@@ -294,6 +294,14 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawCar(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a blackboard.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawBlackboard(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a clock.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawClock(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
@@ -304,23 +312,23 @@ namespace Wisteria::GraphItems
         /// @brief Offsets calls to GetXPosFromLeft(). This is useful for centering the rendering
         ///     of irregular (i.e., non-square) shapes inside of squares.
         void SetXOffsetPercentage(const double offset) const noexcept
-            { xOffsetPercentage = offset; }
+            { m_xOffsetPercentage = offset; }
         /// @brief Offsets calls to GetYPosFromLeft(). This is useful for centering the rendering
         ///     of irregular (i.e., non-square) shapes inside of squares.
         void SetYOffsetPercentage(const double offset) const noexcept
-            { yOffsetPercentage = offset; }
+            { m_yOffsetPercentage = offset; }
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside of the rect.
         [[nodiscard]]
         double GetXPosFromLeft(const wxRect rect,
                                const double percentFromLeft) const
-            { return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + xOffsetPercentage)); };
+            { return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + m_xOffsetPercentage)); };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]]
         double GetYPosFromTop(const wxRect rect,
                               const double percentFromTop) const
-            { return rect.GetTop() + (rect.GetHeight() * (percentFromTop + yOffsetPercentage)); };
+            { return rect.GetTop() + (rect.GetHeight() * (percentFromTop + m_yOffsetPercentage)); };
 
         /// @brief Mirrors percentages passed to GetXPosFromLeft() or GetYPosFromTop().
         [[nodiscard]]
@@ -375,8 +383,8 @@ namespace Wisteria::GraphItems
 
         GraphItemInfo m_graphInfo;
         const wxBitmapBundle* m_iconImage{ nullptr };
-        mutable double xOffsetPercentage{ 0.0 };
-        mutable double yOffsetPercentage{ 0.0 };
+        mutable double m_xOffsetPercentage{ 0.0 };
+        mutable double m_yOffsetPercentage{ 0.0 };
         static std::mt19937 m_mt;
         };
 
@@ -428,7 +436,7 @@ namespace Wisteria::GraphItems
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) noexcept final
-            { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
+            { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove)); }
         /// @returns The renderer.
         [[nodiscard]]
         ShapeRenderer& GetRenderer() noexcept
