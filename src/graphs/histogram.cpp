@@ -27,7 +27,8 @@ namespace Wisteria::Graphs
                             const bool showFullRangeOfValues /*= true*/,
                             const std::optional<double> startBinsValue /*= std::nullopt*/,
                             const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges
-                                /*= std::make_pair(std::nullopt, std::nullopt)*/)
+                                /*= std::make_pair(std::nullopt, std::nullopt)*/,
+                            const bool neatIntervals /*= false*/)
         {
         // point to (new) data and reset
         SetDataset(data);
@@ -40,6 +41,7 @@ namespace Wisteria::Graphs
         if (GetDataset() == nullptr)
             { return; }
 
+        m_neatRanges = neatIntervals;
         m_binningMethod = bMethod;
         m_roundingMethod = rounding;
         m_intervalDisplay = iDisplay;
@@ -324,7 +326,7 @@ namespace Wisteria::Graphs
                 { minVal -= 1; }
             maxVal = std::ceil(static_cast<double>(maxVal));
 
-            // if starting at forced position, then only pad beyond max value if creating neat intervals
+            // if starting at forced position, then only pad beyond max value if creating integral intervals
             if (GetBinsStart() && !std::isnan(GetBinsStart().value()))
                 {
                 while (safe_modulus<size_t>(static_cast<size_t>(maxVal-minVal), numOfBins))
@@ -332,7 +334,7 @@ namespace Wisteria::Graphs
                 }
             else
                 {
-                // if we are splitting the bins into neat integer ranges,
+                // if we are splitting the bins into integral integer ranges,
                 // then we need to adjust (pad) the min and max values so
                 // that the range is evenly divisible by the number of bins.
                 bool addHigh = true;
@@ -343,9 +345,19 @@ namespace Wisteria::Graphs
                     }
                 }
             }
-        const double BinSize = safe_divide<double>((maxVal-minVal), numOfBins);
+        double binSize = safe_divide<double>((maxVal-minVal), numOfBins);
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
-            { assert(!has_fractional_part(BinSize)); }
+            {
+            assert(!has_fractional_part(binSize));
+            // fit the ranges into neater intervals and unused bins will be discarded later
+            if (m_neatRanges)
+                {
+                if (binSize < 5)
+                    { binSize = 5; }
+                else if (binSize > 5 && binSize < 10)
+                    { binSize = 10; }
+                }
+            }
 
         // calculate how many observations are in each group
         using valuesCounter = std::pair<double, std::set<wxString, Data::wxStringLessNoCase>>;
@@ -382,8 +394,8 @@ namespace Wisteria::Graphs
                         }
                     break;
                     }
-                else if (compare_doubles_greater(currentVal, (minVal+(j*BinSize))) &&
-                    compare_doubles_less_or_equal(currentVal, (minVal+(j*BinSize)+BinSize)))
+                else if (compare_doubles_greater(currentVal, (minVal+(j*binSize))) &&
+                    compare_doubles_less_or_equal(currentVal, (minVal+(j*binSize)+binSize)))
                     {
                     auto foundGroup = std::find(bins[j].begin(), bins[j].end(),
                         comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
@@ -408,14 +420,14 @@ namespace Wisteria::Graphs
                 }
             }
 
-        const double startingBarAxisPosition = minVal + safe_divide<double>(BinSize,2);
+        const double startingBarAxisPosition = minVal + safe_divide<double>(binSize,2);
         // if the starting point or interval size has floating precision then set the axis to show it
         if (GetBinningMethod() != BinningMethod::BinByIntegerRange &&
-            (has_fractional_part(startingBarAxisPosition) || has_fractional_part(BinSize)))
+            (has_fractional_part(startingBarAxisPosition) || has_fractional_part(binSize)))
             { GetBarAxis().SetPrecision(4); }
         else
             { GetBarAxis().SetPrecision(0); }
-        GetBarAxis().SetInterval(BinSize);
+        GetBarAxis().SetInterval(binSize);
 
         // tally up the total group counts
         double total = 0;
@@ -426,7 +438,7 @@ namespace Wisteria::Graphs
            }
 
         /* Remove any following bins that do not have anything in them (might happen if the range
-           had to be expanded to create neat intervals). Leading bins are handled separately in the
+           had to be expanded to create integral intervals). Leading bins are handled separately in the
            loop below because the range min value makes removing bins here more tricky.*/
         while (bins.size())
             {
@@ -440,11 +452,11 @@ namespace Wisteria::Graphs
         bool firstBinWithValuesFound = false;
         for (size_t i = 0; i < bins.size(); ++i)
             {
-            Bar theBar(startingBarAxisPosition + (i*BinSize),
+            Bar theBar(startingBarAxisPosition + (i*binSize),
                 std::vector<BarBlock>(),
                 wxEmptyString, GraphItems::Label(),
                 GetBarEffect(), GetBarOpacity(),
-                (GetIntervalDisplay() == IntervalDisplay::Cutpoints) ? BinSize : 0);
+                (GetIntervalDisplay() == IntervalDisplay::Cutpoints) ? binSize : 0);
 
             // build the bar from its blocks (i.e., subgroups)
             double currentBarBlocksTotal{ 0 };
@@ -518,7 +530,7 @@ namespace Wisteria::Graphs
                     L"%)";
             theBar.GetLabel().SetText(barLabel);
 
-            /* If values are being rounded and the intervals are "neat," then show the bins
+            /* If values are being rounded and the intervals are integral, then show the bins
                simply as integer ranges instead of ">= and <" ranges (makes it easier to read).*/
             if (GetBinningMethod() == BinningMethod::BinByIntegerRange &&
                 GetRoundingMethod() != RoundingMethod::NoRounding)
@@ -532,8 +544,8 @@ namespace Wisteria::Graphs
                    starting after the cutpoint.*/
                 const double startValue = (i == 0) ?
                     isLowestValueBeingAdjusted ? minVal+1 : minVal :
-                        minVal+1+(i*BinSize);
-                const double endValue = minVal+(i*BinSize)+BinSize;
+                        minVal+1+(i*binSize);
+                const double endValue = minVal+(i*binSize)+binSize;
                 wxString axisLabel;
                 if (startValue == endValue)
                     { axisLabel += GetCustomBarLabelOrValue(startValue); }
@@ -544,26 +556,26 @@ namespace Wisteria::Graphs
                     }
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
                     {
-                    GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*BinSize),
+                    GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*binSize),
                                                 GraphItems::Label(axisLabel));
                     }
                 }
             else
                 {
                 const wxString axisLabel = ((i == 0) ? L">= " : L"> ") +
-                    wxNumberFormatter::ToString(minVal+(i*BinSize), 6,
+                    wxNumberFormatter::ToString(minVal+(i*binSize), 6,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes) + _(L" and <= ") +
-                    wxNumberFormatter::ToString(minVal+(i*BinSize)+BinSize, 6,
+                    wxNumberFormatter::ToString(minVal+(i*binSize)+binSize, 6,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes);
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
                     {
-                    GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*BinSize),
+                    GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*binSize),
                                                 GraphItems::Label(axisLabel));
                     }
                 }
 
             /* Remove any leading bins that do not have anything in them
-               (might happen if the range had to be expanded to create neat intervals).*/
+               (might happen if the range had to be expanded to create integral intervals).*/
             if (!firstBinWithValuesFound && barValue <= 0 &&
                 // if bins are not forced to start at a certain place,
                 // then allow these leading empty bars

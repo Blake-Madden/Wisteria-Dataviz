@@ -74,7 +74,7 @@ namespace Wisteria::Graphs
          plot->SetData(mtcarsData, L"mpg", 
                       // grouping variable, we won't use one here
                       std::nullopt,
-                      // make the ranges neat integers
+                      // make the ranges integral integers
                       Histogram::BinningMethod::BinByIntegerRange,
                       // don't round the data
                       RoundingMethod::NoRounding,
@@ -179,11 +179,11 @@ namespace Wisteria::Graphs
             {
             double m_bin{ 0 };
             Data::GroupIdType m_block{ 0 };
-            // 0-based index into the color scheme
+            // Zero-based index into the color scheme
             // (based on the alphabetically order of the group label from
             // the secondary group column)
             size_t m_schemeIndex{ 0 };
-            // the name of the group for a subblock in a bar (from the secondary group column)
+            // The name of the group for a subblock in a bar (from the secondary group column)
             wxString m_groupName;
             /// @private
             [[nodiscard]]
@@ -256,6 +256,9 @@ namespace Wisteria::Graphs
                 (if binning into ranges) and the maximum number of bins.
                 For the latter, if binning by unique values and the number of
                 unique values exceeds this, then the range-based mode will be used for the binning.
+            @param neatIntervals If @c true and the binning method is @c BinByIntegerRange, then
+                will attempt to round the bar ranges to mulitples of 5, 10, etc.\n
+                This will override @c binCountRanges.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
@@ -273,7 +276,8 @@ namespace Wisteria::Graphs
                      const bool showFullRangeOfValues = true,
                      const std::optional<double> startBinsValue = std::nullopt,
                      const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges =
-                        std::make_pair(std::nullopt, std::nullopt));
+                        std::make_pair(std::nullopt, std::nullopt),
+                     const bool neatIntervals = false);
 
         /** @brief Gets the number of bins/cells in the histogram with data in them.
             @note This refers to the number of cells with data in them, not the number
@@ -288,7 +292,7 @@ namespace Wisteria::Graphs
 
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if your are showing unique values for the categories
-        ///     (i.e., not ranges)and you are just showing bars that actually have values
+        ///     (i.e., not ranges) and you are just showing bars that actually have values
         ///     (so that the bars are next to each other).
         /// @returns Whether the columns (bins) can be sorted.
         /// @sa GetSortDirection(), SetSortDirection(), SetSortable(), SortBars().
@@ -387,6 +391,7 @@ namespace Wisteria::Graphs
         size_t m_maxBinCount{ 255 };
         size_t m_binCount{ 0 };
         bool m_displayFullRangeOfValues{ true };
+        bool m_neatRanges{ false };
         std::optional<double> m_startBinsValue{ std::nullopt };
         };
     }
