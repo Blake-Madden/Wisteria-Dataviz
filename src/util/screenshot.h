@@ -36,8 +36,8 @@ public:
     /** @brief Saves a screenshot of the active window, and an annotation written over provided control(s).
         @param filePath The path to save the screenshot to.
         @param annotation Text to write in the provided area.
-        @param StartIdToHighlight The start control to draw the annotation over.
-        @param EndIdToHighlight The start control to draw the annotation over.
+        @param StartIdToOverwrite The start control to draw the annotation over.
+        @param EndIdToOverwrite The start control to draw the annotation over.
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshot(const wxString& filePath,
                                const wxString& annotation,
