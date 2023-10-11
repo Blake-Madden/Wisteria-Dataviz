@@ -848,38 +848,56 @@ void SideBar::Realize()
 void SideBar::RecalcSizes()
     {
     // adjust (or show/hide) scrollbars and update the items' positions
-    SetVirtualSize(GetSize().GetWidth(), CalculateItemRects());
+    SetVirtualSize(GetSize().GetWidth(), CalculateItemRects().first);
     }
 
 //-------------------------------------------
-size_t SideBar::CalculateItemRects()
+std::pair<size_t, size_t> SideBar::CalculateItemRects()
     {
     size_t subItemHeight{ 0 };
+    size_t heightToSelectedItem{ 0 };
+    bool foundSelectedItem{ false };
     size_t currentFolderIndex{ 0 };
     for (auto& folder : m_folders)
         {
         folder.m_Rect = wxRect(0,
             (GetItemHeight() * currentFolderIndex) + subItemHeight,
             GetClientSize().GetWidth(), GetItemHeight());
+        // include this folder rect in selection area if we haven't hit the selected folder yet
+        if (!foundSelectedItem)
+            { heightToSelectedItem += folder.m_Rect.GetHeight(); }
         // update subitems' areas and factor them into the overall height
-        for (auto& subitem : folder.m_subItems)
+        for (size_t subCounter = 0; subCounter < folder.m_subItems.size(); ++subCounter)
             {
             if (folder.m_isExpanded)
                 {
-                subitem.m_Rect = wxRect(0,
+                folder.m_subItems[subCounter].m_Rect = wxRect(0,
                     (GetItemHeight() * (currentFolderIndex + 1)) +
                     subItemHeight,
                     GetClientSize().GetWidth() - GetSubitemIndentation(),
                     GetItemHeight());
-                subitem.m_Rect.Offset(GetSubitemIndentation(), 0);
+                folder.m_subItems[subCounter].m_Rect.Offset(GetSubitemIndentation(), 0);
                 subItemHeight += GetItemHeight();
+                // if we haven't gotten to the selected item yet, then include this rect
+                // in the selection area height
+                if (!foundSelectedItem)
+                    {
+                    heightToSelectedItem += folder.m_subItems[subCounter].m_Rect.GetHeight();
+                    // if this is the selected subitem, then we included it and we are done with that area
+                    if (folder.IsSubItemSelected() && folder.m_selectedItem.value() == subCounter)
+                        { foundSelectedItem = true; }
+                    }
                 }
             else
-                { subitem.m_Rect = wxRect(0, 0, 0, 0); }
+                { folder.m_subItems[subCounter].m_Rect = wxRect(0, 0, 0, 0); }
             }
+        // if we haven't hit selected item yet, and this folder is the selected one
+        // and it isn't expanded or has no subitems, then we are done getting the hit of the selection area height
+        if (!foundSelectedItem && GetSelectedFolderId() == folder.GetId())
+            { foundSelectedItem = true; }
         ++currentFolderIndex;
         }
-    return (GetItemHeight() * m_folders.size()) + subItemHeight;
+    return std::make_pair((GetItemHeight() * m_folders.size()) + subItemHeight, heightToSelectedItem);
     }
 
 //-------------------------------------------

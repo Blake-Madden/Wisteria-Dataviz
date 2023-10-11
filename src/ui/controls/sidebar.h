@@ -514,11 +514,11 @@ namespace Wisteria::UI
             }
         /// @brief Updates the areas and positions for the items and returns
         ///     their collective height.
-        /// @returns The total height of all items.
+        /// @returns The total height of all items and the height to where the active item is.
         /// @internal This is only useful for clients if trying to measure the height of the content
         ///     (for something like screenshots).
         /// @private
-        size_t CalculateItemRects();
+        std::pair<size_t, size_t> CalculateItemRects();
     private:
         /** @brief Gets the width (label, icon, and padding) of a given root item.
             @details The item's subitem width are factored into this (including their margins),
