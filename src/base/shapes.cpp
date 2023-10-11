@@ -1601,6 +1601,35 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawNewspaper(const wxRect rect, wxDC& dc) const
         {
+        // write random horizontal lines of dots inside a rect to simulate text
+        const auto writeText = [&dc, &rect, this](const wxRect textRect)
+            {
+            wxPoint textLeft{ textRect.GetTopLeft() };
+            wxPoint textRight{ textRect.GetTopRight() };
+            // use a random selection of pen dash styles for each line to simulate text
+            std::uniform_int_distribution<> randPenStyle(wxPENSTYLE_LONG_DASH, wxPENSTYLE_DOT_DASH);
+            size_t currentLine{ 0 };
+            while (textLeft.y < textRect.GetBottom())
+                {
+                wxDCPenChanger pc3(dc,
+                    wxPen(ColorBrewer::GetColor(Colors::Color::SmokyBlack),
+                        ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? 1 : .5),
+                        static_cast<wxPenStyle>(randPenStyle(m_mt))));
+                if ((currentLine % 10) > 0)
+                    { dc.DrawLine(textLeft, textRight); }
+                // indent every 10th line
+                else
+                    {
+                    dc.DrawLine(
+                        wxPoint(textLeft.x + textRect.GetWidth() * math_constants::fifth, textLeft.y),
+                        textRight);
+                    }
+                textLeft.y += ScaleToScreenAndCanvas(2);
+                textRight.y += ScaleToScreenAndCanvas(2);
+                ++currentLine;
+                }
+            };
+
         wxDCPenChanger pc(dc,
             wxPen(ColorBrewer::GetColor(Colors::Color::DarkGray), ScaleToScreenAndCanvas(1)));
         wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
@@ -1654,7 +1683,7 @@ namespace Wisteria::GraphItems
 
         // picture on the front page
         auto pictureBox{ frontPageRect };
-        pictureBox.SetHeight(frontPageRect.GetHeight() * math_constants::third);
+        pictureBox.SetHeight(frontPageRect.GetHeight() * math_constants::quarter);
         pictureBox.SetWidth(frontPageRect.GetWidth() * math_constants::fourth);
         pictureBox.SetTop(headlineBox.GetBottom() + ScaleToScreenAndCanvas(1));
         pictureBox.Offset(wxPoint(ScaleToScreenAndCanvas(2), 0));
@@ -1662,9 +1691,16 @@ namespace Wisteria::GraphItems
         dc.GradientFillLinear(pictureBox, ColorBrewer::GetColor(Colors::Color::Afternoon),
             ColorBrewer::GetColor(Colors::Color::BlueSky));
         wxRect sunRect{ pictureBox };
-        sunRect.SetWidth(sunRect.GetWidth() * math_constants::half);
+        sunRect.SetWidth(sunRect.GetWidth() * math_constants::three_quarters);
         sunRect.SetHeight(sunRect.GetWidth());
         DrawSun(sunRect, dc);
+
+        // TOC below the picture
+        auto tocBox{ pictureBox };
+        tocBox.SetTop(pictureBox.GetBottom() + ScaleToScreenAndCanvas(2));
+        tocBox.SetBottom(frontPageRect.GetBottom() - ScaleToScreenAndCanvas(2));
+        dc.DrawRectangle(tocBox);
+        writeText(tocBox.Deflate(ScaleToScreenAndCanvas(1)));
 
         // column separator
         wxPoint columnTop(pictureBox.GetTopRight());
@@ -1676,33 +1712,12 @@ namespace Wisteria::GraphItems
         auto rightTextRect{ frontPageRect };
         rightTextRect.SetWidth(frontPageRect.GetRight() - columnTop.x - ScaleToScreenAndCanvas(4));
         headlineBox.Offset(wxPoint(0, ScaleToScreenAndCanvas(1)));
-        rightTextRect.SetHeight(frontPageRect.GetBottom() - headlineBox.GetBottom() - ScaleToScreenAndCanvas(4));
+        rightTextRect.SetHeight(frontPageRect.GetBottom() -
+                                headlineBox.GetBottom() - ScaleToScreenAndCanvas(4));
         rightTextRect.SetTopLeft(columnTop);
         rightTextRect.Offset(ScaleToScreenAndCanvas(2), ScaleToScreenAndCanvas(2));
-        wxPoint textLeft{ rightTextRect.GetTopLeft() };
-        wxPoint textRight{ rightTextRect.GetTopRight() };
-        // use a random selection of pen dash styles for each line to simulate text
-        std::uniform_int_distribution<> randPenStyle(wxPENSTYLE_LONG_DASH, wxPENSTYLE_DOT_DASH);
-        size_t currentLine{ 0 };
-        while (textLeft.y < rightTextRect.GetBottom())
-            {
-            wxDCPenChanger pc3(dc,
-                wxPen(ColorBrewer::GetColor(Colors::Color::SmokyBlack),
-                    ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? 1 : .5),
-                    static_cast<wxPenStyle>(randPenStyle(m_mt))));
-            if ((currentLine % 10) > 0)
-                { dc.DrawLine(textLeft, textRight); }
-            // indent every 10th line
-            else
-                {
-                dc.DrawLine(
-                    wxPoint(textLeft.x + rightTextRect.GetWidth() * math_constants::fifth, textLeft.y),
-                    textRight);
-                }
-            textLeft.y += ScaleToScreenAndCanvas(2);
-            textRight.y += ScaleToScreenAndCanvas(2);
-            ++currentLine;
-            }
+
+        writeText(rightTextRect);
         }
 
     //---------------------------------------------------
