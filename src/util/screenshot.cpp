@@ -66,6 +66,30 @@ bool Screenshot::HighlightItemInScreenshot(const wxString& filePath,
     }
 
 //---------------------------------------------------
+bool Screenshot::AnnotateScreenshot(const wxString& filePath,
+                                    const wxString& text,
+                                    const wxPoint topLeftCorner,
+                                    const wxPoint bottomRightCorner)
+    {
+    wxBitmap bmp(filePath, wxBITMAP_TYPE_ANY);
+    if (bmp.IsOk())
+        {
+        wxMemoryDC memDC;
+        memDC.SelectObject(bmp);
+        memDC.SetPen(GetOutlintPen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
+        memDC.SetBrush(*wxWHITE);
+        memDC.DrawRectangle(wxRect(topLeftCorner, bottomRightCorner));
+        memDC.DrawText(text, topLeftCorner);
+
+        memDC.SelectObject(wxNullBitmap);
+
+        return bmp.SaveFile(filePath, wxBitmapType::wxBITMAP_TYPE_BMP);
+        }
+    else
+        { return false; }
+    }
+
+//---------------------------------------------------
 bool Screenshot::CropScreenshot(const wxString& filePath,
                                 wxCoord width, wxCoord height)
     {
@@ -526,7 +550,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
 
        But on HiDPI displays that causes various artifacts in the images.
        BitBlitting the client area is less problematic overall.*/
-    memDC.Blit(0,0,dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
+    memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
     if (StartIdToHighlight != wxID_ANY || EndIdToHighlight != wxID_ANY)
         {
@@ -577,6 +601,94 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
             memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
             memDC.DrawLine(endPoint.x, endPoint.y, startPoint.x, endPoint.y);
             memDC.DrawLine(startPoint.x, endPoint.y, startPoint.x, startPoint.y);
+            }
+        }
+
+    memDC.SelectObject(wxNullBitmap);
+
+    // draw a gray border around the image since we are saving the client area
+    AddBorderToImage(bitmap);
+
+    wxFileName fn(filePath);
+    fn.SetExt(L"bmp");
+    // create the folder to the filepath--if necessary--and save the image
+    wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+    return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
+    }
+
+//---------------------------------------------------
+bool Screenshot::SaveScreenshot(const wxString& filePath,
+                                const wxString& annotation,
+                                const wxWindowID StartIdToOverwrite,
+                                const wxWindowID EndIdToOverwrite /*= wxID_ANY*/)
+    {
+    wxWindow* windowToCapture = GetActiveDialogOrFrame();
+    if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
+        { windowToCapture = wxTopLevelWindows.GetLast()->GetData(); }
+    if (windowToCapture == nullptr)
+        { return false; }
+
+    PrepareWindowForScreenshot(windowToCapture);
+
+    wxClientDC dc(windowToCapture);
+    wxMemoryDC memDC;
+
+    // use 24-bit (RGB) bitmap, because including the alpha channel
+    // is unnecessary and causes artifacts on HiDPI displays.
+    wxBitmap bitmap(dc.GetSize(), 24);
+    memDC.SelectObject(bitmap);
+    memDC.Clear();
+    /* On Vista and above, the Aero theme breaks ::BitBlt grabbing the entire window
+       (the outer frame appears translucent).
+       Instead, BitBlit the client area and not the entire dialog.
+       An alternative is to call this:
+
+       ::PrintWindow(windowToCapture->GetHandle(), memDC.GetHDC(), 0)
+
+       But on HiDPI displays that causes various artifacts in the images.
+       BitBlitting the client area is less problematic overall.*/
+    memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
+
+    if (StartIdToOverwrite != wxID_ANY || EndIdToOverwrite != wxID_ANY)
+        {
+        const wxWindow* startWindow = (StartIdToOverwrite == wxID_ANY) ?
+            nullptr :
+            windowToCapture->FindWindow(StartIdToOverwrite);
+        if (startWindow)
+            {
+            /* Step back all the way from the child window to the parent and tally the offset
+               of the children relative to its parent. When dealing with client areas, using
+               the screen position of controls will be off because the main dialog's decorations
+               aren't factored into that.*/
+            wxPoint startPoint(0, 0);
+            auto startWindowParent = startWindow;
+            while (startWindowParent && startWindowParent != windowToCapture)
+                {
+                startPoint += startWindowParent->GetPosition();
+                startWindowParent = startWindowParent->GetParent();
+                }
+            wxPoint endPoint(startPoint.x + startWindow->GetSize().GetWidth(),
+                             startPoint.y + startWindow->GetSize().GetHeight());
+            const wxWindow* endWindow = (EndIdToOverwrite == wxID_ANY) ?
+                nullptr :
+                windowToCapture->FindWindow(EndIdToOverwrite);
+            if (endWindow)
+                {
+                endPoint = wxPoint(0, 0);
+                auto endWindowParent = endWindow;
+                while (endWindowParent && endWindowParent != windowToCapture)
+                    {
+                    endPoint += endWindowParent->GetPosition();
+                    endWindowParent = endWindowParent->GetParent();
+                    }
+                // bump down the highlighting to include the end control also
+                endPoint += endWindow->GetSize();
+                }
+
+            memDC.SetPen(GetOutlintPen(windowToCapture->GetDPIScaleFactor()));
+            memDC.SetBrush(*wxWHITE);
+            memDC.DrawRectangle(wxRect(wxPoint(startPoint.x, startPoint.y), wxPoint(endPoint.x, endPoint.y)));
+            memDC.DrawText(annotation, wxPoint(startPoint.x + 2, startPoint.y + 2));
             }
         }
 

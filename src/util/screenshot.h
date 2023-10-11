@@ -25,7 +25,7 @@
 class Screenshot
     {
 public:
-    /** @brief Saves a screenshot of the active Window.
+    /** @brief Saves a screenshot of the active window.
         @param filePath The path to save the screenshot to.
         @param StartIdToHighlight The (optional) start control to draw a red line around.
         @param EndIdToHighlight The (optional) end control to draw a red line around.
@@ -33,7 +33,17 @@ public:
     static bool SaveScreenshot(const wxString& filePath,
                                const wxWindowID StartIdToHighlight = wxID_ANY,
                                const wxWindowID EndIdToHighlight = wxID_ANY);
-    /** @brief Saves a screenshot of the active Window and highlights items in its property grid.
+    /** @brief Saves a screenshot of the active window, and an annotation written over provided control(s).
+        @param filePath The path to save the screenshot to.
+        @param annotation Text to write in the provided area.
+        @param StartIdToHighlight The start control to draw the annotation over.
+        @param EndIdToHighlight The start control to draw the annotation over.
+        @returns @c true if image is saved successfully.*/
+    static bool SaveScreenshot(const wxString& filePath,
+                               const wxString& annotation,
+                               const wxWindowID StartIdToOverwrite,
+                               const wxWindowID EndIdToOverwrite = wxID_ANY);
+    /** @brief Saves a screenshot of the active window and highlights items in its property grid.
         @param filePath The path to save the screenshot to.
         @param propertyGridId The window ID of the property grid.
             If provided, will search for the top-most property grid with that ID.
@@ -96,6 +106,18 @@ public:
                                           const wxPoint topLeftCorner,
                                           const wxPoint bottomRightCorner);
 
+    /** @brief Opens a screenshot and draws a text box at the provided area.
+        @param filePath The path of the image to open.
+        @param text The text to write in the box.
+        @param topLeftCorner The top-left corner of the text box.
+        @param bottomRightCorner The bottom-right corner of the text box.
+        @returns @c true if image is saved successfully.
+        @warning The file needs to be a bitmap.*/
+    static bool AnnotateScreenshot(const wxString& filePath,
+                                   const wxString& text,
+                                   const wxPoint topLeftCorner,
+                                   const wxPoint bottomRightCorner);
+
     /** @brief Opens a screenshot and crops to the provided dimensions.
         @param filePath The path of the image to open.
         @param width The width to crop the image to. Leave as @c wxDefaultCoord to not crop the width.
@@ -131,6 +153,8 @@ private:
 
     static wxPen GetScreenshotHighlightPen(const int width)
         { return wxPen(*wxRED, width, wxPenStyle::wxPENSTYLE_DOT); }
+    static wxPen GetOutlintPen(const int width)
+        { return wxPen(*wxLIGHT_GREY, width); }
     };
 
 /** @}*/
