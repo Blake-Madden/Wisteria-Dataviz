@@ -523,7 +523,8 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
 //---------------------------------------------------
 bool Screenshot::SaveScreenshot(const wxString& filePath,
                                 const wxWindowID StartIdToHighlight /*= wxID_ANY*/,
-                                const wxWindowID EndIdToHighlight /*= wxID_ANY*/)
+                                const wxWindowID EndIdToHighlight /*= wxID_ANY*/,
+                                const wxWindowID cutoffId /*= wxID_ANY*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -605,6 +606,26 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
         }
 
     memDC.SelectObject(wxNullBitmap);
+
+    // crop vertially, if requested
+    if (cutoffId != wxID_ANY)
+        {
+        const wxWindow* cutoffWindow = windowToCapture->FindWindow(cutoffId);
+        if (cutoffWindow)
+            {
+            wxPoint cutoffPoint(0, 0);
+            auto cutoffWindowParent = cutoffWindow;
+            while (cutoffWindowParent && cutoffWindowParent != windowToCapture)
+                {
+                cutoffPoint += cutoffWindowParent->GetPosition();
+                cutoffWindowParent = cutoffWindowParent->GetParent();
+                }
+            wxPoint cutOffEndPoint(cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
+                                   cutoffPoint.y + cutoffWindow->GetSize().GetHeight());
+            bitmap = bitmap.GetSubBitmap(
+                wxRect(0, 0, bitmap.GetWidth(), cutOffEndPoint.y + wxSizerFlags::GetDefaultBorder()));
+            }
+        }
 
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
