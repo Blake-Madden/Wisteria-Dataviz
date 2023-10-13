@@ -1714,14 +1714,16 @@ namespace Wisteria::Graphs
                     }
                 }
 
+            bar.GetLabel().SetScaling(GetScaling());
+            bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
+            bar.GetLabel().SetShadowType(GetShadowType());
+            bar.GetLabel().SetFontColor(GetBarAxis().GetFontColor());
+            bar.GetLabel().SetFont(GetBarAxis().GetFont());
+
             // after all blocks are built, add the label at the end of the full bar
             if (GetBarOrientation() == Orientation::Horizontal &&
                 bar.GetLabel().IsShown())
                 {
-                bar.GetLabel().SetScaling(GetScaling());
-                bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-                bar.GetLabel().SetShadowType(GetShadowType());
-
                 auto bBox = bar.GetLabel().GetBoundingBox(dc);
                 bar.GetLabel().SetAnchorPoint(
                     wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (bBox.GetWidth()/2),
@@ -1750,10 +1752,6 @@ namespace Wisteria::Graphs
             else if (GetBarOrientation() == Orientation::Vertical &&
                 bar.GetLabel().IsShown())
                 {
-                bar.GetLabel().SetScaling(GetScaling());
-                bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-                bar.GetLabel().SetShadowType(GetShadowType());
-
                 auto bBox = bar.GetLabel().GetBoundingBox(dc);
                 bar.GetLabel().SetAnchorPoint(
                     wxPoint(middlePointOfBarEnd.x,
