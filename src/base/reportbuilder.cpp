@@ -3233,7 +3233,7 @@ namespace Wisteria
                 {
                 const auto peri =
                     ReportEnumConvert::ConvertPerimeter(
-                        showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                        graphNode->GetProperty(L"showcased-ring-labels")->GetValueString());
                 pieChart->ShowcaseOuterPieSlices(
                     showcaseNode->GetValueStringVector(),
                     peri.has_value() ? peri.value() : Perimeter::Outer);
@@ -3244,7 +3244,7 @@ namespace Wisteria
                 const auto categoryType = showcaseNode->GetProperty(L"category")->GetValueString();
                 const auto peri =
                     ReportEnumConvert::ConvertPerimeter(
-                        showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                        graphNode->GetProperty(L"showcased-ring-labels")->GetValueString());
                 if (pieType.CmpNoCase(L"inner") == 0)
                     {
                     if (categoryType.CmpNoCase(L"smallest") == 0)

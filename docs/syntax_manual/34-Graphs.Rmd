@@ -657,7 +657,7 @@ Properties for `"pie-chart"` nodes:
     - `"largest"`
   - `"by-group"`: If showcasing the inner pie, `true` will show the smallest/largest slice within each group.
   - `"show-outer-pie-midpoint-labels"`: If showcasing the inner pie, `true` to keep the outer pie midpoint labels shown.
-  - `"outer-label-ring"`: If showcasing the outer pie, a string specifying which ring should have its group labels
+- `"showcased-ring-labels"`: If showcasing, a string specifying which ring should have its group labels
     shown outside of the pie. \
     Available options are:
     - `"inner"`
