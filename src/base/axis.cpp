@@ -1410,6 +1410,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelWidth = bracketLabelSize.GetWidth();
                     if (bracket.GetPerpendicularLabelConnectionLinesAlignment() ==
@@ -1550,6 +1552,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelWidth = bracketLabelSize.GetWidth();
                     if (bracket.GetPerpendicularLabelConnectionLinesAlignment() ==
@@ -1688,6 +1692,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelHeight = bracketLabelSize.GetHeight();
                     if (bracket.GetPerpendicularLabelConnectionLinesAlignment() ==
@@ -1822,6 +1828,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelHeight = bracketLabelSize.GetHeight();
                     if (bracket.GetPerpendicularLabelConnectionLinesAlignment() ==
