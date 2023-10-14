@@ -1769,23 +1769,6 @@ namespace Wisteria::Graphs
             return middlePointOfBarEnd;
             };
 
-        std::vector<wxPoint> boxCorners;
-        for (auto& bar : GetBars())
-            {
-            // index is only used for image, irrelevant here
-            drawBar(bar, true, 0);
-            boxCorners.push_back(barRect.GetTopLeft());
-            boxCorners.push_back(barRect.GetTopRight());
-            boxCorners.push_back(barRect.GetBottomLeft());
-            boxCorners.push_back(barRect.GetBottomRight());
-            }
-        const auto [minX, maxX] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
-            [](const auto lhv, const auto rhv) noexcept
-            { return lhv.x < rhv.x; });
-        const auto [minY, maxY] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
-            [](const auto lhv, const auto rhv) noexcept
-            { return lhv.y < rhv.y; });
-
         // scale the common image to the plot area's size
         scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
