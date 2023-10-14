@@ -53,6 +53,14 @@ CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id/*=wxID_ANY*/,
     // enable auto-completion
     AutoCompSetIgnoreCase(true);
     AutoCompSetAutoHide(true);
+    // annotations styles
+    StyleSetBackground(ERROR_ANNOTATION_STYLE,
+        wxSystemSettings::SelectLightDark(wxColour(244, 220, 220),
+            wxColour(100, 100, 100)));
+    StyleSetSizeFractional(ERROR_ANNOTATION_STYLE,
+        (StyleGetSizeFractional(wxSTC_STYLE_DEFAULT) * 4) / 5);
+    // turn on annotations
+    AnnotationSetVisible(wxSTC_ANNOTATION_BOXED);
 
     CallTipUseStyle(40);
 

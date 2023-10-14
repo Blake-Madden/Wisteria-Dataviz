@@ -197,6 +197,9 @@ namespace Wisteria::UI
         ///     and all text colors will be adjusted to contrast against this color.
         /// @param background The color for the control's background.
         void SetThemeColor(const wxColour& background);
+
+        /// @brief The style to use for error annotations.
+        static constexpr int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
     private:
         struct wxStringCmpNoCase
             {
