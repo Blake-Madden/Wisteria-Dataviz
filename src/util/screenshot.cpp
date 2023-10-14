@@ -442,8 +442,8 @@ bool Screenshot::SaveScreenshotOfTextWindow(const wxString& filePath,
 //---------------------------------------------------
 bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
                                               const wxWindowID propertyGridId /*= wxID_ANY*/,
-                                              const wxString& StartIdToHighlight /*= wxEmptyString*/,
-                                              wxString EndIdToHighlight /*= wxEmptyString*/)
+                                              const wxString& startIdToHighlight /*= wxEmptyString*/,
+                                              wxString endIdToHighlight /*= wxEmptyString*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -467,12 +467,12 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
         wxWindow* window = windowToCapture->FindWindow(propertyGridId);
         if (window != nullptr && window->IsKindOf(CLASSINFO(wxPropertyGridManager)))
             {
-            if (EndIdToHighlight.empty())
-                { EndIdToHighlight = StartIdToHighlight; }
+            if (endIdToHighlight.empty())
+                { endIdToHighlight = startIdToHighlight; }
             const wxPropertyGridManager* propertyGridWindow =
                 dynamic_cast<wxPropertyGridManager*>(window);
-            if (propertyGridWindow->GetProperty(wxGetTranslation(StartIdToHighlight)) &&
-                propertyGridWindow->GetProperty(wxGetTranslation(EndIdToHighlight)) &&
+            if (propertyGridWindow->GetProperty(wxGetTranslation(startIdToHighlight)) &&
+                propertyGridWindow->GetProperty(wxGetTranslation(endIdToHighlight)) &&
                 propertyGridWindow->GetState())
                 {
                 wxPoint startPoint(0, 0);
@@ -484,8 +484,8 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
                     }
                 wxRect rectToHighlight =
                     propertyGridWindow->GetState()->GetGrid()->
-                        GetPropertyRect(propertyGridWindow->GetProperty(StartIdToHighlight),
-                            propertyGridWindow->GetProperty(EndIdToHighlight));
+                        GetPropertyRect(propertyGridWindow->GetProperty(startIdToHighlight),
+                            propertyGridWindow->GetProperty(endIdToHighlight));
                 rectToHighlight.Offset(startPoint);
                 memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
                 memDC.DrawLine(rectToHighlight.GetTopLeft().x,
@@ -522,8 +522,8 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
 
 //---------------------------------------------------
 bool Screenshot::SaveScreenshot(const wxString& filePath,
-                                const wxWindowID StartIdToHighlight /*= wxID_ANY*/,
-                                const wxWindowID EndIdToHighlight /*= wxID_ANY*/,
+                                const wxWindowID startIdToHighlight /*= wxID_ANY*/,
+                                const wxWindowID endIdToHighlight /*= wxID_ANY*/,
                                 const wxWindowID cutoffId /*= wxID_ANY*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
@@ -553,11 +553,11 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
        BitBlitting the client area is less problematic overall.*/
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
-    if (StartIdToHighlight != wxID_ANY || EndIdToHighlight != wxID_ANY)
+    if (startIdToHighlight != wxID_ANY || endIdToHighlight != wxID_ANY)
         {
-        const wxWindow* startWindow = (StartIdToHighlight == wxID_ANY) ?
+        const wxWindow* startWindow = (startIdToHighlight == wxID_ANY) ?
             nullptr :
-            windowToCapture->FindWindow(StartIdToHighlight);
+            windowToCapture->FindWindow(startIdToHighlight);
         if (startWindow)
             {
             /* Step back all the way from the child window to the parent and tally the offset
@@ -573,9 +573,9 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 }
             wxPoint endPoint(startPoint.x + startWindow->GetSize().GetWidth(),
                              startPoint.y + startWindow->GetSize().GetHeight());
-            const wxWindow* endWindow = (EndIdToHighlight == wxID_ANY) ?
+            const wxWindow* endWindow = (endIdToHighlight == wxID_ANY) ?
                 nullptr :
-                windowToCapture->FindWindow(EndIdToHighlight);
+                windowToCapture->FindWindow(endIdToHighlight);
             if (endWindow)
                 {
                 endPoint = wxPoint(0, 0);
@@ -640,8 +640,8 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
 //---------------------------------------------------
 bool Screenshot::SaveScreenshot(const wxString& filePath,
                                 const wxString& annotation,
-                                const wxWindowID StartIdToOverwrite,
-                                const wxWindowID EndIdToOverwrite /*= wxID_ANY*/)
+                                const wxWindowID startIdToOverwrite,
+                                const wxWindowID endIdToOverwrite /*= wxID_ANY*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -670,11 +670,11 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
        BitBlitting the client area is less problematic overall.*/
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
-    if (StartIdToOverwrite != wxID_ANY || EndIdToOverwrite != wxID_ANY)
+    if (startIdToOverwrite != wxID_ANY || endIdToOverwrite != wxID_ANY)
         {
-        const wxWindow* startWindow = (StartIdToOverwrite == wxID_ANY) ?
+        const wxWindow* startWindow = (startIdToOverwrite == wxID_ANY) ?
             nullptr :
-            windowToCapture->FindWindow(StartIdToOverwrite);
+            windowToCapture->FindWindow(startIdToOverwrite);
         if (startWindow)
             {
             /* Step back all the way from the child window to the parent and tally the offset
@@ -690,9 +690,9 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 }
             wxPoint endPoint(startPoint.x + startWindow->GetSize().GetWidth(),
                              startPoint.y + startWindow->GetSize().GetHeight());
-            const wxWindow* endWindow = (EndIdToOverwrite == wxID_ANY) ?
+            const wxWindow* endWindow = (endIdToOverwrite == wxID_ANY) ?
                 nullptr :
-                windowToCapture->FindWindow(EndIdToOverwrite);
+                windowToCapture->FindWindow(endIdToOverwrite);
             if (endWindow)
                 {
                 endPoint = wxPoint(0, 0);

@@ -27,37 +27,37 @@ class Screenshot
 public:
     /** @brief Saves a screenshot of the active window.
         @param filePath The path to save the screenshot to.
-        @param StartIdToHighlight The (optional) start control to draw a red line around.
-        @param EndIdToHighlight The (optional) end control to draw a red line around.
+        @param startIdToHighlight The (optional) start control to draw a red line around.
+        @param endIdToHighlight The (optional) end control to draw a red line around.
         @param cutoffId An (optional) ID it cutoff vertically at.
             (This will be the last control at the bottom of the screenshot.)
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshot(const wxString& filePath,
-                               const wxWindowID StartIdToHighlight = wxID_ANY,
-                               const wxWindowID EndIdToHighlight = wxID_ANY,
+                               const wxWindowID startIdToHighlight = wxID_ANY,
+                               const wxWindowID endIdToHighlight = wxID_ANY,
                                const wxWindowID cutoffId = wxID_ANY);
     /** @brief Saves a screenshot of the active window, and an annotation written over provided control(s).
         @param filePath The path to save the screenshot to.
         @param annotation Text to write in the provided area.
-        @param StartIdToOverwrite The start control to draw the annotation over.
-        @param EndIdToOverwrite The start control to draw the annotation over.
+        @param startIdToOverwrite The start control to draw the annotation over.
+        @param endIdToOverwrite The start control to draw the annotation over.
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshot(const wxString& filePath,
                                const wxString& annotation,
-                               const wxWindowID StartIdToOverwrite,
-                               const wxWindowID EndIdToOverwrite = wxID_ANY);
+                               const wxWindowID startIdToOverwrite,
+                               const wxWindowID endIdToOverwrite = wxID_ANY);
     /** @brief Saves a screenshot of the active window and highlights items in its property grid.
         @param filePath The path to save the screenshot to.
         @param propertyGridId The window ID of the property grid.
             If provided, will search for the top-most property grid with that ID.
             If @c wxID_ANY, then top-most property grid found will be used
-        @param StartIdToHighlight The (optional) starting grid row to draw a red line around.
-        @param EndIdToHighlight The (optional) ending grid row to draw a red line around.
+        @param startIdToHighlight The (optional) starting grid row to draw a red line around.
+        @param endIdToHighlight The (optional) ending grid row to draw a red line around.
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshotOfPropertyGrid(const wxString& filePath,
                                              const wxWindowID propertyGridId = wxID_ANY,
-                                             const wxString& StartIdToHighlight = wxEmptyString,
-                                             wxString EndIdToHighlight = wxEmptyString);
+                                             const wxString& startIdToHighlight = wxEmptyString,
+                                             wxString endIdToHighlight = wxEmptyString);
     /** @brief Saves a screenshot of a text window.
         @param filePath The path to save the screenshot to.
         @param windowId The ID of the text window. The window will be searched for from the
