@@ -932,18 +932,11 @@ namespace Wisteria::Graphs
 
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
-                            wxRect barRectAdjustedToPlotArea = barRect;
-                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() -
-                                                              GetPlotAreaBoundingBox().GetLeft());
-                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() -
-                                 (GetPlotAreaBoundingBox().GetTop() +
-                                     safe_divide(GetPlotAreaBoundingBox().GetHeight() -
-                                                 scaledCommonImg.GetHeight(), 2)) );
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
+                                scaledCommonImg.GetSubImage(barRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
@@ -1377,19 +1370,11 @@ namespace Wisteria::Graphs
 
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
-                            wxRect barRectAdjustedToPlotArea = barRect;
-                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() -
-                                (GetPlotAreaBoundingBox().GetLeft() +
-                                    safe_divide(GetPlotAreaBoundingBox().GetWidth() -
-                                        scaledCommonImg.GetWidth(), 2)) );
-                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() -
-                                (GetPlotAreaBoundingBox().GetTop() +
-                                    GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight()));
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
+                                scaledCommonImg.GetSubImage(barRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
@@ -1805,9 +1790,7 @@ namespace Wisteria::Graphs
         scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
                 GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                // add padding for rounding issues
-                wxSize((maxX->x - minX->x) + ScaleToScreenAndCanvas(5),
-                       (maxY->y - minY->y) + ScaleToScreenAndCanvas(5)), false) :
+                GetBoundingBox(dc).GetSize(), false) :
             wxNullImage;
 
         // draw the bars
