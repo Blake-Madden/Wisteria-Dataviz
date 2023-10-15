@@ -354,6 +354,8 @@ namespace Wisteria::Graphs
         {
         for (const auto& bar : GetBars())
             { UpdateScalingAxisFromBar(bar); }
+        const auto originalLongestBar{ m_longestBarLength };
+        double longestGroupBarWithSubBars{ 0 };
         for (const auto& barGroup : m_barGroups)
             {
             double groupBarLength{ 0 };
@@ -370,17 +372,24 @@ namespace Wisteria::Graphs
                 groupBarLength += barEnd;
                 }
             m_longestBarLength = std::max(m_longestBarLength, longestSubBarLength + groupBarLength);
+            longestGroupBarWithSubBars =
+                std::max(longestGroupBarWithSubBars, longestSubBarLength + groupBarLength);
             }
-        // Add a couple of extra intervals for the connection braces
-        // (it will consume one, but add some wiggle room) and extra space if bin labels are included.
-        // AdjustScalingAxisFromBarLength() will add an extra interval for the bin label on the longest
-        // regular bar, but we will be including another bin label on the group bar also.
-        const auto extraIntervalsNeeded = ((GetBinLabelDisplay() != BinLabelDisplay::NoDisplay) ? 3 : 2);
-        if (GetScalingAxis().GetRange().second <
-                (m_longestBarLength + (GetScalingAxis().GetInterval() * extraIntervalsNeeded)))
+        // If a group of bars with a supergroup bar (with connection braces) are larger
+        // than the tallest regular bar, then we need to adjust the intervals.
+        if (originalLongestBar < (longestGroupBarWithSubBars + GetScalingAxis().GetInterval()))
             {
-            AdjustScalingAxisFromBarLength(m_longestBarLength +
-                (GetScalingAxis().GetInterval() * extraIntervalsNeeded));
+            // Add an extra interval for the connection braces
+            // (it will consume one) and extra space if bin labels are included.
+            // AdjustScalingAxisFromBarLength() will add an extra interval for the bin label on the longest
+            // regular bar, but we will be including another bin label on the group bar also.
+            const auto extraIntervalsNeeded = ((GetBinLabelDisplay() != BinLabelDisplay::NoDisplay) ? 2 : 1);
+            if (GetScalingAxis().GetRange().second <
+                    (m_longestBarLength + (GetScalingAxis().GetInterval() * extraIntervalsNeeded)))
+                {
+                AdjustScalingAxisFromBarLength(m_longestBarLength +
+                    (GetScalingAxis().GetInterval() * extraIntervalsNeeded));
+                }
             }
         }
 
@@ -1832,7 +1841,7 @@ namespace Wisteria::Graphs
             if (grandTotal == 0)
                 { continue; }
 
-            const double bracesWidth{ DownscaleFromScreenAndCanvas(GetScalingAxis().GetIntervalPhysicalLength()) };
+            double bracesWidth{ DownscaleFromScreenAndCanvas(GetScalingAxis().GetIntervalPhysicalLength()) };
             double scalingAxisPos{ 0 }, barAxisPos{ 0 };
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
@@ -1864,16 +1873,6 @@ namespace Wisteria::Graphs
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.second].GetCustomWidth().
                             value_or(barWidth), 2);
-                    const auto braces = std::make_shared<Shape>(
-                        GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
-                        Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
-                        AnchorPoint(wxPoint(
-                            brackStartXPos,
-                            std::min(brackPos1.y, brackPos2.y) - yOffset)).
-                        Anchoring(Anchoring::TopLeftCorner),
-                        Icons::IconShape::RightCurlyBrace,
-                        wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)),
-                        nullptr);
 
                     const auto yPos = std::min(brackPos1.y, brackPos2.y) +
                         safe_divide<double>(std::abs(brackPos1.y - brackPos2.y), 2);
@@ -1893,8 +1892,29 @@ namespace Wisteria::Graphs
                             },
                             wxString{}, Label{}, GetBarEffect(), GetBarOpacity());
                         UpdateBarLabel(theBar);
+                        // if the superbar is going outside of the plot area, then
+                        // shove it back over and adjust the width of the bracket as well
+                        if ((scalingAxisPos + grandTotal) > GetScalingAxis().GetRange().second)
+                            {
+                            scalingAxisPos -=
+                                ((scalingAxisPos + grandTotal) - GetScalingAxis().GetRange().second);
+                            wxCoord newBracketRight{ 0 };
+                            if (GetScalingAxis().GetPhysicalCoordinate(scalingAxisPos, newBracketRight))
+                                { bracesWidth = newBracketRight - brackStartXPos; }
+                            }
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
                         theBar.SetAxisPosition(barAxisPos);
+
+                        const auto braces = std::make_shared<Shape>(
+                            GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
+                            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
+                            AnchorPoint(wxPoint(
+                                brackStartXPos,
+                                std::min(brackPos1.y, brackPos2.y) - yOffset)).
+                            Anchoring(Anchoring::TopLeftCorner),
+                            Icons::IconShape::RightCurlyBrace,
+                            wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)),
+                            nullptr);
 
                         AddObject(braces);
                         drawBar(theBar, false, 0);
@@ -1937,17 +1957,6 @@ namespace Wisteria::Graphs
                             GetBars()[barGroup.m_barPositions.second].GetCustomWidth().
                             value_or(barWidth), 2);
 
-                    const auto braces = std::make_shared<Shape>(
-                        GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
-                        Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
-                        AnchorPoint(wxPoint(
-                            std::min(brackPos1.x, brackPos2.x) - xOffset,
-                            brackStartYPos - ScaleToScreenAndCanvas(bracesWidth))).
-                        Anchoring(Anchoring::TopLeftCorner),
-                        Icons::IconShape::TopCurlyBrace,
-                        wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth),
-                        nullptr);
-
                     const auto xPos = std::min(brackPos1.x, brackPos2.x) +
                         safe_divide<double>(std::abs(brackPos1.x - brackPos2.x), 2);
                     if (GetBarAxis().GetValueFromPhysicalCoordinate(xPos, barAxisPos))
@@ -1966,8 +1975,29 @@ namespace Wisteria::Graphs
                             },
                             wxString{}, Label{}, GetBarEffect(), GetBarOpacity());
                         UpdateBarLabel(theBar);
+                        // if the superbar is going outside of the plot area, then
+                        // shove it back down and adjust the height of the bracket as well
+                        if ((scalingAxisPos + grandTotal) > GetScalingAxis().GetRange().second)
+                            {
+                            scalingAxisPos -=
+                                ((scalingAxisPos + grandTotal) - GetScalingAxis().GetRange().second);
+                            wxCoord newBracketTop{ 0 };
+                            if (GetScalingAxis().GetPhysicalCoordinate(scalingAxisPos, newBracketTop))
+                                { bracesWidth = brackStartYPos - newBracketTop; }
+                            }
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
                         theBar.SetAxisPosition(barAxisPos);
+
+                        const auto braces = std::make_shared<Shape>(
+                            GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
+                            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
+                            AnchorPoint(wxPoint(
+                                std::min(brackPos1.x, brackPos2.x) - xOffset,
+                                brackStartYPos - ScaleToScreenAndCanvas(bracesWidth))).
+                            Anchoring(Anchoring::TopLeftCorner),
+                            Icons::IconShape::TopCurlyBrace,
+                            wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth),
+                            nullptr);
 
                         AddObject(braces);
                         drawBar(theBar, false, 0);
