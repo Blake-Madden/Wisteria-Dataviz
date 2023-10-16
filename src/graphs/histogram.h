@@ -290,6 +290,32 @@ namespace Wisteria::Graphs
         size_t GetBinsWithValuesCount() const noexcept
             { return m_binCount; }
 
+         /// @returns @c true if a place for each bin is included on the axis,
+        ///     even if they have no items.
+        /// @sa ShowFullRangeOfValues().
+        [[nodiscard]]
+        bool IsShowingFullRangeOfValues() const noexcept
+            { return m_displayFullRangeOfValues; }
+        /// @returns The method being used to sort the data into bins.
+        [[nodiscard]]
+        BinningMethod GetBinningMethod() const noexcept
+            { return m_binningMethod; }
+        /// @returns The rounding method used for binning.
+        [[nodiscard]]
+        RoundingMethod GetRoundingMethod() const noexcept
+            { return m_roundingMethod; }
+        /// @returns How the bars are being positioned on the axis.
+        /// @sa SetIntervalDisplay().
+        [[nodiscard]]
+        IntervalDisplay GetIntervalDisplay() const noexcept
+            { return m_intervalDisplay; }
+        /// @returns Where the first bin starts.
+        /// @note This is NaN by default, which will instruct the bins to
+        ///     start at where the data begins.
+        [[nodiscard]]
+        std::optional<double> GetBinsStart() const noexcept
+            { return m_startBinsValue; }
+
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if your are showing unique values for the categories
         ///     (i.e., not ranges) and you are just showing bars that actually have values
@@ -330,32 +356,7 @@ namespace Wisteria::Graphs
         void SetRoundingMethod(const RoundingMethod rounding) noexcept
             { m_roundingMethod = rounding; }
 
-        /// @returns @c true if a place for each bin is included on the axis,
-        ///     even if they have no items.
-        /// @sa ShowFullRangeOfValues().
-        [[nodiscard]]
-        bool IsShowingFullRangeOfValues() const noexcept
-            { return m_displayFullRangeOfValues; }
-        /// @returns The method being used to sort the data into bins.
-        [[nodiscard]]
-        BinningMethod GetBinningMethod() const noexcept
-            { return m_binningMethod; }
-        /// @returns The rounding method used for binning.
-        [[nodiscard]]
-        RoundingMethod GetRoundingMethod() const noexcept
-            { return m_roundingMethod; }
-        /// @returns How the bars are being positioned on the axis.
-        /// @sa SetIntervalDisplay().
-        [[nodiscard]]
-        IntervalDisplay GetIntervalDisplay() const noexcept
-            { return m_intervalDisplay; }
-        /// @returns Where the first bin starts.
-        /// @note This is NaN by default, which will instruct the bins to
-        ///     start at where the data begins.
-        [[nodiscard]]
-        std::optional<double> GetBinsStart() const noexcept
-            { return m_startBinsValue; }
-        /// @returns The number of unique values.
+         /// @returns The number of unique values.
         [[nodiscard]]
         size_t CalcUniqueValuesCount() const;
         /** @brief Creates a bin for each unique value in the data.
