@@ -3036,7 +3036,8 @@ namespace Wisteria::GraphItems
     void Axis::LoadDefaultLabels()
         {
         if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues ||
-            GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues)
+            GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues ||
+            GetLabelDisplay() == AxisLabelDisplay::DisplayValues)
             {
             for (auto& axisPt : GetAxisPoints())
                 {
@@ -3739,16 +3740,18 @@ namespace Wisteria::GraphItems
         else
             {
             const auto customLabel = m_customAxisLabels.find(point.GetValue());
-            // is it set to show a custom label, but doesn't have one?
-            if (GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels &&
-                customLabel == m_customAxisLabels.cend())
-                { return false; }
-            // custom and/or regular label, but has neither?
-            else if (customLabel == m_customAxisLabels.cend() &&
-                point.GetDisplayValue().empty())
-                { return false; }
-            else
-                { return true; }
+            // is it set to show a custom label and has one?
+            if (GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels)
+                { return (customLabel != m_customAxisLabels.cend()); }
+            // custom and/or underlying value and has one or the other?
+            else if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues ||
+                GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues)
+                {
+                return (customLabel != m_customAxisLabels.cend() ||
+                        point.GetDisplayValue().length());
+                }
+            else // AxisLabelDisplay::DisplayValues
+                { return point.GetDisplayValue().length(); }
             }
         }
 
@@ -3766,10 +3769,15 @@ namespace Wisteria::GraphItems
                 GraphItemInfo(customLabel.GetText() + L"    " + pt.GetDisplayValue()).
                 DPIScaling(GetDPIScaleFactor()));
             }
-        else if ((GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels) ||
-                 (customLabel.IsOk() && customLabel.GetText().length()) )
+        else if (GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels)
             { return customLabel; }
-        else
+        else if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues)
+            {
+            return ((customLabel.IsOk() && customLabel.GetText().length()) ?
+                customLabel :
+                Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor())));
+            }
+        else // AxisLabelDisplay::DisplayValues
             { return Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor())); }
         }
 

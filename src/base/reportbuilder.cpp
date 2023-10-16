@@ -422,7 +422,8 @@ namespace Wisteria
             { L"custom-labels-or-values", AxisLabelDisplay::DisplayCustomLabelsOrValues },
             { L"only-custom-labels", AxisLabelDisplay::DisplayOnlyCustomLabels },
             { L"custom-labels-and-values", AxisLabelDisplay::DisplayCustomLabelsAndValues },
-            { L"no-display", AxisLabelDisplay::NoDisplay }
+            { L"no-display", AxisLabelDisplay::NoDisplay },
+            { L"values", AxisLabelDisplay::DisplayValues }
             };
 
         static const std::map<std::wstring_view, BracketLineStyle> bracketLineValues =

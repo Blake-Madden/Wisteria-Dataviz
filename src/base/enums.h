@@ -324,7 +324,8 @@ namespace Wisteria
         DisplayOnlyCustomLabels,      /*!< Only show as a custom label; nothing will
                                            be displayed if custom label isn't available.*/
         DisplayCustomLabelsAndValues, /*!< Display both numeric value and custom label.*/
-        NoDisplay                     /*!< Do not display any label.*/
+        NoDisplay,                    /*!< Do not display any label.*/
+        DisplayValues                 /*!< Display the numeric value.*/
         };
 
     /// @brief How to align perpendicular labels with their parent axis or bracket.
