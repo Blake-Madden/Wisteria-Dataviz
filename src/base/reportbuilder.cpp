@@ -4584,42 +4584,6 @@ namespace Wisteria
     std::shared_ptr<Colors::Schemes::ColorScheme> ReportBuilder::LoadColorScheme(
         const wxSimpleJSON::Ptr_t& colorSchemeNode)
         {
-        static const std::map<std::wstring_view, std::shared_ptr<Colors::Schemes::ColorScheme>> colorSchemes =
-            {
-            { L"dusk", std::make_shared<Colors::Schemes::Dusk>() },
-            { L"earthtones", std::make_shared<Colors::Schemes::EarthTones>() },
-            { L"decade1920s", std::make_shared<Colors::Schemes::Decade1920s>() },
-            { L"decade1940s", std::make_shared<Colors::Schemes::Decade1940s>() },
-            { L"decade1950s", std::make_shared<Colors::Schemes::Decade1950s>() },
-            { L"decade1960s", std::make_shared<Colors::Schemes::Decade1960s>() },
-            { L"decade1970s", std::make_shared<Colors::Schemes::Decade1970s>() },
-            { L"decade1980s", std::make_shared<Colors::Schemes::Decade1980s>() },
-            { L"decade1990s", std::make_shared<Colors::Schemes::Decade1990s>() },
-            { L"decade2000s", std::make_shared<Colors::Schemes::Decade2000s>() },
-            { L"october", std::make_shared<Colors::Schemes::October>() },
-            { L"slytherin", std::make_shared<Colors::Schemes::Slytherin>() },
-            { L"campfire", std::make_shared<Colors::Schemes::Campfire>() },
-            { L"coffeeshop", std::make_shared<Colors::Schemes::CoffeeShop>() },
-            { L"arcticchill", std::make_shared<Colors::Schemes::ArcticChill>() },
-            { L"backtoschool", std::make_shared<Colors::Schemes::BackToSchool>() },
-            { L"boxofchocolates", std::make_shared<Colors::Schemes::BoxOfChocolates>() },
-            { L"cosmopolitan", std::make_shared<Colors::Schemes::Cosmopolitan>() },
-            { L"dayandnight", std::make_shared<Colors::Schemes::DayAndNight>() },
-            { L"freshflowers", std::make_shared<Colors::Schemes::FreshFlowers>() },
-            { L"icecream", std::make_shared<Colors::Schemes::IceCream>() },
-            { L"urbanoasis", std::make_shared<Colors::Schemes::UrbanOasis>() },
-            { L"typewriter", std::make_shared<Colors::Schemes::Typewriter>() },
-            { L"tastywaves", std::make_shared<Colors::Schemes::TastyWaves>() },
-            { L"spring", std::make_shared<Colors::Schemes::Spring>() },
-            { L"shabbychic", std::make_shared<Colors::Schemes::ShabbyChic>() },
-            { L"rollingthunder", std::make_shared<Colors::Schemes::RollingThunder>() },
-            { L"producesection", std::make_shared<Colors::Schemes::ProduceSection>() },
-            { L"nautical", std::make_shared<Colors::Schemes::Nautical>() },
-            { L"semesters", std::make_shared<Colors::Schemes::Semesters>() },
-            { L"seasons", std::make_shared<Colors::Schemes::Seasons>() },
-            { L"meadowsunset", std::make_shared<Colors::Schemes::MeadowSunset>() }
-            };
-
         if (!colorSchemeNode->IsOk())
             { return nullptr; }
         else if (colorSchemeNode->IsValueArray())
@@ -4634,10 +4598,7 @@ namespace Wisteria
             }
         else if (colorSchemeNode->IsValueString())
             {
-            const auto foundPos = colorSchemes.find(
-                std::wstring_view(colorSchemeNode->GetValueString().MakeLower().wc_str()));
-            if (foundPos != colorSchemes.cend())
-                { return foundPos->second; }
+            return ReportEnumConvert::ConvertColorScheme(colorSchemeNode->GetValueString());
             }
 
         return nullptr;
