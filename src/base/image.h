@@ -63,6 +63,7 @@ namespace Wisteria::GraphItems
     class Image final : public GraphItems::GraphItemBase
         {
         friend class Wisteria::Canvas;
+        friend class Wisteria::Graphs::Graph2D;
         friend class Wisteria::UI::Thumbnail;
         friend class Wisteria::GraphItems::ShapeRenderer;
         friend class Wisteria::GraphItems::FillableShape;
@@ -173,13 +174,16 @@ namespace Wisteria::GraphItems
         /// @{
 
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
-            @details For example, if the height of the image is closer to the rect's than
+            @details The image must be larger than the target rect; otherwise, and invalid
+                image will be returned.\n
+                If the height of the image is closer to the rect's than
                 the width is, then its height will be scaled to the rect's height
-                (while maintaining the aspect ratio).\n
+                (while maintaining the aspect ratio).
             @param img The image to fit.
             @param rect The rect to crop the image to.
             @param centerImage @c true to center the image if it needs cropping.
-            @returns The cropped image.*/
+            @returns The cropped image, or an invalid image if the original image is
+                smaller than the rect.*/
         [[nodiscard]]
         static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
                                        const bool centerImage);
