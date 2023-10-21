@@ -5006,7 +5006,7 @@ namespace Wisteria
         // background color
         const auto bgColor = ConvertColor(graphNode->GetProperty(L"background-color"));
         if (bgColor.IsOk())
-            { graph->SetBackgroundColor(bgColor); }
+            { graph->SetPlotBackgroundColor(bgColor); }
 
         // image scheme
         const auto imageSchemeNode = graphNode->GetProperty(L"image-scheme");

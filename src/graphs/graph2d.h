@@ -270,13 +270,13 @@ namespace Wisteria::Graphs
         ///     shown in the plotting area.
         /// @sa GetPlotOrCanvasColor().
         [[nodiscard]]
-        const wxColour& GetBackgroundColor() const noexcept
+        const wxColour& GetPlotBackgroundColor() const noexcept
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
                 This is the color of the plotting area (inside the main axes).
                 This is invalid by default (normally, the canvas background will show through).
             @param color The color to paint with.*/
-        void SetBackgroundColor(const wxColour& color)
+        void SetPlotBackgroundColor(const wxColour& color)
             { m_bgColor = color; }
 
         /// @returns The plot background color, if it is valid and not transparent;
@@ -284,12 +284,12 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxColour GetPlotOrCanvasColor() const noexcept
             {
-            return (GetBackgroundColor().IsOk() &&
-                    GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT) ?
-                        GetBackgroundColor() :
+            return (GetPlotBackgroundColor().IsOk() &&
+                    GetPlotBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT) ?
+                        GetPlotBackgroundColor() :
                     GetCanvas() != nullptr ?
                         GetCanvas()->GetBackgroundColor() :
-                        GetBackgroundColor();
+                        GetPlotBackgroundColor();
             }
 
         /// @brief Sets the outline color when the common image effect in use.
@@ -460,6 +460,14 @@ namespace Wisteria::Graphs
             const wxPoint pt,
             const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             { AddAnnotation(object, pt, interestPts); }
+        /// @private
+        [[deprecated("Use GetPlotBackgroundColor() instead.")]]
+        const wxColour& GetBackgroundColor() const noexcept
+            { return m_bgColor; }
+        /// @private
+        [[deprecated("Use SetPlotBackgroundColor() instead.")]]
+        void SetBackgroundColor(const wxColour& color)
+            { m_bgColor = color; }
     protected:
         /** @private
             @param Finds and returns a pointer to a continuous column

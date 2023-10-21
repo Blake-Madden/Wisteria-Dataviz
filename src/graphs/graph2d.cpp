@@ -686,14 +686,14 @@ namespace Wisteria::Graphs
         AdjustPlotArea(dc);
 
         // fill in the plot area's color (if being used, by default it is transparent)
-        if (GetBackgroundColor().IsOk() &&
-            GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
+        if (GetPlotBackgroundColor().IsOk() &&
+            GetPlotBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
             {
             wxPoint boxPoints[4]{ {0, 0} };
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             auto box = std::make_shared<GraphItems::Polygon>(
                                 GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN).
-                                Brush(wxColour(GetBackgroundColor())).
+                                Brush(wxColour(GetPlotBackgroundColor())).
                                 Scaling(GetScaling()),
                                 boxPoints, std::size(boxPoints));
             AddObject(box);
