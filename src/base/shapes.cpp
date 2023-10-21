@@ -1293,10 +1293,12 @@ namespace Wisteria::GraphItems
             gc->SetBrush(bodyBrush);
 
             // divider between windows
-            gc->SetPen(wxPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1)));
+            gc->SetPen(wxPenInfo(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1)).
+                Cap(wxCAP_BUTT));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
             auto windowRect{ carTopRect };
             windowRect.SetWidth(windowRect.GetWidth() * 0.4);
+            windowRect.SetHeight(windowRect.GetHeight() * math_constants::half);
             windowRect.Offset(wxPoint(carTopRect.GetWidth() * 0.2, ScaleToScreenAndCanvas(2)));
             gc->StrokeLine(windowRect.GetX(), windowRect.GetY(),
                            windowRect.GetX(), windowRect.GetY() + windowRect.GetHeight());
@@ -1390,7 +1392,8 @@ namespace Wisteria::GraphItems
                 hubCapRect.GetWidth(), hubCapRect.GetHeight());
 
             hubCapRect.Deflate(hubCapRect.GetWidth() * math_constants::eighth);
-            wxPen blackPen(*wxBLACK, ScaleToScreenAndCanvas(1));
+            wxPen blackPen(*wxBLACK, rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                ScaleToScreenAndCanvas(0.5) : ScaleToScreenAndCanvas(1));
             gc->SetPen(blackPen);
 
             DrawAsterisk(hubCapRect, gc);
