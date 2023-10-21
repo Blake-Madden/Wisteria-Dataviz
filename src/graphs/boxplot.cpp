@@ -399,13 +399,12 @@ namespace Wisteria::Graphs
                 // draw the box
                 if (box.GetBoxEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                     {
-                    auto boxRectAdjustedToPlotArea = box.m_boxRect;
-                    boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() - boxesLeft);
-                    boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() - highestBoxHeight);
+                    wxRect imgSubRect{ box.m_boxRect };
+                    imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY());
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).Pen(GetImageOutlineColor()).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
-                        scaledCommonImg.GetSubImage(boxRectAdjustedToPlotArea));
+                        scaledCommonImg.GetSubImage(imgSubRect));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
                     boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
@@ -653,8 +652,7 @@ namespace Wisteria::Graphs
         scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
                 GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                wxSize((maxX->x - minX->x) + ScaleToScreenAndCanvas(5), // add padding for rounding issues
-                       (maxY->y - minY->y) + ScaleToScreenAndCanvas(5)), false) :
+                GetPlotAreaBoundingBox().GetSize(), true) :
             wxNullImage;
 
         // draw the boxes

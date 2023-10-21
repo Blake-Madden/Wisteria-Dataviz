@@ -941,11 +941,13 @@ namespace Wisteria::Graphs
 
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
+                            wxRect imgSubRect{ barRect };
+                            imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY());
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                scaledCommonImg.GetSubImage(barRect));
+                                scaledCommonImg.GetSubImage(imgSubRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
@@ -1379,11 +1381,13 @@ namespace Wisteria::Graphs
 
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
+                            wxRect imgSubRect{ barRect };
+                            imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY() );
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                scaledCommonImg.GetSubImage(barRect));
+                                scaledCommonImg.GetSubImage(imgSubRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
@@ -1782,7 +1786,7 @@ namespace Wisteria::Graphs
         scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
                 GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                GetBoundingBox(dc).GetSize(), false) :
+                GetPlotAreaBoundingBox().GetSize(), true) :
             wxNullImage;
 
         // draw the bars
