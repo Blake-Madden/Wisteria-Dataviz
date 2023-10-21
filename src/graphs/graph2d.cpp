@@ -699,6 +699,19 @@ namespace Wisteria::Graphs
             AddObject(box);
             }
 
+        // fill in the plot background image
+        if (m_plotAreaBgImage.IsOk() && m_bgImageOpacity != wxALPHA_TRANSPARENT)
+            {
+            auto img = std::make_shared<Image>(Image::CropImageToRect(
+                m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
+                GetPlotAreaBoundingBox().GetSize(), true) );
+            img->SetDPIScaleFactor(dc.FromDIP(1));
+            img->SetAnchoring(Anchoring::TopLeftCorner);
+            img->SetAnchorPoint(GetPlotAreaBoundingBox().GetTopLeft());
+            img->SetOpacity(m_bgImageOpacity);
+            AddObject(img);
+            }
+
         // draw the X axis grid lines
         if (GetBottomXAxis().IsShown() &&
             GetBottomXAxis().GetGridlinePen().IsOk() &&

@@ -279,8 +279,20 @@ namespace Wisteria::Graphs
         void SetPlotBackgroundColor(const wxColour& color)
             { m_bgColor = color; }
 
+        /** @brief Sets the background image being drawn within the plotting area (inside the main axes).
+            @param backgroundImage The image to draw on the background.
+            @param opacity The opacity to render the image with.
+            @note The image will be centered and cropped to fit the plot area in its entirety.\n
+                If the image is smaller than the plot area, then it will not be used.*/
+        void SetPlotBackgroundImage(wxBitmapBundle backgroundImage,
+            const uint8_t opacity = wxALPHA_OPAQUE) noexcept
+            {
+            m_plotAreaBgImage = std::move(backgroundImage);
+            m_bgImageOpacity = opacity;
+            }
+
         /// @returns The plot background color, if it is valid and not transparent;
-        ///     otherwise, returns the canvas's background.
+        ///     otherwise, returns the canvas's background color.
         [[nodiscard]]
         wxColour GetPlotOrCanvasColor() const noexcept
             {
@@ -750,6 +762,8 @@ namespace Wisteria::Graphs
 
         // transparent by default, so the underlying canvas color will show through
         wxColour m_bgColor{ wxTransparentColour };
+        wxBitmapBundle m_plotAreaBgImage;
+        uint8_t m_bgImageOpacity{ wxALPHA_OPAQUE };
 
         std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>
             m_imageScheme{ nullptr };
