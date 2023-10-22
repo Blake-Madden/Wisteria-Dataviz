@@ -263,7 +263,7 @@ namespace Wisteria
         ORIENTATION_COUNT
         };
 
-    /// @brief How to fit an image into of a rectange.
+    /// @brief How to fit an image into of a rectangle.
     enum class ImageFit
         {
         CropAndCenter, /*!< Crop the image to the dimensions of the rect,
