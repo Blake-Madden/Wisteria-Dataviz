@@ -317,8 +317,6 @@ namespace Wisteria::Graphs
 
         // scale the common image to the plot area's size
         wxImage scaledCommonImg;
-        wxCoord highestBoxHeight{ 0 };
-        wxCoord boxesLeft{ 0 };
 
         // main box renderer
         const auto drawBox = [&](auto& box, const bool measureOnly, const size_t boxIndex)
@@ -639,14 +637,6 @@ namespace Wisteria::Graphs
             boxCorners.push_back(box.m_boxRect.GetBottomLeft());
             boxCorners.push_back(box.m_boxRect.GetBottomRight());
             }
-        const auto [minX, maxX] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
-            [](const auto lhv, const auto rhv) noexcept
-            { return lhv.x < rhv.x; });
-        const auto [minY, maxY] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
-            [](const auto lhv, const auto rhv) noexcept
-            { return lhv.y < rhv.y; });
-        highestBoxHeight = minY->y;
-        boxesLeft = minX->x;
 
         // scale the common image to the plot area's size
         scaledCommonImg = GetCommonBoxImage().IsOk() ?
