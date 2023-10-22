@@ -291,6 +291,11 @@ namespace Wisteria::Graphs
             m_bgImageOpacity = opacity;
             }
 
+        /// @brief Sets how the plot background image fits inside of the plot area.
+        /// @param fit How to fit the image.
+        void SetPlotBackgroundImageFit(const ImageFit fit)
+            { m_plotAreaImageFit = fit; }
+
         /// @returns The plot background color, if it is valid and not transparent;
         ///     otherwise, returns the canvas's background color.
         [[nodiscard]]
@@ -763,6 +768,7 @@ namespace Wisteria::Graphs
         // transparent by default, so the underlying canvas color will show through
         wxColour m_bgColor{ wxTransparentColour };
         wxBitmapBundle m_plotAreaBgImage;
+        ImageFit m_plotAreaImageFit{ ImageFit::Shrink };
         uint8_t m_bgImageOpacity{ wxALPHA_OPAQUE };
 
         std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>

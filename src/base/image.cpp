@@ -53,6 +53,19 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------
+    wxImage Image::ShrinkImageToRect(const wxImage& img, const wxRect rect)
+        {
+        if (rect.GetWidth() >= img.GetWidth() &&
+            rect.GetHeight() >= img.GetHeight())
+            { return img; }
+
+        const auto [width, height] = geometry::downscaled_size(
+            std::make_pair<double, double>(img.GetWidth(), img.GetHeight()),
+            wxSizeToPair(rect.GetSize()));
+        return img.Scale(std::ceil(width), std::ceil(height), wxIMAGE_QUALITY_HIGH);
+        }
+
+    //----------------------------------------------------------
     wxImage Image::CropImageToRect(const wxImage& img, const wxRect rect, const bool centerImage)
         {
         wxImage croppedImg;

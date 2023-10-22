@@ -173,8 +173,19 @@ namespace Wisteria::GraphItems
                 are `wxImage` objects that can be passed to an `Image`'s constructor.*/
         /// @{
 
+        /** @brief Skrinks an image to fit inside of a rect.
+            @details If the image is smaller than the rect, then the original image is returned.\n
+                If the height of the image is closer to the rect's than
+                the width is, then its height will be scaled to the rect's height
+                (while maintaining the aspect ratio).
+            @param img The image to fit.
+            @param rect The rect to shrink the image to.
+            @returns The shrunk image, or the original image if
+                smaller than the rect.*/
+        [[nodiscard]]
+        static wxImage ShrinkImageToRect(const wxImage& img, const wxRect rect);
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
-            @details The image must be larger than the target rect; otherwise, and invalid
+            @details The image must be larger than the target rect; otherwise, an invalid
                 image will be returned.\n
                 If the height of the image is closer to the rect's than
                 the width is, then its height will be scaled to the rect's height
@@ -182,7 +193,7 @@ namespace Wisteria::GraphItems
             @param img The image to fit.
             @param rect The rect to crop the image to.
             @param centerImage @c true to center the image if it needs cropping.
-            @returns The cropped image, or an invalid image if the original image is
+            @returns The cropped image, or an invalid image if the original image if
                 smaller than the rect.*/
         [[nodiscard]]
         static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
@@ -420,7 +431,7 @@ namespace Wisteria::GraphItems
         void SetSize(const wxSize sz);
         /** @brief Sets the image's size to fit inside of the specified bounding box.
             @param suggestedSz The suggested bounding box size.
-            @returns The new size of the control based on the suggested size.
+            @returns The new size of the image based on the suggested size.
             @note The image's new size may be different from the suggested size here, as it will
                 maintain the image's aspect ratio.*/
         wxSize SetBestSize(const wxSize suggestedSz);

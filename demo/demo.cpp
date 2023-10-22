@@ -941,6 +941,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // bgImage = GraphItems::Image::ApplyEffect(Wisteria::ImageEffect::Grayscale, bgImage);
         // GraphItems::Image::SetOpacity(bgImage, 75, false);
         // plot->SetPlotBackgroundImage(bgImage);
+        // plot->SetPlotBackgroundImageFit(ImageFit::CropAndCenter);
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
 

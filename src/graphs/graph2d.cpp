@@ -702,12 +702,23 @@ namespace Wisteria::Graphs
         // fill in the plot background image
         if (m_plotAreaBgImage.IsOk() && m_bgImageOpacity != wxALPHA_TRANSPARENT)
             {
-            auto img = std::make_shared<Image>(Image::CropImageToRect(
-                m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
-                GetPlotAreaBoundingBox().GetSize(), true) );
+            auto img = std::make_shared<Image>(
+                (m_plotAreaImageFit == ImageFit::Shrink ?
+                    Image::ShrinkImageToRect(
+                        m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
+                        GetPlotAreaBoundingBox().GetSize()) :
+                    Image::CropImageToRect(
+                        m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
+                        GetPlotAreaBoundingBox().GetSize(), true) ));
             img->SetDPIScaleFactor(dc.FromDIP(1));
             img->SetAnchoring(Anchoring::TopLeftCorner);
-            img->SetAnchorPoint(GetPlotAreaBoundingBox().GetTopLeft());
+            img->SetAnchorPoint(
+                m_plotAreaImageFit == ImageFit::Shrink ?
+                wxPoint(GetPlotAreaBoundingBox().GetLeft() +
+                    (((GetPlotAreaBoundingBox().GetWidth() - img->GetImageSize().GetWidth()) / 2)),
+                    GetPlotAreaBoundingBox().GetTop() +
+                    (((GetPlotAreaBoundingBox().GetHeight() - img->GetImageSize().GetHeight()) / 2))) :
+                GetPlotAreaBoundingBox().GetTopLeft());
             img->SetOpacity(m_bgImageOpacity);
             AddObject(img);
             }

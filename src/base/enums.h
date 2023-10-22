@@ -263,6 +263,16 @@ namespace Wisteria
         ORIENTATION_COUNT
         };
 
+    /// @brief How to fit an image into of a rectange.
+    enum class ImageFit
+        {
+        CropAndCenter, /*!< Crop the image to the dimensions of the rect,
+                            with the center of the image as the crop origin.*/
+        Shrink,        /*!< Shrink the image to the rect.*/
+        /// @private
+        IMAGE_FIT_COUNT
+        };
+
     /// @brief A hint as to where a generated legend may be placed on a canvas.
     ///     These hints are used by a plot to determine how padding, outlining,
     ///     and canvas proportions should be used when creating a legend.
