@@ -134,6 +134,7 @@ namespace Wisteria
                 { L"tack", Icons::IconShape::Tack },
                 { L"banner", Icons::IconShape::Banner },
                 { L"watercolor-rectangle", Icons::IconShape::WaterColorRectangle },
+                { L"thick-watercolor-rectangle", Icons::IconShape::ThickWaterColorRectangle },
                 { L"graduation-cap", Icons::IconShape::GraduationCap },
                 { L"book", Icons::IconShape::Book },
                 { L"tire", Icons::IconShape::Tire },

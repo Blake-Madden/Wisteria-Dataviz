@@ -1152,14 +1152,27 @@ namespace Wisteria::Graphs
                                 { box->GetGraphItemInfo().Outline(true, false, true, false); }
                             box->SetShape((bar.GetEffect() == BoxEffect::WaterColor) ?
                                 GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                                (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
+                                GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
                                 (bar.GetShape() == BarShape::Arrow) ?
                                 GraphItems::Polygon::PolygonShape::Irregular :
                                 (bar.GetEffect() == BoxEffect::Glassy) ?
                                 GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                 GraphItems::Polygon::PolygonShape::Rectangle);
+                            // along with a second coat, we will make the thick water color
+                            // brush use a more opaque value than the system's default
+                            if (bar.GetEffect() == BoxEffect::ThickWaterColor &&
+                                box->GetBrush().IsOk() &&
+                                box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                                Settings::GetTranslucencyValue() < 200)
+                                {
+                                box->GetBrush().SetColour(
+                                    ColorContrast::ChangeOpacity(box->GetBrush().GetColour(), 200));
+                                }
                             // flip outline logic so that we have a hard outline since we are
                             // not "drawing within the lines" (also, don't clip)
-                            if (bar.GetEffect() == BoxEffect::WaterColor)
+                            if (bar.GetEffect() == BoxEffect::WaterColor ||
+                                bar.GetEffect() == BoxEffect::ThickWaterColor)
                                 {
                                 // ...but only use hard outline if there isn't a user-defined outline
                                 if (!barBlock.GetOutlinePen().IsOk())
@@ -1587,14 +1600,27 @@ namespace Wisteria::Graphs
                                 { box->GetGraphItemInfo().Outline(false, true, false, true); }
                             box->SetShape((bar.GetEffect() == BoxEffect::WaterColor) ?
                                 GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                                (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
+                                GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
                                 (bar.GetShape() == BarShape::Arrow) ?
                                 GraphItems::Polygon::PolygonShape::Irregular :
                                 (bar.GetEffect() == BoxEffect::Glassy) ?
                                 GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                 GraphItems::Polygon::PolygonShape::Rectangle);
+                            // along with a second coat, we will make the thick water color
+                            // brush use a more opaque value than the system's default
+                            if (bar.GetEffect() == BoxEffect::ThickWaterColor &&
+                                box->GetBrush().IsOk() &&
+                                box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                                Settings::GetTranslucencyValue() < 200)
+                                {
+                                box->GetBrush().SetColour(
+                                    ColorContrast::ChangeOpacity(box->GetBrush().GetColour(), 200));
+                                }
                             // flip outline logic so that we have a hard outline since we are
                             // not "drawing within the lines" (also, don't clip)
-                            if (bar.GetEffect() == BoxEffect::WaterColor)
+                            if (bar.GetEffect() == BoxEffect::WaterColor ||
+                                bar.GetEffect() == BoxEffect::ThickWaterColor)
                                 {
                                 // ...but only use hard outline if there isn't a user-defined outline
                                 if (!barBlock.GetOutlinePen().IsOk())

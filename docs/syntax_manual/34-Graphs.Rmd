@@ -119,6 +119,7 @@ Properties common to all graphs:
   - `"tack"`
   - `"banner"`
   - `"watercolor-rectangle"`
+  - `"thick-watercolor-rectangle"`
   - `"graduation-cap"`
   - `"book"`
   - `"tire"`

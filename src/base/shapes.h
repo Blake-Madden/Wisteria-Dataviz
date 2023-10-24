@@ -270,6 +270,15 @@ namespace Wisteria::GraphItems
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
         void DrawWaterColorRectangle(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a rectangle that looks like it was painted with watercolor,
+        ///     painted with a second coat.
+        /// @param rect The area to draw within.
+        /// @param dc The DC to draw to.
+        /// @note The color will more than likely go outside of the provided rectangle,
+        ///     as that is the aesthetic that we are going for.\n
+        ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
+        ///     object using this renderer.
+        void DrawThickWaterColorRectangle(wxRect rect, wxDC& dc) const;
         /// @brief Draws a graduation cap with tassel.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.

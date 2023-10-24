@@ -193,6 +193,7 @@ namespace Wisteria::GraphItems
                 { IconShape::Tack, &ShapeRenderer::DrawTack },
                 { IconShape::Banner, &ShapeRenderer::DrawBanner },
                 { IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
+                { IconShape::ThickWaterColorRectangle, &ShapeRenderer::DrawThickWaterColorRectangle },
                 { IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
                 { IconShape::Book, &ShapeRenderer::DrawBook },
                 { IconShape::Tire, &ShapeRenderer::DrawTire },
@@ -1946,6 +1947,14 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawThickWaterColorRectangle(const wxRect rect, wxDC& dc) const
+        {
+        DrawWaterColorRectangle(rect, dc);
+        // paint a second coat
+        DrawWaterColorRectangle(rect, dc);
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawWaterColorRectangle(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
@@ -1987,7 +1996,7 @@ namespace Wisteria::GraphItems
             // "watercolor" fill of rectangle
             gc->SetPen(*wxTRANSPARENT_PEN);
             wxBrush br{ GetGraphItemInfo().GetBrush() };
-            // make the brush translucent (it not already so) to make it a watercolor brush
+            // make the brush translucent (if not already so) to make it a watercolor brush
             if (br.GetColour().Alpha() == wxALPHA_OPAQUE)
                 {
                 br.SetColour(ColorContrast::ChangeOpacity(br.GetColour(),

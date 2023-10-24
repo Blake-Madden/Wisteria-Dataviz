@@ -63,6 +63,10 @@ namespace Wisteria::GraphItems
             /// @brief A watercolor-like filled rectangle, where fill color is warped and the
             ///     rectangle looks like it was filled in with watercolor paint (or a marker).
             WaterColorRectangle,
+            /// @brief A watercolor-like filled rectangle, where fill color is warped and the
+            ///     rectangle looks like it was filled in with watercolor paint (or a marker).\n
+            ///     Will have a "second coat" applied.
+            ThickWaterColorRectangle,
             /// @brief A spline-like rectanlge.
             /// @note Requires ten points; will be draws as-is an irregular shape otherwise.
             CurvyRectangle,

@@ -404,6 +404,9 @@ namespace Wisteria
         ///     Note that if an outline pen is in use, it will be drawn over the
         ///     fill color, giving the look that it showing through the "watercolor".
         WaterColor,
+        /// @brief Same as WaterColor, but applies a second coat of paint, making
+        ///     it appear thicker.
+        ThickWaterColor,
         /// @brief A subimage of a larger image shared by all boxes.
         CommonImage,
         /// @brief An image scaled down to fit the box.

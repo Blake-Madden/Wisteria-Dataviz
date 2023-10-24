@@ -83,6 +83,8 @@ namespace Wisteria::Icons
         Tack,                          /*!< A tack (i.e., pen that holds paper to a corkboard).*/
         Banner,                        /*!< A banner sign (with custom text written across it).*/
         WaterColorRectangle,           /*!< A warped rectangle that looks like a watercolor-filled box.*/
+        ThickWaterColorRectangle,      /*!< A warped rectangle that looks like a watercolor-filled box,
+                                            painted with a second coat.*/
         GraduationCap,                 /*!< A graduation cap.*/
         Book,                          /*!< A textbook.*/
         Tire,                          /*!< A car tire.*/

@@ -550,11 +550,23 @@ namespace Wisteria::Graphs
                         }
                     boxPoly->SetShape((box.GetBoxEffect() == BoxEffect::WaterColor) ?
                         GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                        (box.GetBoxEffect() == BoxEffect::ThickWaterColor) ?
+                        GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
                         (box.GetBoxEffect() == BoxEffect::Glassy) ?
                         GraphItems::Polygon::PolygonShape::GlassyRectangle :
                         GraphItems::Polygon::PolygonShape::Rectangle);
                     boxPoly->SetBoxCorners(GetBoxCorners());
                     boxPoly->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
+                    // along with a second coat, we will make the thick water color
+                    // brush use a more opaque value than the system's default
+                    if (box.GetBoxEffect() == BoxEffect::ThickWaterColor &&
+                        boxPoly->GetBrush().IsOk() &&
+                        boxPoly->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                        Settings::GetTranslucencyValue() < 200)
+                        {
+                        boxPoly->GetBrush().SetColour(
+                            ColorContrast::ChangeOpacity(boxPoly->GetBrush().GetColour(), 200));
+                        }
                     // add the box to the plot item collection
                     AddObject(boxPoly);
                     }

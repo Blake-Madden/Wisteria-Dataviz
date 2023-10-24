@@ -264,11 +264,15 @@ namespace Wisteria::GraphItems
         assert(
             !(GetShape() == PolygonShape::WaterColorRectangle && !GetBrush().IsOk()) &&
             L"Brush must be set when using watercolor-filled rectangle!");
+        assert(
+            !(GetShape() == PolygonShape::ThickWaterColorRectangle && !GetBrush().IsOk()) &&
+            L"Brush must be set when using watercolor-filled rectangle!");
 
         // using a color fill (possibly a gradient)
         if (GetBackgroundFill().IsOk() &&
-            // use solid color for this
-            (GetShape() != PolygonShape::WaterColorRectangle))
+            // use solid color for these
+            (GetShape() != PolygonShape::WaterColorRectangle) &&
+            (GetShape() != PolygonShape::ThickWaterColorRectangle))
             {
             wxDCBrushChanger bc(dc, GetBackgroundFill().GetColor1());
             if (GetBackgroundFill().IsGradient())
@@ -443,6 +447,12 @@ namespace Wisteria::GraphItems
             else if (GetShape() == PolygonShape::WaterColorRectangle)
                 {
                 GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::WaterColorRectangle,
+                                     boundingBox.GetSize());
+                sh.Draw(boundingBox, dc);
+                }
+            else if (GetShape() == PolygonShape::ThickWaterColorRectangle)
+                {
+                GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::ThickWaterColorRectangle,
                                      boundingBox.GetSize());
                 sh.Draw(boundingBox, dc);
                 }
