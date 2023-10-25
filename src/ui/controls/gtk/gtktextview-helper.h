@@ -21,11 +21,13 @@
 #include <gtk/gtktexttag.h>
 #include <gtk/gtktextchild.h>
 #include <gtk/gtktextiter.h>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/log.h>
+#include <wx/paper.h>
 #include <wx/gtk/print.h>
 
 // Printing system for GtkTextView
@@ -202,8 +204,8 @@ static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
         { return gtk_paper_size_new(gtk_paper_size_get_default()); }
 
     // look for a size match in GTK's GtkPaperSize list
-    const double w{ size.x };
-    const double h{ size.y };
+    const double w{ static_cast<double>(size.x) };
+    const double h{ static_cast<double>(size.y) };
     GtkPaperSize* paperSize{ nullptr };
     GList* list = gtk_paper_size_get_paper_sizes(TRUE);
     for (GList* p = list; p != nullptr; p = p->next)
@@ -223,13 +225,14 @@ static GtkPaperSize* _GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
 
     // last resort, use a custom GtkPaperSize
     const wxString title = _("Custom size");
+    const wxString name = wxString::Format(_("custom_%dx%d"), size.x, size.y);
     return gtk_paper_size_new_custom(
-        name, title.utf8_str(), size.x, size.y, GTK_UNIT_MM);
+        name.utf8_str(), title.utf8_str(), size.x, size.y, GTK_UNIT_MM);
     }
 
 //-------------------------------------------------
 static void _GtkUpdatePrintSettingsFromPageSetup(GtkPrintOperation* operation,
-                                                 GtkPrintOperation* settings,
+                                                 GtkPrintSettings* settings,
                                                  wxPrintData* printData)
     {
     // From wxWidget's gtk/print.cpp:
