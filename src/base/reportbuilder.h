@@ -55,6 +55,9 @@ namespace Wisteria
         [[nodiscard]]
         std::vector<Canvas*> LoadConfigurationFile(
             const wxString& filePath, wxWindow* parent);
+        [[nodiscard]]
+        static const std::map<std::wstring_view, Wisteria::Colors::Color>& GetColorMap() noexcept
+            { return m_colorMap; }
     private:
         using ValuesType = std::variant<wxString, double>;
 
