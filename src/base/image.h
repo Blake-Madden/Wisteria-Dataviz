@@ -79,18 +79,26 @@ namespace Wisteria::GraphItems
             @param img The image to render.
                 LoadFile() can be used as a quick way to load an image here.*/
         Image(const GraphItems::GraphItemInfo& itemInfo,
-              const wxImage& img) : GraphItemBase(itemInfo),
-            m_originalImg(img), m_img(img),
-            m_size(img.GetSize()),
-            m_frameSize(img.GetSize())
-            { SetOk(m_originalImg.IsOk()); }
+              const wxImage& img) : GraphItemBase(itemInfo)
+            {
+            if (img.IsOk())
+                {
+                m_originalImg = m_img = img;
+                m_size = img.GetSize();
+                m_frameSize = img.GetSize();
+                }
+            SetOk(m_originalImg.IsOk());
+            }
         /** @brief Constructor.
             @param img The image to render.*/
-        explicit Image(const wxImage& img) :
-            m_originalImg(img), m_img(img),
-            m_size(img.GetSize()),
-            m_frameSize(img.GetSize())
+        explicit Image(const wxImage& img)
             {
+            if (img.IsOk())
+                {
+                m_originalImg = m_img = img;
+                m_size = img.GetSize();
+                m_frameSize = img.GetSize();
+                }
             SetOk(m_originalImg.IsOk());
             GetPen() = wxNullPen;
             }
