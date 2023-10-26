@@ -628,33 +628,23 @@ namespace Wisteria::GraphItems
                        background.GetSize().GetHeight()-shadowSize) :
                 background.GetSize();
 
-            auto adjustedSize = geometry::downscaled_size(wxSizeToPair(stipple.GetSize()),
-                                                                    wxSizeToPair(canvasSize));
-            // if the image is less than the height of the background
-            // (but was originally wider than the background),
-            // then scale it down to fit the background and let the top of it be cut off.
-            if (adjustedSize.second < canvasSize.GetHeight() &&
-                stipple.GetHeight() >= canvasSize.GetHeight())
-                {
-                adjustedSize = std::make_pair(
-                    geometry::rescaled_width(
-                        wxSizeToPair(stipple.GetSize()), canvasSize.GetHeight()),
-                    canvasSize.GetHeight());
-                }
-
-            const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first,
-                                                         adjustedSize.second, wxIMAGE_QUALITY_HIGH);
+            const auto adjustedHeight = std::min(canvasSize.GetHeight(), stipple.GetHeight());
+            auto adjustedWidth = geometry::rescaled_width(wxSizeToPair(stipple.GetSize()),
+                                                          adjustedHeight);
+     
+            const wxBitmap scaledStipple = stipple.Scale(adjustedWidth,
+                                                         adjustedHeight, wxIMAGE_QUALITY_HIGH);
             const wxBitmap scaledStippleShadow =
                 CreateSilhouette(scaledStipple.ConvertToImage(), false);
 
             // center, if needed
-            const wxCoord yOffset = (adjustedSize.second >= canvasSize.GetHeight()) ?
-                0 : (safe_divide<wxCoord>(canvasSize.GetHeight()-adjustedSize.second, 2));
+            const wxCoord yOffset = (adjustedHeight >= canvasSize.GetHeight()) ?
+                0 : (safe_divide<wxCoord>(canvasSize.GetHeight() - adjustedHeight, 2));
 
             for (int i = 0; i < canvasSize.GetWidth(); i += scaledStipple.GetWidth()+1)
                 {
                 if (includeShadow)
-                    { memDC.DrawBitmap(scaledStippleShadow, i, yOffset+shadowSize); }
+                    { memDC.DrawBitmap(scaledStippleShadow, i, yOffset + shadowSize); }
                 memDC.DrawBitmap(scaledStipple, i, yOffset);
                 }
             }
@@ -667,25 +657,16 @@ namespace Wisteria::GraphItems
                 wxSize(background.GetSize().GetWidth()-shadowSize, background.GetSize().GetHeight()) :
                 background.GetSize();
 
-            auto adjustedSize = geometry::downscaled_size(wxSizeToPair(stipple.GetSize()),
-                                                                    wxSizeToPair(canvasSize));
-            // if the image is less than the width of the background
-            // (but was originally wider than the background),
-            // then scale it down to fit the background and let the top of it be cut off.
-            if (adjustedSize.first < canvasSize.GetWidth() &&
-                stipple.GetWidth() >= canvasSize.GetWidth())
-                {
-                adjustedSize = std::make_pair(canvasSize.GetWidth(),
-                    geometry::rescaled_height(
-                        wxSizeToPair(stipple.GetSize()), canvasSize.GetWidth()));
-                }
-            const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first,
-                                                         adjustedSize.second, wxIMAGE_QUALITY_HIGH);
+            const auto adjustedWidth = std::min(canvasSize.GetWidth(), stipple.GetWidth());
+            auto adjustedHeight = geometry::rescaled_height(wxSizeToPair(stipple.GetSize()),
+                                                            adjustedWidth);
+            const wxBitmap scaledStipple = stipple.Scale(adjustedWidth,
+                                                         adjustedHeight, wxIMAGE_QUALITY_HIGH);
             wxBitmap scaledStippleShadow = CreateSilhouette(scaledStipple.ConvertToImage(), false);
 
             // center image if not as wide as the background
-            const wxCoord xOffset = (adjustedSize.first >= canvasSize.GetWidth()) ?
-                0 : (safe_divide<wxCoord>(canvasSize.GetWidth()-adjustedSize.first, 2));
+            const wxCoord xOffset = (adjustedWidth >= canvasSize.GetWidth()) ?
+                0 : (safe_divide<wxCoord>(canvasSize.GetWidth() - adjustedWidth, 2));
 
             for (int i = canvasSize.GetHeight();
                  i > 0;
@@ -694,7 +675,7 @@ namespace Wisteria::GraphItems
                 if (includeShadow)
                     {
                     memDC.DrawBitmap(scaledStippleShadow, xOffset+shadowSize,
-                                     i-scaledStipple.GetHeight()+1);
+                                     i - scaledStipple.GetHeight() + 1);
                     }
                 memDC.DrawBitmap(scaledStipple, xOffset, i-scaledStipple.GetHeight()+1);
                 }
