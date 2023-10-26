@@ -3537,6 +3537,7 @@ namespace Wisteria::GraphItems
     void Axis::AddBracket(AxisBracket bracket)
         {
         bracket.GetLabel().SetScaling(GetScaling());
+        bracket.GetLabel().SetFont(GetFont());
         GetBrackets().push_back(std::move(bracket));
         }
 

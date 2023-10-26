@@ -1294,6 +1294,8 @@ namespace Wisteria::GraphItems
             {
             GraphItemBase::SetFont(font);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            for (auto& bracket : GetBrackets())
+                { bracket.GetLabel().SetFont(GetFont()); }
             }
 
         // Just hiding these from Doxygen. If these are included inside of groupings,
