@@ -1206,7 +1206,7 @@ namespace Wisteria::GraphItems
             const auto bodyBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(dcRect, -math_constants::full), GetYPosFromTop(dcRect, math_constants::half),
                 GetXPosFromLeft(dcRect, math_constants::full), GetYPosFromTop(dcRect, math_constants::half),
-                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(ColorBrewer::GetColor(Color::SmokyBlack))),
+                ApplyParentColorOpacity(ColorContrast::Shade(GetGraphItemInfo().GetBrush().GetColour(), 0.4)),
                 ApplyParentColorOpacity(GetGraphItemInfo().GetBrush().GetColour()));
             gc->SetPen(outlinePen);
             gc->SetBrush(bodyBrush);
@@ -1294,12 +1294,14 @@ namespace Wisteria::GraphItems
             gc->SetBrush(bodyBrush);
 
             // divider between windows
-            gc->SetPen(wxPenInfo(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1)).
+            gc->SetPen(wxPenInfo(ColorContrast::Shade(GetGraphItemInfo().GetBrush().GetColour()),
+                dcRect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                    ScaleToScreenAndCanvas(1) : ScaleToScreenAndCanvas(2)).
                 Cap(wxCAP_BUTT));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
             auto windowRect{ carTopRect };
             windowRect.SetWidth(windowRect.GetWidth() * 0.4);
-            windowRect.SetHeight(windowRect.GetHeight() * math_constants::half);
+            windowRect.SetHeight(windowRect.GetHeight() - ScaleToScreenAndCanvas(2));
             windowRect.Offset(wxPoint(carTopRect.GetWidth() * 0.2, ScaleToScreenAndCanvas(2)));
             gc->StrokeLine(windowRect.GetX(), windowRect.GetY(),
                            windowRect.GetX(), windowRect.GetY() + windowRect.GetHeight());
@@ -1365,8 +1367,9 @@ namespace Wisteria::GraphItems
         {
         if (gc != nullptr)
             {
-            wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
-                            std::min(1.0, ScaleToScreenAndCanvas(math_constants::half)));
+            const wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                            rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                            ScaleToScreenAndCanvas(1) : ScaleToScreenAndCanvas(2));
             gc->SetPen(scaledPen);
             // the tire
             const wxRect tireRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
@@ -1393,8 +1396,7 @@ namespace Wisteria::GraphItems
                 hubCapRect.GetWidth(), hubCapRect.GetHeight());
 
             hubCapRect.Deflate(hubCapRect.GetWidth() * math_constants::eighth);
-            wxPen blackPen(*wxBLACK, rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                ScaleToScreenAndCanvas(0.5) : ScaleToScreenAndCanvas(1));
+            const wxPen blackPen(*wxBLACK, scaledPen.GetWidth());
             gc->SetPen(blackPen);
 
             DrawAsterisk(hubCapRect, gc);
