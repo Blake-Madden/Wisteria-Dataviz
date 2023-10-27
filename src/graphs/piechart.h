@@ -874,7 +874,10 @@ namespace Wisteria::Graphs
         /// @brief Sets the donut hole color.
         /// @param color The background color of the donut hole.
         void SetDonutHoleColor(const wxColour color) noexcept
-            { m_donutHoleColor = color; }
+            {
+            if (color.IsOk())
+                { m_donutHoleColor = color; }
+            }
         /// @}
 
         /// @name Legend Functions

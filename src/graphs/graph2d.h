@@ -252,11 +252,14 @@ namespace Wisteria::Graphs
             { return m_stippleShape; }
 
         /** @brief Sets the shape color to use when drawing as a stipple across bars.
-            @param col The color to use.
+            @param color The color to use.
             @note Only certain shapes have customizable colors; the rest use specific
                 colors relevant to them. In those cases, this value will be ignored.*/
-        void SetStippleShapeColor(const wxColour col) noexcept
-            { m_stippleShapeColour = col; }
+        void SetStippleShapeColor(const wxColour color) noexcept
+            {
+            if (color.IsOk())
+                { m_stippleShapeColour = col; }
+            }
         /// @returns The shape color to use when drawing as a stipple across a bar.
         [[nodiscard]]
         wxColour GetStippleShapeColor() const noexcept
@@ -277,7 +280,10 @@ namespace Wisteria::Graphs
                 This is invalid by default (normally, the canvas background will show through).
             @param color The color to paint with.*/
         void SetPlotBackgroundColor(const wxColour& color)
-            { m_bgColor = color; }
+            {
+            if (color.IsOk())
+                { m_bgColor = color; }
+            }
 
         /** @brief Sets the background image being drawn within the plotting area (inside the main axes).
             @param backgroundImage The image to draw on the background.
@@ -321,7 +327,10 @@ namespace Wisteria::Graphs
         ///     call SetImageScheme() if wanting to use this effect.
         /// @sa SetImageScheme().
         void SetCommonBoxImageOutlineColor(const wxColour& outlineColor) noexcept
-            { m_imageOutlineColor = outlineColor; }
+            {
+            if (outlineColor.IsOk())
+                { m_imageOutlineColor = outlineColor; }
+            }
         /// @}
 
         /** @name Property Functions
@@ -484,7 +493,10 @@ namespace Wisteria::Graphs
         /// @private
         [[deprecated("Use SetPlotBackgroundColor() instead.")]]
         void SetBackgroundColor(const wxColour& color)
-            { m_bgColor = color; }
+            {
+            if (color.IsOk())
+                { m_bgColor = color; }
+            }
     protected:
         /** @private
             @param Finds and returns a pointer to a continuous column

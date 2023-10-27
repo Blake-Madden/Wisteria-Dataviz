@@ -55,7 +55,10 @@ namespace Wisteria::UI
         /// @brief Sets the background color of the toolbar.
         /// @param color The background color.
         void SetThemeColor(const wxColour& color)
-            { m_baseColour = color; }
+            {
+            if (color.IsOk())
+                { m_baseColour = color; }
+            }
         };
 
     /// @brief Ribbon art provider that emulates the Windows 8 "metro" look.

@@ -1275,8 +1275,11 @@ namespace Wisteria::GraphItems
         /// @private
         void SetFontBackgroundColor(const wxColour& color) final
             {
-            GraphItemBase::SetFontBackgroundColor(color);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            if (color.IsOk())
+                {
+                GraphItemBase::SetFontBackgroundColor(color);
+                m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+                }
             }
         /// @private
         [[nodiscard]]

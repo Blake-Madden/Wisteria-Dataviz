@@ -437,7 +437,10 @@ namespace Wisteria::Graphs
         /** @brief Sets the default color of the points.
             @param color The color to use.*/
         void SetPointColor(const wxColour color) noexcept
-            { m_pointColour = color; }
+            {
+            if (color.IsOk())
+                { m_pointColour = color; }
+            }
         /// @}
 
         /// @private

@@ -201,8 +201,11 @@ namespace Wisteria
         void SetBackgroundColor(const wxColor& color,
                                 const bool includeLinearGradient = false)
             {
-            m_bgColor = color;
-            m_bgColorUseLinearGradient = includeLinearGradient;
+            if (color.IsOk())
+                {
+                m_bgColor = color;
+                m_bgColorUseLinearGradient = includeLinearGradient;
+                }
             }
         /** @brief Sets the background image being drawn on the canvas.
             @param backgroundImage The image to draw on the background.

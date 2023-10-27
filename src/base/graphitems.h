@@ -1051,7 +1051,10 @@ namespace Wisteria
             /** @brief Sets the text color.
                 @param color The color to use for the font.*/
             virtual void SetFontColor(const wxColour& color)
-                { m_itemInfo.m_textColor = color; }
+                {
+                if (color.IsOk())
+                    { m_itemInfo.m_textColor = color; }
+                }
 
             /** @returns The text background color.*/
             [[nodiscard]]
@@ -1060,7 +1063,10 @@ namespace Wisteria
             /** @brief Sets the background color.
                 @param color The color to use for the background.*/
             virtual void SetFontBackgroundColor(const wxColour& color)
-                { m_itemInfo.m_textBgColor = color; }
+                {
+                if (color.IsOk())
+                    { m_itemInfo.m_textBgColor = color; }
+                }
 
             /** @returns The alignment of the first line of text (if multiline).*/
             [[nodiscard]]

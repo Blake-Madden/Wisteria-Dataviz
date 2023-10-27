@@ -335,7 +335,10 @@ namespace Wisteria::Graphs
             /// @brief Sets the color.
             /// @param color The value to set for the cell.
             void SetBackgroundColor(const wxColour color)
-                { m_bgColor = color; }
+                {
+                if (color.IsOk())
+                    { m_bgColor = color; }
+                }
             /// @returns Access to the cell's font. This can be useful for changing
             ///     an attribute of the font, rather than entirely setting a new font.
             [[nodiscard]]
@@ -862,15 +865,18 @@ namespace Wisteria::Graphs
         void SetColumnBackgroundColor(const size_t column, const wxColour color,
             std::optional<std::set<size_t>> rowStops = std::nullopt)
             {
-            if (GetColumnCount() > 0 && column < GetColumnCount())
+            if (color.IsOk())
                 {
-                for (size_t i = 0; i < m_table.size(); ++i)
+                if (GetColumnCount() > 0 && column < GetColumnCount())
                     {
-                    if (rowStops.has_value() &&
-                        rowStops.value().find(i) != rowStops.value().cend())
-                        { continue; }
-                    auto& cell = m_table[i][column];
-                    cell.m_bgColor = color;
+                    for (size_t i = 0; i < m_table.size(); ++i)
+                        {
+                        if (rowStops.has_value() &&
+                            rowStops.value().find(i) != rowStops.value().cend())
+                            { continue; }
+                        auto& cell = m_table[i][column];
+                        cell.m_bgColor = color;
+                        }
                     }
                 }
             }
