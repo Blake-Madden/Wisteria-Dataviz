@@ -258,7 +258,7 @@ namespace Wisteria::Graphs
         void SetStippleShapeColor(const wxColour color) noexcept
             {
             if (color.IsOk())
-                { m_stippleShapeColour = col; }
+                { m_stippleShapeColour = color; }
             }
         /// @returns The shape color to use when drawing as a stipple across a bar.
         [[nodiscard]]
