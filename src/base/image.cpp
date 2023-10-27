@@ -631,7 +631,7 @@ namespace Wisteria::GraphItems
             const auto adjustedHeight = std::min(canvasSize.GetHeight(), stipple.GetHeight());
             auto adjustedWidth = geometry::rescaled_width(wxSizeToPair(stipple.GetSize()),
                                                           adjustedHeight);
-     
+
             const wxBitmap scaledStipple = stipple.Scale(adjustedWidth,
                                                          adjustedHeight, wxIMAGE_QUALITY_HIGH);
             const wxBitmap scaledStippleShadow =
