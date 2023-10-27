@@ -629,7 +629,7 @@ namespace Wisteria::Graphs
             @param ft The font to apply.*/
         void SetTableFont(const wxFont& ft)
             {
-            if (GetColumnCount() > 0)
+            if (ft.IsOk() && GetColumnCount() > 0)
                 {
                 for (auto& row : m_table)
                     {
