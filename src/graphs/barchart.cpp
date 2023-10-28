@@ -559,6 +559,7 @@ namespace Wisteria::Graphs
                     return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0;
                     });
             bar.SetOpacity((foundPos == labels.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
+            bar.m_barLabel.Show(foundPos != labels.cend());
             }
         }
 
@@ -573,6 +574,7 @@ namespace Wisteria::Graphs
                     return compare_doubles(bar.GetAxisPosition(), position);
                     });
             bar.SetOpacity((foundPos == positions.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
+            bar.m_barLabel.Show(foundPos != positions.cend());
             }
         }
 
