@@ -440,10 +440,11 @@ bool Screenshot::SaveScreenshotOfTextWindow(const wxString& filePath,
     }
 
 //---------------------------------------------------
-bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
-                                              const wxWindowID propertyGridId /*= wxID_ANY*/,
-                                              const wxString& startIdToHighlight /*= wxEmptyString*/,
-                                              wxString endIdToHighlight /*= wxEmptyString*/)
+bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath,
+                                                        const wxWindowID propertyGridId /*= wxID_ANY*/,
+                                                        const wxString& startIdToHighlight /*= wxEmptyString*/,
+                                                        wxString endIdToHighlight /*= wxEmptyString*/,
+                                                        const bool cropToGridHeight /*= false*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -510,6 +511,23 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
         }
 
     memDC.SelectObject(wxNullBitmap);
+
+    // crop vertially, if requested
+    if (cropToGridHeight && propertyGridId != wxID_ANY)
+        {
+        wxWindow* window = windowToCapture->FindWindow(propertyGridId);
+        if (window != nullptr && window->IsKindOf(CLASSINFO(wxPropertyGridManager)))
+            {
+            const wxPropertyGridManager* propertyGridWindow =
+                dynamic_cast<wxPropertyGridManager*>(window);
+            wxRect gridRect =
+                propertyGridWindow->GetState()->GetGrid()->
+                GetPropertyRect(propertyGridWindow->GetState()->GetGrid()->GetRoot(),
+                    propertyGridWindow->GetState()->GetGrid()->GetLastItem());
+            bitmap = bitmap.GetSubBitmap(
+                        wxRect(0, 0, bitmap.GetWidth(), gridRect.GetHeight()) );
+            }
+        }
 
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
