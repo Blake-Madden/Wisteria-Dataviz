@@ -53,14 +53,17 @@ public:
             If @c wxID_ANY, then top-most property grid found will be used
         @param startIdToHighlight The (optional) starting grid row to draw a red line around.
         @param endIdToHighlight The (optional) ending grid row to draw a red line around.
-        @param cropToGridHeight Whether to crop the screenshot to the height of the
-            property grid's content.
+        @param cropToGridHeightAndMinSize Whether to crop the screenshot to the height of the
+            property grid's content. If first part is @c true, then will crop. If the second
+            part is a valid height, then this will be the minimum cropped height.\n
+            Note that the min height is in DPIs.
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath,
                                                        const wxWindowID propertyGridId = wxID_ANY,
                                                        const wxString& startIdToHighlight = wxEmptyString,
                                                        wxString endIdToHighlight = wxEmptyString,
-                                                       const bool cropToGridHeight = false);
+                                                       const std::pair<bool, wxCoord> cropToGridHeightAndMinSize =
+                                                         std::make_pair(false, wxDefaultCoord));
     /** @brief Saves a screenshot of a text window.
         @param filePath The path to save the screenshot to.
         @param windowId The ID of the text window. The window will be searched for from the

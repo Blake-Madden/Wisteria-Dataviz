@@ -444,7 +444,8 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
                                                         const wxWindowID propertyGridId /*= wxID_ANY*/,
                                                         const wxString& startIdToHighlight /*= wxEmptyString*/,
                                                         wxString endIdToHighlight /*= wxEmptyString*/,
-                                                        const bool cropToGridHeight /*= false*/)
+                                                        const std::pair<bool, wxCoord> cropToGridHeightAndMinSize /*=
+                                                         std::make_pair(false, wxDefaultCoord*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -513,7 +514,7 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
     memDC.SelectObject(wxNullBitmap);
 
     // crop vertially, if requested
-    if (cropToGridHeight && propertyGridId != wxID_ANY)
+    if (cropToGridHeightAndMinSize.first && propertyGridId != wxID_ANY)
         {
         wxWindow* window = windowToCapture->FindWindow(propertyGridId);
         if (window != nullptr && window->IsKindOf(CLASSINFO(wxPropertyGridManager)))
@@ -525,7 +526,9 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
                 GetPropertyRect(propertyGridWindow->GetState()->GetGrid()->GetRoot(),
                     propertyGridWindow->GetState()->GetGrid()->GetLastItem());
             bitmap = bitmap.GetSubBitmap(
-                        wxRect(0, 0, bitmap.GetWidth(), gridRect.GetHeight()) );
+                        wxRect(0, 0, bitmap.GetWidth(),
+                            std::max(propertyGridWindow->FromDIP(cropToGridHeightAndMinSize.second),
+                                                                 gridRect.GetHeight())) );
             }
         }
 
