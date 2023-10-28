@@ -88,7 +88,8 @@ public:
     [[nodiscard]]
     static wxString GetString(const wchar_t* sectionStart,
                               const wchar_t* sectionEnd,
-                              const wchar_t* entityTag);
+                              const wchar_t* entityTag,
+                              const wxString& defaultValue = wxString{});
     /// loads values when the same tag is used more than once in a block of text
     static void GetStrings(const wchar_t* sectionStart,
                                const wchar_t* sectionEnd,

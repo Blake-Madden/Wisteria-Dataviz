@@ -534,13 +534,14 @@ void XmlFormat::GetStrings(const wchar_t* sectionStart,
 //------------------------------------------------
 wxString XmlFormat::GetString(const wchar_t* sectionStart,
                               const wchar_t* sectionEnd,
-                              const wchar_t* entityTag)
+                              const wchar_t* entityTag,
+                              const wxString& defaultValue /*= wxString{}*/)
     {
     assert(sectionStart && sectionEnd && entityTag &&
            L"Invalid pointer passed to GetString()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
         entityTag == nullptr)
-        { return wxString{}; }
+        { return defaultValue; }
 
     wxString value;
     const size_t startTagLength = std::wcslen(entityTag);
@@ -567,10 +568,10 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart,
             wxMessageBox(
                 wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
                 _(L"Warning"), wxOK|wxICON_INFORMATION);
-            return wxString{};
+            return defaultValue;
             }
         }
-    return wxString{};
+    return defaultValue;
     }
 
 //------------------------------------------------
