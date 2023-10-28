@@ -486,6 +486,7 @@ bool Screenshot::SaveScreenshotOfPropertyGrid(const wxString& filePath,
                     propertyGridWindow->GetState()->GetGrid()->
                         GetPropertyRect(propertyGridWindow->GetProperty(startIdToHighlight),
                             propertyGridWindow->GetProperty(endIdToHighlight));
+
                 rectToHighlight.Offset(startPoint);
                 memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
                 memDC.DrawLine(rectToHighlight.GetTopLeft().x,
@@ -553,6 +554,8 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
        BitBlitting the client area is less problematic overall.*/
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
+    wxCoord endPointY{ 0 };
+
     if (startIdToHighlight != wxID_ANY || endIdToHighlight != wxID_ANY)
         {
         const wxWindow* startWindow = (startIdToHighlight == wxID_ANY) ?
@@ -597,6 +600,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 wxSizerFlags::GetDefaultBorder() : 0,
                 (endPoint.y + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetHeight()) ?
                 wxSizerFlags::GetDefaultBorder() : 0);
+            endPointY = endPoint.y;
             memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
             memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
             memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
@@ -623,7 +627,10 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
             wxPoint cutOffEndPoint(cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
                                    cutoffPoint.y + cutoffWindow->GetSize().GetHeight());
             bitmap = bitmap.GetSubBitmap(
-                wxRect(0, 0, bitmap.GetWidth(), cutOffEndPoint.y + wxSizerFlags::GetDefaultBorder()));
+                wxRect(0, 0, bitmap.GetWidth(),
+                       // if there is something being highlighted, make sure we don't
+                       // cut that off
+                       std::max(cutOffEndPoint.y, endPointY) + wxSizerFlags::GetDefaultBorder()));
             }
         }
 
