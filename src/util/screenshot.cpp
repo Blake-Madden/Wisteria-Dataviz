@@ -138,11 +138,11 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
     if (windowToCapture == nullptr)
         { return false; }
 
-    wxWindow* foundWindow{nullptr};
+    wxWindow* foundWindow{ nullptr };
     if (!windowToCapture->IsKindOf(CLASSINFO(wxRibbonBar)))
         {
-        auto children = windowToCapture->GetChildren();
-        for (const auto child : children)
+        auto& children = windowToCapture->GetChildren();
+        for (const auto& child : children)
             {
             if (child && child->IsKindOf(CLASSINFO(wxRibbonBar)))
                 {
