@@ -467,13 +467,14 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
     if (propertyGridId != wxID_ANY)
         {
         wxWindow* window = windowToCapture->FindWindow(propertyGridId);
-        if (window != nullptr && window->IsKindOf(CLASSINFO(wxPropertyGridManager)))
+        if (window != nullptr)
             {
             if (endIdToHighlight.empty())
                 { endIdToHighlight = startIdToHighlight; }
-            const wxPropertyGridManager* propertyGridWindow =
-                dynamic_cast<wxPropertyGridManager*>(window);
-            if (propertyGridWindow->GetProperty(wxGetTranslation(startIdToHighlight)) &&
+            const auto propertyGridWindow =
+                dynamic_cast<wxPropertyGridInterface*>(window);
+            if (propertyGridWindow &&
+                propertyGridWindow->GetProperty(wxGetTranslation(startIdToHighlight)) &&
                 propertyGridWindow->GetProperty(wxGetTranslation(endIdToHighlight)) &&
                 propertyGridWindow->GetState())
                 {
@@ -517,18 +518,21 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
     if (cropToGridHeightAndMinSize.first && propertyGridId != wxID_ANY)
         {
         wxWindow* window = windowToCapture->FindWindow(propertyGridId);
-        if (window != nullptr && window->IsKindOf(CLASSINFO(wxPropertyGridManager)))
+        if (window != nullptr)
             {
-            const wxPropertyGridManager* propertyGridWindow =
-                dynamic_cast<wxPropertyGridManager*>(window);
-            wxRect gridRect =
-                propertyGridWindow->GetState()->GetGrid()->
-                GetPropertyRect(propertyGridWindow->GetState()->GetGrid()->GetRoot(),
-                    propertyGridWindow->GetState()->GetGrid()->GetLastItem());
-            bitmap = bitmap.GetSubBitmap(
-                        wxRect(0, 0, bitmap.GetWidth(),
-                            std::max(propertyGridWindow->FromDIP(cropToGridHeightAndMinSize.second),
-                                                                 gridRect.GetHeight())) );
+            const auto propertyGridWindow =
+                dynamic_cast<wxPropertyGridInterface*>(window);
+            if (propertyGridWindow)
+                {
+                wxRect gridRect =
+                    propertyGridWindow->GetState()->GetGrid()->
+                    GetPropertyRect(propertyGridWindow->GetState()->GetGrid()->GetRoot(),
+                        propertyGridWindow->GetState()->GetGrid()->GetLastItem());
+                bitmap = bitmap.GetSubBitmap(
+                            wxRect(0, 0, bitmap.GetWidth(),
+                                std::max(GetActiveDialogOrFrame()->FromDIP(cropToGridHeightAndMinSize.second),
+                                                                     gridRect.GetHeight())) );
+                }
             }
         }
 
