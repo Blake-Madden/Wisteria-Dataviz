@@ -257,8 +257,7 @@ namespace Wisteria::Graphs
                 For the latter, if binning by unique values and the number of
                 unique values exceeds this, then the range-based mode will be used for the binning.
             @param neatIntervals If @c true and the binning method is @c BinByIntegerRange, then
-                will attempt to round the bar ranges to multiples of 5, 10, etc.\n
-                This will override @c binCountRanges.
+                will attempt to round the bar ranges to multiples of 5, 10, etc.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.

@@ -354,8 +354,10 @@ namespace Wisteria::Graphs
                 {
                 if (binSize < 5)
                     { binSize = 5; }
-                else if (binSize > 5 && binSize < 10)
-                    { binSize = 10; }
+                else if (binSize < 100)
+                    { binSize = next_interval(binSize, 2); }
+                else if (binSize < 1000)
+                    { binSize = next_interval(binSize, 3); }
                 }
             }
 
