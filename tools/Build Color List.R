@@ -1,10 +1,6 @@
-library(rvest)
-library(tidyverse)
-library(magrittr)
-library(stringi)
-library(stringr)
-library(janitor)
-library(lubridate)
+if (!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(rvest, tidyverse, this.path, magrittr, stringi, stringr, janitor, lubridate)
 
 # Add any colors that you want to Colors.txt (the name should be camel-cased
 # and be sure to add a hex-encoded value next to it [tab between the color name
@@ -13,7 +9,7 @@ library(lubridate)
 # After running this, the files reportbuildercolors.cpp, colors.h, and colors.cpp
 # will be rebuilt from the list of colors in Colors.txt.
 
-dataFolder <- dirname(rstudioapi::getSourceEditorContext()$path)
+dataFolder <- this.path::this.dir()
 
 # colors from various runs and manual additions
 previousColorData <- read_delim(str_glue("{dataFolder}/Colors.txt"), 

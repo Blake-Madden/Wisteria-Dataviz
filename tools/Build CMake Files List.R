@@ -1,16 +1,16 @@
-library(tidyverse)
-library(magrittr)
-library(stringr)
+if (!require("pacman")) install.packages("pacman")
+library(pacman)
+pacman::p_load(tidyverse, magrittr, stringr, this.path)
 
-srcFolder <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/../src')
-testFolder <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/../tests')
-guiTestFolder <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/../tests/gui-tests')
+srcFolder <- str_glue('{this.path::this.dir()}/../src')
+testFolder <- str_glue('{this.path::this.dir()}/../tests')
+guiTestFolder <- str_glue('{this.path::this.dir()}/../tests/gui-tests')
 
-buildLibFile <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/libfiles.cmake')
-buildFile <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/files.cmake')
-buildFileTestGuiLib <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/guilibfiles_testing.cmake')
-buildFileTests <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/testfiles.cmake')
-buildFileTestsGui <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/guitestfiles.cmake')
+buildLibFile <- str_glue('{this.path::this.dir()}/libfiles.cmake')
+buildFile <- str_glue('{this.path::this.dir()}/files.cmake')
+buildFileTestGuiLib <- str_glue('{this.path::this.dir()}/guilibfiles_testing.cmake')
+buildFileTests <- str_glue('{this.path::this.dir()}/testfiles.cmake')
+buildFileTestsGui <- str_glue('{this.path::this.dir()}/guitestfiles.cmake')
 
 # Files for library
 ################################################
