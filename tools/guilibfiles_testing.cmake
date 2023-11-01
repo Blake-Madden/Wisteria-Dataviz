@@ -73,7 +73,6 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/sidebarbook.cpp
     ../../src/ui/controls/thumbnail.cpp
     ../../src/ui/dialogs/archivedlg.cpp
-    ../../src/ui/dialogs/edittextdlg.cpp
     ../../src/ui/dialogs/excelpreviewdlg.cpp
     ../../src/ui/dialogs/filelistdlg.cpp
     ../../src/ui/dialogs/functionbrowserdlg.cpp
