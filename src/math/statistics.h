@@ -361,7 +361,7 @@ namespace statistics
          well as read the outlier values one-by-one.
         @code
          // analyze a data series and retrieve its outliers
-         std::vector<double> values = { 5, 9, -3, 6, 7, 6, 6, 4, 3, 17 }
+         std::vector<double> values = { 5, 9, -3, 6, 7, 6, 6, 4, 3, 17 };
          // load the data
          statistics::find_outliers
             findOutlier(values));
@@ -370,7 +370,7 @@ namespace statistics
          for (;;)
             {
             auto nextOutlier = findOutlier();
-            if (nextOutlier == values.end())
+            if (nextOutlier == values.cend())
                 { break; }
             theOutliers.push_back(*nextOutlier);
             }
@@ -389,7 +389,10 @@ namespace statistics
             @param data The data to analyze.*/
         void set_data(const std::vector<double>& data)
             {
-            double lq(0), uq(0);
+            // reset
+            double lq{ std::numeric_limits<double>::quiet_NaN() },
+                   uq{ std::numeric_limits<double>::quiet_NaN() };
+            lo = uo = le = ue = std::numeric_limits<double>::quiet_NaN();
             m_current_position = data.cbegin();
             m_end = data.cend();
             m_temp_buffer.clear();
@@ -399,6 +402,9 @@ namespace statistics
                 std::back_inserter(m_temp_buffer),
                 [](const auto val) noexcept
                   { return !std::isnan(val); });
+            // if no valid data, then leave boundaries as NaN and bail
+            if (m_temp_buffer.empty())
+                { return; }
             std::sort(m_temp_buffer.begin(), m_temp_buffer.end() );
             // calculate the quartile ranges
             statistics::quartiles_presorted(
@@ -421,19 +427,19 @@ namespace statistics
                 );
             return (m_end == m_current_position) ? m_end : m_current_position++;
             }
-        /// @returns The lower outlier boundary.
+        /// @returns The lower outlier boundary, or NaN if data are empty.
         [[nodiscard]]
         double get_lower_outlier_boundary() const noexcept
             { return lo; }
-        /// @returns The upper outlier boundary.
+        /// @returns The upper outlier boundary, or NaN if data are empty.
         [[nodiscard]]
         double get_upper_outlier_boundary() const noexcept
             { return uo; }
-        /// @returns The lower extreme boundary.
+        /// @returns The lower extreme boundary, or NaN if data are empty.
         [[nodiscard]]
         double get_lower_extreme_boundary() const noexcept
             { return le; }
-        /// @returns The upper extreme boundary.
+        /// @returns The upper extreme boundary, or NaN if data are empty.
         [[nodiscard]]
         double get_upper_extreme_boundary() const noexcept
             { return ue; }
@@ -441,10 +447,10 @@ namespace statistics
         std::vector<double>::const_iterator m_current_position;
         std::vector<double>::const_iterator m_end;
         std::vector<double> m_temp_buffer;
-        double lo{ 0 };
-        double uo{ 0 };
-        double le{ 0 };
-        double ue{ 0 };
+        double lo{ std::numeric_limits<double>::quiet_NaN() };
+        double uo{ std::numeric_limits<double>::quiet_NaN() };
+        double le{ std::numeric_limits<double>::quiet_NaN() };
+        double ue{ std::numeric_limits<double>::quiet_NaN() };
         };
 
     /** @returns The normalized (i.e., within the 0-1 range) value for a number compared
