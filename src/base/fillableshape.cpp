@@ -29,6 +29,35 @@ namespace Wisteria::GraphItems
         drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
         drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
 
+        // position the shape inside of its (possibly) larger box
+        wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
+        // horizontal page alignment
+        if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
+            { /*noop*/ }
+        else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
+            {
+            shapeTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
+                safe_divide<double>(drawRect.GetWidth(), 2);
+            }
+        else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
+            {
+            shapeTopLeftCorner.x += GetBoundingBox(dc).GetWidth() - drawRect.GetWidth();
+            }
+        // vertical page alignment
+        if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
+            { /*noop*/ }
+        else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
+            {
+            shapeTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
+                safe_divide<double>(drawRect.GetHeight(), 2);
+            }
+        else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
+            {
+            shapeTopLeftCorner.y += GetBoundingBox(dc).GetHeight() - drawRect.GetHeight();
+            }
+
+        drawRect.SetTopLeft(shapeTopLeftCorner);
+
         // draw the full shape to a bitmap
         wxBitmap bmp(drawRect.GetSize());
         wxBitmap ghostedBmp(drawRect.GetSize());
