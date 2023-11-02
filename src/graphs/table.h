@@ -1313,11 +1313,19 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         TableCell* FindCell(const wxString& textToFind);
 
-        /** @brief Searches for the first cell whose content matches the provided text in the first row.
+        /** @brief Searches for the position of the first cell whose content matches
+                the provided text in the first row.
             @param textToFind The text to search for.
             @returns The index of the column, or @c std::nullopt if not found.*/
         [[nodiscard]]
         std::optional<size_t> FindColumnIndex(const wxString& textToFind);
+
+        /** @brief Searches for the position of the first cell whose content
+                matches the provided text in the first column.
+            @param textToFind The text to search for.
+            @returns The index of the row, or @c std::nullopt if not found.*/
+        [[nodiscard]]
+        std::optional<size_t> FindRowIndex(const wxString& textToFind);
         /// @}
 
         /** @brief Adds a footnote to the table.

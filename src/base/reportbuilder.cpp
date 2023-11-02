@@ -4515,9 +4515,20 @@ namespace Wisteria
                 { position = table->GetLastDataColumn(); }
             else if (originStr.CmpNoCase(L"last-row") == 0)
                 { position = table->GetLastDataRow(); }
-            else if (const auto colPos = (table ? table->FindColumnIndex(originStr) : std::nullopt);
+            else if (originStr.StartsWith(L"column:"))
+                {
+                if (const auto colPos =
+                        (table ? table->FindColumnIndex(originStr.substr(7)) : std::nullopt);
                      colPos.has_value())
-                { position = colPos; }
+                    { position = colPos; }
+                }
+            else if (originStr.StartsWith(L"row:"))
+                {
+                if (const auto colPos =
+                        (table ? table->FindRowIndex(originStr.substr(4)) : std::nullopt);
+                     colPos.has_value())
+                    { position = colPos; }
+                }
             else
                 {
                 throw std::runtime_error(

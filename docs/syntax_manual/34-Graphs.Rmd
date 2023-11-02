@@ -305,7 +305,8 @@ Properties for row or column table positions:
 - `"origin"`: This is either the zero-based index of the row/column, or a string. \
      The string values available are `"last-row"` or `"last-column"`,
      which will be interpreted as the last row or column in the data, respectively. \
-     Column names from the dataset can also be used if looking for a column position.
+     Column names or row names from the dataset can also be used if looking for a column or row position.
+     To do this, prefix "column:" or "row:" in front of the column or row name.
 - `"offset"`: A numeric value combined with the value for `"origin"`. \
      This is optional and is useful for when `"origin"` is interpreted at run-time. \
      For example, if `origin` is `"last-row"`: And `"offset"` is `-1`, then this will
