@@ -958,6 +958,8 @@ public:
     [[nodiscard]]
     wxString GetItemTextFormatted(const size_t row, const size_t column) const final
         {
+        if (m_virtualData.empty())
+            { return wxString{}; }
         assert(row < m_virtualData.size());
         assert(column < m_virtualData.operator[](row).size());
         const DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
@@ -1071,7 +1073,7 @@ public:
     [[nodiscard]]
     int GetItemImage(const size_t row, const size_t column) const final
         {
-        return m_virtualData.operator[](row).operator[](column).GetImage();
+        return m_virtualData.empty() ? wxNOT_FOUND : m_virtualData.operator[](row).operator[](column).GetImage();
         }
     /// @brief Sets the item's index into the image list.
     /// @param row The row to access.
