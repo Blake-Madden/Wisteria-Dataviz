@@ -146,15 +146,19 @@ namespace Wisteria::UI
             @param textToFind The text to find.
             @param searchFlags How to search. Can be a combination of
                 @c wxSTC_FIND_WHOLEWORD, @c wxSTC_FIND_MATCHCASE, @c wxSTC_FIND_WORDSTART,
-                @c wxSTC_FIND_REGEXP, and @c wxSTC_FIND_POSIX.*/
-        void FindNext(const wxString& textToFind, const int searchFlags = 0);
+                @c wxSTC_FIND_REGEXP, and @c wxSTC_FIND_POSIX.
+            @param wrapAround @c true to search from the top once the end of the document is reached.
+            @returns The position of the match, or @c wxSTC_INVALID_POSITION if not found*/
+        long FindNext(const wxString& textToFind, const int searchFlags = 0,
+                      const bool wrapAround = true);
         /** @brief Search backwards (from the cursor) for a string and moves the
                 selection to it (if found).
             @param textToFind The text to find.
             @param searchFlags How to search. Can be a combination of
                 @c wxSTC_FIND_WHOLEWORD, @c wxSTC_FIND_MATCHCASE, @c wxSTC_FIND_WORDSTART,
-                @c wxSTC_FIND_REGEXP, and @c wxSTC_FIND_POSIX.*/
-        void FindPrevious(const wxString& textToFind, const int searchFlags = 0);
+                @c wxSTC_FIND_REGEXP, and @c wxSTC_FIND_POSIX.
+            @returns The position of the match, or @c wxSTC_INVALID_POSITION if not found.*/
+        long FindPrevious(const wxString& textToFind, const int searchFlags = 0);
         /** @brief When creating a new script, this will be the first line always included.
                 This is useful if there is another Lua script always included in new scripts.
                 An example of this could be `SetDefaultHeader(L"dofile(\"AppLibrary.lua\")")`.
@@ -198,6 +202,10 @@ namespace Wisteria::UI
         /// @param background The color for the control's background.
         void SetThemeColor(const wxColour& background);
 
+        /// @brief Can be useful when calling find event from parent container.
+        /// @private
+        void OnFind(wxFindDialogEvent& event);
+
         /// @brief The style to use for error annotations.
         static constexpr int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
     private:
@@ -224,7 +232,6 @@ namespace Wisteria::UI
         void OnCharAdded(wxStyledTextEvent &event);
         void OnAutoCompletionSelected(wxStyledTextEvent &event);
         void OnKeyDown(wxKeyEvent& event);
-        void OnFind(wxFindDialogEvent &event);
 
         std::map<wxString, wxString, wxStringCmpNoCase> m_libraryCollection;
         std::map<wxString, wxString, wxStringCmpNoCase> m_classCollection;

@@ -176,7 +176,7 @@ void CodeEditor::New()
     if (GetModify())
         {
         if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"),
-                _(L"Save Script"), wxYES_NO|wxICON_QUESTION) == wxYES)
+                _(L"Save Script"), wxYES_NO|wxICON_QUESTION, this) == wxYES)
             { Save(); }
         }
     SetText(m_defaultHeader);
@@ -193,7 +193,7 @@ bool CodeEditor::Open()
     if (GetModify())
         {
         if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"),
-                _(L"Save Script"), wxYES_NO|wxICON_QUESTION) == wxYES)
+                _(L"Save Script"), wxYES_NO|wxICON_QUESTION, this) == wxYES)
             { Save(); }
         }
     wxFileDialog dialogOpen
@@ -232,7 +232,7 @@ bool CodeEditor::Save()
     if (!SaveFile(GetScriptFilePath()) )
         {
         wxMessageBox(wxString::Format(_(L"Unable to save file \"%s\"."), GetScriptFilePath()),
-            _(L"Error"), wxOK|wxICON_EXCLAMATION);
+            _(L"Error"), wxOK|wxICON_EXCLAMATION, this);
         return false;
         }
     return true;
@@ -259,85 +259,71 @@ void CodeEditor::OnFind(wxFindDialogEvent &event)
     if (flags & wxFR_WHOLEWORD)
         { searchFlags = searchFlags|wxSTC_FIND_WHOLEWORD; }
 
+    long foundPos{ wxSTC_INVALID_POSITION };
     if (flags & wxFR_DOWN)
-        { FindNext(event.GetFindString(), searchFlags); }
+        {
+        foundPos = FindNext(event.GetFindString(), searchFlags);
+        }
     else
-        { FindPrevious(event.GetFindString(), searchFlags); }
+        {
+        foundPos = FindPrevious(event.GetFindString(), searchFlags);
+        }
+
+    if (foundPos == wxSTC_INVALID_POSITION)
+        {
+        wxMessageBox(_(L"No further occurrences found."),
+            _(L"Item Not Found"), wxOK | wxICON_INFORMATION, this);
+        }
     }
 
 //-------------------------------------------------------------
-void CodeEditor::FindPrevious(const wxString& textToFind, const int searchFlags /*= 0*/)
+long CodeEditor::FindPrevious(const wxString& textToFind, const int searchFlags /*= 0*/)
     {
     SearchAnchor();
     long selStart{ 0 }, selEnd{ 0 };
-    GetSelection(&selStart,&selEnd);
-    int foundPos = SearchPrev(searchFlags, textToFind);
-    if (foundPos == selStart && foundPos != 0)
+    GetSelection(&selStart, &selEnd);
+    auto foundPos = SearchPrev(searchFlags, textToFind);
+    if (foundPos != wxSTC_INVALID_POSITION)
         {
-        SetSelection(foundPos-1,foundPos-1);
+        SetSelection(foundPos, foundPos+textToFind.length());
         SearchAnchor();
-        foundPos = SearchPrev(searchFlags, textToFind);
-        if (foundPos != wxSTC_INVALID_POSITION)
-            {
-            SetSelection(foundPos,foundPos+textToFind.length());
-            EnsureCaretVisible();
-            }
-        else
-            { SetSelection(selStart, selEnd); }
-        }
-    else if (foundPos != wxSTC_INVALID_POSITION)
-        {
-        SetSelection(foundPos,foundPos+textToFind.length());
         EnsureCaretVisible();
         }
-    // not found going forward, so start from beginning and try from there
-    else
-        {
-        wxMessageBox(_(L"No occurrences found."),
-                _(L"Item Not Found"), wxOK|wxICON_INFORMATION);
-        }
+    return foundPos;
     }
 
 //-------------------------------------------------------------
-void CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 0*/)
+long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 0*/,
+                          const bool wrapAround /*= true*/)
     {
     SearchAnchor();
     long selStart, selEnd;
-    GetSelection(&selStart,&selEnd);
-    int foundPos = SearchNext(searchFlags, textToFind);
-    if (foundPos == selStart)
+    GetSelection(&selStart, &selEnd);
+    SetSelection(selEnd, selEnd);
+    SearchAnchor();
+    auto foundPos = SearchNext(searchFlags, textToFind);
+    if (foundPos != wxSTC_INVALID_POSITION)
         {
-        SetSelection(foundPos+textToFind.length(),foundPos+textToFind.length());
+        SetSelection(foundPos, foundPos+textToFind.length());
         SearchAnchor();
-        foundPos = SearchNext(searchFlags, textToFind);
-        if (foundPos != wxSTC_INVALID_POSITION)
-            {
-            SetSelection(foundPos,foundPos+textToFind.length());
-            EnsureCaretVisible();
-            }
-        else
-            { SetSelection(selStart, selEnd); }
-        }
-    else if (foundPos != wxSTC_INVALID_POSITION)
-        {
-        SetSelection(foundPos,foundPos+textToFind.length());
         EnsureCaretVisible();
+        return foundPos;
         }
     // not found going forward, so start from beginning and try from there
-    else
+    else if (wrapAround)
         {
         foundPos = FindText(0, GetLength(), textToFind, searchFlags);
         if (foundPos != wxSTC_INVALID_POSITION)
             {
             SetSelection(foundPos,foundPos+textToFind.length());
+            SearchAnchor();
             EnsureCaretVisible();
-            }
-        else
-            {
-            wxMessageBox(_(L"No occurrences found."),
-                    _(L"Item Not Found"), wxOK|wxICON_INFORMATION);
+            return foundPos;
             }
         }
+    SetSelection(selStart, selEnd);
+    SearchAnchor();
+    return foundPos;
     }
 
 //-------------------------------------------------------------
