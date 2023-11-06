@@ -62,7 +62,7 @@ public:
         const wxSize& size = wxDefaultSize, long style = 0,
         const wxValidator& validator = wxDefaultValidator) :
             wxTextCtrl(parent, id, wxString{}, pos, size,
-                style|wxTE_RICH2|wxTE_MULTILINE|wxTE_WORDWRAP|wxTE_NOHIDESEL,
+                style|wxTE_RICH2|wxTE_MULTILINE|wxTE_BESTWRAP|wxTE_NOHIDESEL,
                 validator, L"FormattedTextCtrl"),
                 // default paper size is 8.5" x 11"
                 m_paperSize(wxSize(8.5 * TWIPS_PER_INCH,
