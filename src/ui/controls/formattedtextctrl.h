@@ -55,14 +55,16 @@ public:
         @param id The control's ID.
         @param pos The control's position.
         @param size The control's size.
-        @param style The control's style.
+        @param additionalStyles Additional styles to use for the text control.\n
+            Other styles necessary for rich editing (e.g., @c wxTE_RICH2 and @c wxTE_MULTILINE)
+            will already be included.
         @param validator A validator to connect to the control.*/
     explicit FormattedTextCtrl(wxWindow* parent, wxWindowID id = wxID_ANY,
         const wxPoint& pos = wxDefaultPosition,
-        const wxSize& size = wxDefaultSize, long style = 0,
+        const wxSize& size = wxDefaultSize, long additionalStyles = 0,
         const wxValidator& validator = wxDefaultValidator) :
             wxTextCtrl(parent, id, wxString{}, pos, size,
-                style|wxTE_RICH2|wxTE_MULTILINE|wxTE_BESTWRAP|wxTE_NOHIDESEL,
+                additionalStyles|wxTE_RICH2|wxTE_MULTILINE|wxTE_BESTWRAP|wxTE_NOHIDESEL,
                 validator, L"FormattedTextCtrl"),
                 // default paper size is 8.5" x 11"
                 m_paperSize(wxSize(8.5 * TWIPS_PER_INCH,
