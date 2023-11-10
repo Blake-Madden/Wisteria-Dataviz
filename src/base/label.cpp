@@ -1740,20 +1740,6 @@ namespace Wisteria::GraphItems
         return wxFontEnumerator::IsValidFacename(systemFont) ? systemFont : wxString(L"Arial");
         }
 
-    //------------------------------------------------------
-    wxString Label::GetFirstAvailableCursiveFont()
-        {
-        return GetFirstAvailableFont(
-            { L"Gabriola", L"Brush Script", L"Segoe Script", L"AR BERKLEY" });
-        }
-
-    //------------------------------------------------------
-    wxString Label::GetFirstAvailableMonospaceFont()
-        {
-        return GetFirstAvailableFont(
-            { L"Cascadia Mono", L"Consolas", L"Times New Roman" });
-        }
-
     //--------------------------------------------------
     int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
                                             const wxRect& boundingBox, const wxString& text)

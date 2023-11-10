@@ -356,12 +356,31 @@ namespace Wisteria::GraphItems
                 or the system default if none are found.
             @note This function uses a list of known cursive fonts to search with.*/
         [[nodiscard]]
-        static wxString GetFirstAvailableCursiveFont();
+        static wxString GetFirstAvailableCursiveFont()
+            {
+            return GetFirstAvailableFont(
+                { L"Gabriola", L"Brush Script", L"Segoe Script", L"AR BERKLEY" });
+            }
+        /** @returns The first available font (face name) that looks nice in a word processor on the system,
+                or the system default if none are found.
+            @note This function uses a list of known fonts to search with.*/
+        [[nodiscard]]
+        static wxString GetFirstAvailableWordProcessorFont()
+            {
+            return GetFirstAvailableFont(
+                { L"Aptos", L"Bierstadt", L"Grandview", L"Seaford",
+                  L"Skeena", L"Tenorite", L"Calibri", L"Garamond",
+                  L"Franklin Gothic", L"Helvetica Neue" });
+            }
         /** @returns The first available monospace font (face name) found on the system,
                 or the system default if none are found.
             @note This function uses a list of monospace fonts to search with.*/
         [[nodiscard]]
-        static wxString GetFirstAvailableMonospaceFont();
+        static wxString GetFirstAvailableMonospaceFont()
+            {
+            return GetFirstAvailableFont(
+                { L"Cascadia Mono", L"Consolas", L"Times New Roman" });
+            }
         /// @brief Corrects issues with fonts such as bogus facenames and point sizes.
         /// @param theFont The font to review and correct.
         static void FixFont(wxFont& theFont);
