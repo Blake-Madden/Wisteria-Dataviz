@@ -189,6 +189,9 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
             // add a little padding around the control(s) being highlighted
             startPoint -= wxPoint(wxSizerFlags::GetDefaultBorder(),
                                   wxSizerFlags::GetDefaultBorder());
+            // push down if right on the edge
+            startPoint.y = std::max(startPoint.y, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
+
             endPoint += wxPoint(
                 // same for end point, but make sure we didn't go off the screen
                 (endPoint.x + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetWidth()) ?
