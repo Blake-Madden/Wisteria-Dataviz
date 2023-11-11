@@ -130,7 +130,8 @@ void Screenshot::AddBorderToImage(wxBitmap& bmp) // cppcheck-suppress constParam
 //---------------------------------------------------
 bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
                                         const int pageToSelect /*= 0*/,
-                                        const wxWindowID buttonBarToHighlight /*= wxID_ANY*/)
+                                        const wxWindowID firstButtonBarToHighlight /*= wxID_ANY*/,
+                                        const wxWindowID lastButtonBarToHighlight /*= wxID_ANY*/ )
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -168,9 +169,21 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
     memDC.Clear();
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
-    if (buttonBarToHighlight != wxID_ANY)
+    wxWindow* lastButtonBar = [&]() -> wxWindow*
         {
-        const auto buttonBar = ribbonBar->FindWindow(buttonBarToHighlight);
+        if (lastButtonBarToHighlight != wxID_ANY)
+            {
+            const auto buttonBar = ribbonBar->FindWindow(lastButtonBarToHighlight);
+            return (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar))) ?
+                buttonBar : nullptr;
+            }
+        else
+            { return nullptr; }
+        }();
+
+    if (firstButtonBarToHighlight != wxID_ANY)
+        {
+        const auto buttonBar = ribbonBar->FindWindow(firstButtonBarToHighlight);
         if (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
             {
             /* Step back all the way from the child window to the parent and tally the offset
@@ -184,12 +197,14 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
                 startPoint += startWindowParent->GetPosition();
                 startWindowParent = startWindowParent->GetParent();
                 }
-            wxPoint endPoint(startPoint.x + buttonBar->GetSize().GetWidth(),
+            const wxSize lastButtonBarSize = (lastButtonBar != nullptr) ? lastButtonBar->GetSize() : wxSize{};
+            wxPoint endPoint(startPoint.x + buttonBar->GetSize().GetWidth() + lastButtonBarSize.GetWidth(),
                              startPoint.y + buttonBar->GetSize().GetHeight());
             // add a little padding around the control(s) being highlighted
             startPoint -= wxPoint(wxSizerFlags::GetDefaultBorder(),
                                   wxSizerFlags::GetDefaultBorder());
-            // push down if right on the edge
+            // adjust if outside of render area
+            startPoint.x = std::max(startPoint.x, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
             startPoint.y = std::max(startPoint.y, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
 
             endPoint += wxPoint(

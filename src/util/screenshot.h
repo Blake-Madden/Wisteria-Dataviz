@@ -96,14 +96,16 @@ public:
     /** @brief Saves a screenshot of the top-level ribbon.
         @param filePath The path to save the screenshot to.
         @param pageToSelect The ribbon page to select.
-        @param buttonBarToHighlight The button bar area (on the active page) to highlight.
+        @param firstButtonBarToHighlight The first (or only) button bar area (on the active page) to highlight.
+        @param lastButtonBarToHighlight The last button bar area (on the active page) to include in the highlighting.
         @note Unfortunately, highlighting an individual button doesn't seem possible
             because the buttons are drawn dynamically and aren't parented by the
             button bar or ribbon itself.
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshotOfRibbon(const wxString& filePath,
                         const int pageToSelect = 0,
-                        const wxWindowID buttonBarToHighlight = wxID_ANY);
+                        const wxWindowID firstButtonBarToHighlight = wxID_ANY,
+                        const wxWindowID lastButtonBarToHighlight = wxID_ANY);
 
     /** @brief Opens a screenshot and draws a read square at given coordinates.
         @param filePath The path of the image to open.
