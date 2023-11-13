@@ -49,6 +49,11 @@
     #define HDF_SORTDOWN 0x200
 #endif
 
+wxDECLARE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
+
+#define EVT_LISTCTRLEX_EDITED(winid, fn) \
+    wx__DECLARE_EVT1(wxEVT_LISTCTRLEX_EDITED, winid, wxCommandEventHandler(fn))
+
 class ListCtrlEx;
 
 /// @brief "Floating" combobox used to edit cells in the list control.
@@ -950,7 +955,11 @@ public:
     ///     (e.g., a floating text control).
     /// @param edited Whether or not the list has been edited.
     void SetItemBeenEditedByUser(const bool edited = true) noexcept
-        { m_hasItemBeenEditedByUser = edited; }
+        {
+        m_hasItemBeenEditedByUser = edited;
+        if (m_hasItemBeenEditedByUser)
+            { SendEditedEvent(); }
+        }
 
     ///Sets the help export topics and images for the list control.
     /// @param helpProjectPath The folder where the help is located.
@@ -1032,6 +1041,15 @@ private:
         { return m_virtualData->GetItemImage(item, 0); }
     int OnGetItemColumnImage(long item, long column) const final
         { return m_virtualData->GetItemImage(item, column); }
+
+    void SendEditedEvent()
+        {
+        wxCommandEvent cevent(wxEVT_LISTCTRLEX_EDITED, GetId());
+        cevent.SetId(GetId());
+        cevent.SetInt(GetId());
+        cevent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(cevent);
+        }
 
     wxRect m_largestItemRect;
 

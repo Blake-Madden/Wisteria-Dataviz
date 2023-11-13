@@ -13,6 +13,8 @@
 #include "../../debug/debug_profile.h"
 #include "../../import/html_encode.h"
 
+wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
+
 wxIMPLEMENT_DYNAMIC_CLASS(ListCtrlEx, wxListView)
 
 wxBEGIN_EVENT_TABLE(ListCtrlEx, wxListView)
@@ -350,6 +352,7 @@ void ListCtrlEx::RemoveAll(const wxString& valueToRemove)
             { break; }
         }
     SetExtraStyle(style);
+    SetItemBeenEditedByUser(true);
     }
 
 //------------------------------------------------------
@@ -381,9 +384,9 @@ void ListCtrlEx::DeleteSelectedItems()
     else if (firstSelected > 0 &&
              firstSelected-1 < GetItemCount())
         { Select(firstSelected-1); }
-    SetItemBeenEditedByUser(true);
     SetExtraStyle(style);
     Refresh();
+    SetItemBeenEditedByUser(true);
     }
 
 //------------------------------------------------------
