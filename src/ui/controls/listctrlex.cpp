@@ -156,6 +156,7 @@ void ListEditSpinCtrl::OnEndEditKillFocus(wxFocusEvent& event)
     event.Skip();
     }
 
+//------------------------------------------------------
 ListEditSpinCtrlDouble::ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* owner,
                        wxWindowID id /*= wxID_ANY*/, const wxString& value /*= wxString{}*/,
                        const wxPoint& pos /*= wxDefaultPosition*/,
@@ -173,6 +174,7 @@ ListEditSpinCtrlDouble::ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* own
     Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrlDouble::OnKeyDown, this);
     }
 
+//------------------------------------------------------
 void ListEditSpinCtrlDouble::OnKeyDown(wxKeyEvent& event)
     {
     if (event.GetKeyCode() == WXK_ESCAPE)
@@ -2673,12 +2675,19 @@ long ListCtrlEx::AddRow(const wxString& value /*= wxString{}*/)
     {
     if (IsVirtual())
         {
-        SetVirtualDataSize(GetItemCount()+1, GetColumnCount());
-        SetItemText(GetItemCount()-1, 0, value);
-        return GetItemCount()-1;
+        SetVirtualDataSize(GetItemCount() + 1, GetColumnCount());
+        const auto newRowIndex{ GetItemCount() - 1 };
+        SetItemText(newRowIndex, 0, value);
+        EnsureVisible(newRowIndex);
+        return newRowIndex;
         }
     else
-        { return InsertItem(GetItemCount(), value); }
+        {
+        const auto newRowIndex = InsertItem(GetItemCount(), value);
+        EnsureVisible(newRowIndex);
+        return newRowIndex;
+        }
+    SetItemBeenEditedByUser(true);
     }
 
 //------------------------------------------------------
