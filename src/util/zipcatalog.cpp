@@ -85,45 +85,18 @@ bool ZipCatalog::ReadFile(const wxString& path, wxOutputStream& memstream) const
 //------------------------------------------------
 wxString ZipCatalog::ReadTextFile(const wxString& path) const
     {
-    // unzip the file into a temp file...
-    const wxString tempFilePath = wxFileName::CreateTempFileName(
-        wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() + L"RS");
-    wxFileOutputStream tempFile(tempFilePath);
-    if (!ReadFile(path, tempFile))
-        {
-        tempFile.Close();
-        wxRemoveFile(tempFilePath);
-        return wxString{};
-        }
-    tempFile.Close();
-
-    // ...then memory map it and convert it to Unicode and return that.
-    MemoryMappedFile mappedTempFile;
-    try
-        { mappedTempFile.MapFile(tempFilePath, true, true); }
-    catch (...)
-        {
-        wxMessageBox(wxString::Format(
-            _(L"Error reading extracted file from temp folder: %s"), path),
-            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
-        return wxString{};
-        }
-    if (mappedTempFile.IsOk())
-        {
-        const wxString decodedText = Wisteria::TextStream::CharStreamToUnicode(
-            static_cast<const char*>(mappedTempFile.GetStream()), mappedTempFile.GetMapSize());
-        mappedTempFile.UnmapFile();
-        wxRemoveFile(tempFilePath);
-        return decodedText;
-        }
-    else
-        {
-        wxMessageBox(wxString::Format(
-            _(L"Error reading extracted file from temp folder: %s"), path),
-            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
-        wxRemoveFile(tempFilePath);
-        return wxString{};
-        }
+    wxMemoryOutputStream memstream;
+    if (!ReadFile(path, memstream))
+        { return wxString{}; }
+    const wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
+    assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile!");
+    // empty file
+    if (theBuffer == nullptr ||
+        theBuffer->GetBufferSize() == 0 ||
+        theBuffer->GetBufferStart() == nullptr)
+        { return wxString{}; }
+    return Wisteria::TextStream::CharStreamToUnicode(
+        static_cast<const char*>(theBuffer->GetBufferStart()), theBuffer->GetBufferSize());
     }
 
 //------------------------------------------------
