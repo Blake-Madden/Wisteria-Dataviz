@@ -11,18 +11,19 @@
 #ifndef __STATISTICS_H__
 #define __STATISTICS_H__
 
-#include <algorithm>
-#include <numeric>
-#include <iterator>
-#include <functional>
-#include <limits>
-#include <cmath>
-#include <vector>
-#include <map>
+#include "../debug/debug_assert.h"
+#include "../util/frequencymap.h"
 #include "mathematics.h"
 #include "safe_math.h"
-#include "../util/frequencymap.h"
-#include "../debug/debug_assert.h"
+#include <algorithm>
+#include <cmath>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <map>
+#include <numeric>
+#include <stdexcept>
+#include <vector>
 
 /// @brief Namespace for statistics classes.
 namespace statistics
