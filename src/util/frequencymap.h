@@ -12,9 +12,10 @@
 #ifndef __FREQUENCY_MAPS_H__
 #define __FREQUENCY_MAPS_H__
 
+#include <cstddef>
 #include <map>
-#include <unordered_map>
 #include <set>
+#include <unordered_map>
 #include <unordered_set>
 
 /// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added.
