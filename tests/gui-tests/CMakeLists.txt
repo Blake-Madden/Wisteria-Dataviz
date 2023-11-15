@@ -127,12 +127,18 @@ IF(OpenMP_CXX_FOUND)
     TARGET_LINK_LIBRARIES(${TEST_APP} PUBLIC OpenMP::OpenMP_CXX)
 ENDIF()
 
-# Copy datasets into build folder
+# Copy datasets and test files into build folder
 MESSAGE(STATUS "Copying datasets...")
 ADD_CUSTOM_COMMAND(TARGET ${CMAKE_PROJECT_NAME}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_SOURCE_DIR}/../../datasets $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/datasets)
+
+MESSAGE(STATUS "Copying test files...")
+ADD_CUSTOM_COMMAND(TARGET ${CMAKE_PROJECT_NAME}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_CURRENT_SOURCE_DIR}/test_files $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/test_files)
 
 # load the test cases into the runner
 INCLUDE(CTest)

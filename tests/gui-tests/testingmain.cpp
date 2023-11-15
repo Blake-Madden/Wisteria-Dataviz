@@ -94,6 +94,7 @@ wxIMPLEMENT_APP(TestApp);
 // ----------------------------------------------------------------------------
 bool TestApp::OnInit()
     {
+    wxInitAllImageHandlers();
     // Hack: don't call wxApp::OnInit() to let CATCH handle command line.
 
     // create a parent window to be used as parent for the GUI controls

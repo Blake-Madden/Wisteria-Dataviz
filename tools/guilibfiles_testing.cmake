@@ -62,9 +62,9 @@ SET(WISTERIA_SRC
     ../../src/import/rtf_extract_text.cpp
     ../../src/import/xlsx_extract_text.cpp
     ../../src/ui/app.cpp
-    ../../src/ui/controls/codeeditor.cpp
     ../../src/ui/controls/formattedtextctrl.cpp
     ../../src/ui/controls/htmltablewin.cpp
+    ../../src/ui/controls/htmltablewinprintout.cpp
     ../../src/ui/controls/infobarex.cpp
     ../../src/ui/controls/listctrlex.cpp
     ../../src/ui/controls/listctrlexdataprovider.cpp
@@ -75,7 +75,6 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/archivedlg.cpp
     ../../src/ui/dialogs/excelpreviewdlg.cpp
     ../../src/ui/dialogs/filelistdlg.cpp
-    ../../src/ui/dialogs/functionbrowserdlg.cpp
     ../../src/ui/dialogs/getdirdlg.cpp
     ../../src/ui/dialogs/gridexportdlg.cpp
     ../../src/ui/dialogs/htmltablepanel.cpp

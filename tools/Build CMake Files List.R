@@ -17,7 +17,7 @@ buildFileTestsGui <- str_glue('{this.path::this.dir()}/guitestfiles.cmake')
 files <- str_glue("src/{list.files(path=srcFolder, pattern='(*[.]cpp|cJSON[.]c)', recursive=TRUE)}")
 # remove test, sample files from submodules, and other
 # files not relevant to the core library
-files <- files[!grepl("(xml_format|rtf_extract|postscript_extract|cpp_extract|odt_odp_extract|doc_extract|docx_extract|ui/app.cpp|codeeditor.cpp|htmltablewin.cpp|infobarex.cpp|listctrlex.cpp|listctrlexdataprovider.cpp|searchpanel.cpp|warningmanager.cpp|screenshot.cpp|resource_manager.cpp|idhelpers.cpp|mainframe.cpp|warningmessagesdlg.cpp|variableselectdlg.cpp|startpage.cpp|htmltablepanel.cpp|htmltablewinprintout.cpp|listctrlitemviewdlg.cpp|listdlg.cpp|listctrlsortdlg.cpp|artmetro.cpp|filelistdlg.cpp|functionbrowserdlg.cpp|getdirdlg.cpp|gridexportdlg.cpp|archivedlg.cpp|edittextdlg.cpp|excelpreviewdlg.cpp|sidebar.cpp|sidebarbook.cpp|downloadfile.cpp|formattedtextctrl.cpp|gtktextview-helper.cpp|demo.cpp|main.cpp|i18n-check/samples|i18n-check/tests/|cpp_i18n_review.cpp|i18n_review.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|cxxopts)", files)]
+files <- files[!grepl("(rc_file_review|xml_format|rtf_extract|postscript_extract|cpp_extract|odt_odp_extract|doc_extract|docx_extract|ui/app.cpp|codeeditor.cpp|htmltablewin.cpp|infobarex.cpp|listctrlex.cpp|listctrlexdataprovider.cpp|searchpanel.cpp|warningmanager.cpp|screenshot.cpp|resource_manager.cpp|idhelpers.cpp|mainframe.cpp|warningmessagesdlg.cpp|variableselectdlg.cpp|startpage.cpp|htmltablepanel.cpp|htmltablewinprintout.cpp|listctrlitemviewdlg.cpp|listdlg.cpp|listctrlsortdlg.cpp|artmetro.cpp|filelistdlg.cpp|functionbrowserdlg.cpp|getdirdlg.cpp|gridexportdlg.cpp|archivedlg.cpp|edittextdlg.cpp|excelpreviewdlg.cpp|sidebar.cpp|sidebarbook.cpp|downloadfile.cpp|formattedtextctrl.cpp|gtktextview-helper.cpp|demo.cpp|main.cpp|i18n-check/samples|i18n-check/tests/|cpp_i18n_review.cpp|i18n_review.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|cxxopts)", files)]
 write_file(str_glue("# Automatically generated from 'Build CMake Files List.R'
 # DO NOT MODIFY MANUALLY!
 
@@ -29,7 +29,7 @@ SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
 ################################################
 files <- str_glue("src/{list.files(path=srcFolder, pattern='(*[.]cpp|cJSON[.]c)', recursive=TRUE)}")
 # remove test and sample files from submodules
-files <- files[!grepl("(demo.cpp|main.cpp|i18n-check/samples|i18n-check/tests/|cpp_i18n_review.cpp|i18n_review.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|cxxopts)", files)]
+files <- files[!grepl("(rc_file_review.cpp|gtktextview-helper.cpp|codeeditor.cpp|functionbrowserdlg.cpp|demo.cpp|main.cpp|i18n-check/samples|i18n-check/tests/|cpp_i18n_review.cpp|i18n_review.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|cxxopts)", files)]
 write_file(str_glue("# Automatically generated from 'Build CMake Files List.R'
 # DO NOT MODIFY MANUALLY!
 
