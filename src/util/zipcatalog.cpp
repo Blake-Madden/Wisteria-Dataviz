@@ -254,15 +254,16 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
         stream_out.Reset();
         return false;
         }
-    auto buf = std::make_unique<char[]>(bufferSize);
+    m_readBuffer.resize(bufferSize);
+    std::fill(m_readBuffer.begin(), m_readBuffer.end(), 0);
 
     for (;;)
         {
-        const size_t bytes_read = stream_in->Read(buf.get(), bufferSize).LastRead();
+        const size_t bytes_read = stream_in->Read(&m_readBuffer[0], bufferSize).LastRead();
         if (!bytes_read)
             break;
 
-        if (stream_out.Write(buf.get(), bytes_read).LastWrite() != bytes_read)
+        if (stream_out.Write(&m_readBuffer[0], bytes_read).LastWrite() != bytes_read)
             break;
         }
     if (stream_out.GetLength() == 0 && !m_readErrorShown)

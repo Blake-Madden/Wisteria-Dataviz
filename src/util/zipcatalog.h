@@ -141,6 +141,7 @@ namespace Wisteria
         wxZipInputStream* m_inzip{ nullptr };
         std::map<wxString, wxZipEntry*> m_catalog;
         MemoryMappedFile m_mapfile;
+        mutable std::vector<char> m_readBuffer;
         // bookkeeping
         mutable std::vector<ArchiveMessage> m_messages;
         mutable bool m_readErrorShown{ false };
