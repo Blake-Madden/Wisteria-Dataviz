@@ -52,7 +52,7 @@
 /// @private
 wxDECLARE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
-/// @private
+/// @brief Event sent when a list control is edited.
 #define EVT_LISTCTRLEX_EDITED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_LISTCTRLEX_EDITED, winid, wxCommandEventHandler(fn))
 
