@@ -12,34 +12,34 @@
 #ifndef __LISTCTRL_EX_H__
 #define __LISTCTRL_EX_H__
 
-#include <wx/wx.h>
-#include <wx/spinctrl.h>
-#include <wx/imaglist.h>
-#include <wx/image.h>
-#include <wx/dataobj.h>
+#include <wx/busyinfo.h>
 #include <wx/clipbrd.h>
-#include <wx/fdrepdlg.h>
+#include <wx/dataobj.h>
 #include <wx/dcbuffer.h>
 #include <wx/dnd.h>
+#include <wx/fdrepdlg.h>
 #include <wx/file.h>
-#include <wx/print.h>
 #include <wx/html/htmprint.h>
-#include <wx/tokenzr.h>
+#include <wx/image.h>
+#include <wx/imaglist.h>
 #include <wx/mimetype.h>
-#include <wx/busyinfo.h>
-#include <wx/xrc/xmlres.h>
 #include <wx/paper.h>
-#include <wx/wupdlock.h>
+#include <wx/print.h>
 #include <wx/ribbon/buttonbar.h>
+#include <wx/spinctrl.h>
+#include <wx/tokenzr.h>
+#include <wx/wupdlock.h>
+#include <wx/wx.h>
+#include <wx/xrc/xmlres.h>
 #ifdef __WXMSW__
     #include <commctrl.h>
 #endif
 #include "../../base/canvas.h"
 #include "../../math/mathematics.h"
 #include "../../i18n-check/src/donttranslate.h"
+#include "../../util/fileutil.h"
 #include "../dialogs/gridexportdlg.h"
 #include "../dialogs/listctrlitemviewdlg.h"
-#include "../../util/fileutil.h"
 #include "listctrlexdataprovider.h"
 
 #ifndef HDF_SORTUP
@@ -49,8 +49,10 @@
     #define HDF_SORTDOWN 0x200
 #endif
 
+/// @private
 wxDECLARE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
+/// @private
 #define EVT_LISTCTRLEX_EDITED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_LISTCTRLEX_EDITED, winid, wxCommandEventHandler(fn))
 

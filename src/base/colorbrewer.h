@@ -12,14 +12,14 @@
 #ifndef __WISTERIA_COLORBREWER_H__
 #define __WISTERIA_COLORBREWER_H__
 
-#include <wx/wx.h>
-#include <wx/gdicmn.h>
-#include <wx/dcgraph.h>
-#include <wx/string.h>
-#include <vector>
-#include <initializer_list>
-#include "colors.h"
 #include "../math/statistics.h"
+#include "colors.h"
+#include <initializer_list>
+#include <vector>
+#include <wx/dcgraph.h>
+#include <wx/gdicmn.h>
+#include <wx/string.h>
+#include <wx/wx.h>
 
 /// @brief Color management features (building, brewing, contrasting, etc.).
 /// @sa The [color management](../../Colors.md) overview for more information.
@@ -281,7 +281,7 @@ namespace Wisteria::Colors
                     (std::abs(color1.GetLuminance()-color2.GetLuminance())) <=
                      std::clamp(delta, math_constants::empty, math_constants::full));
             }
-        /// @brief Shades a color if close to another color (e.g., a background color).
+        /// @brief Shades or tints a color if close to another color (e.g., a background color).
         /// @param mainColor The color to shade (if necessary).
         /// @param secondaryColor The color to compare against.
         ///     If @c mainColor is close to this, then it will be shaded.
