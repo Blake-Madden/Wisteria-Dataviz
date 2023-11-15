@@ -12,16 +12,16 @@
 #ifndef __WXZIPHELPER_H__
 #define __WXZIPHELPER_H__
 
-#include <wx/zipstrm.h>
-#include <wx/zstream.h>
-#include <wx/mstream.h>
+#include "textstream.h"
+#include <map>
+#include <vector>
 #include <wx/bitmap.h>
 #include <wx/image.h>
+#include <wx/mstream.h>
 #include <wx/stdpaths.h>
 #include <wx/wfstream.h>
-#include <vector>
-#include <map>
-#include "textstream.h"
+#include <wx/zipstrm.h>
+#include <wx/zstream.h>
 
 namespace Wisteria
     {
@@ -56,11 +56,7 @@ namespace Wisteria
         /// @private
         ZipCatalog(const ZipCatalog&) = delete;
         /// @private
-        ZipCatalog(ZipCatalog&&) = delete;
-        /// @private
         ZipCatalog& operator=(const ZipCatalog&) = delete;
-        /// @private
-        ZipCatalog& operator=(ZipCatalog&&) = delete;
         /// @private
         ~ZipCatalog();
 
@@ -96,7 +92,7 @@ namespace Wisteria
         /** @brief Reads a file in the ZIP file and returns its content in a `char*` memory stream.
             @param path The path to the file (relative to its location in the ZIP folder structure).
             @param memstream The memory stream (which will be a `char*` buffer) to write to.
-            @returns True if successfully read the file.*/
+            @returns @c true if successfully read the file.*/
         bool ReadFile(const wxString& path, wxOutputStream& memstream) const;
         /** @brief Reads an image from the ZIP file.
             @param path The path to the image (relative to its location in the ZIP folder structure).

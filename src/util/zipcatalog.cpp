@@ -11,13 +11,11 @@
 using namespace Wisteria;
 
 //------------------------------------------------
-ZipCatalog::ZipCatalog(const void* data, size_t len) :
-    m_inzip(nullptr), m_readErrorShown(false)
+ZipCatalog::ZipCatalog(const void* data, size_t len)
     { Init(data,len); }
 
 //------------------------------------------------
-ZipCatalog::ZipCatalog(const wxString& zipFilePath) :
-    m_inzip(nullptr), m_readErrorShown(false)
+ZipCatalog::ZipCatalog(const wxString& zipFilePath)
     {
     try
         {
