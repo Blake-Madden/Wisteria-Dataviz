@@ -36,6 +36,7 @@ SET(LIB_SRC_FILES
     ../src/import/docx_extract_text.cpp
     ../src/import/html_extract_text.cpp
     ../src/import/odt_odp_extract_text.cpp
+    ../src/import/markdown_extract_text.cpp
     ../src/import/postscript_extract_text.cpp
     ../src/import/xlsx_extract_text.cpp
     ../src/import/rtf_extract_text.cpp)

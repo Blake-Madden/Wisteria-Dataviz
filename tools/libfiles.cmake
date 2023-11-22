@@ -53,6 +53,7 @@ SET(WISTERIA_SRC
     src/graphs/wordcloud.cpp
     src/i18n-check/src/i18n_string_util.cpp
     src/import/html_extract_text.cpp
+    src/import/markdown_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/imageexportdlg.cpp

@@ -18,56 +18,14 @@
 namespace lily_of_the_valley
     {
     /// @brief Extracts plain text from a Markdown file.
-    /// @warning This is in alpha state. Do not use in productino.
     class markdown_extract_text final : public html_extract_text
         {
     public:
         /** @brief Main interface for extracting plain text from a Markdown file.
             @param md_text The markdown text to parse.
-            @param text_length The length of the text.
             @returns The parsed text from the Markdown stream.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* md_text,
-                                  const size_t text_length)
-            {
-            clear_log();
-            if (md_text == nullptr || md_text[0] == 0 || text_length == 0)
-                {
-                set_filtered_text_length(0);
-                return nullptr;
-                }
-
-            if (!allocate_text_buffer(text_length))
-                {
-                set_filtered_text_length(0);
-                return nullptr;
-                }
-
-            // find the start of the text body and set up where we halt our searching
-            const wchar_t* const endSentinel = md_text+text_length;
-            if (is_metadata_section(md_text))
-                { md_text = find_metadata_section_end(md_text); }
-            while (md_text < endSentinel && md_text[0] != 0 && std::iswspace(md_text[0]))
-                { ++md_text; }
-            // in case metadata section ate up the whole file
-            // (or at least the part of the file requested to be reviewed)
-            if (md_text >= endSentinel)
-                { return endSentinel; }
-            const wchar_t* start = md_text;
-            const wchar_t* end = md_text;
-
-            while (end != nullptr  && end[0] != 0 && (end < endSentinel))
-                { ++end; }
-            // pick up any remaining text at the end of the text stream..
-            if (end != nullptr && end[0] == 0)
-                { add_characters(start, end-start); }
-            // ...or if end is beyond where we should go in the buffer,
-            // copy up to the end of the buffer
-            else if (end >= endSentinel)
-                { add_characters(start, endSentinel-start); }
-
-            return get_filtered_text();
-            }
+        const wchar_t* operator()(const std::wstring_view md_text);
 #ifndef __UNITTEST
     private:
 #endif
@@ -129,6 +87,8 @@ namespace lily_of_the_valley
               followed by colon.*/
         std::wregex m_metadataSectionStart
             { LR"(^(%[[:space:]]+|---|[[:alpha:]]+([[:space:]]{1}[[:alpha:]]+)?[:]).*$)" };
+
+        std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
         };
     }
 
