@@ -51,7 +51,7 @@ namespace lily_of_the_valley
             @returns The start of the document's body.
             @sa is_metadata_section().*/
         [[nodiscard]]
-        const wchar_t* find_metadata_section_end(const wchar_t* md_text) const noexcept
+        static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept
             {
             if (!md_text)
                 { return nullptr; }

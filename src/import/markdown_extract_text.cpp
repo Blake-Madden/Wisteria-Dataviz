@@ -189,6 +189,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             }
                         start = ++endOfTag;
                         }
+                    continue;
                     }
                 else if (std::wcsncmp(start, L"`r drop_cap(", 11) == 0)
                     {
@@ -224,6 +225,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             }
                         start = ++endOfTag;
                         }
+                    continue;
                     }
                 else if (std::wcsncmp(start, L"`r menu(", 8) == 0)
                     {
@@ -234,7 +236,6 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         { start += 2; }
                     if (*start == L'\'' || *start == L'"')
                         {
-                        const auto quoteChar{ *start };
                         auto endOfTag = std::wcsstr(start, L")`");
                         if (endOfTag == nullptr)
                             {
@@ -252,6 +253,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             }
                         start = endOfTag + 2;
                         }
+                    continue;
                     }
                 // read content as-is otherwise
                 else
@@ -338,8 +340,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     }
                 else
                     {
-                    auto labelStart{ ++start };
-                    auto endOfTag =
+                     auto endOfTag =
                         string_util::find_unescaped_matching_close_tag(start, L'{', L'}');
                     if (endOfTag == nullptr)
                         {
@@ -377,8 +378,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 // skip that, switch to header mode, and keep reading
                 // any more newlines
                 if (start + 1 < endSentinel &&
-                    (start[0] == L'=' && start[1] == L'=') ||
-                    (start[0] == L'-' && start[1] == L'-'))
+                    ((start[0] == L'=' && start[1] == L'=') ||
+                    (start[0] == L'-' && start[1] == L'-')) )
                     {
                     while ((*start == L'=' || *start == L'-') &&
                         (start < endSentinel))
@@ -458,14 +459,17 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         // newline hacks found in tables (just replace with space to keep the table structure).
-        else if (std::wcsncmp(start, L"<br>\\linebreak", 14) == 0)
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<br>\\linebreak", 14) == 0)
             {
             start += 14;
             previousChar = L' ';
             add_character(L' ');
+            continue;
             }
         // RMarkdown (Pandoc) comment
-        else if (std::wcsncmp(start, L"<!--", 4) == 0)
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<!--", 4) == 0)
             {
             const auto endOfTag = std::wcsstr(start, L"-->");
             if (endOfTag == nullptr)
@@ -474,6 +478,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 break;
                 }
             start = endOfTag + 3;
+            continue;
             }
         // turn off escaping and load the character
         isEscaping = false;
