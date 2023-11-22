@@ -1040,7 +1040,10 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
         SelectFolder(folderIndex.value(), setFocus, sendEvent);
         return true;
         }
-    const auto previouslySelectedFolder = m_selectedFolder.value_or(folderIndex.value());
+    const auto previouslySelectedFolder =
+        (m_selectedFolder.has_value() && m_selectedFolder.value() < m_folders.size()) ?
+            m_selectedFolder.value_or(folderIndex.value()) :
+            folderIndex.value();
     const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
         std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
         std::nullopt;
@@ -1103,7 +1106,9 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
         SelectFolder(item, setFocus, sendEvent);
         return true;
         }
-    const auto previouslySelectedFolder = m_selectedFolder.value_or(item);
+    const auto previouslySelectedFolder =
+        (m_selectedFolder.has_value() && m_selectedFolder.value() < m_folders.size()) ?
+            m_selectedFolder.value_or(item) : item;
     const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
         std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
         std::nullopt;
