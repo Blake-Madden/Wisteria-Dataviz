@@ -490,10 +490,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         isEscaping = false;
         if (start < endSentinel)
             {
-        previousChar = *start;
-        add_character(*start);
-        ++start;
-        }
+            previousChar = *start;
+            add_character(*start);
+            ++start;
+            }
         else
             { break; }
         }

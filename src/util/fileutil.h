@@ -22,6 +22,7 @@
 #include <wx/progdlg.h>
 #include <wx/arrstr.h>
 #include <wx/tokenzr.h>
+#include <map>
 #include <memory>
 #include <string>
 #include <initializer_list>
@@ -29,6 +30,7 @@
     #include <windows.h>
     #include <shlobj.h>
 #endif
+#include "../data/dataset.h"
 #include "../i18n-check/src/string_util.h"
 #include "../i18n-check/src/donttranslate.h"
 
@@ -205,9 +207,11 @@ int CompareFilePaths(const wxString& file1, const wxString& file2);
 int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs);
 /** @brief Filters an array of file paths to only include files with
         extensions from a file filter.
-    @param[out] files The file array to filter.
-    @param fileExtensions The file filter to filter with.*/
-void FilterFiles(wxArrayString& files, const wxString& fileExtensions);
+    @param files The file array to filter.
+    @param fileExtensions The file filter to filter with.
+    @returns The files that match the extension patterns.*/
+[[nodiscard]]
+wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtensions);
 /** @returns An array of strings as a folder structure.
     @param dirs The folder names to combine.*/
 [[nodiscard]]

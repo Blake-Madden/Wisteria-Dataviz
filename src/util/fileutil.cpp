@@ -478,43 +478,28 @@ wxString JoinWebDirs(const wxArrayString& dirs)
     }
 
 //------------------------------------------------------------------
-void FilterFiles(wxArrayString& files, const wxString& fileExtensions)
+wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtensions)
     {
     // if using "all files" wildcard then don't bother filtering
     if (fileExtensions.Cmp(wxFileSelectorDefaultWildcardStr) == 0)
-        { return; }
-    wxArrayString validExtensions;
+        { files; }
+    wxArrayString matchedFiles;
+    matchedFiles.reserve(files.size());
+    std::set<wxString, Wisteria::Data::wxStringLessNoCase> validExtensions;
     wxStringTokenizer tkz(fileExtensions, L"*.;");
     wxString nextFileExt;
     while ( tkz.HasMoreTokens() )
         {
         nextFileExt = tkz.GetNextToken();
         if (!nextFileExt.empty())
-            { validExtensions.Add(L"." + nextFileExt); }
+            { validExtensions.insert(nextFileExt); }
         }
-    wxString currentExtension;
-    if (files.GetCount() > 0)
+    for (const auto& file : files)
         {
-        for (size_t i = 0; i < files.GetCount(); /*handled in loop*/)
-            {
-            size_t j;
-            for (j = 0; j < validExtensions.GetCount(); ++j)
-                {
-                if (files[i].length() < validExtensions[j].length())
-                    { continue; }
-                currentExtension = files[i].Right(validExtensions[j].length());
-                // if it matches an extension then stop
-                if (currentExtension.CmpNoCase(validExtensions[j]) == 0)
-                    { break; }
-                }
-            // if we looped through all of the extensions and none matches
-            // against the file then remove it
-            if (j == validExtensions.Count() )
-                { files.RemoveAt(i); }
-            else
-                { ++i; }
-            }
+        if (validExtensions.find(wxFileName(file).GetExt()) != validExtensions.cend())
+            { matchedFiles.push_back(file); }
         }
+    return matchedFiles;
     }
 
 //------------------------------------------------------------------
