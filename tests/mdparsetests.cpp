@@ -160,4 +160,11 @@ TEST_CASE("Markdown Parser", "[md import]")
         CHECK(std::wstring{ md({ L"| Syntax | Description |\n| --- | ----------- |\n| Header | Title |" }) } ==
               std::wstring{ L"\t Syntax \t Description \t\n\t --- \t ----------- \t\n\t Header \t Title \t" });
         }
+
+    SECTION("Superscript")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"5^th^ edition \\^5" }) } ==
+              std::wstring{ L"5th edition ^5" });
+        }
     }

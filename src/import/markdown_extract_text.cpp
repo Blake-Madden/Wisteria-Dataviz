@@ -352,6 +352,12 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 continue;
                 }
             }
+        // superscript (just read as-is)
+        else if (*start == L'^')
+            {
+            if (!isEscaping)
+                { ++start; }
+            }
         // newlines
         else if (*start == L'\n' || *start == L'\r')
             {
