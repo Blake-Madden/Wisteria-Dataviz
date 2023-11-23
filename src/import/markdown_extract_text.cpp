@@ -341,7 +341,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 else
                     {
                      auto endOfTag =
-                        string_util::find_unescaped_matching_close_tag(start, L'{', L'}');
+                        string_util::find_unescaped_matching_close_tag(++start, L'{', L'}');
                     if (endOfTag == nullptr)
                         {
                         log_message(L"Bad ID command in markdown file.");
