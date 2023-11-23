@@ -488,9 +488,14 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             }
         // turn off escaping and load the character
         isEscaping = false;
+        if (start < endSentinel)
+            {
         previousChar = *start;
         add_character(*start);
         ++start;
+        }
+        else
+            { break; }
         }
 
     return get_filtered_text();
