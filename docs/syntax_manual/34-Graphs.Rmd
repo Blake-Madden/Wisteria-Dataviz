@@ -765,7 +765,7 @@ Properties for `"sankey-diagram"` nodes:
   - `"to"`: The column containing the right-side groups that the left-side groups flow into.
   - `"from-weight"`: The (optional) column containing the multiplier value for the "from" column.
   - `"to-weight"`: The (optional) column containing the multiplier value for the "to" column.
-  - `"from-group"`: The (optional) column used to categorize the groups in the from column.
+  - `"from-group"`: The (optional) column used to categorize the groups in the "from" column.
 - `"brush-scheme"`: For graphs that support brush schemes only. \
      Contains the following properties:
      `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).

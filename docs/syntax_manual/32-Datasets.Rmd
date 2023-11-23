@@ -241,7 +241,7 @@ contain the following properties:
   - `"left-column"`: The column from the current dataset.
   - `"right-column"`: The column from the other dataset.
 - `"suffix"`: If columns in the right dataset already appear in the left dataset, then append this suffix to
-  to column to make it unique.
+  the column to make it unique.
   
 ::: {.notesection data-latex=""}
 Merge nodes can contain their own transformation and formula sections, same as a dataset node.
