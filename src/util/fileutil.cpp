@@ -482,7 +482,7 @@ wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtens
     {
     // if using "all files" wildcard then don't bother filtering
     if (fileExtensions.Cmp(wxFileSelectorDefaultWildcardStr) == 0)
-        { files; }
+        { return files; }
     wxArrayString matchedFiles;
     matchedFiles.reserve(files.size());
     std::set<wxString, Wisteria::Data::wxStringLessNoCase> validExtensions;
