@@ -27,8 +27,6 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     // (or at least the part of the file requested to be reviewed)
     if (start >= endSentinel)
         { return endSentinel; }
-    while (start < endSentinel && *start != 0 && std::iswspace(*start))
-        { ++start; }
 
     bool isEscaping{ false };
     bool headerMode{ false };
