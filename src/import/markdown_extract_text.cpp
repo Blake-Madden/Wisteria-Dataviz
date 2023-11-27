@@ -407,8 +407,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 ++scanAhead;
                 ++leadingScaces;
                 }
+            if (newlineCount == 1 && headerMode)
+                {
+                add_characters(L"\n\n");
+                previousChar = L'\n';
+                }
             // next line starts a list item, quoteblock, table, etc., so keep the newline as-is
-            if (newlineCount == 1 &&
+            else if (newlineCount == 1 &&
                 (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingScaces >= 4))
                 {
                 add_character(L'\n', newlineCount);
@@ -437,15 +442,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 }
             // a single newline not a end of a self-contained line
             // (e.g., a header) is seen as a space
-            else if (newlineCount == 1 && !headerMode)
+            else if (newlineCount == 1)
                 {
                 add_character(L' ');
                 previousChar = L' ';
-                }
-            else if (newlineCount == 1 && headerMode)
-                {
-                add_characters(L"\n\n");
-                previousChar = L'\n';
                 }
             else
                 {
@@ -480,6 +480,15 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             start += 14;
             previousChar = L' ';
             add_character(L' ');
+            continue;
+            }
+        // HTML newline
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<br>", 4) == 0)
+            {
+            start += 4;
+            previousChar = L'\n';
+            add_characters(L"\n\n");
             continue;
             }
         // RMarkdown (Pandoc) comment
