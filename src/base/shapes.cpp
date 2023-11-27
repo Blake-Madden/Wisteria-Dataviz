@@ -202,6 +202,7 @@ namespace Wisteria::GraphItems
                 { IconShape::Car, &ShapeRenderer::DrawCar },
                 { IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
                 { IconShape::Clock, &ShapeRenderer::DrawClock },
+                { IconShape::Ruler, &ShapeRenderer::DrawRuler }
             };
 
         // connect the rendering function to the shape
@@ -374,38 +375,94 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawBoxPlot(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawBoxPlot(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        wxPen scaledPen = GetGraphItemInfo().GetPen().IsOk() ?
+            GetGraphItemInfo().GetPen() : *wxBLACK_PEN;
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         DCPenChangerIfDifferent pc(dc, scaledPen);
 
+        wxRect drawRect{ rect };
+
         // whisker
-        dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
-                            rect.GetTop()),
-                    wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
-                            rect.GetBottom()));
-        dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2) -
-                                rect.GetWidth()/4,
-                            rect.GetTop()),
-                    wxPoint(rect.GetLeft()+(rect.GetWidth()/2) +
-                                rect.GetWidth()/4,
-                            rect.GetTop()));
-        dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2) -
-                                rect.GetWidth()/4,
-                            rect.GetBottom()),
-                    wxPoint(rect.GetLeft()+(rect.GetWidth()/2) +
-                                rect.GetWidth()/4,
-                            rect.GetBottom()));
-        rect.y += (rect.GetHeight()/2) - (rect.GetHeight()/4); // center
-        rect.SetHeight(rect.GetHeight()/2);
-        DrawWithBaseColorAndBrush(dc, [&](){ dc.DrawRectangle(rect); });
+        dc.DrawLine(wxPoint(drawRect.GetLeft()+(drawRect.GetWidth()/2),
+                            drawRect.GetTop()),
+                    wxPoint(drawRect.GetLeft()+(drawRect.GetWidth()/2),
+                            drawRect.GetBottom()));
+        dc.DrawLine(wxPoint(drawRect.GetLeft()+(drawRect.GetWidth()/2) -
+                                drawRect.GetWidth()/4,
+                            drawRect.GetTop()),
+                    wxPoint(drawRect.GetLeft()+(drawRect.GetWidth()/2) +
+                                drawRect.GetWidth()/4,
+                            drawRect.GetTop()));
+        dc.DrawLine(wxPoint(drawRect.GetLeft()+(drawRect.GetWidth()/2) -
+                                drawRect.GetWidth()/4,
+                            drawRect.GetBottom()),
+                    wxPoint(drawRect.GetLeft()+(drawRect.GetWidth()/2) +
+                                drawRect.GetWidth()/4,
+                            drawRect.GetBottom()));
+        drawRect.y += (drawRect.GetHeight()/2) - (drawRect.GetHeight()/4); // center
+        drawRect.SetHeight(drawRect.GetHeight()/2);
+        DrawWithBaseColorAndBrush(dc, [&](){ dc.DrawRectangle(drawRect); });
         // median line
-        dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() +
-                            (rect.GetHeight()/2)),
-                    wxPoint(rect.GetRight(), rect.GetTop() +
-                            (rect.GetHeight()/2)));
+        dc.DrawLine(wxPoint(drawRect.GetLeft(), drawRect.GetTop() +
+                            (drawRect.GetHeight()/2)),
+                    wxPoint(drawRect.GetRight(), drawRect.GetTop() +
+                            (drawRect.GetHeight()/2)));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawRuler(const wxRect rect, wxDC& dc) const
+        {
+        wxPen scaledPen
+            {
+            *wxBLACK,
+            static_cast<int>(ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? .5 : 1.0))
+            };
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(
+            GetGraphItemInfo().GetPen().IsOk() ?
+                ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                0);
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedWidth{ drawRect.GetWidth() * 0.4 };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
+            }
+        // add padding
+            {
+            const auto adjustedWidth{ drawRect.GetWidth() * 0.8 };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
+            }
+
+        dc.GradientFillLinear(drawRect,
+            Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
+            ColorContrast::Shade(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow), .75),
+            wxWEST);
+        wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+        dc.DrawRectangle(drawRect);
+
+        int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
+        int currentLine{ 0 };
+        while (currentY < drawRect.GetBottom())
+            {
+            dc.DrawLine(
+                { drawRect.GetLeft() +
+                    static_cast<int>(drawRect.GetWidth() *
+                        ((currentLine % 4 == 0) ? math_constants::half : math_constants::three_fourths)),
+                  currentY},
+                { drawRect.GetRight(), currentY });
+            currentY += ScaleToScreenAndCanvas(2);
+            ++currentLine;
+            }
         }
 
     //---------------------------------------------------
@@ -904,7 +961,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawImage(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawImage(const wxRect rect, wxDC& dc) const
         {
         if (m_iconImage && m_iconImage->IsOk())
             {
@@ -1428,7 +1485,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawUpwardTriangle(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawUpwardTriangle(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -1449,7 +1506,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawDownwardTriangle(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawDownwardTriangle(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -1471,7 +1528,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawRightTriangle(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawRightTriangle(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -1493,7 +1550,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawLeftTriangle(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawLeftTriangle(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -1515,7 +1572,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawClock(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawClock(const wxRect rect, wxDC& dc) const
         {
         wxRect dcRect{ rect };
         dcRect.Deflate(ScaleToScreenAndCanvas(2));
@@ -1547,7 +1604,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawAsterisk(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
@@ -1604,7 +1661,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawPlus(wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawPlus(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -2410,18 +2467,18 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        wxRect dcRect(rect);
-        dcRect.Deflate(
+        wxRect drawRect{ rect };
+        drawRect.Deflate(
             GetGraphItemInfo().GetPen().IsOk() ?
                 ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                 0);
         // adjust to center it horizontally inside of square area
         if (rect.GetWidth() == rect.GetHeight())
             {
-            const auto adjustedWidth{ dcRect.GetWidth() * .6 };
-            const auto adjustLeft{ (dcRect.GetWidth() - adjustedWidth) * math_constants::half };
-            dcRect.SetWidth(adjustedWidth);
-            dcRect.Offset(wxPoint(adjustLeft, 0));
+            const auto adjustedWidth{ drawRect.GetWidth() * .6 };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
             }
 
         GraphicsContextFallback gcf{ &dc, rect };
@@ -2440,14 +2497,14 @@ namespace Wisteria::GraphItems
 
             auto outlinePath = gc->CreatePath();
             // draw the head
-            wxRect headRect{ dcRect };
+            wxRect headRect{ drawRect };
             headRect.SetHeight(headRect.GetHeight() * .15);
             const auto headMiddle{ GetMidPoint(headRect) };
             outlinePath.AddCircle(headMiddle.x, headMiddle.y, GetRadius(headRect));
 
             // move to the middle of the shoulders
-            wxRect bodyRect{ dcRect };
-            const auto neckHeight{ (dcRect.GetHeight() * 0.025) };
+            wxRect bodyRect{ drawRect };
+            const auto neckHeight{ (drawRect.GetHeight() * 0.025) };
             bodyRect.SetHeight(bodyRect.GetHeight() - headRect.GetHeight() - neckHeight);
             bodyRect.SetTop(headRect.GetBottom() + neckHeight);
             outlinePath.MoveToPoint(wxPoint(GetXPosFromLeft(bodyRect, math_constants::half),
@@ -2564,18 +2621,18 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        wxRect dcRect(rect);
-        dcRect.Deflate(
+        wxRect drawRect{ rect };
+        drawRect.Deflate(
             GetGraphItemInfo().GetPen().IsOk() ?
             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
             0);
         // adjust to center it horizontally inside of square area
         if (rect.GetWidth() == rect.GetHeight())
             {
-            const auto adjustedWidth{ dcRect.GetWidth() * .6 };
-            const auto adjustLeft{ (dcRect.GetWidth() - adjustedWidth) * math_constants::half };
-            dcRect.SetWidth(adjustedWidth);
-            dcRect.Offset(wxPoint(adjustLeft, 0));
+            const auto adjustedWidth{ drawRect.GetWidth() * .6 };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
             }
 
         GraphicsContextFallback gcf{ &dc, rect };
@@ -2594,14 +2651,14 @@ namespace Wisteria::GraphItems
 
             auto outlinePath = gc->CreatePath();
             // draw the head
-            wxRect headRect{ dcRect };
+            wxRect headRect{ drawRect };
             headRect.SetHeight(headRect.GetHeight() * .15);
             const auto headMiddle{ GetMidPoint(headRect) };
             outlinePath.AddCircle(headMiddle.x, headMiddle.y, GetRadius(headRect));
 
             // move to the middle of the shoulders
-            wxRect bodyRect{ dcRect };
-            const auto neckHeight{ (dcRect.GetHeight() * 0.025) };
+            wxRect bodyRect{ drawRect };
+            const auto neckHeight{ (drawRect.GetHeight() * 0.025) };
             bodyRect.SetHeight(bodyRect.GetHeight() - headRect.GetHeight() - neckHeight);
             bodyRect.SetTop(headRect.GetBottom() + neckHeight);
             outlinePath.MoveToPoint(wxPoint(GetXPosFromLeft(bodyRect, math_constants::half),

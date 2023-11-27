@@ -1012,6 +1012,8 @@ namespace Wisteria::Graphs
                                 GetStippleShape() == Icons::IconShape::Woman ||
                                 GetStippleShape() == Icons::IconShape::Man)
                                 { shapeWidth *= 0.6; }
+                            else if (GetStippleShape() == Icons::IconShape::Ruler)
+                                { shapeWidth *= 0.4; }
                             // likewise, handle icons that are wider than others
                             if (GetStippleShape() == Icons::IconShape::Car ||
                                 GetStippleShape() == Icons::IconShape::Blackboard)

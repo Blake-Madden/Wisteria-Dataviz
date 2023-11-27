@@ -176,92 +176,92 @@ namespace Wisteria::GraphItems
         /// @brief Draws a box plot.
         /// @param rect The area to draw the box plot within.
         /// @param dc The DC to draw to.
-        void DrawBoxPlot(wxRect rect, wxDC& dc) const;
+        void DrawBoxPlot(const wxRect rect, wxDC& dc) const;
         /// @brief Draws an asterisk.
         /// @param rect The area to draw the asterisk within.
         /// @param dc The DC to draw to.
-        void DrawAsterisk(wxRect rect, wxDC& dc) const;
+        void DrawAsterisk(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a plus sign.
         /// @param rect The area to draw the plus within.
         /// @param dc The DC to draw to.
-        void DrawPlus(wxRect rect, wxDC& dc) const;
+        void DrawPlus(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a diamond.
         /// @param rect The area to draw the diamond within.
         /// @param dc The DC to draw to.
-        void DrawDiamond(wxRect rect, wxDC& dc) const;
+        void DrawDiamond(const wxRect rect, wxDC& dc) const;
         /// @brief Draws an upward triangle.
         /// @param rect The area to draw the triangle within.
         /// @param dc The DC to draw to.
-        void DrawUpwardTriangle(wxRect rect, wxDC& dc) const;
+        void DrawUpwardTriangle(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a downward triangle.
         /// @param rect The area to draw the triangle within.
         /// @param dc The DC to draw to.
-        void DrawDownwardTriangle(wxRect rect, wxDC& dc) const;
+        void DrawDownwardTriangle(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a right triangle.
         /// @param rect The area to draw the triangle within.
         /// @param dc The DC to draw to.
-        void DrawRightTriangle(wxRect rect, wxDC& dc) const;
+        void DrawRightTriangle(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a left triangle.
         /// @param rect The area to draw the triangle within.
         /// @param dc The DC to draw to.
-        void DrawLeftTriangle(wxRect rect, wxDC& dc) const;
+        void DrawLeftTriangle(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a hexagon.
         /// @param rect The area to draw the hexagon within.
         /// @param dc The DC to draw to.
-        void DrawHexagon(wxRect rect, wxDC& dc) const;
+        void DrawHexagon(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a right-pointing arrow.
         /// @param rect The area to draw the arrow within.
         /// @param dc The DC to draw to.
-        void DrawRightArrow(wxRect rect, wxDC& dc) const;
+        void DrawRightArrow(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a banner sign.
         /// @param rect The area to draw the sign within.
         /// @param dc The DC to draw to.
-        void DrawBanner(wxRect rect, wxDC& dc) const;
+        void DrawBanner(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a warning road sign.
         /// @param rect The area to draw the sign within.
         /// @param dc The DC to draw to.
-        void DrawWarningRoadSign(wxRect rect, wxDC& dc) const;
+        void DrawWarningRoadSign(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a "Go" road sign.
         /// @param rect The area to draw the sign within.
         /// @param dc The DC to draw to.
-        void DrawGoSign(wxRect rect, wxDC& dc) const;
+        void DrawGoSign(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a geo marker.
         /// @param rect The area to draw the marker within.
         /// @param dc The DC to draw to.
-        void DrawGeoMarker(wxRect rect, wxDC& dc) const;
+        void DrawGeoMarker(const wxRect rect, wxDC& dc) const;
         /// @brief Draws an image.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawImage(wxRect rect, wxDC& dc) const;
+        void DrawImage(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a male outline.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawMan(wxRect rect, wxDC& dc) const;
+        void DrawMan(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a female outline.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawWoman(wxRect rect, wxDC& dc) const;
+        void DrawWoman(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a female outline (business skirt).
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawBusinessWoman(wxRect rect, wxDC& dc) const;
+        void DrawBusinessWoman(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a downward-pointing chevron.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawChevronDownward(wxRect rect, wxDC& dc) const;
+        void DrawChevronDownward(const wxRect rect, wxDC& dc) const;
         /// @brief Draws an upward-pointing chevron.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawChevronUpward(wxRect rect, wxDC& dc) const;
+        void DrawChevronUpward(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a string.
         /// @note The pen color of the shape controls the font's color.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawText(wxRect rect, wxDC& dc) const;
+        void DrawText(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a tack.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawTack(wxRect rect, wxDC& dc) const;
+        void DrawTack(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a rectangle that looks like it was painted with watercolor.
         /// @param rect The area to draw within.
         /// @param dc The DC to draw to.
@@ -269,7 +269,7 @@ namespace Wisteria::GraphItems
         ///     as that is the aesthetic that we are going for.\n
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
-        void DrawWaterColorRectangle(wxRect rect, wxDC& dc) const;
+        void DrawWaterColorRectangle(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a rectangle that looks like it was painted with watercolor,
         ///     painted with a second coat.
         /// @param rect The area to draw within.
@@ -278,39 +278,43 @@ namespace Wisteria::GraphItems
         ///     as that is the aesthetic that we are going for.\n
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
-        void DrawThickWaterColorRectangle(wxRect rect, wxDC& dc) const;
+        void DrawThickWaterColorRectangle(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a graduation cap with tassel.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawGraduationCap(wxRect rect, wxDC& dc) const;
+        void DrawGraduationCap(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a book.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawBook(wxRect rect, wxDC& dc) const;
+        void DrawBook(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a car tire.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawTire(wxRect rect, wxDC& dc) const;
+        void DrawTire(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a snowflake.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawSnowflake(wxRect rect, wxDC& dc) const;
+        void DrawSnowflake(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a newspaper.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawNewspaper(wxRect rect, wxDC& dc) const;
+        void DrawNewspaper(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a car.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawCar(wxRect rect, wxDC& dc) const;
+        void DrawCar(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a blackboard.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawBlackboard(wxRect rect, wxDC& dc) const;
+        void DrawBlackboard(const wxRect rect, wxDC& dc) const;
         /// @brief Draws a clock.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawClock(wxRect rect, wxDC& dc) const;
+        void DrawClock(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a measuring ruler.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawRuler(const wxRect rect, wxDC& dc) const;
         /// @}
     private:
         void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
