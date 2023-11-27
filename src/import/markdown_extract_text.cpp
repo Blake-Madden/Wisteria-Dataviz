@@ -28,6 +28,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     if (start >= endSentinel)
         { return endSentinel; }
 
+    const std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
+
     bool isEscaping{ false };
     bool headerMode{ false };
     wchar_t previousChar{ L'\n' };
@@ -152,7 +154,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             // verbatim (inline) code
             else if (!isEscaping)
                 {
-                // R code should be fully removed (or processed for known functions)
+                // RMarkdown code should left as-is, but with the 'r' prefix removed
+                // (or processed for known functions)
                 if (std::wcsncmp(start, L"`r keys(", 8) == 0)
                     {
                     start += 8;
@@ -253,6 +256,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         }
                     continue;
                     }
+                else if (std::wcsncmp(start, L"`r ", 3) == 0)
+                    { start += 3; }
+                else if (std::wcsncmp(start, L"`python ", 8) == 0)
+                    { start += 8; }
                 // read content as-is otherwise
                 else
                     { ++start; }
@@ -331,9 +338,9 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             if (!isEscaping)
                 {
                 // if quarto syntax
-                if (std::wcsncmp(start, L"{{< pagebreak >}}", 17) == 0)
+                if (std::wcsncmp(start, QUARTO_PAGEBREAK.data(), QUARTO_PAGEBREAK.length()) == 0)
                     {
-                    start += 17;
+                    start += QUARTO_PAGEBREAK.length();
                     add_characters(L"\n\n");
                     }
                 else
