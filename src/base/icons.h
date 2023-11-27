@@ -93,7 +93,7 @@ namespace Wisteria::Icons
         Car,                           /*!< A car (specifically, a 2006 Scion xB).*/
         Blackboard,                    /*!< A school blackboard.*/
         Clock,                         /*!< An analog, 12-hour clock.*/
-        Ruler                          /*!< A measurment ruler.*/
+        Ruler                          /*!< A measurement ruler.*/
         };
 
     /// @brief Item to draw on a legend.
