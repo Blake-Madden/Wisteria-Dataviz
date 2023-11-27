@@ -98,6 +98,9 @@ TEST_CASE("Markdown Parser", "[md import]")
         // with header
         CHECK(std::wstring{ md({ L"> # This is a quote header\n\n>\n\n>> End of Quote" }) } ==
             std::wstring{ L"\tThis is a quote header\n\n\t\n\n\t\tEnd of Quote" });
+        // indented
+        CHECK(std::wstring{ md({ L"    This is a quote\n    End of Quote" }) } ==
+            std::wstring{ L"    This is a quote\n    End of Quote" });
         }
 
     SECTION("Inline code")
@@ -105,6 +108,8 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"This `is code`." }) } ==
               std::wstring{ L"This is code." });
+        CHECK(std::wstring{ md({ L"Code `r 2+2`." }) } ==
+              std::wstring{ L"Code 2+2." });
         }
 
     SECTION("Images")
@@ -159,6 +164,8 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"| Syntax | Description |\n| --- | ----------- |\n| Header | Title |" }) } ==
               std::wstring{ L"\t Syntax \t Description \t\n\t --- \t ----------- \t\n\t Header \t Title \t" });
+        CHECK(std::wstring{ md({ L"| Syntax | Description |\n| :-- | ----------: |\n| Header | Title |" }) } ==
+              std::wstring{ L"\t Syntax \t Description \t\n\t :-- \t ----------: \t\n\t Header \t Title \t" });
         }
 
     SECTION("Superscript")

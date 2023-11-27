@@ -400,12 +400,16 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 }
 
             auto scanAhead{ start };
+            size_t leadingScaces{ 0 };
             while ((scanAhead < endSentinel) &&
                 (*scanAhead == L' ' || *scanAhead == L'\t'))
-                { ++scanAhead; }
+                {
+                ++scanAhead;
+                ++leadingScaces;
+                }
             // next line starts a list item, quoteblock, table, etc., so keep the newline as-is
             if (newlineCount == 1 &&
-                string_util::is_one_of(*scanAhead, L">-*+|:^"))
+                (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingScaces >= 4))
                 {
                 add_character(L'\n', newlineCount);
                 previousChar = L'\n';
