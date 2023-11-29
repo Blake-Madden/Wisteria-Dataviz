@@ -135,6 +135,62 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 continue;
                 }
             }
+        // block quotes
+        else if (*start == L'&')
+            {
+            if (!isEscaping)
+                {
+                if (std::wcsncmp(start, L"&amp;", 5) == 0)
+                    {
+                    add_character(L'&');
+                    previousChar = L'&';
+                    start += 5;
+                    continue;
+                    }
+                else if (std::wcsncmp(start, L"&quot;", 6) == 0)
+                    {
+                    add_character(L'\"');
+                    previousChar = L'\"';
+                    start += 6;
+                    continue;
+                    }
+                else if (std::wcsncmp(start, L"&apos;", 6) == 0)
+                    {
+                    add_character(L'\'');
+                    previousChar = L'\'';
+                    start += 6;
+                    continue;
+                    }
+                else if (std::wcsncmp(start, L"&gt;", 4) == 0)
+                    {
+                    add_character(L'>');
+                    previousChar = L'>';
+                    start += 4;
+                    continue;
+                    }
+                else if (std::wcsncmp(start, L"&lt;", 4) == 0)
+                    {
+                    add_character(L'<');
+                    previousChar = L'<';
+                    start += 4;
+                    continue;
+                    }
+                else if (std::wcsncmp(start, L"&ge;", 4) == 0)
+                    {
+                    add_characters(L">=");
+                    previousChar = L'=';
+                    start += 4;
+                    continue;
+                    }
+                else if (std::wcsncmp(start, L"&le;", 4) == 0)
+                    {
+                    add_characters(L"<=");
+                    previousChar = L'=';
+                    start += 4;
+                    continue;
+                    }
+                }
+            }
         // code blocks
         else if (*start == L'`')
             {
