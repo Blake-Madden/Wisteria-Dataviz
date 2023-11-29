@@ -108,8 +108,17 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"This `is code`." }) } ==
               std::wstring{ L"This is code." });
+        CHECK(std::wstring{ md({ L"This ```is code```." }) } ==
+            std::wstring{ L"This is code." });
         CHECK(std::wstring{ md({ L"Code `r 2+2`." }) } ==
               std::wstring{ L"Code 2+2." });
+        }
+
+    SECTION("Code block")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"This\n```\nis code\n```." }) } ==
+              std::wstring{ L"This \nis code\n." });
         }
 
     SECTION("Images")
@@ -173,5 +182,12 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"5^th^ edition \\^5" }) } ==
               std::wstring{ L"5th edition ^5" });
+        }
+
+    SECTION("HTML angle")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"This is <em>bold</em>." }) } ==
+              std::wstring{ L"This is bold." });
         }
     }

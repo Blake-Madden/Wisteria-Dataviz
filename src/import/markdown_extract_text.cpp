@@ -148,6 +148,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     log_message(L"Bad fenced code block in markdown file.");
                     break;
                     }
+                add_characters({ start, static_cast<size_t>(endOfTag - start) });
                 start = endOfTag + 3;
                 continue;
                 }
@@ -345,7 +346,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     }
                 else
                     {
-                     auto endOfTag =
+                    auto endOfTag =
                         string_util::find_unescaped_matching_close_tag(++start, L'{', L'}');
                     if (endOfTag == nullptr)
                         {
@@ -362,6 +363,21 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             {
             if (!isEscaping)
                 { ++start; }
+            }
+        else if (*start == L'<')
+            {
+            if (!isEscaping)
+                {
+                auto endOfTag =
+                        string_util::find_unescaped_matching_close_tag(++start, L'<', L'>');
+                if (endOfTag == nullptr)
+                    {
+                    log_message(L"Bad <> pair in markdown file.");
+                    break;
+                    }
+                start = ++endOfTag;
+                continue;
+                }
             }
         // newlines
         else if (*start == L'\n' || *start == L'\r')
