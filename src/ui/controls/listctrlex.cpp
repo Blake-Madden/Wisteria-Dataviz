@@ -2682,15 +2682,16 @@ long ListCtrlEx::AddRow(const wxString& value /*= wxString{}*/)
         const auto newRowIndex{ GetItemCount() - 1 };
         SetItemText(newRowIndex, 0, value);
         EnsureVisible(newRowIndex);
+        SetItemBeenEditedByUser(true);
         return newRowIndex;
         }
     else
         {
         const auto newRowIndex = InsertItem(GetItemCount(), value);
         EnsureVisible(newRowIndex);
+        SetItemBeenEditedByUser(true);
         return newRowIndex;
         }
-    SetItemBeenEditedByUser(true);
     }
 
 //------------------------------------------------------
