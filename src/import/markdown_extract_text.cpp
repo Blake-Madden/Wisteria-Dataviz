@@ -359,10 +359,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 }
             }
         // superscript (just read as-is)
-        else if (*start == L'^')
+        else if (!isEscaping &&
+                 *start == L'^')
             {
-            if (!isEscaping)
-                { ++start; }
+            ++start;
+            continue;
             }
         else if (*start == L'<')
             {
@@ -479,6 +480,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             while ((*start == L'*' || *start == L'_' || *start == L'~') &&
                    (start < endSentinel))
                 { ++start; }
+            continue;
             }
         // table
         else if (!isEscaping &&

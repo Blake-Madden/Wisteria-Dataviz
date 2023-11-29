@@ -85,6 +85,8 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"This is *italic* and **bold** and also __italic__. 2 \\* 2." }) } ==
               std::wstring{ L"This is italic and bold and also italic. 2 * 2." });
+        CHECK(std::wstring{ md({ L"**PGF\\_HOT**" }) } ==
+            std::wstring{ L"PGF_HOT" });
         }
 
     SECTION("Blockquoes")
@@ -189,5 +191,14 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"This is <em>bold</em>." }) } ==
               std::wstring{ L"This is bold." });
+        CHECK(std::wstring{ md({ L"<dl> <dt>**PGF\\_HOT**</dt> </dl>" }) } ==
+              std::wstring{ L" PGF_HOT " });
+        }
+
+    SECTION("HTML tags")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"Hi &gt; there &amp; you &quot;." }) } ==
+              std::wstring{ L"Hi > there & you \"." });
         }
     }
