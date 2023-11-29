@@ -69,7 +69,7 @@ theChart->GetCaption().GetGraphItemInfo().
     ChildAlignment(RelativeAlignment::FlushLeft).
     // justify its text
     LabelAlignment(TextAlignment::Justified).
-    Text(_(L"Bar widths indicate the proportional number of respondants"));
+    Text(_(L"Bar widths indicate the proportional number of respondents"));
 // split the text so that the justification is enacted
 theChart->GetCaption().SplitTextToFitLength(20);
 ```
