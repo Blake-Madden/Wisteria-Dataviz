@@ -34,7 +34,7 @@ namespace lily_of_the_valley
             @note Multimarkdown, YAML, and Pandoc sections are supported.
             @warning @c md_text must be the start of the Markdown document.*/
         [[nodiscard]]
-        bool is_metadata_section(const wchar_t* md_text) const
+        bool has_metadata_section(const wchar_t* md_text) const
             {
             if (!md_text)
                 { return false; }
@@ -49,7 +49,7 @@ namespace lily_of_the_valley
         /** @brief Metadata sections end on the first blank like, so moves to that.
             @param md_text The Markdown text, starting anywhere in the metadata section.
             @returns The start of the document's body.
-            @sa is_metadata_section().*/
+            @sa has_metadata_section().*/
         [[nodiscard]]
         static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept
             {
@@ -82,11 +82,9 @@ namespace lily_of_the_valley
 
         /** Metadata section types start with these:
             - Pandoc: % and a space.
-            - YAML header: ---
-            - Multimarkdown: word, followed by an optional space and other word,
-              followed by colon.*/
+            - YAML header: ---*/
         std::wregex m_metadataSectionStart
-            { LR"(^(%[[:space:]]+|---|[[:alpha:]]+([[:space:]]{1}[[:alpha:]]+)?[:]).*$)" };
+            { LR"(^(%[[:space:]]+|---).*$)" };
 
         std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
         };

@@ -12,7 +12,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     if (m_subParser == nullptr)
         { m_subParser = std::make_unique<markdown_extract_text>(); }
 
-    if (!allocate_text_buffer(md_text.length()))
+    if (!allocate_text_buffer(md_text.length() * 2))
         {
         set_filtered_text_length(0);
         return nullptr;
@@ -21,8 +21,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     // find the start of the text body and set up where we halt our searching
     const wchar_t* const endSentinel = md_text.data() + md_text.length();
     const wchar_t* start = md_text.data();
-    if (is_metadata_section(start))
-        { start = find_metadata_section_end(start); }
+    const wchar_t* metaEnd{ nullptr };
+    if (has_metadata_section(start))
+        { metaEnd = find_metadata_section_end(start); }
+    if (metaEnd != nullptr)
+        { start = metaEnd; }
     // in case metadata section ate up the whole file
     // (or at least the part of the file requested to be reviewed)
     if (start >= endSentinel)

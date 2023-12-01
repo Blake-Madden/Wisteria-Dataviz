@@ -10,23 +10,20 @@ TEST_CASE("Markdown Parser", "[md import]")
     SECTION("Null")
         {
         lily_of_the_valley::markdown_extract_text md;
-        CHECK(md.is_metadata_section(nullptr) == false);
+        CHECK(md.has_metadata_section(nullptr) == false);
         CHECK(md.find_metadata_section_end(nullptr) == nullptr);
         CHECK(md({ L"some MD text", 0 }) == nullptr);
         }
 
     SECTION("Meta Sections")
         {
-        // multimarkdown
-        auto mdText = L"keyvalue:12\nKey2: re\n\nHere is the *actual* \\*text to **review**.";
         lily_of_the_valley::markdown_extract_text md;
-        CHECK(md.is_metadata_section(mdText));
         // pandoc
-        mdText = L"% title: my book\n\nHere is the *actual* \\*text to **review**.";
-        CHECK(md.is_metadata_section(mdText));
+        auto mdText = L"% title: my book\n\nHere is the *actual* \\*text to **review**.";
+        CHECK(md.has_metadata_section(mdText));
         // YAML
         mdText = L"---\n   title:my book\n\nHere is the *actual* \\*text to **review**.";
-        CHECK(md.is_metadata_section(mdText));
+        CHECK(md.has_metadata_section(mdText));
         }
 
     SECTION("Meta Section End")
