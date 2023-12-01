@@ -708,6 +708,11 @@ namespace lily_of_the_valley
         /// @param include @c true to include this sort of text.
         void include_no_script_sections(const bool include) noexcept
             { m_includeNoScriptSections = include; }
+
+        /// @private
+        static const html_utilities::symbol_font_table SYMBOL_FONT_TABLE;
+        /// @private
+        static const html_utilities::html_entity_table HTML_TABLE_LOOKUP;
     protected:
         /** @brief Converts a section of HTML text that is using Symbol font into the actual
                 symbols that it is meant to display.
@@ -749,10 +754,6 @@ namespace lily_of_the_valley
         std::wstring m_author;
         /// @private
         std::wstring m_keywords;
-        /// @private
-        static const html_utilities::symbol_font_table SYMBOL_FONT_TABLE;
-        /// @private
-        static const html_utilities::html_entity_table HTML_TABLE_LOOKUP;
         };
     }
 
