@@ -168,8 +168,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     continue;
                     }
                 // not an HTML entity, treat as an ampersand at the end of the loop
-                    }
                 }
+            }
         // code blocks
         else if (*start == L'`')
             {
@@ -546,8 +546,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         else if (!isEscaping &&
                  (*start == L'|') )
             {
-            previousChar = L'\t';
-            add_character(L'\t');
+            previousChar = L'|';
+            add_characters(L" |");
             ++start;
             continue;
             }
