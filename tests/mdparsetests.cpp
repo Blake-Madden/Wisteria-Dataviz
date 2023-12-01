@@ -116,8 +116,9 @@ TEST_CASE("Markdown Parser", "[md import]")
     SECTION("Code block")
         {
         lily_of_the_valley::markdown_extract_text md;
-        CHECK(std::wstring{ md({ L"This\n```\nis code\n```." }) } ==
-              std::wstring{ L"This \nis code\n." });
+        auto blah = std::wstring{ md({ L"This\n```\nis code\r\nhere```\n." }) };
+        CHECK(std::wstring{ md({ L"This\n```\nis code\r\nhere```\n." }) } ==
+              std::wstring{ L"This \n\tis code\r\n\there\n\n." });
         }
 
     SECTION("Images")
@@ -135,6 +136,8 @@ TEST_CASE("Markdown Parser", "[md import]")
     SECTION("Links")
         {
         lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"go to [https://visualstudio.microsoft.com/vs/pricing/](https://visualstudio.microsoft.com/vs/pricing/) to explore." }) } ==
+              std::wstring{ L"go to https://visualstudio.microsoft.com/vs/pricing/ to explore." });
         CHECK(std::wstring{ md({ L"Tux [the Linux mascot](/assets/tux.png) the penguin." }) } ==
               std::wstring{ L"Tux the Linux mascot the penguin." });
         CHECK(std::wstring{ md({ L"Tux [the **Linux** mascot](/assets/tux.png) the penguin." }) } ==
@@ -197,5 +200,7 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"Hi &gt; there &amp; you &quot;." }) } ==
               std::wstring{ L"Hi > there & you \"." });
+        CHECK(std::wstring{ md({ L"You &amp me." }) } ==
+            std::wstring{ L"You &amp me." });
         }
     }

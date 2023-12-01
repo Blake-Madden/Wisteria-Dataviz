@@ -183,8 +183,33 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     log_message(L"Bad fenced code block in markdown file.");
                     break;
                     }
-                add_characters({ start, static_cast<size_t>(endOfTag - start) });
+                // tab over each line inside of the code block
+                while (start < endOfTag)
+                    {
+                    if (*start == L'\r' ||
+                        *start == L'\n')
+                        {
+                        while (start < endOfTag &&
+                            (*start == L'\r' ||
+                             *start == L'\n'))
+                            {
+                            add_character(*start);
+                            ++start;
+                            }
+                        add_character(L'\t');
+                        continue;
+                        }
+                    add_character(*start);
+                    ++start;
+                    }
                 start = endOfTag + 3;
+                // if code block is not inline, then force a line break later after it
+                if (start < endSentinel &&
+                    ((*start == L'\r' ||
+                     *start == L'\n')))
+                    {
+                    headerMode = true;
+                    }
                 continue;
                 }
             // verbatim (inline) code
