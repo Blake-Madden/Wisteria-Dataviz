@@ -32,6 +32,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         { return endSentinel; }
 
     const std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
+    const std::wstring_view BEGIN_FIGURE{ L"\\begin{figure}" };
+    const std::wstring_view END_FIGURE{ L"\\end{figure}" };
 
     bool isEscaping{ false };
     bool headerMode{ false };
@@ -58,7 +60,17 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     start = ++endOfTag;
                     continue;
                     }
-                 if (std::wcsncmp(start, L"\\@ref(", 6) == 0)
+                else if (std::wcsncmp(start, BEGIN_FIGURE.data(), BEGIN_FIGURE.length()) == 0)
+                    {
+                    start += BEGIN_FIGURE.length();
+                    continue;
+                    }
+                else if (std::wcsncmp(start, END_FIGURE.data(), END_FIGURE.length()) == 0)
+                    {
+                    start += END_FIGURE.length();
+                    continue;
+                    }
+                 else if (std::wcsncmp(start, L"\\@ref(", 6) == 0)
                     {
                     start += 6;
                     auto endOfTag = string_util::find_unescaped_matching_close_tag(start, L'(', L')');
