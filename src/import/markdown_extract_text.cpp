@@ -425,9 +425,38 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             ++start;
             continue;
             }
+        // RMarkdown (Pandoc) comment
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<!--", 4) == 0)
+            {
+            const auto endOfTag = std::wcsstr(start, L"-->");
+            if (endOfTag == nullptr)
+                {
+                log_message(L"Bad comment block in markdown file.");
+                break;
+                }
+            start = endOfTag + 3;
+            continue;
+            }
         else if (*start == L'<')
             {
-            if (!isEscaping)
+            if (!isEscaping &&
+                start + 1 < endSentinel &&
+                (start[1] == L'/' ||
+                 start[1] == L'p' ||
+                 std::wcsncmp(start + 1, L"a ", 2) == 0 ||
+                 std::wcsncmp(start + 1, L"b>", 2) == 0 ||
+                 std::wcsncmp(start + 1, L"i>", 2) == 0 ||
+                 std::wcsncmp(start + 1, L"u>", 2) == 0 ||
+                 std::wcsncmp(start + 1, L"div", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"dl>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"dt>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"dd>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"em>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"tt>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"ul>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"ol>", 3) == 0 ||
+                 std::wcsncmp(start + 1, L"li>", 3) == 0) )
                 {
                 auto endOfTag =
                         string_util::find_unescaped_matching_close_tag(++start, L'<', L'>');
@@ -567,19 +596,6 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             start += 4;
             previousChar = L'\n';
             add_characters(L"\n\n");
-            continue;
-            }
-        // RMarkdown (Pandoc) comment
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<!--", 4) == 0)
-            {
-            const auto endOfTag = std::wcsstr(start, L"-->");
-            if (endOfTag == nullptr)
-                {
-                log_message(L"Bad comment block in markdown file.");
-                break;
-                }
-            start = endOfTag + 3;
             continue;
             }
         // turn off escaping and load the character

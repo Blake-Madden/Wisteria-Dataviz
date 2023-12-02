@@ -191,8 +191,16 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"This is <em>bold</em>." }) } ==
               std::wstring{ L"This is bold." });
+        CHECK(std::wstring{ md({ L"This is <a href=\"#bm\">bold</a>." }) } ==
+            std::wstring{ L"This is bold." });
         CHECK(std::wstring{ md({ L"<dl> <dt>**PGF\\_HOT**</dt> </dl>" }) } ==
               std::wstring{ L" PGF_HOT " });
+        CHECK(std::wstring{ md({ L"2 > 1" }) } ==
+            std::wstring{ L"2 > 1" });
+        CHECK(std::wstring{ md({ L"2 < 5" }) } ==
+            std::wstring{ L"2 < 5" });
+        CHECK(std::wstring{ md({ L"Go to <https://website> for more info." }) } ==
+            std::wstring{ L"Go to <https://website> for more info." });
         }
 
     SECTION("HTML tags")
