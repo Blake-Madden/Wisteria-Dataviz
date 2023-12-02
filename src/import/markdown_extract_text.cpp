@@ -331,6 +331,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         add_character(*start);
                         ++start;
                         }
+                    if (*start == '`')
+                        {
+                        ++start;
+                        }
                     continue;
                     }
                 }
