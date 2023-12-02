@@ -438,6 +438,24 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             start = endOfTag + 3;
             continue;
             }
+        // newline hacks found in tables (just replace with space to keep the table structure).
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<br>\\linebreak", 14) == 0)
+            {
+            start += 14;
+            previousChar = L' ';
+            add_character(L' ');
+            continue;
+            }
+        // HTML newline
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<br>", 4) == 0)
+            {
+            start += 4;
+            previousChar = L'\n';
+            add_characters(L"\n\n");
+            continue;
+            }
         else if (*start == L'<')
             {
             if (!isEscaping &&
@@ -578,24 +596,6 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             previousChar = L'|';
             add_characters(L" |");
             ++start;
-            continue;
-            }
-        // newline hacks found in tables (just replace with space to keep the table structure).
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<br>\\linebreak", 14) == 0)
-            {
-            start += 14;
-            previousChar = L' ';
-            add_character(L' ');
-            continue;
-            }
-        // HTML newline
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<br>", 4) == 0)
-            {
-            start += 4;
-            previousChar = L'\n';
-            add_characters(L"\n\n");
             continue;
             }
         // turn off escaping and load the character
