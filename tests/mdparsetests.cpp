@@ -211,4 +211,13 @@ TEST_CASE("Markdown Parser", "[md import]")
         CHECK(std::wstring{ md({ L"You &amp me." }) } ==
             std::wstring{ L"You &amp me." });
         }
+
+    SECTION("Formatted link")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"`shared_ptr`" }) } ==
+            std::wstring{ L"shared_ptr" });
+        CHECK(std::wstring{ md({ L"[`shared_ptr`](www.website)" }) } ==
+              std::wstring{ L"shared_ptr" });
+        }
     }

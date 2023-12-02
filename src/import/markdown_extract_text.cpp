@@ -323,7 +323,16 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     { start += 8; }
                 // read content as-is otherwise
                 else
-                    { ++start; }
+                    {
+                    ++start;
+                    while (start < endSentinel && *start != '`')
+                        {
+                        previousChar = *start;
+                        add_character(*start);
+                        ++start;
+                        }
+                    continue;
+                    }
                 }
             }
         // images
