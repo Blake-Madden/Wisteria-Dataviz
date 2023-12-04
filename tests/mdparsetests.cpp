@@ -18,52 +18,25 @@ TEST_CASE("Markdown Parser", "[md import]")
     SECTION("Meta Sections")
         {
         lily_of_the_valley::markdown_extract_text md;
-        // pandoc
-        auto mdText = L"% title: my book\n\nHere is the *actual* \\*text to **review**.";
-        CHECK(md.has_metadata_section(mdText));
         // YAML
-        mdText = L"---\n   title:my book\n\nHere is the *actual* \\*text to **review**.";
+        auto mdText = L"---\n   title:my book\n\nHere is the *actual* \\*text to **review**.";
         CHECK(md.has_metadata_section(mdText));
         }
 
     SECTION("Meta Section End")
         {
-        // test \n
-        auto mdText = L"keyvalue:12\nKey2: re\n\nHere is the *actual* \\*text to **review**.";
         lily_of_the_valley::markdown_extract_text md;
-        auto end = md.find_metadata_section_end(mdText);
-        CHECK(end == mdText+22);
-
-        // test \r
-        mdText = L"keyvalue:12\rKey2: re\r\rHere is the *actual* \\*text to **review**.";
-        end = md.find_metadata_section_end(mdText);
-        CHECK(end == mdText+22);
-
-        // test \r\n combinations
-        mdText = L"keyvalue:12\r\nKey2: re\r\n\r\nHere is the *actual* \\*text to **review**.";
-        end = md.find_metadata_section_end(mdText);
-        CHECK(end == mdText+24);
-
-        mdText = L"keyvalue:12\r\nKey2: re\r\n\nHere is the *actual* \\*text to **review**.";
-        end = md.find_metadata_section_end(mdText);
-        CHECK(end == mdText+24);
-
-        // test being at the end of the text
-        mdText = L"title\r\n";
-        end = md.find_metadata_section_end(mdText);
-        CHECK(end == mdText+7);
-
-        // test being at the end of the text, because there was no blank lines
-        mdText = L"title";
-        end = md.find_metadata_section_end(mdText);
-        CHECK(end == mdText+5);
+        CHECK(std::wstring{ md({ L"---\ntitle:my book\n---\nHere is the *actual* text to **review**." }) } ==
+            std::wstring{ L"Here is the actual text to review." });
         }
 
     SECTION("Newlines")
         {
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"# Header\nThis is\na line.\r\nThis is the same line.  \nThis is a new line.\r\n\r\nAnother line. \nSame line." }) } ==
-              std::wstring{ L"Header\n\nThis is a line. This is the same line.  \n\nThis is a new line.\n\nAnother line.  Same line." });
+             std::wstring{ L"Header\n\nThis is a line. This is the same line.  \n\nThis is a new line.\n\nAnother line.  Same line." });
+        CHECK(std::wstring{ md({ L"*`where`*\\\nNext line" }) } ==
+            std::wstring{ L"where\n\nNext line" });
         }
 
     SECTION("Header")
@@ -82,8 +55,15 @@ TEST_CASE("Markdown Parser", "[md import]")
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"This is *italic* and **bold** and also __italic__. 2 \\* 2." }) } ==
               std::wstring{ L"This is italic and bold and also italic. 2 * 2." });
+        CHECK(std::wstring{ md({ L"This is _italic and **bold** text_." }) } ==
+            std::wstring{ L"This is italic and bold text." });
+        // can't handle "This is *italic and **bold** text*", will have to be a known limitation
         CHECK(std::wstring{ md({ L"**PGF\\_HOT**" }) } ==
             std::wstring{ L"PGF_HOT" });
+        CHECK(std::wstring{ md({ L"TIFF _spe_ci**f**i_c_ *options*" }) } ==
+            std::wstring{ L"TIFF spe_ci**f**i_c options" });
+        CHECK(std::wstring{ md({ L"2 * 2" }) } ==
+            std::wstring{ L"2 * 2" });
         }
 
     SECTION("Blockquoes")
@@ -111,14 +91,22 @@ TEST_CASE("Markdown Parser", "[md import]")
             std::wstring{ L"This is code." });
         CHECK(std::wstring{ md({ L"Code `r 2+2`." }) } ==
               std::wstring{ L"Code 2+2." });
+        CHECK(std::wstring{ md({ L"``2`2`` `shared_ptr`" }) } ==
+              std::wstring{ L"2`2 shared_ptr" });
+        CHECK(std::wstring{ md({ L"### `std::basic_istream::read` processing of `\\r\\n`` =>`\\n`\n `shared_ptr`" }) } ==
+              std::wstring{ L"std::basic_istream::read processing of \\r\\n =>n\n shared_ptr" });
         }
 
     SECTION("Code block")
         {
         lily_of_the_valley::markdown_extract_text md;
-        auto blah = std::wstring{ md({ L"This\n```\nis code\r\nhere```\n." }) };
+        // inline (you aren't supposed to do this with ```, but people do)
         CHECK(std::wstring{ md({ L"This\n```\nis code\r\nhere```\n." }) } ==
               std::wstring{ L"This \n\tis code\r\n\there\n\n." });
+        // remove lang info
+        auto blah = std::wstring{ md({ L"This\n```cpp\nis code\r\nhere\n```\n." }) };
+        CHECK(std::wstring{ md({ L"This\n```cpp\nis code\r\nhere\n```\n." }) } ==
+            std::wstring{ L"This \n\tis code\r\n\there\n\t\n\n." });
         }
 
     SECTION("Images")
@@ -128,9 +116,9 @@ TEST_CASE("Markdown Parser", "[md import]")
               std::wstring{ L"Tux  the penguin." });
         // malformed
         CHECK(std::wstring{ md({ L"Tux ![Tux, the Linux mascot" }) } ==
-            std::wstring{ L"Tux " });
+            std::wstring{ L"Tux [Tux, the Linux mascot" });
         CHECK(std::wstring{ md({ L"Tux ![Tux, the Linux mascot](/assets/tux.png" }) } ==
-            std::wstring{ L"Tux " });
+            std::wstring{ L"Tux (/assets/tux.png" });
         }
 
     SECTION("Links")
@@ -144,9 +132,11 @@ TEST_CASE("Markdown Parser", "[md import]")
             std::wstring{ L"Tux the Linux mascot the penguin." });
         // malformed
         CHECK(std::wstring{ md({ L"Tux [the Linux mascot" }) } ==
-            std::wstring{ L"Tux " });
+            std::wstring{ L"Tux [the Linux mascot" });
         CHECK(std::wstring{ md({ L"Tux [the Linux mascot](/assets/tux.png" }) } ==
-            std::wstring{ L"Tux " });
+            std::wstring{ L"Tux [the Linux mascot](/assets/tux.png" });
+        CHECK(std::wstring{ md({ L"The third member function inserts the sequence [`first`, `last`). You use it" }) } ==
+            std::wstring{ L"The third member function inserts the sequence [first, last). You use it" });
         }
 
     SECTION("Unordered Lists")

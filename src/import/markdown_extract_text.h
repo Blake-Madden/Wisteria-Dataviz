@@ -31,19 +31,15 @@ namespace lily_of_the_valley
 #endif
         /** @returns @c true if text marks the start of a Markdown metadata section.
             @param md_text The start of the Markdown text.
-            @note Multimarkdown, YAML, and Pandoc sections are supported.
+            @note YAML sections are supported.
             @warning @c md_text must be the start of the Markdown document.*/
         [[nodiscard]]
         bool has_metadata_section(const wchar_t* md_text) const
             {
-            if (!md_text)
+            if (md_text == nullptr)
                 { return false; }
-            // will just be reviewing the first line of text
-            auto eol = string_util::strcspn_pointer(md_text, L"\n\r", 2);
-            if (!eol)
-                { return false; }
-
-            return std::regex_match(md_text, eol, m_metadataSectionStart);
+            // does the first line start with ---
+            return (std::wcsncmp(md_text, L"---", 3) == 0);
             }
 
         /** @brief Metadata sections end on the first blank like, so moves to that.
@@ -53,38 +49,32 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept
             {
-            if (!md_text)
+            if (md_text == nullptr)
                 { return nullptr; }
-            while (md_text[0] != 0 && md_text[1] != 0)
+            // step over first line
+            auto eol = string_util::strcspn_pointer(md_text, L"\r\n", 2);
+            if (eol == nullptr)
                 {
-                // if a Windows \r\n combination, then if followed by either 
-                // \r or \n means we have a blank line
-                if (md_text[0] == L'\r' && md_text[1] == L'\n')
-                    {
-                    if (md_text[2] == 0)
-                        { return md_text+2; }
-                    else if (string_util::is_either(md_text[2], L'\n', L'\r'))
-                        { return md_text+3; }
-                    }
-                // otherwise, if 2 consecutive breaks then we have a blank line
-                else if (string_util::is_either(md_text[0], L'\n', L'\r') &&
-                    string_util::is_either(md_text[1], L'\n', L'\r'))
-                    { return md_text+2; }
-                ++md_text;
+                return md_text;
                 }
-            // if stopped on the last character because the whole file is just metadata,
-            // then step to the end.
-            if (md_text[0] != 0 && md_text[1] == 0)
-                { return ++md_text; }
+            // ...and find the terminating --- line
+            auto endOfYaml = std::wcsstr(eol, L"\n---");
+            if (endOfYaml == nullptr)
+                {
+                return md_text;
+                }
+            endOfYaml = string_util::strcspn_pointer(endOfYaml + 4, L"\r\n", 2);
+            if (endOfYaml == nullptr)
+                {
+                return md_text;
+                }
+            while (*endOfYaml == L'\r' || *endOfYaml == L'\n')
+                {
+                ++endOfYaml;
+                }
 
-            return md_text;
+            return endOfYaml;
             }
-
-        /** Metadata section types start with these:
-            - Pandoc: % and a space.
-            - YAML header: ---*/
-        std::wregex m_metadataSectionStart
-            { LR"(^(%[[:space:]]+|---).*$)" };
 
         std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
         };

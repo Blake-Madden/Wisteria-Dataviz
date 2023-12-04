@@ -39,6 +39,72 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     bool headerMode{ false };
     wchar_t previousChar{ L'\n' };
 
+    const auto parseStyledText = [&](const wchar_t tag)
+        {
+        // not styling text, just an orphan character that should be processed as-is
+        if (*start == tag &&
+            start + 1 < endSentinel)
+            {
+            if (start[1] != tag &&
+                !std::iswalnum(start[1]) &&
+                start[1] != L'`')
+                {
+                add_character(*start);
+                previousChar = *start;
+                ++start;
+                return true;
+                }
+            }
+        while (*start == tag &&
+            start < endSentinel)
+            { ++start; }
+        auto endOfTag = string_util::find_unescaped_char(start, tag);
+        if (endOfTag == nullptr || (endOfTag >= endSentinel))
+            {
+            log_message(L"Missing matching styling tag in markdown file.");
+            return false;
+            }
+        while (*endOfTag == tag &&
+            (endOfTag < endSentinel))
+            { ++endOfTag; }
+        while (endOfTag < endSentinel &&
+            (std::iswalnum(*endOfTag) || *endOfTag == L'`'))
+            {
+            endOfTag = string_util::find_unescaped_char(++endOfTag, tag);
+            if (endOfTag == nullptr ||
+                endOfTag + 1 >= endSentinel)
+                {
+                log_message(L"Missing matching styling tag in markdown file.");
+                return false;
+                }
+            ++endOfTag;
+            }
+        // in case we stepped ahead, step back to the last closing tag
+        if (*endOfTag != tag)
+            {
+            --endOfTag;
+            }
+        // ...and then move back to the first tag of the consecutive closing tags
+        while (endOfTag > start && *endOfTag == tag)
+            {
+            --endOfTag;
+            }
+        if (*endOfTag != tag)
+            {
+            ++endOfTag;
+            }
+
+        [[maybe_unused]] auto retval = m_subParser->operator()(
+            { start, static_cast<size_t>(std::distance(start, endOfTag)) });
+        add_characters(
+            { m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
+        start = endOfTag;
+        while (*start == tag &&
+            (start < endSentinel))
+            { ++start; }
+        return true;
+        };
+
     while (start != nullptr && *start != 0 && (start < endSentinel))
         {
         if (*start == L'\\')
@@ -70,7 +136,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     start += END_FIGURE.length();
                     continue;
                     }
-                 else if (std::wcsncmp(start, L"\\@ref(", 6) == 0)
+                else if (std::wcsncmp(start, L"\\@ref(", 6) == 0)
                     {
                     start += 6;
                     auto endOfTag = string_util::find_unescaped_matching_close_tag(start, L'(', L')');
@@ -86,6 +152,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     {
                     start += 8;
                     add_characters(L"\n\n");
+                    continue;
+                    }
+                else if (start < endSentinel &&
+                    (start[1] == L'\n' || start[1] == L'\r'))
+                    {
+                    headerMode = true;
+                    ++start;
                     continue;
                     }
                 // actually is an escape character
@@ -183,6 +256,19 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     log_message(L"Bad fenced code block in markdown file.");
                     break;
                     }
+                bool isMultiline{ false };
+                auto scanAhead{ start };
+                while (scanAhead < endOfTag)
+                    {
+                    if (*scanAhead == L'\r' ||
+                        *scanAhead == L'\n')
+                        {
+                        isMultiline = true;
+                        break;
+                        }
+                    ++scanAhead;
+                    }
+                bool pastFirstLine{ false };
                 // tab over each line inside of the code block
                 while (start < endOfTag)
                     {
@@ -197,9 +283,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             ++start;
                             }
                         add_character(L'\t');
+                        pastFirstLine = true;
                         continue;
                         }
-                    add_character(*start);
+                    if (!isMultiline || pastFirstLine)
+                        {
+                        add_character(*start);
+                        }
                     ++start;
                     }
                 start = endOfTag + 3;
@@ -317,29 +407,65 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         }
                     continue;
                     }
-                else if (std::wcsncmp(start, L"`r ", 3) == 0)
-                    { start += 3; }
-                else if (std::wcsncmp(start, L"`python ", 8) == 0)
-                    { start += 8; }
                 // read content as-is otherwise
                 else
                     {
-                    ++start;
-                    while (start < endSentinel && *start != '`')
+                    if (std::wcsncmp(start, L"`r ", 3) == 0)
+                        { start += 3; }
+                    else if (std::wcsncmp(start, L"`python ", 8) == 0)
+                        { start += 8; }
+                    else
                         {
-                        previousChar = *start;
-                        add_character(*start);
                         ++start;
                         }
+                    // `` section, which can have embedded backticks
                     if (*start == '`')
                         {
-                        ++start;
+                        auto endOfTag = std::wcsstr(++start, L"``");
+                        if (endOfTag == nullptr ||
+                            endOfTag > endSentinel)
+                            {
+                            log_message(L"Bad inline `` code block in markdown file.");
+                            break;
+                            }
+                        // read in content verbatim
+                        while (start < endOfTag)
+                            {
+                            previousChar = *start;
+                            add_character(*start);
+                            ++start;
+                            }
+                        start += 2;
+                        }
+                    // just a single backtick block, should be on one line
+                    else
+                        {
+                        while (start < endSentinel && *start != '`')
+                            {
+                            // inline blocks should be on one line, so bail if we hit a new line
+                            // as this would probably be a missing closing backtick
+                            if (*start == L'\n' || *start == L'\r')
+                                {
+                                log_message(L"Unterminated inline ` code block in markdown file.");
+                                previousChar = *start;
+                                add_character(*start);
+                                ++start;
+                                break;
+                                }
+                            previousChar = *start;
+                            add_character(*start);
+                            ++start;
+                            }
+                        if (*start == '`')
+                            {
+                            ++start;
+                            }
                         }
                     continue;
                     }
                 }
             }
-        // images
+        // images (we don't read in the alt text inside of the [], just skip everything)
         else if (*start == L'!')
             {
             if (!isEscaping &&
@@ -347,20 +473,24 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 start[1] == L'[')
                 {
                 start += 2;
-                auto endOfTag = string_util::find_unescaped_matching_close_tag(start, L'[', L']');
+                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'[', L']');
                 if (endOfTag == nullptr)
                     {
                     log_message(L"Bad image command in markdown file.");
-                    break;
+                    previousChar = L'[';
+                    add_character(L'[');
+                    continue;
                     }
                 start = ++endOfTag;
                 if (*start == L'(')
                     {
-                    endOfTag = string_util::find_unescaped_matching_close_tag(++start, L'(', L')');
+                    endOfTag = string_util::find_unescaped_matching_close_tag_same_line(++start, L'(', L')');
                     if (endOfTag == nullptr)
                         {
                         log_message(L"Bad image command in markdown file.");
-                        break;
+                        previousChar = L'(';
+                        add_character(L'(');
+                        continue;
                         }
                     start = ++endOfTag;
                     }
@@ -373,21 +503,28 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             if (!isEscaping)
                 {
                 auto labelStart{ ++start };
-                auto endOfTag = string_util::find_unescaped_matching_close_tag(start, L'[', L']');
+                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'[', L']');
                 if (endOfTag == nullptr)
                     {
-                    log_message(L"Bad link command in markdown file.");
-                    break;
+                    log_message(L"Bad link command in markdown file. Missing closing ']'");
+                    // just treat it like a stray '[' and keep going
+                    previousChar = L'[';
+                    add_character(L'[');
+                    continue;
                     }
                 start = ++endOfTag;
                 if (*start == L'(')
                     {
                     auto labelEnd{ start - 1};
-                    endOfTag = string_util::find_unescaped_matching_close_tag(++start, L'(', L')');
+                    endOfTag = string_util::find_unescaped_matching_close_tag_same_line(++start, L'(', L')');
                     if (endOfTag == nullptr)
                         {
-                        log_message(L"Bad link command in markdown file.");
-                        break;
+                        log_message(L"Bad link command in markdown file. Missing closing ')'");
+                        // read in the label and '(' section after it as-is if closing ')' is missing
+                        start = labelStart;
+                        previousChar = L'[';
+                        add_character(L'[');
+                        continue;
                         }
                     start = ++endOfTag;
                     if (labelStart < labelEnd)
@@ -465,6 +602,22 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             std::wcsncmp(start, L"<br>", 4) == 0)
             {
             start += 4;
+            previousChar = L'\n';
+            add_characters(L"\n\n");
+            continue;
+            }
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"< br/>", 6) == 0)
+            {
+            start += 6;
+            previousChar = L'\n';
+            add_characters(L"\n\n");
+            continue;
+            }
+        else if (!isEscaping &&
+            std::wcsncmp(start, L"<br/>", 5) == 0)
+            {
+            start += 5;
             previousChar = L'\n';
             add_characters(L"\n\n");
             continue;
@@ -595,12 +748,43 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             }
         // styling tags that just get removed from raw text
         else if (!isEscaping &&
-                 (*start == L'*' || *start == L'_' || *start == L'~') )
+                 std::iswspace(previousChar) &&
+                 *start == L'*')
             {
-            while ((*start == L'*' || *start == L'_' || *start == L'~') &&
-                   (start < endSentinel))
-                { ++start; }
-            continue;
+            if (parseStyledText(L'*'))
+                {
+                continue;
+                }
+            else
+                {
+                break;
+                }
+            }
+        else if (!isEscaping &&
+                 std::iswspace(previousChar) &&
+                 *start == L'_')
+            {
+            if (parseStyledText(L'_'))
+                {
+                continue;
+                }
+            else
+                {
+                break;
+                }
+            }
+        else if (!isEscaping &&
+                 std::iswspace(previousChar) &&
+                 *start == L'~')
+            {
+            if (parseStyledText(L'~'))
+                {
+                continue;
+                }
+            else
+                {
+                break;
+                }
             }
         // table
         else if (!isEscaping &&
