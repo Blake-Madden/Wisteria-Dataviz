@@ -1008,6 +1008,56 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(std::wcscmp(p, L"List.    (pane)") == 0);
         delete[] text;
         }
+    SECTION("Embedded JS Quotes")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = LR"(<html>Hello <input type='submit' id='gform_submit_button_12' class='gform_button button' value='Submit'  onclick='if(window["gf_submitting_12"]){return false;}  window["gf_submitting_12"]=true;  ' onkeypress='if( event.keyCode == 13 ){ if(window["gf_submitting_12"]){return false;} window["gf_submitting_12"]=true;  jQuery("#gform_12").trigger("submit",[true]); }' />there</html>)";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello \n\nthere") == p);
+        }
+    SECTION("Embedded JS Quotes 2")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = LR"(<html>Hello <input type="submit" id="gform_submit_button_12" class="gform_button button" value="Submit"  onclick="if(window['gf_submitting_12']){return false;}  window['gf_submitting_12']=true;  " onkeypress="if( event.keyCode == 13 ){ if(window["gf_submitting_12"]){return false;} window["gf_submitting_12"]=true;  jQuery('#gform_12').trigger('submit', [true]); }" />there</html>)";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello \n\nthere") == p);
+        }
+    SECTION("Elements with Quotes")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = LR"(Hello <a hef="submit">there)";
+        const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello there") == p);
+
+        text = LR"(Hello <a hef='submit'>there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello there") == p);
+
+        text = LR"(Hello <a hef='su"b"mit'>there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello there") == p);
+
+        text = LR"(Hello <a hef="sub'm'it">there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello there") == p);
+
+        text = LR"(Hello <a hef='submit' name="name" value="5">there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello there") == p);
+
+        text = LR"(Hello <a hef='su<>bmit' name="na<>me" value="<5">there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello there") == p);
+
+        // Mismatch, will be trash. Just read what we can.
+        text = LR"(Hello <a hef='submit">there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello ") == p);
+
+        text = LR"(Hello <a hef="submit'>there)";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello ") == p);
+        }
     SECTION("Compare Entities")
         {
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";

@@ -1334,30 +1334,26 @@ namespace lily_of_the_valley
         else if (text[0] == L'<')
             { ++text; }
 
-        bool is_inside_of_quotes = false;
-        bool is_inside_of_single_quotes = false;
+        bool is_inside_of_double_quotes{ false };
+        bool is_inside_of_single_quotes{ false };
         long openTagCount{ 0 };
         while (text)
             {
             if (text[0] == 0)
                 { return nullptr; }
-            else if (text[0] == 0x22) // double quote
+            // flip the state of double or single quote if not inside of
+            // the other type of quotes
+            else if (!is_inside_of_single_quotes && text[0] == L'\"')
                 {
-                is_inside_of_quotes = !is_inside_of_quotes;
-                // whether this double quote ends a quote pair or starts a new one, turn this flag
-                // off. This means that a double quote can close a single quote.
-                is_inside_of_single_quotes = false;
+                is_inside_of_double_quotes = !is_inside_of_double_quotes;
                 }
-            // if a single quote already started a quote pair (and this is closing it) or
-            // we are not inside of a double quote then count single quotes
-            else if ((!is_inside_of_quotes || is_inside_of_single_quotes) && text[0] == 0x27) //single quote
+            else if (!is_inside_of_double_quotes && text[0] == L'\'')
                 {
-                is_inside_of_quotes = !is_inside_of_quotes;
-                is_inside_of_single_quotes = true;
+                is_inside_of_single_quotes = !is_inside_of_single_quotes;
                 }
-            else if (!is_inside_of_quotes && text[0] == L'<')
+            else if (!is_inside_of_double_quotes && !is_inside_of_single_quotes && text[0] == L'<')
                 { ++openTagCount; }
-            else if (!is_inside_of_quotes && text[0] == L'>')
+            else if (!is_inside_of_double_quotes && !is_inside_of_single_quotes && text[0] == L'>')
                 {
                 if (openTagCount == 0)
                     { return text; }
