@@ -558,10 +558,17 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             }
                         }
                     }
+                else
+                    {
+                    log_message(L"Bad link command in markdown file. Missing '()' section.");
+                    // read in the label and '(' section after it as-is if closing ')' is missing
+                    start = labelStart;
+                    previousChar = L'[';
+                    add_character(L'[');
+                    continue;
+                    }
                 continue;
                 }
-                continue;
-            }
             }
         // IDs
         else if (*start == L'{')
@@ -637,7 +644,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         else if (!isEscaping &&
-            std::wcsncmp(start, L"< br/>", 6) == 0)
+            (std::wcsncmp(start, L"< br/>", 6) == 0 ||
+             std::wcsncmp(start, L"<br />", 6) == 0))
             {
             start += 6;
             previousChar = L'\n';
@@ -775,40 +783,22 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                  std::iswspace(previousChar) &&
                  *start == L'*')
             {
-            if (parseStyledText(L'*'))
-                {
-                continue;
-                }
-            else
-                {
-                break;
-                }
-            }
+            parseStyledText(L'*');
+            continue;
+             }
         else if (!isEscaping &&
                  std::iswspace(previousChar) &&
                  *start == L'_')
             {
-            if (parseStyledText(L'_'))
-                {
-                continue;
-                }
-            else
-                {
-                break;
-                }
+            parseStyledText(L'_');
+            continue;
             }
         else if (!isEscaping &&
                  std::iswspace(previousChar) &&
                  *start == L'~')
             {
-            if (parseStyledText(L'~'))
-                {
-                continue;
-                }
-            else
-                {
-                break;
-                }
+            parseStyledText(L'~');
+            continue;
             }
         // table
         else if (!isEscaping &&
