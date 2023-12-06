@@ -607,17 +607,17 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         else if (!isEscaping &&
-            std::wcsncmp(start, L"< br/>", 6) == 0)
+            std::wcsncmp(start, L"<br/>", 5) == 0)
             {
-            start += 6;
+            start += 5;
             previousChar = L'\n';
             add_characters(L"\n\n");
             continue;
             }
         else if (!isEscaping &&
-            std::wcsncmp(start, L"<br/>", 5) == 0)
+            std::wcsncmp(start, L"< br/>", 6) == 0)
             {
-            start += 5;
+            start += 6;
             previousChar = L'\n';
             add_characters(L"\n\n");
             continue;
