@@ -64,6 +64,9 @@ TEST_CASE("Markdown Parser", "[md import]")
             std::wstring{ L"TIFF spe_ci**f**i_c options" });
         CHECK(std::wstring{ md({ L"2 * 2" }) } ==
             std::wstring{ L"2 * 2" });
+        // unescaped _ in front will get lost, but read in the rest of it
+        CHECK(std::wstring{ md({ L"A **_variant_t** _object_" }) } ==
+            std::wstring{ L"A variant_t object" });
         }
 
     SECTION("Blockquoes")
@@ -137,6 +140,9 @@ TEST_CASE("Markdown Parser", "[md import]")
             std::wstring{ L"Tux [the Linux mascot](/assets/tux.png" });
         CHECK(std::wstring{ md({ L"The third member function inserts the sequence [`first`, `last`). You use it" }) } ==
             std::wstring{ L"The third member function inserts the sequence [first, last). You use it" });
+        // missing link
+        CHECK(std::wstring{ md({ L"as an **[out]** parameter." }) } ==
+            std::wstring{ L"as an [out] parameter." });
         }
 
     SECTION("Unordered Lists")

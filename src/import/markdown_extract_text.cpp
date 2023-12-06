@@ -58,7 +58,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         while (*start == tag &&
             start < endSentinel)
             { ++start; }
-        auto endOfTag = string_util::find_unescaped_char(start, tag);
+        auto endOfTag =
+            string_util::find_unescaped_char_same_line_n(start, tag, std::distance(start, endSentinel));
         if (endOfTag == nullptr || (endOfTag >= endSentinel))
             {
             log_message(L"Missing matching styling tag in markdown file.");
@@ -70,7 +71,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         while (endOfTag < endSentinel &&
             (std::iswalnum(*endOfTag) || *endOfTag == L'`'))
             {
-            endOfTag = string_util::find_unescaped_char(++endOfTag, tag);
+            ++endOfTag;
+            endOfTag =
+                string_util::find_unescaped_char_same_line_n(endOfTag, tag,
+                                                   std::distance(endOfTag, endSentinel));
             if (endOfTag == nullptr ||
                 endOfTag + 1 >= endSentinel)
                 {
@@ -117,7 +121,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 if (std::wcsncmp(start, L"\\index{", 7) == 0)
                     {
                     start += 7;
-                    auto endOfTag = string_util::find_unescaped_matching_close_tag(start, L'{', L'}');
+                    auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'{', L'}');
                     if (endOfTag == nullptr)
                         {
                         log_message(L"Bad index{} command in markdown file.");
@@ -139,7 +143,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 else if (std::wcsncmp(start, L"\\@ref(", 6) == 0)
                     {
                     start += 6;
-                    auto endOfTag = string_util::find_unescaped_matching_close_tag(start, L'(', L')');
+                    auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'(', L')');
                     if (endOfTag == nullptr)
                         {
                         log_message(L"Bad cross reference command in markdown file.");
@@ -316,8 +320,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     if (*start == L'\'' || *start == L'"')
                         {
                         const auto quoteChar{ *start };
-                        auto endOfTag = string_util::find_unescaped_char(++start, quoteChar);
-                        if (endOfTag == nullptr)
+                        ++start;
+                        auto endOfTag =
+                            string_util::find_unescaped_char_same_line_n(start, quoteChar, std::distance(start, endSentinel));
+                        if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r keys' code block in markdown file.");
                             break;
@@ -333,8 +339,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             previousChar =
                                 m_subParser->get_filtered_text()[m_subParser->get_filtered_text_length() - 1];
                             }
-                        endOfTag = string_util::find_unescaped_char(start, L'`');
-                        if (endOfTag == nullptr)
+                        endOfTag = string_util::find_unescaped_char_same_line_n(start, L'`', std::distance(start, endSentinel));
+                        if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r keys' code block in markdown file.");
                             break;
@@ -352,8 +358,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     if (*start == L'\'' || *start == L'"')
                         {
                         const auto quoteChar{ *start };
-                        auto endOfTag = string_util::find_unescaped_char(++start, quoteChar);
-                        if (endOfTag == nullptr)
+                        ++start;
+                        auto endOfTag =
+                            string_util::find_unescaped_char_same_line_n(start, quoteChar, std::distance(start, endSentinel));
+                        if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r dropcap' code block in markdown file.");
                             break;
@@ -369,8 +377,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             previousChar =
                                 m_subParser->get_filtered_text()[m_subParser->get_filtered_text_length() - 1];
                             }
-                        endOfTag = string_util::find_unescaped_char(start, L'`');
-                        if (endOfTag == nullptr)
+                        endOfTag = string_util::find_unescaped_char_same_line_n(start, L'`', std::distance(start, endSentinel));
+                        if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r dropcap' code block in markdown file.");
                             break;
@@ -473,8 +481,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 start[1] == L'[')
                 {
                 start += 2;
-                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'[', L']');
-                if (endOfTag == nullptr)
+                auto endOfTag =
+                    string_util::find_unescaped_matching_close_tag_same_line_n(start, L'[', L']',
+                        std::distance(start, endSentinel));
+                if (endOfTag == nullptr || (endOfTag >= endSentinel))
                     {
                     log_message(L"Bad image command in markdown file.");
                     previousChar = L'[';
@@ -484,8 +494,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 start = ++endOfTag;
                 if (*start == L'(')
                     {
-                    endOfTag = string_util::find_unescaped_matching_close_tag_same_line(++start, L'(', L')');
-                    if (endOfTag == nullptr)
+                    ++start;
+                    endOfTag =
+                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'(', L')',
+                            std::distance(start, endSentinel));
+                    if (endOfTag == nullptr || (endOfTag >= endSentinel))
                         {
                         log_message(L"Bad image command in markdown file.");
                         previousChar = L'(';
@@ -503,10 +516,12 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             if (!isEscaping)
                 {
                 auto labelStart{ ++start };
-                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'[', L']');
-                if (endOfTag == nullptr)
+                auto endOfTag =
+                    string_util::find_unescaped_matching_close_tag_same_line_n(start, L'[', L']',
+                        std::distance(start, endSentinel));
+                if (endOfTag == nullptr || (endOfTag >= endSentinel))
                     {
-                    log_message(L"Bad link command in markdown file. Missing closing ']'");
+                    log_message(L"Bad link command in markdown file. Missing closing ']'.");
                     // just treat it like a stray '[' and keep going
                     previousChar = L'[';
                     add_character(L'[');
@@ -516,10 +531,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 if (*start == L'(')
                     {
                     auto labelEnd{ start - 1};
-                    endOfTag = string_util::find_unescaped_matching_close_tag_same_line(++start, L'(', L')');
-                    if (endOfTag == nullptr)
+                    ++start;
+                    endOfTag =
+                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'(', L')',
+                            std::distance(start, endSentinel));
+                    if (endOfTag == nullptr || (endOfTag >= endSentinel))
                         {
-                        log_message(L"Bad link command in markdown file. Missing closing ')'");
+                        log_message(L"Bad link command in markdown file. Missing closing ')'.");
                         // read in the label and '(' section after it as-is if closing ')' is missing
                         start = labelStart;
                         previousChar = L'[';
@@ -542,6 +560,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     }
                 continue;
                 }
+                continue;
+            }
             }
         // IDs
         else if (*start == L'{')
@@ -556,9 +576,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     }
                 else
                     {
+                    ++++start;
                     auto endOfTag =
-                        string_util::find_unescaped_matching_close_tag(++start, L'{', L'}');
-                    if (endOfTag == nullptr)
+                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'{', L'}',
+                            std::distance(start, endSentinel));
+                    if (endOfTag == nullptr || (endOfTag >= endSentinel))
                         {
                         log_message(L"Bad ID command in markdown file.");
                         break;
@@ -642,8 +664,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                  std::wcsncmp(start + 1, L"ol>", 3) == 0 ||
                  std::wcsncmp(start + 1, L"li>", 3) == 0) )
                 {
+                ++start;
                 auto endOfTag =
-                        string_util::find_unescaped_matching_close_tag(++start, L'<', L'>');
+                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'<', L'>',
+                            std::distance(start, endSentinel));
                 if (endOfTag == nullptr)
                     {
                     log_message(L"Bad <> pair in markdown file.");
