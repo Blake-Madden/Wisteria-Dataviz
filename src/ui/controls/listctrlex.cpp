@@ -307,9 +307,7 @@ void ListCtrlEx::ViewItem(const long selectedRow)
         FilePathResolverBase fileResolve;
         for (long i = 0; i < GetColumnCount(); ++i)
             {
-            fileResolve.ResolvePath(GetItemTextFormatted(selectedRow, i));
-            dlg.AddValue(GetColumnName(i), GetItemTextFormatted(selectedRow, i),
-                         !fileResolve.IsInvalidFile());
+            dlg.AddValue(GetColumnName(i), GetItemTextFormatted(selectedRow, i));
             }
         dlg.Create(this);
         dlg.ShowModal();
@@ -317,7 +315,7 @@ void ListCtrlEx::ViewItem(const long selectedRow)
     }
 
 //------------------------------------------------------
-long ListCtrlEx::FindColumn(const wchar_t* columnName)
+long ListCtrlEx::FindColumn(const wchar_t* columnName) const
     {
     for (long i = 0; i < GetColumnCount(); ++i)
         {

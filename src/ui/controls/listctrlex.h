@@ -597,7 +597,7 @@ public:
     /// @param columnName The column name to search for.
     /// @returns The index of column, if found; otherwise, wxNOT_FOUND if column name.
     [[nodiscard]]
-    long FindColumn(const wchar_t* columnName);
+    long FindColumn(const wchar_t* columnName) const;
 
     /// @brief Removes every row that matches the given string (first column of report view)
     /// @param valueToRemove The value to remove.

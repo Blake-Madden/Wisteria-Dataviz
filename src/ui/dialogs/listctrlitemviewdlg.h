@@ -13,10 +13,80 @@
 #define __LISTCTRL_ITEM_VIEW_DLG_H__
 
 #include <wx/wx.h>
+#include <wx/artprov.h>
 #include <wx/string.h>
 #include <wx/statline.h>
+#include <wx/grid.h>
+#include <wx/utils.h>
 #include <vector>
-#include "../controls/htmltablewin.h"
+
+struct RowTableItem
+    {
+    RowTableItem(wxString column, wxString value)
+        : m_column(std::move(column)), m_value(std::move(value))
+        {
+        }
+
+    wxString m_column;
+    wxString m_value;
+    };
+
+/// @brief Data provider for Excel worksheet.
+class ListRowTable final : public wxGridStringTable
+    {
+  public:
+    /// @private
+    ListRowTable() = default;
+    ListRowTable(ListRowTable&) = delete;
+    void operator=(ListRowTable&) = delete;
+
+    /// @brief Constructor.
+    /// @param wrk The worksheet to preview.
+    /// @param excelFile The excel extractor that @c wrk belongs to.
+    ListRowTable(std::vector<RowTableItem> values)
+        : m_values(std::move(values))
+        {
+        }
+
+    /// @private
+    [[nodiscard]]
+    int GetNumberRows() final
+        {
+        return m_values.size();
+        }
+
+    /// @private
+    [[nodiscard]]
+    int GetNumberCols() final
+        {
+        return 2;
+        }
+
+    /// @private
+    [[nodiscard]]
+    wxString GetValue(int row, int col) final
+        {
+        wxCHECK_MSG((row >= 0 && row < GetNumberRows()) && (col >= 0 && col < GetNumberCols()),
+                    wxString{}, L"invalid row or column index in ListRowTable");
+        return (row < m_values.size() && (col == 0 || col == 1)) ?
+            (col == 0 ? m_values[row].m_column : m_values[row].m_value) :
+            wxString{};
+        }
+
+    /// @private
+    /// @brief Will just reset the cell to its original value.
+    ///     The intention is that this dialog is read-only (it's just viewing the contents of
+    ///     a list's row), but the user may want to go into psuedo edit mode to select
+    ///     portions of the text.
+    void SetValue([[maybe_unused]] int row, [[maybe_unused]] int col,
+                  [[maybe_unused]] const wxString&) final
+        {
+        // no-op
+        }
+
+  private:
+    std::vector<RowTableItem> m_values;
+    };
 
 class ListCtrlItemViewDlg final : public wxDialog
     {
@@ -39,7 +109,7 @@ public:
         @param style The style of this dialog.*/
     bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Item"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN)
+                long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
         {
         SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create( parent, id, caption, pos, size, style );
@@ -49,33 +119,25 @@ public:
         GetSizer()->SetSizeHints(this);
         Centre();
 
-        Bind(wxEVT_HTML_LINK_CLICKED, &ListCtrlItemViewDlg::OnHyperlinkClicked, this);
         Bind(wxEVT_BUTTON, &ListCtrlItemViewDlg::OnButtonClick, this);
         return true;
         }
 
     /** Adds a value to the list.
         @param columnName The header of the column.
-        @param value The value to display in the grid.
-        @param isUrl Whether the value is a hyperlink that user can click on.*/
-    void AddValue(const wxString& columnName, const wxString& value, const bool isUrl = false)
-        { m_values.emplace_back(DisplayItem(columnName, value, isUrl)); }
+        @param value The value to display in the grid.*/
+    void AddValue(const wxString& columnName, const wxString& value)
+        {
+        m_values.emplace_back(RowTableItem(columnName, value));
+        }
 
-    void OnHyperlinkClicked(wxHtmlLinkEvent& event);
     void OnButtonClick(wxCommandEvent& event);
 private:
     void CreateControls();
-    struct DisplayItem
-        {
-        DisplayItem(const wxString& column, const wxString& value, const bool isUrl) :
-            m_column(column), m_value(value), m_isUrl(isUrl) {}
-        wxString m_column;
-        wxString m_value;
-        bool m_isUrl{ false };
-        };
-    std::vector<DisplayItem> m_values;
 
-    Wisteria::UI::HtmlTableWindow* m_htmlWindow{ nullptr };
+    std::vector<RowTableItem> m_values;
+
+    wxGrid* m_grid{ nullptr };
     };
 
 /** @}*/
