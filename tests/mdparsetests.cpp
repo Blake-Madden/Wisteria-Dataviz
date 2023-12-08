@@ -170,9 +170,9 @@ TEST_CASE("Markdown Parser", "[md import]")
         {
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"| Syntax | Description |\n| --- | ----------- |\n| Header | Title |" }) } ==
-              std::wstring{ L" | Syntax  | Description  |\n | ---  | -----------  |\n | Header  | Title  |" });
+              std::wstring{ L"\t| Syntax \t| Description \t|\n\t| --- \t| ----------- \t|\n\t| Header \t| Title \t|" });
         CHECK(std::wstring{ md({ L"| Syntax | Description |\n| :-- | ----------: |\n| Header | Title |" }) } ==
-              std::wstring{ L" | Syntax  | Description  |\n | :--  | ----------:  |\n | Header  | Title  |" });
+              std::wstring{ L"\t| Syntax \t| Description \t|\n\t| :-- \t| ----------: \t|\n\t| Header \t| Title \t|" });
         }
 
     SECTION("Superscript")

@@ -805,7 +805,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                  (*start == L'|') )
             {
             previousChar = L'|';
-            add_characters(L" |");
+            add_characters(L"\t|");
             ++start;
             continue;
             }
