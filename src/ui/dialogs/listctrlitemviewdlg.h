@@ -42,7 +42,7 @@ class ListRowTable final : public wxGridStringTable
 
     /// @brief Constructor.
     /// @param wrk The worksheet to preview.
-    /// @param excelFile The excel extractor that @c wrk belongs to.
+    /// @param values The values to show.
     ListRowTable(std::vector<RowTableItem> values)
         : m_values(std::move(values))
         {
@@ -76,7 +76,7 @@ class ListRowTable final : public wxGridStringTable
     /// @private
     /// @brief Will just reset the cell to its original value.
     ///     The intention is that this dialog is read-only (it's just viewing the contents of
-    ///     a list's row), but the user may want to go into psuedo edit mode to select
+    ///     a list's row), but the user may want to go into pseudo edit mode to select
     ///     portions of the text.
     void SetValue([[maybe_unused]] int row, [[maybe_unused]] int col,
                   [[maybe_unused]] const wxString&) final
