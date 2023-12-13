@@ -68,7 +68,7 @@ class ListRowTable final : public wxGridStringTable
         {
         wxCHECK_MSG((row >= 0 && row < GetNumberRows()) && (col >= 0 && col < GetNumberCols()),
                     wxString{}, L"invalid row or column index in ListRowTable");
-        return (row < m_values.size() && (col == 0 || col == 1)) ?
+        return (static_cast<size_t>(row) < m_values.size() && (col == 0 || col == 1)) ?
             (col == 0 ? m_values[row].m_column : m_values[row].m_value) :
             wxString{};
         }
