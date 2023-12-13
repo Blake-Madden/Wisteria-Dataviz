@@ -34,7 +34,7 @@ namespace lily_of_the_valley
             @note YAML sections are supported.
             @warning @c md_text must be the start of the Markdown document.*/
         [[nodiscard]]
-        bool has_metadata_section(const wchar_t* md_text) const
+        static bool has_metadata_section(const wchar_t* md_text)
             {
             if (md_text == nullptr)
                 { return false; }
