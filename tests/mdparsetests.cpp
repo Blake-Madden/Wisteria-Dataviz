@@ -206,6 +206,8 @@ TEST_CASE("Markdown Parser", "[md import]")
               std::wstring{ L"Hi > there & you \"." });
         CHECK(std::wstring{ md({ L"You &amp me." }) } ==
             std::wstring{ L"You &amp me." });
+        CHECK(std::wstring{ md({ L"organization&#39;s" }) } ==
+            std::wstring{ L"organization's" });
         }
 
     SECTION("Formatted link")

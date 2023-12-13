@@ -234,13 +234,23 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 {
                 auto endOfTag = std::wcsstr(start, L";");
                 if (endOfTag != nullptr &&
+                    (endOfTag < endSentinel) &&
                     std::distance(start, endOfTag) <= 6)
                     {
-                    const auto decodedChar =
-                        html_extract_text::HTML_TABLE_LOOKUP.find(
-                            { start + 1, static_cast<size_t>(std::distance(start, endOfTag) - 1) });
-                    add_character(decodedChar);
-                    previousChar = decodedChar;
+                    if (start[1] == L'#')
+                        {
+                        const auto decodedChar = static_cast<wchar_t>(string_util::atoi(start + 2));
+                        add_character(decodedChar);
+                        previousChar = decodedChar;
+                        }
+                    else
+                        {
+                        const auto decodedChar =
+                            html_extract_text::HTML_TABLE_LOOKUP.find(
+                                { start + 1, static_cast<size_t>(std::distance(start, endOfTag) - 1) });
+                        add_character(decodedChar);
+                        previousChar = decodedChar;
+                        }
                     start += std::distance(start, endOfTag) + 1;
                     continue;
                     }
