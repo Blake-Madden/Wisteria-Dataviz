@@ -19,7 +19,7 @@ void ListCtrlItemViewDlg::OnButtonClick(wxCommandEvent& event)
         {
         if (wxCHECK_VERSION(3, 3, 0))
             {
-            m_grid->CopySelected();
+            m_grid->CopySelection();
             }
         }
     else
