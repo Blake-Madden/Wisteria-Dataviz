@@ -31,7 +31,7 @@ struct RowTableItem
     wxString m_value;
     };
 
-/// @brief Data provider for Excel worksheet.
+/// @brief Data provider for a row of items from a grid.
 class ListRowTable final : public wxGridStringTable
     {
   public:
