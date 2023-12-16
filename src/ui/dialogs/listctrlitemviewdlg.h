@@ -41,9 +41,8 @@ class ListRowTable final : public wxGridStringTable
     void operator=(ListRowTable&) = delete;
 
     /// @brief Constructor.
-    /// @param wrk The worksheet to preview.
     /// @param values The values to show.
-    ListRowTable(std::vector<RowTableItem> values)
+    explicit ListRowTable(std::vector<RowTableItem> values)
         : m_values(std::move(values))
         {
         }
