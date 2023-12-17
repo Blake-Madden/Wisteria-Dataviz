@@ -370,7 +370,11 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         {
         printer.GetPrintDialogData().SetPrintData(*m_printData);
         }
-    if (!printer.Print(this, printOut, true) )
+    printer.GetPrintDialogData().SetAllPages(true);
+    printer.GetPrintDialogData().SetFromPage(1);
+    printer.GetPrintDialogData().SetMinPage(1);
+    printer.GetPrintDialogData().EnableSelection(false);
+    if (!printer.Print(m_printWindow, printOut, true))
         {
         // just show a message if a real error occurred.
         // They may have just cancelled.
