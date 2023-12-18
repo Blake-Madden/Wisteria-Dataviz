@@ -711,9 +711,11 @@ namespace lily_of_the_valley
 
         const wchar_t* const endSentinel = html_text+text_length;
         case_insensitive_wstring currentElement;
+        case_insensitive_wstring previousElement;
         while (start && (start < endSentinel))
             {
             const size_t remainingTextLength = (endSentinel-start);
+            previousElement = currentElement;
             currentElement.assign(get_element_name(start + 1, false));
             bool isSymbolFontSection = false;
             // if it's a comment, then look for matching comment ending sequence
@@ -1044,6 +1046,12 @@ namespace lily_of_the_valley
                         if (attrib.find(L"FooterLink") != std::wstring::npos)
                             {
                             add_character(L'\n');
+                            add_character(L'\n');
+                            }
+                        // break in front of link indicates that this is a link list,
+                        // so add an extra newline in front of it
+                        else if (previousElement == L"br")
+                            {
                             add_character(L'\n');
                             }
                         }

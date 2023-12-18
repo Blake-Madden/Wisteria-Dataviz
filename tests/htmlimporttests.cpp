@@ -786,6 +786,13 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"Contact 555-5555 for details.") == 0);
         }
+    SECTION("Link list")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = L"<p>Contact:</p><a href=''>Prayer Card</a><br ><a href=''>Email</a>";
+        const std::wstring res = filter_html(text, std::wcslen(text), true, false);
+        CHECK(res == std::wstring{ L"\n\nContact:\n\nPrayer Card\n\nEmail" });
+        }
     SECTION("Template PlaceHolders")
         {
         html_extract_text filter_html;
