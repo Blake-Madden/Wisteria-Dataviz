@@ -926,12 +926,12 @@ void SideBar::EnsureFolderVisible(const size_t index)
     }
 
 //-------------------------------------------
-void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
+bool SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
                            const bool sendEvent /*= true*/,
                            const bool collapseIfExpanded /*= false*/)
     {
     if (item >= GetFolderCount())
-        { return; }
+        { return false; }
 
     EnsureFolderVisible(item);
 
@@ -951,7 +951,7 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         RecalcSizes();
         Refresh(true, &refreshRect);
         Update();
-        return;
+        return true;
         }
     // See if we should fire a subitem selection event instead
     // (in case this parent has subitems)
@@ -960,7 +960,7 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         if (!m_folders[item].IsSubItemSelected())
             { m_folders[item].m_selectedItem = 0; }
         SelectSubItem(item, m_folders[item].m_selectedItem.value(), setFocus, sendEvent);
-        return;
+        return true;
         }
 
     m_selectedFolder = item;
@@ -979,6 +979,8 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         cevent.SetEventObject(this);
         GetEventHandler()->ProcessEvent(cevent);
         }
+
+    return true;
     }
 
 //-------------------------------------------
