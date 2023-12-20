@@ -71,6 +71,9 @@ public:
                             wxComboBox(parent, id, value, pos, size, choices, style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {}
+    ListEditComboBox(const ListEditComboBox&) = delete;
+    ListEditComboBox& operator=(const ListEditComboBox&) = delete;
+
     void OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event);
     void OnEndEditKillFocusTextCtrl(wxFocusEvent& event);
     void SetCurrentItem(const long row, const long column)
@@ -94,7 +97,7 @@ private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
-    wxDECLARE_NO_COPY_CLASS(ListEditComboBox);
+
     wxDECLARE_EVENT_TABLE();
     };
 
@@ -104,6 +107,8 @@ class ListEditSpinCtrl final : public wxSpinCtrl
     {
 public:
     ListEditSpinCtrl() = delete;
+    ListEditSpinCtrl(const ListEditSpinCtrl&) = delete;
+    ListEditSpinCtrl& operator=(const ListEditSpinCtrl&) = delete;
     ListEditSpinCtrl(wxWindow* parent, ListCtrlEx* owner, wxWindowID id = wxID_ANY, const wxString& value = wxString{},
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxSP_ARROW_KEYS, int Min = 1, int Max = 100, int initial = 1,
@@ -131,7 +136,6 @@ private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
-    wxDECLARE_NO_COPY_CLASS(ListEditSpinCtrl);
     };
 
 /// @brief "Floating" spin control used to edit cells in the list control (double values).
@@ -140,6 +144,8 @@ class ListEditSpinCtrlDouble final : public wxSpinCtrlDouble
     {
 public:
     ListEditSpinCtrlDouble() = delete;
+    ListEditSpinCtrlDouble(const ListEditSpinCtrlDouble&) = delete;
+    ListEditSpinCtrlDouble& operator=(const ListEditSpinCtrlDouble&) = delete;
     ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* owner,
         wxWindowID id = wxID_ANY, const wxString& value = wxString{},
         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -163,7 +169,6 @@ private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
-    wxDECLARE_NO_COPY_CLASS(ListEditSpinCtrlDouble);
     };
 
 /// @brief "Floating" text control used to edit cells in the list control.
@@ -181,6 +186,9 @@ public:
                                 style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {}
+    ListEditTextCtrl(const ListEditTextCtrl&) = delete;
+    ListEditTextCtrl& operator=(const ListEditTextCtrl&) = delete;
+
     void OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event);
     void OnEndEditKillFocusTextCtrl([[maybe_unused]] wxFocusEvent& event);
     void SetCurrentItem(const long row, const long column)
@@ -204,7 +212,7 @@ private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
-    wxDECLARE_NO_COPY_CLASS(ListEditTextCtrl);
+
     wxDECLARE_EVENT_TABLE();
     };
 
@@ -215,6 +223,9 @@ class DnDListCtrlEx final : public wxTextDropTarget
 public:
     explicit DnDListCtrlEx(wxListCtrl* owner) : m_owner(owner)
         {}
+    DnDListCtrlEx(const DnDListCtrlEx&) = delete;
+    DnDListCtrlEx& operator=(const DnDListCtrlEx&) = delete;
+
     bool OnDropText(wxCoord x, wxCoord y, const wxString& text) final
         {
         if (m_owner->IsVirtual() )
@@ -228,7 +239,6 @@ public:
         }
 private:
     wxListCtrl* m_owner{ nullptr };
-    wxDECLARE_NO_COPY_CLASS(DnDListCtrlEx);
     };
 
 /** @brief An advanced version of ListCtrl, which has built-in support for sorting, exporting,
