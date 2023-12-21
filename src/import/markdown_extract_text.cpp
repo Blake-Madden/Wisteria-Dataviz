@@ -237,10 +237,22 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     (endOfTag < endSentinel) &&
                     std::distance(start, endOfTag) <= 6)
                     {
-                    if (start[1] == L'#')
+                    if (start + 3 < endOfTag &&
+                        start[1] == L'#')
                         {
-                        const auto decodedChar = static_cast<wchar_t>(string_util::atoi(start + 2));
-                        add_character(decodedChar);
+                        size_t hexLength(endOfTag - (start + 3));
+                        const wchar_t decodedChar =
+                            string_util::is_either(start[2], L'x', L'X') ?
+                                // if it is hex encoded
+                                static_cast<wchar_t>(
+                                    string_util::axtoi(start + 3,
+                                        hexLength)) /*skip "&#x"*/ :
+                                // else it is a plain numeric value
+                                static_cast<wchar_t>(string_util::atoi(start + 2));
+                        if (decodedChar != 0)
+                            {
+                            add_character(decodedChar);
+                            }
                         previousChar = decodedChar;
                         }
                     else
