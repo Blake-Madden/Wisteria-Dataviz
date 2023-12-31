@@ -1037,7 +1037,8 @@ namespace lily_of_the_valley
                          string_util::strnicmp(pageBreakValue.c_str(), L"right", 5) == 0))
                         { add_character(L'\f'); }
                     }
-                else if (currentElement == L"br")
+                // break (handle self-terminating ones the same way)
+                else if (currentElement == L"br" || currentElement == L"br/")
                     { add_character(L'\n'); }
                 // or end of a section that is like a paragraph
                 else if (remainingTextLength >= 3 && start[0] == L'<' && start[1] == L'/')
