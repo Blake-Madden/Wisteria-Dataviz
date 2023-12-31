@@ -121,6 +121,12 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void html_extract_text::parse_raw_text(const wchar_t* text, size_t textSize)
         {
+        /* Note about superscripts and subscripts.
+           Some pages apply this to entire paragraphs to make them appear in
+           a smaller font, which is what browsers then render them as.
+           There is no way to tell what the author's intent is, but if more than
+           four characters, then it's probably not really meant to be a super or subscript.*/
+        constexpr size_t maxSubscriptLength{ 4 };
         if (textSize > 0)
             {
             size_t currentStartPosition{ 0 };
@@ -344,14 +350,29 @@ namespace lily_of_the_valley
                         if (m_superscript_stack > 0)
                             {
                             // convert what we can along the way
-                            for (size_t i = 0; i < index; ++i)
-                                { add_character(string_util::to_superscript(text[i])); }
+                            if (index <= maxSubscriptLength)
+                                {
+                                for (size_t i = 0; i < index; ++i)
+                                    { add_character(string_util::to_superscript(text[i])); }
+                                }
+                            else
+                                {
+                                add_characters({ text, index });
+                                }
                             }
                         else if (m_subscript_stack > 0)
                             {
                             // convert what we can along the way
-                            for (size_t i = 0; i < index; ++i)
-                                { add_character(string_util::to_subscript(text[i])); }
+                            // (if really a subscript)
+                            if (index <= maxSubscriptLength)
+                                {
+                                for (size_t i = 0; i < index; ++i)
+                                    { add_character(string_util::to_subscript(text[i])); }
+                                }
+                            else
+                                {
+                                add_characters({ text, index });
+                                }
                             }
                         else
                             { add_characters(text, index); }
@@ -376,14 +397,29 @@ namespace lily_of_the_valley
                 if (m_superscript_stack > 0)
                     {
                     // convert what we can along the way
+                    if (textSize <= maxSubscriptLength)
+                        {
                     for (size_t i = 0; i < textSize; ++i)
                         { add_character(string_util::to_superscript(text[i])); }
+                        }
+                    else
+                        {
+                        add_characters({ text, textSize });
+                        }
                     }
                 else if (m_subscript_stack > 0)
                     {
                     // convert what we can along the way
-                    for (size_t i = 0; i < textSize; ++i)
-                        { add_character(string_util::to_subscript(text[i])); }
+                    // (if really a subscript)
+                    if (textSize <= maxSubscriptLength)
+                        {
+                        for (size_t i = 0; i < textSize; ++i)
+                            { add_character(string_util::to_subscript(text[i])); }
+                        }
+                    else
+                        {
+                        add_characters({ text, textSize });
+                        }
                     }
                 else
                     { add_characters(text, textSize); }

@@ -191,6 +191,76 @@ TEST_CASE("Str Chr Not Quoted", "[html import]")
         }
 	}
 
+TEST_CASE("HTML parser subscripts", "[html import]")
+    {
+        SECTION("Superscript")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = L"H<sup>2</sup>O<sup>37i</sup>";
+        std::wstring p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"H²O³⁷ⁱ") == p);
+        text = L"H<sup>2</sup>O<sup>37Zi</sup>";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"H²O³⁷Zⁱ") == p);
+        }
+    SECTION("Subscript")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = L"H<sub>2</sub>O<sub>37h</sub>";
+        std::wstring p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"H₂O₃₇ₕ") == p);
+        text = L"H<sub>2</sub>O<sub>37Zh</sub>";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"H₂O₃₇Zₕ") == p);
+        }
+    SECTION("Not really a script")
+        {
+        html_extract_text filter_html;
+        wchar_t* text = L"<sub>Hello22</sub> some text <sub>Hello2</sub>";
+        std::wstring p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello22 some text Hello2") == p);
+
+        text = L"<sup>Hello2</sup>";
+        p = filter_html(text, std::wcslen(text), true, false);
+        CHECK(std::wstring(L"Hello2") == p);
+        }
+    }
+
+TEST_CASE("HTML parser tags", "[html import]")
+    {
+    SECTION("Find Tag")
+        {
+        const wchar_t* text = L"body bgcolor=\'#FF0000\' color=\'#FF0000\'>there<br />world<br >!";
+        CHECK(html_extract_text::find_tag(text, L"bgcolor", 7, false) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"BGCOLOR", 7, false) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"color", 5, false) == text+23);
+        CHECK(html_extract_text::find_tag(text, L"width", 5, false) == nullptr);
+        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
+        }
+    SECTION("Find Tag 2")
+        {
+        const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
+        CHECK(html_extract_text::find_tag(text, L"STYLE", 5, false) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"color", 5, false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"width", 5, false) == nullptr);
+        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
+        }
+    SECTION("Find Tag Quotable")
+        {
+        const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
+        CHECK(html_extract_text::find_tag(text, L"STYLE", 5, true) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"color", 5, true) == text+12);
+        CHECK(html_extract_text::find_tag(text, L"width", 5, true) == text+26);
+        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, true) == nullptr);
+        CHECK(html_extract_text::find_tag(text, nullptr, 0, true) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"body", 4, true) == text);
+        }
+    }
+
 TEST_CASE("HTML Parser", "[html import]")
     {
     SECTION("Find Bookmark")
@@ -345,26 +415,6 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"hello\n\n\n\nItem 1:\tThe definition\n\n") == p);
         }
-    SECTION("Superscript")
-        {
-        html_extract_text filter_html;
-        const wchar_t* text = L"H<sup>2</sup>O<sup>37i</sup>";
-        std::wstring p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wstring(L"H²O³⁷ⁱ") == p);
-        text = L"H<sup>2</sup>O<sup>37Zi</sup>";
-        p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wstring(L"H²O³⁷Zⁱ") == p);
-        }
-    SECTION("Subscript")
-        {
-        html_extract_text filter_html;
-        const wchar_t* text = L"H<sub>2</sub>O<sub>37h</sub>";
-        std::wstring p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wstring(L"H₂O₃₇ₕ") == p);
-        text = L"H<sub>2</sub>O<sub>37Zh</sub>";
-        p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wstring(L"H₂O₃₇Zₕ") == p);
-        }
     SECTION("Table")
         {
         html_extract_text filter_html;
@@ -461,37 +511,6 @@ TEST_CASE("HTML Parser", "[html import]")
         text = L"<img src=\"images/biosoft.gif\" biotechnology=\"\" software=\"\" internet=\"\" journal=\"\" praises=\"\" statistics=\"\" s=\"\" quality,=\"\" customizability=\"\" and=\"\" selection=\"\" of=\"\" graphics=\"\" valign=\"bottom\" vspace=\"5\" width=\"258\" align=\"left\" height=\"23\" hspace=\"10\">A comprehensive (4 pages long) review of";
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"A comprehensive (4 pages long) review of") == 0);
-        }
-    SECTION("Find Tag")
-        {
-        const wchar_t* text = L"body bgcolor=\'#FF0000\' color=\'#FF0000\'>there<br />world<br >!";
-        CHECK(html_extract_text::find_tag(text, L"bgcolor", 7, false) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"BGCOLOR", 7, false) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"color", 5, false) == text+23);
-        CHECK(html_extract_text::find_tag(text, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
-        }
-    SECTION("Find Tag 2")
-        {
-        const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
-        CHECK(html_extract_text::find_tag(text, L"STYLE", 5, false) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"color", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
-        }
-    SECTION("Find Tag Quotable")
-        {
-        const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
-        CHECK(html_extract_text::find_tag(text, L"STYLE", 5, true) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"color", 5, true) == text+12);
-        CHECK(html_extract_text::find_tag(text, L"width", 5, true) == text+26);
-        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, true) == nullptr);
-        CHECK(html_extract_text::find_tag(text, nullptr, 0, true) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"body", 4, true) == text);
         }
     SECTION("Read Element As String")
         {
