@@ -10,7 +10,7 @@
 # Declare the minimum required CMake version
 # Note that CMake 3.24 is needed if compiling wxWidgets 3.2
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 IF(NOT CMAKE_CONFIGURATION_TYPES)
