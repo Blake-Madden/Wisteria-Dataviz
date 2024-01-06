@@ -207,7 +207,7 @@ Dependencies
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher
 - GTK 3 (Linux)
 - Threading Building Blocks: libtbb (Linux), tbb (macOS)
-- A C++17 compatible compiler
+- A C++20 compatible compiler
 - OpenMP (optional): libomp (macOS)
 
 If using a version of CMake older than 3.24, please refer to
