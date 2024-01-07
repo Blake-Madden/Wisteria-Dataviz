@@ -6,7 +6,8 @@
             Tim-Philipp Mueller (Gtk+ bug report patch for GtkTextView Pango-loading functionality)
             Anthony Bretaudeau (portions of wxWidgets printing code)
     @details This program is free software; you can redistribute it and/or modify
-     it under the terms of the 3-Clause BSD License (some portions are wxWindows licensed, where noted).
+        it under the terms of the 3-Clause BSD License
+        (some portions are wxWindows licensed, where noted).
 
      SPDX-License-Identifier: BSD-3-Clause
      SPDX-License-Identifier: wxWindows
@@ -511,7 +512,7 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag);
 /// @returns A GTK text tag into RTF text.
 wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
                              std::vector<wxColour>& colorTable,
-                             std::vector<wxString>& fontTable);
+                             [[maybe_unused]] std::vector<wxString>& fontTable);
 
 /*  Suggestion for bug #59390 on http://bugs.gnome.org,
  *  "load Pango Markup into GtkTextBuffer"

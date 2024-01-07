@@ -4,7 +4,8 @@
             Tim-Philipp Mueller (Gtk+ bug report patch for GtkTextView Pango functionality)
             Anthony Bretaudeau (portions of wxWidgets printing code)
     @details This program is free software; you can redistribute it and/or modify
-     it under the terms of the 3-Clause BSD License (some portions are wxWindows licensed, where noted).
+        it under the terms of the 3-Clause BSD License
+        (some portions are wxWindows licensed, where noted).
 
      SPDX-License-Identifier: BSD-3-Clause
      SPDX-License-Identifier: wxWindows
@@ -228,20 +229,20 @@ text_buffer_set_markup (GtkTextBuffer *buffer,
 //-------------------------------------------------
 wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     {
-    wxString text = L"<span";
-    wxString styleParams = L" style=\"";
+    wxString text{ L"<span" };
+    wxString styleParams{ L" style=\"" };
     // indicators as to whether a tag is set or not
     gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
              strikeThroughSet;
     // values to write to
-    GdkRGBA* bkColor = nullptr;
-    GdkRGBA* fgColor = nullptr;
-    gdouble size = 0;
+    GdkRGBA* bkColor{ nullptr };
+    GdkRGBA* fgColor{ nullptr };
+    gdouble size{ 0 };
     gint weight;
     PangoStyle style;
     gboolean underline, strikeThrough;
-    gchar* family = nullptr;
-    gchar* font = nullptr;
+    gchar* family{ nullptr };
+    gchar* font{ nullptr };
     g_object_get(G_OBJECT(tag),
         "background-set", &bkColorSet,
         "foreground-set", &fgColorSet,
@@ -315,21 +316,21 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
 //-------------------------------------------------
 wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
                             std::vector<wxColour>& colorTable,
-                            std::vector<wxString>& fontTable)
+                            [[maybe_unused]] std::vector<wxString>& fontTable)
     {
-    wxString text = L" ";
+    wxString text{ L" " };
     // indicators as to whether a tag is set or not
     gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
         strikeThroughSet;
     // values to write to
-    GdkRGBA* bkColor = nullptr;
-    GdkRGBA* fgColor = nullptr;
-    gdouble size = 0;
+    GdkRGBA* bkColor{ nullptr };
+    GdkRGBA* fgColor{ nullptr };
+    gdouble size{ 0 };
     gint weight;
     PangoStyle style;
     gboolean underline, strikeThrough;
-    gchar* family = nullptr;
-    gchar* font = nullptr;
+    gchar* family{ nullptr };
+    gchar* font{ nullptr };
     g_object_get(G_OBJECT(tag),
         "background-set", &bkColorSet,
         "foreground-set", &fgColorSet,
