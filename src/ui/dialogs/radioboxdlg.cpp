@@ -19,7 +19,7 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
 
     auto banner = new wxBannerWindow(this, wxTOP);
     banner->SetText(m_bannerLabel, m_bannerDescription);
-    banner->SetGradient(ColorBrewer::GetColor(Color::White), ColorBrewer::GetColor(Color::AshGrey));
+    banner->SetGradient(banner->GetBackgroundColour(), ColorContrast::ShadeOrTint(banner->GetBackgroundColour()));
 
     mainSizer->Add(banner, wxSizerFlags().Expand());
 
