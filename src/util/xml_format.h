@@ -108,7 +108,7 @@ public:
     [[nodiscard]]
     static wxColour GetColor(const wchar_t* sectionStart,
                              const wchar_t* sectionEnd,
-                             const wchar_t* entityTag,
+                             const wxString& entityTag,
                              const wxColour& defaultValue);
     [[nodiscard]]
     static wxColour GetColorWithInclusionTag(const wchar_t* sectionStart,

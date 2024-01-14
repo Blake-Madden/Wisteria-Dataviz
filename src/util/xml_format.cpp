@@ -262,29 +262,28 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
 //------------------------------------------------
 wxColour XmlFormat::GetColor(const wchar_t* sectionStart,
                              const wchar_t* sectionEnd,
-                             const wchar_t* entityTag,
+                             const wxString& entityTag,
                              const wxColour& defaultValue)
     {
     wxColour color = defaultValue;
 
-    assert(sectionStart && sectionEnd && entityTag &&
+    assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetColor()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag == nullptr)
+        entityTag.empty())
         { return color; }
 
     // get the color
-    const size_t startTagLength = std::wcslen(entityTag);
     const wchar_t* currentPos =
         lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, entityTag, startTagLength);
+            sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
     int red = defaultValue.Red(), green = defaultValue.Green(), blue = defaultValue.Blue();
     if (currentPos && (currentPos < sectionEnd) )
         {
         const wchar_t* entityEnd = std::wcschr(currentPos, L'>');
         if (!entityEnd || (entityEnd > sectionEnd))
             { return defaultValue; }
-        currentPos += startTagLength+1;
+        currentPos += entityTag.length() + 1;
         // red
         wxString colorAttribute = wxString::Format(L"%s=\"", GetRed());
         const wchar_t* colorPos = std::wcsstr(currentPos, colorAttribute);
