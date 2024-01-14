@@ -113,14 +113,14 @@ public:
     [[nodiscard]]
     static wxColour GetColorWithInclusionTag(const wchar_t* sectionStart,
                                              const wchar_t* sectionEnd,
-                                             const wchar_t* entityTag,
+                                             const wxString& entityTag,
                                              bool& include,
                                              const wxColour& defaultValue,
                                              const bool includeDefaultValue);
     [[nodiscard]]
     static wxFont GetFont(const wchar_t* sectionStart,
                           const wchar_t* sectionEnd,
-                          const wchar_t* entityTag,
+                          const wxString& entityTag,
                           const wxFont& defaultFont = wxNullFont);
     [[nodiscard]]
     static long GetAttributeLongValue(const wchar_t* sectionStart,
@@ -129,19 +129,19 @@ public:
     [[nodiscard]]
     static long GetAttributeLongValue(const wchar_t* sectionStart,
                        const wchar_t* sectionEnd,
-                       const wchar_t* entityTag,
-                       const wchar_t* attributeTag,
+                       const wxString& entityTag,
+                       const wxString& attributeTag,
                        const long defaultValue);
     [[nodiscard]]
     static double GetAttributeDoubleValue(const wchar_t* sectionStart,
                                          const wchar_t* sectionEnd,
-                                         const wchar_t* entityTag,
-                                         const wchar_t* attributeTag,
+                                         const wxString& entityTag,
+                                         const wxString& attributeTag,
                                          const double defaultValue);
     [[nodiscard]]
     static wxString GetAttributeString(const wchar_t* sectionStart,
                                        const wchar_t* sectionEnd,
-                                       const wchar_t* attributeTag);
+                                       const wxString& attributeTag);
     [[nodiscard]]
     static wxString FormatFontAttributes(const wxFont& font);
     [[nodiscard]]

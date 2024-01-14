@@ -87,24 +87,24 @@ long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart,
 //------------------------------------------------
 double XmlFormat::GetAttributeDoubleValue(const wchar_t* sectionStart,
                                           const wchar_t* sectionEnd,
-                                          const wchar_t* entityTag,
-                                          const wchar_t* attributeTag,
+                                          const wxString& entityTag,
+                                          const wxString& attributeTag,
                                           const double defaultValue)
     {
-    assert(sectionStart && sectionEnd && entityTag && attributeTag &&
+    assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length() &&
            L"Invalid pointer passed to GetAttributeDoubleValue()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag == nullptr || attributeTag == nullptr)
+        entityTag.empty() || attributeTag.empty())
         { return 0.0; }
 
     const wchar_t* currentPos =
         lily_of_the_valley::html_extract_text::find_element(sectionStart, sectionEnd,
-            entityTag, std::wcslen(entityTag));
+            { entityTag.data(), entityTag.length() }, true);
     if (currentPos)
         {
         const auto dValueStr =
             wxString(lily_of_the_valley::html_extract_text::read_attribute_as_string(
-                     currentPos, attributeTag, std::wcslen(attributeTag), false));
+                currentPos, { attributeTag.data(), attributeTag.length() }, false, false));
         if (dValueStr.length())
             {
             double dValue{ 0 };
@@ -120,14 +120,14 @@ double XmlFormat::GetAttributeDoubleValue(const wchar_t* sectionStart,
 //------------------------------------------------
 long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart,
                                       const wchar_t* sectionEnd,
-                                      const wchar_t* entityTag,
-                                      const wchar_t* attributeTag,
+                                      const wxString& entityTag,
+                                      const wxString& attributeTag,
                                       const long defaultValue)
     {
-    assert(sectionStart && sectionEnd && entityTag && attributeTag &&
+    assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length() &&
            L"Invalid pointer passed to GetAttributeLongValue()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag == nullptr || attributeTag == nullptr)
+        entityTag.empty() || attributeTag.empty())
         { return 0; }
 
     const wchar_t* currentPos = std::wcsstr(sectionStart, entityTag);
@@ -151,11 +151,11 @@ long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart,
 //------------------------------------------------
 wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart,
                                        const wchar_t* sectionEnd,
-                                       const wchar_t* attributeTag)
+                                       const wxString& attributeTag)
     {
-    assert(sectionStart && sectionEnd && attributeTag &&
+    assert(sectionStart && sectionEnd && attributeTag.length() &&
            L"Invalid pointer passed to GetAttributeString()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag == nullptr)
+    if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag.empty())
         { return wxString{}; }
 
     const wchar_t* currentPos = std::wcsstr(sectionStart, attributeTag);
@@ -179,26 +179,25 @@ wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart,
 //------------------------------------------------
 wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
                           const wchar_t* sectionEnd,
-                          const wchar_t* entityTag,
+                          const wxString& entityTag,
                           const wxFont& defaultFont /*= wxNullFont*/)
     {
     wxFont font = defaultFont.IsOk() ?
         defaultFont : wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
 
-    assert(sectionStart && sectionEnd && entityTag &&
+    assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetFont()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag == nullptr)
+        entityTag.empty())
         { return font; }
 
     // get the font
-    const size_t startTagLength = std::wcslen(entityTag);
     const wchar_t* currentPos =
         html_extract_text::find_element(
-            sectionStart, sectionEnd, entityTag, startTagLength);
+            sectionStart, sectionEnd, { entityTag.data(), entityTag.length() }, true);
     if (currentPos && (currentPos < sectionEnd) )
         {
-        currentPos += startTagLength+1;
+        currentPos += entityTag.length() + 1;
         // point size
         wxString attribute = GetFontPointSize();
         attribute += L"=\"";
@@ -316,7 +315,7 @@ wxColour XmlFormat::GetColor(const wchar_t* sectionStart,
 //------------------------------------------------
 wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart,
                        const wchar_t* sectionEnd,
-                       const wchar_t* entityTag,
+                       const wxString& entityTag,
                        bool& include,
                        const wxColour& defaultValue,
                        const bool includeDefaultValue)
@@ -324,24 +323,23 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart,
     wxColour color = defaultValue;
     include = includeDefaultValue;
 
-    assert(sectionStart && sectionEnd && entityTag &&
+    assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetColorWithInclusionTag()!");
     if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag == nullptr)
+        entityTag.empty())
         { return color; }
 
     // get the color
-    const size_t startTagLength = std::wcslen(entityTag);
     const wchar_t* currentPos =
         lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, entityTag, startTagLength);
+            sectionStart, sectionEnd, { entityTag.data(), entityTag .length() }, true);
     int red = defaultValue.Red(), green = defaultValue.Green(), blue = defaultValue.Blue();
     if (currentPos && (currentPos < sectionEnd) )
         {
         const wchar_t* entityEnd = std::wcschr(currentPos, L'>');
         if (!entityEnd || (entityEnd > sectionEnd))
             { return defaultValue; }
-        currentPos += startTagLength+1;
+        currentPos += entityTag.length() + 1;
         // red
         wxString colorAttribute = wxString::Format(L"%s=\"", GetRed());
         const wchar_t* colorPos = std::wcsstr(currentPos, colorAttribute);
