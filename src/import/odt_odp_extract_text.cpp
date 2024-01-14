@@ -15,42 +15,42 @@ namespace lily_of_the_valley
         // reset meta data from last call
         reset_meta_data();
 
-        const std::wstring OFFICE_META(L"office:meta");
-        const std::wstring SUBJECT(L"dc:subject");
-        const std::wstring TITLE(L"dc:title");
-        const std::wstring DESCRIPTION(L"dc:description");
-        const std::wstring KEYWORDS(L"meta:keyword");
-        const std::wstring AUTHOR(L"meta:initial-creator");
+        const std::wstring_view OFFICE_META(L"office:meta");
+        const std::wstring_view SUBJECT(L"dc:subject");
+        const std::wstring_view TITLE(L"dc:title");
+        const std::wstring_view DESCRIPTION(L"dc:description");
+        const std::wstring_view KEYWORDS(L"meta:keyword");
+        const std::wstring_view AUTHOR(L"meta:initial-creator");
         const wchar_t* const textEnd = html_text+text_length;
 
         const wchar_t* const officeMetaStart =
-            find_element(html_text, textEnd, OFFICE_META.c_str(), OFFICE_META.length());
+            find_element(html_text, textEnd, OFFICE_META, true);
         if (!officeMetaStart)
             { return; }
 
         html_extract_text parseHtml;
 
-        m_title = read_element_as_string(officeMetaStart, textEnd, TITLE.c_str(), TITLE.length());
+        m_title = read_element_as_string(officeMetaStart, textEnd, TITLE);
         auto metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
         if (metaVal)
             { m_title.assign(metaVal); }
 
-        m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT.c_str(), SUBJECT.length());
+        m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT);
         metaVal = parseHtml(m_subject.c_str(), m_subject.length(), true, false);
         if (metaVal)
             { m_subject.assign(metaVal); }
 
-        m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION.c_str(), DESCRIPTION.length());
+        m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION);
         metaVal = parseHtml(m_description.c_str(), m_description.length(), true, false);
         if (metaVal)
             { m_description.assign(metaVal); }
 
-        m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS.c_str(), KEYWORDS.length());
+        m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS);
         metaVal = parseHtml(m_keywords.c_str(), m_keywords.length(), true, false);
         if (metaVal)
             { m_keywords.assign(metaVal); }
 
-        m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR.c_str(), AUTHOR.length());
+        m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR);
         metaVal = parseHtml(m_author.c_str(), m_author.length(), true, false);
         if (metaVal)
             { m_author.assign(metaVal); }
@@ -62,19 +62,19 @@ namespace lily_of_the_valley
         // reset meta data from last call
         reset_meta_data();
 
-        static const std::wstring OFFICE_ANNOTATION(L"office:annotation");
-        static const std::wstring OFFICE_ANNOTATION_OOO(L"officeooo:annotation");
+        static const std::wstring_view OFFICE_ANNOTATION(L"office:annotation");
+        static const std::wstring_view OFFICE_ANNOTATION_OOO(L"officeooo:annotation");
         // text section tags
-        static const std::wstring TEXT_P(L"text:p");
-        static const std::wstring TEXT_P_END(L"</text:p>");
-        static const std::wstring TEXT_H(L"text:h");
-        static const std::wstring TEXT_H_END(L"</text:h>");
-        static const std::wstring TEXT_S(L"text:s");
-        static const std::wstring TEXT_C(L"text:c");
+        static const std::wstring_view TEXT_P(L"text:p");
+        static const std::wstring_view TEXT_P_END(L"</text:p>");
+        static const std::wstring_view TEXT_H(L"text:h");
+        static const std::wstring_view TEXT_H_END(L"</text:h>");
+        static const std::wstring_view TEXT_S(L"text:s");
+        static const std::wstring_view TEXT_C(L"text:c");
         // tables
-        static const std::wstring TABLE_ROW(L"table:table-row");
+        static const std::wstring_view TABLE_ROW(L"table:table-row");
         // paragraph info
-        static const std::wstring TEXT_STYLE_NAME(L"text:style-name");
+        static const std::wstring_view TEXT_STYLE_NAME(L"text:style-name");
 
         clear_log();
         if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
@@ -115,9 +115,9 @@ namespace lily_of_the_valley
                 end += 3; // -->
                 }
             // if it's an annotation, then skip it
-            else if (compare_element_case_sensitive(start+1, OFFICE_ANNOTATION.c_str(), OFFICE_ANNOTATION.length() ) )
+            else if (compare_element_case_sensitive(start+1, OFFICE_ANNOTATION, false) )
                 {
-                end = find_closing_element(start, endSentinel, OFFICE_ANNOTATION.c_str(), OFFICE_ANNOTATION.length());
+                end = find_closing_element(start, endSentinel, OFFICE_ANNOTATION);
                 if (!end)
                     { break; }
                 end = find_close_tag(end+1);
@@ -126,9 +126,9 @@ namespace lily_of_the_valley
                 else
                     { ++end; }
                 }
-            else if (compare_element_case_sensitive(start+1, OFFICE_ANNOTATION_OOO.c_str(), OFFICE_ANNOTATION_OOO.length() ) )
+            else if (compare_element_case_sensitive(start+1, OFFICE_ANNOTATION_OOO, false) )
                 {
-                end = find_closing_element(start, endSentinel, OFFICE_ANNOTATION_OOO.c_str(), OFFICE_ANNOTATION_OOO.length());
+                end = find_closing_element(start, endSentinel, OFFICE_ANNOTATION_OOO);
                 if (!end)
                     { break; }
                 end = find_close_tag(end+1);
@@ -137,10 +137,9 @@ namespace lily_of_the_valley
                 else
                     { ++end; }
                 }
-            else if (compare_element_case_sensitive(start+1, TEXT_S.c_str(), TEXT_S.length(), true))
-                {
+            else if (compare_element_case_sensitive(start+1, TEXT_S, true))                {
                 auto spacesCount =
-                    read_attribute_as_long(start+1, TEXT_C.c_str(), TEXT_C.length(), false);
+                    read_attribute_as_long(start+1, TEXT_C, false);
                 // if unreasonable number of spaces value is found, then use 10
                 // (more than 10 spaces could mean that this tag is messed up)
                 if (spacesCount > 10)
@@ -156,12 +155,11 @@ namespace lily_of_the_valley
             else
                 {
                 // see if this should be treated as a new paragraph
-                if (compare_element_case_sensitive(start+1, TEXT_P.c_str(), TEXT_P.length(), true) ||
-                    compare_element_case_sensitive(start+1, TEXT_H.c_str(), TEXT_H.length(), true))
+                if (compare_element_case_sensitive(start+1, TEXT_P, true) ||
+                    compare_element_case_sensitive(start+1, TEXT_H, true))
                     {
                     const std::wstring styleName =
-                        read_attribute_as_string(start+1, TEXT_STYLE_NAME.c_str(),
-                                                 TEXT_STYLE_NAME.length(), false);
+                        read_attribute_as_string(start+1, TEXT_STYLE_NAME, false, false);
                     // page breaks
                     if (m_page_break_paragraph_styles.find(styleName) !=
                         m_page_break_paragraph_styles.cend())
@@ -184,45 +182,45 @@ namespace lily_of_the_valley
                         }
                     ++textSectionDepth;
                     }
-                else if (compare_element_case_sensitive(start+1, L"text:span", 9, true))
+                else if (compare_element_case_sensitive(start+1, L"text:span", true))
                     { ++textSectionDepth; }
                 // or end of a section
-                else if (std::wcsncmp(start, TEXT_P_END.c_str(), TEXT_P_END.length() ) == 0 ||
-                    std::wcsncmp(start, TEXT_H_END.c_str(), TEXT_H_END.length() ) == 0 ||
+                else if (std::wcsncmp(start, TEXT_P_END.data(), TEXT_P_END.length() ) == 0 ||
+                    std::wcsncmp(start, TEXT_H_END.data(), TEXT_H_END.length() ) == 0 ||
                     std::wcsncmp(start, L"</text:span>", 12) == 0)
                     { --textSectionDepth; }
                 // beginning of a list item
-                else if (compare_element_case_sensitive(start+1, L"text:list-item", 14) )
+                else if (compare_element_case_sensitive(start+1, L"text:list-item", false) )
                     {
                     add_character(L'\n');
                     add_character(L'\t');
                     insideOfListItemOrTableCell = true;
                     }
                 // end of a list item
-                else if (compare_element_case_sensitive(start+1, L"/text:list-item", 15) )
+                else if (compare_element_case_sensitive(start+1, L"/text:list-item", false) )
                     { insideOfListItemOrTableCell = false; }
                 // tab over table cell and newline for table rows
-                else if (compare_element_case_sensitive(start+1, TABLE_ROW.c_str(), TABLE_ROW.length() ) )
+                else if (compare_element_case_sensitive(start+1, TABLE_ROW, false) )
                     {
                     add_character(L'\n');
                     add_character(L'\n');
                     }
                 // tab over for a cell
-                else if (compare_element_case_sensitive(start+1, L"table:table-cell", 16) )
+                else if (compare_element_case_sensitive(start+1, L"table:table-cell", false) )
                     {
                     add_character(L'\t');
                     insideOfListItemOrTableCell = true;
                     }
-                else if (compare_element_case_sensitive(start+1, L"/table:table-cell", 17) )
+                else if (compare_element_case_sensitive(start+1, L"/table:table-cell", false) )
                     { insideOfListItemOrTableCell = false; }
                 // or a tab
-                else if (compare_element_case_sensitive(start+1, L"text:tab", 8, true) )
+                else if (compare_element_case_sensitive(start+1, L"text:tab", true) )
                     { add_character(L'\t'); }
                 // hard breaks
-                else if (compare_element_case_sensitive(start+1, L"text:line-break", 15, true) )
+                else if (compare_element_case_sensitive(start+1, L"text:line-break", true) )
                     { add_character(L'\n'); }
                 // a new page (only in ODP files)
-                else if (compare_element_case_sensitive(start+1, L"draw:page", 9, true) )
+                else if (compare_element_case_sensitive(start+1, L"draw:page", true) )
                     { add_character(L'\f'); }
                 else
                     { textSectionFound = (textSectionDepth > 0) ? true : false; }
@@ -261,39 +259,39 @@ namespace lily_of_the_valley
     void odt_odp_extract_text::read_paragraph_styles(const wchar_t* text, const wchar_t* textEnd)
         {
         // items for reading in general style information
-        static const std::wstring STYLE_STYLE_END(L"</style:style>");
-        static const std::wstring STYLE_NAME(L"style:name");
-        static const std::wstring ALIGNMENT(L"fo:text-align");
-        static const std::wstring BREAK_BEFORE(L"fo:break-before");
-        static const std::wstring MARGIN_ALIGNMENT(L"fo:margin-left");
+        static const std::wstring_view STYLE_STYLE_END(L"</style:style>");
+        static const std::wstring_view STYLE_NAME(L"style:name");
+        static const std::wstring_view ALIGNMENT(L"fo:text-align");
+        static const std::wstring_view BREAK_BEFORE(L"fo:break-before");
+        static const std::wstring_view MARGIN_ALIGNMENT(L"fo:margin-left");
 
         const wchar_t* const officeStyleStart =
-            find_element(text, textEnd, L"office:automatic-styles", 23);
+            find_element(text, textEnd, L"office:automatic-styles", true);
         if (!officeStyleStart)
             { return; }
         const wchar_t* const officeStyleEnd =
-            find_closing_element(officeStyleStart, textEnd, L"office:automatic-styles", 23);
+            find_closing_element(officeStyleStart, textEnd, L"office:automatic-styles");
         if (officeStyleEnd)
             {
             // go through all of the styles in the office styles section
             const wchar_t* currentStyleStart =
-                find_element(officeStyleStart, textEnd, L"style:style", 11);
+                find_element(officeStyleStart, textEnd, L"style:style", true);
             while (currentStyleStart)
                 {
                 const wchar_t* currentStyleEnd =
-                    find_closing_element(currentStyleStart, textEnd, L"style:style", 11);
+                    find_closing_element(currentStyleStart, textEnd, L"style:style");
                 if (currentStyleEnd && (currentStyleStart < currentStyleEnd))
                     {
                     // read in the name of the current style
                     const std::wstring styleName = read_attribute_as_string(currentStyleStart,
-                        STYLE_NAME.c_str(), STYLE_NAME.length(), false, true);
+                        STYLE_NAME, false, true);
                     if (styleName.empty())
                         {
                         currentStyleStart = currentStyleEnd + STYLE_STYLE_END.length();
                         continue;
                         }
                     const wchar_t* paragraphProperties =
-                        find_element(currentStyleStart, currentStyleEnd, L"style:paragraph-properties", 26);
+                        find_element(currentStyleStart, currentStyleEnd, L"style:paragraph-properties", true);
                     if (!paragraphProperties ||
                         paragraphProperties > currentStyleEnd)
                         {
@@ -304,19 +302,19 @@ namespace lily_of_the_valley
                     // read in the paragraph alignment and if it's indented then
                     // add it to our collection of indented styles
                     const std::wstring alignment = read_attribute_as_string(currentStyleStart,
-                        ALIGNMENT.c_str(), ALIGNMENT.length(), false, true);
+                        ALIGNMENT, false, true);
                     if (alignment == L"center" || alignment == L"end")
                         { m_indented_paragraph_styles.insert(styleName); }
                     else
                         {
                         const auto alignmentValue = read_attribute_as_long(currentStyleStart,
-                            MARGIN_ALIGNMENT.c_str(), MARGIN_ALIGNMENT.length(), false);
+                            MARGIN_ALIGNMENT, false);
                         if (alignmentValue > 0)
                             { m_indented_paragraph_styles.insert(styleName); }
                         }
                     // page breaks
                     const std::wstring pageBreak = read_attribute_as_string(currentStyleStart,
-                        BREAK_BEFORE.c_str(), BREAK_BEFORE.length(), false, true);
+                        BREAK_BEFORE, false, true);
                     if (pageBreak == L"page")
                         {m_page_break_paragraph_styles.insert(styleName); }
                     }

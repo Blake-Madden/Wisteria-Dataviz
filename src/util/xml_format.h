@@ -78,22 +78,22 @@ public:
     [[nodiscard]]
     static long GetLong(const wchar_t* sectionStart,
                         const wchar_t* sectionEnd,
-                        const wchar_t* entityTag,
+                        const wxString& entityTag,
                         const long defaultValue);
     [[nodiscard]]
     static double GetDouble(const wchar_t* sectionStart,
                             const wchar_t* sectionEnd,
-                            const wchar_t* entityTag,
+                            const wxString& entityTag,
                             const double defaultValue);
     [[nodiscard]]
     static wxString GetString(const wchar_t* sectionStart,
                               const wchar_t* sectionEnd,
-                              const wchar_t* entityTag,
+                              const wxString& entityTag,
                               const wxString& defaultValue = wxString{});
     /// loads values when the same tag is used more than once in a block of text
     static void GetStrings(const wchar_t* sectionStart,
                                const wchar_t* sectionEnd,
-                               const wchar_t* entityTag,
+                               const wxString& entityTag,
                                std::vector<wxString>& strings);
     static void GetStringsWithExtraInfo(const wchar_t* sectionStart,
                                const wchar_t* sectionEnd,
@@ -103,7 +103,7 @@ public:
     [[nodiscard]]
     static bool GetBoolean(const wchar_t* sectionStart,
                            const wchar_t* sectionEnd,
-                           const wchar_t* entityTag,
+                           const wxString& entityTag,
                            const bool defaultValue);
     [[nodiscard]]
     static wxColour GetColor(const wchar_t* sectionStart,

@@ -77,7 +77,7 @@ namespace lily_of_the_valley
         if (!m_html_text || m_html_text[0] == 0)
             { return return_finished(); }
 
-        while ((m_html_text = html_extract_text::find_element(m_html_text, m_html_text_end, L"si", 2)) != nullptr)
+        while ((m_html_text = html_extract_text::find_element(m_html_text, m_html_text_end, L"si", true)) != nullptr)
             {
             const wchar_t* const siElement = html_extract_text::find_close_tag(m_html_text);
             // ill-formed string item, just return empty and move onto the next one.
@@ -87,7 +87,7 @@ namespace lily_of_the_valley
                 return std::make_pair(true, std::wstring{});
                 }
             m_html_text = siElement+1;
-            const wchar_t* const endTag = html_extract_text::find_closing_element(m_html_text, m_html_text_end, L"si", 2);
+            const wchar_t* const endTag = html_extract_text::find_closing_element(m_html_text, m_html_text_end, L"si");
             // no matching end for string item, so the rest of the table is ill formed, so we're done.
             if (!endTag)
                 { return return_finished(); }
@@ -95,14 +95,14 @@ namespace lily_of_the_valley
             std::wstring currentString;
             while (stringTag && stringTag < endTag)
                 {
-                stringTag = html_extract_text::find_element(stringTag, endTag, L"t", 1);
+                stringTag = html_extract_text::find_element(stringTag, endTag, L"t", true);
                 if (!stringTag)
                     { break; }
                 stringTag = html_extract_text::find_close_tag(stringTag);
                 if (!stringTag)
                     { break; }
                 const wchar_t* const endStringTag =
-                    html_extract_text::find_closing_element(++stringTag, endTag, L"t", 1);
+                    html_extract_text::find_closing_element(++stringTag, endTag, L"t");
                 if (!endStringTag)
                     { break; }
                 // read in the string
@@ -169,24 +169,24 @@ namespace lily_of_the_valley
         const wchar_t* const worksheetEnd = worksheet_text+worksheet_length;
         std::pair<const wchar_t*, size_t> typeTag;
         while ((worksheet_text =
-                html_extract_text::find_element(worksheet_text, worksheetEnd, L"c", 1)) != nullptr)
+                html_extract_text::find_element(worksheet_text, worksheetEnd, L"c", true)) != nullptr)
             {
-            if (html_extract_text::read_attribute_as_string(worksheet_text, L"r", 1, false, false) == cell_name)
+            if (html_extract_text::read_attribute_as_string(worksheet_text, L"r", false, false) == cell_name)
                 {
-                typeTag = html_extract_text::read_attribute(worksheet_text, L"t", 1, false, false);
+                typeTag = html_extract_text::read_attribute(worksheet_text, L"t", false, false);
                 if (typeTag.second == 1 && *typeTag.first == L's')
                     {
                     const wchar_t* const cellEnd =
-                        html_extract_text::find_closing_element(worksheet_text, worksheetEnd, L"c", 1);
+                        html_extract_text::find_closing_element(worksheet_text, worksheetEnd, L"c");
                     // found the cell, but its cell ending tag is missing? return empty.
                     if (!cellEnd)
                         { return std::wstring{}; }
                     const wchar_t* value =
-                        html_extract_text::find_element(worksheet_text, cellEnd, L"v", 1);
+                        html_extract_text::find_element(worksheet_text, cellEnd, L"v", true);
                     if (value && (value = html_extract_text::find_close_tag(value)) != nullptr)
                         {
                         const wchar_t* const valueEnd =
-                            html_extract_text::find_closing_element(++value, cellEnd, L"v", 1);
+                            html_extract_text::find_closing_element(++value, cellEnd, L"v");
                         if (valueEnd)
                             {
                             std::wstring valueIndex(value, valueEnd-value);
@@ -275,11 +275,11 @@ namespace lily_of_the_valley
         // Sometimes, sparse data will cause the empty cells to not be listed in the file explicitly, so we
         // need to fill those in with blank cells here.
         const wchar_t* const dimension =
-            html_extract_text::find_element(html_text, endSentinel, L"dimension", 9);
+            html_extract_text::find_element(html_text, endSentinel, L"dimension", true);
         if (dimension)
             {
             std::wstring dimensionRef =
-                html_extract_text::read_attribute_as_string(dimension, L"ref", 3, false);
+                html_extract_text::read_attribute_as_string(dimension, L"ref", false, false);
             const size_t colonIndex = dimensionRef.find(L':');
             if (colonIndex != std::wstring::npos)
                 {
@@ -314,7 +314,7 @@ namespace lily_of_the_valley
         std::pair<const wchar_t*, size_t> typeTag;
         std::pair<const wchar_t*, size_t> styleTag;
         while ((html_text =
-                html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
+                html_extract_text::find_element(html_text, endSentinel, L"row", true)) != nullptr)
             {
             cRow.clear();
             const size_t rowNum =
@@ -323,7 +323,7 @@ namespace lily_of_the_valley
             worksheet_row::iterator cellPos = currentRow.begin();
 
             const wchar_t* const rowEnd =
-                html_extract_text::find_closing_element(html_text, endSentinel, L"row", 3);
+                html_extract_text::find_closing_element(html_text, endSentinel, L"row");
             // if <row> is self terminating, then it's a blank row; move to the end tag and
             // go to next row
             if (!rowEnd)
@@ -335,19 +335,19 @@ namespace lily_of_the_valley
                 }
 
             while ((html_text =
-                    html_extract_text::find_element(html_text, rowEnd, L"c", 1)) != nullptr)
+                    html_extract_text::find_element(html_text, rowEnd, L"c", true)) != nullptr)
                 {
                 currentCell.set_name(
-                    html_extract_text::read_attribute_as_string(html_text, L"r", 1, false, false));
+                    html_extract_text::read_attribute_as_string(html_text, L"r", false, false));
                 currentCell.set_value(std::wstring{});
                 // read the type ('t') attribute
                 typeTag =
-                    html_extract_text::read_attribute(html_text, L"t", 1, false, false);
+                    html_extract_text::read_attribute(html_text, L"t", false, false);
                 // read the style ('s') attribute
                 styleTag =
-                    html_extract_text::read_attribute(html_text, L"s", 1, false, false);
+                    html_extract_text::read_attribute(html_text, L"s", false, false);
                 const wchar_t* const cellEnd =
-                    html_extract_text::find_closing_element(html_text, rowEnd, L"c", 1);
+                    html_extract_text::find_closing_element(html_text, rowEnd, L"c");
                 if (cellEnd)
                     {
                     // - 'inlineStr' (inline string)
@@ -355,21 +355,21 @@ namespace lily_of_the_valley
                         std::wcsncmp(typeTag.first, L"inlineStr", 9) == 0)
                         {
                         const wchar_t* isTag =
-                            html_extract_text::find_element(html_text, cellEnd, L"is", 2);
+                            html_extract_text::find_element(html_text, cellEnd, L"is", true);
                         if (isTag &&
                             (isTag = html_extract_text::find_close_tag(isTag)) != nullptr)
                             {
                             const wchar_t* const isEnd =
-                                html_extract_text::find_closing_element(++isTag, cellEnd, L"is", 2);
+                                html_extract_text::find_closing_element(++isTag, cellEnd, L"is");
                             if (isEnd)
                                 {
                                 const wchar_t* tTag =
-                                    html_extract_text::find_element(isTag, isEnd, L"t", 1);
+                                    html_extract_text::find_element(isTag, isEnd, L"t", true);
                                 if (tTag &&
                                     (tTag = html_extract_text::find_close_tag(tTag)) != nullptr)
                                     {
                                     const wchar_t* const tEnd =
-                                        html_extract_text::find_closing_element(++tTag, cellEnd, L"t", 1);
+                                        html_extract_text::find_closing_element(++tTag, cellEnd, L"t");
                                     if (tEnd)
                                         {
                                         valueStr.assign(tTag, tEnd-tTag);
@@ -384,12 +384,12 @@ namespace lily_of_the_valley
                     else
                         {
                         const wchar_t* valueTag =
-                            html_extract_text::find_element(html_text, cellEnd, L"v", 1);
+                            html_extract_text::find_element(html_text, cellEnd, L"v", true);
                         if (valueTag &&
                             (valueTag = html_extract_text::find_close_tag(valueTag)) != nullptr)
                             {
                             const wchar_t* const valueEnd =
-                                html_extract_text::find_closing_element(++valueTag, cellEnd, L"v", 1);
+                                html_extract_text::find_closing_element(++valueTag, cellEnd, L"v");
                             if (valueEnd)
                                 {
                                 valueStr.assign(valueTag, valueEnd-valueTag);
@@ -545,12 +545,12 @@ namespace lily_of_the_valley
         assert(text_length == std::wcslen(text) );
         // see how many strings are in here and allocate space for them
         const wchar_t* countInfo =
-            html_extract_text::find_element(text, (text+text_length), L"sst", 3);
+            html_extract_text::find_element(text, (text+text_length), L"sst", true);
         if (countInfo)
             {
             const size_t stringCount =
                 string_util::atol(
-                    html_extract_text::read_attribute_as_string(countInfo, L"uniqueCount", 11, false).c_str());
+                    html_extract_text::read_attribute_as_string(countInfo, L"uniqueCount", false, false).c_str());
             if (stringCount == 0)
                 { m_shared_strings.reserve(1'000); }
             // in case file has nonsense in it, don't allocate more than
@@ -581,12 +581,12 @@ namespace lily_of_the_valley
         // load the custom number formats
         std::set<size_t> dateFormatIds;
         const wchar_t* customNumberFormats =
-            html_extract_text::find_element(text, (text+text_length), L"numFmts", 7);
+            html_extract_text::find_element(text, (text+text_length), L"numFmts", true);
         if (customNumberFormats)
             {
             const wchar_t* const endTag =
                 html_extract_text::find_closing_element(customNumberFormats,
-                                                        (text + text_length), L"numFmts", 7);
+                                                        (text + text_length), L"numFmts");
             if (endTag)
                 {
                 const wchar_t* stringTag = customNumberFormats;
@@ -620,16 +620,16 @@ namespace lily_of_the_valley
 
                 while (stringTag && stringTag < endTag)
                     {
-                    stringTag = html_extract_text::find_element(stringTag, endTag, L"numFmt", 6);
+                    stringTag = html_extract_text::find_element(stringTag, endTag, L"numFmt", true);
                     if (!stringTag)
                         { break; }
 
                     const auto fmtId =
                         string_util::atol(
                             html_extract_text::read_attribute_as_string(stringTag, L"numFmtId",
-                                                                        8, false).c_str());
+                                                                        false, false).c_str());
                     formatStr = html_extract_text::read_attribute_as_string(
-                        stringTag, L"formatCode", 10, false);
+                        stringTag, L"formatCode", false, false);
                     stripFormatString(formatStr);
                     // Custom format is some sort of date if it contains
                     // year, day, week, or quarter markers OR
@@ -645,25 +645,25 @@ namespace lily_of_the_valley
             }
         // read the cell styles
         const wchar_t* cellStyles =
-            html_extract_text::find_element(text, (text+text_length), L"cellXfs", 7);
+            html_extract_text::find_element(text, (text+text_length), L"cellXfs", true);
         if (cellStyles)
             {
             const wchar_t* const endTag =
-                html_extract_text::find_closing_element(cellStyles, (text+text_length), L"cellXfs", 7);
+                html_extract_text::find_closing_element(cellStyles, (text+text_length), L"cellXfs");
             if (endTag)
                 {
                 const wchar_t* stringTag = cellStyles;
                 size_t currentIndex{ 0 };
                 while (stringTag && stringTag < endTag)
                     {
-                    stringTag = html_extract_text::find_element(stringTag, endTag, L"xf", 2);
+                    stringTag = html_extract_text::find_element(stringTag, endTag, L"xf", true);
                     if (!stringTag)
                         { break; }
 
                     const auto fmtId =
                         string_util::atol(
                             html_extract_text::read_attribute_as_string(stringTag, L"numFmtId",
-                                                                        8, false).c_str());
+                                                                        false, false).c_str());
                     // built-in formats known to be date formats, or a custom date format
                     if ((fmtId >= 14 && fmtId <= 17) || fmtId == 22 ||
                         dateFormatIds.find(fmtId) != dateFormatIds.cend())
@@ -683,20 +683,20 @@ namespace lily_of_the_valley
             { return; }
         assert(text_length <= std::wcslen(text) );
         const wchar_t* const textEnd = text+text_length;
-        text = html_extract_text::find_element(text, textEnd, L"sheets", 6);
+        text = html_extract_text::find_element(text, textEnd, L"sheets", true);
         if (!text)
             { return; }
         const wchar_t* const sheetsEnd =
-            html_extract_text::find_closing_element(text+6, textEnd, L"sheets", 6);
+            html_extract_text::find_closing_element(text+6, textEnd, L"sheets");
         if (sheetsEnd)
             {
             // go through all of the worksheet names
             while ((text =
-                   html_extract_text::find_element(text, textEnd, L"sheet", 5)) != nullptr)
+                   html_extract_text::find_element(text, textEnd, L"sheet", true)) != nullptr)
                 {
                 // read in the name of the current worksheet
                 std::wstring worksheetName =
-                    html_extract_text::read_attribute_as_string(text, L"name", 4, false, true);
+                    html_extract_text::read_attribute_as_string(text, L"name", false, true);
                 if (!worksheetName.empty())
                     { m_worksheet_names.push_back(worksheetName); }
                 text += 5;

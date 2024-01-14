@@ -505,46 +505,45 @@ namespace lily_of_the_valley
                 if the current element that we are on is the one we are looking for.
             @param text The current position in the HTML buffer that we are examining.
             @param element The element that we are comparing against the current position.
-            @param element_size The length of the element that we are comparing against.
             @param accept_self_terminating_elements Whether we should match elements that
                 close themselves (i.e., don't have a matching "</[element]>",
                 but rather end where it is declared).\n
                 For example, "<br />" is a self-terminating element.\n
                 You would set this to @c false if you only want to read text in between
-                opening d closing tags.
+                opening and closing tags.\n
+                @c false is recommended for most cases.
             @returns @c true if the current position matches the element.
             @note Be sure to skip the starting '<' first.*/
         [[nodiscard]]
-        static bool compare_element(const wchar_t* text, const wchar_t* element,
-                                    const size_t element_size,
-                                    const bool accept_self_terminating_elements = false);
+        static bool compare_element(const wchar_t* text, std::wstring_view element,
+                                    const bool accept_self_terminating_elements);
         /** Compares (case sensitively) raw HTML text with an element constant to see
                 if the current element that we are on is the one we are looking for.
                 Be sure to skip the starting '<' first.
             @param text The current position in the HTML buffer that we are examining.
             @param element The element that we are comparing against the current position.
-            @param element_size The length of the element that we are comparing against.
             @param accept_self_terminating_elements Whether we should match elements that
                 close themselves (i.e., don't have a matching "</[element]>",
                 but rather end where it is declared).\n
                 For example, "<br />" is a self-terminating element.\n
                 You would set this to @c false if you only want to read
-                text in between opening and closing tags.
+                text in between opening and closing tags.\n
+                @c false is recommended for most cases.
             @returns @c true if the current position matches the element.
             @note This function is case sensitive, so it should only be used for XML
                 or strict HTML 4.0.*/
         [[nodiscard]]
-        static bool compare_element_case_sensitive(const wchar_t* text, const wchar_t* element,
-            const size_t element_size,
-            const bool accept_self_terminating_elements = false);
+        static bool compare_element_case_sensitive(const wchar_t* text, std::wstring_view element,
+            const bool accept_self_terminating_elements);
         /** @returns The current element that a stream is on. (This assumes that you have
                 already skipped the leading < symbol.)
             @note The returned string view will wrap @c text and will share the same lifetime.
             @param text The HTML stream to analyze.
-            @param accept_self_terminating_elements Whether to analyze element such as "<br />".*/
+            @param accept_self_terminating_elements Whether to analyze element such as "<br />".\n
+                @c true is recommended for most cases.*/
         [[nodiscard]]
         static string_util::case_insensitive_wstring_view get_element_name(const wchar_t* text,
-            const bool accept_self_terminating_elements = true);
+            const bool accept_self_terminating_elements);
         /** @returns The body of an HTML buffer.
             @param text The HTML stream to parse.*/
         [[nodiscard]]
@@ -562,54 +561,50 @@ namespace lily_of_the_valley
             @param html_text The start of the element.
             @param html_end How far into the HTML buffer we should read.
             @param element The element that we are looking at.
-            @param element_length The elementLength length of @c element.
             @returns The string inside of the element.
             @note Returned string may need to be decoded by another html_extract_text object.*/
         [[nodiscard]]
         static std::wstring_view read_element_as_string(const wchar_t* html_text,
                                                    const wchar_t* html_end,
-                                                   const wchar_t* element,
-                                                   const size_t element_length);
+                                                   std::wstring_view element);
         /** @brief Searches for a tag inside of an element and returns its value
                 (or empty string if not found).
             @param text The start of the element section.
             @param tag The inner tag to search for (e.g., "bgcolor").
-            @param tagSize The length of the tag to search for.
             @param allowQuotedTags Set this parameter to @c true for tags that are inside of
                 quotes (e.g., style values). For example, to read "bold" as the value for
                 "font-weight" from "<span style="font-weight: bold;">",
                 this should be set to @c true.
             @param allowSpacesInValue Whether there can be a spaces in the tag's value.
-                Usually you would only see that with complex strings values, such as a font name.
+                Usually you would only see that with complex strings values, such as a font name.\n
+                @c false is recommended for most cases.
             @returns The pointer to the tag value and its length.
                 Returns null and length of zero on failure.*/
         [[nodiscard]]
         static std::pair<const wchar_t*, size_t> read_attribute(const wchar_t* text,
-            const wchar_t* tag, const size_t tagSize,
+            std::wstring_view tag,
             const bool allowQuotedTags,
-            const bool allowSpacesInValue = false);
+            const bool allowSpacesInValue);
         /** @brief Same as read_attribute(), except it returns a `std::wstring`
                 instead of a raw pointer.
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "bgcolor").
-            @param attributeSize The length of the tag to search for.
             @param allowQuotedTags Set this parameter to @c true for tags that are
                 inside of quotes (e.g., style values).\n
                 For example, to read "bold" from "<span style="font-weight: bold;">",
                 this would need to be @c true. Usually this would be @c false.
             @param allowSpacesInValue Whether there can be a spaces in the tag's value.
                 Usually you would only see that with complex strings values,
-                such as a font name.
+                such as a font name. @c  false is recommended for most cases.
             @returns The tag value as a string, or empty string on failure.*/
         [[nodiscard]]
         static std::wstring read_attribute_as_string(const wchar_t* text,
-            const wchar_t* attribute, const size_t attributeSize,
+            std::wstring_view attribute,
             const bool allowQuotedTags,
-            const bool allowSpacesInValue = false);
+            const bool allowSpacesInValue);
         /** @brief Same as read_attribute(), except it returns the value as a long.
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "score").
-            @param attributeSize The length of the tag to search for.
             @param allowQuotedTags Set this parameter to true for tags that are
                 inside of quotes (e.g., style values).\n
                 For example, to read "bold" from "<span style="font-weight: bold;">",
@@ -617,23 +612,22 @@ namespace lily_of_the_valley
             @returns The attribute value as a double, or zero on failure.*/
         [[nodiscard]]
         static long read_attribute_as_long(const wchar_t* text,
-            const wchar_t* attribute, const size_t attributeSize,
+            std::wstring_view attribute,
             const bool allowQuotedTags);
         /** @brief Searches a buffer range for an element (e.g., "<h1>").
             @returns The pointer to the next element, or null if not found.
             @param sectionStart The start of the HTML buffer.
             @param sectionEnd The end of the HTML buffer.
             @param elementTag The name of the element (e.g., "table") to find.
-            @param elementTagLength The length of elementTag.
             @param accept_self_terminating_elements @c true to accept tags such as "<br />".\n
                 Usually should be @c true, use @c false here if searching for
-                opening and closing elements with content in them.*/
+                opening and closing elements with content in them.\n
+                @c true is recommended for most cases.*/
         [[nodiscard]]
         static const wchar_t* find_element(const wchar_t* sectionStart,
                                            const wchar_t* sectionEnd,
-                                           const wchar_t* elementTag,
-                                           const size_t elementTagLength,
-                                           const bool accept_self_terminating_elements = true);
+                                           std::wstring_view elementTag,
+                                           const bool accept_self_terminating_elements);
         /** @c brief Searches a buffer range for an element's matching close (e.g., "</h1>").
             @details If the search starts on the starting element, then it will search for
                 the matching close tag (i.e., it will skip inner elements that have the same name
@@ -642,18 +636,15 @@ namespace lily_of_the_valley
             @param sectionStart The start of the HTML buffer.
             @param sectionEnd The end of the buffer.
             @param elementTag The element (e.g., "h1") whose respective ending element
-                that we are looking for.
-            @param elementTagLength The length of elementTag.*/
+                that we are looking for.*/
         [[nodiscard]]
         static const wchar_t* find_closing_element(const wchar_t* sectionStart,
             const wchar_t* sectionEnd,
-            const wchar_t* elementTag,
-            const size_t elementTagLength);
+            std::wstring_view elementTag);
         /** @brief Searches for an attribute inside of an element.
             @returns The position of the attribute (or null if not found).
             @param text The start of the element section.
             @param tag The inner tag to search for (e.g., "bgcolor").
-            @param tagSize The length of the attribute to search for.
             @param allowQuotedTags Set this parameter to true for tags that are inside of quotes
                 (e.g., style values like "font-weight", as in "<span style="font-weight: bold;">").
                 To find "font-weight" inside of the style tag, this parameter should be @c true.\n
@@ -662,7 +653,7 @@ namespace lily_of_the_valley
                 then you should set @c sectionStart to one character after the '<'.*/
         [[nodiscard]]
         static const wchar_t* find_tag(const wchar_t* text,
-            const wchar_t* tag, const size_t tagSize,
+            std::wstring_view tag,
             const bool allowQuotedTags);
         /** @brief Searches a buffer range for a bookmark (e.g., "<a name="citation" />").
             @param sectionStart The start of the HTML buffer.

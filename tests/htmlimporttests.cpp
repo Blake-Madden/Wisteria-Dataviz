@@ -231,33 +231,33 @@ TEST_CASE("HTML parser tags", "[html import]")
     SECTION("Find Tag")
         {
         const wchar_t* text = L"body bgcolor=\'#FF0000\' color=\'#FF0000\'>there<br />world<br >!";
-        CHECK(html_extract_text::find_tag(text, L"bgcolor", 7, false) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"BGCOLOR", 7, false) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"color", 5, false) == text+23);
-        CHECK(html_extract_text::find_tag(text, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
+        CHECK(html_extract_text::find_tag(text, L"bgcolor", false) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"BGCOLOR", false) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"color", false) == text+23);
+        CHECK(html_extract_text::find_tag(text, L"width", false) == nullptr);
+        CHECK(html_extract_text::find_tag(nullptr, L"width", false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"", false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"body", false) == text);
         }
     SECTION("Find Tag 2")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
-        CHECK(html_extract_text::find_tag(text, L"STYLE", 5, false) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"color", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
+        CHECK(html_extract_text::find_tag(text, L"STYLE", false) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"color", false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"width", false) == nullptr);
+        CHECK(html_extract_text::find_tag(nullptr, L"width", false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"", false) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"body", false) == text);
         }
     SECTION("Find Tag Quotable")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
-        CHECK(html_extract_text::find_tag(text, L"STYLE", 5, true) == text+5);
-        CHECK(html_extract_text::find_tag(text, L"color", 5, true) == text+12);
-        CHECK(html_extract_text::find_tag(text, L"width", 5, true) == text+26);
-        CHECK(html_extract_text::find_tag(nullptr, L"width", 5, true) == nullptr);
-        CHECK(html_extract_text::find_tag(text, nullptr, 0, true) == nullptr);
-        CHECK(html_extract_text::find_tag(text, L"body", 4, true) == text);
+        CHECK(html_extract_text::find_tag(text, L"STYLE", true) == text+5);
+        CHECK(html_extract_text::find_tag(text, L"color", true) == text+12);
+        CHECK(html_extract_text::find_tag(text, L"width", true) == text+26);
+        CHECK(html_extract_text::find_tag(nullptr, L"width", true) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"", true) == nullptr);
+        CHECK(html_extract_text::find_tag(text, L"body", true) == text);
         }
     }
 
@@ -515,102 +515,102 @@ TEST_CASE("HTML Parser", "[html import]")
     SECTION("Read Element As String")
         {
         const wchar_t* text = L"<h1>My header</H1>";
-        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1", 2));
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1"));
         text = L"<h1>   My header</H1>";
-        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1"));
         text = L"<h1>My header   </H1>";
-        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1"));
         text = L"<h1>   My header   </H1>";
-        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1"));
         text = L"<h1></H1>";
-        CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1"));
         // malformed
         text = L"<h1>My header</l1>";
-        CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1", 2));
+        CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1"));
         }
     SECTION("Read Tag As Long")
         {
         const wchar_t* text = L"body height= 275 style=\"width=250\">there<br />world<br >!";
-        CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", 6, false));
-        CHECK(250 == html_extract_text::read_attribute_as_long(text, L"width", 5, true));
-        CHECK(0 == html_extract_text::read_attribute_as_long(text, L"size", 4, true)); // doesn't exit
-        CHECK(0 == html_extract_text::read_attribute_as_long(nullptr, L"width", 5, true));
-        CHECK(0 == html_extract_text::read_attribute_as_long(text, nullptr, 0, true));
+        CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", false));
+        CHECK(250 == html_extract_text::read_attribute_as_long(text, L"width", true));
+        CHECK(0 == html_extract_text::read_attribute_as_long(text, L"size", true)); // doesn't exit
+        CHECK(0 == html_extract_text::read_attribute_as_long(nullptr, L"width", true));
+        CHECK(0 == html_extract_text::read_attribute_as_long(text, std::wstring_view( L"bogus", 0 ), true));
         }
     SECTION("Read Empty Attribute")
         {
         const wchar_t* text = L"body style =\"\" info =' ' height=275>there<br />world<br >!";
-        CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", 6, false));
-        CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"style", 5, false));
-        CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"info", 4, false, false));
-        CHECK(std::wstring(L" ") == html_extract_text::read_attribute_as_string(text, L"info", 4, false, true));
+        CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", false));
+        CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"style", false, false));
+        CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"info", false, false));
+        CHECK(std::wstring(L" ") == html_extract_text::read_attribute_as_string(text, L"info", false, true));
         }
     SECTION("Read Tag Quotable")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"color", 5, true) == L"#FF0000");
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true) == L"250");
-        CHECK(html_extract_text::read_attribute_as_string(text, L"size", 4, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"color", true, false) == L"#FF0000");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", true, false) == L"250");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"size", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, { L"bogus", 0 }, true, false) == L"");
         }
     SECTION("Read Tags")
         {
         const wchar_t* text = L"body bgcolor=#FF0000>there<style width=250>world<br >!";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"bgcolor", 7, true) == L"#FF0000");
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true) == L""); // width is in another tag
-        CHECK(html_extract_text::read_attribute_as_string(text, L"size", 4, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"bgcolor", true, false) == L"#FF0000");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", true, false) == L""); // width is in another tag
+        CHECK(html_extract_text::read_attribute_as_string(text, L"size", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, { L"", 0 }, true, false) == L"");
         }
     SECTION("Read Tags Quoted")
         {
         const wchar_t* text = L"body bgcolor=\"#FF0000\">there<style width=250>world<br >!";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"bgcolor", 7, true) == L"#FF0000");
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true) == L""); // width is in another tag
-        CHECK(html_extract_text::read_attribute_as_string(text, L"size", 4, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"bgcolor", true, false) == L"#FF0000");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", true, false) == L""); // width is in another tag
+        CHECK(html_extract_text::read_attribute_as_string(text, L"size", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, { L"", 0 }, true, false) == L"");
         }
     SECTION("Read Tags Css")
         {
         const wchar_t* text = L"body style=\"color: #FF0000;\">there<style width=250>world<br >!";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"color", 5, true) == L"#FF0000");
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true) == L""); // width is in another tag
-        CHECK(html_extract_text::read_attribute_as_string(text, L"size", 4, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
-        CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"color", true, false) == L"#FF0000");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", true, false) == L""); // width is in another tag
+        CHECK(html_extract_text::read_attribute_as_string(text, L"size", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", true, false) == L"");
+        CHECK(html_extract_text::read_attribute_as_string(text, { L"", 0 }, true, false) == L"");
         }
     SECTION("Read Tags Spaces And Quotes Combinations")
         {
         const wchar_t* text = L"body style=\'font-weight: really bold;\'>";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", 11, false, false) == L"");//inside of quotes, won't be found
-        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", 11, false, true) == L"");//inside of quotes, won't be found
-        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", 11, true, false) == L"really");//not allowing spaces in value, "bold" won't be seen
-        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", 11, true, true) == L"really bold");//will be read properly
+        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", false, false) == L"");//inside of quotes, won't be found
+        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", false, true) == L"");//inside of quotes, won't be found
+        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", true, false) == L"really");//not allowing spaces in value, "bold" won't be seen
+        CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", true, true) == L"really bold");//will be read properly
 
         text = L"width=250 px>world<br >!";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, false, false) == L"250");//not allowing spaces in value, "px" won't be seen
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true, false) == L"250");//not allowing spaces in value, "px" won't be seen
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true, true) == L"250 px");//will be read properly
-        CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, false, true) == L"250 px");//will be read properly
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", false, false) == L"250");//not allowing spaces in value, "px" won't be seen
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", true, false) == L"250");//not allowing spaces in value, "px" won't be seen
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", true, true) == L"250 px");//will be read properly
+        CHECK(html_extract_text::read_attribute_as_string(text, L"width", false, true) == L"250 px");//will be read properly
         }
     SECTION("Read Tags With Spaces")
         {
         const wchar_t* text = L"body style=\"Color Value\">there<style width=250>world<br >!";
-        CHECK(html_extract_text::read_attribute_as_string(text, L"style", 5, false, true) == L"Color Value");
-        CHECK(html_extract_text::read_attribute_as_string(text, L"style", 5, false, false) == L"Color");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"style", false, true) == L"Color Value");
+        CHECK(html_extract_text::read_attribute_as_string(text, L"style", false, false) == L"Color");
         }
     SECTION("Get Element Name")
         {
-        CHECK(html_extract_text::get_element_name(L"body style=\"color=#FF0000\">there<style width=250>world<br >!") == L"body");
-        CHECK(html_extract_text::get_element_name(L"br>there<style width=250>world<br >!") == L"br");
-        CHECK(html_extract_text::get_element_name(L"br/>there<style width=250>world<br >!") == L"br");
-        CHECK(html_extract_text::get_element_name(L"/br") == L"/br");
-        CHECK(html_extract_text::get_element_name(L"br>") == L"br");
-        CHECK(html_extract_text::get_element_name(L"br") == L"br");
-        CHECK(html_extract_text::get_element_name(nullptr).empty());
-        CHECK(html_extract_text::get_element_name(L"") == L"");
+        CHECK(html_extract_text::get_element_name(L"body style=\"color=#FF0000\">there<style width=250>world<br >!", true) == L"body");
+        CHECK(html_extract_text::get_element_name(L"br>there<style width=250>world<br >!", true) == L"br");
+        CHECK(html_extract_text::get_element_name(L"br/>there<style width=250>world<br >!", true) == L"br");
+        CHECK(html_extract_text::get_element_name(L"/br", true) == L"/br");
+        CHECK(html_extract_text::get_element_name(L"br>", true) == L"br");
+        CHECK(html_extract_text::get_element_name(L"br", true) == L"br");
+        CHECK(html_extract_text::get_element_name(nullptr, true).empty());
+        CHECK(html_extract_text::get_element_name(L"", true) == L"");
         }
     SECTION("Get Body")
         {
@@ -909,73 +909,73 @@ TEST_CASE("HTML Parser", "[html import]")
     SECTION("Find Element")
         {
         const wchar_t* const text = L"<br />world<br ><br-eak><br><br>";
-        const wchar_t* next = html_extract_text::find_element(text, text+wcslen(text), L"br", 2);
+        const wchar_t* next = html_extract_text::find_element(text, text+wcslen(text), L"br", true);
         CHECK(next == text);
         ++next;
-        next = html_extract_text::find_element(next, next+wcslen(next), L"br", 2);
+        next = html_extract_text::find_element(next, next+wcslen(next), L"br", true);
         CHECK(next == text+11);
         ++next;
-        next = html_extract_text::find_element(next, next+wcslen(next), L"br", 2);
+        next = html_extract_text::find_element(next, next+wcslen(next), L"br", true);
         CHECK(next == text+24);
         ++next;
         //note that we are stopping short of the last break in our search as part of the test
-        const wchar_t* badNext = html_extract_text::find_element(next, next+(wcslen(next)-4), L"br", 2);
+        const wchar_t* badNext = html_extract_text::find_element(next, next+(wcslen(next)-4), L"br", true);
         CHECK(badNext == nullptr);
         ++next;
-        next = html_extract_text::find_element(next, next+wcslen(next), L"br", 2);
+        next = html_extract_text::find_element(next, next+wcslen(next), L"br", true);
         CHECK(next == text+28);
 
         //test nulls
-        CHECK(html_extract_text::find_element(nullptr, text+wcslen(text), L"br", 2) == nullptr);
-        CHECK(html_extract_text::find_element(text, nullptr, L"br", 2) == nullptr);
-        CHECK(html_extract_text::find_element(text, text+wcslen(text), nullptr, 0) == nullptr);
+        CHECK(html_extract_text::find_element(nullptr, text+wcslen(text), L"br", true) == nullptr);
+        CHECK(html_extract_text::find_element(text, nullptr, L"br", true) == nullptr);
+        CHECK(html_extract_text::find_element(text, text+wcslen(text), L"", true) == nullptr);
         }
     SECTION("Find Closing Element")
         {
         const wchar_t* const text = L" </br ></br eak></br></br>";
-        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"br", 2);
+        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"br");
         CHECK(next == text+1);
         ++next;
-        next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br", 2);
+        next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br");
         CHECK(next == text+7);
         ++next;
-        next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br", 2);
+        next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br");
         CHECK(next == text+16);
         ++next;
         //note that we are stopping short of the last break in our search as part of the test
-        const wchar_t* badNext = html_extract_text::find_closing_element(next, next+(wcslen(next)-4), L"br", 2);
+        const wchar_t* badNext = html_extract_text::find_closing_element(next, next+(wcslen(next)-4), L"br");
         CHECK(badNext == nullptr);
         ++next;
-        next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br", 2);
+        next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br");
         CHECK(next == text+21);
 
         //test nulls
-        CHECK(html_extract_text::find_closing_element(nullptr, text+wcslen(text), L"br", 2) == nullptr);
-        CHECK(html_extract_text::find_closing_element(text, nullptr, L"br", 2) == nullptr);
-        CHECK(html_extract_text::find_closing_element(text, text+wcslen(text), nullptr, 0) == nullptr);
+        CHECK(html_extract_text::find_closing_element(nullptr, text+wcslen(text), L"br") == nullptr);
+        CHECK(html_extract_text::find_closing_element(text, nullptr, L"br") == nullptr);
+        CHECK(html_extract_text::find_closing_element(text, text+wcslen(text), L"") == nullptr);
         }
     SECTION("Find Closing Element Overlap")
         {
         const wchar_t* const text = L"<table>text<table>more text</table><br /> </table>";
-        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table", 5);
+        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table");
         CHECK(next == text+42);
         }
     SECTION("FindClosingElementNoClosing")
         {
         const wchar_t* const text = L"<table>text<table>more text</table><br /><";
-        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table", 5);
+        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table");
         CHECK(next == nullptr);
         }
     SECTION("FindClosingElementNoHtml")
         {
         const wchar_t* const text = L"This isn't real HTML text";
-        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table", 5);
+        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table");
         CHECK(next == nullptr);
         }
     SECTION("FindClosingElementBadFormatting")
         {
         const wchar_t* const text = L"<table>text<table>more text</table><<br /> </table>";
-        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table", 5);
+        const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table");
         CHECK(next == text+43);
         }
     SECTION("Descriptions")
@@ -1087,71 +1087,67 @@ TEST_CASE("HTML Parser", "[html import]")
     SECTION("Compare Entities")
         {
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";
-        CHECK(html_extract_text::compare_element(text+1, L"sPaN", 4));
-        CHECK_FALSE(html_extract_text::compare_element(text+1, L"sPa", 3));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"sPaN", 4));
-        CHECK(html_extract_text::compare_element_case_sensitive(text+1, L"span", 4));
+        CHECK(html_extract_text::compare_element(text+1, L"sPaN", false));
+        CHECK_FALSE(html_extract_text::compare_element(text+1, L"sPa", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"sPaN", false));
+        CHECK(html_extract_text::compare_element_case_sensitive(text+1, L"span", false));
         }
     SECTION("Compare Entities Ignore Terminated")
         {
         const wchar_t* text = L"<span/>List.<span><span /> \r\n <span  ";
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"span", 4, false));
-        CHECK(html_extract_text::compare_element_case_sensitive(text+13, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+13, L"SPAN", 4, false)); // wrong case
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+19, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+31, L"span", 4, false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"span", false));
+        CHECK(html_extract_text::compare_element_case_sensitive(text+13, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+13, L"SPAN", false)); // wrong case
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+19, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+31, L"span", false));
 
-        CHECK_FALSE(html_extract_text::compare_element(text+1, L"span", 4, false));
-        CHECK(html_extract_text::compare_element(text+13, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element(text+19, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element(text+31, L"span", 4, false));
+        CHECK_FALSE(html_extract_text::compare_element(text+1, L"span", false));
+        CHECK(html_extract_text::compare_element(text+13, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element(text+19, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element(text+31, L"span", false));
         }
     SECTION("Compare Entities Ignore Terminated Has Atritubes")
         {
         const wchar_t* text = L"<span/>List.<span bg=\"red\"><span bg=\"red\"/> \r\n <span";
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"span", 4, false));
-        CHECK(html_extract_text::compare_element_case_sensitive(text+13, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+28, L"SPAN", 4, false)); // wrong case
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+28, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+48, L"span", 4, false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"span", false));
+        CHECK(html_extract_text::compare_element_case_sensitive(text+13, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+28, L"SPAN", false)); // wrong case
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+28, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+48, L"span", false));
 
-        CHECK_FALSE(html_extract_text::compare_element(text+1, L"span", 4, false));
-        CHECK(html_extract_text::compare_element(text+13, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element(text+28, L"span", 4, false));
-        CHECK_FALSE(html_extract_text::compare_element(text+48, L"span", 4, false));
+        CHECK_FALSE(html_extract_text::compare_element(text+1, L"span", false));
+        CHECK(html_extract_text::compare_element(text+13, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element(text+28, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element(text+48, L"span", false));
         }
     SECTION("Compare Entities Null And Empty")
         {
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";
-        CHECK_FALSE(html_extract_text::compare_element(L"", L"sPaN", 4));
-        CHECK_FALSE(html_extract_text::compare_element(nullptr, L"sPa", 3));
-        CHECK_FALSE(html_extract_text::compare_element(text, L"", 0));
-        CHECK_FALSE(html_extract_text::compare_element(text, nullptr, 0));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(L"", L"sPaN", 4));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(nullptr, L"span", 4));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, L"", 0));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, nullptr, 0));
+        CHECK_FALSE(html_extract_text::compare_element(L"", L"sPaN", false));
+        CHECK_FALSE(html_extract_text::compare_element(nullptr, L"sPa", false));
+        CHECK_FALSE(html_extract_text::compare_element(text, L"", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(L"", L"sPaN", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(nullptr, L"span", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, L"", false));
         }
     SECTION("Compare Entities One Character")
         {
         const wchar_t* text = L"<v>List.</v> \r\n (pane)";
-        CHECK(html_extract_text::compare_element(text+1, L"V", 1));
-        CHECK(html_extract_text::compare_element(text+1, L"v", 1));
-        CHECK_FALSE(html_extract_text::compare_element(text+1, L"g", 1));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"V", 1));
-        CHECK(html_extract_text::compare_element_case_sensitive(text+1, L"v", 1));
+        CHECK(html_extract_text::compare_element(text+1, L"V", false));
+        CHECK(html_extract_text::compare_element(text+1, L"v", false));
+        CHECK_FALSE(html_extract_text::compare_element(text+1, L"g", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"V", false));
+        CHECK(html_extract_text::compare_element_case_sensitive(text+1, L"v", false));
         }
     SECTION("Compare Entities One Character Null And Empty")
         {
         const wchar_t* text = L"<v>List.</v> \r\n (pane)";
-        CHECK_FALSE(html_extract_text::compare_element(L"", L"v", 1));
-        CHECK_FALSE(html_extract_text::compare_element(nullptr, L"v", 1));
-        CHECK_FALSE(html_extract_text::compare_element(text, L"", 0));
-        CHECK_FALSE(html_extract_text::compare_element(text, nullptr, 0));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(L"", L"v", 1));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(nullptr, L"v", 1));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, L"", 0));
-        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, nullptr, 0));
+        CHECK_FALSE(html_extract_text::compare_element(L"", L"v", false));
+        CHECK_FALSE(html_extract_text::compare_element(nullptr, L"v", false));
+        CHECK_FALSE(html_extract_text::compare_element(text, L"", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(L"", L"v", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(nullptr, L"v", false));
+        CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, L"", false));
         }
     SECTION("NewLine Removal")
         {

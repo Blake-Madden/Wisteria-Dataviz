@@ -67,7 +67,7 @@ namespace lily_of_the_valley
 
             // find the first paragraph and set up where we halt our searching
             const wchar_t* const endSentinel = html_text+text_length;
-            const wchar_t* start = find_element(html_text, endSentinel, L"a:p", 3, false);
+            const wchar_t* start = find_element(html_text, endSentinel, L"a:p", false);
             const wchar_t* paragraphEnd = nullptr;
             const wchar_t* rowEnd = nullptr;
             const wchar_t* paragraphProperties = nullptr;
@@ -80,26 +80,26 @@ namespace lily_of_the_valley
                 {
                 bool isBulletedPreviousParagraph = isBulletedParagraph;
                 isBulletedParagraph = true;
-                paragraphEnd = find_closing_element(start, endSentinel, L"a:p", 3);
+                paragraphEnd = find_closing_element(start, endSentinel, L"a:p");
                 if (!paragraphEnd)
                     { break; }
-                paragraphProperties = find_element(start, paragraphEnd, L"a:pPr", 5, true);
+                paragraphProperties = find_element(start, paragraphEnd, L"a:pPr", true);
                 if (paragraphProperties)
                     {
                     paragraphPropertiesEnd =
-                        find_closing_element(paragraphProperties, paragraphEnd, L"a:pPr", 5); 
+                        find_closing_element(paragraphProperties, paragraphEnd, L"a:pPr"); 
                     if (paragraphPropertiesEnd)
                         {
                         // see if the paragraphs in here are bullet points or real lines of text.
                         const wchar_t* bulletNoneTag =
                             find_element(paragraphProperties, paragraphPropertiesEnd,
-                                         L"a:buNone", 8, true);
+                                         L"a:buNone", true);
                         if (bulletNoneTag)
                             { isBulletedParagraph = false; }
                         }
                     // if the paragraph is indented, then put a tab in front of it.
                     const std::wstring levelDepth =
-                        read_attribute_as_string(paragraphProperties, L"lvl", 3, false);
+                        read_attribute_as_string(paragraphProperties, L"lvl", false, false);
                     if (!levelDepth.empty())
                         {
                         wchar_t* dummy = nullptr;
@@ -115,8 +115,8 @@ namespace lily_of_the_valley
                 for (;;)
                     {
                     // go to the next row
-                    nextBreak = find_element(start, paragraphEnd, L"a:br", 4, true);
-                    start = find_element(start, paragraphEnd, L"a:r", 3, false);
+                    nextBreak = find_element(start, paragraphEnd, L"a:br", true);
+                    start = find_element(start, paragraphEnd, L"a:r", false);
                     if (!start || start > endSentinel)
                         {
                         // if no more runs in this paragraph,
@@ -125,7 +125,7 @@ namespace lily_of_the_valley
                             { add_character(L'\n'); }
                         break;
                         }
-                    rowEnd = find_closing_element(++start, paragraphEnd, L"a:r", 3);
+                    rowEnd = find_closing_element(++start, paragraphEnd, L"a:r");
                     if (!rowEnd || rowEnd > endSentinel)
                         { break; }
                     // See if there is a break before this row.
@@ -134,7 +134,7 @@ namespace lily_of_the_valley
                         { add_character(L'\n'); }
                     // Read the text section inside of it. If no valid text section, then
                     // just add a space (which an empty run implies) and skip to the next run.
-                    start = find_element(start, rowEnd, L"a:t", 3, false);
+                    start = find_element(start, rowEnd, L"a:t", false);
                     if (!start || start > endSentinel)
                         {
                         if (get_filtered_text_length() > 0 &&
@@ -149,7 +149,7 @@ namespace lily_of_the_valley
                         start = rowEnd;
                         continue;
                         }
-                    textEnd = find_closing_element(++start, rowEnd, L"a:t", 3);
+                    textEnd = find_closing_element(++start, rowEnd, L"a:t");
                     if (!textEnd || textEnd > endSentinel)
                         {
                         start = rowEnd;
@@ -168,7 +168,7 @@ namespace lily_of_the_valley
                 else
                     { add_character(L'\n'); }
                 // go to the next paragraph
-                start = find_element(paragraphEnd, endSentinel, L"a:p", 3, false);
+                start = find_element(paragraphEnd, endSentinel, L"a:p", false);
                 }
 
             return get_filtered_text();
@@ -185,23 +185,23 @@ namespace lily_of_the_valley
             // reset meta data from last call
             reset_meta_data();
 
-            static const std::wstring OFFICE_META(L"cp:coreProperties");
-            static const std::wstring SUBJECT(L"dc:subject");
-            static const std::wstring TITLE(L"dc:title");
-            static const std::wstring DESCRIPTION(L"dc:description");
-            static const std::wstring KEYWORDS(L"cp:keywords");
-            static const std::wstring AUTHOR(L"dc:creator");
+            static const std::wstring_view OFFICE_META(L"cp:coreProperties");
+            static const std::wstring_view SUBJECT(L"dc:subject");
+            static const std::wstring_view TITLE(L"dc:title");
+            static const std::wstring_view DESCRIPTION(L"dc:description");
+            static const std::wstring_view KEYWORDS(L"cp:keywords");
+            static const std::wstring_view AUTHOR(L"dc:creator");
             const wchar_t* const textEnd = html_text+text_length;
 
             const wchar_t* const officMetaStart =
-                find_element(html_text, textEnd, OFFICE_META.c_str(), OFFICE_META.length());
+                find_element(html_text, textEnd, OFFICE_META, true);
             if (!officMetaStart)
                 { return; }
-            m_title = read_element_as_string(officMetaStart, textEnd, TITLE.c_str(), TITLE.length());
-            m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT.c_str(), SUBJECT.length());
-            m_description = read_element_as_string(officMetaStart, textEnd, DESCRIPTION.c_str(), DESCRIPTION.length());
-            m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS.c_str(), KEYWORDS.length());
-            m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR.c_str(), AUTHOR.length());
+            m_title = read_element_as_string(officMetaStart, textEnd, TITLE);
+            m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT);
+            m_description = read_element_as_string(officMetaStart, textEnd, DESCRIPTION);
+            m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS);
+            m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR);
             }
         };
     }

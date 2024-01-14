@@ -53,13 +53,13 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     const wchar_t* htmlEnd = htmlText.wc_str()+htmlText.length();
     const wchar_t* tableStart =
         lily_of_the_valley::html_extract_text::find_element(htmlText.wc_str(), htmlEnd,
-                                                            _DT(L"table"), 5, false);
+                                                            _DT(L"table"), false);
     const wchar_t* tableEnd = nullptr;
     while (tableStart)
         {
         tableEnd =
             lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
-                                                                        _DT(L"table"), 5);
+                                                                        _DT(L"table"));
         if (tableEnd == nullptr)
             { break; }
         else
@@ -73,7 +73,7 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
             }
         tableStart =
             lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
-                                                                _DT(L"table"), 5, false);
+                                                                _DT(L"table"), false);
         }
 
 #if defined(__WXMSW__) || defined(__WXOSX__)
@@ -155,13 +155,13 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
     const wchar_t* htmlEnd = htmlText.wc_str()+htmlText.length();
     const wchar_t* tableStart =
         lily_of_the_valley::html_extract_text::find_element(htmlText.wc_str(), htmlEnd,
-                                                            _DT(L"table"), 5, false);
+                                                            _DT(L"table"), false);
     const wchar_t* tableEnd = nullptr;
     while (tableStart)
         {
         tableEnd =
             lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
-                                                                        _DT(L"table"), 5);
+                                                                        _DT(L"table"));
         if (tableEnd == nullptr)
             { break; }
         else
@@ -176,7 +176,7 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
             }
         tableStart =
             lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
-                                                                _DT(L"table"), 5, false);
+                                                                _DT(L"table"), false);
         }
     wxPrinterDC* dc = nullptr;
     wxPrinterDC* dc2 = nullptr;

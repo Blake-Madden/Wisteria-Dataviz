@@ -51,14 +51,14 @@ namespace lily_of_the_valley
             std::wstring attribValue;
             while (start && (start < endSentinel))
                 {
-                currentTag.assign(get_element_name(start+1));
+                currentTag.assign(get_element_name(start + 1, true));
 
                 if (currentTag == L"param")
                     {
-                    if (read_attribute_as_string(start + 6/*skip "<param"*/, L"name", 4, false) == L"Name")
+                    if (read_attribute_as_string(start + 6/*skip "<param"*/, L"name", false, false) == L"Name")
                         {
                         attribValue =
-                            read_attribute_as_string(start + 6, L"value", 5, false, true);
+                            read_attribute_as_string(start + 6, L"value", false, true);
                         parse_raw_text(attribValue.c_str(), attribValue.length());
                         add_character(L'\n');
                         add_character(L'\n');

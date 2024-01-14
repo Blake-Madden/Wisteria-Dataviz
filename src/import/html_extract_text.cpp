@@ -16,14 +16,15 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     std::wstring_view html_extract_text::read_element_as_string(const wchar_t* html_text,
                                                            const wchar_t* html_end,
-                                                           const wchar_t* element,
-                                                           const size_t element_length)
+                                                           std::wstring_view element)
         {
-        assert(html_text && html_end && element && element_length > 0);
-        const wchar_t* elementStart = find_element(html_text, html_end, element, element_length);
-        if (elementStart)
+        assert(html_text && html_end && element.length());
+        const wchar_t* elementStart =
+            find_element(html_text, html_end, element, true);
+        if (elementStart != nullptr)
             {
-            const wchar_t* elementEnd = find_closing_element(elementStart, html_end, element, element_length);
+            const wchar_t* elementEnd =
+                find_closing_element(elementStart, html_end, element);
             elementStart = find_close_tag(elementStart);
             if (elementStart && elementEnd)
                 {
@@ -36,15 +37,13 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     std::wstring html_extract_text::read_attribute_as_string(const wchar_t* text,
-            const wchar_t* attribute, const size_t attributeSize,
+            std::wstring_view attribute,
             const bool allowQuotedTags,
-            const bool allowSpacesInValue /*= false*/)
+            const bool allowSpacesInValue)
         {
-        if (!text || !attribute || *attribute == 0)
+        if (text == nullptr || attribute.empty())
             { return L""; }
-        assert((std::wcslen(attribute) == attributeSize) &&
-               "Invalid length passed to read_tag_as_string().");
-        const auto rt = read_attribute(text, attribute, attributeSize, allowQuotedTags, allowSpacesInValue);
+        const auto rt = read_attribute(text, attribute, allowQuotedTags, allowSpacesInValue);
         if (rt.first == nullptr)
             { return L""; }
         else
@@ -53,12 +52,13 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     long html_extract_text::read_attribute_as_long(const wchar_t* text,
-            const wchar_t* attribute, const size_t attributeSize,
+            std::wstring_view attribute,
             const bool allowQuotedTags)
         {
-        const std::wstring tagStr = read_attribute_as_string(text, attribute, attributeSize, allowQuotedTags, false);
+        const std::wstring tagStr =
+            read_attribute_as_string(text, attribute, allowQuotedTags, false);
         wchar_t* dummy{ nullptr };
-        return tagStr.length() ? std::wcstol(tagStr.c_str(),&dummy,10) : 0;
+        return tagStr.length() ? std::wcstol(tagStr.c_str(), &dummy, 10) : 0;
         }
 
     //------------------------------------------------------------------
@@ -66,10 +66,10 @@ namespace lily_of_the_valley
                                             const wchar_t* sectionStart,
                                             const wchar_t* sectionEnd)
         {
-        const wchar_t* nextAnchor = find_element(sectionStart, sectionEnd, L"a", 1);
+        const wchar_t* nextAnchor = find_element(sectionStart, sectionEnd, L"a", true);
         if (nextAnchor)
             {
-            auto [bookMarkPtr, bookMarkSize] = read_attribute(nextAnchor, L"name", 4, false);
+            auto [bookMarkPtr, bookMarkSize] = read_attribute(nextAnchor, L"name", false, false);
             if (bookMarkPtr && bookMarkSize > 0)
                 {
                 // chop if the leading '#' from the bookmark name
@@ -441,7 +441,7 @@ namespace lily_of_the_valley
     std::string html_extract_text::parse_charset(const char* pageContent, const size_t length)
         {
         std::string charset;
-        if (pageContent == nullptr || pageContent[0] == 0)
+        if (pageContent == nullptr || length == 0)
             { return charset; }
 
         const char* const end = pageContent+length;
@@ -597,19 +597,18 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     std::pair<const wchar_t*, size_t> html_extract_text::read_attribute(const wchar_t* text,
-            const wchar_t* tag, const size_t tagSize,
+            std::wstring_view tag,
             const bool allowQuotedTags,
-            const bool allowSpacesInValue /*= false*/)
+            const bool allowSpacesInValue)
         {
-        if (!text || !tag || tagSize == 0)
+        if (text == nullptr || tag.empty())
             { return std::make_pair(nullptr,0); }
-        assert((std::wcslen(tag) == tagSize) && "Invalid length passed to read_attribute().");
-        const wchar_t* foundTag = find_tag(text, tag, tagSize, allowQuotedTags);
+        const wchar_t* foundTag = find_tag(text, tag, allowQuotedTags);
         const wchar_t* elementEnd = find_close_tag(text);
         if (foundTag && elementEnd &&
             foundTag < elementEnd)
             {
-            foundTag += tagSize;
+            foundTag += tag.length();
             // step over spaces between attribute name and its assignment operator
             while (foundTag && foundTag < elementEnd && *foundTag == L' ')
                 { ++foundTag; }
@@ -662,10 +661,10 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     const wchar_t* html_extract_text::find_tag(const wchar_t* text,
-            const wchar_t* tag, const size_t tagSize,
+            std::wstring_view tag,
             const bool allowQuotedTags)
         {
-        if (!text || !tag || tagSize == 0)
+        if (text == nullptr || tag.empty())
             { return nullptr; }
         const wchar_t* foundTag = text;
         const wchar_t* const elementEnd = find_close_tag(text);
@@ -674,8 +673,8 @@ namespace lily_of_the_valley
         while (foundTag)
             {
             foundTag = allowQuotedTags ?
-                string_util::strnistr<wchar_t>(foundTag, tag, (elementEnd-foundTag))
-                : stristr_not_quoted(foundTag, (elementEnd-foundTag), tag, tagSize);
+                string_util::strnistr<wchar_t>(foundTag, tag.data(), (elementEnd-foundTag))
+                : stristr_not_quoted(foundTag, (elementEnd-foundTag), tag.data(), tag.length());
             if (!foundTag || (foundTag > elementEnd))
                 { return nullptr; }
             if (foundTag == text)
@@ -686,7 +685,7 @@ namespace lily_of_the_valley
             // (e.g., "color" will not count if what we are really on is "bgcolor")
             else if (std::iswspace(foundTag[-1]) || (foundTag[-1] == L';'))
                 { return foundTag; }
-            foundTag += tagSize;
+            foundTag += tag.length();
             }
         return nullptr;
         }
@@ -694,8 +693,8 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     const wchar_t* html_extract_text::operator()(const wchar_t* html_text,
                                                  const size_t text_length,
-                                                 const bool include_outer_text /*= true*/,
-                                                 const bool preserve_newlines /*= false*/)
+                                                 const bool include_outer_text,
+                                                 const bool preserve_newlines)
         {
         static const std::wstring HTML_STYLE_END(L"</style>");
         static const std::wstring HTML_SCRIPT(L"script");
@@ -854,14 +853,14 @@ namespace lily_of_the_valley
             else if (currentElement == L"meta")
                 {
                 const std::wstring metaName = html_extract_text::read_attribute_as_string(start,
-                        L"name", 4, false);
+                        L"name", false, false);
                 auto closeTag = find_close_tag(start);
                 if (!closeTag)
                     { break; }
                 if (string_util::stricmp(metaName.c_str(), L"author") == 0)
                     {
                     m_author = html_extract_text::read_attribute_as_string(start,
-                        L"content", 7, false, true);
+                        L"content", false, true);
                     html_extract_text valueParser;
                     auto author = valueParser(m_author.c_str(), m_author.length(), true, false);
                     if (author)
@@ -874,7 +873,7 @@ namespace lily_of_the_valley
                 else if (string_util::stricmp(metaName.c_str(), L"description") == 0)
                     {
                     m_description = html_extract_text::read_attribute_as_string(start,
-                        L"content", 7, false, true);
+                        L"content", false, true);
                     html_extract_text valueParser;
                     auto description = valueParser(m_description.c_str(), m_description.length(), true, false);
                     if (description)
@@ -887,7 +886,7 @@ namespace lily_of_the_valley
                 else if (string_util::stricmp(metaName.c_str(), L"keywords") == 0)
                     {
                     m_keywords = html_extract_text::read_attribute_as_string(start,
-                        L"content", 7, false, true);
+                        L"content", false, true);
                     html_extract_text valueParser;
                     auto keywords = valueParser(m_keywords.c_str(), m_keywords.length(), true, false);
                     if (keywords)
@@ -1005,14 +1004,14 @@ namespace lily_of_the_valley
                 // First, special logic for "font" element...
                 if (currentElement == L"font")
                     {
-                    if (string_util::strnicmp(read_attribute(start+1, L"face", 4, false, true).first, L"Symbol", 6) == 0 ||
-                        string_util::strnicmp(read_attribute(start+1, L"font-family", 11, true, true).first, L"Symbol", 6) == 0)
+                    if (string_util::strnicmp(read_attribute(start+1, L"face", false, true).first, L"Symbol", 6) == 0 ||
+                        string_util::strnicmp(read_attribute(start+1, L"font-family", true, true).first, L"Symbol", 6) == 0)
                         { isSymbolFontSection = true; }
                     }
                 // ...then any other element
                 else
                     {
-                    if (string_util::strnicmp(read_attribute(start+1, L"font-family", 11, true, true).first, L"Symbol", 6) == 0)
+                    if (string_util::strnicmp(read_attribute(start+1, L"font-family", true, true).first, L"Symbol", 6) == 0)
                         { isSymbolFontSection = true; }
                     }
                 // see if this is a preformatted section, where CRLFs should be preserved
@@ -1029,7 +1028,8 @@ namespace lily_of_the_valley
                     add_character(L'\n');
                     add_character(L'\n');
                     // insert a page break before this section of text if requested.
-                    const std::wstring pageBreakValue = read_attribute_as_string(start+1, L"page-break-before", 17, true, false);
+                    const std::wstring pageBreakValue =
+                        read_attribute_as_string(start+1, L"page-break-before", true, false);
                     if (pageBreakValue.length() &&
                         (string_util::strnicmp(pageBreakValue.c_str(), L"always", 6) == 0||
                          string_util::strnicmp(pageBreakValue.c_str(), L"auto", 4) == 0 ||
@@ -1072,14 +1072,14 @@ namespace lily_of_the_valley
                     // often e-mail and telephone links are missing the space between them and the proceeding word,
                     // so force one in front of it just to be safe.
                         {
-                        const auto attrib = read_attribute_as_string(start+1, L"href", 4, false, false);
+                        const auto attrib = read_attribute_as_string(start+1, L"href", false, false);
                         if (string_util::strnicmp(attrib.c_str(), L"mailto:", 7) == 0 ||
                             string_util::strnicmp(attrib.c_str(), L"tel:", 4) == 0)
                             { add_character(L' '); }
                         }
                     // links that would usually be its own line
                         {
-                        const auto attrib = read_attribute_as_string(start+1, L"class", 5, false, false);
+                        const auto attrib = read_attribute_as_string(start+1, L"class", false, false);
                         if (attrib.find(L"FooterLink") != std::wstring::npos)
                             {
                             add_character(L'\n');
@@ -1097,7 +1097,7 @@ namespace lily_of_the_valley
                     {
                     // span data-types that could cause a new paragraph or tab
                         {
-                        const auto attrib = read_attribute_as_string(start+1, L"data-type", 9, false, false);
+                        const auto attrib = read_attribute_as_string(start+1, L"data-type", false, false);
                         // non-standard way of saying <br />
                         if (attrib == L"newline")
                             { add_character(L'\n'); }
@@ -1106,7 +1106,7 @@ namespace lily_of_the_valley
                         }
                     // span class that could cause a new paragraph (or be hidden)
                         {
-                        const auto attrib = read_attribute_as_string(start+1, L"class", 5, false, false);
+                        const auto attrib = read_attribute_as_string(start+1, L"class", false, false);
                         if (attrib.length())
                             {
                             if (attrib.find(L"BookBanner") != std::wstring::npos ||
@@ -1119,7 +1119,7 @@ namespace lily_of_the_valley
                                 { add_character(L'\t'); }
                             else if (attrib.find(L"hidden") != std::wstring::npos)
                                 {
-                                auto spanEnd = find_closing_element(start, endSentinel, L"span", 4);
+                                auto spanEnd = find_closing_element(start, endSentinel, L"span");
                                 if (spanEnd)
                                     { start = spanEnd; }
                                 }
@@ -1201,21 +1201,20 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    bool html_extract_text::compare_element(const wchar_t* text, const wchar_t* element,
-                                            const size_t element_size,
-                                            const bool accept_self_terminating_elements /*= false*/)
+    bool html_extract_text::compare_element(const wchar_t* text, std::wstring_view element,
+                                            const bool accept_self_terminating_elements)
         {
-        if (!text || !element || element_size == 0)
+        if (!text || element.empty())
             { return false; }
-        assert((std::wcslen(element) == element_size) && "Invalid length passed to compare_element().");
+
         // first see if the element matches the text (e.g., "br" or "br/" [if accepting self terminating element])
-        if (string_util::strnicmp(text, element, element_size) == 0)
+        if (string_util::strnicmp(text, element.data(), element.length()) == 0)
             {
             /* now we need to make sure that there isn't more to the element in the text.
                In other words, verify that it is either terminated by a '>' or proceeded with
                attributes; otherwise, the element in the text is not the same as the element
                that we are comparing against.*/
-            text += element_size;
+            text += element.length();
             // if element is missing '>' and has nothing after it then it's invalid.
             if (*text == 0)
                 { return false; }
@@ -1251,21 +1250,19 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    bool html_extract_text::compare_element_case_sensitive(const wchar_t* text, const wchar_t* element,
-                                                           const size_t element_size,
-                                                           const bool accept_self_terminating_elements /*= false*/)
+    bool html_extract_text::compare_element_case_sensitive(const wchar_t* text, std::wstring_view element,
+                                                           const bool accept_self_terminating_elements)
         {
-        if (!text || !element || element_size == 0)
+        if (!text || element.empty())
             { return false; }
-        assert((std::wcslen(element) == element_size) && "Invalid length passed to compare_element().");
         // first see if the element matches the text (e.g., "br" or "br/" [if accepting self terminating element])
-        if (std::wcsncmp(text, element, element_size) == 0)
+        if (std::wcsncmp(text, element.data(), element.length()) == 0)
             {
             /* now we need to make sure that there isn't more to the element in the text.
                In other words, verify that it is either terminated by a '>' or proceeded with
                attributes; otherwise, the element in the text is not the same as the element
                that we are comparing against.*/
-            text += element_size;
+            text += element.length();
             // if element is missing '>' and has nothing after it then it's invalid.
             if (*text == 0)
                 { return false; }
@@ -1349,7 +1346,7 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     case_insensitive_wstring_view html_extract_text::get_element_name(
-        const wchar_t* text, const bool accept_self_terminating_elements /*= true*/)
+        const wchar_t* text, const bool accept_self_terminating_elements)
         {
         if (text == nullptr)
             { return case_insensitive_wstring_view{}; }
@@ -1413,21 +1410,19 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     const wchar_t* html_extract_text::find_element(const wchar_t* sectionStart,
                                            const wchar_t* sectionEnd,
-                                           const wchar_t* elementTag,
-                                           const size_t elementTagLength,
-                                           const bool accept_self_terminating_elements /*= true*/)
+                                           std::wstring_view elementTag,
+                                           const bool accept_self_terminating_elements)
         {
         if (sectionStart == nullptr || sectionEnd == nullptr ||
-            elementTag == nullptr || elementTagLength == 0)
+            elementTag.empty())
             { return nullptr; }
-        assert((std::wcslen(elementTag) == elementTagLength) &&
-               "Invalid length passed to find_element().");
-        while (sectionStart && sectionStart+elementTagLength < sectionEnd)
+
+        while (sectionStart && sectionStart + elementTag.length() < sectionEnd)
             {
             sectionStart = std::wcschr(sectionStart, L'<');
-            if (sectionStart == nullptr || sectionStart+elementTagLength > sectionEnd)
+            if (sectionStart == nullptr || sectionStart + elementTag.length() > sectionEnd)
                 { return nullptr; }
-            else if (compare_element(sectionStart+1, elementTag, elementTagLength,
+            else if (compare_element(sectionStart + 1, elementTag,
                                      accept_self_terminating_elements))
                 { return sectionStart; }
             else
@@ -1439,24 +1434,22 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     const wchar_t* html_extract_text::find_closing_element(const wchar_t* sectionStart,
                                            const wchar_t* sectionEnd,
-                                           const wchar_t* elementTag,
-                                           const size_t elementTagLength)
+                                           std::wstring_view elementTag)
         {
         if (sectionStart == nullptr || sectionEnd == nullptr ||
-            elementTag == nullptr || elementTagLength == 0)
+            elementTag.empty())
             { return nullptr; }
-        assert((std::wcslen(elementTag) == elementTagLength) &&
-               "Invalid length passed to find_closing_element().");
+
         const wchar_t* start = std::wcschr(sectionStart, L'<');
-        if (start == nullptr || start+elementTagLength > sectionEnd)
+        if (start == nullptr || start + elementTag.length() > sectionEnd)
             { return nullptr; }
         ++start; // skip '<'
         // if we are on an opening element by the same name, then skip it so that we won't
         // count it again in the stack logic below
-        if (compare_element(start, elementTag, elementTagLength, true))
-            { sectionStart = start+elementTagLength; }
+        if (compare_element(start, elementTag, true))
+            { sectionStart = start + elementTag.length(); }
         // else if we are on the closing element already then just return that.
-        else if (start[0] == '/' && compare_element(start+1, elementTag, elementTagLength, true))
+        else if (start[0] == '/' && compare_element(start+1, elementTag, true))
             { return --start; }
 
         // Do a search for the matching close tag. That means
@@ -1465,14 +1458,14 @@ namespace lily_of_the_valley
         long stackSize = 1;
 
         start = std::wcschr(sectionStart, L'<');
-        while (start && start+elementTagLength+1 < sectionEnd)
+        while (start && start + elementTag.length() + 1 < sectionEnd)
             {
             // if a closing element if found, then decrease the stack
-            if (start[1] == L'/' && compare_element(start+2, elementTag, elementTagLength, true))
+            if (start[1] == L'/' && compare_element(start+2, elementTag, true))
                 { --stackSize; }
             // if a new opening element by the same name, then add that to the stack so that its
             // respective closing element will be skipped.
-            else if (compare_element(start+1, elementTag, elementTagLength, true))
+            else if (compare_element(start+1, elementTag, true))
                 { ++stackSize; }
             if (stackSize == 0)
                 { return start; }
@@ -1502,7 +1495,7 @@ namespace html_utilities
         const wchar_t* currentPos = html_text, *lastEnd = html_text;
         while (currentPos && (currentPos < endSentinel))
             {
-            currentPos = html_extract_text::find_element(currentPos, endSentinel, L"a", 1, true);
+            currentPos = html_extract_text::find_element(currentPos, endSentinel, L"a", true);
             // no more anchors, so just copy over the rest of the text and quit.
             if (!currentPos || currentPos >= endSentinel)
                 {
@@ -1510,7 +1503,7 @@ namespace html_utilities
                 break;
                 }
             // if this is actually a bookmark, then we need to start over (looking for the next <a>).
-            if (html_extract_text::find_tag(currentPos, L"name", 4, false))
+            if (html_extract_text::find_tag(currentPos, L"name", false))
                 {
                 currentPos += 2;
                 continue;
@@ -1524,7 +1517,7 @@ namespace html_utilities
             lastEnd = currentPos+1;
             // ...Now, find the matching </a> and copy over the text between that and the previous <a>.
             // Note that nested <a> would be very incorrect HTML, so we will safely assume that there aren't any.
-            currentPos = html_extract_text::find_closing_element(currentPos, endSentinel, L"a", 1);
+            currentPos = html_extract_text::find_closing_element(currentPos, endSentinel, L"a");
             if (!currentPos || currentPos >= endSentinel)
                 { break; }
             add_characters(lastEnd, currentPos-lastEnd);
@@ -2031,7 +2024,7 @@ namespace html_utilities
     //------------------------------------------------------------------
     const wchar_t* html_image_parse::operator()()
         {
-        static const std::wstring HTML_IMAGE(L"img");
+        static const std::wstring_view HTML_IMAGE(L"img");
         // reset
         m_current_hyperlink_length = 0;
 
@@ -2042,11 +2035,11 @@ namespace html_utilities
             {
             m_html_text =
                 html_extract_text::find_element(m_html_text, m_html_text_end,
-                                                HTML_IMAGE.c_str(), HTML_IMAGE.length());
+                                                HTML_IMAGE, true);
             if (m_html_text)
                 {
                 const auto [imageSrc, imageLength] =
-                    html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
+                    html_extract_text::read_attribute(m_html_text, L"src", false, true);
                 if (imageSrc)
                     {
                     m_html_text = imageSrc;
@@ -2056,7 +2049,7 @@ namespace html_utilities
                 // no src in this anchor, so go to next one
                 else
                     {
-                    m_html_text += HTML_IMAGE.length()+1;
+                    m_html_text += HTML_IMAGE.length() + 1;
                     continue;
                     }
                 }
@@ -2113,12 +2106,12 @@ namespace html_utilities
     //------------------------------------------------------------------
     const wchar_t* html_hyperlink_parse::operator()()
         {
-        static const std::wstring HTML_META(L"meta");
-        static const std::wstring HTML_IFRAME(L"iframe");
-        static const std::wstring HTML_FRAME(L"frame");
-        static const std::wstring HTML_SCRIPT(L"script");
-        static const std::wstring HTML_SCRIPT_END(L"</script>");
-        static const std::wstring HTML_IMAGE(L"img");
+        static const std::wstring_view HTML_META(L"meta");
+        static const std::wstring_view HTML_IFRAME(L"iframe");
+        static const std::wstring_view HTML_FRAME(L"frame");
+        static const std::wstring_view HTML_SCRIPT(L"script");
+        static const std::wstring_view HTML_SCRIPT_END(L"</script>");
+        static const std::wstring_view HTML_IMAGE(L"img");
         // if we are in an embedded script block, then continue parsing the
         // links out of that instead of using the regular parser
         if (m_inside_of_script_section)
@@ -2154,15 +2147,15 @@ namespace html_utilities
                     }
                 m_current_link_is_image =
                     html_extract_text::compare_element(m_html_text+1,
-                        HTML_IMAGE.c_str(), HTML_IMAGE.length(), false);
+                        HTML_IMAGE, false);
                 m_inside_of_script_section = m_current_link_is_javascript =
                     html_extract_text::compare_element(m_html_text+1,
-                        HTML_SCRIPT.c_str(), HTML_SCRIPT.length(), false);
+                        HTML_SCRIPT, false);
                 if (m_inside_of_script_section)
                     {
                     const wchar_t* endAngle = html_extract_text::find_close_tag(m_html_text);
                     const wchar_t* endOfScriptSection =
-                        string_util::stristr<wchar_t>(m_html_text, HTML_SCRIPT_END.c_str());
+                        string_util::stristr<wchar_t>(m_html_text, HTML_SCRIPT_END.data());
                     if (endAngle && (endAngle < m_html_text_end) &&
                         endOfScriptSection && (endOfScriptSection < m_html_text_end))
                         { m_javascript_hyperlink_parse.set(endAngle, endOfScriptSection-endAngle); }
@@ -2172,13 +2165,13 @@ namespace html_utilities
                 if ((m_include_image_links && m_current_link_is_image) ||
                     m_current_link_is_javascript  ||
                     html_extract_text::compare_element(m_html_text+1,
-                        HTML_FRAME.c_str(), HTML_FRAME.length(), false) ||
+                        HTML_FRAME, false) ||
                     html_extract_text::compare_element(m_html_text+1,
-                        HTML_IFRAME.c_str(), HTML_IFRAME.length(), false))
+                        HTML_IFRAME, false))
                     {
                     m_html_text += 4;
                     const auto [imageSrc, imageLengh] =
-                        html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
+                        html_extract_text::read_attribute(m_html_text, L"src", false, true);
                     if (imageSrc)
                         {
                         m_html_text = imageSrc;
@@ -2208,13 +2201,13 @@ namespace html_utilities
                         { continue; }
                     }
                 // ...or it is an anchor link
-                else if (html_extract_text::compare_element(m_html_text+1, L"a", 1, false) ||
-                    html_extract_text::compare_element(m_html_text+1, L"link", 4, false) ||
-                    html_extract_text::compare_element(m_html_text+1, L"area", 4, false) )
+                else if (html_extract_text::compare_element(m_html_text+1, L"a", false) ||
+                    html_extract_text::compare_element(m_html_text+1, L"link", false) ||
+                    html_extract_text::compare_element(m_html_text+1, L"area", false) )
                     {
                     ++m_html_text; // skip the <
                     const auto [attribText, attribLength] =
-                        html_extract_text::read_attribute(m_html_text, L"href", 4, false, true);
+                        html_extract_text::read_attribute(m_html_text, L"href", false, true);
                     if (attribText && attribLength > 0)
                         {
                         m_html_text = attribText;
@@ -2227,14 +2220,14 @@ namespace html_utilities
                     }
                 // ...or a redirect in the HTTP meta section
                 else if (html_extract_text::compare_element(m_html_text+1,
-                    HTML_META.c_str(), HTML_META.size(), false) )
+                    HTML_META, false) )
                     {
                     m_html_text += HTML_META.size() + 1;
                     const std::wstring httpEquiv =
-                        html_extract_text::read_attribute_as_string(m_html_text, L"http-equiv", 10, false);
+                        html_extract_text::read_attribute_as_string(m_html_text, L"http-equiv", false, false);
                     if (string_util::stricmp(httpEquiv.c_str(), L"refresh") == 0)
                         {
-                        const wchar_t* url = html_extract_text::find_tag(m_html_text, L"url=", 4, true);
+                        const wchar_t* url = html_extract_text::find_tag(m_html_text, L"url=", true);
                         if (url && (url < m_html_text_end))
                             {
                             m_html_text = url+4;

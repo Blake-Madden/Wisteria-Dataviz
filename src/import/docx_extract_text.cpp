@@ -13,12 +13,12 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void word2007_extract_text::read_meta_data(const wchar_t* html_text, const size_t text_length)
         {
-        static const std::wstring OFFICE_META(L"cp:coreProperties");
-        static const std::wstring SUBJECT(L"dc:subject");
-        static const std::wstring TITLE(L"dc:title");
-        static const std::wstring DESCRIPTION(L"dc:description");
-        static const std::wstring KEYWORDS(L"cp:keywords");
-        static const std::wstring AUTHOR(L"dc:creator");
+        static const std::wstring_view OFFICE_META(L"cp:coreProperties");
+        static const std::wstring_view SUBJECT(L"dc:subject");
+        static const std::wstring_view TITLE(L"dc:title");
+        static const std::wstring_view DESCRIPTION(L"dc:description");
+        static const std::wstring_view KEYWORDS(L"cp:keywords");
+        static const std::wstring_view AUTHOR(L"dc:creator");
 
         // reset meta data from last call
         reset_meta_data();
@@ -26,34 +26,34 @@ namespace lily_of_the_valley
         const wchar_t* const textEnd = html_text+text_length;
 
         const wchar_t* const officMetaStart =
-            find_element(html_text, textEnd, OFFICE_META.c_str(), OFFICE_META.length());
+            find_element(html_text, textEnd, OFFICE_META, true);
         if (!officMetaStart)
             { return; }
 
         html_extract_text parseHtml;
 
-        m_title = read_element_as_string(officMetaStart, textEnd, TITLE.c_str(), TITLE.length());
+        m_title = read_element_as_string(officMetaStart, textEnd, TITLE);
         auto metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
         if (metaVal)
             { m_title.assign(metaVal); }
 
-        m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT.c_str(), SUBJECT.length());
+        m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT);
         metaVal = parseHtml(m_subject.c_str(), m_subject.length(), true, false);
         if (metaVal)
             { m_subject.assign(metaVal); }
 
         m_description =
-            read_element_as_string(officMetaStart, textEnd, DESCRIPTION.c_str(), DESCRIPTION.length());
+            read_element_as_string(officMetaStart, textEnd, DESCRIPTION);
         metaVal = parseHtml(m_description.c_str(), m_description.length(), true, false);
         if (metaVal)
             { m_description.assign(metaVal); }
 
-        m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS.c_str(), KEYWORDS.length());
+        m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS);
         metaVal = parseHtml(m_keywords.c_str(), m_keywords.length(), true, false);
         if (metaVal)
             { m_keywords.assign(metaVal); }
 
-        m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR.c_str(), AUTHOR.length());
+        m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR);
         metaVal = parseHtml(m_author.c_str(), m_author.length(), true, false);
         if (metaVal)
             { m_author.assign(metaVal); }
@@ -90,7 +90,7 @@ namespace lily_of_the_valley
         string_util::case_insensitive_wstring currentTag;
         while (start && (start < endSentinel))
             {
-            currentTag.assign(get_element_name(start + 1));
+            currentTag.assign(get_element_name(start + 1, true));
             bool textSectionFound = false;
             // if it's a comment then look for matching comment ending sequence
             if (currentTag == L"!--")
@@ -132,7 +132,7 @@ namespace lily_of_the_valley
                 // if paragraph style indicates a list item
                 else if (currentTag == L"w:pStyle")
                     {
-                    if (read_attribute_as_string(start + 1, L"w:val", 5, false) == L"ListParagraph")
+                    if (read_attribute_as_string(start + 1, L"w:val", false, false) == L"ListParagraph")
                         { add_character(L'\t'); }
                     }
                 // or a tab
@@ -144,7 +144,7 @@ namespace lily_of_the_valley
                 else if (currentTag == L"w:br")
                     {
                     const std::wstring breakType =
-                        read_attribute_as_string(start + 1, L"w:type", 6, false);
+                        read_attribute_as_string(start + 1, L"w:type", false, false);
                     if (breakType == L"page")
                         { add_character(L'\f'); }
                     else
@@ -157,7 +157,7 @@ namespace lily_of_the_valley
                 else if (currentTag == L"w:jc")
                     {
                     const std::wstring alignment =
-                        read_attribute_as_string(start + 1, L"w:val", 5, false);
+                        read_attribute_as_string(start + 1, L"w:val", false, false);
                     if (alignment == L"center" ||
                         alignment == L"right" ||
                         alignment == L"both" ||
@@ -167,7 +167,7 @@ namespace lily_of_the_valley
                 // or if it's indented
                 else if (currentTag == L"w:ind")
                     {
-                    const auto alignment = read_attribute_as_long(start + 1, L"w:left", 6, false);
+                    const auto alignment = read_attribute_as_long(start + 1, L"w:left", false);
                     if (alignment > 0.0f)
                         { add_character(L'\t'); }
                     }
@@ -177,14 +177,14 @@ namespace lily_of_the_valley
                     add_character(L'\n');
                     add_character(L'\n');
                     }
-                else if (compare_element_case_sensitive(start + 1, L"w:tc", 4, true) )
+                else if (compare_element_case_sensitive(start + 1, L"w:tc", true) )
                     {
                     add_character(L'\t');
                     insideOfTableCell = true;
                     }
-                else if (compare_element_case_sensitive(start + 1, L"/w:tc", 5) )
+                else if (compare_element_case_sensitive(start + 1, L"/w:tc", false) )
                     { insideOfTableCell = false; }
-                else if (compare_element_case_sensitive(start + 1, L"w:t", 3) )
+                else if (compare_element_case_sensitive(start + 1, L"w:t", false) )
                     { textSectionFound = true; }
                 /* find the matching >, but watch out for an errant < also in case
                    the previous < wasn't terminated properly*/
