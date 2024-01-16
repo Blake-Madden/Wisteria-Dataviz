@@ -133,7 +133,9 @@ void ListEditSpinCtrl::OnKeyDown(wxKeyEvent& event)
         { Accept(); }
     // number or arrow key was probably typed, process it
     else
-        { event.Skip(); }
+        {
+        event.Skip();
+        }
     }
 
 //------------------------------------------------------
@@ -187,7 +189,9 @@ void ListEditSpinCtrlDouble::OnKeyDown(wxKeyEvent& event)
         { Accept(); }
     // number or arrow key was probably typed, process it
     else
-        { event.Skip(); }
+        {
+        event.Skip();
+        }
     }
 
 //------------------------------------------------------
@@ -445,8 +449,10 @@ void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
     else if ((event.GetKeyCode() == WXK_RETURN || event.GetKeyCode() == WXK_NUMPAD_ENTER) &&
         m_enableItemViewable && (GetWindowStyle() & wxLC_REPORT))
         { ViewItem(GetFocusedItem()); }
-
-    event.Skip();
+    else
+        {
+        event.Skip();
+        }
     }
 
 class ListCtrlExPrintout : public wxPrintout
