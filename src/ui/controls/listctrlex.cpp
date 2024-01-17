@@ -2002,7 +2002,7 @@ wxString ListCtrlEx::GetItemTextFormatted(const long item, const long column) co
             const wxString retVal = m_virtualData->GetItemTextFormatted(item, column);
             if (GetColumnFilePathTruncationMode(column) ==
                 ColumnInfo::ColumnFilePathTruncationMode::TruncatePaths)
-                { return GetShortenedFileName(retVal); }
+                { return GetShortenedFilePath(retVal); }
             else if (GetColumnFilePathTruncationMode(column) ==
                 ColumnInfo::ColumnFilePathTruncationMode::OnlyShowFileNames)
                 {

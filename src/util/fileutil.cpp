@@ -296,7 +296,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
     }
 
 //------------------------------------------------
-wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength /*= 40*/)
+wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /*= 40*/)
     {
     // if the path is shorter than the max allowed length, just return it
     if (filePath.length() <= maxLength)

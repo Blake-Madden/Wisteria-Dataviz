@@ -168,7 +168,7 @@ protected:
     @param filePath The filepath to shorten.
     @param maxLength The maximumn length of the shortened name.*/
 [[nodiscard]]
-wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength = 40);
+wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength = 40);
 /// @brief Strips illegal characters from a file path, except for path separators.
 /// @param filePath The path to strip.
 /// @returns The stripped path.
