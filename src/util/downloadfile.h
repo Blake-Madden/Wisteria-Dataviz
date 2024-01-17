@@ -133,6 +133,47 @@ public:
     /// @brief Bind this to the parent `wxEvtHandler`'s close event
     ///     to close any downloads that still pending.
     void CancelPending();
+
+    /// @brief Converts a response code to a readable message.
+    /// @param responseCode The web request response code.
+    /// @returns The meaning of the response code.
+    [[nodiscard]]
+    static wxString GetResponseMessage(const int responseCode)
+        {
+        if (responseCode < 300)
+            {
+            return _(L"Connection successful.");
+            }
+        switch (responseCode)
+            {
+        case 301:
+            return _(L"Page has moved.");
+        case 302:
+            return _(L"Page was found, but under a different URL.");
+        case 204:
+            return _(L"Page not responding.");
+        case 400:
+            return _(L"Bad request.");
+        case 401:
+            return _(L"Unauthorized.");
+        case 402:
+            return _(L"Payment Required.");
+        case 403:
+            return _(L"Forbidden.");
+        case 404:
+            return _(L"Page not found.");
+        case 500:
+            return _(L"Internal Error.");
+        case 501:
+            return _(L"Not implemented.");
+        case 502:
+            return _(L"Service temporarily overloaded.");
+        case 503:
+            return _(L"Gateway timeout.");
+        default:
+            return _(L"Unknown connection error.");
+            };
+        }
 private:
     wxString GetLocalPath(const int ID) const;
     void Remove(const int ID);

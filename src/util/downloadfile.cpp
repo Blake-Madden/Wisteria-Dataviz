@@ -84,7 +84,8 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         break;
         }
     case wxWebRequest::State_Failed:
-        wxLogError(L"Web Request failed: %s", evt.GetErrorDescription());
+        wxLogError(L"Web Request failed: %s (%s)",
+                   evt.GetErrorDescription(), QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
         Remove(evt.GetId());
         break;
     case wxWebRequest::State_Cancelled:
@@ -314,7 +315,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             break;
             }
         case wxWebRequest::State_Failed:
-            wxLogError(L"Web Request failed: %s", evt.GetErrorDescription());
+            wxLogError(L"Web Request failed: %s (%s)",
+                       evt.GetErrorDescription(), QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
             m_stillActive = false;
             fillResponseInfo();
             break;
