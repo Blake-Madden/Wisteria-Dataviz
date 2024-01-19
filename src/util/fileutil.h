@@ -164,6 +164,16 @@ protected:
     FilePathType m_fileType{ FilePathType::InvalidFileType };
     };
 
+/** @brief Renames a file, attempting to shortening the destination name.
+    @details If the destination file name is more than 255 and the original isn't,
+        then this will attempted to truncate the name and combine it with the orininal name
+        to add randomness.\n
+        If that criteria isn't met, then will attempt to call @c wxRenameFile.
+        This can be called if a regular call to @c wxRenameFile fails.
+    @param srcPath The original file to rename/move.
+    @param destPath The destination name.
+    @returns @c true if successful.*/
+bool RenameFileShortenName(const wxString& srcPath, wxString& destPath);
 /** @returns A shortened version of a filepath.
     @param filePath The filepath to shorten.
     @param maxLength The maximumn length of the shortened name.*/

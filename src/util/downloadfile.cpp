@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "downloadfile.h"
+#include "fileutil.h"
 
 //--------------------------------------------------
 void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
@@ -77,7 +78,8 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
             if (wxFileName::FileExists(downloadPath))
                 { wxFileName(downloadPath).SetPermissions(wxS_DEFAULT); }
 
-            if (!wxRenameFile(evt.GetDataFile(), downloadPath))
+            if (!wxRenameFile(evt.GetDataFile(), downloadPath) &&
+                !RenameFileShortenName(evt.GetDataFile(), downloadPath) )
                 { wxLogError(L"Could not move %s", evt.GetDataFile()); }
             Remove(evt.GetId());
             }
@@ -296,7 +298,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 if (wxFileName::FileExists(m_downloadPath))
                     { wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT); }
 
-                if (!wxRenameFile(evt.GetDataFile(), m_downloadPath))
+                if (!wxRenameFile(evt.GetDataFile(), m_downloadPath) &&
+                    !RenameFileShortenName(evt.GetDataFile(), m_downloadPath) )
                     { wxLogError(L"Could not move %s", evt.GetDataFile()); }
                 else
                     { m_downloadSuccessful = true; }

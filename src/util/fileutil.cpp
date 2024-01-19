@@ -296,6 +296,31 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
     }
 
 //------------------------------------------------
+bool RenameFileShortenName(const wxString& srcPath, wxString& destPath)
+    {
+    constexpr int maxFileNameLength{ 255 };
+    wxFileName src{ srcPath };
+    wxFileName dest{ destPath };
+    // if destination is too long, but the original name isn't...
+    if (dest.GetFullName().length() > maxFileNameLength &&
+        src.GetFullName().length() < maxFileNameLength)
+        {
+        // truncate to the max length (with the src file name appended)
+        wxString shortenedName{ dest.GetFullName() };
+        shortenedName.erase(maxFileNameLength - src.GetFullName().length());
+        shortenedName += src.GetFullName();
+        const wxString newDestPath = dest.GetPath(wxPATH_GET_SEPARATOR) + shortenedName;
+        wxLogMessage(L"'%s' name was too long to rename to. Will attempt to rename to '%s'",
+                     dest.GetFullName(), newDestPath);
+        return wxRenameFile(srcPath, newDestPath);
+        }
+    else
+        {
+        return wxRenameFile(srcPath, destPath);
+        }
+    }
+
+//------------------------------------------------
 wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /*= 40*/)
     {
     // if the path is shorter than the max allowed length, just return it
