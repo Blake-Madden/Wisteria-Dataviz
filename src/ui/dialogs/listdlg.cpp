@@ -134,9 +134,9 @@ void ListDlg::CreateControls()
         m_buttonStyle & LD_SORT_BUTTON || m_buttonStyle & LD_SAVE_BUTTON ||
         m_buttonStyle & LD_PRINT_BUTTON)
         {
-        wxRibbonBar* ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition,
+        m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition,
                                               wxDefaultSize, wxRIBBON_BAR_FLOW_HORIZONTAL);
-        wxRibbonPage* homePage = new wxRibbonPage(ribbon, wxID_ANY, wxString{});
+        wxRibbonPage* homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
         // export
         if (m_buttonStyle & LD_SAVE_BUTTON || m_buttonStyle & LD_PRINT_BUTTON)
             {
@@ -186,35 +186,9 @@ void ListDlg::CreateControls()
                         FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Sort the list."));
                 }
             }
-        ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
-        ribbon->GetArtProvider()->SetColourScheme(GetBackgroundColour(),
-            GetBackgroundColour(), m_hoverColor);
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_BUTTON_BAR_LABEL_DISABLED_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_BUTTON_BAR_LABEL_HIGHLIGHT_TOP_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_BUTTON_BAR_LABEL_HIGHLIGHT_GRADIENT_TOP_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_BUTTON_BAR_LABEL_HIGHLIGHT_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_BUTTON_BAR_LABEL_HIGHLIGHT_GRADIENT_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_TAB_LABEL_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_TAB_ACTIVE_LABEL_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_TAB_HOVER_LABEL_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_PANEL_LABEL_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_PANEL_MINIMISED_LABEL_COLOUR,
-            GetForegroundColour());
-        ribbon->GetArtProvider()->SetColour(wxRIBBON_ART_PANEL_HOVER_LABEL_COLOUR,
-            GetForegroundColour());
-        mainSizer->Add(ribbon, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
-        ribbon->Realise();
+        m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
+        mainSizer->Add(m_ribbon, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+        m_ribbon->Realise();
         }
 
     if (m_usecheckBoxes)

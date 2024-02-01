@@ -142,6 +142,10 @@ public:
     [[nodiscard]]
     ListCtrlEx* GetListCtrl() noexcept
         { return m_list; }
+    /// @returns The dialog's ribbon.
+    [[nodiscard]]
+    wxRibbonBar* GetRibbon() noexcept
+        { return m_ribbon; }
     /// @returns An array of the selected strings.
     [[nodiscard]]
     const wxArrayString& GetSelectedItems() const noexcept
@@ -189,6 +193,7 @@ private:
     wxCheckListBox* m_checkList{ nullptr };
     ListCtrlExDataProvider* m_data{ new ListCtrlExDataProvider() };
     wxCheckBox* m_checkBox{ nullptr };
+    wxRibbonBar* m_ribbon{ nullptr };
     wxArrayString m_values;
     wxArrayString m_selectedItems;
 
