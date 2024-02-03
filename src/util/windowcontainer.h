@@ -215,6 +215,10 @@ public:
     [[nodiscard]]
     size_t GetWindowCount() const noexcept
         { return m_windows.size(); }
+    /// @returns The internal vector of windows.
+    [[nodiscard]]
+    std::vector<wxWindow*>& GetWindows() noexcept
+        { return m_windows; }
 private:
     std::vector<wxWindow*> m_windows;
     };
