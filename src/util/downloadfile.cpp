@@ -104,9 +104,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
             { Remove(evt.GetId()); }
         else
             {
-            wxWebAuthChallenge
-                auth = requestPos->GetAuthChallenge();
-            if (!auth.IsOk())
+            if (!requestPos->GetAuthChallenge().IsOk())
                 {
                 wxLogStatus(L"Unexpectedly missing auth challenge");
                 Remove(evt.GetId());
@@ -125,8 +123,13 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
                 );
             if (dialog.ShowModal() == wxID_OK)
                 {
-                auth.SetCredentials(cred);
+                requestPos->GetAuthChallenge().SetCredentials(cred);
                 wxLogStatus(L"Trying to authenticate...");
+                }
+            else
+                {
+                wxLogStatus(L"Authentication challenge canceled");
+                Remove(evt.GetId());
                 }
             }
         break;
@@ -329,9 +332,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             break;
         case wxWebRequest::State_Unauthorized:
             {
-            wxWebAuthChallenge
-                auth = evt.GetRequest().GetAuthChallenge();
-            if (!auth.IsOk())
+            if (!evt.GetRequest().GetAuthChallenge().IsOk())
                 {
                 wxLogStatus(L"Unexpectedly missing authentication challenge");
                 m_stillActive = false;
@@ -347,8 +348,14 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     evt.GetResponse().GetURL() ), wxTheApp->GetAppName(), cred);
             if (dialog.ShowModal() == wxID_OK)
                 {
-                auth.SetCredentials(cred);
+                evt.GetRequest().GetAuthChallenge().SetCredentials(cred);
                 wxLogStatus(L"Trying to authenticate...");
+                }
+            else
+                {
+                wxLogStatus(L"Authentication challenge canceled");
+                m_stillActive = false;
+                fillResponseInfo();
                 }
             break;
             }
