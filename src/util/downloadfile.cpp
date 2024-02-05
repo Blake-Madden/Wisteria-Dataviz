@@ -163,7 +163,6 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
     m_downloadSuccessful = false;
-    wxWebRequest tempRequest{ request };
     request.Start();
 
     wxProgressDialog* progressDlg = m_showProgress ?
@@ -215,7 +214,9 @@ void FileDownload::RequestResponse(const wxString& url)
     request.Start();
 
     while (m_stillActive)
-        { wxYield(); }
+        {
+        wxYield();
+        }
     }
 
 //--------------------------------------------------
@@ -243,7 +244,9 @@ bool FileDownload::Read(const wxString& url)
     request.Start();
 
     while (m_stillActive)
-        { wxYield(); }
+        {
+        wxYield();
+        }
 
     return (m_lastState == wxWebRequest::State_Completed);
     }
@@ -321,8 +324,17 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             break;
             }
         case wxWebRequest::State_Failed:
-            wxLogError(L"Web Request failed: %s (%s)",
-                       evt.GetErrorDescription(), QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
+            if (evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk())
+                {
+                wxLogError(L"Web Request failed: %s (%s)",
+                    evt.GetErrorDescription(),
+                    QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
+                }
+            else
+                {
+                wxLogError(L"Web Request failed: %s",
+                    evt.GetErrorDescription());
+                }
             m_stillActive = false;
             fillResponseInfo();
             break;
@@ -332,7 +344,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             break;
         case wxWebRequest::State_Unauthorized:
             {
-            if (!evt.GetRequest().GetAuthChallenge().IsOk())
+            if (evt.GetRequest().IsOk() &&
+                !evt.GetRequest().GetAuthChallenge().IsOk())
                 {
                 wxLogStatus(L"Unexpectedly missing authentication challenge");
                 m_stillActive = false;

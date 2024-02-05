@@ -140,7 +140,7 @@ public:
     [[nodiscard]]
     static wxString GetResponseMessage(const int responseCode)
         {
-        if (responseCode < 300)
+        if (responseCode > 0 && responseCode < 300)
             {
             return _(L"Connection successful.");
             }
@@ -174,6 +174,17 @@ public:
             return _(L"Unknown connection error.");
             };
         }
+    /// @brief Determines if a response code indicates a connection failure.
+    /// @param responseCode The web request response code.
+    /// @returns @c true if the response code indicates a connection failure.
+    [[nodiscard]]
+    inline constexpr static bool IsBadResponseCode(const int responseCode) noexcept
+        {
+        return (responseCode == 204 || responseCode == 400 || responseCode == 401 ||
+                responseCode == 402 || responseCode == 403 || responseCode == 404 ||
+                responseCode == 500 || responseCode == 501 || responseCode == 502 ||
+                responseCode == 503 || responseCode == 0);
+        }
 private:
     wxString GetLocalPath(const int ID) const;
     void Remove(const int ID);
@@ -194,21 +205,14 @@ private:
         // You can also call SetEventHandler() and bind wxEVT_WEBREQUEST_STATE and
         // wxEVT_WEBREQUEST_DATA yourself if you prefer; this is a shortcut for that.
         m_downloadFile.SetAndBindEventHandler(this);
-
-        // Either bind this, or call m_downloadFile.CancelPending() in the
-        // wxEvtHandler's already-existing close event.
-        Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
-            {
-            m_downloadFile.CancelPending();
-            event.Skip();
-            });
     @endcode
 
     Later, the `wxEvtHandler`-derived class can call GetResponse(), Read(), or Download() as such:
     @code
         // get the content type of a page (without reading its full content)
         const wxString contentType = m_downloadFile.GetResponse(
-            "https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md").GetHeader("Content-Type");
+            "https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md")
+            .GetHeader("Content-Type");
 
         // download a file locally
         m_downloadFile.Download("https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md",
@@ -219,8 +223,9 @@ private:
                                 &m_downloadFile.GetLastRead()[0] : wxString{});
     @endcode
     @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
-        or a single FileDownload object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
-        event to the `QueueDownload`'s or `FileDownload`'s @c ProcessRequest() method.
+        or a single FileDownload object. This is because the class must bind its
+        @c wxEVT_WEBREQUEST_STATE event to the `QueueDownload`'s or
+        `FileDownload`'s @c ProcessRequest() method.
 */
 class FileDownload
     {
