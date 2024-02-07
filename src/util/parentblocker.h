@@ -31,7 +31,7 @@ public:
     explicit ParentEventBlocker(wxWindow* window) : m_window(window)
         {
         m_style = m_window->GetExtraStyle();
-        m_window->SetExtraStyle(m_style|wxWS_EX_BLOCK_EVENTS);
+        m_window->SetExtraStyle(m_style | wxWS_EX_BLOCK_EVENTS);
         }
     /// @private
     ~ParentEventBlocker()
@@ -39,11 +39,7 @@ public:
     /// @private
     ParentEventBlocker(const ParentEventBlocker&) = delete;
     /// @private
-    ParentEventBlocker(ParentEventBlocker&&) = delete;
-    /// @private
     ParentEventBlocker& operator=(const ParentEventBlocker&) = delete;
-    /// @private
-    ParentEventBlocker& operator=(ParentEventBlocker&&) = delete;
 private:
     wxWindow* m_window{nullptr};
     long m_style{ 0 };
