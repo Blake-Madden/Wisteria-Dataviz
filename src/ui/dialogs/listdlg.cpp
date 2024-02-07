@@ -9,21 +9,6 @@
 #include "listdlg.h"
 #include "../ribbon/artmetro.h"
 
-wxBEGIN_EVENT_TABLE(ListDlg, wxDialog)
-    EVT_BUTTON(wxID_OK, ListDlg::OnAffirmative)
-    EVT_BUTTON(wxID_YES, ListDlg::OnAffirmative)
-    EVT_BUTTON(wxID_NO, ListDlg::OnNegative)
-    EVT_BUTTON(wxID_CANCEL, ListDlg::OnNegative)
-    EVT_BUTTON(wxID_CLOSE, ListDlg::OnNegative)
-    EVT_CLOSE(ListDlg::OnClose)
-    EVT_RIBBONBUTTONBAR_CLICKED(wxID_SELECTALL, ListDlg::OnSelectAll)
-    EVT_RIBBONBUTTONBAR_CLICKED(wxID_COPY, ListDlg::OnCopy)
-    EVT_RIBBONBUTTONBAR_CLICKED(wxID_SAVE, ListDlg::OnSave)
-    EVT_RIBBONBUTTONBAR_CLICKED(wxID_PRINT, ListDlg::OnPrint)
-    EVT_RIBBONBUTTONBAR_CLICKED(XRCID("ID_LIST_SORT"), ListDlg::OnSort)
-    EVT_FIND_NEXT(wxID_ANY, ListDlg::OnFind)
-wxEND_EVENT_TABLE()
-
 //------------------------------------------------------
 void ListDlg::OnFind(wxFindDialogEvent& event)
     {
@@ -46,7 +31,7 @@ void ListDlg::OnSave(wxRibbonButtonBarEvent& event)
     {
     if (m_usecheckBoxes)
         {
-        wxFAIL_MSG("Save not supported for checklist control");
+        wxFAIL_MSG(L"Save not supported for checklist control");
         }
     else if (m_list)
         { m_list->OnSave(event); }
@@ -57,7 +42,7 @@ void ListDlg::OnPrint(wxRibbonButtonBarEvent& event)
     {
     if (m_usecheckBoxes)
         {
-        wxFAIL_MSG("Print not supported for checklist control");
+        wxFAIL_MSG(L"Print not supported for checklist control");
         }
     else if (m_list)
         { m_list->OnPrint(event); }
@@ -107,10 +92,86 @@ void ListDlg::OnCopy([[maybe_unused]] wxRibbonButtonBarEvent& event)
     }
 
 //------------------------------------------------------
+ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool usecheckBoxes,
+            const wxColour bkColor,
+            const wxColour hoverColor,
+            const wxColour foreColor,
+            const long buttonStyle /*= LD_NO_BUTTONS*/,
+            wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
+            const wxString& label /*= wxString{}*/,
+            const wxPoint& pos /*= wxDefaultPosition*/,
+            const wxSize& size /*= wxSize(600, 250)*/,
+            long style /*= wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER*/) :
+            m_usecheckBoxes(usecheckBoxes),
+            m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
+            m_values(values)
+    {
+    GetData()->SetValues(values);
+    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    wxDialog::Create(parent, id, caption, pos, size, style);
+    SetMinSize(FromDIP(wxSize(600, 250)));
+
+    SetBackgroundColour(bkColor);
+    SetForegroundColour(foreColor);
+
+    CreateControls();
+    Centre();
+    BindEvents();
+    }
+
+//------------------------------------------------------
+ListDlg::ListDlg(wxWindow* parent,
+        const wxColour bkColor,
+        const wxColour hoverColor,
+        const wxColour foreColor,
+        const long buttonStyle /*= LD_NO_BUTTONS*/,
+        wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
+        const wxString& label /*= wxString{}*/,
+        const wxPoint& pos /*= wxDefaultPosition*/,
+        const wxSize& size /*= wxSize(600, 250)*/,
+        long style /*= wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER*/) :
+        m_usecheckBoxes(false),
+        m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor)
+    {
+    SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
+    wxDialog::Create(parent, id, caption, pos, size, style);
+    SetMinSize(FromDIP(wxSize(600, 250)));
+
+    SetBackgroundColour(bkColor);
+    SetForegroundColour(foreColor);
+
+    CreateControls();
+    Centre();
+    BindEvents();
+    }
+
+//------------------------------------------------------
+void ListDlg::BindEvents()
+    {
+    Bind(wxEVT_BUTTON, &ListDlg::OnNegative, this, wxID_CANCEL);
+    Bind(wxEVT_BUTTON, &ListDlg::OnNegative, this, wxID_CLOSE);
+    Bind(wxEVT_BUTTON, &ListDlg::OnNegative, this, wxID_NO);
+
+    Bind(wxEVT_BUTTON, &ListDlg::OnAffirmative, this, wxID_YES);
+    Bind(wxEVT_BUTTON, &ListDlg::OnAffirmative, this, wxID_OK);
+
+    Bind(wxEVT_CLOSE_WINDOW, &ListDlg::OnClose, this);
+
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSave, this, wxID_SAVE);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnPrint, this, wxID_PRINT);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSelectAll, this, wxID_SELECTALL);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSort, this, XRCID("ID_LIST_SORT"));
+
+    Bind(wxEVT_FIND, &ListDlg::OnFind, this);
+    Bind(wxEVT_FIND_NEXT, &ListDlg::OnFind, this);
+    }
+
+//------------------------------------------------------
 void ListDlg::CreateControls()
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->SetMinSize(FromDIP(wxSize(800,600)));
+    mainSizer->SetMinSize(FromDIP(wxSize(800, 600)));
 
     // the top label
     if (m_label.length())
@@ -128,7 +189,7 @@ void ListDlg::CreateControls()
         auto searcher = new Wisteria::UI::SearchPanel(this, wxID_ANY);
         searcher->SetBackgroundColour(GetBackgroundColour());
         searchSizer->Add(searcher, 0);
-        mainSizer->Add(searchSizer,0,wxEXPAND);
+        mainSizer->Add(searchSizer, 0, wxEXPAND);
         }
     if (m_buttonStyle & LD_COPY_BUTTON || m_buttonStyle & LD_SELECT_ALL_BUTTON ||
         m_buttonStyle & LD_SORT_BUTTON || m_buttonStyle & LD_SAVE_BUTTON ||

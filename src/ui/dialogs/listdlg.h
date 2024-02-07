@@ -23,6 +23,8 @@
 /// @brief Which features to include for a ListDlg.
 enum ListDlgFlags
     {
+    /// @brief No ribbon buttons.
+    LD_NO_BUTTONS = 0,
     /// @brief A save button.
     LD_SAVE_BUTTON  = 1,
     /// @brief A copy button.
@@ -67,31 +69,18 @@ public:
         @param pos The dialog's position.
         @param size The dialog's size.
         @param style The dialog's style.*/
-    ListDlg(wxWindow* parent, const wxArrayString& values, const bool usecheckBoxes,
-            const wxColour bkColor,
-            const wxColour hoverColor,
-            const wxColour foreColor,
-            const long buttonStyle = 0,
-            wxWindowID id = wxID_ANY, const wxString& caption = wxString{},
-            const wxString& label = wxString{},
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxSize(600, 250),
-            long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) :
-            m_usecheckBoxes(usecheckBoxes),
-            m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
-            m_values(values)
-        {
-        GetData()->SetValues(values);
-        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
-        wxDialog::Create(parent, id, caption, pos, size, style);
-        SetMinSize(FromDIP(wxSize(600, 250)));
-
-        SetBackgroundColour(bkColor);
-        SetForegroundColour(foreColor);
-
-        CreateControls();
-        Centre();
-        }
+    ListDlg(wxWindow* parent, const wxArrayString& values,
+        const bool usecheckBoxes,
+        const wxColour bkColor,
+        const wxColour hoverColor,
+        const wxColour foreColor,
+        const long buttonStyle = LD_NO_BUTTONS,
+        wxWindowID id = wxID_ANY,
+        const wxString& caption = wxString{},
+        const wxString& label = wxString{},
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxSize(600, 250),
+        long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
      /** @brief Constructor that won't show the checkbox.
          @param parent The parent window.
          @param bkColor The dialog's background color.
@@ -108,25 +97,13 @@ public:
              const wxColour bkColor,
              const wxColour hoverColor,
              const wxColour foreColor,
-             const long buttonStyle = 0,
-             wxWindowID id = wxID_ANY, const wxString& caption = wxString{},
+             const long buttonStyle = LD_NO_BUTTONS,
+             wxWindowID id = wxID_ANY,
+             const wxString& caption = wxString{},
              const wxString& label = wxString{},
              const wxPoint& pos = wxDefaultPosition,
              const wxSize& size = wxSize(600, 250),
-             long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) :
-             m_usecheckBoxes(false),
-             m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor)
-        {
-        SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
-        wxDialog::Create(parent, id, caption, pos, size, style);
-        SetMinSize(FromDIP(wxSize(600, 250)));
-
-        SetBackgroundColour(bkColor);
-        SetForegroundColour(foreColor);
-
-        CreateControls();
-        Centre();
-        }
+             long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
      /// @private
      ListDlg(const ListDlg&) = delete;
      /// @private
@@ -170,8 +147,7 @@ public:
             { m_list->SetSortHelpTopic(helpProjectPath, topicPath); }
         }
 private:
-    ListDlg() = default;
-
+    void BindEvents();
     /// Creates the controls and sizers
     void CreateControls();
     void OnAffirmative(wxCommandEvent& event);
@@ -196,8 +172,6 @@ private:
     wxRibbonBar* m_ribbon{ nullptr };
     wxArrayString m_values;
     wxArrayString m_selectedItems;
-
-    wxDECLARE_EVENT_TABLE();
     };
 
 /** @}*/
