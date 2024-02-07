@@ -82,7 +82,7 @@ void GridExportDlg::CreateControls()
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer* optionsSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(optionsSizer, wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+    mainSizer->Add(optionsSizer, wxSizerFlags(1).Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     wxCheckBox* columnHeaderCheck = new wxCheckBox(this, wxID_ANY, _(L"&Include column headers"),
         wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
@@ -105,11 +105,12 @@ void GridExportDlg::CreateControls()
         wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     m_rangeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Range:"));
-    optionsSizer->Add(m_rangeBoxSizer, wxSizerFlags().Expand().Border(wxALL,
+    optionsSizer->Add(m_rangeBoxSizer, wxSizerFlags(1).Expand().Border(wxALL,
         wxSizerFlags::GetDefaultBorder()));
 
     wxFlexGridSizer* rangeOptionsSizer = new wxFlexGridSizer(2, 4, 5, 5);
-    m_rangeBoxSizer->Add(rangeOptionsSizer);
+    m_rangeBoxSizer->Add(rangeOptionsSizer,
+                         wxSizerFlags(1).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     // row options
     rangeOptionsSizer->Add(new wxStaticText(m_rangeBoxSizer->GetStaticBox(),
@@ -117,39 +118,39 @@ void GridExportDlg::CreateControls()
 
     auto fromRowSpinCtrl = new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(),
         ControlIDs::ID_ROWS_FROM_SPIN,
-        L"1", wxDefaultPosition, wxSize(FromDIP(wxSize(100, 100)).GetWidth(),-1), wxSP_ARROW_KEYS,
+        L"1", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
         1, m_options.m_toRow, 1);
     fromRowSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_fromRow));
-    rangeOptionsSizer->Add(fromRowSpinCtrl);
+    rangeOptionsSizer->Add(fromRowSpinCtrl, wxSizerFlags().Expand());
 
     rangeOptionsSizer->Add(new wxStaticText(m_rangeBoxSizer->GetStaticBox(),
         ID_ROWS_TO_LABEL, _(L"to")), wxSizerFlags().CenterVertical());
 
     auto toRowSpinCtrl = new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(),
         ControlIDs::ID_ROWS_TO_SPIN,
-        L"1", wxDefaultPosition, wxSize(FromDIP(wxSize(100, 100)).GetWidth(),-1), wxSP_ARROW_KEYS,
+        L"1", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
         1, m_options.m_toRow, 1);
     toRowSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_toRow));
-    rangeOptionsSizer->Add(toRowSpinCtrl);
+    rangeOptionsSizer->Add(toRowSpinCtrl, wxSizerFlags().Expand());
 
     // column options
     rangeOptionsSizer->Add(new wxStaticText(m_rangeBoxSizer->GetStaticBox(), wxID_STATIC,
         _(L"Columns: from")), wxSizerFlags().CenterVertical());
 
     auto fromColumnSpinCtrl = new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), wxID_ANY,
-        L"1", wxDefaultPosition, wxSize(FromDIP(wxSize(100, 100)).GetWidth(),-1),
+        L"1", wxDefaultPosition, wxDefaultSize,
         wxSP_ARROW_KEYS, 1, m_options.m_toColumn, 1);
     fromColumnSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_fromColumn));
-    rangeOptionsSizer->Add(fromColumnSpinCtrl, 0, wxALIGN_CENTER_HORIZONTAL);
+    rangeOptionsSizer->Add(fromColumnSpinCtrl, wxSizerFlags().Expand());
 
     rangeOptionsSizer->Add(new wxStaticText(m_rangeBoxSizer->GetStaticBox(), wxID_STATIC,
         _(L"to")), wxSizerFlags().CenterVertical());
 
     auto toColumnSpinCtrl = new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), wxID_ANY, L"1",
-        wxDefaultPosition, wxSize(FromDIP(wxSize(100, 100)).GetWidth(),-1), wxSP_ARROW_KEYS, 1,
+        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1,
         m_options.m_toColumn, 1);
     toColumnSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_toColumn));
-    rangeOptionsSizer->Add(toColumnSpinCtrl);
+    rangeOptionsSizer->Add(toColumnSpinCtrl, wxSizerFlags().Expand());
 
     if (m_exportFormat == GridExportFormat::ExportHtml)
         {

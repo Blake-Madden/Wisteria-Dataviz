@@ -78,15 +78,11 @@ namespace Wisteria::UI
             const wxString& caption = _(L"List Export Options"),
             const wxPoint& pos = wxDefaultPosition,
             const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
+            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private
         GridExportDlg(const GridExportDlg&) = delete;
         /// @private
-        GridExportDlg(GridExportDlg&&) = delete;
-        /// @private
         GridExportDlg& operator=(const GridExportDlg&) = delete;
-        /// @private
-        GridExportDlg& operator=(GridExportDlg&&) = delete;
 
         /// @returns @c true if user requested pagination in the output.
         [[nodiscard]]
