@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <chrono>
 #include "downloadfile.h"
 #include "fileutil.h"
 
@@ -213,9 +214,25 @@ void FileDownload::RequestResponse(const wxString& url)
     m_stillActive = true;
     request.Start();
 
+    const auto startTime = std::chrono::system_clock::now();
     while (m_stillActive)
         {
         wxYield();
+        /* Some misconfigured webpages cause ProcessRequest() to not be called
+           after the state has been set to idle when using wxWebRequest::Storage_None
+           (at least with the libCurl engine). Some at least for here where
+           wxWebRequest::Storage_None is being used, time out after 30 seconds since
+           requesting a response should only involve pinging the server and shouldn't
+           take nearly that long.*/
+        const auto rightNow = std::chrono::system_clock::now();
+        const auto elapsedSeconds = rightNow - startTime;
+        constexpr long timeoutThreshold{ 30 };
+        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() > timeoutThreshold)
+            {
+            wxLogError(L"Requesting response timed out after %s seconds.",
+                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()) );
+            break;
+            }
         }
     }
 
