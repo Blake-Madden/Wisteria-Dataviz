@@ -709,7 +709,7 @@ namespace lily_of_the_valley
         static const std::set<case_insensitive_wstring> newParagraphElements =
             { L"button", L"div", L"dl", L"dt", L"h1", L"h2", L"h3", L"h4",
               L"h5", L"h6", L"hr", L"input", L"ol", L"option", L"p", L"select",
-              L"table", L"tr", L"ul" };
+              L"table", L"tr", L"ul", L"nav" };
 
         // reset any state variables
         clear_log();
