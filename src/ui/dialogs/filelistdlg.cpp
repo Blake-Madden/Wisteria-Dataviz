@@ -16,7 +16,7 @@ void FileListDlg::CreateControls()
     m_infoBar = new wxInfoBar(this);
     mainSizer->Add(m_infoBar, wxSizerFlags().Expand());
 
-    wxSizerFlags szFlags(wxSizerFlags().Expand().Border(wxDirection::wxALL,
+    const wxSizerFlags szFlags(wxSizerFlags().Expand().Border(wxDirection::wxALL,
         wxSizerFlags::GetDefaultBorder()));
 
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -55,7 +55,7 @@ void FileListDlg::CreateControls()
 
     fileListSizer->Add(buttonsSizer);
 
-    m_listCtrl = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(500, 400)),
+    m_listCtrl = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(600, 400)),
                                 wxLC_REPORT|wxLC_VIRTUAL);
     m_listCtrl->EnableGridLines();
     m_listCtrl->EnableAlternateRowColours(false);
@@ -72,9 +72,15 @@ void FileListDlg::CreateControls()
 
     // file information
     wxBoxSizer* fileInfoSizer = new wxBoxSizer(wxVERTICAL);
-    m_thumbnail = new Wisteria::UI::Thumbnail(this, wxNullBitmap);
-    fileInfoSizer->Add(m_thumbnail, wxSizerFlags(1).Expand().
+    m_thumbnail = new Wisteria::UI::Thumbnail(this, wxNullBitmap,
+                                              Wisteria::ClickMode::FullSizeViewable,
+                                              false, wxID_ANY,
+                                              wxDefaultPosition,
+                                              FromDIP(wxSize(256, 256)));
+    fileInfoSizer->Add(m_thumbnail, wxSizerFlags().
         Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+
+    fileInfoSizer->AddStretchSpacer();
 
     m_label = new wxStaticText(this, wxID_ANY, L"\n\n\n");
     fileInfoSizer->Add(m_label, szFlags);
@@ -113,6 +119,7 @@ void FileListDlg::BindEvents()
                     createdDt.FormatDate(), createdDt.FormatTime(),
                     modifiedDt.FormatDate(), modifiedDt.FormatTime());
                 m_label->SetLabel(fileInfo);
+                GetSizer()->Layout();
                 }
             else
                 { m_listCtrl->DeleteItem(selected.GetIndex()); }
