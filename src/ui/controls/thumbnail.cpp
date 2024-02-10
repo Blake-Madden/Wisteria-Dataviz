@@ -83,24 +83,24 @@ namespace Wisteria::UI
                          long style /*= wxFULL_REPAINT_ON_RESIZE|wxBORDER_SIMPLE*/,
                          const wxString& name /*= L"Thumbnail"*/) :
             wxWindow(parent, id, pos, wxDefaultSize, style, name),
-            m_img(bmp.ConvertToImage()),
+            m_img(bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage),
             m_clickMode(clickMode),
             m_opactity(wxALPHA_OPAQUE)
         {
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-        if (!size.IsFullySpecified())
+
+        // User-defined size should have been DIP adjusted by the
+        // but our default value will need to be adjusted if that is what will be used.
+        m_baseSize = size.IsFullySpecified() ? size : FromDIP(m_baseSize);
+        SetSize(m_baseSize);
+        SetMinSize(m_baseSize);
+
+        if (m_img.IsOk())
             {
-            SetSize(FromDIP(wxSize(64, 64)));
-            SetMinSize(FromDIP(wxSize(64, 64)));
+            const wxSize newSize = m_img.SetBestSize(GetSize());
+            SetSize(newSize);
+            SetMinSize(newSize);
             }
-        else
-            {
-            SetSize(FromDIP(size));
-            SetMinSize(FromDIP(size));
-            }
-        const wxSize newSize = m_img.SetBestSize(GetSize());
-        SetSize(newSize);
-        SetMinSize(newSize);
 
         // if original image is smaller or same size as this control,
         // then no reason to have "click to view" support
@@ -133,10 +133,15 @@ namespace Wisteria::UI
     //----------------------------------
     void Thumbnail::SetBitmap(const wxBitmap& bmp)
         {
-        m_img = GraphItems::Image(bmp.ConvertToImage());
-        const wxSize newSize = m_img.SetBestSize(GetSize());
-        SetSize(newSize);
-        SetMinSize(newSize);
+        m_img = GraphItems::Image((bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage));
+        if (m_img.IsOk())
+            {
+            // reset to a standard, square size and then
+            // adjust that to the image's aspect ratio
+            const wxSize newSize = m_img.SetBestSize(m_baseSize);
+            SetSize(newSize);
+            SetMinSize(newSize);
+            }
         Refresh();
         Update();
         }
@@ -145,9 +150,12 @@ namespace Wisteria::UI
     bool Thumbnail::LoadImage(const wxString& filePath)
         {
         m_img = GraphItems::Image(GraphItems::Image::LoadFile(filePath));
-        const wxSize newSize = m_img.SetBestSize(GetSize());
-        SetSize(newSize);
-        SetMinSize(newSize);
+        if (m_img.IsOk())
+            {
+            const wxSize newSize = m_img.SetBestSize(m_baseSize);
+            SetSize(newSize);
+            SetMinSize(newSize);
+            }
         Refresh();
         Update();
         return (m_img.IsOk());
@@ -195,7 +203,10 @@ namespace Wisteria::UI
     //----------------------------------
     void Thumbnail::OnResize(wxSizeEvent& event)
         {
-        m_img.SetSize(event.GetSize());
+        if (m_img.IsOk())
+            {
+            m_img.SetSize(event.GetSize());
+            }
         Refresh();
         Update();
         event.Skip();

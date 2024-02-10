@@ -50,7 +50,7 @@ void OpacityDlg::CreateControls()
             geometry::downscaled_size(std::make_pair(m_image.GetWidth(), m_image.GetHeight()),
             std::make_pair(scaledSize.GetWidth(),scaledSize.GetHeight()));
 
-        m_thumb = new Thumbnail(this, m_image, Thumbnail::ClickMode::FullSizeViewable,
+        m_thumb = new Thumbnail(this, m_image, ClickMode::FullSizeViewable,
                                 false, wxID_ANY, wxDefaultPosition,
                                 wxSize(thumbSize.first, thumbSize.second));
         m_thumb->SetOpacity(static_cast<uint8_t>(GetOpacity()));

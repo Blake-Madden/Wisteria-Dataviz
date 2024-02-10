@@ -556,6 +556,18 @@ namespace Wisteria
         /// @brief Calculates the change (i.e., difference) from one value to another.
         Change
         };
+
+    /// @brief Behavior for the thumbnail control when the user clicks on it.
+    enum class ClickMode
+        {
+        /// @brief Clicking on the thumbnail will do nothing, it's a static image.
+        DoNothing,
+        /// @brief Clicking on the thumbnail will show a full-size version of the
+        ///     image being previewed.
+        FullSizeViewable,
+        /// @brief Clicking on the thumbnail will prompt the user for an image file.
+        BrowseForImageFile
+        };
     }
 
 /** @}*/

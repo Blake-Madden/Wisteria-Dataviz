@@ -57,17 +57,6 @@ namespace Wisteria::UI
     class Thumbnail : public wxWindow
         {
     public:
-        /// @brief Behavior for the thumbnail control when the user clicks on it.
-        enum class ClickMode
-            {
-            /// @brief Clicking on the thumbnail will do nothing, it's a static image.
-            DoNothing,
-            /// @brief Clicking on the thumbnail will show a full-size version of the
-            ///     image being previewed.
-            FullSizeViewable,
-            /// @brief Clicking on the thumbnail will prompt the user for an image file.
-            BrowseForImageFile
-            };
         /** @brief Constructor.
             @param parent The parent window.
             @param bmp The (full-size) bitmap to show in the thumbnail
@@ -126,6 +115,7 @@ namespace Wisteria::UI
         Wisteria::GraphItems::Image m_img;
         ClickMode m_clickMode{ ClickMode::FullSizeViewable };
         uint8_t m_opactity{ wxALPHA_OPAQUE };
+        wxSize m_baseSize{ 128, 128 };
         };
 
     /// @brief Drop file handler for thumbnail control.
