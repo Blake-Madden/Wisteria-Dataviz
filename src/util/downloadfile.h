@@ -134,6 +134,21 @@ public:
     ///     to close any downloads that still pending.
     void CancelPending();
 
+    /** @brief Disable SSL certificate verification.
+        @details This can be used to connect to self signed servers or other invalid SSL connections.\n
+            Disabling verification makes the communication insecure.
+        @param disable @c true to disable SSL certificate verification.*/
+    void DisablePeerVerify(const bool disable)noexcept
+        {
+        m_disablePeerVerify = disable;
+        }
+    /// @returns Returns @c true if peer verification has been disabled.
+    [[nodiscard]]
+    bool IsPeerVerifyDisabled() const noexcept
+        {
+        return m_disablePeerVerify;
+        }
+
     /// @brief Converts a response code to a readable message.
     /// @param responseCode The web request response code.
     /// @returns The meaning of the response code.
@@ -194,6 +209,7 @@ private:
     std::vector<wxWebRequest> m_requests;
     wxString m_userAgent;
     int m_currentId{ 0 };
+    bool m_disablePeerVerify{ false };
     };
 
 /** @brief Reads or downloads a file synchronously.
@@ -269,6 +285,20 @@ public:
     /// @param show @c true to show the progress dialog.
     void ShowProgress(const bool show) noexcept
         { m_showProgress = show; }
+    /** @brief Disable SSL certificate verification.
+        @details This can be used to connect to self signed servers or other invalid SSL connections.\n
+            Disabling verification makes the communication insecure.
+        @param disable @c true to disable SSL certificate verification.*/
+    void DisablePeerVerify(const bool disable)noexcept
+        {
+        m_disablePeerVerify = disable;
+        }
+    /// @returns Returns @c true if peer verification has been disabled.
+    [[nodiscard]]
+    bool IsPeerVerifyDisabled() const noexcept
+        {
+        return m_disablePeerVerify;
+        }
     /// @brief Downloads a web file to a local path.
     /// @param url The web file to download.
     /// @param localDownloadPath Where to download to.
@@ -333,6 +363,7 @@ private:
     bool m_stillActive{ false };
     bool m_downloadSuccessful{ false };
     bool m_showProgress{ false };
+    bool m_disablePeerVerify{ false };
     wxEvtHandler* m_handler{ nullptr };
     mutable std::mutex m_mutex;
     wxString m_downloadPath;

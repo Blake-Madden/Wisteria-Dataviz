@@ -21,11 +21,13 @@ void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
                     "has not been connected.");
         return;
         }
+
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url, m_currentId++);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
+    request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_downloads.insert(std::make_pair(request.GetId(), localDownloadPath));
     m_requests.push_back(request);
     }
@@ -160,6 +162,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
+    request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_lastStatus = 404;
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
@@ -209,6 +212,7 @@ void FileDownload::RequestResponse(const wxString& url)
     request.SetStorage(wxWebRequest::Storage_None);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
+    request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_lastStatus = 404;
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
@@ -255,6 +259,7 @@ bool FileDownload::Read(const wxString& url)
     request.SetStorage(wxWebRequest::Storage_Memory);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
+    request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_lastStatus = 404;
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
