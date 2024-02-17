@@ -158,7 +158,12 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
     auto ribbonBar = dynamic_cast<wxRibbonBar*>(foundWindow);
     assert(ribbonBar);
 
-    ribbonBar->SetActivePage(pageToSelect);
+    if (!ribbonBar->SetActivePage(pageToSelect))
+        {
+        return false;
+        }
+    wxRibbonPage* activePage{ ribbonBar->GetPage(pageToSelect) };
+    const size_t panelCount{ activePage->GetPanelCount() };
     wxTheApp->Yield();
 
     wxClientDC dc(ribbonBar);
@@ -173,51 +178,68 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
         {
         if (lastButtonBarToHighlight != wxID_ANY)
             {
-            const auto buttonBar = ribbonBar->FindWindow(lastButtonBarToHighlight);
-            return (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar))) ?
-                buttonBar : nullptr;
+            for (size_t i = 0; i < panelCount; ++i)
+                {
+                wxRibbonPanel* currentPanel{ activePage->GetPanel(i) };
+                if (currentPanel != nullptr && currentPanel->IsShown())
+                    {
+                    const auto buttonBar = currentPanel->FindWindow(lastButtonBarToHighlight);
+                    return (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar))) ?
+                        buttonBar : nullptr;
+                    }
+                }
+            return nullptr;
             }
         else
-            { return nullptr; }
+            {
+            return nullptr;
+            }
         }();
 
     if (firstButtonBarToHighlight != wxID_ANY)
         {
-        const auto buttonBar = ribbonBar->FindWindow(firstButtonBarToHighlight);
-        if (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
+        for (size_t i = 0; i < panelCount; ++i)
             {
-            /* Step back all the way from the child window to the parent and tally the offset
-               of the children relative to its parent. When dealing with client areas, using
-               the screen position of controls will be off because the main dialog's decorations
-               aren't factored into that.*/
-            wxPoint startPoint(0, 0);
-            auto startWindowParent = buttonBar;
-            while (startWindowParent && startWindowParent != ribbonBar)
+            wxRibbonPanel* currentPanel{ activePage->GetPanel(i) };
+            if (currentPanel != nullptr && currentPanel->IsShown())
                 {
-                startPoint += startWindowParent->GetPosition();
-                startWindowParent = startWindowParent->GetParent();
-                }
-            const wxSize lastButtonBarSize = (lastButtonBar != nullptr) ? lastButtonBar->GetSize() : wxSize{};
-            wxPoint endPoint(startPoint.x + buttonBar->GetSize().GetWidth() + lastButtonBarSize.GetWidth(),
-                             startPoint.y + buttonBar->GetSize().GetHeight());
-            // add a little padding around the control(s) being highlighted
-            startPoint -= wxPoint(wxSizerFlags::GetDefaultBorder(),
-                                  wxSizerFlags::GetDefaultBorder());
-            // adjust if outside of render area
-            startPoint.x = std::max(startPoint.x, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
-            startPoint.y = std::max(startPoint.y, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
+                const auto buttonBar = currentPanel->FindWindow(firstButtonBarToHighlight);
+                if (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
+                    {
+                    /* Step back all the way from the child window to the parent and tally the offset
+                       of the children relative to its parent. When dealing with client areas, using
+                       the screen position of controls will be off because the main dialog's decorations
+                       aren't factored into that.*/
+                    wxPoint startPoint(0, 0);
+                    auto startWindowParent = buttonBar;
+                    while (startWindowParent && startWindowParent != ribbonBar)
+                        {
+                        startPoint += startWindowParent->GetPosition();
+                        startWindowParent = startWindowParent->GetParent();
+                        }
+                    const wxSize lastButtonBarSize = (lastButtonBar != nullptr) ? lastButtonBar->GetSize() : wxSize{};
+                    wxPoint endPoint(startPoint.x + buttonBar->GetSize().GetWidth() + lastButtonBarSize.GetWidth(),
+                                     startPoint.y + buttonBar->GetSize().GetHeight());
+                    // add a little padding around the control(s) being highlighted
+                    startPoint -= wxPoint(wxSizerFlags::GetDefaultBorder(),
+                                          wxSizerFlags::GetDefaultBorder());
+                    // adjust if outside of render area
+                    startPoint.x = std::max(startPoint.x, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
+                    startPoint.y = std::max(startPoint.y, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
 
-            endPoint += wxPoint(
-                // same for end point, but make sure we didn't go off the screen
-                (endPoint.x + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetWidth()) ?
-                    wxSizerFlags::GetDefaultBorder() : 0,
-                (endPoint.y + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetHeight()) ?
-                    wxSizerFlags::GetDefaultBorder() : 0);
-            memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
-            memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
-            memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
-            memDC.DrawLine(endPoint.x, endPoint.y, startPoint.x, endPoint.y);
-            memDC.DrawLine(startPoint.x, endPoint.y, startPoint.x, startPoint.y);
+                    endPoint += wxPoint(
+                        // same for end point, but make sure we didn't go off the screen
+                        (endPoint.x + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetWidth()) ?
+                            wxSizerFlags::GetDefaultBorder() : 0,
+                        (endPoint.y + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetHeight()) ?
+                            wxSizerFlags::GetDefaultBorder() : 0);
+                    memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
+                    memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
+                    memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
+                    memDC.DrawLine(endPoint.x, endPoint.y, startPoint.x, endPoint.y);
+                    memDC.DrawLine(startPoint.x, endPoint.y, startPoint.x, startPoint.y);
+                    }
+                }
             }
         }
 
