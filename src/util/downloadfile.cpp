@@ -90,7 +90,8 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         }
     case wxWebRequest::State_Failed:
         wxLogError(L"Web Request failed: %s (%s)",
-                   evt.GetErrorDescription(), QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
+            evt.GetErrorDescription(),
+            QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
         Remove(evt.GetId());
         break;
     case wxWebRequest::State_Cancelled:
@@ -110,6 +111,13 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
             if (!requestPos->GetAuthChallenge().IsOk())
                 {
                 wxLogStatus(L"Unexpectedly missing auth challenge");
+                Remove(evt.GetId());
+                break;
+                }
+            else if (IsPeerVerifyDisabled())
+                {
+                wxLogStatus(L"Credentials were requested, but will not be used because "
+                             "SSL certificate verification is disabled.");
                 Remove(evt.GetId());
                 break;
                 }
@@ -231,10 +239,12 @@ void FileDownload::RequestResponse(const wxString& url)
         const auto rightNow = std::chrono::system_clock::now();
         const auto elapsedSeconds = rightNow - startTime;
         constexpr long timeoutThreshold{ 30 };
-        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() > timeoutThreshold)
+        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+            timeoutThreshold)
             {
             wxLogError(L"Requesting response timed out after %s seconds.",
-                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()) );
+                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
+                    (elapsedSeconds).count()) );
             break;
             }
         }
@@ -298,7 +308,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             {
             lily_of_the_valley::html_extract_text hExtract;
             hExtract.include_no_script_sections(true);
-            auto filteredMsg = hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
+            auto filteredMsg =
+                hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
             if (filteredMsg && hExtract.get_filtered_text_length())
                 {
                 m_lastStatusInfo.assign(filteredMsg);
@@ -308,8 +319,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             if (m_lastStatus == 403 && m_server.CmpNoCase(L"cloudflare") == 0)
                 {
                 m_lastStatusInfo.insert(0, _(L"Webpage is using Cloudflare protection and "
-                    "can only be accessed via an interactive browser. Please use a browser to download "
-                    "this page.\n\nResponse from website:\n"));
+                    "can only be accessed via an interactive browser. "
+                    "Please use a browser to download this page.\n\nResponse from website:\n"));
                 }
             }
         };
@@ -370,6 +381,14 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 !evt.GetRequest().GetAuthChallenge().IsOk())
                 {
                 wxLogStatus(L"Unexpectedly missing authentication challenge");
+                m_stillActive = false;
+                fillResponseInfo();
+                break;
+                }
+            else if (IsPeerVerifyDisabled())
+                {
+                wxLogStatus(L"Credentials were requested, but will not be used because "
+                             "SSL certificate verification is disabled.");
                 m_stillActive = false;
                 fillResponseInfo();
                 break;
