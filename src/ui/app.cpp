@@ -51,8 +51,9 @@ bool Wisteria::UI::BaseApp::OnInit()
     SET_PROFILER_REPORT_PATH(m_profileReportPath.mb_str());
     DUMP_PROFILER_REPORT(); // flush out data in temp file from previous run
 
-    // logs will be written to file now, delete the old logging system
-    m_logBuffer = new LogFile;
+    // Logs will be written to file now, delete the old logging system.
+    // (We will append to an existing log file if SHIFT key is held down.)
+    m_logBuffer = new LogFile{ !wxGetMouseState().ShiftDown() };
     delete wxLog::SetActiveTarget(m_logBuffer);
 
     // log some system information

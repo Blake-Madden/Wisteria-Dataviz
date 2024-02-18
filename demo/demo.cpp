@@ -39,7 +39,7 @@ bool MyApp::OnInit()
     wxInitAllImageHandlers();
 
     // enable this to route wxLog messages to a file:
-    // auto logFile = new LogFile;
+    // auto logFile = new LogFile{ true };
     // delete wxLog::SetActiveTarget(logFile);
 
     MyFrame* frame = new MyFrame;

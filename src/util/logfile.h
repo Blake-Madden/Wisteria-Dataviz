@@ -57,17 +57,15 @@ class LogFile : public wxLog
     {
 public:
     /// @brief Default constructor.
+    /// @param clearPreviousLog @c true to clear the contents of the target log file
+    ///     if it exists.
     /// @details Should be created on the heap and passed to
     ///     @c wxLog::SetActiveTarget().
-    LogFile();
+    explicit LogFile(bool clearPreviousLog);
     /// @private
     LogFile(const LogFile&) = delete;
     /// @private
-    LogFile(LogFile&&) = delete;
-    /// @private
     LogFile& operator=(const LogFile&) = delete;
-    /// @private
-    LogFile& operator=(LogFile&&) = delete;
 
     /// @brief Reads (and returns) the content of the log file.
     /// @returns The content of the log report.

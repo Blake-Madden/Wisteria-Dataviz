@@ -9,23 +9,21 @@
 #include "logfile.h"
 
 //--------------------------------------------------
-LogFile::LogFile() :
+LogFile::LogFile(bool clearPreviousLog) :
     // will be a unique file name on a per day basis
     m_logFilePath(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
         wxTheApp->GetAppName() + wxDateTime::Now().FormatISODate() + L".log")
     {
-    wxFile logFile;
-    if (!logFile.Create(m_logFilePath, true))
+    wxFile logFile(m_logFilePath, clearPreviousLog ? wxFile::write : wxFile::write_append);
+    if (!logFile.IsOpened())
         {
         wxMessageBox(wxString::Format(
             _(L"Unable to create log file at '%s'"), m_logFilePath),
             _(L"Logging Error"), wxOK|wxICON_WARNING);
+        return;
         }
-    else
-        {
-        // clear file (from a previous program run) and prepare for appending
-        logFile.Write(wxEmptyString);
-        }
+    // clear file (from a previous program run) or prepare for appending
+    logFile.Write(wxString{});
     }
 
 //--------------------------------------------------
