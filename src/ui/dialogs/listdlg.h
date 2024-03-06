@@ -1,12 +1,3 @@
-#ifndef __LIST_DIALOG_H__
-#define __LIST_DIALOG_H__
-
-#include <wx/wx.h>
-#include <wx/dialog.h>
-#include <wx/valgen.h>
-#include <wx/checklst.h>
-#include <wx/bmpbuttn.h>
-#include "../controls/listctrlex.h"
 /** @addtogroup UI
     @brief User interface classes.
     @date 2005-2023
@@ -18,7 +9,17 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
+#ifndef __LIST_DIALOG_H__
+#define __LIST_DIALOG_H__
+
+#include <wx/wx.h>
+#include <wx/dialog.h>
+#include <wx/valgen.h>
+#include <wx/checklst.h>
+#include <wx/bmpbuttn.h>
+#include "../controls/listctrlex.h"
 #include "../controls/searchpanel.h"
+#include "../../util/logfile.h"
 
 /// @brief Which features to include for a ListDlg.
 enum ListDlgFlags
@@ -47,8 +48,12 @@ enum ListDlgFlags
     LD_CLOSE_BUTTON = 1 << 9,
     /// @brief A sort button.
     LD_SORT_BUTTON = 1 << 10,
+    /// @brief A clear button.
+    LD_CLEAR_BUTTON = 1 << 11,
+    /// @brief A refresh button.
+    LD_REFRESH_BUTTON = 1 << 12,
     /// @brief Make the list control single selection.
-    LD_SINGLE_SELECTION = 1 << 11
+    LD_SINGLE_SELECTION = 1 << 13
     };
 
 /// @brief A dialog with a list control and various buttons.
@@ -146,6 +151,22 @@ public:
         if (m_list)
             { m_list->SetSortHelpTopic(helpProjectPath, topicPath); }
         }
+
+    /// @brief Sets the log file reporter to read and write from
+    ///     (if this is meant to be a log report window).
+    /// @param log The log file reporter to connect this dialog to.
+    void SetActiveLog(LogFile* log) noexcept
+        {
+        m_logFile = log;
+        }
+
+    /// @brief If an active log is connected, reads its content into this dialog.
+    /// @sa SetActiveLog().
+    void Readlog()
+        {
+        wxCommandEvent event;
+        OnReadLog(event);
+        }
 private:
     void BindEvents();
     /// Creates the controls and sizers
@@ -159,6 +180,7 @@ private:
     void OnSort(wxRibbonButtonBarEvent& event);
     void OnFind(wxFindDialogEvent& event);
     void OnClose([[maybe_unused]] wxCloseEvent& event);
+    void OnReadLog([[maybe_unused]] wxCommandEvent& event);
 
     bool m_usecheckBoxes{ true };
     long m_buttonStyle{ 0 };
@@ -168,6 +190,7 @@ private:
     ListCtrlEx* m_list{ nullptr };
     wxCheckListBox* m_checkList{ nullptr };
     ListCtrlExDataProvider* m_data{ new ListCtrlExDataProvider() };
+    LogFile* m_logFile;
     wxCheckBox* m_checkBox{ nullptr };
     wxRibbonBar* m_ribbon{ nullptr };
     wxArrayString m_values;

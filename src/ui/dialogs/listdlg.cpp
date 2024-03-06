@@ -8,6 +8,7 @@
 
 #include "listdlg.h"
 #include "../ribbon/artmetro.h"
+#include "../../import/text_matrix.h"
 
 //------------------------------------------------------
 void ListDlg::OnFind(wxFindDialogEvent& event)
@@ -162,6 +163,16 @@ void ListDlg::BindEvents()
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnCopy, this, wxID_COPY);
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSelectAll, this, wxID_SELECTALL);
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSort, this, XRCID("ID_LIST_SORT"));
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,[this]([[maybe_unused]] wxCommandEvent&)
+            {
+            if (m_logFile != nullptr)
+                {
+                m_logFile->Clear();
+                m_list->ClearAll();
+                }
+            },
+        XRCID("ID_CLEAR"));
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnReadLog, this, XRCID("ID_REFRESH"));
 
     Bind(wxEVT_FIND, &ListDlg::OnFind, this);
     Bind(wxEVT_FIND_NEXT, &ListDlg::OnFind, this);
@@ -221,7 +232,8 @@ void ListDlg::CreateControls()
             }
         // edit
         if (m_buttonStyle & LD_COPY_BUTTON || m_buttonStyle & LD_SELECT_ALL_BUTTON ||
-            m_buttonStyle & LD_SORT_BUTTON)
+            m_buttonStyle & LD_SORT_BUTTON || m_buttonStyle & LD_CLEAR_BUTTON ||
+            m_buttonStyle & LD_REFRESH_BUTTON)
             {
             wxRibbonPanel* editPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Edit"),
                                                         wxNullBitmap, wxDefaultPosition,
@@ -245,6 +257,18 @@ void ListDlg::CreateControls()
                 buttonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
                     wxArtProvider::GetBitmap(L"ID_LIST_SORT", wxART_BUTTON,
                         FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Sort the list."));
+                }
+            if (m_buttonStyle & LD_CLEAR_BUTTON)
+                {
+                buttonBar->AddButton(XRCID("ID_CLEAR"), _(L"Clear"),
+                    wxArtProvider::GetBitmap(L"ID_CLEAR", wxART_BUTTON,
+                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Clear the log report."));
+                }
+            if (m_buttonStyle & LD_REFRESH_BUTTON)
+                {
+                buttonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
+                    wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
+                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Refresh the log report."));
                 }
             }
         m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
@@ -310,6 +334,67 @@ void ListDlg::CreateControls()
         }
 
     SetSizerAndFit(mainSizer);
+    }
+
+//------------------------------------------------------
+void ListDlg::OnReadLog([[maybe_unused]] wxCommandEvent& event)
+    {
+    GetListCtrl()->ClearAll();
+    if (GetListCtrl()->GetColumnCount() == 0)
+        {
+        GetListCtrl()->InsertColumn(0, _(L"Message"));
+        GetListCtrl()->InsertColumn(1, _(L"Timestamp"));
+        GetListCtrl()->InsertColumn(2, _(L"Function"));
+        GetListCtrl()->InsertColumn(3, _(L"Source"));
+        }
+    // we do custom row highlighting below
+    GetListCtrl()->EnableAlternateRowColours(false);
+
+    const lily_of_the_valley::text_column_delimited_character_parser
+                                              parser(L'\t');
+    lily_of_the_valley::text_column<lily_of_the_valley::text_column_delimited_character_parser>
+                                    myColumn(parser, std::nullopt);
+    lily_of_the_valley::text_row<ListCtrlExDataProvider::ListCellString> myRow(std::nullopt);
+    myRow.treat_consecutive_delimitors_as_one(false);
+    myRow.add_column(myColumn);
+
+    lily_of_the_valley::text_matrix<ListCtrlExDataProvider::ListCellString>
+        importer(&GetData()->GetMatrix());
+    importer.add_row_definition(myRow);
+
+    // see how many lines are in the file
+    const wxString logBuffer{ m_logFile->Read() };
+    lily_of_the_valley::text_preview preview;
+    size_t rowCount = preview(logBuffer, L'\t', true, false);
+    // now read it
+    rowCount = importer.read(logBuffer, rowCount, 4, true);
+
+    GetListCtrl()->EnableAlternateRowColours(false);
+    GetListCtrl()->SetVirtualDataSize(rowCount, 4);
+    GetListCtrl()->SetItemCount(static_cast<long>((rowCount)));
+
+    for (long i = 0; i < GetListCtrl()->GetItemCount(); ++i)
+        {
+        const auto currentRow = GetListCtrl()->GetItemText(i,0);
+        const wxColour rowColor =
+            (currentRow.find(_DT(L"Error: ", DTExplanation::LogMessage)) != wxString::npos) ? wxColour(242, 94, 101) :
+            (currentRow.find(_DT(L"Warning: ")) != wxString::npos) ? *wxYELLOW :
+            (currentRow.find(_DT(L"Debug: ")) != wxString::npos) ? wxColour(143, 214, 159) :
+            wxNullColour;
+        if (rowColor.IsOk())
+            {
+            GetListCtrl()->SetRowAttributes(i,
+                wxListItemAttr(*wxBLACK, rowColor, GetListCtrl()->GetFont()));
+            }
+        }
+
+    // scroll to most recent item in the log
+    if (GetListCtrl()->GetItemCount() > 0)
+        {
+        GetListCtrl()->EnsureVisible(GetListCtrl()->GetItemCount() - 1);
+        }
+    GetListCtrl()->SetSortedColumn(0, Wisteria::SortDirection::SortAscending);
+    GetListCtrl()->DistributeColumns();
     }
 
 //------------------------------------------------------
