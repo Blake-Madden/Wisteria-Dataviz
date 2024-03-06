@@ -143,7 +143,14 @@ namespace Wisteria::UI
         /// @returns Everything sent to the logging system as a formatted string.
         [[nodiscard]]
         wxString GetLogReport()
-            { return m_logBuffer->ReadLog(); }
+            { return m_logFile->Read(); }
+
+        /// @return The file logging systems used by the application.
+        [[nodiscard]]
+        LogFile* GetLogFile() const noexcept
+            {
+            return m_logFile;
+            }
 
         /// @brief Sets a support email for the application.
         /// @param email The email address.
@@ -210,7 +217,7 @@ namespace Wisteria::UI
 
         wxDocManager* m_docManager{ nullptr };
         Wisteria::UI::BaseMainFrame* m_mainFrame{ nullptr };
-        LogFile* m_logBuffer{ nullptr };
+        LogFile* m_logFile{ nullptr };
         ResourceManager m_resManager;
 
         wxString m_appSubName;

@@ -53,13 +53,13 @@ bool Wisteria::UI::BaseApp::OnInit()
 
     // Logs will be written to file now, delete the old logging system.
     // (We will append to an existing log file if SHIFT key is held down.)
-    m_logBuffer = new LogFile{ !wxGetMouseState().ShiftDown() };
-    delete wxLog::SetActiveTarget(m_logBuffer);
+    m_logFile = new LogFile{ !wxGetMouseState().ShiftDown() };
+    delete wxLog::SetActiveTarget(m_logFile);
 
     // log some system information
     wxDateTime buildDate;
     buildDate.ParseDate(__DATE__);
-    wxLogMessage(L"Log File Location: %s", m_logBuffer->GetLogFilePath());
+    wxLogMessage(L"Log File Location: %s", m_logFile->GetLogFilePath());
     wxLogMessage(L"%s %s (build %s)", GetAppName(), GetAppSubName(), buildDate.Format(L"%G.%m.%d"));
     wxLogMessage(L"App Location: %s", wxStandardPaths::Get().GetExecutablePath());
     wxLogMessage(wxVERSION_STRING);
@@ -282,7 +282,7 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
     report->AddText(L"Timestamp.log", dt.FormatISODate() + L' ' +
                     dt.FormatISOTime(), _(L"Timestamp of this report"));
 
-    report->AddFile(m_logBuffer->GetLogFilePath(), _(L"Log Report"));
+    report->AddFile(m_logFile->GetLogFilePath(), _(L"Log Report"));
     wxString settingsPath = wxStandardPaths::Get().GetUserDataDir() +
                             wxFileName::GetPathSeparator() + L"Settings.xml";
     if (!wxFile::Exists(settingsPath))
