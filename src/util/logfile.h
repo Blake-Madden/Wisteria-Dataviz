@@ -34,11 +34,11 @@
      // at any time, call this to read the log file:
      wxString logMessages = logFile->ReadLog();
     @endcode
-    
+
     @par Log Format
      The log file is recorded as a tab-delimited text file with the
      following format (with example content):
-     
+
      | Log Level                   | Message                    | Timestamp            | Function Name      | Filename        | Line |
      | :--                         | :--                        | :--                  | :--                | :--             | :--  |
      | @emoji :warning: Warning:   | System font name not found | 2022-02-27T08:32:47  | @c LoadFonts()     | fontloader.cpp  | 122  |
@@ -57,20 +57,25 @@ class LogFile : public wxLog
     {
 public:
     /// @brief Default constructor.
-    /// @param clearPreviousLog @c true to clear the contents of the target log file
-    ///     if it exists.
+    /// @param clearPreviousLog @c true to clear the contents of the target
+    ///     log file if it exists. @c false is recommended if you wish to
+    ///     preserve the contents of a log file from a previous run of a
+    ///     program (as an example). @c true if recommended if you wish to
+    ///     have a fresh log file when activating this logger.
     /// @details Should be created on the heap and passed to
     ///     @c wxLog::SetActiveTarget().
     explicit LogFile(bool clearPreviousLog);
+
     /// @private
     LogFile(const LogFile&) = delete;
+
     /// @private
     LogFile& operator=(const LogFile&) = delete;
 
     /// @brief Reads (and returns) the content of the log file.
     /// @returns The content of the log report.
     [[nodiscard]]
-    wxString ReadLog();
+    wxString Read();
 
     /** @brief Gets the path of the log file.
         @details This can be useful for archiving a log file
@@ -78,7 +83,7 @@ public:
          This can also be used for adding the log file to a crash report:
         @code
          wxDebugReportCompress* report = new wxDebugReportCompress;
-         //"logFile" will the LogFile object you created earlier
+         // "logFile" will the LogFile object you created earlier
          report->AddFile(logFile->GetLogFilePath(), _(L"Log Report"));
          ...
         @endcode
@@ -88,18 +93,29 @@ public:
     const wxString& GetLogFilePath() const noexcept
         { return m_logFilePath; }
 
+    /// @brief Clears the contents of the log file.
+    /// @note Flush will not be called, so pending messages will still
+    ///     be queued for processing. Call Flush prior to calling this
+    ///     if you wish to delete any queued messages.
+    /// @returns @c true if the log file was successfully cleared.
+    bool Clear();
+
     /// @private
     void Flush() final;
 protected:
+
     /// @private
     void DoLogText(const wxString &msg) final
         { m_buffer << msg << L"\n"; }
+
     /// @private
     void DoLogRecord(wxLogLevel level, const wxString &msg,
                      const wxLogRecordInfo &info) final;
+
     /// @private
     void DoLogTextAtLevel(wxLogLevel level, const wxString &msg) final;
 private:
+
     wxString m_buffer;
     wxString m_logFilePath;
     };

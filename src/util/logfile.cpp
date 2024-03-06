@@ -27,7 +27,7 @@ LogFile::LogFile(bool clearPreviousLog) :
     }
 
 //--------------------------------------------------
-wxString LogFile::ReadLog()
+wxString LogFile::Read()
     {
     LogFile::Flush();
 
@@ -40,6 +40,19 @@ wxString LogFile::ReadLog()
     else
         { return m_buffer; }
     return logBuffer;
+    }
+
+//--------------------------------------------------
+bool LogFile::Clear()
+    {
+    m_buffer.clear();
+
+    wxFile logFile(m_logFilePath, wxFile::write);
+    if (logFile.IsOpened())
+        {
+        return logFile.Write(wxString{});
+        }
+    return false;
     }
 
 //--------------------------------------------------
