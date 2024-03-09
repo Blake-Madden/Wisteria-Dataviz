@@ -102,10 +102,11 @@ ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool usech
             const wxString& label /*= wxString{}*/,
             const wxPoint& pos /*= wxDefaultPosition*/,
             const wxSize& size /*= wxSize(600, 250)*/,
-            long style /*= wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER*/) :
+            long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/) :
             m_usecheckBoxes(usecheckBoxes),
             m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
-            m_values(values)
+            m_values(values),
+            m_realTimeTimer(this)
     {
     GetData()->SetValues(values);
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
@@ -118,6 +119,7 @@ ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool usech
     CreateControls();
     Centre();
     BindEvents();
+    RestartRealtimeUpdate();
     }
 
 //------------------------------------------------------
@@ -130,9 +132,10 @@ ListDlg::ListDlg(wxWindow* parent,
         const wxString& label /*= wxString{}*/,
         const wxPoint& pos /*= wxDefaultPosition*/,
         const wxSize& size /*= wxSize(600, 250)*/,
-        long style /*= wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER*/) :
+        long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/) :
         m_usecheckBoxes(false),
-        m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor)
+        m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
+        m_realTimeTimer(this)
     {
     SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
@@ -144,6 +147,7 @@ ListDlg::ListDlg(wxWindow* parent,
     CreateControls();
     Centre();
     BindEvents();
+    RestartRealtimeUpdate();
     }
 
 //------------------------------------------------------
@@ -168,11 +172,15 @@ void ListDlg::BindEvents()
             if (m_logFile != nullptr)
                 {
                 m_logFile->Clear();
-                m_list->ClearAll();
+                m_list->DeleteAllItems();
                 }
             },
         XRCID("ID_CLEAR"));
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnReadLog, this, XRCID("ID_REFRESH"));
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
+            &ListDlg::OnRealTimeUpdate, this,
+            XRCID("ID_REALTIME_UPDATE"));
+    Bind(wxEVT_TIMER, &ListDlg::OnRealTimeTimer, this);
 
     Bind(wxEVT_FIND, &ListDlg::OnFind, this);
     Bind(wxEVT_FIND_NEXT, &ListDlg::OnFind, this);
@@ -269,6 +277,10 @@ void ListDlg::CreateControls()
                 buttonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
                     wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
                         FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Refresh the log report."));
+                buttonBar->AddToggleButton(XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
+                    wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE", wxART_BUTTON,
+                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Refresh the log report automatically."));
+                buttonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
                 }
             }
         m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
@@ -339,62 +351,112 @@ void ListDlg::CreateControls()
 //------------------------------------------------------
 void ListDlg::OnReadLog([[maybe_unused]] wxCommandEvent& event)
     {
-    GetListCtrl()->ClearAll();
-    if (GetListCtrl()->GetColumnCount() == 0)
+    // in case the list is being sorted or an item view request was sent,
+    // process all that before reloading the list control
+    wxTheApp->Yield();
+    if (m_logFile != nullptr)
         {
-        GetListCtrl()->InsertColumn(0, _(L"Message"));
-        GetListCtrl()->InsertColumn(1, _(L"Timestamp"));
-        GetListCtrl()->InsertColumn(2, _(L"Function"));
-        GetListCtrl()->InsertColumn(3, _(L"Source"));
-        }
-    // we do custom row highlighting below
-    GetListCtrl()->EnableAlternateRowColours(false);
+        const long style = GetListCtrl()->GetExtraStyle();
+        GetListCtrl()->SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
+        wxWindowUpdateLocker wl{ GetListCtrl() };
 
-    const lily_of_the_valley::text_column_delimited_character_parser
-                                              parser(L'\t');
-    lily_of_the_valley::text_column<lily_of_the_valley::text_column_delimited_character_parser>
-                                    myColumn(parser, std::nullopt);
-    lily_of_the_valley::text_row<ListCtrlExDataProvider::ListCellString> myRow(std::nullopt);
-    myRow.treat_consecutive_delimitors_as_one(false);
-    myRow.add_column(myColumn);
-
-    lily_of_the_valley::text_matrix<ListCtrlExDataProvider::ListCellString>
-        importer(&GetData()->GetMatrix());
-    importer.add_row_definition(myRow);
-
-    // see how many lines are in the file
-    const wxString logBuffer{ m_logFile->Read() };
-    lily_of_the_valley::text_preview preview;
-    size_t rowCount = preview(logBuffer, L'\t', true, false);
-    // now read it
-    rowCount = importer.read(logBuffer, rowCount, 4, true);
-
-    GetListCtrl()->EnableAlternateRowColours(false);
-    GetListCtrl()->SetVirtualDataSize(rowCount, 4);
-    GetListCtrl()->SetItemCount(static_cast<long>((rowCount)));
-
-    for (long i = 0; i < GetListCtrl()->GetItemCount(); ++i)
-        {
-        const auto currentRow = GetListCtrl()->GetItemText(i,0);
-        const wxColour rowColor =
-            (currentRow.find(_DT(L"Error: ", DTExplanation::LogMessage)) != wxString::npos) ? wxColour(242, 94, 101) :
-            (currentRow.find(_DT(L"Warning: ")) != wxString::npos) ? *wxYELLOW :
-            (currentRow.find(_DT(L"Debug: ")) != wxString::npos) ? wxColour(143, 214, 159) :
-            wxNullColour;
-        if (rowColor.IsOk())
+        if (GetListCtrl()->GetColumnCount() < 4)
             {
-            GetListCtrl()->SetRowAttributes(i,
-                wxListItemAttr(*wxBLACK, rowColor, GetListCtrl()->GetFont()));
+            GetListCtrl()->DeleteAllColumns();
+            GetListCtrl()->InsertColumn(0, _(L"Message"));
+            GetListCtrl()->InsertColumn(1, _(L"Timestamp"));
+            GetListCtrl()->InsertColumn(2, _(L"Function"));
+            GetListCtrl()->InsertColumn(3, _(L"Source"));
+            }
+        // we do custom row highlighting below
+        GetListCtrl()->EnableAlternateRowColours(false);
+
+        GetListCtrl()->DeleteAllItems();
+
+        const lily_of_the_valley::text_column_delimited_character_parser
+                                                parser(L'\t');
+        lily_of_the_valley::text_column<lily_of_the_valley::text_column_delimited_character_parser>
+                                        myColumn(parser, std::nullopt);
+        lily_of_the_valley::text_row<ListCtrlExDataProvider::ListCellString> myRow(std::nullopt);
+        myRow.treat_consecutive_delimitors_as_one(false);
+        myRow.add_column(myColumn);
+
+        lily_of_the_valley::text_matrix<ListCtrlExDataProvider::ListCellString>
+            importer(&GetData()->GetMatrix());
+        importer.add_row_definition(myRow);
+
+        // see how many lines are in the file
+        const wxString logBuffer{ m_logFile->Read() };
+        lily_of_the_valley::text_preview preview;
+        size_t rowCount = preview(logBuffer, L'\t', true, false);
+        // now read it
+        rowCount = importer.read(logBuffer, rowCount, 4, true);
+
+        GetListCtrl()->SetVirtualDataSize(rowCount, 4);
+        GetListCtrl()->SetItemCount(static_cast<long>((rowCount)));
+
+        for (long i = 0; i < GetListCtrl()->GetItemCount(); ++i)
+            {
+            const auto currentRow = GetListCtrl()->GetItemText(i, 0);
+            const wxColour rowColor =
+                (currentRow.find(_DT(L"Error: ", DTExplanation::LogMessage)) != wxString::npos) ?
+                    wxColour(242, 94, 101) :
+                (currentRow.find(_DT(L"Warning: ")) != wxString::npos) ? *wxYELLOW :
+                (currentRow.find(_DT(L"Debug: ")) != wxString::npos) ? wxColour(143, 214, 159) :
+                wxNullColour;
+            if (rowColor.IsOk())
+                {
+                GetListCtrl()->SetRowAttributes(i,
+                    wxListItemAttr(*wxBLACK, rowColor, GetListCtrl()->GetFont()));
+                }
+            }
+
+        // scroll to most recent item in the log
+        if (GetListCtrl()->GetItemCount() > 0)
+            {
+            GetListCtrl()->EnsureVisible(GetListCtrl()->GetItemCount() - 1);
+            }
+        GetListCtrl()->SetSortedColumn(0, Wisteria::SortDirection::SortAscending);
+        if (GetListCtrl()->GetItemCount() > 0)
+            {
+            GetListCtrl()->DistributeColumns();
+            }
+        GetListCtrl()->SetExtraStyle(style);
+        }
+    }
+
+//------------------------------------------------------
+void ListDlg::OnRealTimeUpdate([[maybe_unused]] wxRibbonButtonBarEvent& event)
+    {
+    m_autoRefresh = !m_autoRefresh;
+    if (m_autoRefresh)
+        {
+        RestartRealtimeUpdate();
+        }
+    else
+        {
+        StopRealtimeUpdate();
+        }
+    }
+
+//-------------------------------------------------------
+void ListDlg::OnRealTimeTimer([[maybe_unused]] wxTimerEvent& event)
+    {
+    StopRealtimeUpdate();
+    if (m_logFile != nullptr && wxFile::Exists(m_logFile->GetLogFilePath()))
+        {
+        m_logFile->Flush();
+        // just update the window if the log file changed
+        const auto previousModTime{ m_sourceFileLastModified };
+        m_sourceFileLastModified = wxFileName(m_logFile->GetLogFilePath()).GetModificationTime();
+        if (m_sourceFileLastModified.IsValid() &&
+            previousModTime.IsValid() &&
+            previousModTime < m_sourceFileLastModified)
+            {
+            Readlog();
             }
         }
-
-    // scroll to most recent item in the log
-    if (GetListCtrl()->GetItemCount() > 0)
-        {
-        GetListCtrl()->EnsureVisible(GetListCtrl()->GetItemCount() - 1);
-        }
-    GetListCtrl()->SetSortedColumn(0, Wisteria::SortDirection::SortAscending);
-    GetListCtrl()->DistributeColumns();
+    RestartRealtimeUpdate();
     }
 
 //------------------------------------------------------

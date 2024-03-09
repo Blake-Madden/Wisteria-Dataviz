@@ -158,6 +158,7 @@ public:
     void SetActiveLog(LogFile* log) noexcept
         {
         m_logFile = log;
+        RestartRealtimeUpdate();
         }
 
     /// @brief If an active log is connected, reads its content into this dialog.
@@ -182,6 +183,19 @@ private:
     void OnClose([[maybe_unused]] wxCloseEvent& event);
     void OnReadLog([[maybe_unused]] wxCommandEvent& event);
 
+    void StopRealtimeUpdate() { m_realTimeTimer.Stop(); }
+
+    void RestartRealtimeUpdate()
+        {
+        if (m_logFile != nullptr && m_autoRefresh)
+            {
+            m_realTimeTimer.Start(REALTIME_UPDATE_INTERVAL);
+            }
+        }
+
+    void OnRealTimeTimer([[maybe_unused]] wxTimerEvent& event);
+    void OnRealTimeUpdate([[maybe_unused]] wxRibbonButtonBarEvent& event);
+
     bool m_usecheckBoxes{ true };
     long m_buttonStyle{ 0 };
     wxString m_label;
@@ -195,6 +209,11 @@ private:
     wxRibbonBar* m_ribbon{ nullptr };
     wxArrayString m_values;
     wxArrayString m_selectedItems;
+
+    constexpr static int REALTIME_UPDATE_INTERVAL{ 3000 }; // in milliseconds
+    wxTimer m_realTimeTimer;
+    bool m_autoRefresh{ true };
+    wxDateTime m_sourceFileLastModified;
     };
 
 /** @}*/
