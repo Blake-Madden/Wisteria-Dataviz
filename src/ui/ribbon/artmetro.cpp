@@ -371,7 +371,7 @@ void RibbonMetroArtProvider::DrawTab(
 
         if (tab.active)
             dc.SetPen(m_tab_border_pen);
-        dc.DrawLines(WXSIZEOF(border_points), border_points, tab.rect.x, tab.rect.y);
+        dc.DrawLines(std::size(border_points), border_points, tab.rect.x, tab.rect.y);
     }
 
     if(m_flags & wxRIBBON_BAR_SHOW_PAGE_ICONS)
