@@ -164,6 +164,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
                     "has not been connected.");
         return false;
         }
+    wxLogVerbose(L"Downloading '%s'", url);
     m_downloadPath = localDownloadPath;
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
@@ -172,8 +173,6 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_lastStatus = 404;
-    m_lastState = wxWebRequest::State_Failed;
-    m_stillActive = true;
     m_downloadSuccessful = false;
     request.Start();
 
@@ -183,7 +182,9 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
             wxPD_AUTO_HIDE | wxPD_SMOOTH | wxPD_CAN_ABORT) :
         nullptr;
 
-    while (m_stillActive)
+    const auto startTime = std::chrono::system_clock::now();
+    bool timedOut{ false };
+    while (request.GetState() == wxWebRequest::State_Active)
         {
         wxYield();
         if (progressDlg != nullptr &&
@@ -196,9 +197,33 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
                 break;
                 }
             }
+        const auto rightNow = std::chrono::system_clock::now();
+        const auto elapsedSeconds = rightNow - startTime;
+        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+            GetTimeout() &&
+            request.GetBytesReceived() == 0)
+            {
+            m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                     request.GetResponse().GetStatus() : 404);
+            wxLogError(L"Downloading page timed out after %s seconds. Response code #%d.",
+                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
+                    (elapsedSeconds).count()), m_lastStatus);
+            timedOut = true;
+            request.Cancel();
+            }
         }
-    if (progressDlg)
+    if (progressDlg != nullptr)
         { progressDlg->Close(); }
+
+    LoadResponseInfo(request);
+    if (timedOut)
+        {
+        // change status to "Page not responding" since we gave up after logging the real status
+        m_lastStatus = 204;
+        m_lastStatusText = L"Page not responding";
+        m_downloadSuccessful = false;
+        }
+
     return m_downloadSuccessful;
     }
 
@@ -213,6 +238,9 @@ void FileDownload::RequestResponse(const wxString& url)
                     "has not been connected.");
         return;
         }
+    // note that you need to printf the string before passing to wxLog
+    // because this is an untrusted string (i.e., and URL that can containt '%' in it).
+    wxLogVerbose(L"Requesting response from '%s'", url);
     m_downloadPath.clear();
     m_buffer.clear();
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
@@ -222,31 +250,39 @@ void FileDownload::RequestResponse(const wxString& url)
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_lastStatus = 404;
-    m_lastState = wxWebRequest::State_Failed;
-    m_stillActive = true;
     request.Start();
 
     const auto startTime = std::chrono::system_clock::now();
-    while (m_stillActive)
+    bool timedOut{ false };
+    while (request.GetState() == wxWebRequest::State_Active)
         {
         wxYield();
         /* Some misconfigured webpages cause ProcessRequest() to not be called
-           after the state has been set to idle when using wxWebRequest::Storage_None
-           (at least with the libCurl engine). Some at least for here where
-           wxWebRequest::Storage_None is being used, time out after 30 seconds since
-           requesting a response should only involve pinging the server and shouldn't
-           take nearly that long.*/
+           after some sort of failure , meaning that we won't have a change to
+           query its state and truly see that it is no longer active.
+           Time out after XX seconds since requesting a response should only involve
+           pinging the server and shouldn't take very long.*/
         const auto rightNow = std::chrono::system_clock::now();
         const auto elapsedSeconds = rightNow - startTime;
-        constexpr long timeoutThreshold{ 30 };
         if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-            timeoutThreshold)
+            GetTimeout())
             {
-            wxLogError(L"Requesting response timed out after %s seconds.",
+            m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                     request.GetResponse().GetStatus() : 404);
+            wxLogError(L"Requesting response timed out after %s seconds. Response code #%d.",
                 std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
-                    (elapsedSeconds).count()) );
-            break;
+                    (elapsedSeconds).count()), m_lastStatus);
+            timedOut = true;
+            request.Cancel();
             }
+        }
+
+    LoadResponseInfo(request);
+    if (timedOut)
+        {
+        // change status to "Page not responding" since we gave up after logging the real status
+        m_lastStatus = 204;
+        m_lastStatusText = L"Page not responding";
         }
     }
 
@@ -261,6 +297,7 @@ bool FileDownload::Read(const wxString& url)
                     "has not been connected.");
         return false;
         }
+    wxLogVerbose(L"Reading '%s'", url);
     m_downloadPath.clear();
     m_buffer.clear();
 
@@ -271,60 +308,83 @@ bool FileDownload::Read(const wxString& url)
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     m_lastStatus = 404;
-    m_lastState = wxWebRequest::State_Failed;
-    m_stillActive = true;
     request.Start();
 
-    while (m_stillActive)
+    const auto startTime = std::chrono::system_clock::now();
+    bool timedOut{ false };
+    while (request.GetState() == wxWebRequest::State_Active)
         {
         wxYield();
+        /* Sometimes a connection failure will cause ProcessRequest to not be called,
+           meaning that the active flag won't be turned as expected. Check after
+           XX seconds as to whether any data has been recieved; if not, then quit.*/
+        const auto rightNow = std::chrono::system_clock::now();
+        const auto elapsedSeconds = rightNow - startTime;
+        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+            GetTimeout() &&
+            request.GetBytesReceived() == 0)
+            {
+            m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                     request.GetResponse().GetStatus() : 404);
+            wxLogError(L"Reading page timed out after %s seconds. Response code #%d.",
+                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
+                    (elapsedSeconds).count()), m_lastStatus);
+            timedOut = true;
+            request.Cancel();
+            }
         }
 
-    return (m_lastState == wxWebRequest::State_Completed);
+    LoadResponseInfo(request);
+    if (timedOut)
+        {
+        // change status to "Page not responding" since we gave up after logging the real status
+        m_lastStatus = 204;
+        m_lastStatusText = L"Page not responding";
+        }
+
+    return (request.GetState() == wxWebRequest::State_Completed);
+    }
+
+//--------------------------------------------------
+void FileDownload::LoadResponseInfo(const wxWebRequest& request)
+    {
+    m_server = ((request.IsOk() && request.GetResponse().IsOk()) ?
+            request.GetResponse().GetHeader("Server") : wxString{});
+    m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                     request.GetResponse().GetStatus() : 404);
+    m_lastStatusText = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                    request.GetResponse().GetStatusText() : wxString{});
+    m_lastUrl = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                  request.GetResponse().GetURL() : wxString{});
+    m_lastContentType = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                          request.GetResponse().GetHeader("Content-Type") : wxString{});
+    m_lastStatusInfo = ((request.IsOk() && request.GetResponse().IsOk()) ?
+                    request.GetResponse().AsString() : wxString{});
+    // if a redirected error page, parse it down to its readable content
+    if (m_lastStatus != 200)
+        {
+        lily_of_the_valley::html_extract_text hExtract;
+        hExtract.include_no_script_sections(true);
+        auto filteredMsg =
+            hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
+        if (filteredMsg && hExtract.get_filtered_text_length())
+            {
+            m_lastStatusInfo.assign(filteredMsg);
+            m_lastStatusInfo.Trim(true).Trim(false);
+            }
+        // Cloudflare forces the use of javascript to block robots
+        if (m_lastStatus == 403 && m_server.CmpNoCase(L"cloudflare") == 0)
+            {
+            m_lastStatusInfo.insert(0, _(L"Webpage is using Cloudflare protection and "
+                "can only be accessed via an interactive browser. "
+                "Please use a browser to download this page.\n\nResponse from website:\n"));
+            }
+        }
     }
 
 //--------------------------------------------------
 void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     {
-    // wxWebResponse does not get deep copied, so cached the response information that we
-    // want for later here.
-    const auto fillResponseInfo = [this, &evt]()
-        {
-        m_server = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
-            evt.GetRequest().GetResponse().GetHeader("Server") : wxString{});
-        m_lastStatus = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
-                         evt.GetRequest().GetResponse().GetStatus() : 404);
-        m_lastStatusText = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
-                        evt.GetRequest().GetResponse().GetStatusText() : wxString{});
-        m_lastState = (evt.GetRequest().IsOk() ? evt.GetRequest().GetState() : wxWebRequest::State_Failed);
-        m_lastUrl = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
-                      evt.GetRequest().GetResponse().GetURL() : wxString{});
-        m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
-                              evt.GetRequest().GetResponse().GetHeader("Content-Type") : wxString{});
-        m_lastStatusInfo = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
-                      evt.GetRequest().GetResponse().AsString() : wxString{});
-        // if a redirected error page, parse it down to its readable content
-        if (m_lastStatus != 200)
-            {
-            lily_of_the_valley::html_extract_text hExtract;
-            hExtract.include_no_script_sections(true);
-            auto filteredMsg =
-                hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
-            if (filteredMsg && hExtract.get_filtered_text_length())
-                {
-                m_lastStatusInfo.assign(filteredMsg);
-                m_lastStatusInfo.Trim(true).Trim(false);
-                }
-            // Cloudflare forces the use of javascript to block robots
-            if (m_lastStatus == 403 && m_server.CmpNoCase(L"cloudflare") == 0)
-                {
-                m_lastStatusInfo.insert(0, _(L"Webpage is using Cloudflare protection and "
-                    "can only be accessed via an interactive browser. "
-                    "Please use a browser to download this page.\n\nResponse from website:\n"));
-                }
-            }
-        };
-
     switch (evt.GetState())
         {
         // Request completed
@@ -352,8 +412,6 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
                     }
                 }
-            m_stillActive = false;
-            fillResponseInfo();
             break;
             }
         case wxWebRequest::State_Failed:
@@ -368,12 +426,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 wxLogError(L"Web Request failed: %s",
                     evt.GetErrorDescription());
                 }
-            m_stillActive = false;
-            fillResponseInfo();
             break;
         case wxWebRequest::State_Cancelled:
-            m_stillActive = false;
-            fillResponseInfo();
             break;
         case wxWebRequest::State_Unauthorized:
             {
@@ -381,16 +435,12 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 !evt.GetRequest().GetAuthChallenge().IsOk())
                 {
                 wxLogStatus(L"Unexpectedly missing authentication challenge");
-                m_stillActive = false;
-                fillResponseInfo();
                 break;
                 }
             else if (IsPeerVerifyDisabled())
                 {
                 wxLogStatus(L"Credentials were requested, but will not be used because "
                              "SSL certificate verification is disabled.");
-                m_stillActive = false;
-                fillResponseInfo();
                 break;
                 }
 
@@ -408,8 +458,6 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             else
                 {
                 wxLogStatus(L"Authentication challenge canceled");
-                m_stillActive = false;
-                fillResponseInfo();
                 }
             break;
             }
@@ -417,7 +465,6 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
         case wxWebRequest::State_Active:
             [[fallthrough]];
         case wxWebRequest::State_Idle:
-            m_stillActive = true;
             break;
         }
     }

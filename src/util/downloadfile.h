@@ -200,7 +200,9 @@ public:
                 responseCode == 500 || responseCode == 501 || responseCode == 502 ||
                 responseCode == 503 || responseCode == 0);
         }
+
 private:
+
     wxString GetLocalPath(const int ID) const;
     void Remove(const int ID);
     wxEvtHandler* m_handler{ nullptr };
@@ -251,10 +253,13 @@ public:
     ///     to connect to this queue.
     explicit FileDownload(wxEvtHandler* handler) : m_handler(handler)
         {};
+
     /// @private
     FileDownload() = default;
+
     /// @private
     FileDownload(const QueueDownload&) = delete;
+
     /// @private
     FileDownload& operator=(const QueueDownload&) = delete;
 
@@ -263,6 +268,7 @@ public:
     /// @sa ProcessRequest(), SetAndBindEventHandler().
     void SetEventHandler(wxEvtHandler* handler)
         { m_handler = handler; }
+
     /// @brief Connect the downloader to a parent dialog or @c wxApp, and also
     ///     bind the event handler's @c wxEVT_WEBREQUEST_STATE and @c wxEVT_WEBREQUEST_DATA
     ///     events to this object.
@@ -273,18 +279,22 @@ public:
         m_handler->Bind(wxEVT_WEBREQUEST_STATE, &FileDownload::ProcessRequest, this);
         m_handler->Bind(wxEVT_WEBREQUEST_DATA, &FileDownload::ProcessRequest, this);
         }
+
     /** @brief Sets the user agent to send the server when connecting.
         @param userAgent The user agent to use.*/
     void SetUserAgent(wxString userAgent)
         { m_userAgent = std::move(userAgent); }
+
     /// @returns The user agent being sent when connecting.
     [[nodiscard]]
     const wxString& GetUserAgent() const noexcept
         { return m_userAgent; }
+
     /// @brief If @c true, shows a progress dialog while downloading a file.
     /// @param show @c true to show the progress dialog.
     void ShowProgress(const bool show) noexcept
         { m_showProgress = show; }
+
     /** @brief Disable SSL certificate verification.
         @details This can be used to connect to self signed servers or other invalid SSL connections.\n
             Disabling verification makes the communication insecure.
@@ -293,17 +303,36 @@ public:
         {
         m_disablePeerVerify = disable;
         }
+
     /// @returns Returns @c true if peer verification has been disabled.
     [[nodiscard]]
     bool IsPeerVerifyDisabled() const noexcept
         {
         return m_disablePeerVerify;
         }
+
+    /// @brief Sets the number of seconds before a request, read, or download will quit
+    ///     due to inactivity.
+    /// @param timeout The number of seconds to wait before timing out.
+    void SetTimeout(const int timeout) noexcept
+        {
+        m_timeoutSeconds = timeout;
+        }
+
+    /// @returns The number of seconds before a request, read, or download will quit
+    ///     due to inactivity.
+    [[nodiscard]]
+    int GetTimeout() const noexcept
+        {
+        return m_timeoutSeconds;
+        }
+
     /// @brief Downloads a web file to a local path.
     /// @param url The web file to download.
     /// @param localDownloadPath Where to download to.
     /// @returns @c true if download was successful.
     bool Download(const wxString& url, const wxString& localDownloadPath);
+
     /// @brief Reads the requested URL.
     /// @details This will be synchronous, so will not return until the
     ///     entire web file has been read.\n
@@ -312,11 +341,13 @@ public:
     /// @returns @c true if read was successful.
     /// @sa GetLastRead().
     bool Read(const wxString& url);
+
     /// @returns The read web file content from the last call to
     ///     Read(). This will be a @c char buffer that can be converted
-    ///     into a wxString.
+    ///     into a @c wxString.
     const std::vector<char>& GetLastRead() const noexcept
         { return m_buffer; }
+
     /// @brief Attempts to connect to an URL and load its response.
     /// @param url The URL to check. 
     /// @note This will not read or download the webpage, it will only get its response.\n
@@ -325,42 +356,51 @@ public:
     ///     bound to object if calling this.
     /// @sa GetLastStatus(), GetLastUrl(), GetLastContentType().
     void RequestResponse(const wxString& url);
+
     /// @returns The last status from a read, download, or response request.
     [[nodiscard]]
     int GetLastStatus() const noexcept
         { return m_lastStatus; };
+
     /// @returns The last status message from a read, download, or response request.
     [[nodiscard]]
     const wxString& GetLastStatusText() const noexcept
         { return m_lastStatusText; };
+
     /// @returns The last status info from a read, download, or response request.
     /// @note This is debug info, usually the contents of a redirected error page.
     [[nodiscard]]
     const wxString& GetLastStatusInfo() const noexcept
         { return m_lastStatusInfo; };
+
     /// @returns The last url (or possible redirect) from a read, download, or response request.
     [[nodiscard]]
     const wxString& GetLastUrl() const noexcept
         { return m_lastUrl; };
+
     /// @returns The last @c Content-Type from a read, download, or response request.
     [[nodiscard]]
     const wxString& GetLastContentType() const noexcept
         { return m_lastContentType; };
+
     /// @brief Bind this to a @c wxEVT_WEBREQUEST_STATE in the
     ///     parent @c wxEvtHandler.
     /// @param evt The event to process.
     /// @par Example:
     /// @code
-    ///     // assuming m_downloadFile is a FileDownload member of the dialog
+    ///     // assuming m_downloadFile is a FileDownload member of the event handler
     ///     Bind(wxEVT_WEBREQUEST_STATE,
     ///          &FileDownload::ProcessRequest, &m_downloadFile);
     ///     Bind(wxEVT_WEBREQUEST_DATA,
     ///         &FileDownload::ProcessRequest, &m_downloadFile);
     /// @endcode
     void ProcessRequest(wxWebRequestEvent& evt);
+
 private:
+
+    void LoadResponseInfo(const wxWebRequest& request);
+
     std::vector<char> m_buffer;
-    bool m_stillActive{ false };
     bool m_downloadSuccessful{ false };
     bool m_showProgress{ false };
     bool m_disablePeerVerify{ false };
@@ -369,13 +409,13 @@ private:
     wxString m_downloadPath;
     wxString m_readContent;
     wxString m_userAgent;
-    int m_lastStatus{ 404 };
     wxString m_lastStatusText;
     wxString m_lastUrl;
     wxString m_lastContentType;
     wxString m_lastStatusInfo;
     wxString m_server;
-    wxWebRequest::State m_lastState{ wxWebRequest::State_Failed };
+    int m_timeoutSeconds{ 30 };
+    int m_lastStatus{ 404 };
     };
 
 /** @}*/
