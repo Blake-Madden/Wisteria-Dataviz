@@ -167,7 +167,7 @@ void ListDlg::BindEvents()
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnCopy, this, wxID_COPY);
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSelectAll, this, wxID_SELECTALL);
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSort, this, XRCID("ID_LIST_SORT"));
-    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,[this]([[maybe_unused]] wxCommandEvent&)
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,[this]([[maybe_unused]] wxRibbonButtonBarEvent&)
             {
             if (m_logFile != nullptr)
                 {
@@ -181,6 +181,15 @@ void ListDlg::BindEvents()
             &ListDlg::OnRealTimeUpdate, this,
             XRCID("ID_REALTIME_UPDATE"));
     Bind(wxEVT_TIMER, &ListDlg::OnRealTimeTimer, this);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,[this]([[maybe_unused]] wxRibbonButtonBarEvent& evt)
+            {
+            m_isLogVerbose = !m_isLogVerbose;
+            if (m_logFile != nullptr)
+                {
+                m_logFile->SetVerbose(m_isLogVerbose);
+                }
+            },
+        XRCID("ID_VERBOSE_LOG"));
 
     Bind(wxEVT_FIND, &ListDlg::OnFind, this);
     Bind(wxEVT_FIND_NEXT, &ListDlg::OnFind, this);
@@ -201,7 +210,7 @@ void ListDlg::CreateControls()
         mainSizer->Add(labelSizer, 0, wxALL, wxSizerFlags::GetDefaultBorder());
         }
 
-    if (m_buttonStyle & LD_FIND_BUTTON)
+    if ((m_buttonStyle & LD_FIND_BUTTON))
         {
         wxBoxSizer* searchSizer = new wxBoxSizer(wxHORIZONTAL);
         searchSizer->AddStretchSpacer(1);
@@ -210,15 +219,15 @@ void ListDlg::CreateControls()
         searchSizer->Add(searcher, 0);
         mainSizer->Add(searchSizer, 0, wxEXPAND);
         }
-    if (m_buttonStyle & LD_COPY_BUTTON || m_buttonStyle & LD_SELECT_ALL_BUTTON ||
-        m_buttonStyle & LD_SORT_BUTTON || m_buttonStyle & LD_SAVE_BUTTON ||
-        m_buttonStyle & LD_PRINT_BUTTON)
+    if ((m_buttonStyle & LD_COPY_BUTTON) || (m_buttonStyle & LD_SELECT_ALL_BUTTON) ||
+        (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_SAVE_BUTTON) ||
+        (m_buttonStyle & LD_PRINT_BUTTON))
         {
         m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition,
                                               wxDefaultSize, wxRIBBON_BAR_FLOW_HORIZONTAL);
         wxRibbonPage* homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
         // export
-        if (m_buttonStyle & LD_SAVE_BUTTON || m_buttonStyle & LD_PRINT_BUTTON)
+        if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
             {
             wxRibbonPanel* exportPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Export"),
                                                           wxNullBitmap, wxDefaultPosition,
@@ -239,15 +248,15 @@ void ListDlg::CreateControls()
                 }
             }
         // edit
-        if (m_buttonStyle & LD_COPY_BUTTON || m_buttonStyle & LD_SELECT_ALL_BUTTON ||
-            m_buttonStyle & LD_SORT_BUTTON || m_buttonStyle & LD_CLEAR_BUTTON ||
-            m_buttonStyle & LD_REFRESH_BUTTON)
+        if ((m_buttonStyle & LD_COPY_BUTTON) || (m_buttonStyle & LD_SELECT_ALL_BUTTON) ||
+            (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_CLEAR_BUTTON) ||
+            (m_buttonStyle & LD_REFRESH_BUTTON) || (m_buttonStyle & LD_LOG_VERBOSE_BUTTON))
             {
-            wxRibbonPanel* editPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Edit"),
+            wxRibbonPanel* editPage = new wxRibbonPanel(homePage, ID_EDIT_PANEL, _(L"Edit"),
                                                         wxNullBitmap, wxDefaultPosition,
                                                         wxDefaultSize,
                                                         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
-            wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(editPage);
+            wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
             if (m_buttonStyle & LD_COPY_BUTTON)
                 {
                 buttonBar->AddButton(wxID_COPY, _(L"Copy Selection"),
@@ -281,6 +290,13 @@ void ListDlg::CreateControls()
                     wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE", wxART_BUTTON,
                         FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Refresh the log report automatically."));
                 buttonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
+                }
+            if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON)
+                {
+                buttonBar->AddToggleButton(XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
+                    wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_BUTTON,
+                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Toggles whether the logging system includes more detailed information."));
+                buttonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                 }
             }
         m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
@@ -346,6 +362,27 @@ void ListDlg::CreateControls()
         }
 
     SetSizerAndFit(mainSizer);
+    }
+
+//------------------------------------------------------
+void ListDlg::SetActiveLog(LogFile* log)
+    {
+    m_logFile = log;
+
+    // toggle the verbose button to match what the logger is doing
+    wxRibbonPanel* editPanel = m_ribbon->GetPage(0)->GetPanelById(ID_EDIT_PANEL);
+    if (editPanel != nullptr && m_logFile != nullptr)
+        {
+        m_isLogVerbose = m_logFile->GetVerbose();
+        wxWindow* editBar = editPanel->FindWindow(ID_EDIT_BUTTON_BAR);
+        if (editBar != nullptr && editBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
+            {
+            dynamic_cast<wxRibbonButtonBar*>(editBar)->ToggleButton(
+                XRCID("ID_VERBOSE_LOG"), m_logFile->GetVerbose());
+            }
+        }
+
+    RestartRealtimeUpdate();
     }
 
 //------------------------------------------------------

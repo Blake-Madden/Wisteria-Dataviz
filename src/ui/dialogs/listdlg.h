@@ -52,8 +52,10 @@ enum ListDlgFlags
     LD_CLEAR_BUTTON = 1 << 11,
     /// @brief A refresh button.
     LD_REFRESH_BUTTON = 1 << 12,
+    /// @brief A verbose logging toggle button.
+    LD_LOG_VERBOSE_BUTTON = 1 << 13,
     /// @brief Make the list control single selection.
-    LD_SINGLE_SELECTION = 1 << 13
+    LD_SINGLE_SELECTION = 1 << 14
     };
 
 /// @brief A dialog with a list control and various buttons.
@@ -155,11 +157,7 @@ public:
     /// @brief Sets the log file reporter to read and write from
     ///     (if this is meant to be a log report window).
     /// @param log The log file reporter to connect this dialog to.
-    void SetActiveLog(LogFile* log) noexcept
-        {
-        m_logFile = log;
-        RestartRealtimeUpdate();
-        }
+    void SetActiveLog(LogFile* log);
 
     /// @brief If an active log is connected, reads its content into this dialog.
     /// @sa SetActiveLog().
@@ -204,15 +202,19 @@ private:
     ListCtrlEx* m_list{ nullptr };
     wxCheckListBox* m_checkList{ nullptr };
     ListCtrlExDataProvider* m_data{ new ListCtrlExDataProvider() };
-    LogFile* m_logFile;
+    LogFile* m_logFile{ nullptr };
     wxCheckBox* m_checkBox{ nullptr };
     wxRibbonBar* m_ribbon{ nullptr };
     wxArrayString m_values;
     wxArrayString m_selectedItems;
 
+    constexpr static wxWindowID ID_EDIT_PANEL{ wxID_HIGHEST };
+    constexpr static wxWindowID ID_EDIT_BUTTON_BAR{ wxID_HIGHEST + 1 };
+
     constexpr static int REALTIME_UPDATE_INTERVAL{ 3000 }; // in milliseconds
     wxTimer m_realTimeTimer;
     bool m_autoRefresh{ true };
+    bool m_isLogVerbose{ false };
     wxDateTime m_sourceFileLastModified;
     };
 
