@@ -239,7 +239,7 @@ void FileDownload::RequestResponse(const wxString& url)
         return;
         }
     // note that you need to printf the string before passing to wxLog
-    // because this is an untrusted string (i.e., and URL that can containt '%' in it).
+    // because this is an untrusted string (i.e., and URL that can contain '%' in it).
     wxLogVerbose(L"Requesting response from '%s'", url);
     m_downloadPath.clear();
     m_buffer.clear();
@@ -276,6 +276,7 @@ void FileDownload::RequestResponse(const wxString& url)
             request.Cancel();
             }
         }
+    wxLogVerbose(L"Requesting response from '%s' complete.", url);
 
     LoadResponseInfo(request);
     if (timedOut)
@@ -317,7 +318,7 @@ bool FileDownload::Read(const wxString& url)
         wxYield();
         /* Sometimes a connection failure will cause ProcessRequest to not be called,
            meaning that the active flag won't be turned as expected. Check after
-           XX seconds as to whether any data has been recieved; if not, then quit.*/
+           XX seconds as to whether any data has been received; if not, then quit.*/
         const auto rightNow = std::chrono::system_clock::now();
         const auto elapsedSeconds = rightNow - startTime;
         if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
@@ -365,9 +366,9 @@ void FileDownload::LoadResponseInfo(const wxWebRequest& request)
         {
         lily_of_the_valley::html_extract_text hExtract;
         hExtract.include_no_script_sections(true);
-        auto filteredMsg =
+        const wchar_t* const filteredMsg =
             hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
-        if (filteredMsg && hExtract.get_filtered_text_length())
+        if (filteredMsg != nullptr && hExtract.get_filtered_text_length())
             {
             m_lastStatusInfo.assign(filteredMsg);
             m_lastStatusInfo.Trim(true).Trim(false);
