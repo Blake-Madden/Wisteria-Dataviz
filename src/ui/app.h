@@ -31,6 +31,7 @@
 #include <wx/fs_mem.h>
 #include <wx/config.h>
 #include <wx/propgrid/propgrid.h>
+#include <wx/webrequest.h>
 #include "../util/logfile.h"
 #include "../util/resource_manager.h"
 #include "../i18n-check/src/donttranslate.h"

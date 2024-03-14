@@ -79,6 +79,8 @@ bool Wisteria::UI::BaseApp::OnInit()
     if (wxGraphicsRenderer::GetDirect2DRenderer())
         { wxLogMessage(L"Direct2D Rendering Available: will attempt to use Direct2D"); }
 #endif
+    wxLogMessage(L"Web engine: %s, version %s", wxWebSession::GetDefault().GetLibraryVersionInfo().GetName(),
+                 wxWebSession::GetDefault().GetLibraryVersionInfo().GetVersionString());
     wxLogMessage(L"Default System Font: %s, %d pt.",
         wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
         wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
