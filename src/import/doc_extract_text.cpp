@@ -103,7 +103,8 @@ namespace lily_of_the_valley
                 static_cast<uint8_t>(doc_buffer[2]) == UTF8_SIGNATURE[2])
                 { bomStartLength = 3; }
             const size_t firstChar =
-                string_util::find_first_not_of(doc_buffer + bomStartLength, text_length, " \t\n\r", 4) +
+                string_util::find_first_not_of(doc_buffer + bomStartLength,
+                                               text_length - bomStartLength, " \t\n\r", 4) +
                     bomStartLength;
             // See if maybe it's HTML (based on if first character is a '<').
             // We are grasping at straws here, but people actually have files like this.
