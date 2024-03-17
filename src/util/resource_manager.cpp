@@ -61,9 +61,8 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
             wxImage img = Wisteria::GraphItems::Image::LoadFile(filePath);
             if (!img.IsOk())
                 { return wxNullBitmap; }
-            wxLogVerbose(
-                wxString::Format(L"%s extracted from file. Width=%d, Height=%d",
-                                 filePath, img.GetWidth(), img.GetHeight()));
+            wxLogVerbose(L"%s extracted from file. Width=%d, Height=%d",
+                         filePath, img.GetWidth(), img.GetHeight());
             return m_imageMap[filePath] = wxBitmap(img);
             }
         // ...otherwise, load from the resource zip file
@@ -72,8 +71,8 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
             wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
             assert(bmp.IsOk() &&
                    "Failed to load image from resources!");
-            wxLogVerbose(wxString::Format(L"%s extracted from resource file. Width=%d, Height=%d",
-                                          filePath, bmp.GetWidth(), bmp.GetHeight()));
+            wxLogVerbose(L"%s extracted from resource file. Width=%d, Height=%d",
+                         filePath, bmp.GetWidth(), bmp.GetHeight());
             return m_imageMap[filePath] = bmp;
             }
         }
