@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <wx/clipbrd.h>
 #include "searchpanel.h"
 
 using namespace Wisteria::UI;
@@ -50,6 +51,27 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     Bind(wxEVT_SEARCH, &SearchPanel::OnSearch, this, ControlIDs::ID_SEARCH_TEXT_ENTRY);
     Bind(wxEVT_BUTTON, &SearchPanel::OnSearchButton, this, ControlIDs::ID_SEARCH_NEXT);
     Bind(wxEVT_BUTTON, &SearchPanel::OnSearchButton, this, ControlIDs::ID_SEARCH_PREVIOUS);
+    Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
+        {
+        if (event.ControlDown() && event.GetKeyCode() == L'V')
+            {
+            if (wxTheClipboard->Open())
+                {
+                if (wxTheClipboard->IsSupported(wxDF_TEXT))
+                    {
+                    wxTextDataObject data;
+                    wxTheClipboard->GetData(data);
+                    m_search->SetValue(data.GetText());
+                    }
+                wxTheClipboard->Close();
+                }
+            m_search->SetFocus();
+            }
+        else
+            {
+            event.Skip();
+            }
+        });
     }
 
 //---------------------------------------------------
