@@ -11,7 +11,11 @@
 #ifdef __WXMSW__
     #include <psapi.h>
     #include <debugapi.h>
+#elif defined(__UNIX__)
+    #include <sys/resource.h>
 #endif
+#include <wx/stc/stc.h>
+#include <wx/xml/xml.h>
 
 using namespace Wisteria;
 
@@ -79,16 +83,33 @@ bool Wisteria::UI::BaseApp::OnInit()
     if (wxGraphicsRenderer::GetDirect2DRenderer())
         { wxLogMessage(L"Direct2D Rendering Available: will attempt to use Direct2D"); }
 #endif
-    wxLogMessage(L"Web engine: %s, version %s", wxWebSession::GetDefault().GetLibraryVersionInfo().GetName(),
+    wxLogMessage(L"Web Engine: %s",
                  wxWebSession::GetDefault().GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"Code Editor: %s",
+                 wxStyledTextCtrl::GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"XML Parser: %s",
+                 wxXmlDocument::GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"JPEG Library: %s",
+                 wxJPEGHandler::GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"PNG Library: %s",
+                 wxPNGHandler::GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"TIFF Library: %s",
+                 wxTIFFHandler::GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"RegEx Library: %s",
+                 wxRegEx::GetLibraryVersionInfo().GetVersionString());
+
     wxLogMessage(L"Default System Font: %s, %d pt.",
         wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
         wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
     wxLogMessage(L"Screen Size: %d wide, %d tall",
         wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
         wxSystemSettings::GetMetric(wxSYS_SCREEN_Y));
-    wxLogMessage(L"System Theme: %s", wxSystemSettings::GetAppearance().GetName().empty() ?
-        wxString(L"[unnamed]") : wxSystemSettings::GetAppearance().GetName());
+    if (wxSystemSettings::GetAppearance().GetName().length())
+        {
+        wxLogMessage(L"System Theme: %s",
+                     wxSystemSettings::GetAppearance().GetName());
+        }
+
     // subroutine to log the system colors
     const auto logSystemColor = [](const wxSystemColour color, const wxString& description)
         {
@@ -148,18 +169,31 @@ int Wisteria::UI::BaseApp::OnExit()
     SaveFileHistoryMenu();
     wxDELETE(m_docManager);
 
-#ifdef __WXMSW__
-    #ifndef NDEBUG
-        // dump max memory usage
+// dump max memory usage
+#ifndef NDEBUG
+    #ifdef __WXMSW__
         // https://docs.microsoft.com/en-us/windows/win32/psapi/collecting-memory-usage-information-for-a-process?redirectedfrom=MSDN
         PROCESS_MEMORY_COUNTERS memCounter;
         ::ZeroMemory(&memCounter, sizeof(PROCESS_MEMORY_COUNTERS));
         if (::GetProcessMemoryInfo(::GetCurrentProcess(), &memCounter, sizeof(memCounter)))
             {
-            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02fGbs.",
+            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02fGbs\n",
+                // PeakWorkingSetSize is in bytes
                 safe_divide<double>(memCounter.PeakWorkingSetSize, 1024*1024*1024));
             wxLogDebug(memMsg);
+            wxPrintf(memMsg);
             OutputDebugString(memMsg.wc_str());
+            }
+    #elif defined(__UNIX__)
+        rusage usage;
+        memset(&usage, 0, sizeof(rusage));
+        if (getrusage(RUSAGE_SELF, &usage) == 0)
+            {
+            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02fGbs\n",
+                // ru_maxrss is in kilobytes
+                safe_divide<double>(usage.ru_maxrss, 1024*1024));
+            wxLogDebug(memMsg);
+            wxPrintf(memMsg);
             }
     #endif
 #endif
