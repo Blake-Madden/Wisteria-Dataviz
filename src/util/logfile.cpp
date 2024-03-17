@@ -12,7 +12,7 @@
 LogFile::LogFile(bool clearPreviousLog) :
     // will be a unique file name on a per day basis
     m_logFilePath(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
-        wxTheApp->GetAppName() + wxDateTime::Now().FormatISODate() + L".log")
+        wxTheApp->GetAppName() + wxGetUserName() + wxDateTime::Now().FormatISODate() + L".log")
     {
     wxFile logFile(m_logFilePath, clearPreviousLog ? wxFile::write : wxFile::write_append);
     if (!logFile.IsOpened())
