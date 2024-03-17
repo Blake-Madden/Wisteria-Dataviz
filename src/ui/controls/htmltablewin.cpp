@@ -15,26 +15,38 @@ using namespace Wisteria::UI;
 
 wxIMPLEMENT_DYNAMIC_CLASS(HtmlTableWindow, wxHtmlWindow)
 
-wxBEGIN_EVENT_TABLE(HtmlTableWindow, wxHtmlWindow)
-    EVT_FIND(wxID_ANY, HtmlTableWindow::OnFind)
-    EVT_FIND_NEXT(wxID_ANY, HtmlTableWindow::OnFind)
-    EVT_FIND_CLOSE(wxID_ANY, HtmlTableWindow::OnFind)
-    EVT_RIGHT_DOWN(HtmlTableWindow::OnRightClick)
+//------------------------------------------------------
+HtmlTableWindow::HtmlTableWindow(wxWindow *parent, wxWindowID id /*= wxID_ANY*/,
+            const wxPoint& pos /*= wxDefaultPosition*/,
+            const wxSize& size /*= wxDefaultSize*/,
+            long style /*= wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION | wxBORDER_THEME*/) :
+                wxHtmlWindow(parent, id, pos, size, style, L"HtmlTableWindow")
+    {
+    m_menu.Append(wxID_COPY, _(L"Copy"));
+    m_menu.AppendSeparator();
+    m_menu.Append(wxID_SELECTALL, _(L"Select All"));
+    m_menu.AppendSeparator();
+    m_menu.Append(wxID_PRINT, _(L"Print"));
+    m_menu.Append(wxID_SAVE, _(L"Save"));
+
+    Bind(wxEVT_FIND, &HtmlTableWindow::OnFind, this);
+    Bind(wxEVT_FIND_NEXT, &HtmlTableWindow::OnFind, this);
+    Bind(wxEVT_FIND_CLOSE, &HtmlTableWindow::OnFind, this);
+
+    Bind(wxEVT_RIGHT_DOWN, &HtmlTableWindow::OnRightClick, this);
     // standard menu commands
-    EVT_MENU(wxID_SELECTALL, HtmlTableWindow::OnSelectAll)
-    EVT_MENU(wxID_COPY, HtmlTableWindow::OnCopy)
-    EVT_MENU(XRCID("ID_COPY_ALL"), HtmlTableWindow::OnCopyAll)
-    EVT_MENU(wxID_PREVIEW, HtmlTableWindow::OnPreview)
-    EVT_MENU(wxID_PRINT, HtmlTableWindow::OnPrint)
-    EVT_MENU(wxID_SAVE, HtmlTableWindow::OnSave)
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnSelectAll, this, wxID_SELECTALL);
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnPreview, this, wxID_PREVIEW);
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnPrint, this, wxID_PRINT);
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnSave, this, wxID_SAVE);
     // button variations of above commands
-    EVT_BUTTON(wxID_SELECTALL, HtmlTableWindow::OnSelectAll)
-    EVT_BUTTON(wxID_COPY, HtmlTableWindow::OnCopy)
-    EVT_BUTTON(XRCID("ID_COPY_ALL"), HtmlTableWindow::OnCopyAll)
-    EVT_BUTTON(wxID_PREVIEW, HtmlTableWindow::OnPreview)
-    EVT_BUTTON(wxID_PRINT, HtmlTableWindow::OnPrint)
-    EVT_BUTTON(wxID_SAVE, HtmlTableWindow::OnSave)
-wxEND_EVENT_TABLE()
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnSelectAll, this, wxID_SELECTALL);
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnPreview, this, wxID_PREVIEW);
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnPrint, this, wxID_PRINT);
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnSave, this, wxID_SAVE);
+    }
 
 //------------------------------------------------------
 void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
@@ -270,21 +282,7 @@ bool HtmlTableWindow::Save(const wxFileName& path)
     }
 
 //------------------------------------------------------
-void HtmlTableWindow::OnSelectAll([[maybe_unused]] wxCommandEvent& event )
-    { SelectAll(); }
-
-//------------------------------------------------------
-void HtmlTableWindow::OnCopy([[maybe_unused]] wxCommandEvent& event )
-    {
-    if (wxTheClipboard->Open())
-        {
-        if (wxTheClipboard->SetData(new wxTextDataObject(SelectionToText()) ) )
-            { wxTheClipboard->Close(); }
-        }
-    }
-
-//------------------------------------------------------
-void HtmlTableWindow::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
+void HtmlTableWindow::Copy()
     {
     if (wxTheClipboard->Open())
         {
@@ -297,22 +295,25 @@ void HtmlTableWindow::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
         lily_of_the_valley::html_format::set_encoding(htmlText);
         obj->Add(new wxHTMLDataObject(htmlText), true);
         obj->Add(new wxTextDataObject(ToText()) );
-        wxTheClipboard->AddData(obj);
+        wxTheClipboard->SetData(obj);
         wxTheClipboard->Close();
         }
     }
 
 //------------------------------------------------------
+void HtmlTableWindow::OnSelectAll([[maybe_unused]] wxCommandEvent& event)
+    { SelectAll(); }
+
+//------------------------------------------------------
+void HtmlTableWindow::OnCopy([[maybe_unused]] wxCommandEvent& event)
+    {
+    Copy();
+    }
+
+//------------------------------------------------------
 void HtmlTableWindow::OnRightClick([[maybe_unused]] wxMouseEvent& event)
     {
-    if (m_menu == nullptr)
-        { return; }
-    // if nothing selected then disable the Copy option
-    if (SelectionToText().empty() )
-        { m_menu->Enable(wxID_COPY, false); }
-    else
-        { m_menu->Enable(wxID_COPY, true); }
-    PopupMenu(m_menu);
+    PopupMenu(&m_menu);
     }
 
 //------------------------------------------------------
