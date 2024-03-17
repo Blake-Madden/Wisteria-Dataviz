@@ -140,6 +140,7 @@ namespace Wisteria
         {
         if (wxTheClipboard->Open())
             {
+            wxTheClipboard->Clear();
             // new bitmap to be used by memory DC
             wxBitmap canvasBitmap;
             canvasBitmap.CreateWithDIPSize(
@@ -171,8 +172,8 @@ namespace Wisteria
             // unlock the image from the DC
             memDc.SelectObject(wxNullBitmap);
 
-            if (wxTheClipboard->SetData(new wxBitmapDataObject(canvasBitmap)) )
-                { wxTheClipboard->Close(); }
+            wxTheClipboard->SetData(new wxBitmapDataObject(canvasBitmap));
+            wxTheClipboard->Close();
             }
         }
 

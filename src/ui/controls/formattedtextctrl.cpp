@@ -1000,7 +1000,7 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
             wxDataObjectComposite* obj = new wxDataObjectComposite();
             obj->Add(new wxRtfDataObject(FormattedText), true);
             obj->Add(new wxTextDataObject(GetValue()) );
-            wxTheClipboard->AddData(obj);
+            wxTheClipboard->SetData(obj);
             }
         wxTheClipboard->Close();
         }
@@ -1014,7 +1014,7 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event )
             wxDataObjectComposite* obj = new wxDataObjectComposite();
             obj->Add(new wxHTMLDataObject(FormattedText), true);
             obj->Add(new wxTextDataObject(GetValue()) );
-            wxTheClipboard->AddData(obj);
+            wxTheClipboard->SetData(obj);
             }
         wxTheClipboard->Close();
         }

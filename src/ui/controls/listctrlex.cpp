@@ -1301,7 +1301,7 @@ void ListCtrlEx::OnCopyFirstColumn([[maybe_unused]] wxCommandEvent& event)
             wxDataObjectComposite* obj = new wxDataObjectComposite();
             obj->Add(new wxHTMLDataObject(selectedFormattedText), true);
             obj->Add(new wxTextDataObject(selectedText) );
-            wxTheClipboard->AddData(obj);
+            wxTheClipboard->SetData(obj);
             }
         wxTheClipboard->Close();
         }
@@ -1340,7 +1340,7 @@ void ListCtrlEx::Copy(const bool onlyIncludeSelectedRows, const bool includeColu
             wxDataObjectComposite* obj = new wxDataObjectComposite();
             obj->Add(new wxHTMLDataObject(selectedFormattedText), true);
             obj->Add(new wxTextDataObject(selectedText) );
-            wxTheClipboard->AddData(obj);
+            wxTheClipboard->SetData(obj);
             }
         wxTheClipboard->Close();
         }
