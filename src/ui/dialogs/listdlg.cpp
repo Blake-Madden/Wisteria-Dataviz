@@ -84,7 +84,7 @@ void ListDlg::OnCopy([[maybe_unused]] wxRibbonButtonBarEvent& event)
             wxTheClipboard->Clear();
             wxDataObjectComposite* obj = new wxDataObjectComposite();
             obj->Add(new wxTextDataObject(selectedText) );
-            wxTheClipboard->AddData(obj);
+            wxTheClipboard->SetData(obj);
             wxTheClipboard->Close();
             }
         }
