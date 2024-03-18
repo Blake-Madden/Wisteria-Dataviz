@@ -977,8 +977,7 @@ void FormattedTextCtrl::OnContextMenu([[maybe_unused]] wxContextMenuEvent& event
             wxString::Format(_DT(L"Cursor position: %d", DTExplanation::DebugMessage),
                 GetInsertionPoint()), _DT(L"Position"), wxOK);
         }
-    if (m_menu)
-        { PopupMenu(m_menu); }
+    PopupMenu(&m_menu);
     }
 
 //------------------------------------------------------

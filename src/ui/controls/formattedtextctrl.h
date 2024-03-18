@@ -48,7 +48,6 @@ static constexpr int TWIPS_PER_INCH = 1440;
 ///     as retrieved for easy exporting. Native printing support is also built in.
 class FormattedTextCtrl final : public wxTextCtrl
     {
-    FormattedTextCtrl() = default; // needed for WX macros
 public:
     /** @brief Constructor.
         @param parent The parent window.
@@ -70,23 +69,30 @@ public:
                 m_paperSize(wxSize(8.5 * TWIPS_PER_INCH,
                                    11 * TWIPS_PER_INCH))
         {
+        m_menu.Append(wxID_COPY, _(L"Copy"));
+        m_menu.Append(XRCID("ID_COPY_ALL"), _(L"Copy All"));
+        m_menu.AppendSeparator();
+        m_menu.Append(wxID_SELECTALL, _(L"Select All"));
+        m_menu.AppendSeparator();
+        m_menu.Append(wxID_PRINT, _(L"Print"));
+        m_menu.Append(XRCID("ID_SAVE_ITEM"), _(L"Save"));
+
         Bind(wxEVT_CONTEXT_MENU, &FormattedTextCtrl::OnContextMenu, this);
         Bind(wxEVT_FIND, &FormattedTextCtrl::OnFind, this);
         Bind(wxEVT_FIND_NEXT, &FormattedTextCtrl::OnFind, this);
         Bind(wxEVT_FIND_CLOSE, &FormattedTextCtrl::OnFind, this);
         Bind(wxEVT_MENU, &FormattedTextCtrl::OnSave, this, wxID_SAVE);
+        Bind(wxEVT_MENU, &FormattedTextCtrl::OnSave, this, XRCID("ID_SAVE_ITEM"));
         Bind(wxEVT_MENU, &FormattedTextCtrl::OnPreview, this, wxID_PREVIEW);
         Bind(wxEVT_MENU, &FormattedTextCtrl::OnPrint, this, wxID_PRINT);
         Bind(wxEVT_MENU, &FormattedTextCtrl::OnSelectAll, this, wxID_SELECTALL);
         Bind(wxEVT_MENU, &FormattedTextCtrl::OnCopyAll, this, XRCID("ID_COPY_ALL"));
         }
+
     /// @private
     FormattedTextCtrl(const FormattedTextCtrl&) = delete;
     /// @private
     FormattedTextCtrl& operator=(const FormattedTextCtrl&) = delete;
-    /// @private
-    ~FormattedTextCtrl()
-        { wxDELETE(m_menu); }
 
     /// @brief Sets the content to be used when exporting or printing.
     /// @details This is useful for when the control is themed and you
@@ -132,14 +138,6 @@ public:
                                                   LONG cb, [[maybe_unused]] LONG* pcb);
 #endif
 
-    /// @brief Assign a context menu to the control.
-    /// @note Control takes ownership of this @c menu.
-    /// @param menu The menu to display.
-    void AssignContextMenu(wxMenu* menu) noexcept
-        {
-        delete m_menu;
-        m_menu = menu;
-        }
     /** @brief Searches for a given string in the control.
         @details Text will automatically be selected (if found).\n
             If the search reaches the end of the document,
@@ -364,6 +362,9 @@ public:
         { return m_waterMark; }
     /// @}
 private:
+
+    FormattedTextCtrl() = default; // needed for WX macros
+
     [[nodiscard]]
     wxString ExpandUnixPrintString(const wxString& printString) const
         {
@@ -428,7 +429,7 @@ private:
         that->m_waterMark = m_waterMark;
         }
 
-    wxMenu* m_menu{ nullptr };
+    wxMenu m_menu;
     unsigned long m_rtfLength{ 0 };
     wxString m_titleName;
 
