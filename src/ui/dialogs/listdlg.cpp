@@ -285,17 +285,20 @@ void ListDlg::CreateControls()
                 {
                 buttonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
                     wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Refresh the log report."));
+                        FromDIP(wxSize(32, 32))).ConvertToImage(),
+                    _(L"Refresh the log report."));
                 buttonBar->AddToggleButton(XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
                     wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Refresh the log report automatically."));
+                        FromDIP(wxSize(32, 32))).ConvertToImage(),
+                    _(L"Refresh the log report automatically."));
                 buttonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
                 }
             if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON)
                 {
                 buttonBar->AddToggleButton(XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
                     wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Toggles whether the logging system includes more detailed information."));
+                        FromDIP(wxSize(32, 32))).ConvertToImage(),
+                    _(L"Toggles whether the logging system includes more detailed information."));
                 buttonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                 }
             }

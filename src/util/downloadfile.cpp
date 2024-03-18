@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+Text = L"Page not re///////////////////////////////////////////////////////////////////////////////
 // Name:        downloadfile.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2023 Blake Madden
@@ -220,7 +220,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
         {
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
-        m_lastStatusText = L"Page not responding";
+        m_lastStatusText = _(L"Page not responding");
         m_downloadSuccessful = false;
         }
 
@@ -283,7 +283,7 @@ void FileDownload::RequestResponse(const wxString& url)
         {
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
-        m_lastStatusText = L"Page not responding";
+        m_lastStatusText = _(L"Page not responding");
         }
     }
 
@@ -340,7 +340,7 @@ bool FileDownload::Read(const wxString& url)
         {
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
-        m_lastStatusText = L"Page not responding";
+        m_lastStatusText = _(L"Page not responding");
         }
 
     return (request.GetState() == wxWebRequest::State_Completed);
