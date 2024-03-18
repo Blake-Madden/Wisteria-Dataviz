@@ -24,10 +24,10 @@ HtmlTableWindow::HtmlTableWindow(wxWindow *parent, wxWindowID id /*= wxID_ANY*/,
     {
     m_menu.Append(wxID_COPY, _(L"Copy"));
     m_menu.AppendSeparator();
-    m_menu.Append(wxID_SELECTALL, _(L"Select All"));
-    m_menu.AppendSeparator();
     m_menu.Append(wxID_PRINT, _(L"Print"));
-    m_menu.Append(wxID_SAVE, _(L"Save"));
+    // Save button can be disabled by docmanger if parent document is not dirty,
+    // but here save is just meant for this window.
+    m_menu.Append(XRCID("ID_SAVE_ITEM"), _(L"Save"));
 
     Bind(wxEVT_FIND, &HtmlTableWindow::OnFind, this);
     Bind(wxEVT_FIND_NEXT, &HtmlTableWindow::OnFind, this);
@@ -35,17 +35,17 @@ HtmlTableWindow::HtmlTableWindow(wxWindow *parent, wxWindowID id /*= wxID_ANY*/,
 
     Bind(wxEVT_RIGHT_DOWN, &HtmlTableWindow::OnRightClick, this);
     // standard menu commands
-    Bind(wxEVT_MENU, &HtmlTableWindow::OnSelectAll, this, wxID_SELECTALL);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnCopy, this, wxID_COPY);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnPreview, this, wxID_PREVIEW);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnPrint, this, wxID_PRINT);
     Bind(wxEVT_MENU, &HtmlTableWindow::OnSave, this, wxID_SAVE);
+    Bind(wxEVT_MENU, &HtmlTableWindow::OnSave, this, XRCID("ID_SAVE_ITEM"));
     // button variations of above commands
-    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnSelectAll, this, wxID_SELECTALL);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnCopy, this, wxID_COPY);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnPreview, this, wxID_PREVIEW);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnPrint, this, wxID_PRINT);
     Bind(wxEVT_BUTTON, &HtmlTableWindow::OnSave, this, wxID_SAVE);
+    Bind(wxEVT_BUTTON, &HtmlTableWindow::OnSave, this, XRCID("ID_SAVE_ITEM"));
     }
 
 //------------------------------------------------------
