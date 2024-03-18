@@ -155,22 +155,7 @@ namespace Wisteria
         /// @private
         Canvas(const Canvas&) = delete;
         /// @private
-        Canvas(Canvas&&) = delete;
-        /// @private
         Canvas& operator=(const Canvas&) = delete;
-        /// @private
-        Canvas& operator=(Canvas&&) = delete;
-        /// @private
-        ~Canvas()
-            {
-            /* Note for developer: you can't use a shared_ptr with wxMenu, there is some odd
-               copy CTOR compile error with wxMenu that prevents doing the following:
-
-               std::make_shared<wxMenu>(new wxMenu);
-
-               So, we need to manually manage this resource.*/
-            delete m_menu;
-            }
 
         /// @private
         void OnDraw(wxDC& dc) final;
@@ -621,15 +606,6 @@ namespace Wisteria
         /// @returns @c true upon successful saving.
         bool Save(const wxFileName& filePath, const UI::ImageExportOptions& options);
 
-        /// @brief Assign a menu as the right-click menu for the canvas.
-        /// @param menu The menu to assign.
-        /// @warning The canvas will take ownership of the menu and delete it upon destruction.
-        void AssignContextMenu(wxMenu* menu) noexcept
-            {
-            delete m_menu;
-            m_menu = menu;
-            }
-
         /** @brief Sets the resources to use for the export dialog.
             @details These are set by the parent application to connect icons and
                 help topics to the export dialog.
@@ -815,7 +791,7 @@ namespace Wisteria
         bool m_alignRowContent{ false };
         bool m_alignColumnContent{ false };
 
-        wxMenu* m_menu{ nullptr };
+        wxMenu m_menu;
         wxPrintData m_printData;
         bool m_fitToPageWhenPrinting{ false };
         // headers

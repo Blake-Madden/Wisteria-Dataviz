@@ -10,6 +10,7 @@
 #include "colorbrewer.h"
 #include "axis.h"
 #include "reportprintout.h"
+#include <wx/xrc/xmlres.h>
 
 wxDEFINE_EVENT(EVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow);
@@ -131,8 +132,7 @@ namespace Wisteria
     //------------------------------------------------------
     void Canvas::OnContextMenu([[maybe_unused]] wxContextMenuEvent& event)
         {
-        if (m_menu != nullptr)
-            { PopupMenu(m_menu); }
+        PopupMenu(&m_menu);
         }
 
     //------------------------------------------------------
@@ -446,6 +446,11 @@ namespace Wisteria
         SetVirtualSize(size);
         wxGCDC gdc(this);
         CalcAllSizes(gdc);
+
+        m_menu.Append(wxID_COPY, _(L"Copy"));
+        m_menu.AppendSeparator();
+        m_menu.Append(wxID_PRINT, _(L"Print"));
+        m_menu.Append(XRCID("ID_SAVE_ITEM"), _(L"Save"));
 
         Bind(wxEVT_MENU,
             [this]([[maybe_unused]] wxCommandEvent&)
