@@ -70,7 +70,12 @@ public:
                        const wxString& name = L"ListEditComboBox") :
                             wxComboBox(parent, id, value, pos, size, choices, style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
-        {}
+        {
+        Bind(wxEVT_COMBOBOX, &ListEditComboBox::OnEndEditTextCtrl, this);
+        Bind(wxEVT_TEXT_ENTER, &ListEditComboBox::OnEndEditTextCtrl, this);
+        Bind(wxEVT_KILL_FOCUS, &ListEditComboBox::OnEndEditKillFocusTextCtrl, this);
+        Bind(wxEVT_KEY_DOWN, &ListEditComboBox::OnKeyDown, this);
+        }
     ListEditComboBox(const ListEditComboBox&) = delete;
     ListEditComboBox& operator=(const ListEditComboBox&) = delete;
 
@@ -97,8 +102,6 @@ private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
-
-    wxDECLARE_EVENT_TABLE();
     };
 
 /// @brief "Floating" spin control used to edit cells in the list control.
@@ -185,7 +188,11 @@ public:
                             wxTextCtrl(parent, id, value, pos, size,
                                 style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
-        {}
+        {
+        Bind(wxEVT_TEXT_ENTER, &ListEditTextCtrl::OnEndEditTextCtrl, this);
+        Bind(wxEVT_KILL_FOCUS, &ListEditTextCtrl::OnEndEditKillFocusTextCtrl, this);
+        Bind(wxEVT_KEY_DOWN, &ListEditTextCtrl::OnKeyDown, this);
+        }
     ListEditTextCtrl(const ListEditTextCtrl&) = delete;
     ListEditTextCtrl& operator=(const ListEditTextCtrl&) = delete;
 
@@ -212,8 +219,6 @@ private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
-
-    wxDECLARE_EVENT_TABLE();
     };
 
 /// @brief Helper for support to drop text into a list control.
@@ -266,27 +271,14 @@ public:
                const wxPoint& pos = wxDefaultPosition,
                const wxSize& size = wxDefaultSize,
                long style = 0,
-               const wxValidator& validator = wxDefaultValidator)
-        : wxListView(parent, id, pos, size, style, validator, L"ListCtrlEx"),
-        m_sortableRange(0, -1)
-        {
-        if (IsVirtual())
-            { EnableAlternateRowColours(true); }
-        }
+               const wxValidator& validator = wxDefaultValidator);
 
     /// @private
     ListCtrlEx(const ListCtrlEx&) = delete;
     /// @private
     ListCtrlEx& operator=(const ListCtrlEx&) = delete;
     /// @private
-    ~ListCtrlEx()
-        {
-        wxDELETE(m_menu);
-        wxDELETE(m_editTextCtrl);
-        wxDELETE(m_editSpinCtrl);
-        wxDELETE(m_editSpinCtrlDouble);
-        wxDELETE(m_editComboBox);
-        }
+    ~ListCtrlEx();
 
     /// @brief Specifies whether double clicking an item will show it as a pop-up HTML report.
     /// @param enable @c true to enable.
@@ -623,7 +615,7 @@ public:
     void SetVirtualDataSize(size_t rowSize, size_t columnSize)
         {
         assert(IsVirtual() );
-        if (m_virtualData)
+        if (m_virtualData != nullptr)
             { m_virtualData->SetSize(rowSize, columnSize); }
         SetItemCount(static_cast<long>(rowSize));
         }
@@ -634,7 +626,7 @@ public:
     void SetVirtualDataSize(size_t rowSize)
         {
         assert(IsVirtual() );
-        if (m_virtualData)
+        if (m_virtualData != nullptr)
             { m_virtualData->SetSize(rowSize); }
         SetItemCount(static_cast<long>(rowSize));
         }
@@ -676,7 +668,7 @@ public:
         {
         if (GetWindowStyle() & wxLC_REPORT)
             {
-            return (IsVirtual() ) ?
+            return (IsVirtual() && m_virtualData != nullptr) ?
                 wxString(m_virtualData->GetItemText(item, column)) :
                 GetItemTextNonVirtual(item, column);
             }
@@ -702,7 +694,7 @@ public:
                             const Wisteria::NumberFormatInfo format =
                                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
         {
-        if (IsVirtual() )
+        if (IsVirtual() && m_virtualData != nullptr)
             { m_virtualData->SetItemText(row, column, text, format); }
         else
             { SetItem(static_cast<long>(row), static_cast<long>(column), text); }
@@ -720,7 +712,7 @@ public:
     /// @param attribs The attributes to apply.
     void SetRowAttributes(long item, const wxItemAttr& attribs)
         {
-        if (IsVirtual() )
+        if (IsVirtual() && m_virtualData != nullptr)
             { m_virtualData->SetRowAttributes(item, attribs); }
         else
             {
@@ -1032,7 +1024,8 @@ public:
             }
         else
             {
-            wxFAIL_MSG("Folder and File columns must be specified properly before calling GetItemFilePath().");
+            wxFAIL_MSG("Folder and File columns must be specified properly "
+                       "before calling GetItemFilePath().");
             return wxString{};
             }
         }
@@ -1047,7 +1040,7 @@ private:
     [[nodiscard]]
     wxString GetItemTextNonVirtual(long item, long column) const;
 
-    ///overloaded functions for virtual mode
+    /// overloaded functions for virtual mode
     wxString OnGetItemText(long item, long column) const final;
     int OnGetItemImage(long item) const final
         { return m_virtualData->GetItemImage(item, 0); }
@@ -1067,7 +1060,7 @@ private:
 
     bool m_sortable{ true };
     std::vector<std::pair<size_t, Wisteria::SortDirection>> m_sortedCols;
-    std::pair<long,long> m_sortableRange;
+    std::pair<long,long> m_sortableRange{ 0, -1 };
 
     std::vector<wxString> m_encodedImages;
 
@@ -1109,8 +1102,6 @@ private:
     std::map<long, ColumnInfo> m_columnInfo;
 
     bool m_hasItemBeenEditedByUser{ false };
-
-    wxDECLARE_EVENT_TABLE();
     };
 
 /** @}*/

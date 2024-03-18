@@ -17,43 +17,61 @@ wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(ListCtrlEx, wxListView)
 
-wxBEGIN_EVENT_TABLE(ListCtrlEx, wxListView)
-    EVT_KEY_DOWN(ListCtrlEx::OnKeyDown)
-    EVT_SIZE(ListCtrlEx::OnResize)
-    EVT_LIST_COL_CLICK(wxID_ANY, ListCtrlEx::OnColClick)
-    EVT_FIND(wxID_ANY, ListCtrlEx::OnFind)
-    EVT_FIND_NEXT(wxID_ANY, ListCtrlEx::OnFind)
-    EVT_FIND_CLOSE(wxID_ANY, ListCtrlEx::OnFind)
-    EVT_CONTEXT_MENU(ListCtrlEx::OnContextMenu)
-    EVT_MENU(XRCID("ID_LIST_SORT"), ListCtrlEx::OnMultiColumSort)
-    EVT_MENU(wxID_SELECTALL, ListCtrlEx::OnSelectAll)
-    EVT_MENU(wxID_COPY, ListCtrlEx::OnCopy)
-    EVT_MENU(XRCID("ID_COPY_FIRST_COLUMN"), ListCtrlEx::OnCopyFirstColumn)
-    EVT_MENU(XRCID("ID_COPY_WITH_COLUMN_HEADERS"), ListCtrlEx::OnCopyWithColumnHeaders)
-    EVT_MENU(XRCID("ID_COPY_ALL"), ListCtrlEx::OnCopyAll)
-    EVT_MENU(wxID_PASTE, ListCtrlEx::OnPaste)
-    EVT_MENU(wxID_SAVE, ListCtrlEx::OnSave)
-    EVT_MENU(wxID_PREVIEW, ListCtrlEx::OnPreview)
-    EVT_MENU(wxID_PRINT, ListCtrlEx::OnPrint)
-    EVT_MENU(XRCID("ID_VIEW_ITEM"), ListCtrlEx::OnViewItem)
-    EVT_RIBBONBUTTONBAR_CLICKED(wxID_ANY, ListCtrlEx::OnRibbonButton)
-    EVT_LIST_DELETE_ALL_ITEMS(wxID_ANY, ListCtrlEx::OnDeleteAllItems)
-    EVT_LIST_DELETE_ITEM(wxID_ANY, ListCtrlEx::OnDeleteItem)
-    // in-place editing or viewing row
-    EVT_LEFT_DCLICK(ListCtrlEx::OnDblClick)
-    // we will just handle these in the activate event
-    EVT_LIST_BEGIN_LABEL_EDIT(wxID_ANY, ListCtrlEx::OnIgnoreEvent)
-    EVT_LIST_END_LABEL_EDIT(wxID_ANY, ListCtrlEx::OnIgnoreEvent)
-wxEND_EVENT_TABLE()
-
-wxBEGIN_EVENT_TABLE(ListEditTextCtrl, wxTextCtrl)
-    EVT_TEXT_ENTER(wxID_ANY, ListEditTextCtrl::OnEndEditTextCtrl)
-    EVT_KILL_FOCUS(ListEditTextCtrl::OnEndEditKillFocusTextCtrl)
-    EVT_KEY_DOWN(ListEditTextCtrl::OnKeyDown)
-wxEND_EVENT_TABLE()
-
 using namespace Wisteria;
 using namespace Wisteria::UI;
+
+//------------------------------------------------------
+ListCtrlEx::ListCtrlEx(wxWindow *parent,
+            const wxWindowID id,
+            const wxPoint& pos /*= wxDefaultPosition*/,
+            const wxSize& size /*= wxDefaultSize*/,
+            long style /*= 0*/,
+            const wxValidator& validator /*= wxDefaultValidator*/)
+    : wxListView(parent, id, pos, size, style, validator, L"ListCtrlEx")
+    {
+    if (IsVirtual())
+        { EnableAlternateRowColours(true); }
+    Bind(wxEVT_KEY_DOWN, &ListCtrlEx::OnKeyDown, this);
+    Bind(wxEVT_SIZE, &ListCtrlEx::OnResize, this);
+    Bind(wxEVT_LIST_COL_CLICK, &ListCtrlEx::OnColClick, this);
+    Bind(wxEVT_FIND, &ListCtrlEx::OnFind, this);
+    Bind(wxEVT_FIND_NEXT, &ListCtrlEx::OnFind, this);
+    Bind(wxEVT_FIND_CLOSE, &ListCtrlEx::OnFind, this);
+    Bind(wxEVT_CONTEXT_MENU, &ListCtrlEx::OnContextMenu, this);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListCtrlEx::OnRibbonButton, this);
+    Bind(wxEVT_LIST_DELETE_ALL_ITEMS, &ListCtrlEx::OnDeleteAllItems, this);
+    Bind(wxEVT_LIST_DELETE_ITEM, &ListCtrlEx::OnDeleteItem, this);
+    // in-place editing or viewing row
+    Bind(wxEVT_LEFT_DCLICK, &ListCtrlEx::OnDblClick, this);
+    // we will just handle these in the activate event
+    Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
+    Bind(wxEVT_LIST_END_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
+    // menus
+    Bind(wxEVT_MENU, &ListCtrlEx::OnMultiColumSort, this, XRCID("ID_LIST_SORT"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnSelectAll, this, wxID_SELECTALL);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyFirstColumn, this, XRCID("ID_COPY_FIRST_COLUMN"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyWithColumnHeaders, this, XRCID("ID_COPY_WITH_COLUMN_HEADERS"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyAll, this, XRCID("ID_COPY_ALL"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnPaste, this, wxID_PASTE);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnSave, this, wxID_SAVE);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnPreview, this, wxID_PREVIEW);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnPrint, this, wxID_PRINT);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnViewItem, this, XRCID("ID_VIEW_ITEM"));
+    }
+
+//------------------------------------------------------
+ListCtrlEx::~ListCtrlEx()
+    {
+    // We don't own this, but null our pointer in case the base DTORs fire a
+    // wxEVT_LIST_DELETE_ALL_ITEMS event.
+    m_virtualData = nullptr;
+    wxDELETE(m_menu);
+    wxDELETE(m_editTextCtrl);
+    wxDELETE(m_editSpinCtrl);
+    wxDELETE(m_editSpinCtrlDouble);
+    wxDELETE(m_editComboBox);
+    }
 
 //------------------------------------------------------
 void ListEditTextCtrl::OnEndEditKillFocusTextCtrl([[maybe_unused]] wxFocusEvent& event)
@@ -80,13 +98,6 @@ void ListEditTextCtrl::OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event)
         m_owner->SetItemBeenEditedByUser(true);
         }
     }
-
-wxBEGIN_EVENT_TABLE(ListEditComboBox, wxComboBox)
-    EVT_COMBOBOX(wxID_ANY, ListEditComboBox::OnEndEditTextCtrl)
-    EVT_TEXT_ENTER(wxID_ANY, ListEditComboBox::OnEndEditTextCtrl)
-    EVT_KILL_FOCUS(ListEditComboBox::OnEndEditKillFocusTextCtrl)
-    EVT_KEY_DOWN(ListEditComboBox::OnKeyDown)
-wxEND_EVENT_TABLE()
 
 //------------------------------------------------------
 void ListEditComboBox::OnEndEditKillFocusTextCtrl(wxFocusEvent& event)
@@ -222,7 +233,10 @@ void ListCtrlEx::OnDeleteAllItems(wxListEvent& event)
     {
     if (IsVirtual())
         {
-        m_virtualData->DeleteAllItems();
+        if (m_virtualData != nullptr)
+            {
+            m_virtualData->DeleteAllItems();
+            }
         SetItemCount(0);
         Refresh();
         }
@@ -235,7 +249,12 @@ void ListCtrlEx::OnDeleteItem(wxListEvent& event)
     {
     // ListCtrl::DeleteItem will decrement the item count
     if (IsVirtual())
-        { m_virtualData->DeleteItem(event.GetIndex()); }
+        {
+        if (m_virtualData != nullptr)
+            {
+            m_virtualData->DeleteItem(event.GetIndex());
+            }
+        }
     else
         { event.Skip(); }
     }
@@ -332,7 +351,7 @@ long ListCtrlEx::FindColumn(const wchar_t* columnName) const
 //------------------------------------------------------
 long ListCtrlEx::FindEx(const wchar_t* textToFind, const long startIndex /*= 0*/)
     {
-    if (IsVirtual())
+    if (IsVirtual() && m_virtualData != nullptr)
         { return m_virtualData->Find(textToFind, startIndex); }
     else
         { return FindItem((startIndex == 0) ? -1 : startIndex, textToFind); }
@@ -1590,7 +1609,7 @@ void ListCtrlEx::SortColumn(const long nCol, const Wisteria::SortDirection direc
     wxWindowUpdateLocker noUpdates(this);
     const long style = GetExtraStyle();
     SetExtraStyle(style|wxWS_EX_BLOCK_EVENTS);
-    if (IsVirtual())
+    if (IsVirtual() && m_virtualData != nullptr)
         { m_virtualData->Sort(nCol, direction, m_sortableRange.first, m_sortableRange.second); }
     else
         {
@@ -1963,7 +1982,7 @@ bool ListCtrlEx::SortTextItems(const long nCol, const bool ascending,
 //------------------------------------------------------
 wxItemAttr* ListCtrlEx::OnGetItemAttr(long item) const
     {
-    if (!IsVirtual())
+    if (!IsVirtual() || m_virtualData == nullptr)
         { return nullptr; }
     else if (GetAlternateRowColour().IsOk())
         { return wxListCtrl::OnGetItemAttr(item); }
@@ -1997,7 +2016,7 @@ wxString ListCtrlEx::GetItemTextFormatted(const long item, const long column) co
     {
     if (GetWindowStyle() & wxLC_REPORT)
         {
-        if (IsVirtual() )
+        if (IsVirtual() && m_virtualData != nullptr)
             {
             const wxString retVal = m_virtualData->GetItemTextFormatted(item, column);
             if (GetColumnFilePathTruncationMode(column) ==
