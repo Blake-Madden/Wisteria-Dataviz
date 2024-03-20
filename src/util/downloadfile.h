@@ -64,8 +64,9 @@
         m_downloader.Start();
     @endcode
     @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
-        or a single FileDownload object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
-        event to the `QueueDownload`'s or `FileDownload`'s @c ProcessRequest() method.
+        or a single FileDownload object. This is because the class must bind its
+        @c wxEVT_WEBREQUEST_STATE event to the `QueueDownload`'s or
+        `FileDownload`'s @c ProcessRequest() method.
 */
 class QueueDownload
     {
@@ -135,7 +136,8 @@ public:
     void CancelPending();
 
     /** @brief Disable SSL certificate verification.
-        @details This can be used to connect to self signed servers or other invalid SSL connections.\n
+        @details This can be used to connect to self signed servers or
+            other invalid SSL connections.\n
             Disabling verification makes the communication insecure.
         @param disable @c true to disable SSL certificate verification.*/
     void DisablePeerVerify(const bool disable)noexcept
@@ -296,7 +298,8 @@ public:
         { m_showProgress = show; }
 
     /** @brief Disable SSL certificate verification.
-        @details This can be used to connect to self signed servers or other invalid SSL connections.\n
+        @details This can be used to connect to self signed servers or
+            other invalid SSL connections.\n
             Disabling verification makes the communication insecure.
         @param disable @c true to disable SSL certificate verification.*/
     void DisablePeerVerify(const bool disable)noexcept
