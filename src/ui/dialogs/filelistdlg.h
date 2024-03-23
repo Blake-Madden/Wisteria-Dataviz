@@ -38,10 +38,10 @@ public:
     explicit FileListDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
                 const wxString& caption = _(L"File List"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER)
+                long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
         {
-        SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS|wxWS_EX_CONTEXTHELP);
-        Wisteria::UI::DialogWithHelp::Create( parent, id, caption, pos, size, style );
+        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+        Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
         CreateControls();
         Centre();
@@ -50,9 +50,7 @@ public:
     FileListDlg(const FileListDlg& that) = delete;
     /// @private
     FileListDlg& operator=(const FileListDlg& that) = delete;
-    /// @private
-    ~FileListDlg()
-        { wxDELETE(m_fileData); }
+
     /// @returns Access to the file list control, which should be filled before calling ShowModal().
     [[nodiscard]]
     ListCtrlEx* GetListCtrl() noexcept
@@ -60,7 +58,7 @@ public:
     /// @returns Access to the file list control's backend data provider,
     ///     which should be filled before calling ShowModal().
     [[nodiscard]]
-    ListCtrlExNumericDataProvider* GetListCtrlData() noexcept
+    const std::shared_ptr<ListCtrlExNumericDataProvider>& GetListCtrlData()
         { return m_fileData; }
     /// @returns Access to a descriptive infobar shown when the dialog is presented.
     [[nodiscard]]
@@ -73,7 +71,8 @@ private:
     static constexpr int ID_FOLDER_OPEN = wxID_HIGHEST;
 
     ListCtrlEx* m_listCtrl{ nullptr };
-    ListCtrlExNumericDataProvider* m_fileData{ new ListCtrlExNumericDataProvider };
+    std::shared_ptr<ListCtrlExNumericDataProvider> m_fileData
+        { std::make_shared<ListCtrlExNumericDataProvider>() };
     Wisteria::UI::Thumbnail* m_thumbnail{ nullptr };
     wxStaticText* m_label{ nullptr };
     wxInfoBar* m_infoBar{ nullptr };

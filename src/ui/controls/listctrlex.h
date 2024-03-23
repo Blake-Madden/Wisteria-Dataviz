@@ -724,12 +724,12 @@ public:
 
     /// @brief Sets the underlying data provider for a virtual list control.
     /// @param dataProvider The data provider for the list control.
-    void SetVirtualDataProvider(ListCtrlExDataProviderBase* dataProvider) noexcept
+    void SetVirtualDataProvider(std::shared_ptr<ListCtrlExDataProviderBase> dataProvider) noexcept
         { m_virtualData = dataProvider; }
 
     /// @returns The underlying data provider for a virtual list control.
     [[nodiscard]]
-    const ListCtrlExDataProviderBase* GetVirtualDataProvider() const noexcept
+    const std::shared_ptr<ListCtrlExDataProviderBase>& GetVirtualDataProvider()
         { return m_virtualData; }
 
     /// @brief Sets whether clicking the list can be sorted.
@@ -1085,7 +1085,7 @@ private:
 
     Wisteria::Canvas::Watermark m_waterMark;
 
-    ListCtrlExDataProviderBase* m_virtualData{ nullptr };
+    std::shared_ptr<ListCtrlExDataProviderBase> m_virtualData{ nullptr };
     wxMenu* m_menu{ nullptr };
     wxPrintData* m_printData{ nullptr };
 

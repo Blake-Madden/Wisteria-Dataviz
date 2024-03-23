@@ -584,7 +584,7 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
 
 TEST_CASE("ListCtrlEx to LaTeX", "[listctrlex]")
     {
-    auto m_dataProvider = new ListCtrlExNumericDataProvider;
+    auto m_dataProvider = std::make_shared<ListCtrlExNumericDataProvider>();
     auto m_list = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxBORDER_SUNKEN);
     m_list->Hide();
 
@@ -797,7 +797,7 @@ text \\
 
 TEST_CASE("ListCtrlEx", "[listctrlex]")
     {
-    auto m_dataProvider = new ListCtrlExNumericDataProvider;
+    auto m_dataProvider = std::make_shared<LListCtrlExNumericDataProvider>();
     auto m_list = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxBORDER_SUNKEN);
     m_list->Hide();
 

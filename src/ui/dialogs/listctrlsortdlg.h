@@ -33,16 +33,13 @@ public:
     ListCtrlSortDlg(wxWindow* parent, const wxArrayString& columnChoices,
                     wxWindowID id = wxID_ANY, const wxString& caption = _(L"Sort Columns"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                    long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) :
+                    long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) :
             m_columnChoices(columnChoices)
         { Create(parent, id, caption, pos, size, style); }
     /// @private
     ListCtrlSortDlg(const ListCtrlSortDlg& that) = delete;
     /// @private
     ListCtrlSortDlg& operator=(const ListCtrlSortDlg& that) = delete;
-    /// @private
-    ~ListCtrlSortDlg()
-        { wxDELETE(m_data); }
 
     /// @brief Sets the column sorting information.
     /// @param sortColumns The columns to sort by.
@@ -56,9 +53,9 @@ private:
     bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
                 const wxString& caption = _(L"Sort Columns"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
+                long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
         {
-        SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
+        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
         CreateControls();
@@ -76,7 +73,8 @@ private:
 
     wxArrayString m_columnChoices;
     ListCtrlEx* m_columnList{ nullptr };
-    ListCtrlExNumericDataProvider* m_data{ new ListCtrlExNumericDataProvider() };
+    std::shared_ptr<ListCtrlExNumericDataProvider> m_data
+        { std::make_shared<ListCtrlExNumericDataProvider>() };
     };
 
 /** @}*/

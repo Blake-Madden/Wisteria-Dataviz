@@ -111,16 +111,14 @@ public:
              const wxPoint& pos = wxDefaultPosition,
              const wxSize& size = wxSize(600, 250),
              long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-     /// @private
-     ListDlg(const ListDlg&) = delete;
-     /// @private
-     ListDlg& operator=(const ListDlg&) = delete;
-     /// @private
-     ~ListDlg()
-        { wxDELETE(m_data); }
-     /// @returns The list's data provider.
+    /// @private
+    ListDlg(const ListDlg&) = delete;
+    /// @private
+    ListDlg& operator=(const ListDlg&) = delete;
+
+    /// @returns The list's data provider.
     [[nodiscard]]
-    ListCtrlExDataProvider* GetData() noexcept
+    std::shared_ptr<ListCtrlExDataProvider>& GetData()
         { return m_data; }
     /// @returns The list.
     [[nodiscard]]
@@ -166,7 +164,9 @@ public:
         wxCommandEvent event;
         OnReadLog(event);
         }
+
 private:
+
     void BindEvents();
     /// Creates the controls and sizers
     void CreateControls();
@@ -201,7 +201,7 @@ private:
     bool m_dontShowAgain{ false };
     ListCtrlEx* m_list{ nullptr };
     wxCheckListBox* m_checkList{ nullptr };
-    ListCtrlExDataProvider* m_data{ new ListCtrlExDataProvider() };
+    std::shared_ptr<ListCtrlExDataProvider> m_data{ std::make_shared<ListCtrlExDataProvider>() };
     LogFile* m_logFile{ nullptr };
     wxCheckBox* m_checkBox{ nullptr };
     wxRibbonBar* m_ribbon{ nullptr };
