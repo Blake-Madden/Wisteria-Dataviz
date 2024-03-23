@@ -154,7 +154,8 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
     }
 
 //--------------------------------------------------
-bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath)
+bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath,
+                            std::optional<uint32_t> minFileDownloadSizeKilobytes /*= std::nullopt*/)
     {
     assert(m_handler &&
         L"Call SetEventHandler() to connect an event handler!");
@@ -184,9 +185,18 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
 
     const auto startTime = std::chrono::system_clock::now();
     bool timedOut{ false };
+    bool fileTooSmall{ false };
     while (request.GetState() == wxWebRequest::State_Active)
         {
         wxYield();
+        if (request.GetBytesExpectedToReceive() != 0 &&
+            minFileDownloadSizeKilobytes.has_value() &&
+            minFileDownloadSizeKilobytes.value() > request.GetBytesExpectedToReceive())
+            {
+            request.Cancel();
+            fileTooSmall = true;
+            }
+
         if (progressDlg != nullptr &&
             request.GetBytesExpectedToReceive() > 0)
             {
@@ -205,9 +215,10 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
             {
             m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
                      request.GetResponse().GetStatus() : 404);
-            wxLogError(L"Downloading page timed out after %s seconds. Response code #%d.",
+            wxLogError(L"Downloading page timed out after %s seconds. Response code #%d (%s).",
                 std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
-                    (elapsedSeconds).count()), m_lastStatus);
+                    (elapsedSeconds).count()), m_lastStatus,
+                QueueDownload::GetResponseMessage(m_lastStatus));
             timedOut = true;
             request.Cancel();
             }
@@ -221,6 +232,11 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
         m_lastStatusText = _(L"Page not responding");
+        m_downloadSuccessful = false;
+        }
+    else if (fileTooSmall)
+        {
+        m_lastStatusText = _(L"File skipped, was too small to download");
         m_downloadSuccessful = false;
         }
 
@@ -350,7 +366,7 @@ bool FileDownload::Read(const wxString& url)
 void FileDownload::LoadResponseInfo(const wxWebRequest& request)
     {
     m_server = ((request.IsOk() && request.GetResponse().IsOk()) ?
-            request.GetResponse().GetHeader("Server") : wxString{});
+            request.GetResponse().GetHeader(_DT(L"Server")) : wxString{});
     m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
                      request.GetResponse().GetStatus() : 404);
     m_lastStatusText = ((request.IsOk() && request.GetResponse().IsOk()) ?
@@ -358,7 +374,7 @@ void FileDownload::LoadResponseInfo(const wxWebRequest& request)
     m_lastUrl = ((request.IsOk() && request.GetResponse().IsOk()) ?
                   request.GetResponse().GetURL() : wxString{});
     m_lastContentType = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                          request.GetResponse().GetHeader("Content-Type") : wxString{});
+                          request.GetResponse().GetHeader(_DT(L"Content-Type")) : wxString{});
     m_lastStatusInfo = ((request.IsOk() && request.GetResponse().IsOk()) ?
                     request.GetResponse().AsString() : wxString{});
     // if a redirected error page, parse it down to its readable content
@@ -374,7 +390,7 @@ void FileDownload::LoadResponseInfo(const wxWebRequest& request)
             m_lastStatusInfo.Trim(true).Trim(false);
             }
         // Cloudflare forces the use of javascript to block robots
-        if (m_lastStatus == 403 && m_server.CmpNoCase(L"cloudflare") == 0)
+        if (m_lastStatus == 403 && m_server.CmpNoCase(_DT(L"cloudflare")) == 0)
             {
             m_lastStatusInfo.insert(0, _(L"Webpage is using Cloudflare protection and "
                 "can only be accessed via an interactive browser. "

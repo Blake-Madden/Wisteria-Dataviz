@@ -22,6 +22,7 @@
 #include <wx/creddlg.h>
 #include <wx/progdlg.h>
 #include <map>
+#include <optional>
 #include <vector>
 #include <mutex>
 #include "../import/html_extract_text.h"
@@ -64,9 +65,8 @@
         m_downloader.Start();
     @endcode
     @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
-        or a single FileDownload object. This is because the class must bind its
-        @c wxEVT_WEBREQUEST_STATE event to the `QueueDownload`'s or
-        `FileDownload`'s @c ProcessRequest() method.
+        or a single FileDownload object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
+        event to the `QueueDownload`'s or `FileDownload`'s @c ProcessRequest() method.
 */
 class QueueDownload
     {
@@ -136,8 +136,7 @@ public:
     void CancelPending();
 
     /** @brief Disable SSL certificate verification.
-        @details This can be used to connect to self signed servers or
-            other invalid SSL connections.\n
+        @details This can be used to connect to self signed servers or other invalid SSL connections.\n
             Disabling verification makes the communication insecure.
         @param disable @c true to disable SSL certificate verification.*/
     void DisablePeerVerify(const bool disable)noexcept
@@ -157,18 +156,19 @@ public:
     [[nodiscard]]
     static wxString GetResponseMessage(const int responseCode)
         {
-        if (responseCode > 0 && responseCode < 300)
+        if (responseCode > 0 && responseCode < 300 &&
+            responseCode != 204)
             {
             return _(L"Connection successful.");
             }
         switch (responseCode)
             {
+        case 204:
+            return _(L"Page not responding.");
         case 301:
             return _(L"Page has moved.");
         case 302:
             return _(L"Page was found, but under a different URL.");
-        case 204:
-            return _(L"Page not responding.");
         case 400:
             return _(L"Bad request.");
         case 401:
@@ -202,6 +202,11 @@ public:
                 responseCode == 500 || responseCode == 501 || responseCode == 502 ||
                 responseCode == 503 || responseCode == 0);
         }
+
+    /// @private
+    constexpr static size_t KILOBYTE = 1024;
+    /// @private
+    constexpr static size_t MEGABYTE = 1024 * 1024;
 
 private:
 
@@ -298,8 +303,7 @@ public:
         { m_showProgress = show; }
 
     /** @brief Disable SSL certificate verification.
-        @details This can be used to connect to self signed servers or
-            other invalid SSL connections.\n
+        @details This can be used to connect to self signed servers or other invalid SSL connections.\n
             Disabling verification makes the communication insecure.
         @param disable @c true to disable SSL certificate verification.*/
     void DisablePeerVerify(const bool disable)noexcept
@@ -333,8 +337,11 @@ public:
     /// @brief Downloads a web file to a local path.
     /// @param url The web file to download.
     /// @param localDownloadPath Where to download to.
+    /// @param minFileDownloadSizeKilobytes The minimum size that a file has to be to download it.\n
+    ///     Setting to `std::nullopt` will not enforce any file size constraints.
     /// @returns @c true if download was successful.
-    bool Download(const wxString& url, const wxString& localDownloadPath);
+    bool Download(const wxString& url, const wxString& localDownloadPath,
+                  std::optional<uint32_t> minFileDownloadSizeKilobytes = std::nullopt);
 
     /// @brief Reads the requested URL.
     /// @details This will be synchronous, so will not return until the
