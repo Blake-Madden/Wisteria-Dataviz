@@ -414,6 +414,7 @@ private:
     bool m_downloadSuccessful{ false };
     bool m_showProgress{ false };
     bool m_disablePeerVerify{ false };
+    bool m_statusHasBeenProcessed{ false };
     wxEvtHandler* m_handler{ nullptr };
     mutable std::mutex m_mutex;
     wxString m_downloadPath;

@@ -167,14 +167,16 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
         }
     wxLogVerbose(L"Downloading '%s'", url);
     m_downloadPath = localDownloadPath;
+    m_lastStatus = 404;
+    m_downloadSuccessful = false;
+    m_statusHasBeenProcessed = false;
+
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     request.DisablePeerVerify(IsPeerVerifyDisabled());
-    m_lastStatus = 404;
-    m_downloadSuccessful = false;
     request.Start();
 
     wxProgressDialog* progressDlg = m_showProgress ?
@@ -186,7 +188,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     const auto startTime = std::chrono::system_clock::now();
     bool timedOut{ false };
     bool fileTooSmall{ false };
-    while (request.GetState() == wxWebRequest::State_Active)
+    while (!m_statusHasBeenProcessed)
         {
         wxYield();
         if (request.GetBytesExpectedToReceive() != 0 &&
@@ -259,18 +261,20 @@ void FileDownload::RequestResponse(const wxString& url)
     wxLogVerbose(L"Requesting response from '%s'", url);
     m_downloadPath.clear();
     m_buffer.clear();
+    m_lastStatus = 404;
+    m_statusHasBeenProcessed = false;
+
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
     request.SetStorage(wxWebRequest::Storage_None);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     request.DisablePeerVerify(IsPeerVerifyDisabled());
-    m_lastStatus = 404;
     request.Start();
 
     const auto startTime = std::chrono::system_clock::now();
     bool timedOut{ false };
-    while (request.GetState() == wxWebRequest::State_Active)
+    while (!m_statusHasBeenProcessed)
         {
         wxYield();
         /* Some misconfigured webpages cause ProcessRequest() to not be called
@@ -317,6 +321,8 @@ bool FileDownload::Read(const wxString& url)
     wxLogVerbose(L"Reading '%s'", url);
     m_downloadPath.clear();
     m_buffer.clear();
+    m_lastStatus = 404;
+    m_statusHasBeenProcessed = false;
 
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
@@ -324,12 +330,11 @@ bool FileDownload::Read(const wxString& url)
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     request.DisablePeerVerify(IsPeerVerifyDisabled());
-    m_lastStatus = 404;
     request.Start();
 
     const auto startTime = std::chrono::system_clock::now();
     bool timedOut{ false };
-    while (request.GetState() == wxWebRequest::State_Active)
+    while (!m_statusHasBeenProcessed)
         {
         wxYield();
         /* Sometimes a connection failure will cause ProcessRequest to not be called,
@@ -429,6 +434,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
                     }
                 }
+            m_statusHasBeenProcessed = true;
             break;
             }
         case wxWebRequest::State_Failed:
@@ -443,8 +449,10 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 wxLogError(L"Web Request failed: %s",
                     evt.GetErrorDescription());
                 }
+            m_statusHasBeenProcessed = true;
             break;
         case wxWebRequest::State_Cancelled:
+            m_statusHasBeenProcessed = true;
             break;
         case wxWebRequest::State_Unauthorized:
             {
@@ -476,9 +484,11 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 {
                 wxLogStatus(L"Authentication challenge canceled");
                 }
+            m_statusHasBeenProcessed = true;
             break;
             }
-        // Nothing special to do for these states.
+        // Nothing special to do for these states
+        // (and nothing has been processed)
         case wxWebRequest::State_Active:
             [[fallthrough]];
         case wxWebRequest::State_Idle:
