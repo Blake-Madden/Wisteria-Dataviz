@@ -159,36 +159,36 @@ public:
         if (responseCode > 0 && responseCode < 300 &&
             responseCode != 204)
             {
-            return _(L"Connection successful.");
+            return _(L"Connection successful");
             }
         switch (responseCode)
             {
         case 204:
-            return _(L"Page not responding.");
+            return _(L"Page not responding");
         case 301:
-            return _(L"Page has moved.");
+            return _(L"Page has moved");
         case 302:
-            return _(L"Page was found, but under a different URL.");
+            return _(L"Page was found, but under a different URL");
         case 400:
-            return _(L"Bad request.");
+            return _(L"Bad request");
         case 401:
-            return _(L"Unauthorized.");
+            return _(L"Unauthorized");
         case 402:
-            return _(L"Payment Required.");
+            return _(L"Payment Required");
         case 403:
-            return _(L"Forbidden.");
+            return _(L"Forbidden");
         case 404:
-            return _(L"Page not found.");
+            return _(L"Page not found");
         case 500:
-            return _(L"Internal Error.");
+            return _(L"Internal Error");
         case 501:
-            return _(L"Not implemented.");
+            return _(L"Not implemented");
         case 502:
-            return _(L"Service temporarily overloaded.");
+            return _(L"Service temporarily overloaded");
         case 503:
-            return _(L"Gateway timeout.");
+            return _(L"Gateway timeout");
         default:
-            return _(L"Unknown connection error.");
+            return _(L"Unknown connection error");
             };
         }
     /// @brief Determines if a response code indicates a connection failure.
@@ -250,7 +250,10 @@ private:
     @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
         or a single FileDownload object. This is because the class must bind its
         @c wxEVT_WEBREQUEST_STATE event to the `QueueDownload`'s or
-        `FileDownload`'s @c ProcessRequest() method.
+        `FileDownload`'s @c ProcessRequest() method.\n
+        This also object is also not MT-safe, as its current state is synchronously bound
+        to the event handler. In other words, this multiple FileDownload object's cannot be used
+        to download (or read) pages at the same time if they are sharing the same event handler.
 */
 class FileDownload
     {
@@ -289,18 +292,14 @@ public:
 
     /** @brief Sets the user agent to send the server when connecting.
         @param userAgent The user agent to use.*/
-    void SetUserAgent(wxString userAgent)
-        { m_userAgent = std::move(userAgent); }
+    void SetUserAgent(wxString userAgent) { m_userAgent = std::move(userAgent); }
 
     /// @returns The user agent being sent when connecting.
     [[nodiscard]]
     const wxString& GetUserAgent() const noexcept
-        { return m_userAgent; }
-
-    /// @brief If @c true, shows a progress dialog while downloading a file.
-    /// @param show @c true to show the progress dialog.
-    void ShowProgress(const bool show) noexcept
-        { m_showProgress = show; }
+        {
+        return m_userAgent;
+        }
 
     /** @brief Disable SSL certificate verification.
         @details This can be used to connect to self signed servers or other invalid SSL connections.\n
@@ -408,25 +407,54 @@ public:
 
 private:
 
-    void LoadResponseInfo(const wxWebRequest& request);
+    void LoadResponseInfo(const wxWebRequestEvent& evt);
 
-    std::vector<char> m_buffer;
-    bool m_downloadSuccessful{ false };
-    bool m_showProgress{ false };
-    bool m_disablePeerVerify{ false };
-    bool m_statusHasBeenProcessed{ false };
+    /// @param restartTimer @true to restart the timer used to determine if
+    ///     when response times out.
+    void Reset(bool restartTimer)
+        {
+        m_lastStatusText.clear();
+        m_downloadPath.clear();
+        m_lastUrl.clear();
+        m_buffer.clear();
+        m_lastContentType.clear();
+        m_lastStatusInfo.clear();
+        m_server.clear();
+        m_lastStatus = 404;
+        m_downloadSuccessful = false;
+        m_statusHasBeenProcessed = false;
+        m_timedOut = false;
+        m_downloadTooSmall = false;
+        m_lastState = wxWebRequest::State::State_Idle;
+        if (restartTimer)
+            {
+            m_startTime = std::chrono::system_clock::now();
+            }
+        }
+
     wxEvtHandler* m_handler{ nullptr };
     mutable std::mutex m_mutex;
-    wxString m_downloadPath;
-    wxString m_readContent;
+    std::vector<char> m_buffer;
     wxString m_userAgent;
+    std::optional<uint32_t> m_minFileDownloadSizeKilobytes{ std::nullopt };
+
+    int m_timeoutSeconds{ 30 };
+    int m_lastStatus{ 404 };
+    bool m_disablePeerVerify{ false };
+
+    // state-based fields
+    bool m_downloadSuccessful{ false };
+    bool m_statusHasBeenProcessed{ false };
+    bool m_timedOut{ false };
+    bool m_downloadTooSmall{ false };
+    wxString m_downloadPath;
     wxString m_lastStatusText;
     wxString m_lastUrl;
     wxString m_lastContentType;
     wxString m_lastStatusInfo;
     wxString m_server;
-    int m_timeoutSeconds{ 30 };
-    int m_lastStatus{ 404 };
+    wxWebRequest::State m_lastState{ wxWebRequest::State::State_Idle };
+    std::chrono::system_clock::time_point m_startTime;
     };
 
 /** @}*/

@@ -166,10 +166,10 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
         return false;
         }
     wxLogVerbose(L"Downloading '%s'", url);
+
+    Reset(true);
     m_downloadPath = localDownloadPath;
-    m_lastStatus = 404;
-    m_downloadSuccessful = false;
-    m_statusHasBeenProcessed = false;
+    m_minFileDownloadSizeKilobytes = minFileDownloadSizeKilobytes;
 
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
@@ -179,66 +179,31 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     request.Start();
 
-    wxProgressDialog* progressDlg = m_showProgress ?
-        new wxProgressDialog(wxTheApp->GetAppName(),
-            _(L"Downloading "), 100, nullptr,
-            wxPD_AUTO_HIDE | wxPD_SMOOTH | wxPD_CAN_ABORT) :
-        nullptr;
-
-    const auto startTime = std::chrono::system_clock::now();
-    bool timedOut{ false };
-    bool fileTooSmall{ false };
     while (!m_statusHasBeenProcessed)
         {
         wxYield();
-        if (request.GetBytesExpectedToReceive() != 0 &&
-            minFileDownloadSizeKilobytes.has_value() &&
-            minFileDownloadSizeKilobytes.value() > request.GetBytesExpectedToReceive())
+
+        if (m_downloadTooSmall)
             {
             request.Cancel();
-            fileTooSmall = true;
             }
 
-        if (progressDlg != nullptr &&
-            request.GetBytesExpectedToReceive() > 0)
+        if (m_timedOut)
             {
-            if (!progressDlg->Update((request.GetBytesReceived() * 100) /
-                                      request.GetBytesExpectedToReceive()))
-                {
-                request.Cancel();
-                break;
-                }
-            }
-        const auto rightNow = std::chrono::system_clock::now();
-        const auto elapsedSeconds = rightNow - startTime;
-        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-            GetTimeout() &&
-            request.GetBytesReceived() == 0)
-            {
-            m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                     request.GetResponse().GetStatus() : 404);
-            wxLogError(L"Downloading page timed out after %s seconds. Response code #%d (%s).",
-                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
-                    (elapsedSeconds).count()), m_lastStatus,
-                QueueDownload::GetResponseMessage(m_lastStatus));
-            timedOut = true;
             request.Cancel();
             }
         }
-    if (progressDlg != nullptr)
-        { progressDlg->Close(); }
 
-    LoadResponseInfo(request);
-    if (timedOut)
+    if (m_timedOut)
         {
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
         m_lastStatusText = _(L"Page not responding");
         m_downloadSuccessful = false;
         }
-    else if (fileTooSmall)
+    else if (m_downloadTooSmall)
         {
-        m_lastStatusText = _(L"File skipped, was too small to download");
+        m_lastStatusText = _(L"File skipped; too small to download");
         m_downloadSuccessful = false;
         }
 
@@ -259,10 +224,8 @@ void FileDownload::RequestResponse(const wxString& url)
     // note that you need to printf the string before passing to wxLog
     // because this is an untrusted string (i.e., and URL that can contain '%' in it).
     wxLogVerbose(L"Requesting response from '%s'", url);
-    m_downloadPath.clear();
-    m_buffer.clear();
-    m_lastStatus = 404;
-    m_statusHasBeenProcessed = false;
+
+    Reset(true);
 
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
@@ -272,34 +235,18 @@ void FileDownload::RequestResponse(const wxString& url)
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     request.Start();
 
-    const auto startTime = std::chrono::system_clock::now();
-    bool timedOut{ false };
     while (!m_statusHasBeenProcessed)
         {
         wxYield();
-        /* Some misconfigured webpages cause ProcessRequest() to not be called
-           after some sort of failure , meaning that we won't have a change to
-           query its state and truly see that it is no longer active.
-           Time out after XX seconds since requesting a response should only involve
-           pinging the server and shouldn't take very long.*/
-        const auto rightNow = std::chrono::system_clock::now();
-        const auto elapsedSeconds = rightNow - startTime;
-        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-            GetTimeout())
+
+        if (m_timedOut)
             {
-            m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                     request.GetResponse().GetStatus() : 404);
-            wxLogError(L"Requesting response timed out after %s seconds. Response code #%d.",
-                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
-                    (elapsedSeconds).count()), m_lastStatus);
-            timedOut = true;
             request.Cancel();
             }
         }
     wxLogVerbose(L"Requesting response from '%s' complete.", url);
 
-    LoadResponseInfo(request);
-    if (timedOut)
+    if (m_timedOut)
         {
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
@@ -319,10 +266,8 @@ bool FileDownload::Read(const wxString& url)
         return false;
         }
     wxLogVerbose(L"Reading '%s'", url);
-    m_downloadPath.clear();
-    m_buffer.clear();
-    m_lastStatus = 404;
-    m_statusHasBeenProcessed = false;
+
+    Reset(true);
 
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
@@ -332,56 +277,44 @@ bool FileDownload::Read(const wxString& url)
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     request.Start();
 
-    const auto startTime = std::chrono::system_clock::now();
-    bool timedOut{ false };
     while (!m_statusHasBeenProcessed)
         {
         wxYield();
-        /* Sometimes a connection failure will cause ProcessRequest to not be called,
-           meaning that the active flag won't be turned as expected. Check after
-           XX seconds as to whether any data has been received; if not, then quit.*/
-        const auto rightNow = std::chrono::system_clock::now();
-        const auto elapsedSeconds = rightNow - startTime;
-        if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-            GetTimeout() &&
-            request.GetBytesReceived() == 0)
+        
+        if (m_timedOut)
             {
-            m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                     request.GetResponse().GetStatus() : 404);
-            wxLogError(L"Reading page timed out after %s seconds. Response code #%d.",
-                std::to_wstring(std::chrono::duration_cast<std::chrono::seconds>
-                    (elapsedSeconds).count()), m_lastStatus);
-            timedOut = true;
             request.Cancel();
             }
         }
 
-    LoadResponseInfo(request);
-    if (timedOut)
+    if (m_timedOut)
         {
         // change status to "Page not responding" since we gave up after logging the real status
         m_lastStatus = 204;
         m_lastStatusText = _(L"Page not responding");
         }
 
-    return (request.GetState() == wxWebRequest::State_Completed);
+    return (m_lastState == wxWebRequest::State_Completed);
     }
 
 //--------------------------------------------------
-void FileDownload::LoadResponseInfo(const wxWebRequest& request)
+void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     {
-    m_server = ((request.IsOk() && request.GetResponse().IsOk()) ?
-            request.GetResponse().GetHeader(_DT(L"Server")) : wxString{});
-    m_lastStatus = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                     request.GetResponse().GetStatus() : 404);
-    m_lastStatusText = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                    request.GetResponse().GetStatusText() : wxString{});
-    m_lastUrl = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                  request.GetResponse().GetURL() : wxString{});
-    m_lastContentType = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                          request.GetResponse().GetHeader(_DT(L"Content-Type")) : wxString{});
-    m_lastStatusInfo = ((request.IsOk() && request.GetResponse().IsOk()) ?
-                    request.GetResponse().AsString() : wxString{});
+    m_server = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                    evt.GetResponse().GetHeader(_DT(L"Server")) :
+                    wxString{});
+    m_lastStatus = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                     evt.GetResponse().GetStatus() : 404);
+    m_lastStatusText = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                    evt.GetResponse().GetStatusText() : wxString{});
+    m_lastUrl = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                  evt.GetResponse().GetURL() : wxString{});
+    m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                          evt.GetResponse().GetHeader(_DT(L"Content-Type")) : wxString{});
+    m_lastStatusInfo = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                    evt.GetResponse().AsString() : wxString{});
+    m_lastState =
+        (evt.GetRequest().IsOk() ? evt.GetRequest().GetState() : wxWebRequest::State::State_Failed);
     // if a redirected error page, parse it down to its readable content
     if (m_lastStatus != 200)
         {
@@ -435,12 +368,14 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     }
                 }
             m_statusHasBeenProcessed = true;
+            LoadResponseInfo(evt);
             break;
             }
         case wxWebRequest::State_Failed:
             if (evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk())
                 {
-                wxLogError(L"Web Request failed: %s (%s)",
+                wxLogError(L"'%s', web Request failed: %s (%s)",
+                    evt.GetRequest().GetResponse().GetURL(),
                     evt.GetErrorDescription(),
                     QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
                 }
@@ -450,9 +385,11 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     evt.GetErrorDescription());
                 }
             m_statusHasBeenProcessed = true;
+            LoadResponseInfo(evt);
             break;
         case wxWebRequest::State_Cancelled:
             m_statusHasBeenProcessed = true;
+            LoadResponseInfo(evt);
             break;
         case wxWebRequest::State_Unauthorized:
             {
@@ -485,11 +422,39 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 wxLogStatus(L"Authentication challenge canceled");
                 }
             m_statusHasBeenProcessed = true;
+            LoadResponseInfo(evt);
             break;
             }
         // Nothing special to do for these states
         // (and nothing has been processed)
         case wxWebRequest::State_Active:
+            if (evt.GetRequest().IsOk() &&
+                evt.GetRequest().GetBytesExpectedToReceive() != 0 &&
+                m_minFileDownloadSizeKilobytes.has_value() &&
+                m_minFileDownloadSizeKilobytes.value() >
+                    evt.GetRequest().GetBytesExpectedToReceive())
+                {
+                // Don't bother loading the response info;
+                // only Download uses then and will fill in respone info manually
+                // if this error occurs.
+                m_downloadTooSmall = true;
+                }
+            /* Check after XX seconds as to whether any data has been received;
+               if not, then quit.*/
+            const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
+            if (std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                    GetTimeout() &&
+                evt.GetRequest().IsOk() &&
+                evt.GetRequest().GetBytesReceived() == 0)
+                {
+                wxLogError(
+                    L"Page timed out after %s seconds. Response code #%d (%s).",
+                    std::to_wstring(
+                        std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()),
+                    m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
+                LoadResponseInfo(evt);
+                m_timedOut = true;
+                }
             [[fallthrough]];
         case wxWebRequest::State_Idle:
             break;
