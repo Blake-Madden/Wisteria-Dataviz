@@ -465,6 +465,20 @@ void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
     else if ((event.GetKeyCode() == WXK_RETURN || event.GetKeyCode() == WXK_NUMPAD_ENTER) &&
         m_enableItemViewable && (GetWindowStyle() & wxLC_REPORT))
         { ViewItem(GetFocusedItem()); }
+    else if (event.ControlDown() && event.GetKeyCode() == WXK_DOWN && GetItemCount() > 0)
+        {
+        DeselectAll();
+        EnsureVisible(GetItemCount() - 1);
+        Select(GetItemCount() - 1);
+        Focus(GetItemCount() - 1);
+        }
+    else if (event.ControlDown() && event.GetKeyCode() == WXK_UP && GetItemCount() > 0)
+        {
+        DeselectAll();
+        EnsureVisible(0);
+        Select(0);
+        Focus(0);
+        }
     else
         {
         event.Skip();
@@ -1406,7 +1420,7 @@ void ListCtrlEx::SelectAll()
 void ListCtrlEx::DistributeColumns(const long maxColumnWidth /*= 300*/)
     {
     PROFILE();
-    Freeze();
+    wxWindowUpdateLocker noUpdates(this);
     for (long i = 0; i < GetColumnCount(); ++i)
         {
         const long estimatedWidth = EstimateColumnWidth(i);
@@ -1417,7 +1431,6 @@ void ListCtrlEx::DistributeColumns(const long maxColumnWidth /*= 300*/)
         else
             { SetColumnWidth(i, estimatedWidth); }
         }
-    Thaw();
     }
 
 //------------------------------------------------------
