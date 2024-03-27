@@ -63,9 +63,6 @@ ListCtrlEx::ListCtrlEx(wxWindow *parent,
 //------------------------------------------------------
 ListCtrlEx::~ListCtrlEx()
     {
-    // We don't own this, but null our pointer in case the base DTORs fire a
-    // wxEVT_LIST_DELETE_ALL_ITEMS event.
-    m_virtualData = nullptr;
     wxDELETE(m_menu);
     wxDELETE(m_editTextCtrl);
     wxDELETE(m_editSpinCtrl);
@@ -474,6 +471,7 @@ void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
         }
     }
 
+//------------------------------------------------------
 class ListCtrlExPrintout : public wxPrintout
     {
 public:
