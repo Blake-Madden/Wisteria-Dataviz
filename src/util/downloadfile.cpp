@@ -280,7 +280,7 @@ bool FileDownload::Read(const wxString& url)
     while (!m_statusHasBeenProcessed)
         {
         wxYield();
-        
+
         if (m_timedOut)
             {
             request.Cancel();
@@ -435,7 +435,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     evt.GetRequest().GetBytesExpectedToReceive())
                 {
                 // Don't bother loading the response info;
-                // only Download uses then and will fill in respone info manually
+                // only Download uses then and will fill in response info manually
                 // if this error occurs.
                 m_downloadTooSmall = true;
                 }
