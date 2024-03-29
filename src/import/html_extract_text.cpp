@@ -2265,11 +2265,11 @@ namespace html_utilities
         }
 
     //------------------------------------------------------------------
-    html_url_format::html_url_format(const wchar_t* root_url) :
+    html_url_format::html_url_format(std::wstring_view root_url) :
         m_last_slash(std::wstring::npos),
         m_query(std::wstring::npos)
         {
-        if (root_url)
+        if (root_url.length())
             {
             m_root_url = root_url;
             m_current_url = root_url;
@@ -2283,49 +2283,69 @@ namespace html_utilities
         }
 
     //------------------------------------------------------------------
-    const wchar_t* html_url_format::operator()(const wchar_t* path, size_t text_length,
-                                               const bool is_image /*= false*/)
+    const wchar_t* html_url_format::operator()(std::wstring_view path,
+                                               const bool is_image)
         {
-        if (!path || text_length == 0)
-            { return nullptr; }
-        // see if it's a valid URL already
-        if (is_absolute_url(path) )
+        if (path.empty())
             {
-            m_current_url.assign(path, text_length);
+            return nullptr;
+            }
+        // see if it's a valid URL already
+        if (is_absolute_url(path.data()) )
+            {
+            m_current_url.assign(path.data(), path.length());
             }
         // first see if it is a queried link first
         else if (path[0] == L'?' && (m_query != std::wstring::npos))
             {
             m_current_url.assign(m_root_url, 0, m_query);
-            m_current_url.append(path, text_length);
+            m_current_url.append(path.data(), path.length());
             }
         // or a link meant for the root of the full domain
         else if (path[0] == L'/')
             {
             m_current_url.assign(m_root_full_domain);
-            if (m_current_url.length() > 1 && m_current_url[m_current_url.length()-1] != L'/')
-                { m_current_url += (L'/'); }
-            m_current_url.append(path+1, text_length-1);
+            if (m_current_url.length() > 1 &&
+                m_current_url[m_current_url.length()-1] != L'/')
+                {
+                m_current_url += (L'/');
+                }
+            const size_t startPos = path.find_first_not_of(L'/');
+            if (startPos != std::wstring_view::npos)
+                {
+                // if pointing to another webpage entirely, then use that
+                if (is_absolute_url(path.substr(startPos)))
+                    {
+                    m_current_url.assign(path.substr(startPos));
+                    }
+                else
+                    {
+                    m_current_url.append(path.substr(startPos));
+                    }
+                }
             }
         // or if "./" is in front then strip it because it is redundant
-        else if (string_util::strnicmp<wchar_t>(path, L"./", 2) == 0)
+        else if (path.length() >= 2 && path.compare(0, 2, L"./") == 0)
             {
-            m_current_url.assign(m_root_url, 0, m_last_slash+1);
-            m_current_url.append(path+2, text_length-2);
+            m_current_url.assign(m_root_url, 0, m_last_slash + 1);
+            m_current_url.append(path.substr(2));
             }
         // or a relative link that goes up a few folders
-        else if (std::wcsncmp(path, L"../", 3) == 0)
+        else if (path.length() >= 3 && path.compare(0, 3, L"../") == 0)
             {
             size_t folderLevelsToGoUp = 1;
-            const wchar_t* start = path+3;
+            path.remove_prefix(3);
             for (;;)
                 {
-                if (std::wcsncmp(start, L"../", 3) == 0)
-                    { start = path + (3*(++folderLevelsToGoUp)); }
+                if (path.length() >= 3 && path.compare(0, 3, L"../") == 0)
+                    {
+                    ++folderLevelsToGoUp;
+                    path.remove_prefix(3);
+                    }
                 else
                     { break; }
                 }
-            size_t lastSlash = m_last_slash-1;
+            size_t lastSlash = m_last_slash - 1;
             while (folderLevelsToGoUp-- > 0)
                 {
                 const size_t currentLastSlash = m_root_url.rfind(L'/', lastSlash-1);
@@ -2336,22 +2356,22 @@ namespace html_utilities
                 lastSlash = currentLastSlash;
                 }
             /* make sure we didn't go all the way back to the protocol (e.g., "http://").
-               If so, the move back up a folder. This can happen if there is an incorrect "../" in front
-               of this link.*/
-            if ((lastSlash < m_root_url.length()-2 && lastSlash > 0) &&
-                is_either<wchar_t>(L'/', m_root_url[lastSlash-1], m_root_url[lastSlash+1]))
-                { lastSlash = m_root_url.find(L'/', lastSlash+2); }
+               If so, the move back up a folder.
+               This can happen if there is an incorrect "../" in front of this link.*/
+            if ((lastSlash < m_root_url.length() - 2 && lastSlash > 0) &&
+                is_either<wchar_t>(L'/', m_root_url[lastSlash - 1], m_root_url[lastSlash + 1]))
+                { lastSlash = m_root_url.find(L'/', lastSlash + 2); }
             if (lastSlash == std::wstring::npos)
-                {m_current_url = m_root_url; }
+                { m_current_url = m_root_url; }
             else
-                { m_current_url.assign(m_root_url, 0, lastSlash+1); }
-            m_current_url.append(start, text_length-(start-path));
+                { m_current_url.assign(m_root_url, 0, lastSlash + 1); }
+            m_current_url.append(path);
             }
         // ...or just a regular link
         else
             {
             m_current_url.assign(m_root_url, 0, m_last_slash+1);
-            m_current_url.append(path, text_length);
+            m_current_url.append(path.data(), path.length());
             }
 
         // if this is a bookmark then chop it off
@@ -2361,7 +2381,8 @@ namespace html_utilities
 
         /* sometimes with PHP the IMG SRC is just the folder path and you
            need to append the "image" value from the page's url*/
-        if (is_image && m_current_url.length() > 1 && m_current_url[m_current_url.length()-1] == L'/')
+        if (is_image && m_current_url.length() > 1 &&
+            m_current_url[m_current_url.length()-1] == L'/')
             { m_current_url += m_image_name; }
 
         // now get the domain information about this URL
@@ -2390,70 +2411,92 @@ namespace html_utilities
         }
 
     //------------------------------------------------------------------
-    std::wstring html_url_format::parse_image_name_from_url(const wchar_t* url)
+    std::wstring html_url_format::parse_image_name_from_url(std::wstring_view url)
         {
-        static const std::wstring PHP_IMAGE(L"image=");
+        static const std::wstring_view PHP_IMAGE{ L"image=" };
         std::wstring image_name;
-        if (url == nullptr || url[0] == 0)
-            { return image_name; }
-        const wchar_t* start = std::wcschr(url, L'?');
-        if (start == nullptr)
-            { return image_name; }
-        start = string_util::stristr(start, PHP_IMAGE.c_str());
-        if (start == nullptr)
-            { return image_name; }
-        start += PHP_IMAGE.length();
-        // see if it is the in front of another command
-        const wchar_t* end = std::wcschr(start, L'&');
-        if (end == nullptr)
-            { image_name.assign(start); }
+        if (url.empty())
+            {
+            return image_name;
+            }
+        size_t startPos = url.find(L'?');
+        if (startPos == std::wstring_view::npos)
+            {
+            return image_name;
+            }
+        const auto foundPos =
+            std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(), PHP_IMAGE.cend(),
+                [](wchar_t lhv, wchar_t rhv) { return std::towlower(lhv) == std::towlower(rhv); });
+        if (foundPos != url.cend())
+            {
+            url = url.substr((foundPos - url.cbegin()) + PHP_IMAGE.length());
+            }
         else
-            { image_name.assign(start, end-start); }
+            {
+            return image_name;
+            }
+
+        // see if it is the in front of another command
+        const size_t endPos = url.find(L'&');
+        if (endPos == std::wstring_view::npos)
+            {
+            image_name.assign(url);
+            }
+        else
+            {
+            image_name.assign(url, 0, endPos);
+            }
         return image_name; 
         }
 
     //------------------------------------------------------------------
-    std::wstring html_url_format::parse_top_level_domain_from_url(const wchar_t* url)
+    std::wstring html_url_format::parse_top_level_domain_from_url(std::wstring_view url)
         {
-        static const std::wstring WWW(L"www.");
+        static const std::wstring_view WWW{ L"www." };
         std::wstring tld;
-        if (url == nullptr || url[0] == 0)
+        if (url.empty())
             { return tld; }
         // move to after the "www." or (if not there) the start of the url
-        const wchar_t* start = string_util::stristr(url, WWW.c_str());
-        if (start)
-            { start += WWW.length(); }
+        // (note that this needs to be case insensitive, hence the std::search)
+        const auto foundPos =
+            std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
+                [](wchar_t lhv, wchar_t rhv) { return std::towlower(lhv) == std::towlower(rhv); });
+        if (foundPos != url.cend())
+            {
+            url = url.substr((foundPos - url.cbegin()) + WWW.length());
+            }
+        size_t startPos = url.find(L'.');
+        if ((startPos == std::wstring_view::npos) || startPos == (url.length() - 1))
+            {
+            return tld;
+            }
+        size_t endPos = url.find_first_of(L"/?", ++startPos);
+        if (endPos == std::wstring_view::npos)
+            {
+            tld.assign(url.substr(startPos));
+            }
         else
-            { start = url; }
-        start = std::wcschr(start, L'.');
-        if (start == nullptr || start[1] == 0)
-            { return tld; }
-        const wchar_t* end = string_util::strcspn_pointer(++start, L"/?", 2);
-        if (end == nullptr)
-            { tld.assign(start); }
-        else
-            { tld.assign(start, end-start); }
+            {
+            tld.assign(url.substr(startPos, endPos - startPos));
+            }
         return tld;
         }
 
     //------------------------------------------------------------------
-    bool html_url_format::is_url_top_level_domain(const wchar_t* url) noexcept
+    bool html_url_format::is_url_top_level_domain(std::wstring_view url)
         {
-        if (url == nullptr || url[0] == 0)
+        if (url.empty())
             { return false; }
         // move to after the protocol's "//" or (if not there) the start of the url
-        const wchar_t* start = string_util::stristr(url, L"//");
-        if (start)
-            { start += 2; }
-        else
-            { start = url; }
-        // if no more slashes in the URL or if that last slash is the last character
+        size_t startPos = url.find(L"//");
+        if (startPos != std::wstring_view::npos)
+            {
+            url = url.substr(startPos + 2);
+            }
+        // if no more slashes in the URL or if the last slash is the last character,
         // then this must be just a domain
-        start = std::wcschr(start, L'/');
-        if (start == nullptr || start[1] == 0)
-            { return true; }
-        else
-            { return false; }
+        startPos = url.find(L'/');
+        return ((startPos == std::wstring_view::npos) || startPos == (url.length() - 1));
         }
 
     //------------------------------------------------------------------

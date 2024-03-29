@@ -278,15 +278,15 @@ namespace html_utilities
     public:
         /** @brief Constructor, which accepts the base URL to format any relative links with.
             @param root_url The base directory to format the URLs to.*/
-        explicit html_url_format(const wchar_t* root_url);
+        explicit html_url_format(std::wstring_view root_url);
         /** @brief Main interface.
             @param path The filepath to format.
-            @param text_length The length of the filepath.
-            @param is_image Whether or not the filepath is to an image.
-                This is needed when formatting a full URL to an image from a PHP request.
+            @param is_image Whether or not the filepath is to an image.\n
+                This is needed when formatting a full URL to an image from a PHP request.\n
+                @c false is recommended.
             @returns The fully-formed file path.*/
-        const wchar_t* operator()(const wchar_t* path, size_t text_length,
-                                  const bool is_image = false);
+        const wchar_t* operator()(std::wstring_view path,
+                                  const bool is_image);
         /** @returns The domain of the base URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "yahoo.com".*/
@@ -328,13 +328,13 @@ namespace html_utilities
                 If not, then it is a relative URL.
             @param url The url to analyze.*/
         [[nodiscard]]
-        inline static bool is_absolute_url(const wchar_t* url) noexcept
+        inline static bool is_absolute_url(std::wstring_view url) noexcept
             {
-            return (string_util::strnicmp<wchar_t>(url, L"http://", 7) == 0 ||
-                    string_util::strnicmp<wchar_t>(url, L"https://", 8) == 0 ||
-                    string_util::strnicmp<wchar_t>(url, L"www.", 4) == 0 ||
-                    string_util::strnicmp<wchar_t>(url, L"ftp://", 6) == 0 ||
-                    string_util::strnicmp<wchar_t>(url, L"ftps://", 7) == 0);
+            return (string_util::strnicmp<wchar_t>(url.data(), L"http://", 7) == 0 ||
+                    string_util::strnicmp<wchar_t>(url.data(), L"https://", 8) == 0 ||
+                    string_util::strnicmp<wchar_t>(url.data(), L"www.", 4) == 0 ||
+                    string_util::strnicmp<wchar_t>(url.data(), L"ftp://", 6) == 0 ||
+                    string_util::strnicmp<wchar_t>(url.data(), L"ftps://", 7) == 0);
             }
         /** @returns Whether or not this URL has a PHP query command.*/
         [[nodiscard]]
@@ -345,15 +345,15 @@ namespace html_utilities
             @param url The url to analyze.
             @returns The image name.*/
         [[nodiscard]]
-        static std::wstring parse_image_name_from_url(const wchar_t* url);
+        static std::wstring parse_image_name_from_url(std::wstring_view url);
         /** @returns The top-level domain (e.g., .com or .org) from an url.
             @param url The url to analyze.*/
         [[nodiscard]]
-        static std::wstring parse_top_level_domain_from_url(const wchar_t* url);
+        static std::wstring parse_top_level_domain_from_url(std::wstring_view url);
         /** @returns Whether an URL is just a domain and not a subfolder or file.
             @param url The url to analyze.*/
         [[nodiscard]]
-        static bool is_url_top_level_domain(const wchar_t* url) noexcept;
+        static bool is_url_top_level_domain(std::wstring_view url);
     protected:
         /** @returns The position of the top level direction in an URL, as well as
                 the position of the query comment in it (if there is one).

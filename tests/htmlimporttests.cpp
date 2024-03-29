@@ -216,7 +216,7 @@ TEST_CASE("HTML parser subscripts", "[html import]")
     SECTION("Not really a script")
         {
         html_extract_text filter_html;
-        wchar_t* text = L"<sub>Hello22</sub> some text <sub>Hello2</sub>";
+        const wchar_t* text = L"<sub>Hello22</sub> some text <sub>Hello2</sub>";
         std::wstring p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Hello22 some text Hello2") == p);
 
@@ -1380,12 +1380,12 @@ TEST_CASE("Html Url Format", "[html import]")
     {
     SECTION("Null")
         {
-        html_url_format formatHtml(nullptr);
+        html_url_format formatHtml({ L"" });
         }
     SECTION("Domains")
         {
         html_url_format formatHtml(L"http://www.business.yahoo.com");
-        formatHtml(L"http://www.sales.mycompany.com", 30);
+        formatHtml({ L"http://www.sales.mycompany.com", 30 }, false);
         CHECK(formatHtml.get_root_domain() == L"yahoo.com");
         CHECK(formatHtml.get_root_full_domain() == L"http://www.business.yahoo.com");
         CHECK(formatHtml.get_full_domain() == L"http://www.sales.mycompany.com");
@@ -1394,7 +1394,7 @@ TEST_CASE("Html Url Format", "[html import]")
     SECTION("Domains2")
         {
         html_url_format formatHtml(L"http://www.business.yahoo.com/index.htm");
-        formatHtml(L"http://www.sales.mycompany.com/index.htm", 40);
+        formatHtml({ L"http://www.sales.mycompany.com/index.htm", 40 }, false);
         CHECK(formatHtml.get_root_domain() == L"yahoo.com");
         CHECK(formatHtml.get_root_subdomain() == L"business.yahoo.com");
         CHECK(formatHtml.get_root_full_domain() == L"http://www.business.yahoo.com");
@@ -1405,72 +1405,82 @@ TEST_CASE("Html Url Format", "[html import]")
     SECTION("Absolute Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
-        const wchar_t* p = formatHtml(L"http://blah.com/page.html", 25);
+        const wchar_t* p = formatHtml({ L"http://blah.com/page.html", 25 }, false);
         CHECK(std::wcscmp(p, L"http://blah.com/page.html") == 0);
         }
     SECTION("Base Domain Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
-        const wchar_t* p = formatHtml(L"/page.html", 10);
+        const wchar_t* p = formatHtml({ L"/page.html", 10 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
      SECTION("Relative Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
-        const wchar_t* p = formatHtml(L"page.html", 9);
+        const wchar_t* p = formatHtml({ L"page.html", 9 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/blahblahblah/page.html") == 0);
         }
     SECTION("Relative Link2")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
-        const wchar_t* p = formatHtml(L"./page.html", 11);
+        const wchar_t* p = formatHtml({ L"./page.html", 11 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/blahblahblah/page.html") == 0);
+        p = formatHtml({ L"/page.html" }, false);
+        CHECK(std::wstring{ p } == std::wstring{ L"http://mypage.com/page.html" });
+        p = formatHtml({ L"//page.html" }, false);
+        CHECK(std::wstring{ p } == std::wstring{ L"http://mypage.com/page.html" });
         }
     SECTION("Relative Link3")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/index.html");
-        const wchar_t* p = formatHtml(L"../page.html", 12);
+        const wchar_t* p = formatHtml({ L"../page.html", 12 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
     SECTION("Relative Link4")
         {
         html_url_format formatHtml(L"http://mypage.com/first/second/third/index.html");
-        const wchar_t* p = formatHtml(L"../../../page.html#start", 18);
+        const wchar_t* p = formatHtml({ L"../../../page.html#start", 18 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         CHECK(formatHtml.get_domain() == L"mypage.com");
+        }
+    SECTION("Relative Link Outside Link")
+        {
+        html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
+        const wchar_t*  p = formatHtml({ L"//www.yahoo.com" }, false);
+        CHECK(std::wstring{ p } == std::wstring{ L"www.yahoo.com" });
         }
     SECTION("Relative Link Bad")
         {
         html_url_format formatHtml(L"http://mypage.com/");
-        const wchar_t* p = formatHtml(L"../../../page.html#start", 18);
+        const wchar_t* p = formatHtml({ L"../../../page.html#start", 18 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
     SECTION("Relative Link Bad2")
         {
         html_url_format formatHtml(L"http://mypage.com/");
-        const wchar_t* p = formatHtml(L"../page.html#start", 12);
+        const wchar_t* p = formatHtml({ L"../page.html#start", 12 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         CHECK(formatHtml.get_domain() == L"mypage.com");
         }
     SECTION("Relative Link Bad3")
         {
         html_url_format formatHtml(L"http://mypage.com");
-        const wchar_t* p = formatHtml(L"../page.html#start", 12);
+        const wchar_t* p = formatHtml({ L"../page.html#start", 12 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         CHECK(formatHtml.get_domain() == L"mypage.com");
         }
     SECTION("Query Link")
         {
         html_url_format formatHtml(L"http://mypage.com/query.php?blah");
-        const wchar_t* p = formatHtml(L"page.html", 9);
+        const wchar_t* p = formatHtml({ L"page.html", 9 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
-        p = formatHtml(L"?page.html", 10);
+        p = formatHtml({ L"?page.html", 10 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/query.php?page.html") == 0);
         }
     SECTION("Bookmark Link")
         {
         html_url_format formatHtml(L"http://mypage.com/");
-        const wchar_t* p = formatHtml(L"page.html#blah", 14);
+        const wchar_t* p = formatHtml({ L"page.html#blah", 14 }, false);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
     SECTION("Get Domain")
@@ -1492,7 +1502,7 @@ TEST_CASE("Html Url Format", "[html import]")
     SECTION("NoProtocal")
         {
         html_url_format formatHtml(L"www.mypage.com");
-        const wchar_t* p = formatHtml(L"page.html", 9);
+        const wchar_t* p = formatHtml({ L"page.html", 9 }, false);
         CHECK(std::wcscmp(p, L"www.mypage.com/page.html") == 0);
         }
     SECTION("Url Image Parse")
@@ -1503,14 +1513,13 @@ TEST_CASE("Html Url Format", "[html import]")
         CHECK(formatHtml.parse_image_name_from_url(L"www.mypage.com?loc=location&pic=hi.jpg") == L"");
         CHECK(formatHtml.parse_image_name_from_url(L"www.mypage.com/hi.jpg") == L"");
         CHECK(formatHtml.parse_image_name_from_url(L"") == L"");
-        CHECK(formatHtml.parse_image_name_from_url(nullptr) == L"");
         }
     SECTION("Url TLD Parse")
         {
         html_url_format formatHtml(L"");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"") == L"");
-        CHECK(formatHtml.parse_top_level_domain_from_url(nullptr) == L"");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"wwW.mypage.com?Image=hi.jpg&loc=location") == L"com");
+        CHECK(formatHtml.parse_top_level_domain_from_url(L"https://wwW.mypage.com?Image=hi.jpg&loc=location") == L"com");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"www.mypage.org/index.htm") == L"org");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"www.mypage.co.uk/index.htm") == L"co.uk");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"wWw.mypage.co.uk") == L"co.uk");
@@ -1522,7 +1531,6 @@ TEST_CASE("Html Url Format", "[html import]")
         {
         html_url_format formatHtml(L"");
         CHECK(formatHtml.is_url_top_level_domain(L"") == false);
-        CHECK(formatHtml.is_url_top_level_domain(nullptr) == false);
         CHECK(formatHtml.is_url_top_level_domain(L"www.mypage.org/index.htm") == false);
         CHECK(formatHtml.is_url_top_level_domain(L"www.mypage.co.uk/") == true);
         CHECK(formatHtml.is_url_top_level_domain(L"www.mypage.co.uk") == true);
