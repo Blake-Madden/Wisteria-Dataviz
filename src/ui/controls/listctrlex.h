@@ -559,7 +559,7 @@ public:
     void OnIgnoreEvent(wxListEvent& event);
 
     /// @brief Resizes the columns evenly.
-    /// @param maxColumnWidth The maximum width for all columns.\n
+    /// @param maxColumnWidth The maximum width for all columns (in DIPs).\n
     ///     Set to @c -1 to not use a maximum width.
     void DistributeColumns(const long maxColumnWidth = 300);
 

@@ -457,10 +457,6 @@ void ListDlg::OnReadLog([[maybe_unused]] wxCommandEvent& event)
             GetListCtrl()->EnsureVisible(GetListCtrl()->GetItemCount() - 1);
             }
         GetListCtrl()->SetSortedColumn(0, Wisteria::SortDirection::SortAscending);
-        if (GetListCtrl()->GetItemCount() > 0)
-            {
-            GetListCtrl()->DistributeColumns();
-            }
         GetListCtrl()->SetExtraStyle(style);
         }
     }
