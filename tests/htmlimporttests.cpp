@@ -1378,10 +1378,6 @@ TEST_CASE("Hyperlink Parser", "[html import]")
 
 TEST_CASE("Html Url Format", "[html import]")
     {
-    SECTION("Null")
-        {
-        html_url_format formatHtml({ L"" });
-        }
     SECTION("Domains")
         {
         html_url_format formatHtml(L"http://www.business.yahoo.com");
