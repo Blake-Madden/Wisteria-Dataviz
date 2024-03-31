@@ -312,6 +312,11 @@ ListCtrlEx::ListCtrlEx(wxWindow* parent, const wxWindowID id,
 //------------------------------------------------------
 ListCtrlEx::~ListCtrlEx()
     {
+    // Under GTK+, DoDeleteAllItems() is called from the base DTOR,
+    // so need to unbind this event. Otherwise, our method in this derived
+    // class will be called after destruction.
+    Unbind(wxEVT_LIST_DELETE_ALL_ITEMS, &ListCtrlEx::OnDeleteAllItems, this);
+
     wxDELETE(m_menu);
     wxDELETE(m_editTextCtrl);
     wxDELETE(m_editSpinCtrl);
