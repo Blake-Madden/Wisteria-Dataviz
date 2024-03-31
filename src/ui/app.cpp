@@ -13,6 +13,7 @@
     #include <debugapi.h>
 #elif defined(__UNIX__)
     #include <sys/resource.h>
+    #include <sys/sysinfo.h>
 #endif
 #include <wx/stc/stc.h>
 #include <wx/xml/xml.h>
@@ -74,6 +75,24 @@ bool Wisteria::UI::BaseApp::OnInit()
 #endif
     wxLogMessage(L"CPU Architecture: %s", wxGetCpuArchitectureName());
     wxLogMessage(L"CPU Count: %d", wxThread::GetCPUCount());
+#ifdef __WXMSW__
+    MEMORYSTATUSEX status{};
+    status.dwLength = sizeof(status);
+    if (::GlobalMemoryStatusEx(&status))
+        {
+        wxLogMessage(L"Physical Memory (Total): %.02f Gbs.",
+                     safe_divide<double>(status.ullTotalPhys, 1024 * 1024 * 1024));
+        wxLogMessage(L"Physical Memory (Available): %.02f Gbs.",
+                     safe_divide<double>(status.ullAvailPhys, 1024 * 1024 * 1024));
+        }
+#elif defined(__UNIX__)
+    struct sysinfo status{};
+    if (sysinfo(&status) == 0)
+        {
+        wxLogMessage(L"Physical Memory: %.02f Gbs.",
+                     safe_divide<double>(status.totalram, 1024 * 1024 * 1024));
+        }
+#endif
     if (wxGraphicsRenderer::GetDefaultRenderer())
         {
         wxLogMessage(L"Graphics Renderer: %s",
@@ -177,7 +196,7 @@ int Wisteria::UI::BaseApp::OnExit()
         ::ZeroMemory(&memCounter, sizeof(PROCESS_MEMORY_COUNTERS));
         if (::GetProcessMemoryInfo(::GetCurrentProcess(), &memCounter, sizeof(memCounter)))
             {
-            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02fGbs\n",
+            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02f Gbs.\n",
                 // PeakWorkingSetSize is in bytes
                 safe_divide<double>(memCounter.PeakWorkingSetSize, 1024*1024*1024));
             wxLogDebug(memMsg);
@@ -189,7 +208,7 @@ int Wisteria::UI::BaseApp::OnExit()
         memset(&usage, 0, sizeof(rusage));
         if (getrusage(RUSAGE_SELF, &usage) == 0)
             {
-            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02fGbs\n",
+            const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02f Gbs.\n",
                 // ru_maxrss is in kilobytes
                 safe_divide<double>(usage.ru_maxrss, 1024*1024));
             wxLogDebug(memMsg);
