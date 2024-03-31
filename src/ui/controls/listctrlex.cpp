@@ -21,57 +21,29 @@ using namespace Wisteria;
 using namespace Wisteria::UI;
 
 //------------------------------------------------------
-ListCtrlEx::ListCtrlEx(wxWindow *parent,
-            const wxWindowID id,
-            const wxPoint& pos /*= wxDefaultPosition*/,
-            const wxSize& size /*= wxDefaultSize*/,
-            long style /*= 0*/,
-            const wxValidator& validator /*= wxDefaultValidator*/)
-    : wxListView(parent, id, pos, size, style, validator, L"ListCtrlEx")
+ListEditTextCtrl::ListEditTextCtrl(wxWindow* parent, ListCtrlEx* owner,
+                                        wxWindowID id /*= wxID_ANY*/,
+                 wxString value /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
+                 const wxSize& size /*= wxDefaultSize*/, long style /*= 0*/,
+                 const wxValidator& validator /*= wxDefaultValidator*/,
+                 const wxString& name /*= L"ListEditTextCtrl"*/)
+    : wxTextCtrl(parent, id, value, pos, size, style, validator, name), m_owner(owner),
+      m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
     {
-    if (IsVirtual())
-        { EnableAlternateRowColours(true); }
-    Bind(wxEVT_KEY_DOWN, &ListCtrlEx::OnKeyDown, this);
-    Bind(wxEVT_SIZE, &ListCtrlEx::OnResize, this);
-    Bind(wxEVT_LIST_COL_CLICK, &ListCtrlEx::OnColClick, this);
-    Bind(wxEVT_FIND, &ListCtrlEx::OnFind, this);
-    Bind(wxEVT_FIND_NEXT, &ListCtrlEx::OnFind, this);
-    Bind(wxEVT_FIND_CLOSE, &ListCtrlEx::OnFind, this);
-    Bind(wxEVT_CONTEXT_MENU, &ListCtrlEx::OnContextMenu, this);
-    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListCtrlEx::OnRibbonButton, this);
-    Bind(wxEVT_LIST_DELETE_ALL_ITEMS, &ListCtrlEx::OnDeleteAllItems, this);
-    Bind(wxEVT_LIST_DELETE_ITEM, &ListCtrlEx::OnDeleteItem, this);
-    // in-place editing or viewing row
-    Bind(wxEVT_LEFT_DCLICK, &ListCtrlEx::OnDblClick, this);
-    // we will just handle these in the activate event
-    Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
-    Bind(wxEVT_LIST_END_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
-    // menus
-    Bind(wxEVT_MENU, &ListCtrlEx::OnMultiColumSort, this, XRCID("ID_LIST_SORT"));
-    Bind(wxEVT_MENU, &ListCtrlEx::OnSelectAll, this, wxID_SELECTALL);
-    Bind(wxEVT_MENU, &ListCtrlEx::OnCopy, this, wxID_COPY);
-    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyFirstColumn, this, XRCID("ID_COPY_FIRST_COLUMN"));
-    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyWithColumnHeaders, this, XRCID("ID_COPY_WITH_COLUMN_HEADERS"));
-    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyAll, this, XRCID("ID_COPY_ALL"));
-    Bind(wxEVT_MENU, &ListCtrlEx::OnPaste, this, wxID_PASTE);
-    Bind(wxEVT_MENU, &ListCtrlEx::OnSave, this, wxID_SAVE);
-    Bind(wxEVT_MENU, &ListCtrlEx::OnPreview, this, wxID_PREVIEW);
-    Bind(wxEVT_MENU, &ListCtrlEx::OnPrint, this, wxID_PRINT);
-    Bind(wxEVT_MENU, &ListCtrlEx::OnViewItem, this, XRCID("ID_VIEW_ITEM"));
+    Bind(wxEVT_TEXT_ENTER, &ListEditTextCtrl::OnEnter, this);
+    Bind(wxEVT_KILL_FOCUS, &ListEditTextCtrl::OnKillFocus, this);
+    Bind(wxEVT_CHAR_HOOK, &ListEditTextCtrl::OnChar, this);
     }
 
 //------------------------------------------------------
-ListCtrlEx::~ListCtrlEx()
+void ListEditTextCtrl::SetCurrentItem(const long row, const long column)
     {
-    wxDELETE(m_menu);
-    wxDELETE(m_editTextCtrl);
-    wxDELETE(m_editSpinCtrl);
-    wxDELETE(m_editSpinCtrlDouble);
-    wxDELETE(m_editComboBox);
+    m_editedRow = row;
+    m_editedColumn = column;
     }
 
 //------------------------------------------------------
-void ListEditTextCtrl::OnEndEditKillFocusTextCtrl([[maybe_unused]] wxFocusEvent& event)
+void ListEditTextCtrl::OnKillFocus([[maybe_unused]] wxFocusEvent& event)
     {
     Hide();
     if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
@@ -84,7 +56,41 @@ void ListEditTextCtrl::OnEndEditKillFocusTextCtrl([[maybe_unused]] wxFocusEvent&
     }
 
 //------------------------------------------------------
-void ListEditTextCtrl::OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event)
+void ListEditTextCtrl::OnEnter([[maybe_unused]] wxCommandEvent& event)
+    {
+    Accept(wxDirection::wxDOWN);
+    }
+
+//------------------------------------------------------
+void ListEditTextCtrl::OnChar(wxKeyEvent& event)
+    {
+    if (event.GetKeyCode() == WXK_ESCAPE)
+        {
+        Cancel();
+        }
+    else if (event.GetKeyCode() == WXK_DOWN || event.GetKeyCode() == WXK_TAB)
+        {
+        Accept(wxDirection::wxDOWN);
+        }
+    else if (event.GetKeyCode() == WXK_UP)
+        {
+        Accept(wxDirection::wxUP);
+        }
+    else
+        {
+        event.Skip();
+        }
+    }
+
+//------------------------------------------------------
+void ListEditTextCtrl::Cancel()
+    {
+    m_editedRow = m_editedColumn = wxNOT_FOUND;
+    Hide();
+    }
+
+//------------------------------------------------------
+void ListEditTextCtrl::Accept(wxDirection direction)
     {
     Hide();
     if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
@@ -94,10 +100,47 @@ void ListEditTextCtrl::OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event)
         m_owner->Refresh();
         m_owner->SetItemBeenEditedByUser(true);
         }
+    // move focus to next (or previous) item in the parent list
+    // (or insert a new row at the end and go to that, if adding is enabled)
+    // and put it in edit mode
+    if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND)
+        {
+        if (direction == wxDirection::wxDOWN)
+            {
+            if (m_editedRow + 1 < m_owner->GetItemCount())
+                {
+                m_owner->DeselectAll();
+                m_owner->EnsureVisible(m_editedRow + 1);
+                m_owner->Select(m_editedRow + 1);
+                m_owner->Focus(m_editedRow + 1);
+                m_owner->EditItem(m_editedRow + 1, 0);
+                }
+            else if (m_owner->IsItemAddingEnabled())
+                {
+                const auto newSelection = m_owner->AddRow();
+                m_owner->DeselectAll();
+                m_owner->EnsureVisible(newSelection);
+                m_owner->Select(newSelection);
+                m_owner->Focus(newSelection);
+                m_owner->EditItem(newSelection, 0);
+                }
+            }
+        if (direction == wxDirection::wxUP)
+            {
+            if (m_editedRow > 0)
+                {
+                m_owner->DeselectAll();
+                m_owner->EnsureVisible(m_editedRow - 1);
+                m_owner->Select(m_editedRow - 1);
+                m_owner->Focus(m_editedRow - 1);
+                m_owner->EditItem(m_editedRow - 1, 0);
+                }
+            }
+        }
     }
 
 //------------------------------------------------------
-void ListEditComboBox::OnEndEditKillFocusTextCtrl(wxFocusEvent& event)
+void ListEditComboBox::OnKillFocus(wxFocusEvent& event)
     {
     Hide();
     /* The kill focus event is a little quirky when the combobox is not read only.
@@ -118,7 +161,7 @@ void ListEditComboBox::OnEndEditKillFocusTextCtrl(wxFocusEvent& event)
     }
 
 //------------------------------------------------------
-void ListEditComboBox::OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event)
+void ListEditComboBox::OnEnter([[maybe_unused]] wxCommandEvent& event)
     {
     Hide();
     if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
@@ -131,7 +174,7 @@ void ListEditComboBox::OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event)
     }
 
 //------------------------------------------------------
-void ListEditSpinCtrl::OnKeyDown(wxKeyEvent& event)
+void ListEditSpinCtrl::OnChar(wxKeyEvent& event)
     {
     if (event.GetKeyCode() == WXK_ESCAPE)
         { Cancel(); }
@@ -183,11 +226,11 @@ ListEditSpinCtrlDouble::ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* own
     {
     SetDigits(1);
     Bind(wxEVT_KILL_FOCUS, &ListEditSpinCtrlDouble::OnEndEditKillFocus, this);
-    Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrlDouble::OnKeyDown, this);
+    Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrlDouble::OnChar, this);
     }
 
 //------------------------------------------------------
-void ListEditSpinCtrlDouble::OnKeyDown(wxKeyEvent& event)
+void ListEditSpinCtrlDouble::OnChar(wxKeyEvent& event)
     {
     if (event.GetKeyCode() == WXK_ESCAPE)
         { Cancel(); }
@@ -223,6 +266,57 @@ void ListEditSpinCtrlDouble::OnEndEditKillFocus(wxFocusEvent& event)
     {
     Accept();
     event.Skip();
+    }
+
+//------------------------------------------------------
+ListCtrlEx::ListCtrlEx(wxWindow* parent, const wxWindowID id,
+                       const wxPoint& pos /*= wxDefaultPosition*/,
+                       const wxSize& size /*= wxDefaultSize*/, long style /*= 0*/,
+                       const wxValidator& validator /*= wxDefaultValidator*/)
+    : wxListView(parent, id, pos, size, style, validator, L"ListCtrlEx")
+    {
+    if (IsVirtual())
+        {
+        EnableAlternateRowColours(true);
+        }
+    Bind(wxEVT_KEY_DOWN, &ListCtrlEx::OnKeyDown, this);
+    Bind(wxEVT_SIZE, &ListCtrlEx::OnResize, this);
+    Bind(wxEVT_LIST_COL_CLICK, &ListCtrlEx::OnColClick, this);
+    Bind(wxEVT_FIND, &ListCtrlEx::OnFind, this);
+    Bind(wxEVT_FIND_NEXT, &ListCtrlEx::OnFind, this);
+    Bind(wxEVT_FIND_CLOSE, &ListCtrlEx::OnFind, this);
+    Bind(wxEVT_CONTEXT_MENU, &ListCtrlEx::OnContextMenu, this);
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListCtrlEx::OnRibbonButton, this);
+    Bind(wxEVT_LIST_DELETE_ALL_ITEMS, &ListCtrlEx::OnDeleteAllItems, this);
+    Bind(wxEVT_LIST_DELETE_ITEM, &ListCtrlEx::OnDeleteItem, this);
+    // in-place editing or viewing row
+    Bind(wxEVT_LEFT_DCLICK, &ListCtrlEx::OnDblClick, this);
+    // we will just handle these in the activate event
+    Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
+    Bind(wxEVT_LIST_END_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
+    // menus
+    Bind(wxEVT_MENU, &ListCtrlEx::OnMultiColumSort, this, XRCID("ID_LIST_SORT"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnSelectAll, this, wxID_SELECTALL);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopy, this, wxID_COPY);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyFirstColumn, this, XRCID("ID_COPY_FIRST_COLUMN"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyWithColumnHeaders, this,
+         XRCID("ID_COPY_WITH_COLUMN_HEADERS"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnCopyAll, this, XRCID("ID_COPY_ALL"));
+    Bind(wxEVT_MENU, &ListCtrlEx::OnPaste, this, wxID_PASTE);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnSave, this, wxID_SAVE);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnPreview, this, wxID_PREVIEW);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnPrint, this, wxID_PRINT);
+    Bind(wxEVT_MENU, &ListCtrlEx::OnViewItem, this, XRCID("ID_VIEW_ITEM"));
+    }
+
+//------------------------------------------------------
+ListCtrlEx::~ListCtrlEx()
+    {
+    wxDELETE(m_menu);
+    wxDELETE(m_editTextCtrl);
+    wxDELETE(m_editSpinCtrl);
+    wxDELETE(m_editSpinCtrlDouble);
+    wxDELETE(m_editComboBox);
     }
 
 //------------------------------------------------------
@@ -460,8 +554,11 @@ void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
             }
         DeleteSelectedItems();
         }
-    else if (event.GetKeyCode() == WXK_INSERT)
-        { EditItem(GetFocusedItem(), 0); }
+    else if ((GetWindowStyle() & wxLC_EDIT_LABELS) &&
+        event.GetKeyCode() == WXK_F2)
+        {
+        EditItem(GetFocusedItem(), 0);
+        }
     else if ((event.GetKeyCode() == WXK_RETURN || event.GetKeyCode() == WXK_NUMPAD_ENTER) &&
         m_enableItemViewable && (GetWindowStyle() & wxLC_REPORT))
         { ViewItem(GetFocusedItem()); }
@@ -2760,7 +2857,7 @@ void ListCtrlEx::EditItem(const long selectedRow, const long selectedColumn)
             {
             m_editTextCtrl = new ListEditTextCtrl(this, this, wxID_ANY, currentItemText,
                 wxPoint(itemRect.x, itemRect.y), wxSize(itemRect.width, itemRect.height),
-                wxTE_PROCESS_TAB|wxTE_PROCESS_ENTER|wxBORDER_SUNKEN);
+                wxTE_PROCESS_TAB | wxTE_PROCESS_ENTER | wxBORDER_SUNKEN);
             m_editTextCtrl->SetCurrentItem(selectedRow, selectedColumn);
             }
         else
@@ -2769,12 +2866,12 @@ void ListCtrlEx::EditItem(const long selectedRow, const long selectedColumn)
             m_editTextCtrl->SetValue(currentItemText);
             m_editTextCtrl->Move(wxPoint(itemRect.x, itemRect.y));
             m_editTextCtrl->SetSize(wxSize(itemRect.width, itemRect.height));
+            // move caret to end of the text
+            m_editTextCtrl->SetSelection(currentItemText.length(), currentItemText.length());
             }
 
         Select(selectedRow, false);
         m_editTextCtrl->Show(true);
-        if (m_editTextCtrl->GetValue().length())
-            { m_editTextCtrl->SelectAll(); }
         m_editTextCtrl->SetFocus();
         }
     else if (GetColumnEditMode(selectedColumn).m_editMode == ColumnInfo::ColumnEditMode::IntegerEdit)

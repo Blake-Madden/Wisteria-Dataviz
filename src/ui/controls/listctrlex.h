@@ -71,16 +71,16 @@ public:
                             wxComboBox(parent, id, value, pos, size, choices, style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {
-        Bind(wxEVT_COMBOBOX, &ListEditComboBox::OnEndEditTextCtrl, this);
-        Bind(wxEVT_TEXT_ENTER, &ListEditComboBox::OnEndEditTextCtrl, this);
-        Bind(wxEVT_KILL_FOCUS, &ListEditComboBox::OnEndEditKillFocusTextCtrl, this);
-        Bind(wxEVT_KEY_DOWN, &ListEditComboBox::OnKeyDown, this);
+        Bind(wxEVT_COMBOBOX, &ListEditComboBox::OnEnter, this);
+        Bind(wxEVT_TEXT_ENTER, &ListEditComboBox::OnEnter, this);
+        Bind(wxEVT_KILL_FOCUS, &ListEditComboBox::OnKillFocus, this);
+        Bind(wxEVT_CHAR_HOOK, &ListEditComboBox::OnChar, this);
         }
     ListEditComboBox(const ListEditComboBox&) = delete;
     ListEditComboBox& operator=(const ListEditComboBox&) = delete;
 
-    void OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event);
-    void OnEndEditKillFocusTextCtrl(wxFocusEvent& event);
+    void OnEnter([[maybe_unused]] wxCommandEvent& event);
+    void OnKillFocus(wxFocusEvent& event);
     void SetCurrentItem(const long row, const long column)
         {
         m_editedRow = row;
@@ -91,7 +91,7 @@ public:
         m_editedRow = m_editedColumn = wxNOT_FOUND;
         Hide();
         }
-    void OnKeyDown(wxKeyEvent& event)
+    void OnChar(wxKeyEvent& event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             { Cancel(); }
@@ -120,7 +120,7 @@ public:
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {
         Bind(wxEVT_KILL_FOCUS, &ListEditSpinCtrl::OnEndEditKillFocus, this, wxID_ANY);
-        Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrl::OnKeyDown, this);
+        Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrl::OnChar, this);
         }
     void OnEndEditKillFocus(wxFocusEvent& event);
     void SetCurrentItem(const long row, const long column)
@@ -134,7 +134,7 @@ public:
         Hide();
         }
     void Accept();
-    void OnKeyDown(wxKeyEvent& event);
+    void OnChar(wxKeyEvent& event);
 private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
@@ -167,8 +167,9 @@ public:
         Hide();
         }
     void Accept();
-    void OnKeyDown(wxKeyEvent& event);
-private:
+    void OnChar(wxKeyEvent& event);
+
+  private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
@@ -180,42 +181,24 @@ class ListEditTextCtrl final : public wxTextCtrl
     {
 public:
     ListEditTextCtrl(wxWindow* parent, ListCtrlEx* owner, wxWindowID id = wxID_ANY,
-                       const wxString& value = wxString{},
-                       const wxPoint& pos = wxDefaultPosition,
-                       const wxSize& size = wxDefaultSize, long style = 0,
-                       const wxValidator& validator = wxDefaultValidator,
-                       const wxString& name = L"ListEditTextCtrl") :
-                            wxTextCtrl(parent, id, value, pos, size,
-                                style, validator, name),
-                            m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
-        {
-        Bind(wxEVT_TEXT_ENTER, &ListEditTextCtrl::OnEndEditTextCtrl, this);
-        Bind(wxEVT_KILL_FOCUS, &ListEditTextCtrl::OnEndEditKillFocusTextCtrl, this);
-        Bind(wxEVT_KEY_DOWN, &ListEditTextCtrl::OnKeyDown, this);
-        }
+                     wxString value = wxString{}, const wxPoint& pos = wxDefaultPosition,
+                     const wxSize& size = wxDefaultSize, long style = 0,
+                     const wxValidator& validator = wxDefaultValidator,
+                     const wxString& name = L"ListEditTextCtrl");
+
     ListEditTextCtrl(const ListEditTextCtrl&) = delete;
     ListEditTextCtrl& operator=(const ListEditTextCtrl&) = delete;
 
-    void OnEndEditTextCtrl([[maybe_unused]] wxCommandEvent& event);
-    void OnEndEditKillFocusTextCtrl([[maybe_unused]] wxFocusEvent& event);
-    void SetCurrentItem(const long row, const long column)
-        {
-        m_editedRow = row;
-        m_editedColumn = column;
-        }
-    void Cancel()
-        {
-        m_editedRow = m_editedColumn = wxNOT_FOUND;
-        Hide();
-        }
-    void OnKeyDown(wxKeyEvent& event)
-        {
-        if (event.GetKeyCode() == WXK_ESCAPE)
-            { Cancel(); }
-        else
-            { event.Skip(); }
-        }
-private:
+    void SetCurrentItem(const long row, const long column);
+
+    void Cancel();
+    void Accept(wxDirection direction);
+
+    void OnChar(wxKeyEvent& event);
+    void OnEnter([[maybe_unused]] wxCommandEvent& event);
+    void OnKillFocus([[maybe_unused]] wxFocusEvent& event);
+
+  private:
     ListCtrlEx* m_owner{ nullptr };
     long m_editedRow{ wxNOT_FOUND };
     long m_editedColumn{ wxNOT_FOUND };
