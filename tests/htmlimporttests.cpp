@@ -1404,6 +1404,12 @@ TEST_CASE("Html Url Format", "[html import]")
         const wchar_t* p = formatHtml({ L"http://blah.com/page.html", 25 }, false);
         CHECK(std::wcscmp(p, L"http://blah.com/page.html") == 0);
         }
+    SECTION("SMS Link")
+        {
+        html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
+        const wchar_t* p = formatHtml(L"sms:?&body=http://yahoo.com/page1.html", false);
+        CHECK(std::wstring{ p } == std::wstring{ L"http://yahoo.com/page1.html" });
+        }
     SECTION("Base Domain Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");

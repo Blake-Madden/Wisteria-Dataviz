@@ -2290,6 +2290,13 @@ namespace html_utilities
             {
             return nullptr;
             }
+        const std::wstring_view SMS_BODY{ L"sms:?&body=" };
+        if (path.length() >= SMS_BODY.length() &&
+            path.compare(0, SMS_BODY.length(), SMS_BODY) == 0)
+            {
+            path.remove_prefix(SMS_BODY.length());
+            }
+
         // see if it's a valid URL already
         if (is_absolute_url(path.data()) )
             {
