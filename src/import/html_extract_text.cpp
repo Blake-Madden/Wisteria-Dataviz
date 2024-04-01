@@ -2147,7 +2147,7 @@ namespace html_utilities
                     }
                 m_current_link_is_image =
                     html_extract_text::compare_element(m_html_text+1,
-                        HTML_IMAGE, false);
+                        HTML_IMAGE, true);
                 m_inside_of_script_section = m_current_link_is_javascript =
                     html_extract_text::compare_element(m_html_text+1,
                         HTML_SCRIPT, false);
