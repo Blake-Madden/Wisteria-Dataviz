@@ -330,11 +330,11 @@ namespace html_utilities
         [[nodiscard]]
         inline static bool is_absolute_url(std::wstring_view url) noexcept
             {
-            return (string_util::strnicmp<wchar_t>(url.data(), L"http://", 7) == 0 ||
-                    string_util::strnicmp<wchar_t>(url.data(), L"https://", 8) == 0 ||
+            return (string_util::strnicmp<wchar_t>(url.data(), L"http:", 5) == 0 ||
+                    string_util::strnicmp<wchar_t>(url.data(), L"https:", 6) == 0 ||
                     string_util::strnicmp<wchar_t>(url.data(), L"www.", 4) == 0 ||
-                    string_util::strnicmp<wchar_t>(url.data(), L"ftp://", 6) == 0 ||
-                    string_util::strnicmp<wchar_t>(url.data(), L"ftps://", 7) == 0);
+                    string_util::strnicmp<wchar_t>(url.data(), L"ftp:", 4) == 0 ||
+                    string_util::strnicmp<wchar_t>(url.data(), L"ftps:", 5) == 0);
             }
         /** @returns Whether or not this URL has a PHP query command.*/
         [[nodiscard]]
