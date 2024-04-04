@@ -426,6 +426,7 @@ private:
         m_timedOut = false;
         m_downloadTooSmall = false;
         m_lastState = wxWebRequest::State::State_Idle;
+        m_bytesReceived = 0;
         if (restartTimer)
             {
             m_startTime = std::chrono::system_clock::now();
@@ -453,6 +454,7 @@ private:
     wxString m_lastContentType;
     wxString m_lastStatusInfo;
     wxString m_server;
+    wxFileOffset m_bytesReceived{ 0 };
     wxWebRequest::State m_lastState{ wxWebRequest::State::State_Idle };
     std::chrono::system_clock::time_point m_startTime;
     };
