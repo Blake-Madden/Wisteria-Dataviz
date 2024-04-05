@@ -318,7 +318,7 @@ TEST_CASE("HTML Parser", "[html import]")
         const wchar_t* p = filter_html(nullptr, 5, true, false);
         CHECK(p == nullptr);
         p = filter_html(L"cl&#xFF;ich&#Xc9;", 17, true, false);
-        CHECK(std::wcscmp(p, L"clÿichÉ") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"clÿichÉ" });
         }
     SECTION("Extended Ascii Hex Broken")
         {
@@ -326,7 +326,7 @@ TEST_CASE("HTML Parser", "[html import]")
         const wchar_t* p = filter_html(nullptr, 5, true, false);
         CHECK(p == nullptr);
         p = filter_html(L"cl&#x;ich&#xG7;", 15, true, false);
-        CHECK(std::wcscmp(p, L"cl&#x;ich&#xG7;") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"cl&#x;ich&#xG7;" });
         }
     SECTION("Ligatures")
         {
@@ -335,7 +335,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(p == nullptr);
         const wchar_t* text = L"&#xFB01;t as a &#xFB01;ddle. &#xFB02;y away, &#64258;y away.";
         p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wcscmp(p, L"fit as a fiddle. fly away, fly away.") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"fit as a fiddle. fly away, fly away." });
         }
     SECTION("Paragraph")
         {
@@ -1154,29 +1154,29 @@ TEST_CASE("HTML Parser", "[html import]")
         html_extract_text filter_html;
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wcscmp(p, L"List.    (pane)") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"List.    (pane)" });
         }
     SECTION("Pre")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<pre>Line\n\nLine2\n\nLine3</pre>";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wcscmp(p, L"Line\n\nLine2\n\nLine3") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"Line\n\nLine2\n\nLine3" });
         }
     SECTION("Ignore Soft Hyphen")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"inter&shy;ntional";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wcscmp(p, L"interntional") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"interntional" });
 
         text = L"inter&#173;ntional";
         p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wcscmp(p, L"interntional") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"interntional" });
 
         text = L"inter&#xAD;ntional";
         p = filter_html(text, std::wcslen(text), true, false);
-        CHECK(std::wcscmp(p, L"interntional") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"interntional" });
         }
     SECTION("Symbol Font")
         {
