@@ -180,12 +180,13 @@ namespace lily_of_the_valley
                             // convert an encoded number to character
                             else if (text[index+1] == L'#')
                                 {
-                                size_t hexLength(textSize-(index+3));
-                                const wchar_t value = is_either(text[index+2], L'x', L'X') ?
-                                    // if it is hex encoded
-                                    static_cast<wchar_t>(string_util::axtoi(text+index+3, hexLength))/*skip "&#x"*/ :
-                                    // else it is a plain numeric value
-                                    static_cast<wchar_t>(string_util::atoi(text+index+2));
+                                wchar_t* dummy{ nullptr };
+                                const wchar_t value =
+                                    string_util::is_either(text[index + 2], L'x', L'X') ?
+                                    // if it is hex encoded (e.g., '&#xFF')
+                                    static_cast<wchar_t>(std::wcstol((text + index + 3), &dummy, 16)) :
+                                    // else it is a plain numeric value (e.g., '&#79')
+                                    static_cast<wchar_t>(std::wcstol((text + index + 2), &dummy, 10));
                                 if (value != 173) // soft hyphens should just be stripped out
                                     {
                                     // ligatures
@@ -217,14 +218,16 @@ namespace lily_of_the_valley
                                             };
                                         }
                                     else if (value != 0)
-                                        { add_character(value); }
+                                        {
+                                        add_character(value);
+                                        }
                                     // in case conversion failed to come up with a number
                                     // (incorrect encoding in the HTML maybe)
                                     else
                                         {
                                         log_message(L"Invalid numeric HTML entity: " +
-                                                    std::wstring(text+index, (semicolon+1)-(text+index)));
-                                        add_characters(text+index, (semicolon+1)-(text+index));
+                                            std::wstring(text + index, (semicolon + 1) - (text + index)));
+                                        add_characters(text + index, (semicolon + 1) - (text + index));
                                         }
                                     }
                                 }
