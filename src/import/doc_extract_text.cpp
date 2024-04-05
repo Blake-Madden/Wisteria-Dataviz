@@ -97,15 +97,21 @@ namespace lily_of_the_valley
         else
             {
             size_t bomStartLength{ 0 };
-            if (text_length > 3 &&
-                static_cast<uint8_t>(doc_buffer[0]) == UTF8_SIGNATURE[0] &&
-                static_cast<uint8_t>(doc_buffer[1]) == UTF8_SIGNATURE[1] && 
+            if (text_length > 3 && static_cast<uint8_t>(doc_buffer[0]) == UTF8_SIGNATURE[0] &&
+                static_cast<uint8_t>(doc_buffer[1]) == UTF8_SIGNATURE[1] &&
                 static_cast<uint8_t>(doc_buffer[2]) == UTF8_SIGNATURE[2])
-                { bomStartLength = 3; }
-            const size_t firstChar =
-                string_util::find_first_not_of(doc_buffer + bomStartLength,
-                                               text_length - bomStartLength, " \t\n\r", 4) +
-                    bomStartLength;
+                {
+                bomStartLength = 3;
+                }
+            size_t firstChar =
+                std::string_view{ doc_buffer + bomStartLength, text_length - bomStartLength }
+                    .find_first_not_of(" \t\n\r");
+            if (firstChar == std::string_view::npos)
+                {
+                return nullptr;
+                }
+            firstChar += bomStartLength;
+
             // See if maybe it's HTML (based on if first character is a '<').
             // We are grasping at straws here, but people actually have files like this.
             if (firstChar < text_length && doc_buffer[firstChar] == '<')
