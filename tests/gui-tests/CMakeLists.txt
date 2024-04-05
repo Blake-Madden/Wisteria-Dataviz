@@ -31,20 +31,36 @@ ENDIF()
 PROJECT(WisteriaGuiTestRunner)
 
 # Setup wxWidgets
-########################
+##############################################################
 
 # Find wxWidgets (wxWidgetsConfig.cmake, specifically) and select its components
-SET(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
-MESSAGE(STATUS "Adding wxWidgets CMake cofig folder: ${wxWidgets_DIR}")
-IF(NOT EXISTS "${wxWidgets_DIR}/wxWidgetsConfig.cmake" AND NOT EXISTS "${wxWidgets_DIR}/wxwidgets-config.cmake")
-    MESSAGE(STATUS "Warning: cannot find wxWidgets CMake configuration. (Looked in ${wxWidgets_DIR}.)")
-ENDIF()
-SET(wxWidgets_USE_STATIC 1)
-FIND_PACKAGE(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net richtext REQUIRED CONFIG)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../wxWidgets")
+    if(WIN32)
+        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
+    elseif(UNIX)
+        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../wxWidgets/wxlib/lib/cmake/wxWidgets")
+    endif()
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets")
+    if(WIN32)
+        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
+    elseif(UNIX)
+        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/wxlib/lib/cmake/wxWidgets")
+    endif()
+endif()
 
-IF(wxWidgets_USE_FILE)
-    INCLUDE(${wxWidgets_USE_FILE})
-ENDIF()
+message(STATUS "Adding wxWidgets CMake cofig folder: ${wxWidgets_DIR}")
+if(NOT EXISTS "${wxWidgets_DIR}/wxWidgetsConfig.cmake" AND NOT EXISTS "${wxWidgets_DIR}/wxwidgets-config.cmake")
+    message(WARNING "Cannot find wxWidgets CMake configuration. (Looked in ${wxWidgets_DIR}.)")
+endif()
+set(wxWidgets_USE_STATIC 1)
+find_package(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net richtext REQUIRED CONFIG)
+
+# Include the wxWidgets use file to initialize various settings
+if(wxWidgets_USE_FILE)
+    include(${wxWidgets_USE_FILE})
+endif()
+message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
+message(STATUS "Adding wxWidgets: ${wxPLATFORM_LIB_DIR}")
 
 IF(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
