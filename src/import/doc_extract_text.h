@@ -358,15 +358,14 @@ namespace lily_of_the_valley
         ///     Leading spaces will be skipped.
         [[nodiscard]]
         static bool paragraph_begins_with(const std::wstring& para,
-                                          const wchar_t* searchText)
+                                          std::wstring_view searchText)
             {
-            if (!searchText)
+            if (searchText.empty())
                 { return false; }
-            const size_t firstChar =
-                string_util::find_first_not_of(para.c_str(), para.length(), L" \n\r\t", 4);
-            if (firstChar == para.length())
+            const size_t firstChar = para.find_first_not_of(L" \n\r\t");
+            if (firstChar == std::string_view::npos)
                 { return false; }
-            return (std::wcsncmp(para.c_str() + firstChar, searchText, std::wcslen(searchText)) == 0);
+            return (std::wcsncmp(para.c_str() + firstChar, searchText.data(), searchText.length()) == 0);
             }
 
         /** @brief Scans a sector to determine if it is really a binary stream,
