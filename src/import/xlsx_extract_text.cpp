@@ -835,7 +835,7 @@ namespace lily_of_the_valley
         {
         assert(text_length <= std::wcslen(text) );
         xlsx_string_table_parse tableParse(text, text_length, m_removeNewlinesAndTabs);
-        std::pair<bool,std::wstring> nextString;
+        std::pair<bool, std::wstring> nextString;
         size_t i = 0;
         while ((nextString = tableParse()).first)
             {
@@ -847,16 +847,21 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    std::pair<size_t,size_t> xlsx_extract_text::split_column_info(const wchar_t* cell_name)
+    std::pair<size_t, size_t> xlsx_extract_text::split_column_info(std::wstring_view cell_name)
         {
-        assert(cell_name);
-        size_t numStart = string_util::find_last_not_of(cell_name, L"0123456789");
-        if (numStart == std::wstring::npos ||
-            cell_name[numStart] == 0 || cell_name[numStart+1] == 0)
-            { return std::make_pair(-1, 0); }
-        const size_t row = string_util::atol(cell_name+(++numStart));
+        assert(cell_name.length());
+        size_t numStart = cell_name.find_last_not_of(L"0123456789");
+        if (numStart == std::wstring::npos || cell_name.length() == numStart + 1)
+            {
+            return std::make_pair(std::wstring::npos, 0);
+            }
+        cell_name.remove_prefix(++numStart);
+        wchar_t* dummy{ nullptr };
+        const size_t row = static_cast<size_t>(std::wcstol(cell_name.data(), &dummy, 10));
         if (row == 0)
-            { return std::make_pair(-1, 0); }
+            {
+            return std::make_pair(std::wstring::npos, 0);
+            }
         return std::make_pair(numStart, row);
         }
     }

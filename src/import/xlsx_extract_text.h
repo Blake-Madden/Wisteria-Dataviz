@@ -346,7 +346,7 @@ namespace lily_of_the_valley
                 Row and/or column numbers will be -1 if name format is wrong.
                 For example, "A7" will return "A", 1 (column 1), and 7 (row 7).*/
         [[nodiscard]]
-        static std::pair<column_info,size_t>
+        static std::pair<column_info, size_t>
             get_column_and_row_info(const wchar_t* cell_name);
 
         /** Adds cells to rows with missing cells. This may happen with files missing its
@@ -373,9 +373,10 @@ namespace lily_of_the_valley
             @param cell_name The cell name (e.g., "A2").
             @returns a pair representing where the row number begins in the string
                 (parsing from the start of the cell name up to this index yields the column name)
-                and the row number. The first index will be set to @c -1 upon failure.*/
+                and the row number.\n
+                The first index will be set to `std::wstring::npos` upon failure.*/
         [[nodiscard]]
-        static std::pair<size_t,size_t> split_column_info(const wchar_t* cell_name);
+        static std::pair<size_t, size_t> split_column_info(std::wstring_view cell_name);
 
         /// @returns The string table.
         [[nodiscard]]
