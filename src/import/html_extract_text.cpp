@@ -2025,6 +2025,7 @@ namespace html_utilities
     const wchar_t* html_image_parse::operator()()
         {
         static const std::wstring_view HTML_IMAGE(L"img");
+        static const std::wstring_view DATA_IMAGE(L"data:image");
         // reset
         m_current_hyperlink_length = 0;
 
@@ -2040,7 +2041,9 @@ namespace html_utilities
                 {
                 const auto [imageSrc, imageLength] =
                     html_extract_text::read_attribute(m_html_text, L"src", false, true);
-                if (imageSrc)
+                if (imageSrc != nullptr &&
+                    // skip over base64-encoded image data, we just want file paths
+                    string_util::strnicmp(imageSrc, DATA_IMAGE.data(), DATA_IMAGE.length()) != 0)
                     {
                     m_html_text = imageSrc;
                     m_current_hyperlink_length = imageLength;
@@ -2112,6 +2115,7 @@ namespace html_utilities
         static const std::wstring_view HTML_SCRIPT(L"script");
         static const std::wstring_view HTML_SCRIPT_END(L"</script>");
         static const std::wstring_view HTML_IMAGE(L"img");
+        static const std::wstring_view DATA_IMAGE(L"data:image");
         // if we are in an embedded script block, then continue parsing the
         // links out of that instead of using the regular parser
         if (m_inside_of_script_section)
@@ -2164,15 +2168,18 @@ namespace html_utilities
                 // see if it is an IMG, Frame (sometimes they have a SRC to another HTML page), or JS link
                 if ((m_include_image_links && m_current_link_is_image) ||
                     m_current_link_is_javascript  ||
-                    html_extract_text::compare_element(m_html_text+1,
+                    html_extract_text::compare_element(m_html_text + 1,
                         HTML_FRAME, false) ||
-                    html_extract_text::compare_element(m_html_text+1,
+                    html_extract_text::compare_element(m_html_text + 1,
                         HTML_IFRAME, false))
                     {
                     m_html_text += 4;
                     const auto [imageSrc, imageLengh] =
                         html_extract_text::read_attribute(m_html_text, L"src", false, true);
-                    if (imageSrc)
+                    if (imageSrc != nullptr &&
+                        // skip over base64-encoded image data, we just want file paths
+                        string_util::strnicmp(imageSrc, DATA_IMAGE.data(), DATA_IMAGE.length()) !=
+                            0)
                         {
                         m_html_text = imageSrc;
                         m_current_hyperlink_length = imageLengh;

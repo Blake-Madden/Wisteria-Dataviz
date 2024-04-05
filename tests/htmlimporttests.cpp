@@ -1613,7 +1613,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse.get_current_hyperlink_length() == 16);
 
         CHECK(parse() == nullptr);
-
+        CHECK(parse.get_current_hyperlink_length() == 0);
         CHECK(parse() == nullptr);
         }
 
@@ -1626,8 +1626,18 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse.get_current_hyperlink_length() == 16);
 
         CHECK(parse() == nullptr);
-
+        CHECK(parse.get_current_hyperlink_length() == 0);
         CHECK(parse() == nullptr);
+        }
+
+    SECTION("Image Base-64 Encoded")
+        {
+        const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <img SRc=\"data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==\"/><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
+        html_image_parse parse(text, std::wcslen(text) );
+
+        // don't pick up the encoded image data
+        CHECK(parse() == nullptr);
+        CHECK(parse.get_current_hyperlink_length() == 0);
         }
 
     SECTION("Images")
@@ -1642,7 +1652,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse.get_current_hyperlink_length() == 9);
 
         CHECK(parse() == nullptr);
-
+        CHECK(parse.get_current_hyperlink_length() == 0);
         CHECK(parse() == nullptr);
         }
 
@@ -1658,7 +1668,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse.get_current_hyperlink_length() == 9);
 
         CHECK(parse() == nullptr);
-
+        CHECK(parse.get_current_hyperlink_length() == 0);
         CHECK(parse() == nullptr);
         }
 
