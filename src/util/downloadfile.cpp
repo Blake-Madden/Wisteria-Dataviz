@@ -190,7 +190,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
                 request.Cancel();
                 }
 
-            if (m_timedOut)
+            if (m_timedOut || m_cancelled)
                 {
                 request.Cancel();
                 }
@@ -262,7 +262,7 @@ void FileDownload::RequestResponse(const wxString& url)
             {
             wxYield();
 
-            if (m_timedOut)
+            if (m_timedOut || m_cancelled)
                 {
                 request.Cancel();
                 }
@@ -326,7 +326,7 @@ bool FileDownload::Read(const wxString& url)
             {
             wxYield();
 
-            if (m_timedOut)
+            if (m_timedOut || m_cancelled)
                 {
                 request.Cancel();
                 }
