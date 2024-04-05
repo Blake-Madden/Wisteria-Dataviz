@@ -192,7 +192,8 @@ namespace lily_of_the_valley
                             std::wstring valueIndex(value, valueEnd-value);
                             if (valueIndex.length())
                                 {
-                                const int stringTableIndex = string_util::atoi(valueIndex.c_str());
+                                wchar_t* dummy{ nullptr };
+                                const int stringTableIndex = static_cast<int>(std::wcstol(valueIndex.c_str(), &dummy, 10));
                                 return get_shared_string(stringTableIndex, shared_strings, shared_strings_length);
                                 }
                             }
@@ -317,8 +318,11 @@ namespace lily_of_the_valley
                 html_extract_text::find_element(html_text, endSentinel, L"row", true)) != nullptr)
             {
             cRow.clear();
+            wchar_t* dummy{ nullptr };
             const size_t rowNum =
-                string_util::atol(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false).c_str());
+                static_cast<size_t>(std::wcstol(
+                    html_extract_text::read_attribute_as_string(
+                        html_text, L"r", 1, false).c_str(), &dummy, 10));
             worksheet_row& currentRow = (rowNum != 0 && rowNum <= data.size()) ? data[rowNum-1] : cRow;
             worksheet_row::iterator cellPos = currentRow.begin();
 
@@ -404,8 +408,9 @@ namespace lily_of_the_valley
                                         typeTag.first != nullptr &&
                                         *typeTag.first == L's')
                                         {
+                                        wchar_t* dummy{ nullptr };
                                         const int stringTableIndex =
-                                            string_util::atoi(valueStr.c_str());
+                                            static_cast<int>(std::wcstol(valueStr.c_str(), &dummy, 10));
                                         if (stringTableIndex >= 0 &&
                                             static_cast<size_t>(stringTableIndex) <
                                                 get_shared_strings().size())
@@ -418,8 +423,9 @@ namespace lily_of_the_valley
                                         typeTag.first != nullptr &&
                                         *typeTag.first == L'b')
                                         {
+                                        wchar_t* dummy{ nullptr };
                                         const bool bVal =
-                                            static_cast<bool>(string_util::atoi(valueStr.c_str()));
+                                            static_cast<bool>(std::wcstol(valueStr.c_str(), &dummy, 10));
                                         if (bVal)
                                             {
                                             currentCell.set_value(bVal ? _DT(L"TRUE") : _DT(L"FALSE"));
@@ -548,9 +554,11 @@ namespace lily_of_the_valley
             html_extract_text::find_element(text, (text+text_length), L"sst", true);
         if (countInfo)
             {
+            wchar_t* dummy{ nullptr };
             const size_t stringCount =
-                string_util::atol(
-                    html_extract_text::read_attribute_as_string(countInfo, L"uniqueCount", false, false).c_str());
+                static_cast<size_t>(std::wcstol(
+                    html_extract_text::read_attribute_as_string(
+                        countInfo, L"uniqueCount", false, false).c_str(), &dummy, 10));
             if (stringCount == 0)
                 { m_shared_strings.reserve(1'000); }
             // in case file has nonsense in it, don't allocate more than
