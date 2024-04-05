@@ -14,12 +14,33 @@ TEST_CASE("XML format", "[xml format]")
             wxString(LR"( red="100" green="120" blue="150" include="1")"));
         CHECK(XmlFormat::FormatColorAttributeWithInclusionTag(wxColor(100, 120, 150), false) ==
             wxString(LR"( red="100" green="120" blue="150" include="0")"));
+
+        std::wstring_view colStr{ LR"(<data red="100" green="120" blue="150" include="0">)" };
+        wxColor retCol = XmlFormat::GetColor(colStr.data(), colStr.data() + colStr.length(), L"data", *wxBLACK);
+        CHECK(retCol.Red() == 100);
+        CHECK(retCol.Green() == 120);
+        CHECK(retCol.Blue() == 150);
+
+        bool inc;
+        wxColor retCol2 = XmlFormat::GetColorWithInclusionTag(
+            colStr.data(), colStr.data() + colStr.length(), L"data", inc, *wxBLACK, false);
+        CHECK(retCol2.Red() == 100);
+        CHECK(retCol2.Green() == 120);
+        CHECK(retCol2.Blue() == 150);
         }
 
     SECTION("Format Xml Font")
         {
         CHECK(XmlFormat::FormatFontAttributes(wxFontInfo(12).Bold(true).Italic(true).Underlined(true).FaceName(L"Arial")) ==
             wxString(LR"( font-point-size="12" font-style="93" font-weight="700" font-underline="1" font-face-name="Arial")"));
+
+        std::wstring fontStr{LR"(<data font-point-size="12" font-style="93" font-weight="700" font-underline="1" font-face-name="Arial">)" };
+        wxFont retFont = XmlFormat::GetFont(
+            fontStr.data(), fontStr.data() + fontStr.length(), L"data");
+        CHECK((int)retFont.GetPointSize() == 12);
+        CHECK((int)retFont.GetStyle() == 93);
+        CHECK((int)retFont.GetWeight() == 700);
+        CHECK((int)retFont.GetUnderlined() == 1);
         }
 
     SECTION("Format Xml Section With Attribute")
