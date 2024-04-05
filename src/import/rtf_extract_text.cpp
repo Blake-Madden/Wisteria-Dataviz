@@ -577,8 +577,8 @@ namespace lily_of_the_valley
                         hexBuffer[0] = static_cast<char>(ch);
                         hexBuffer[1] = m_rtf_text[0];
                         // convert the two bytes (hex value) to character
-                        size_t hexLength(2);
-                        ch = string_util::axtoi(hexBuffer, hexLength);
+                        char* dummy{ nullptr };
+                        ch = static_cast<int>(std::strtol(hexBuffer, &dummy, 16));
                         ecParseChar(ch);
                         m_ris = RIS::risNorm;
                         }// end else (m_ris != risNorm)
@@ -739,6 +739,10 @@ namespace lily_of_the_valley
     //------------------------------------------------
     void rtf_extract_text::ecParseChar(int ch)
         {
+        if (ch == 0)
+            {
+            return;
+            }
         if (m_ris == RIS::risBin && --m_cbBin <= 0)
             {
             m_ris = RIS::risNorm;
