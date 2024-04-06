@@ -408,7 +408,6 @@ namespace lily_of_the_valley
                                         typeTag.first != nullptr &&
                                         *typeTag.first == L's')
                                         {
-                                        wchar_t* dummy{ nullptr };
                                         const int stringTableIndex =
                                             static_cast<int>(std::wcstol(valueStr.c_str(), &dummy, 10));
                                         if (stringTableIndex >= 0 &&
@@ -423,8 +422,7 @@ namespace lily_of_the_valley
                                         typeTag.first != nullptr &&
                                         *typeTag.first == L'b')
                                         {
-                                        wchar_t* dummy{ nullptr };
-                                        const bool bVal =
+                                         const bool bVal =
                                             static_cast<bool>(std::wcstol(valueStr.c_str(), &dummy, 10));
                                         if (bVal)
                                             {
@@ -469,7 +467,6 @@ namespace lily_of_the_valley
                                                 {
                                                 const auto percentStrLength =
                                                     (valueStr.length() - dateTimeSepPos - 1);
-                                                wchar_t* dummy{ nullptr };
                                                 auto timeOfDay =
                                                     std::wcstoll(valueStr.c_str() + dateTimeSepPos + 1, &dummy, 10);
                                                 long double timeOfDayPercent =
