@@ -133,16 +133,21 @@ namespace lily_of_the_valley
             while (textSize > 0)
                 {
                 size_t index{ 0 };
-                // if preformatted then just look for ampersands or template placeholders
                 if (m_is_in_preformatted_text_block_stack > 0)
-                    { index = string_util::strncspn<wchar_t>(text+currentStartPosition, textSize, L"&$", 2); }
-                // otherwise, eat up crlfs and replace with spaces
-                else
-                    { index = string_util::strncspn<wchar_t>(text+currentStartPosition, textSize, L"\r\n&$", 4); }
-                // move the index to the position in the full valid string
-                index += currentStartPosition;
-                if (index < textSize)
                     {
+                    index = std::wstring_view{ text + currentStartPosition, textSize }.find_first_of(L"&$");
+                    }
+                // otherwise, eat up CRLFs and replace with spaces
+                else
+                    {
+                    index = std::wstring_view{ text + currentStartPosition, textSize }.find_first_of(L"\r\n&$");
+                    }
+
+                if (index != std::wstring_view::npos &&
+                    index + currentStartPosition < textSize)
+                    {
+                    // move the index to the position in the full valid string
+                    index += currentStartPosition;
                     if (text[index] == L'&')
                         {
                         const wchar_t* semicolon = string_util::strcspn_pointer<wchar_t>(text+index+1, L";< \t\n\r", 6);
