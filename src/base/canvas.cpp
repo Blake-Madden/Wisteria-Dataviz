@@ -12,7 +12,8 @@
 #include "reportprintout.h"
 #include <wx/xrc/xmlres.h>
 
-wxDEFINE_EVENT(EVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
+
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow);
 
 using namespace Wisteria::GraphItems;
@@ -1689,7 +1690,7 @@ namespace Wisteria
             }
         else if (event.LeftDClick())
             {
-            wxCommandEvent devent(EVT_WISTERIA_CANVAS_DCLICK, GetId());
+            wxCommandEvent devent(wxEVT_WISTERIA_CANVAS_DCLICK, GetId());
             devent.SetEventObject(this);
             GetEventHandler()->ProcessEvent(devent);
             }

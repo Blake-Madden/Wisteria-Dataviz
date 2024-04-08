@@ -47,7 +47,11 @@
 #include "../ui/dialogs/radioboxdlg.h"
 
 /// @private
-wxDECLARE_EVENT(EVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
+
+/// @private
+#define EVT_WISTERIA_CANVAS_DCLICK(winid, fn)                                                               \
+    wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winid, wxCommandEventHandler(fn))
 
 namespace Wisteria
     {
