@@ -32,35 +32,44 @@ void MenuBarEnableAll(wxMenuBar* menuBar, const wxWindowID id, const bool enable
 ///     be incremented beyond that.
 class IdRangeLock
     {
-public:
+  public:
     /** @brief Constructor.
         @param idCount The number of IDs to use in the range.*/
     explicit IdRangeLock(const size_t idCount)
         {
         m_rangeBegin = m_firstId = m_startingId;
         wxWindowID i = m_rangeBegin;
-        for (/*already defined*/; static_cast<size_t>(i) < m_rangeBegin+idCount; ++i)
-            { wxRegisterId(i); }
-        m_rangeEnd = i-1;
+        for (/*already defined*/; static_cast<size_t>(i) < m_rangeBegin + idCount; ++i)
+            {
+            wxRegisterId(i);
+            }
+        m_rangeEnd = i - 1;
         m_startingId = i; // where the next menu id range lock will begin
         }
+
     /// @returns The first available ID.
     [[nodiscard]]
     wxWindowID GetFirstId() const noexcept
-        { return m_firstId; }
+        {
+        return m_firstId;
+        }
+
     /// @returns The last available ID.
     [[nodiscard]]
     wxWindowID GetLastId() const noexcept
-        { return m_rangeEnd; }
+        {
+        return m_rangeEnd;
+        }
+
     /// @returns The next available ID.\n
     ///     Will return @c wxNOT_FOUND if no more IDs are available.
     [[nodiscard]]
     wxWindowID GetNextId() noexcept
         {
-        return (m_rangeBegin > m_rangeEnd) ?
-            wxNOT_FOUND : m_rangeBegin++;
+        return (m_rangeBegin > m_rangeEnd) ? wxNOT_FOUND : m_rangeBegin++;
         }
-private:
+
+  private:
     static wxWindowID m_startingId;
     wxWindowID m_firstId{ 0 };
     wxWindowID m_rangeBegin{ 0 };
@@ -70,35 +79,43 @@ private:
 /// @brief Keeps track of a range IDs, but does not lock them.
 class IdRange
     {
-public:
+  public:
     /** @brief Constructor.
         @param startId The start of the ID range.
         @param idCount The number of IDs to use in the range.*/
-    IdRange(const wxWindowID startId, const size_t idCount) noexcept :
-        m_firstId(startId), m_rangeBegin(startId), m_rangeEnd(startId+idCount)
-        {}
+    IdRange(const wxWindowID startId, const size_t idCount) noexcept
+        : m_firstId(startId), m_rangeBegin(startId), m_rangeEnd(startId + idCount)
+        {
+        }
+
     /// @returns The first available ID.
     [[nodiscard]]
     wxWindowID GetFirstId() const noexcept
-        { return m_firstId; }
+        {
+        return m_firstId;
+        }
+
     /// @returns The last available ID.
     [[nodiscard]]
     wxWindowID GetLastId() const noexcept
-        { return m_rangeEnd; }
+        {
+        return m_rangeEnd;
+        }
+
     /// @returns The next available ID.\n
     ///     Will return @c wxNOT_FOUND if no more IDs are available.
     [[nodiscard]]
     wxWindowID GetNextId() noexcept
         {
-        return (m_rangeBegin > m_rangeEnd) ?
-            wxNOT_FOUND : m_rangeBegin++;
+        return (m_rangeBegin > m_rangeEnd) ? wxNOT_FOUND : m_rangeBegin++;
         }
-private:
+
+  private:
     wxWindowID m_firstId{ 0 };
     wxWindowID m_rangeBegin{ 0 };
     wxWindowID m_rangeEnd{ 0 };
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__ID_HELPERS_H__

@@ -12,22 +12,22 @@
 #ifndef __RESOURCE_MANAGER_H__
 #define __RESOURCE_MANAGER_H__
 
+#include "../i18n-check/src/donttranslate.h"
+#include "../math/mathematics.h"
+#include "memorymappedfile.h"
+#include "zipcatalog.h"
 #include <map>
-#include <wx/wx.h>
-#include <wx/fs_zip.h>
 #include <wx/filesys.h>
-#include <wx/wfstream.h>
-#include <wx/stdpaths.h>
-#include <wx/mstream.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/propgrid/manager.h>
+#include <wx/fs_zip.h>
 #include <wx/listctrl.h>
+#include <wx/mstream.h>
+#include <wx/propgrid/manager.h>
+#include <wx/propgrid/propgrid.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
-#include "memorymappedfile.h"
-#include "../i18n-check/src/donttranslate.h"
-#include "zipcatalog.h"
-#include "../math/mathematics.h"
+#include <wx/stdpaths.h>
+#include <wx/wfstream.h>
+#include <wx/wx.h>
 
 /// @brief Class to manage loading images, icons, and XRC files from a ZIP file.
 /// @details Also supports local files as well.\n
@@ -35,14 +35,18 @@
 ///     so that the next time they are requested they will not need to be reloaded.
 class ResourceManager
     {
-public:
+  public:
     /// @private
     ResourceManager() = default;
+
     /** @brief Constructor.
         @param resourceArchivePath The path to the ZIP file containing the resources
             to load.*/
     explicit ResourceManager(const wxString& resourceArchivePath)
-        { LoadArchive(resourceArchivePath); }
+        {
+        LoadArchive(resourceArchivePath);
+        }
+
     /// @private
     ResourceManager(const ResourceManager&) = delete;
     /// @private
@@ -64,9 +68,13 @@ public:
     wxString GetResourceFilePath(const wxString& subFile = wxEmptyString) const
         {
         if (subFile.empty())
-            { return m_resourceFile; }
+            {
+            return m_resourceFile;
+            }
         else
-            { return m_resourceFile + _DT(L"#zip:") + subFile; }
+            {
+            return m_resourceFile + _DT(L"#zip:") + subFile;
+            }
         }
 
     /// @returns A bitmap from the provided path.
@@ -89,14 +97,17 @@ public:
         @param path The name of the folder (in the attached archive file) to iterate.*/
     [[nodiscard]]
     wxArrayString GetFilesInFolder(const wxString& path) const
-        { return m_zipCatalog.GetFilesInFolder(path); }
+        {
+        return m_zipCatalog.GetFilesInFolder(path);
+        }
 
     /// @brief Creates an icon filled with the specified color.
     /// @param color The color of the icon.
     /// @returns The color-filled icon.
     [[nodiscard]]
     static wxBitmapBundle CreateColorIcon(const wxColour& color);
-private:
+
+  private:
     wxBitmap ExtractBitmap(const wxString& bmpPath, const wxBitmapType bitmapType) const;
     wxString m_resourceFile;
     std::map<wxString, wxBitmap> m_imageMap;
@@ -105,6 +116,6 @@ private:
     MemoryMappedFile m_zipFile;
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__RESOURCE_MANAGER_H__

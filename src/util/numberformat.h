@@ -31,19 +31,18 @@ namespace Wisteria
 
         /// @brief Constructor.
         /// @param type How to format values.
-        NumberFormatInfo(const NumberFormatType type) noexcept :
-            m_type(type)
-            {}
+        NumberFormatInfo(const NumberFormatType type) noexcept : m_type(type) {}
+
         /// @brief Constructor.
         /// @param type How to format values.
         /// @param precision The precision to show.
         /// @param displayThousandsSeparator @c true to show the thousands separator.
-        NumberFormatInfo(const NumberFormatType type,
-                         const uint8_t precision,
-                         const bool displayThousandsSeparator = false) noexcept :
-            m_type(type), m_precision(precision),
-            m_displayThousandsSeparator(displayThousandsSeparator)
-            {}
+        NumberFormatInfo(const NumberFormatType type, const uint8_t precision,
+                         const bool displayThousandsSeparator = false) noexcept
+            : m_type(type), m_precision(precision),
+              m_displayThousandsSeparator(displayThousandsSeparator)
+            {
+            }
 
         /// @brief The specification for how to format the values.
         NumberFormatType m_type{ NumberFormatType::StandardFormatting };
@@ -60,10 +59,10 @@ namespace Wisteria
     template<typename stringT>
     class NumberFormat
         {
-    public:
+      public:
         /// @private
-        virtual ~NumberFormat()
-            {}
+        virtual ~NumberFormat() {}
+
         /// @brief Formats a string into a different format.
         /// @param value The string to reformat.
         /// @param format The format specification.
@@ -77,7 +76,7 @@ namespace Wisteria
         virtual stringT GetFormattedValue(const double value,
                                           const NumberFormatInfo& format) const = 0;
         };
-    }
+    } // namespace Wisteria
 
 /** @}*/
 

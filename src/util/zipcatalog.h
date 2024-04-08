@@ -31,9 +31,10 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param message The warning/error message.
         /// @param icon The icon to show (if presented in a message box).
-        ArchiveMessage(const wxString& message, const int icon) :
-            m_message(message), m_icon(icon)
-            {}
+        ArchiveMessage(const wxString& message, const int icon) : m_message(message), m_icon(icon)
+            {
+            }
+
         /// The warning/error message.
         wxString m_message;
         /// The icon to show (if presented in a message box).
@@ -43,7 +44,7 @@ namespace Wisteria
     /// @brief Helper class that reads files inside of a zip file by just passing in the file path.
     class ZipCatalog
         {
-    public:
+      public:
         /// @private
         ZipCatalog() = default;
         /** @brief Loads a ZIP file stream and catalogs its files.
@@ -72,8 +73,9 @@ namespace Wisteria
         wxZipEntry* Find(const wxString& value) const
             {
             auto entry = m_catalog.find(wxZipEntry::GetInternalName(value));
-            return (entry == m_catalog.cend() ) ? nullptr : entry->second;
+            return (entry == m_catalog.cend()) ? nullptr : entry->second;
             }
+
         /** @returns A list of files in a given folder
                 (relative to its location in the ZIP folder structure).
             @param path The name of the folder to iterate.*/
@@ -95,13 +97,15 @@ namespace Wisteria
             @returns @c true if successfully read the file.*/
         bool ReadFile(const wxString& path, wxOutputStream& memstream) const;
         /** @brief Reads an image from the ZIP file.
-            @param path The path to the image (relative to its location in the ZIP folder structure).
+            @param path The path to the image
+                (relative to its location in the ZIP folder structure).
             @param bitmapType The format of the image.
             @returns The bitmap from the ZIP file, or @c wxNullBitmap if not found.*/
         [[nodiscard]]
         wxBitmap ReadBitmap(const wxString& path, const wxBitmapType bitmapType) const;
         /** @brief Reads an SVG entry from the ZIP file.
-            @param path The path to the image (relative to its location in the ZIP folder structure).
+            @param path The path to the image
+                (relative to its location in the ZIP folder structure).
             @param size The default size for the SVG.
             @returns The SVG as a @c wxBitmap from the ZIP file
                 (which will be invalid if the path was not found).*/
@@ -121,19 +125,26 @@ namespace Wisteria
         /// @param text The text to write to the stream.
         static void WriteText(wxZipOutputStream& zip, const wxString& fileName,
                               const wxString& text);
+
         /// @returns @c true if any read operations had failed,
         ///     usually due to corruption or password protection.
         [[nodiscard]]
         bool HadReadErrors() const noexcept
-            { return m_readErrorShown; }
+            {
+            return m_readErrorShown;
+            }
+
         /// @returns The messages encountered while loading files from the archive.
         [[nodiscard]]
         const std::vector<ArchiveMessage>& GetMessages() const noexcept
-            { return m_messages; }
+            {
+            return m_messages;
+            }
+
         /// @brief Clears all of the logged messages from previous reads.
-        void ClearMessages() noexcept
-            { m_messages.clear(); }
-    private:
+        void ClearMessages() noexcept { m_messages.clear(); }
+
+      private:
         /// @brief Optimized reading function which can use a
         ///     large buffer for larger compressed files.
         bool Read(wxInputStream* stream_in, wxOutputStream& stream_out,
@@ -146,7 +157,7 @@ namespace Wisteria
         mutable std::vector<ArchiveMessage> m_messages;
         mutable bool m_readErrorShown{ false };
         };
-    }
+    } // namespace Wisteria
 
 /** @}*/
 

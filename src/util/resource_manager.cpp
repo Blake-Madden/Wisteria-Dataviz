@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "resource_manager.h"
-#include "../ui/mainframe.h"
 #include "../base/image.h"
+#include "../ui/mainframe.h"
 
 //---------------------------------------------------
 void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
@@ -18,27 +18,30 @@ void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
     if (fn.FileExists())
         {
         if (!fn.IsAbsolute())
-            { fn.MakeAbsolute(); }
+            {
+            fn.MakeAbsolute();
+            }
         m_resourceFile = fn.GetFullPath();
         }
     else
         {
-        wxMessageBox(
-            wxString::Format(
-                _(L"'%s': resource archive file missing. Please reinstall."), resourceArchivePath),
-                _(L"Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(wxString::Format(_(L"'%s': resource archive file missing. Please reinstall."),
+                                      resourceArchivePath),
+                     _(L"Error"), wxOK | wxICON_EXCLAMATION);
         m_resourceFile.Clear();
         return;
         }
     try
         {
         if (m_zipFile.MapFile(m_resourceFile, true, true))
-            { m_zipCatalog.Init(m_zipFile.GetStream(), m_zipFile.GetMapSize()); }
+            {
+            m_zipCatalog.Init(m_zipFile.GetStream(), m_zipFile.GetMapSize());
+            }
         }
     catch (...)
         {
-        wxMessageBox(_(L"Cannot open resource collection file."),
-            _(L"Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(_(L"Cannot open resource collection file."), _(L"Error"),
+                     wxOK | wxICON_EXCLAMATION);
         m_resourceFile.Clear();
         return;
         }
@@ -46,8 +49,10 @@ void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
 
 //---------------------------------------------------
 wxBitmap ResourceManager::ExtractBitmap(const wxString& bmpPath,
-                                          const wxBitmapType bitmapType) const
-    { return m_zipCatalog.ReadBitmap(bmpPath, bitmapType); }
+                                        const wxBitmapType bitmapType) const
+    {
+    return m_zipCatalog.ReadBitmap(bmpPath, bitmapType);
+    }
 
 //---------------------------------------------------
 wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType bitmapType)
@@ -60,24 +65,27 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
             {
             wxImage img = Wisteria::GraphItems::Image::LoadFile(filePath);
             if (!img.IsOk())
-                { return wxNullBitmap; }
-            wxLogVerbose(L"%s extracted from file. Width=%d, Height=%d",
-                         filePath, img.GetWidth(), img.GetHeight());
+                {
+                return wxNullBitmap;
+                }
+            wxLogVerbose(L"%s extracted from file. Width=%d, Height=%d", filePath, img.GetWidth(),
+                         img.GetHeight());
             return m_imageMap[filePath] = wxBitmap(img);
             }
         // ...otherwise, load from the resource zip file
         else
             {
             wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
-            assert(bmp.IsOk() &&
-                   "Failed to load image from resources!");
-            wxLogVerbose(L"%s extracted from resource file. Width=%d, Height=%d",
-                         filePath, bmp.GetWidth(), bmp.GetHeight());
+            assert(bmp.IsOk() && "Failed to load image from resources!");
+            wxLogVerbose(L"%s extracted from resource file. Width=%d, Height=%d", filePath,
+                         bmp.GetWidth(), bmp.GetHeight());
             return m_imageMap[filePath] = bmp;
             }
         }
     else
-        { return imagePos->second; }
+        {
+        return imagePos->second;
+        }
     }
 
 //-------------------------------------------------------
@@ -93,12 +101,16 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
                    L"Failed to load SVG icon!");
 
             wxVector<wxBitmap> bmps;
-            bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).GetBitmap(wxSize(16, 16)));
-            bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize(32, 32)).GetBitmap(wxSize(32, 32)));
-            bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize(64, 64)).GetBitmap(wxSize(64, 64)));
-            bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize(128, 128)).GetBitmap(wxSize(128, 128)));
+            bmps.push_back(
+                wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).GetBitmap(wxSize(16, 16)));
+            bmps.push_back(
+                wxBitmapBundle::FromSVGFile(path, wxSize(32, 32)).GetBitmap(wxSize(32, 32)));
+            bmps.push_back(
+                wxBitmapBundle::FromSVGFile(path, wxSize(64, 64)).GetBitmap(wxSize(64, 64)));
+            bmps.push_back(
+                wxBitmapBundle::FromSVGFile(path, wxSize(128, 128)).GetBitmap(wxSize(128, 128)));
 
-            const auto[node, inserted] =
+            const auto [node, inserted] =
                 m_bmpBundleMap.insert(std::make_pair(path, wxBitmapBundle::FromBitmaps(bmps)));
 
             return node->second;
@@ -111,14 +123,16 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(64, 64)));
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(128, 128)));
 
-            const auto[node, inserted] =
+            const auto [node, inserted] =
                 m_bmpBundleMap.insert(std::make_pair(path, wxBitmapBundle::FromBitmaps(bmps)));
 
             return node->second;
             }
         }
     else
-        { return imagePos->second; }
+        {
+        return imagePos->second;
+        }
     }
 
 //-------------------------------------------------------
@@ -133,7 +147,7 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     bmps.push_back(wxBitmap(128, 128));
 
     const auto fillIcon = [&color](wxBitmap& bmp)
-        {
+    {
         wxMemoryDC memDC(bmp);
         memDC.SetBrush(wxBrush(color));
         memDC.SetPen(*wxBLACK_PEN);
@@ -141,7 +155,7 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
         memDC.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight());
         memDC.SelectObject(wxNullBitmap);
         assert(bmp.IsOk());
-        };
+    };
 
     std::for_each(bmps.begin(), bmps.end(), fillIcon);
 

@@ -13,10 +13,10 @@
 #define __TEXTREPLACE_H__
 
 #include <memory>
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/regex.h>
 #include <vector>
+#include <wx/regex.h>
+#include <wx/string.h>
+#include <wx/wx.h>
 
 namespace Wisteria
     {
@@ -27,12 +27,14 @@ namespace Wisteria
             This can be useful abbreviating strings, as an example.*/
     class TextReplace
         {
-    public:
+      public:
         /** @brief Interface for applying replacements to a string.
             @param str The string to make replacements within.
             @returns The altered string.*/
         [[nodiscard]]
-        wxString operator()(const wxString& str) const;
+        wxString
+        operator()(const wxString& str) const;
+
         /** @brief Adds a replacement item to the catalog.
             @param regExToReplace A regular expression to search for in text.
             @param replacement The text to replace any matches for @c regExToReplace.
@@ -42,13 +44,16 @@ namespace Wisteria
                             const wxString& replacement)
             {
             if (regExToReplace && regExToReplace->IsValid())
-                { m_replacements.push_back(std::make_pair(regExToReplace, replacement)); }
+                {
+                m_replacements.push_back(std::make_pair(regExToReplace, replacement));
+                }
             else
                 {
                 wxLogWarning(L"Invalid regular expression passed to text replacement helper.");
                 }
             }
-    protected:
+
+      protected:
         /// @brief The text replacement map. This should be initialized with default values
         ///     in derived classes.
         std::vector<std::pair<std::shared_ptr<wxRegEx>, wxString>> m_replacements;
@@ -67,19 +72,19 @@ namespace Wisteria
             - Department -> Dept.
             - Communication -> Comm.
             - Communications -> Comm.
-            
+
             If aggressive, the following will also be included:
             - Science -> Sci.
             - Social -> Soc.
             - Public -> Pub.*/
     class AbbreviateEnglish final : public TextReplace
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param aggressive Set to @c true to use more aggressive abbreviations.
         AbbreviateEnglish(const bool aggressive = false);
         };
-    }
+    } // namespace Wisteria
 
 /** @}*/
 
