@@ -12,13 +12,14 @@
 #ifndef __LOGFILLE_H__
 #define __LOGFILLE_H__
 
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/log.h>
 #include <wx/file.h>
 #include <wx/filename.h>
+#include <wx/log.h>
 #include <wx/stdpaths.h>
+#include <wx/string.h>
+#include <wx/wx.h>
 
+// clang-format off
 /** @brief Logging system that writes its records to a temp file.
     @details Each record in the log report is highly verbose. It will include
      the log level, message, timestamp, and location (function, file, and line #)
@@ -53,9 +54,10 @@
      | @emoji :exclamation: | Error     |
      | @emoji :bug:         | Debug     |
     */
+// clang-format on
 class LogFile : public wxLog
     {
-public:
+  public:
     /// @brief Default constructor.
     /// @param clearPreviousLog @c true to clear the contents of the target
     ///     log file if it exists. @c false is recommended if you wish to
@@ -91,7 +93,9 @@ public:
      */
     [[nodiscard]]
     const wxString& GetLogFilePath() const noexcept
-        { return m_logFilePath; }
+        {
+        return m_logFilePath;
+        }
 
     /// @brief Clears the contents of the log file.
     /// @note Flush will not be called, so pending messages will still
@@ -102,24 +106,22 @@ public:
 
     /// @private
     void Flush() final;
-protected:
+
+  protected:
+    /// @private
+    void DoLogText(const wxString& msg) final { m_buffer << msg << L"\n"; }
 
     /// @private
-    void DoLogText(const wxString &msg) final
-        { m_buffer << msg << L"\n"; }
+    void DoLogRecord(wxLogLevel level, const wxString& msg, const wxLogRecordInfo& info) final;
 
     /// @private
-    void DoLogRecord(wxLogLevel level, const wxString &msg,
-                     const wxLogRecordInfo &info) final;
+    void DoLogTextAtLevel(wxLogLevel level, const wxString& msg) final;
 
-    /// @private
-    void DoLogTextAtLevel(wxLogLevel level, const wxString &msg) final;
-private:
-
+  private:
     wxString m_buffer;
     wxString m_logFilePath;
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__LOGFILLE_H__

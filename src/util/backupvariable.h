@@ -13,76 +13,109 @@
 #define __BACKUP_VARIABLE_H__
 
 /// @brief Class that remembers its original value from construction.
-template <typename T>
+template<typename T>
 class BackupVariable
     {
-public:
+  public:
     /// @brief Constructor.
     /// @param value The starting value.
-    explicit BackupVariable(const T& value) : m_originalValue(value), m_value(value)
-        {}
+    explicit BackupVariable(const T& value) : m_originalValue(value), m_value(value) {}
+
     /// @private
     BackupVariable() = delete;
+
     /// @private
-    void operator=(const T& value) noexcept
-        { m_value = value; }
-    /// @private
-    [[nodiscard]]
-    bool operator==(const T& value) const noexcept
-        { return m_value == value; }
+    void operator=(const T& value) noexcept { m_value = value; }
+
     /// @private
     [[nodiscard]]
-    bool operator<(const T& value) const noexcept
-        { return m_value < value; }
+    bool
+    operator==(const T& value) const noexcept
+        {
+        return m_value == value;
+        }
+
     /// @private
     [[nodiscard]]
-    bool operator<=(const T& value) const noexcept
-        { return m_value <= value; }
+    bool
+    operator<(const T& value) const noexcept
+        {
+        return m_value < value;
+        }
+
     /// @private
     [[nodiscard]]
-    bool operator>(const T& value) const noexcept
-        { return m_value > value; }
+    bool
+    operator<=(const T& value) const noexcept
+        {
+        return m_value <= value;
+        }
+
     /// @private
     [[nodiscard]]
-    bool operator>=(const T& value) const noexcept
-        { return m_value >= value; }
-    /// @private
-    void operator+(const T& value)
-        { m_value + value; }
-    /// @private
-    void operator+=(const T& value)
-        { m_value += value; }
-    /// @private
-    void operator-(const T& value)
-        { m_value - value; }
-    /// @private
-    void operator-=(const T& value)
-        { m_value -= value; }
+    bool
+    operator>(const T& value) const noexcept
+        {
+        return m_value > value;
+        }
+
     /// @private
     [[nodiscard]]
-    operator const T() const noexcept
-        { return m_value; }
+    bool
+    operator>=(const T& value) const noexcept
+        {
+        return m_value >= value;
+        }
+
+    /// @private
+    void operator+(const T& value) { m_value + value; }
+
+    /// @private
+    void operator+=(const T& value) { m_value += value; }
+
+    /// @private
+    void operator-(const T& value) { m_value - value; }
+
+    /// @private
+    void operator-=(const T& value) { m_value -= value; }
+
+    /// @private
+    [[nodiscard]] operator const T() const noexcept { return m_value; }
+
     /// @private
     [[nodiscard]]
-    T* operator&() noexcept
-        { return &m_value; }
+    T*
+    operator&() noexcept
+        {
+        return &m_value;
+        }
+
     /// @returns The current value.
     [[nodiscard]]
     const T& get_value() const noexcept
-        { return m_value; }
+        {
+        return m_value;
+        }
+
     /// @private
     [[nodiscard]]
     T& get_value() noexcept
-        { return m_value; }
+        {
+        return m_value;
+        }
+
     /// @returns @c true if the value has changed.
     [[nodiscard]]
     bool has_changed() const noexcept
-        { return m_value != m_originalValue; }
-private:
+        {
+        return m_value != m_originalValue;
+        }
+
+  private:
     T m_originalValue;
     T m_value;
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__BACKUP_VARIABLE_H__

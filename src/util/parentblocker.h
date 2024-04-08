@@ -14,9 +14,9 @@
 
 #include <cmath>
 #include <string>
-#include <wx/string.h>
-#include <wx/numformatter.h>
 #include <wx/math.h>
+#include <wx/numformatter.h>
+#include <wx/string.h>
 #include <wx/utils.h>
 
 /** @brief Temporarily prevents a window from propagating its event to its parent.
@@ -25,7 +25,7 @@
         go back to the parent and cause an infinite loop, so this will prevent that.*/
 class ParentEventBlocker
     {
-public:
+  public:
     /** @brief Constructor/
         @param window The window whose event propagation should be blocked temporarily.*/
     explicit ParentEventBlocker(wxWindow* window) : m_window(window)
@@ -33,18 +33,20 @@ public:
         m_style = m_window->GetExtraStyle();
         m_window->SetExtraStyle(m_style | wxWS_EX_BLOCK_EVENTS);
         }
+
     /// @private
-    ~ParentEventBlocker()
-        { m_window->SetExtraStyle(m_style); }
+    ~ParentEventBlocker() { m_window->SetExtraStyle(m_style); }
+
     /// @private
     ParentEventBlocker(const ParentEventBlocker&) = delete;
     /// @private
     ParentEventBlocker& operator=(const ParentEventBlocker&) = delete;
-private:
-    wxWindow* m_window{nullptr};
+
+  private:
+    wxWindow* m_window{ nullptr };
     long m_style{ 0 };
     };
 
- /** @}*/
+    /** @}*/
 
 #endif //__PARENT_BLOCKER_H__

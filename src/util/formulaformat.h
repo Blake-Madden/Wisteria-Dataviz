@@ -14,15 +14,15 @@
 
 #include <cmath>
 #include <string>
-#include <wx/string.h>
-#include <wx/numformatter.h>
 #include <wx/math.h>
+#include <wx/numformatter.h>
+#include <wx/string.h>
 #include <wx/utils.h>
 
 /// @brief Class for formatting math formulas between U.S. and non-U.S. locales.
 class FormulaFormat
     {
-public:
+  public:
     /// @brief Converts a U.S.-formatted math expression into the current locale format.
     /// @param expression The U.S.-formatted formula to convert.
     /// @returns The formula in the current locale's format.
@@ -31,6 +31,7 @@ public:
     /// @param expression The locale-formatted formula to convert.
     /// @returns The formula in the U.S. format.
     static wxString FormatMathExpressionToUS(const wxString& expression);
+
     /// @returns The locale's list separator.
     static wchar_t GetListSeparator() noexcept
         {
@@ -39,6 +40,6 @@ public:
         }
     };
 
- /** @}*/
+    /** @}*/
 
 #endif //__FORMAT_FORMULA_H__

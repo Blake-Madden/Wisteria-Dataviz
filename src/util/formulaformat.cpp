@@ -15,14 +15,20 @@ wxString FormulaFormat::FormatMathExpressionFromUS(const wxString& expression)
     for (size_t i = 0; i < formattedExpression.length(); ++i)
         {
         if (formattedExpression[i] == L',')
-            { formattedExpression[i] = GetListSeparator(); }
+            {
+            formattedExpression[i] = GetListSeparator();
+            }
         else if (formattedExpression[i] == L'.')
             {
             // if ellipses
-            if (i+1 < formattedExpression.length() && formattedExpression[i+1] == L'.')
-                { continue; }
-            else if (i > 0 && formattedExpression[i-1] == L'.')
-                { continue; }
+            if (i + 1 < formattedExpression.length() && formattedExpression[i + 1] == L'.')
+                {
+                continue;
+                }
+            else if (i > 0 && formattedExpression[i - 1] == L'.')
+                {
+                continue;
+                }
             formattedExpression[i] = wxNumberFormatter::GetDecimalSeparator();
             }
         }
@@ -36,10 +42,13 @@ wxString FormulaFormat::FormatMathExpressionToUS(const wxString& expression)
     for (size_t i = 0; i < formattedExpression.length(); ++i)
         {
         if (formattedExpression[i] == wxNumberFormatter::GetDecimalSeparator())
-            { formattedExpression[i] = L'.'; }
+            {
+            formattedExpression[i] = L'.';
+            }
         else if (formattedExpression[i] == GetListSeparator())
-            { formattedExpression[i] = L','; }
+            {
+            formattedExpression[i] = L',';
+            }
         }
     return formattedExpression;
     }
-
