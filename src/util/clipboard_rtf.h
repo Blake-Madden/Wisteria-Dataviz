@@ -25,7 +25,7 @@ class wxRtfDataObject : public wxDataObjectSimple
     /** @brief Constructor. May be used to initialize the text
             (otherwise, SetText() should be used later).
         @param rtf The RTF data.*/
-    wxRtfDataObject(const wxString& rtf = wxEmptyString)
+    wxRtfDataObject(const wxString& rtf = wxString{})
         :
 #ifdef __WXMSW__
           wxDataObjectSimple(L"Rich Text Format"),
@@ -40,7 +40,7 @@ class wxRtfDataObject : public wxDataObjectSimple
 
     /** @brief Sets the (Rich Text Formatted) text.
         @param rtf The RTF data.*/
-    void SetText(const wxString& rtf) { m_rtf = rtf; }
+    void SetText(wxString rtf) { m_rtf = std::move(rtf); }
 
     /** @param format The data's format (not used).
         @returns The size of the RTF data in bytes. */
@@ -55,7 +55,7 @@ class wxRtfDataObject : public wxDataObjectSimple
     size_t GetDataSize() const final
         {
         const wxCharBuffer cBuffer = m_rtf.mb_str();
-        return std::strlen(cBuffer.data());
+        return cBuffer.length();
         }
 
     /** @brief Copy the data to the buffer.
@@ -75,7 +75,7 @@ class wxRtfDataObject : public wxDataObjectSimple
     bool GetDataHere(void* buf) const final
         {
         const wxCharBuffer cBuffer = m_rtf.mb_str();
-        std::memcpy(buf, cBuffer.data(), std::strlen(cBuffer.data()));
+        std::memcpy(buf, cBuffer.data(), cBuffer.length());
         return true;
         }
 
