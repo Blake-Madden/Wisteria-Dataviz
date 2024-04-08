@@ -12,8 +12,8 @@ using namespace Wisteria::UI;
 
 wxIMPLEMENT_DYNAMIC_CLASS(SideBarBook, wxControl)
 
-wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
-wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
+wxDEFINE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
+wxDEFINE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
 
 //---------------------------------------------------
 SideBarBook::SideBarBook(wxWindow *parent, wxWindowID id) :
@@ -24,7 +24,7 @@ SideBarBook::SideBarBook(wxWindow *parent, wxWindowID id) :
     m_sidebar->SetMinSize(wxSize(100, -1));
 
     // bind events
-    Bind(EVT_SIDEBAR_CLICK, &SideBarBook::OnListSelected, this, wxID_ANY);
+    Bind(wxEVT_SIDEBAR_CLICK, &SideBarBook::OnListSelected, this, wxID_ANY);
     Bind(wxEVT_SIZE, &SideBarBook::OnSize, this);
     }
 
@@ -49,11 +49,11 @@ void SideBarBook::UpdateSelectedPage(size_t newsel)
 
 //---------------------------------------------------
 wxBookCtrlEvent* SideBarBook::CreatePageChangingEvent() const
-    { return new wxBookCtrlEvent(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, m_windowId); }
+    { return new wxBookCtrlEvent(wxEVT_SIDEBARBOOK_PAGE_CHANGING, m_windowId); }
 
 //---------------------------------------------------
 void SideBarBook::MakeChangedEvent(wxBookCtrlEvent &event)
-    { event.SetEventType(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED); }
+    { event.SetEventType(wxEVT_SIDEBARBOOK_PAGE_CHANGED); }
 
 //---------------------------------------------------
 bool SideBarBook::AddPage(wxWindow *page,

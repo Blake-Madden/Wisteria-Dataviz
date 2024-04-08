@@ -20,9 +20,18 @@
 #include "sidebar.h"
 
 /// @private
-wxDECLARE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
+wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
+
 /// @private
-wxDECLARE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
+#define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn)                                                           \
+    wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
+
+/// @private
+wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
+
+/// @private
+#define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn)                                                           \
+    wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
 
 namespace Wisteria::UI
     {
@@ -221,15 +230,5 @@ namespace Wisteria::UI
     }
 
 /** @}*/
-
-// ----------------------------------------------------------------------------
-// listbook event class and related stuff
-// ----------------------------------------------------------------------------
-
-#define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn) \
-    wx__DECLARE_EVT1(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
-
-#define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn) \
-    wx__DECLARE_EVT1(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
 
 #endif // __SIDEBARBOOK_H__

@@ -10,7 +10,7 @@
 
 using namespace Wisteria::UI;
 
-wxDEFINE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_SIDEBAR_CLICK, wxCommandEvent);
 
 //---------------------------------------------------
 SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
@@ -973,7 +973,7 @@ bool SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
+        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
         cevent.SetString(m_folders[GetSelectedFolder().value()].m_label);
         cevent.SetInt(m_folders[GetSelectedFolder().value()].m_id);
         cevent.SetEventObject(this);
@@ -1082,7 +1082,7 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
+        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
         cevent.SetString(m_folders[GetSelectedFolder().value()].
             m_subItems[subItemIndex.value()].m_label);
         cevent.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
@@ -1147,7 +1147,7 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
+        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
         cevent.SetString(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_label);
         cevent.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
         cevent.SetInt(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_id);

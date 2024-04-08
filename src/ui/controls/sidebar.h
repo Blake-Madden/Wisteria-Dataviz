@@ -12,20 +12,24 @@
 #ifndef __SIDEBAR_H__
 #define __SIDEBAR_H__
 
-#include <wx/wx.h>
-#include <wx/window.h>
-#include <wx/scrolwin.h>
-#include <wx/dcbuffer.h>
-#include <wx/dcgraph.h>
-#include <wx/artprov.h>
-#include <wx/uilocale.h>
-#include <vector>
-#include <set>
 #include <algorithm>
 #include <optional>
+#include <set>
+#include <vector>
+#include <wx/artprov.h>
+#include <wx/dcbuffer.h>
+#include <wx/dcgraph.h>
+#include <wx/scrolwin.h>
+#include <wx/uilocale.h>
+#include <wx/window.h>
+#include <wx/wx.h>
 
 /// @private
-wxDECLARE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_SIDEBAR_CLICK, wxCommandEvent);
+
+/// @private
+#define EVT_SIDEBAR_CLICK(winid, fn)                                                               \
+    wx__DECLARE_EVT1(wxEVT_SIDEBAR_CLICK, winid, wxCommandEventHandler(fn))
 
 namespace Wisteria::UI
     {
@@ -62,7 +66,7 @@ namespace Wisteria::UI
             and items (sub-items under the folders).*/
     class SideBar final : public wxScrolledCanvas
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param parent The parent window.
         /// @param id The control's ID.
@@ -77,11 +81,13 @@ namespace Wisteria::UI
             {
             /// @private
             [[nodiscard]]
-            bool operator<(const SideBarSubItem& that) const
+            bool
+            operator<(const SideBarSubItem& that) const
                 {
-                return wxUILocale::GetCurrent().
-                    CompareStrings(m_label, that.m_label, wxCompare_CaseInsensitive) < 0;
+                return wxUILocale::GetCurrent().CompareStrings(m_label, that.m_label,
+                                                               wxCompare_CaseInsensitive) < 0;
                 }
+
             /// @brief The string to display for the item.
             wxString m_label;
             /// @brief An ID to assign to the item.
@@ -97,40 +103,53 @@ namespace Wisteria::UI
         class SideBarItem
             {
             friend class SideBar;
-        public:
+
+          public:
             /// @brief Opens the folder to display its children nodes.
             void Expand() noexcept
                 {
                 if (m_subItems.size())
-                    { m_isExpanded = true; }
+                    {
+                    m_isExpanded = true;
+                    }
                 }
+
             /// @brief Closes the folder, hiding its children.
             void Collapse() noexcept
                 {
                 if (m_subItems.size())
-                    { m_isExpanded = false; }
+                    {
+                    m_isExpanded = false;
+                    }
                 }
+
             /// @returns The number of child items in this folder.
             [[nodiscard]]
             size_t GetSubItemCount() const noexcept
-                { return m_subItems.size(); }
+                {
+                return m_subItems.size();
+                }
+
             /// @returns @c true if the selected item in the sidebar is
             ///     one of this folder's children.
             [[nodiscard]]
             bool IsSubItemSelected() const noexcept
                 {
-                return (m_selectedItem.has_value() &&
-                        m_selectedItem.value() < m_subItems.size());
+                return (m_selectedItem.has_value() && m_selectedItem.value() < m_subItems.size());
                 }
+
             /// @brief Sorts the folder's subitems alphabetically
             ///     (locale sensitive, case insensitively).
-            void SortSubItems()
-                { std::sort(m_subItems.begin(), m_subItems.end()); }
+            void SortSubItems() { std::sort(m_subItems.begin(), m_subItems.end()); }
+
             /// @returns The item's ID.
             [[nodiscard]]
             wxWindowID GetId() const noexcept
-                { return m_id; }
-        private:
+                {
+                return m_id;
+                }
+
+          private:
             wxString m_label;
             wxWindowID m_id{ wxID_ANY };
             std::optional<size_t> m_iconIndex{ std::nullopt };
@@ -188,6 +207,7 @@ namespace Wisteria::UI
             RecalcSizes();
             Refresh();
             }
+
         /** @brief Deletes a specific (root-level) folder (by index).
             @param index The index of the folder to delete.*/
         void DeleteFolder(const size_t index)
@@ -195,22 +215,28 @@ namespace Wisteria::UI
             m_folders.erase(m_folders.begin() + index);
             m_highlightedFolder = std::nullopt;
             if (m_folders.size() == 0)
-                { m_selectedFolder = std::nullopt; }
-            else if (!m_selectedFolder.has_value() ||
-                m_selectedFolder.value() >= m_folders.size())
-                { m_selectedFolder = 0; }
+                {
+                m_selectedFolder = std::nullopt;
+                }
+            else if (!m_selectedFolder.has_value() || m_selectedFolder.value() >= m_folders.size())
+                {
+                m_selectedFolder = 0;
+                }
             RecalcSizes();
             Refresh();
             }
 
         /** @brief Sets the control's image list.
             @param imageList A vector of bitmaps to use as the image list.*/
-        void SetImageList(const std::vector<wxBitmapBundle>& imageList)
-            { m_imageList = imageList; }
+        void SetImageList(const std::vector<wxBitmapBundle>& imageList) { m_imageList = imageList; }
+
         /** @returns The control's image list.*/
         [[nodiscard]]
         std::vector<wxBitmapBundle>& GetImageList() noexcept
-            { return m_imageList; }
+            {
+            return m_imageList;
+            }
+
         /// @}
 
         /// @name Folder Functions
@@ -221,7 +247,9 @@ namespace Wisteria::UI
             @note Subitems are not included in this count.*/
         [[nodiscard]]
         size_t GetFolderCount() const noexcept
-            { return m_folders.size(); }
+            {
+            return m_folders.size();
+            }
 
         /** @returns The label of a given root item.
             @param item The index of the item in the list of root items.*/
@@ -229,9 +257,12 @@ namespace Wisteria::UI
         wxString GetFolderText(const size_t item) const
             {
             if (item >= GetFolderCount())
-                { return wxEmptyString; }
+                {
+                return wxEmptyString;
+                }
             return m_folders[item].m_label;
             }
+
         /** @brief Scrolls to folder (by index) if not fully visible.
             @param index The index of the folder to make visible.*/
         void EnsureFolderVisible(const size_t index);
@@ -250,24 +281,28 @@ namespace Wisteria::UI
                 (i.e., the selection event will not be fired).
             @returns @c true if the folder was selected.*/
         bool SelectFolder(const size_t item, const bool setFocus = true,
-                          const bool sendEvent = true,
-                          const bool collapseIfExpanded = false);
+                          const bool sendEvent = true, const bool collapseIfExpanded = false);
         /** @brief Selects a subitem.
             @param item The position of the parent item to select.
             @param subItem The position of the subitem (relative to its parent) to select.
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
             @returns @c true if the subitem (or at least the folder) was found and selected.*/
-        bool SelectSubItem(const size_t item, const size_t subItem,
-                           const bool setFocus = true, const bool sendEvent = true);
+        bool SelectSubItem(const size_t item, const size_t subItem, const bool setFocus = true,
+                           const bool sendEvent = true);
+
         /** @brief Selects a subitem.
-            @param item The position of the parent item and subitem (relative to its parent) to select.
+            @param item The position of the parent item and subitem (relative to its parent) to
+           select.
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
             @returns @c true if the subitem was found and selected.*/
         bool SelectSubItem(const std::pair<size_t, size_t>& item, const bool setFocus = true,
                            const bool sendEvent = true)
-            { return SelectSubItem(item.first, item.second, setFocus, sendEvent); }
+            {
+            return SelectSubItem(item.first, item.second, setFocus, sendEvent);
+            }
+
         /** @brief Selects a folder or subitem with the provided ID.
             @param folderId The ID of the parent item to select.
             @param subItemId The ID of the item to select.
@@ -276,6 +311,7 @@ namespace Wisteria::UI
             @returns @c true if the item was found and selected.*/
         bool SelectSubItemById(const wxWindowID folderId, const wxWindowID subItemId,
                                const bool setFocus = true, const bool sendEvent = true);
+
         /** @brief Selects a folder or subitem with the provided ID.
             @param folderAndSubItemId The position of the parent item and ID of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
@@ -284,27 +320,33 @@ namespace Wisteria::UI
         bool SelectSubItemById(const std::pair<size_t, wxWindowID> folderAndSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
-            return SelectSubItemById(folderAndSubItemId.first,
-                                     folderAndSubItemId.second, setFocus, sendEvent);
+            return SelectSubItemById(folderAndSubItemId.first, folderAndSubItemId.second, setFocus,
+                                     sendEvent);
             }
+
         /** @brief Selects a folder or subitem.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
         void SelectAnyItem(const size_t item, const bool setFocus = true,
                            const bool sendEvent = true);
+
         /** @returns The position of the selected root-level item, or @c std::nullopt
                 if nothing is selected.
             @note If a subitem is selected, this will return the position of its parent item.*/
         [[nodiscard]]
         std::optional<size_t> GetSelectedFolder() const noexcept
-            { return m_selectedFolder; }
+            {
+            return m_selectedFolder;
+            }
+
         /** @brief Gets the position of the selected item (or sub item).
             @returns The raw position of the selected item,
                 meaning the index of the item including subitems.\n
                 Returns @c std::nullopt if nothing is selected.*/
         [[nodiscard]]
         std::optional<size_t> GetSelectedAnyItem() const;
+
         /** @returns The ID of the selected root-level item,
                 or @c std::nullopt if nothing is selected.
             @note If a subitem is selected, this will return the ID of its parent item.*/
@@ -312,26 +354,28 @@ namespace Wisteria::UI
         std::optional<wxWindowID> GetSelectedFolderId() const
             {
             return IsFolderSelected() ?
-                std::optional<wxWindowID>(m_folders[GetSelectedFolder().value()].m_id) :
-                std::nullopt;
+                       std::optional<wxWindowID>(m_folders[GetSelectedFolder().value()].m_id) :
+                       std::nullopt;
             }
+
         /** @brief Gets parent ID and ID of its selected subitem, or a pair of
                 @c std::nullopt if no subitem is selected.
             @returns The position of the parent and the subitem's ID.*/
         [[nodiscard]]
         std::pair<std::optional<wxWindowID>, std::optional<wxWindowID>>
-            GetSelectedSubItemId() const;
+        GetSelectedSubItemId() const;
         /** @returns The label of the selected folder
                 (or subitem if the folder has a select subitem).*/
         [[nodiscard]]
         wxString GetSelectedLabel() const;
+
         /** @returns Whether a (root-level) item is selected in the sidebar.*/
         [[nodiscard]]
         bool IsFolderSelected() const noexcept
             {
-            return (m_selectedFolder.has_value() &&
-                    m_selectedFolder.value() < GetFolderCount());
+            return (m_selectedFolder.has_value() && m_selectedFolder.value() < GetFolderCount());
             }
+
         /// @}
 
         /// @name Search Functions
@@ -350,7 +394,7 @@ namespace Wisteria::UI
                 pair of @c std::nullopt otherwise.*/
         [[nodiscard]]
         std::pair<std::optional<size_t>, std::optional<size_t>>
-            FindSubItem(const wxWindowID Id) const;
+        FindSubItem(const wxWindowID Id) const;
         /** @brief Searches for a sub item by ID, but only within a specified parent item
             @param parentId The parent item's ID to search within.
             @param subItemId The ID of the sub item to search for.
@@ -358,7 +402,7 @@ namespace Wisteria::UI
                 pair of @c std::nullopt otherwise.*/
         [[nodiscard]]
         std::pair<std::optional<size_t>, std::optional<size_t>>
-            FindSubItem(const wxWindowID parentId, const wxWindowID subItemId) const;
+        FindSubItem(const wxWindowID parentId, const wxWindowID subItemId) const;
         /** Searches for a sub item by ID, but only within a specified parent item
             @param parentId The parent item's ID to search within.
             @param subItem Information about the subitem to search for. While try to find
@@ -367,7 +411,7 @@ namespace Wisteria::UI
                 pair of @c std::nullopt otherwise.*/
         [[nodiscard]]
         std::pair<std::optional<size_t>, std::optional<size_t>>
-            FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
+        FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
         /** @brief Searches for a subitem by label
             @details Note that it will search within all of the root-level items.
             @param label The Label of the sub item to search for.
@@ -375,7 +419,8 @@ namespace Wisteria::UI
                 pair of @c std::nullopt otherwise.*/
         [[nodiscard]]
         std::pair<std::optional<size_t>, std::optional<size_t>>
-            FindSubItem(const wxString& label) const;
+        FindSubItem(const wxString& label) const;
+
         /// @}
 
         /// @name Appearance Functions
@@ -384,24 +429,24 @@ namespace Wisteria::UI
 
         /** @brief Sets the color for the currently selected item.
             @param color The color to use.*/
-        void SetSelectedColour(const wxColour color) noexcept
-            { m_selectedColor = color; }
+        void SetSelectedColour(const wxColour color) noexcept { m_selectedColor = color; }
+
         /** @brief Sets the font color for the currently selected item.
             @param color The color to use.*/
-        void SetSelectedFontColour(const wxColour color) noexcept
-            { m_selectedFontColor = color; }
+        void SetSelectedFontColour(const wxColour color) noexcept { m_selectedFontColor = color; }
+
         /** @brief Sets the color for the parents.
             @param color The color to use.*/
-        void SetParentColour(const wxColour color) noexcept
-            { m_parentColor = color; }
+        void SetParentColour(const wxColour color) noexcept { m_parentColor = color; }
+
         /** @brief Sets the color for items that are being moused over.
             @param color The color to use.*/
-        void SetHighlightColour(const wxColour color) noexcept
-            { m_highlightColor = color; }
+        void SetHighlightColour(const wxColour color) noexcept { m_highlightColor = color; }
+
         /** @brief Sets the font color for items that are being moused over.
             @param color The color to use.*/
-        void SetHighlightFontColour(const wxColour color) noexcept
-            { m_highlightFontColor = color; }
+        void SetHighlightFontColour(const wxColour color) noexcept { m_highlightFontColor = color; }
+
         /** @brief Sets the entire coloring schema of the control.
             @param colorScheme The color scheme to use.*/
         void SetColorScheme(const SideBarColorScheme& colorScheme)
@@ -418,11 +463,13 @@ namespace Wisteria::UI
         /// @returns Which sort of effect is being used to render the control.
         [[nodiscard]]
         SidebarStyle GetStyle() const noexcept
-            { return m_style; }
+            {
+            return m_style;
+            }
+
         /// @brief Sets the visual effect to render the control.
         /// @param style The style to use.
-        void SetStyle(const SidebarStyle style) noexcept
-            { m_style = style; }
+        void SetStyle(const SidebarStyle style) noexcept { m_style = style; }
 
         /** @brief Sets the minimum width of the control to fit its widest item.
             @returns The new width of the control.*/
@@ -439,9 +486,9 @@ namespace Wisteria::UI
         void Minimize();
         /// @}
 
-        /** @brief Saves information about which items are selected and expanded.*/
+        /// @brief Saves information about which items are selected and expanded.
         void SaveState();
-        /** @brief Selects and expands/collapses items previously saved from call to SaveState().*/
+        /// @brief Selects and expands/collapses items previously saved from call to SaveState().
         void ResetState();
 
         /// @brief Perform initial layout and size calculations.
@@ -450,13 +497,15 @@ namespace Wisteria::UI
 
         /** @brief Sets the size for all the icons (in DIPs).
             @param sz The icons' sizes.*/
-        void SetIconSize(const wxSize sz)
-            { m_iconSizeDIPs = sz; }
+        void SetIconSize(const wxSize sz) { m_iconSizeDIPs = sz; }
 
         /// @private
         [[nodiscard]]
         const std::vector<wxBitmapBundle>& GetImageList() const noexcept
-            { return m_imageList; }
+            {
+            return m_imageList;
+            }
+
         /// @private
         [[nodiscard]]
         const SideBarItem& GetFolder(const size_t item) const
@@ -464,46 +513,57 @@ namespace Wisteria::UI
             assert(item < m_folders.size() && L"Invalid item in call to GetFolder()!");
             return m_folders.at(item);
             }
+
         /// @private
         [[nodiscard]]
         std::optional<size_t> FindFolder(const std::optional<wxWindowID> Id) const
-            { return (Id.has_value() ? FindFolder(Id.value()) : std::nullopt); }
+            {
+            return (Id.has_value() ? FindFolder(Id.value()) : std::nullopt);
+            }
+
         /// @private
         [[nodiscard]]
         std::pair<std::optional<size_t>, std::optional<size_t>>
-            FindSubItem(std::optional<wxWindowID> parentId, std::optional<wxWindowID> subItemId) const
+        FindSubItem(std::optional<wxWindowID> parentId, std::optional<wxWindowID> subItemId) const
             {
             return ((parentId.has_value() && subItemId.has_value()) ?
-                FindSubItem(parentId.value(), subItemId.value()) :
-                std::make_pair(std::nullopt, std::nullopt));
+                        FindSubItem(parentId.value(), subItemId.value()) :
+                        std::make_pair(std::nullopt, std::nullopt));
             }
+
         /// @private
         [[nodiscard]]
         std::pair<std::optional<size_t>, std::optional<size_t>>
-            FindSubItem(std::optional<wxWindowID> Id) const
+        FindSubItem(std::optional<wxWindowID> Id) const
             {
             return (Id.has_value() ? FindSubItem(Id.value()) :
-                std::make_pair(std::nullopt, std::nullopt));
+                                     std::make_pair(std::nullopt, std::nullopt));
             }
+
         /// @private
         void SelectFolder(std::optional<size_t> item, const bool setFocus = true,
-            const bool sendEvent = true)
+                          const bool sendEvent = true)
             {
             if (item.has_value())
-                { SelectFolder(item.value(), setFocus, sendEvent); }
+                {
+                SelectFolder(item.value(), setFocus, sendEvent);
+                }
             }
+
         /// @private
-        bool SelectSubItem(
-            const std::pair<std::optional<size_t>, std::optional<size_t>> item,
-            const bool setFocus = true, const bool sendEvent = true)
+        bool SelectSubItem(const std::pair<std::optional<size_t>, std::optional<size_t>> item,
+                           const bool setFocus = true, const bool sendEvent = true)
             {
             if (item.first.has_value() && item.second.has_value())
-                { return SelectSubItem(item.first.value(), item.second.value(), setFocus, sendEvent); }
+                {
+                return SelectSubItem(item.first.value(), item.second.value(), setFocus, sendEvent);
+                }
             return false;
             }
+
         /// @private
-        bool SelectSubItemById(const std::pair<std::optional<wxWindowID>,
-                                               std::optional<wxWindowID>> folderAndSubItemId,
+        bool SelectSubItemById(const std::pair<std::optional<wxWindowID>, std::optional<wxWindowID>>
+                                   folderAndSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
             if (folderAndSubItemId.first.has_value() && folderAndSubItemId.second.has_value())
@@ -513,14 +573,16 @@ namespace Wisteria::UI
                 }
             return false;
             }
+
         /// @brief Updates the areas and positions for the items and returns
         ///     their collective height.
         /// @returns The total height of all items and the height to where the active item is.
-        /// @internal This is only useful for clients if trying to measure the height of the content
-        ///     (for something like screenshots).
+        /// @internal This is only useful for clients if trying to measure the height of the
+        ///     content (for something like screenshots).
         /// @private
         std::pair<size_t, size_t> CalculateItemRects();
-    private:
+
+      private:
         /** @brief Gets the width (label, icon, and padding) of a given root item.
             @details The item's subitem width are factored into this (including their margins),
                 so the width of the widest subitem will be returned if wider than the root item.
@@ -532,13 +594,13 @@ namespace Wisteria::UI
         void RecalcSizes();
         /// @brief Removes selection.
         void ClearHighlightedItems() noexcept;
+
         /// @returns @c true if an item's icon ID is valid.
         /// @param iconId The icon ID to validate.
         bool IsValidImageId(std::optional<size_t> iconId) const
             {
-            return (iconId.has_value() &&
-                iconId.value() < GetImageList().size() &&
-                GetImageList()[iconId.value()].IsOk());
+            return (iconId.has_value() && iconId.value() < GetImageList().size() &&
+                    GetImageList()[iconId.value()].IsOk());
             }
 
         // events
@@ -557,27 +619,43 @@ namespace Wisteria::UI
         void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color);
 
         std::vector<wxBitmapBundle> m_imageList;
+
         [[nodiscard]]
         wxCoord GetItemHeight() const noexcept
-            { return m_itemHeight; }
+            {
+            return m_itemHeight;
+            }
+
         [[nodiscard]]
         wxSize GetIconSize() const
-            { return FromDIP(m_iconSizeDIPs); }
+            {
+            return FromDIP(m_iconSizeDIPs);
+            }
+
         [[nodiscard]]
         wxCoord GetPaddingWidth() const
-            { return wxSizerFlags::GetDefaultBorder() * 2; }
+            {
+            return wxSizerFlags::GetDefaultBorder() * 2;
+            }
+
         [[nodiscard]]
         wxCoord GetPaddingHeight() const
-            { return wxSizerFlags::GetDefaultBorder() * 2; }
+            {
+            return wxSizerFlags::GetDefaultBorder() * 2;
+            }
+
         [[nodiscard]]
         wxCoord GetSubitemIndentation() const
-            { return GetPaddingWidth() * 2; }
+            {
+            return GetPaddingWidth() * 2;
+            }
 
         wxCoord m_itemHeight{ 0 };
         std::optional<size_t> m_highlightedFolder{ std::nullopt };
         // the folder index, and the index of its subitem
-        std::pair<std::optional<size_t>, std::optional<size_t>>
-            m_folderWithHighlightedSubitem{ std::make_pair(std::nullopt, std::nullopt) };
+        std::pair<std::optional<size_t>, std::optional<size_t>> m_folderWithHighlightedSubitem{
+            std::make_pair(std::nullopt, std::nullopt)
+        };
         std::optional<wxRect> m_highlightedRect{ std::nullopt };
         std::optional<size_t> m_selectedFolder{ std::nullopt };
         std::optional<size_t> m_savedSelectedItem{ std::nullopt };
@@ -585,18 +663,24 @@ namespace Wisteria::UI
 
         struct SideBarStateInfo
             {
-            explicit SideBarStateInfo(const SideBarItem& that) noexcept :
-                m_id(that.m_id),
-                m_selectedItem(that.m_selectedItem),
-                m_isExpanded(that.m_isExpanded)
-                {}
+            explicit SideBarStateInfo(const SideBarItem& that) noexcept
+                : m_id(that.m_id), m_selectedItem(that.m_selectedItem),
+                  m_isExpanded(that.m_isExpanded)
+                {
+                }
+
             [[nodiscard]]
-            bool operator<(const SideBarStateInfo& that) const noexcept
-                { return m_id < that.m_id; }
+            bool
+            operator<(const SideBarStateInfo& that) const noexcept
+                {
+                return m_id < that.m_id;
+                }
+
             wxWindowID m_id{ wxID_ANY };
             std::optional<size_t> m_selectedItem{ std::nullopt };
             bool m_isExpanded{ true };
             };
+
         std::set<SideBarStateInfo> m_stateInfo;
 
         std::vector<SideBarItem> m_folders;
@@ -612,7 +696,7 @@ namespace Wisteria::UI
         bool m_highlightedIsSelected{ false };
         bool m_previouslyHighlightedItemsIsSelected{ false };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

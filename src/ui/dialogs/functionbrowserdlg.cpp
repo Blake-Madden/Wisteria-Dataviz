@@ -235,7 +235,7 @@ bool FunctionBrowserDlg::Create(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
     // connect events
     Bind(wxEVT_BUTTON, &FunctionBrowserDlg::OnInsertButtonClick, this, FunctionBrowserDlg::ID_INSERT_BUTTON);
     Bind(wxEVT_BUTTON, &FunctionBrowserDlg::OnInsertButtonClick, this, FunctionBrowserDlg::ID_FUNCTION_LIST);
-    Bind(EVT_SIDEBAR_CLICK, &FunctionBrowserDlg::OnListSelected, this, FunctionBrowserDlg::ID_CATEGORY_LIST);
+    Bind(wxEVT_SIDEBAR_CLICK, &FunctionBrowserDlg::OnListSelected, this, FunctionBrowserDlg::ID_CATEGORY_LIST);
     Bind(wxEVT_LISTBOX, &FunctionBrowserDlg::OnListSelected, this);
     Bind(wxEVT_HTML_LINK_CLICKED, &FunctionBrowserDlg::OnHyperlinkClicked, this);
 
