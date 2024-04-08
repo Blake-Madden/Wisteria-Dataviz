@@ -12,31 +12,31 @@
 #ifndef __OPACITY_DLG_H__
 #define __OPACITY_DLG_H__
 
-#include <wx/wx.h>
+#include "../controls/thumbnail.h"
+#include <wx/dialog.h>
+#include <wx/slider.h>
 #include <wx/string.h>
 #include <wx/valgen.h>
-#include <wx/slider.h>
-#include <wx/dialog.h>
-#include "../controls/thumbnail.h"
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
     class OpacityDlg final : public wxDialog
         {
-    public:
-         /** @brief Constructor.
-             @param parent The dialog's parent.
-             @param opacity The starting opacity.
-             @param image The image whose opacity you are changing.
-             @param id The dialog's ID.
-             @param caption The dialog's title.
-             @param pos The dialog's screen position.
-             @param size The dialog's initial size.
-             @param style The dialog's flags.*/
+      public:
+        /** @brief Constructor.
+            @param parent The dialog's parent.
+            @param opacity The starting opacity.
+            @param image The image whose opacity you are changing.
+            @param id The dialog's ID.
+            @param caption The dialog's title.
+            @param pos The dialog's screen position.
+            @param size The dialog's initial size.
+            @param style The dialog's flags.*/
         OpacityDlg(wxWindow* parent, const uint8_t opacity, const wxBitmap& image,
                    wxWindowID id = wxID_ANY, const wxString& caption = _(L"Set Opacity"),
                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                   long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
+                   long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private
         OpacityDlg() = delete;
         /// @private
@@ -47,8 +47,11 @@ namespace Wisteria::UI
         /// @returns The selected opacity.
         [[nodiscard]]
         int GetOpacity() const noexcept
-            { return m_opacity; }
-    private:
+            {
+            return m_opacity;
+            }
+
+      private:
         void CreateControls();
         void OnChangeOpacity(wxScrollEvent& event);
 
@@ -56,7 +59,7 @@ namespace Wisteria::UI
         int m_opacity{ wxALPHA_OPAQUE }; // validator needs an int, not a uint8_t
         wxBitmap m_image;
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

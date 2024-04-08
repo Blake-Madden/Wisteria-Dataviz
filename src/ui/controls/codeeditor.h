@@ -12,15 +12,15 @@
 #ifndef __CODE_EDITOR_H__
 #define __CODE_EDITOR_H__
 
-#include <wx/settings.h>
-#include <wx/stc/stc.h>
-#include <wx/validate.h>
-#include <wx/fdrepdlg.h>
+#include "../../i18n-check/src/donttranslate.h"
+#include "../../i18n-check/src/string_util.h"
 #include <map>
 #include <set>
 #include <vector>
-#include "../../i18n-check/src/string_util.h"
-#include "../../i18n-check/src/donttranslate.h"
+#include <wx/fdrepdlg.h>
+#include <wx/settings.h>
+#include <wx/stc/stc.h>
+#include <wx/validate.h>
 
 /// @brief Namespace for code/formula parsing and editing.
 namespace Wisteria::UI
@@ -63,7 +63,7 @@ namespace Wisteria::UI
     */
     class CodeEditor final : public wxStyledTextCtrl
         {
-    public:
+      public:
         /// @brief Container type for function, class, and category names.
         using NameList = std::set<std::wstring, string_util::string_no_case_less>;
         /** @brief Constructor.
@@ -74,9 +74,9 @@ namespace Wisteria::UI
             @param style The window style for this editor.
             @param name The class name for this window.*/
         explicit CodeEditor(wxWindow* parent, wxWindowID id = wxID_ANY,
-                     const wxPoint& pos = wxDefaultPosition,
-                     const wxSize& size = wxDefaultSize, long style = 0,
-                     const wxString& name = L"CodeEditor");
+                            const wxPoint& pos = wxDefaultPosition,
+                            const wxSize& size = wxDefaultSize, long style = 0,
+                            const wxString& name = L"CodeEditor");
         /// @private
         CodeEditor(const CodeEditor&) = delete;
         /// @private
@@ -84,7 +84,8 @@ namespace Wisteria::UI
 
         /** @brief Sets the language used in this editor.
             @param lang The language.\n
-                @c wxSTC_LEX_LUA, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE are currently supported.*/
+                @c wxSTC_LEX_LUA, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE
+                are currently supported.*/
         void SetLanguage(const int lang);
         /** @brief Adds a library and its functions/classes.
                 This information is used for autocompletion.
@@ -98,10 +99,11 @@ namespace Wisteria::UI
         void AddLibrary(const wxString& library, NameList& functions);
         /** @brief Adds a class and its functions. This information is used for autocompletion.
             @param theClass The name of the class.
-            @param[in,out] functions The functions inside of the class. The syntax for these strings is
-                the name of the function and (optionally) a return type following a tab character.
-                For example, `"GetUser()\tUser"` will load a function named `GetUser`
-                with a return type of `User`.
+            @param[in,out] functions The functions inside of the class.
+                The syntax for these strings is the name of the function and
+                (optionally) a return type following a tab character.
+                For example, `"GetUser()\tUser"` will load a function
+                named `GetUser` with a return type of `User`.
             @sa Finalize().*/
         void AddClass(const wxString& theClass, NameList& functions);
         /** @brief Adds a set of function or class names that the highlighting and
@@ -117,20 +119,26 @@ namespace Wisteria::UI
             @param include Set to @c true to include the line-number margins,
                 @c false to hide them.*/
         void IncludeNumberMargin(const bool include)
-            { SetMarginWidth(0, include ? TextWidth(wxSTC_STYLE_LINENUMBER, L"_999999") : 0); }
+            {
+            SetMarginWidth(0, include ? TextWidth(wxSTC_STYLE_LINENUMBER, L"_999999") : 0);
+            }
+
         /** @brief Sets whether to include the code-folding margins.
             @param include Set to @c true to include the code-folding margins,
                 @c false to hide them.*/
-        void IncludeFoldingMargin(const bool include)
-            { SetMarginWidth(1, include ? 16 : 0); }
+        void IncludeFoldingMargin(const bool include) { SetMarginWidth(1, include ? 16 : 0); }
+
         /// @returns The filepath where the script is currently being saved to.
         [[nodiscard]]
         const wxString& GetScriptFilePath() const noexcept
-            { return m_scriptFilePath; }
+            {
+            return m_scriptFilePath;
+            }
+
         /** @brief Sets the path of where the script is being saved.
             @param filePath The filepath of the script.*/
-        void SetScriptFilePath(const wxString& filePath)
-            { m_scriptFilePath = filePath; }
+        void SetScriptFilePath(const wxString& filePath) { m_scriptFilePath = filePath; }
+
         /// @brief Saves the script.
         /// @note If the script's filepath has not been set, then will prompt for a path.
         /// @returns @c true if file was saved.
@@ -147,7 +155,8 @@ namespace Wisteria::UI
             @param searchFlags How to search. Can be a combination of
                 @c wxSTC_FIND_WHOLEWORD, @c wxSTC_FIND_MATCHCASE, @c wxSTC_FIND_WORDSTART,
                 @c wxSTC_FIND_REGEXP, and @c wxSTC_FIND_POSIX.
-            @param wrapAround @c true to search from the top once the end of the document is reached.
+            @param wrapAround @c true to search from the top once the
+                end of the document is reached.
             @returns The position of the match, or @c wxSTC_INVALID_POSITION if not found*/
         long FindNext(const wxString& textToFind, const int searchFlags = 0,
                       const bool wrapAround = true);
@@ -159,43 +168,55 @@ namespace Wisteria::UI
                 @c wxSTC_FIND_REGEXP, and @c wxSTC_FIND_POSIX.
             @returns The position of the match, or @c wxSTC_INVALID_POSITION if not found.*/
         long FindPrevious(const wxString& textToFind, const int searchFlags = 0);
+
         /** @brief When creating a new script, this will be the first line always included.
                 This is useful if there is another Lua script always included in new scripts.
                 An example of this could be `SetDefaultHeader(L"dofile(\"AppLibrary.lua\")")`.
             @param header The string to include at the top of all new scripts.*/
-        void SetDefaultHeader(const wxString& header)
-            { m_defaultHeader = header; }
+        void SetDefaultHeader(const wxString& header) { m_defaultHeader = header; }
+
         /// @returns The default header being included in all new scripts.
         /// @sa SetDefaultHeader().
         [[nodiscard]]
         const wxString& GetDefaultHeader() const noexcept
-            { return m_defaultHeader; }
+            {
+            return m_defaultHeader;
+            }
+
         /** @brief For autocompletion, this sets the character that divides a library/namespace
                 from its member classes/functions.
             @param ch The separator character.*/
-        void SetLibraryAccessor(const wchar_t ch) noexcept
-            { m_libraryAccessor = ch; }
+        void SetLibraryAccessor(const wchar_t ch) noexcept { m_libraryAccessor = ch; }
+
         /// @returns The separator between libraries/namespaces and their member classes/functions.
         [[nodiscard]]
         wchar_t GetLibraryAccessor() const noexcept
-            { return m_libraryAccessor; }
+            {
+            return m_libraryAccessor;
+            }
+
         /** @brief For autocompletion, this sets the character that divides an object from
                 its member functions.
             @param ch The separator character.*/
-        void SetObjectAccessor(const wchar_t ch) noexcept
-            { m_objectAccessor = ch; }
+        void SetObjectAccessor(const wchar_t ch) noexcept { m_objectAccessor = ch; }
+
         /// @returns The separator between objects and their member functions.
         [[nodiscard]]
         wchar_t GetObjectAccessor() const noexcept
-            { return m_objectAccessor; }
+            {
+            return m_objectAccessor;
+            }
+
         /** @brief Sets the file filter for the Open dialog.
             @param filter The file filter.*/
-        void SetFileFilter(const wxString& filter)
-            { m_fileFilter = filter; }
+        void SetFileFilter(const wxString& filter) { m_fileFilter = filter; }
+
         /// @returns The file filter used when opening a script.
         [[nodiscard]]
         const wxString& GetFileFilter() const noexcept
-            { return m_fileFilter; }
+            {
+            return m_fileFilter;
+            }
 
         /// @brief Sets the main color for the control. This will be the background color,
         ///     and all text colors will be adjusted to contrast against this color.
@@ -207,19 +228,27 @@ namespace Wisteria::UI
         void OnFind(wxFindDialogEvent& event);
 
         /// @brief The style to use for error annotations.
-        static constexpr int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
-    private:
+        constexpr static int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
+
+      private:
         struct wxStringCmpNoCase
             {
             [[nodiscard]]
-            bool operator()(const wxString& s1, const wxString& s2) const
-                { return s1.CmpNoCase(s2) < 0; }
+            bool
+            operator()(const wxString& s1, const wxString& s2) const
+                {
+                return s1.CmpNoCase(s2) < 0;
+                }
             };
+
         struct wxStringPartialCmpNoCase
             {
             [[nodiscard]]
-            bool operator()(const wxString& s1, const wxString& s2) const
-                { return s1.CmpNoCase(s2.substr(0, s1.length())) < 0; }
+            bool
+            operator()(const wxString& s1, const wxString& s2) const
+                {
+                return s1.CmpNoCase(s2.substr(0, s1.length())) < 0;
+                }
             };
 
         static bool SplitFunctionAndParams(wxString& function, wxString& params);
@@ -228,9 +257,9 @@ namespace Wisteria::UI
         [[nodiscard]]
         static wxString GetReturnType(const wxString& function);
 
-        void OnMarginClick(wxStyledTextEvent &event);
-        void OnCharAdded(wxStyledTextEvent &event);
-        void OnAutoCompletionSelected(wxStyledTextEvent &event);
+        void OnMarginClick(wxStyledTextEvent& event);
+        void OnCharAdded(wxStyledTextEvent& event);
+        void OnAutoCompletionSelected(wxStyledTextEvent& event);
         void OnKeyDown(wxKeyEvent& event);
 
         std::map<wxString, wxString, wxStringCmpNoCase> m_libraryCollection;
@@ -259,8 +288,8 @@ namespace Wisteria::UI
 
         wxDECLARE_CLASS(CodeEditor);
         };
-    }
+    } // namespace Wisteria::UI
 
- /** @}*/
+/** @}*/
 
 #endif //__CODE_EDITOR_H__

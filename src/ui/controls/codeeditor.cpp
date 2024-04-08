@@ -7,46 +7,48 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "codeeditor.h"
-#include <wx/tokenzr.h>
+#include "../../base/colorbrewer.h"
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
+#include <wx/tokenzr.h>
 #include <wx/wupdlock.h>
-#include "../../base/colorbrewer.h"
 
 using namespace Wisteria::UI;
 using namespace Wisteria::Colors;
 
 wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 
-//-------------------------------------------------------------
-CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id/*=wxID_ANY*/,
-    const wxPoint& pos/*=wxDefaultPosition*/,
-    const wxSize& size/*=wxDefaultSize*/, long style/*=0*/,
-    const wxString& name/*"CodeEditor"*/) :
-    wxStyledTextCtrl(parent, id, pos, size, style, name)
+    //-------------------------------------------------------------
+    CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id /*=wxID_ANY*/,
+                           const wxPoint& pos /*=wxDefaultPosition*/,
+                           const wxSize& size /*=wxDefaultSize*/, long style /*=0*/,
+                           const wxString& name /*"CodeEditor"*/)
+    : wxStyledTextCtrl(parent, id, pos, size, style, name)
     {
     StyleClearAll();
     const wxFont font{ wxFontInfo().Family(wxFONTFAMILY_MODERN) };
     for (auto i = 0; i < wxSTC_STYLE_LASTPREDEFINED; ++i)
-        { StyleSetFont(i, font.Larger().Larger().Bold()); }
+        {
+        StyleSetFont(i, font.Larger().Larger().Bold());
+        }
 
     // code-folding options
     SetProperty(L"fold", L"1");
     SetProperty(L"fold.compact", L"1");
-    MarkerDefine(wxSTC_MARKNUM_FOLDER,        wxSTC_MARK_DOTDOTDOT, *wxBLACK, *wxBLACK);
-    MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN,    wxSTC_MARK_ARROWDOWN, *wxBLACK, *wxBLACK);
-    MarkerDefine(wxSTC_MARKNUM_FOLDERSUB,     wxSTC_MARK_EMPTY,     *wxBLACK, *wxBLACK);
-    MarkerDefine(wxSTC_MARKNUM_FOLDEREND,     wxSTC_MARK_DOTDOTDOT, *wxBLACK, *wxWHITE);
+    MarkerDefine(wxSTC_MARKNUM_FOLDER, wxSTC_MARK_DOTDOTDOT, *wxBLACK, *wxBLACK);
+    MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_ARROWDOWN, *wxBLACK, *wxBLACK);
+    MarkerDefine(wxSTC_MARKNUM_FOLDERSUB, wxSTC_MARK_EMPTY, *wxBLACK, *wxBLACK);
+    MarkerDefine(wxSTC_MARKNUM_FOLDEREND, wxSTC_MARK_DOTDOTDOT, *wxBLACK, *wxWHITE);
     MarkerDefine(wxSTC_MARKNUM_FOLDEROPENMID, wxSTC_MARK_ARROWDOWN, *wxBLACK, *wxWHITE);
-    MarkerDefine(wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_EMPTY,     *wxBLACK, *wxBLACK);
-    MarkerDefine(wxSTC_MARKNUM_FOLDERTAIL,    wxSTC_MARK_EMPTY,     *wxBLACK, *wxBLACK);
+    MarkerDefine(wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_EMPTY, *wxBLACK, *wxBLACK);
+    MarkerDefine(wxSTC_MARKNUM_FOLDERTAIL, wxSTC_MARK_EMPTY, *wxBLACK, *wxBLACK);
     // margin settings
     SetMarginType(0, wxSTC_MARGIN_NUMBER);
     SetMarginType(1, wxSTC_MARGIN_SYMBOL);
     SetMarginMask(1, wxSTC_MASK_FOLDERS);
     SetMarginWidth(1, FromDIP(16));
     SetMarginSensitive(1, true);
-    SetFoldFlags(wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED|wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED);
+    SetFoldFlags(wxSTC_FOLDFLAG_LINEBEFORE_CONTRACTED | wxSTC_FOLDFLAG_LINEAFTER_CONTRACTED);
     // turn off tabs
     SetUseTabs(false);
     SetTabWidth(4);
@@ -54,11 +56,11 @@ CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id/*=wxID_ANY*/,
     AutoCompSetIgnoreCase(true);
     AutoCompSetAutoHide(true);
     // annotations styles
-    StyleSetBackground(ERROR_ANNOTATION_STYLE,
-        wxSystemSettings::SelectLightDark(wxColour(244, 220, 220),
-            wxColour(100, 100, 100)));
+    StyleSetBackground(
+        ERROR_ANNOTATION_STYLE,
+        wxSystemSettings::SelectLightDark(wxColour(244, 220, 220), wxColour(100, 100, 100)));
     StyleSetSizeFractional(ERROR_ANNOTATION_STYLE,
-        (StyleGetSizeFractional(wxSTC_STYLE_DEFAULT) * 4) / 5);
+                           (StyleGetSizeFractional(wxSTC_STYLE_DEFAULT) * 4) / 5);
     // turn on annotations
     AnnotationSetVisible(wxSTC_ANNOTATION_BOXED);
 
@@ -123,9 +125,8 @@ void CodeEditor::SetLanguage(const int lang)
         {
         // core language keywords
         SetLexer(m_lexer);
-        SetKeyWords(0,
-            _DT(L"and break do else elseif end false for function if in local "
-                 "nil not or repeat return then true until while dofile"));
+        SetKeyWords(0, _DT(L"and break do else elseif end false for function if in local "
+                           "nil not or repeat return then true until while dofile"));
         // other language settings
         SetFileFilter(_(L"Lua Script (*.lua)|*.lua"));
         SetLibraryAccessor(L'.');
@@ -138,19 +139,22 @@ void CodeEditor::SetLanguage(const int lang)
         StyleSetForeground(wxSTC_LUA_OPERATOR, m_operatorColor);
         StyleSetForeground(wxSTC_LUA_COMMENTLINE, m_commentColor);
         }
-    if (wxSTC_LEX_CPP == m_lexer ||
-        wxSTC_LEX_CPPNOCASE == m_lexer)
+    if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
         {
         // core language keywords
         SetLexer(m_lexer);
-        SetKeyWords(0,
-            _DT(L"alignas alignof and_eq asm atomic_cancel atomic_commit atomic_noexcept auto bitand "
-                "bitor bool break case catch char char8_t char16_t "
-                "char32_t class compl concept const consteval constexpr constinit const_cast continue co_await co_return co_yield decltype default delete "
-                "do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept "
-                "not not_eq nullptr operator or or_eq private protected public reflexpr register reinterpret_cast requires return short signed "
-                "sizeof static static_assert static_cast struct switch synchronized template this thread_local throw true try typedef typeid typename "
-                "union unsigned using virtual void volatile wchar_t while xor xor_eq final override import module"));
+        SetKeyWords(
+            0, _DT(L"alignas alignof and_eq asm atomic_cancel atomic_commit atomic_noexcept auto "
+                   "bitand bitor bool break case catch char char8_t char16_t char32_t class compl "
+                   "concept const consteval constexpr constinit const_cast continue co_await "
+                   "co_return co_yield decltype default delete do double dynamic_cast else enum "
+                   "explicit export extern false float for friend goto if inline int long mutable "
+                   "namespace new noexcept not not_eq nullptr operator or or_eq private protected "
+                   "public reflexpr register reinterpret_cast requires return short signed "
+                   "sizeof static static_assert static_cast struct switch synchronized template "
+                   "this thread_local throw true try typedef typeid typename "
+                   "union unsigned using virtual void volatile wchar_t while xor xor_eq "
+                   "final override import module"));
         // other language settings
         SetFileFilter(_(L"C++ Source Files (*.cpp)|*.cpp"));
         SetLibraryAccessor(L':');
@@ -175,9 +179,11 @@ void CodeEditor::New()
     {
     if (GetModify())
         {
-        if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"),
-                _(L"Save Script"), wxYES_NO|wxICON_QUESTION, this) == wxYES)
-            { Save(); }
+        if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"), _(L"Save Script"),
+                         wxYES_NO | wxICON_QUESTION, this) == wxYES)
+            {
+            Save();
+            }
         }
     SetText(m_defaultHeader);
     SetSelection(GetLastPosition(), GetLastPosition());
@@ -192,23 +198,24 @@ bool CodeEditor::Open()
     {
     if (GetModify())
         {
-        if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"),
-                _(L"Save Script"), wxYES_NO|wxICON_QUESTION, this) == wxYES)
-            { Save(); }
+        if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"), _(L"Save Script"),
+                         wxYES_NO | wxICON_QUESTION, this) == wxYES)
+            {
+            Save();
+            }
         }
-    wxFileDialog dialogOpen
-            (this, _(L"Select Script to Open"),
-            wxString{}, wxString{},
-            GetFileFilter(),
-            wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_PREVIEW);
+    wxFileDialog dialogOpen(this, _(L"Select Script to Open"), wxString{}, wxString{},
+                            GetFileFilter(), wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
     if (dialogOpen.ShowModal() != wxID_OK)
-        { return false; }
+        {
+        return false;
+        }
     const wxString filePath = dialogOpen.GetPath();
 
     wxWindowUpdateLocker noUpdates(this);
     ClearAll();
     LoadFile(filePath);
-    SetSelection(0,0);
+    SetSelection(0, 0);
     SetScriptFilePath(filePath);
 
     return true;
@@ -219,20 +226,19 @@ bool CodeEditor::Save()
     {
     if (GetScriptFilePath().empty())
         {
-        wxFileDialog dialogSave
-                (this, _(L"Save Script As"),
-                wxString{}, wxString{},
-                GetFileFilter(),
-                wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialogSave(this, _(L"Save Script As"), wxString{}, wxString{}, GetFileFilter(),
+                                wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
         if (dialogSave.ShowModal() != wxID_OK)
-            { return false; }
+            {
+            return false;
+            }
         SetScriptFilePath(dialogSave.GetPath());
         }
-    if (!SaveFile(GetScriptFilePath()) )
+    if (!SaveFile(GetScriptFilePath()))
         {
         wxMessageBox(wxString::Format(_(L"Unable to save file \"%s\"."), GetScriptFilePath()),
-            _(L"Error"), wxOK|wxICON_EXCLAMATION, this);
+                     _(L"Error"), wxOK | wxICON_EXCLAMATION, this);
         return false;
         }
     return true;
@@ -242,22 +248,32 @@ bool CodeEditor::Save()
 void CodeEditor::OnKeyDown(wxKeyEvent& event)
     {
     if (event.ControlDown() && event.GetKeyCode() == L'S')
-        { Save(); }
+        {
+        Save();
+        }
     else if (event.ControlDown() && event.GetKeyCode() == L'O')
-        { Open(); }
+        {
+        Open();
+        }
     else
-        { event.Skip(); }
+        {
+        event.Skip();
+        }
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnFind(wxFindDialogEvent &event)
+void CodeEditor::OnFind(wxFindDialogEvent& event)
     {
     const int flags = event.GetFlags();
     int searchFlags = 0;
     if (flags & wxFR_MATCHCASE)
-        { searchFlags = searchFlags|wxSTC_FIND_MATCHCASE; }
+        {
+        searchFlags = searchFlags | wxSTC_FIND_MATCHCASE;
+        }
     if (flags & wxFR_WHOLEWORD)
-        { searchFlags = searchFlags|wxSTC_FIND_WHOLEWORD; }
+        {
+        searchFlags = searchFlags | wxSTC_FIND_WHOLEWORD;
+        }
 
     long foundPos{ wxSTC_INVALID_POSITION };
     if (flags & wxFR_DOWN)
@@ -271,8 +287,8 @@ void CodeEditor::OnFind(wxFindDialogEvent &event)
 
     if (foundPos == wxSTC_INVALID_POSITION)
         {
-        wxMessageBox(_(L"No further occurrences found."),
-            _(L"Item Not Found"), wxOK | wxICON_INFORMATION, this);
+        wxMessageBox(_(L"No further occurrences found."), _(L"Item Not Found"),
+                     wxOK | wxICON_INFORMATION, this);
         }
     }
 
@@ -285,7 +301,7 @@ long CodeEditor::FindPrevious(const wxString& textToFind, const int searchFlags 
     auto foundPos = SearchPrev(searchFlags, textToFind);
     if (foundPos != wxSTC_INVALID_POSITION)
         {
-        SetSelection(foundPos, foundPos+textToFind.length());
+        SetSelection(foundPos, foundPos + textToFind.length());
         SearchAnchor();
         EnsureCaretVisible();
         }
@@ -304,7 +320,7 @@ long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
     auto foundPos = SearchNext(searchFlags, textToFind);
     if (foundPos != wxSTC_INVALID_POSITION)
         {
-        SetSelection(foundPos, foundPos+textToFind.length());
+        SetSelection(foundPos, foundPos + textToFind.length());
         SearchAnchor();
         EnsureCaretVisible();
         return foundPos;
@@ -315,7 +331,7 @@ long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
         foundPos = FindText(0, GetLength(), textToFind, searchFlags);
         if (foundPos != wxSTC_INVALID_POSITION)
             {
-            SetSelection(foundPos,foundPos+textToFind.length());
+            SetSelection(foundPos, foundPos + textToFind.length());
             SearchAnchor();
             EnsureCaretVisible();
             return foundPos;
@@ -330,7 +346,9 @@ long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
 void CodeEditor::AddFunctionsOrClasses(const NameList& functions)
     {
     for (const auto& func : functions)
-        { m_libaryAndClassNames.insert(StripExtraInfo(func.c_str())); }
+        {
+        m_libaryAndClassNames.insert(StripExtraInfo(func.c_str()));
+        }
     }
 
 //-------------------------------------------------------------
@@ -343,10 +361,12 @@ void CodeEditor::AddLibrary(const wxString& library, NameList& functions)
         functionString += L" " + StripExtraInfo(func);
         returnTypeStr = GetReturnType(func);
         if (returnTypeStr.length())
-            { m_libraryFunctionsWithReturnTypes.insert(
-                std::make_pair(library + L"." + StripExtraInfo(func), returnTypeStr) ); }
+            {
+            m_libraryFunctionsWithReturnTypes.insert(
+                std::make_pair(library + L"." + StripExtraInfo(func), returnTypeStr));
+            }
         }
-    m_libraryCollection.insert(std::make_pair(library, functionString) );
+    m_libraryCollection.insert(std::make_pair(library, functionString));
     m_libaryAndClassNames.insert(library);
     }
 
@@ -355,8 +375,10 @@ void CodeEditor::AddClass(const wxString& theClass, NameList& functions)
     {
     wxString functionString;
     for (const auto& func : functions)
-        { functionString += L" " + StripExtraInfo(func); }
-    m_classCollection.insert(std::make_pair(theClass, functionString) );
+        {
+        functionString += L" " + StripExtraInfo(func);
+        }
+    m_classCollection.insert(std::make_pair(theClass, functionString));
     m_libaryAndClassNames.insert(theClass);
     }
 
@@ -365,11 +387,17 @@ void CodeEditor::Finalize()
     {
     m_libaryAndClassNamesStr.clear();
     for (const auto& className : m_libaryAndClassNames)
-        { m_libaryAndClassNamesStr += L" " + className; }
+        {
+        m_libaryAndClassNamesStr += L" " + className;
+        }
     if (wxSTC_LEX_CPPNOCASE == m_lexer)
-        { SetKeyWords(1, m_libaryAndClassNamesStr.Lower()); }
+        {
+        SetKeyWords(1, m_libaryAndClassNamesStr.Lower());
+        }
     else
-        { SetKeyWords(1, m_libaryAndClassNamesStr); }
+        {
+        SetKeyWords(1, m_libaryAndClassNamesStr);
+        }
     }
 
 //-------------------------------------------------------------
@@ -377,9 +405,13 @@ wxString CodeEditor::StripExtraInfo(const wxString& function)
     {
     const auto extraInfoStart = function.find_first_of(L"\t (");
     if (extraInfoStart != wxString::npos)
-        { return function.substr(0, extraInfoStart); }
+        {
+        return function.substr(0, extraInfoStart);
+        }
     else
-        { return function; }
+        {
+        return function;
+        }
     }
 
 //-------------------------------------------------------------
@@ -389,11 +421,14 @@ wxString CodeEditor::GetReturnType(const wxString& function)
     if (parenthesisStart != wxString::npos)
         {
         wxString returnType = function.substr(parenthesisStart);
-        returnType.Trim(true); returnType.Trim(false);
+        returnType.Trim(true);
+        returnType.Trim(false);
         return returnType;
         }
     else
-        { return wxString{}; }
+        {
+        return wxString{};
+        }
     }
 
 //-------------------------------------------------------------
@@ -404,9 +439,11 @@ bool CodeEditor::SplitFunctionAndParams(wxString& function, wxString& params)
         {
         const auto parenthesisEnd = function.rfind(L')');
         // if empty parameter list then don't bother splitting this up
-        if (parenthesisEnd == parenthesisStart+1)
-            { return false; }
-        params = function.substr(parenthesisStart+1, (parenthesisEnd-1)-parenthesisStart);
+        if (parenthesisEnd == parenthesisStart + 1)
+            {
+            return false;
+            }
+        params = function.substr(parenthesisStart + 1, (parenthesisEnd - 1) - parenthesisStart);
         function.Truncate(parenthesisStart);
         return true;
         }
@@ -414,68 +451,79 @@ bool CodeEditor::SplitFunctionAndParams(wxString& function, wxString& params)
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnMarginClick(wxStyledTextEvent &event)
+void CodeEditor::OnMarginClick(wxStyledTextEvent& event)
     {
     if (event.GetMargin() == 1)
         {
         const int lineClick = LineFromPosition(event.GetPosition());
         if ((GetFoldLevel(lineClick) & wxSTC_FOLDLEVELHEADERFLAG) > 0)
-            { ToggleFold(lineClick); }
+            {
+            ToggleFold(lineClick);
+            }
         }
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnCharAdded(wxStyledTextEvent &event)
+void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
     {
     if (event.GetKey() == GetLibraryAccessor())
         {
-        const int wordStart = WordStartPosition(GetCurrentPos()-1, true);
-        const wxString lastWord = GetTextRange(wordStart, GetCurrentPos()-1);
+        const int wordStart = WordStartPosition(GetCurrentPos() - 1, true);
+        const wxString lastWord = GetTextRange(wordStart, GetCurrentPos() - 1);
 
         auto pos = m_libraryCollection.find(lastWord);
         if (pos != m_libraryCollection.cend())
-            { AutoCompShow(0, pos->second); }
+            {
+            AutoCompShow(0, pos->second);
+            }
         }
     else if (event.GetKey() == L')' || event.GetKey() == L'(')
-        { CallTipCancel(); }
+        {
+        CallTipCancel();
+        }
     else if (event.GetKey() == GetObjectAccessor())
         {
-        int wordStart = WordStartPosition(GetCurrentPos()-1, false);
-        const wxString lastWord = GetTextRange(wordStart, GetCurrentPos()-1);
+        int wordStart = WordStartPosition(GetCurrentPos() - 1, false);
+        const wxString lastWord = GetTextRange(wordStart, GetCurrentPos() - 1);
 
         if (lastWord == L"()")
             {
-            wordStart = WordStartPosition(wordStart-1, false);
-            const wxString functionName = GetTextRange(wordStart, GetCurrentPos()-3);
-            wordStart = WordStartPosition(wordStart-1, false);
-            const wxString libraryName = GetTextRange(wordStart, GetCurrentPos()-3);
+            wordStart = WordStartPosition(wordStart - 1, false);
+            const wxString functionName = GetTextRange(wordStart, GetCurrentPos() - 3);
+            wordStart = WordStartPosition(wordStart - 1, false);
+            const wxString libraryName = GetTextRange(wordStart, GetCurrentPos() - 3);
             auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
             if (libraryPos != m_libraryFunctionsWithReturnTypes.cend())
                 {
                 libraryPos = m_classCollection.find(libraryPos->second);
                 if (libraryPos != m_classCollection.cend())
-                    { AutoCompShow(0, libraryPos->second); }
+                    {
+                    AutoCompShow(0, libraryPos->second);
+                    }
                 }
             }
         // might be a variable, look for where it was first assigned to something
         int foundPos = 0;
-        while (foundPos+lastWord.length()+2 < static_cast<size_t>(wordStart))
+        while (foundPos + lastWord.length() + 2 < static_cast<size_t>(wordStart))
             {
             foundPos = FindText(foundPos, wordStart, lastWord,
-                                wxSTC_FIND_WHOLEWORD|wxSTC_FIND_MATCHCASE);
+                                wxSTC_FIND_WHOLEWORD | wxSTC_FIND_MATCHCASE);
             if (foundPos != wxSTC_INVALID_POSITION &&
-                foundPos+lastWord.length()+2 < static_cast<size_t>(wordStart))
+                foundPos + lastWord.length() + 2 < static_cast<size_t>(wordStart))
                 {
                 foundPos += lastWord.length();
                 while (foundPos < GetLength() && GetCharAt(foundPos) == L' ')
-                    { ++foundPos; }
+                    {
+                    ++foundPos;
+                    }
                 // found an assignment to this variable
                 if (foundPos < GetLength() && GetCharAt(foundPos) == L'=')
                     {
                     // scan to whatever it is assigned to
                     do
-                        { ++foundPos; }
-                    while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
+                        {
+                        ++foundPos;
+                        } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
                     // if it is a known class of ours, then show the functions
                     // available for that class
                     wxString assignment = GetTextRange(foundPos, WordEndPosition(foundPos, true));
@@ -486,13 +534,19 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent &event)
                         break;
                         }
                     else
-                        { continue; }
+                        {
+                        continue;
+                        }
                     }
                 else
-                    { continue; }
+                    {
+                    continue;
+                    }
                 }
             else
-                { break; }
+                {
+                break;
+                }
             }
         }
     else
@@ -503,32 +557,36 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent &event)
         if (lastWord.length())
             {
             // see if we are inside a library, if so show its list of functions
-            if (wordStart > 2 && GetCharAt(wordStart-1) == GetLibraryAccessor())
+            if (wordStart > 2 && GetCharAt(wordStart - 1) == GetLibraryAccessor())
                 {
                 const wxString libraryName =
-                    GetTextRange(WordStartPosition(wordStart-2, true), wordStart-1);
+                    GetTextRange(WordStartPosition(wordStart - 2, true), wordStart - 1);
                 auto pos = m_libraryCollection.find(libraryName);
                 if (pos != m_libraryCollection.cend())
                     {
                     if (AutoCompActive())
-                        { AutoCompSelect(lastWord); }
+                        {
+                        AutoCompSelect(lastWord);
+                        }
                     else
-                        { AutoCompShow(lastWord.length(), pos->second); }
+                        {
+                        AutoCompShow(lastWord.length(), pos->second);
+                        }
                     }
                 }
             // if an object...
-            else if (wordStart > 2 && GetCharAt(wordStart-1) == GetObjectAccessor())
+            else if (wordStart > 2 && GetCharAt(wordStart - 1) == GetObjectAccessor())
                 {
-                int previousWordStart = WordStartPosition(wordStart-2, false);
-                const wxString previousWord = GetTextRange(previousWordStart, wordStart-1);
+                int previousWordStart = WordStartPosition(wordStart - 2, false);
+                const wxString previousWord = GetTextRange(previousWordStart, wordStart - 1);
 
                 // see if it is an object returned from a known function
                 if (previousWord == L"()")
                     {
-                    previousWordStart = WordStartPosition(previousWordStart-1, false);
-                    const wxString functionName = GetTextRange(previousWordStart, wordStart-1);
-                    previousWordStart = WordStartPosition(previousWordStart-1, false);
-                    const wxString libraryName = GetTextRange(previousWordStart, wordStart-1);
+                    previousWordStart = WordStartPosition(previousWordStart - 1, false);
+                    const wxString functionName = GetTextRange(previousWordStart, wordStart - 1);
+                    previousWordStart = WordStartPosition(previousWordStart - 1, false);
+                    const wxString libraryName = GetTextRange(previousWordStart, wordStart - 1);
                     auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
                     if (libraryPos != m_libraryFunctionsWithReturnTypes.cend())
                         {
@@ -536,9 +594,13 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent &event)
                         if (libraryPos != m_classCollection.cend())
                             {
                             if (AutoCompActive())
-                                { AutoCompSelect(lastWord); }
+                                {
+                                AutoCompSelect(lastWord);
+                                }
                             else
-                                { AutoCompShow(lastWord.length(), libraryPos->second); }
+                                {
+                                AutoCompShow(lastWord.length(), libraryPos->second);
+                                }
                             }
                         }
                     }
@@ -552,28 +614,28 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent &event)
                 if (pos != m_libaryAndClassNames.cend())
                     {
                     foundKeyword = *pos;
-                    SplitFunctionAndParams(foundKeyword,params);
+                    SplitFunctionAndParams(foundKeyword, params);
                     }
                 // if found a full keyword, then just fix its case and let it auto-highlight
                 if (pos != m_libaryAndClassNames.cend() &&
                     foundKeyword.length() == lastWord.length())
                     {
-                    SetSelection(wordStart,wordStart+lastWord.length());
+                    SetSelection(wordStart, wordStart + lastWord.length());
                     // tooltip the parameters (if applicable)
                     if (params.length())
                         {
                         foundKeyword += L"(";
                         ReplaceSelection(foundKeyword);
-                        SetSelection(wordStart+foundKeyword.length(),
-                                     wordStart+foundKeyword.length());
+                        SetSelection(wordStart + foundKeyword.length(),
+                                     wordStart + foundKeyword.length());
                         params += L")";
                         CallTipShow(GetCurrentPos(), params);
                         }
                     else
                         {
                         ReplaceSelection(foundKeyword);
-                        SetSelection(wordStart+foundKeyword.length(),
-                                     wordStart+foundKeyword.length());
+                        SetSelection(wordStart + foundKeyword.length(),
+                                     wordStart + foundKeyword.length());
                         }
                     AutoCompCancel();
                     }
@@ -581,22 +643,30 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent &event)
                 else if (pos != m_libaryAndClassNames.end())
                     {
                     if (AutoCompActive())
-                        { AutoCompSelect(lastWord); }
+                        {
+                        AutoCompSelect(lastWord);
+                        }
                     else
-                        { AutoCompShow(lastWord.length(), m_libaryAndClassNamesStr); }
+                        {
+                        AutoCompShow(lastWord.length(), m_libaryAndClassNamesStr);
+                        }
                     }
                 else
-                    { AutoCompCancel(); }
+                    {
+                    AutoCompCancel();
+                    }
                 }
             }
         else
-            { AutoCompCancel(); }
+            {
+            AutoCompCancel();
+            }
         }
     event.Skip();
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnAutoCompletionSelected(wxStyledTextEvent &event)
+void CodeEditor::OnAutoCompletionSelected(wxStyledTextEvent& event)
     {
     wxString selectedString = event.GetText();
     wxString paramText;
@@ -604,11 +674,13 @@ void CodeEditor::OnAutoCompletionSelected(wxStyledTextEvent &event)
 
     const int wordStart = WordStartPosition(GetCurrentPos(), true);
     const int wordEnd = WordEndPosition(GetCurrentPos(), true);
-    SetSelection(wordStart,wordEnd);
+    SetSelection(wordStart, wordEnd);
     if (hasParams)
-        { selectedString += L"("; }
+        {
+        selectedString += L"(";
+        }
     ReplaceSelection(selectedString);
-    SetSelection(wordStart+selectedString.length(), wordStart+selectedString.length());
+    SetSelection(wordStart + selectedString.length(), wordStart + selectedString.length());
     AutoCompCancel();
     if (hasParams)
         {

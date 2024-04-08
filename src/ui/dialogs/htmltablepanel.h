@@ -19,27 +19,31 @@ namespace Wisteria::UI
     /// @brief Dialog to display a HtmlTableWindow.
     class HtmlTablePanel : public wxWindow
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param parent The parent window.
         /// @param id The dialog's ID.
         /// @param bkColor The dialog's background color.
-        HtmlTablePanel(wxWindow *parent, wxWindowID id, const wxColour bkColor);
+        HtmlTablePanel(wxWindow* parent, wxWindowID id, const wxColour bkColor);
         /// @private
         HtmlTablePanel() = delete;
         /// @private
         HtmlTablePanel(const HtmlTablePanel& that) = delete;
         /// @private
         HtmlTablePanel& operator=(const HtmlTablePanel& that) = delete;
+
         /// @returns The HTML table window.
         [[nodiscard]]
         HtmlTableWindow* GetHtmlWindow() noexcept
-            { return m_htmlWindow; }
-    private:
+            {
+            return m_htmlWindow;
+            }
+
+      private:
         void OnButtonClick(wxCommandEvent& event);
         HtmlTableWindow* m_htmlWindow{ nullptr };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

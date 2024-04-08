@@ -6,28 +6,29 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wx/clipbrd.h>
 #include "searchpanel.h"
+#include <wx/clipbrd.h>
 
 using namespace Wisteria::UI;
 
 //---------------------------------------------------
-SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
-      wxWindow(parent, id)
+SearchPanel::SearchPanel(wxWindow* parent, wxWindowID id) : wxWindow(parent, id)
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_search = new wxSearchCtrl(this, ControlIDs::ID_SEARCH_TEXT_ENTRY, wxString{},
-        wxDefaultPosition, FromDIP(wxSize(200, -1)), 0);
-    mainSizer->Add(m_search, 0, wxTOP|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
+                                wxDefaultPosition, FromDIP(wxSize(200, -1)), 0);
+    mainSizer->Add(m_search, 0, wxTOP | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxBitmapButton* nextButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
-            wxArtProvider::GetBitmapBundle(wxART_GO_DOWN, wxART_BUTTON));
+    wxBitmapButton* nextButton =
+        new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
+                           wxArtProvider::GetBitmapBundle(wxART_GO_DOWN, wxART_BUTTON));
     nextButton->SetToolTip(_(L"Find the next occurrence"));
     mainSizer->Add(nextButton, 0, wxALIGN_CENTER_VERTICAL);
 
-    wxBitmapButton* peviousButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
-            wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
+    wxBitmapButton* peviousButton =
+        new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
+                           wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
     peviousButton->SetToolTip(_(L"Find the previous occurrence"));
     mainSizer->Add(peviousButton, 0, wxALIGN_CENTER_VERTICAL);
 
@@ -38,12 +39,12 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     // search options menu
     auto searchOptionsMenu = new wxMenu;
 
-    m_matchCaseItem = searchOptionsMenu->AppendCheckItem(XRCID("ID_MATCH_CASE"),
-        _(L"Match Case"), _(L"Match Case"));
+    m_matchCaseItem = searchOptionsMenu->AppendCheckItem(XRCID("ID_MATCH_CASE"), _(L"Match Case"),
+                                                         _(L"Match Case"));
     m_matchCaseItem->Check(false);
 
-    m_wholeWordItem = searchOptionsMenu->AppendCheckItem(XRCID("ID_MATCH_WHOLE_WORD"),
-        _(L"Match Whole Word"), _(L"Match Whole Word"));
+    m_wholeWordItem = searchOptionsMenu->AppendCheckItem(
+        XRCID("ID_MATCH_WHOLE_WORD"), _(L"Match Whole Word"), _(L"Match Whole Word"));
     m_wholeWordItem->Check(false);
 
     m_search->SetMenu(searchOptionsMenu);
@@ -51,27 +52,28 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     Bind(wxEVT_SEARCH, &SearchPanel::OnSearch, this, ControlIDs::ID_SEARCH_TEXT_ENTRY);
     Bind(wxEVT_BUTTON, &SearchPanel::OnSearchButton, this, ControlIDs::ID_SEARCH_NEXT);
     Bind(wxEVT_BUTTON, &SearchPanel::OnSearchButton, this, ControlIDs::ID_SEARCH_PREVIOUS);
-    Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
-        {
-        if (event.ControlDown() && event.GetKeyCode() == L'V')
-            {
-            if (wxTheClipboard->Open())
-                {
-                if (wxTheClipboard->IsSupported(wxDF_TEXT))
-                    {
-                    wxTextDataObject data;
-                    wxTheClipboard->GetData(data);
-                    m_search->SetValue(data.GetText());
-                    }
-                wxTheClipboard->Close();
-                }
-            m_search->SetFocus();
-            }
-        else
-            {
-            event.Skip();
-            }
-        });
+    Bind(wxEVT_CHAR_HOOK,
+         [this](wxKeyEvent& event)
+         {
+             if (event.ControlDown() && event.GetKeyCode() == L'V')
+                 {
+                 if (wxTheClipboard->Open())
+                     {
+                     if (wxTheClipboard->IsSupported(wxDF_TEXT))
+                         {
+                         wxTextDataObject data;
+                         wxTheClipboard->GetData(data);
+                         m_search->SetValue(data.GetText());
+                         }
+                     wxTheClipboard->Close();
+                     }
+                 m_search->SetFocus();
+                 }
+             else
+                 {
+                 event.Skip();
+                 }
+         });
     }
 
 //---------------------------------------------------
@@ -111,8 +113,8 @@ void SearchPanel::OnSearch(wxCommandEvent& event)
     {
     if (m_search->GetValue().empty())
         {
-        wxMessageBox(_(L"Please enter an item to search for."),
-            _(L"Search"), wxOK|wxICON_INFORMATION, nullptr);
+        wxMessageBox(_(L"Please enter an item to search for."), _(L"Search"),
+                     wxOK | wxICON_INFORMATION, nullptr);
         return;
         }
     m_previousSearches.push_back(m_search->GetValue());
@@ -122,9 +124,13 @@ void SearchPanel::OnSearch(wxCommandEvent& event)
     // set up the search flags
     wxUint32 searchFlags = event.GetId() == ID_SEARCH_PREVIOUS ? 0 : wxFR_DOWN;
     if (m_wholeWordItem->IsChecked())
-        { searchFlags |= wxFR_WHOLEWORD; }
+        {
+        searchFlags |= wxFR_WHOLEWORD;
+        }
     if (m_matchCaseItem->IsChecked())
-        { searchFlags |= wxFR_MATCHCASE; }
+        {
+        searchFlags |= wxFR_MATCHCASE;
+        }
     findEvent.SetFlags(searchFlags);
 
     findEvent.SetEventType(wxEVT_COMMAND_FIND);

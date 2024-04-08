@@ -23,24 +23,23 @@ void WarningMessagesDlg::CreateControls()
     // sort the warnings by display label
     std::map<wxString, std::vector<WarningMessage>::iterator> warningsSortedByLabel;
     for (auto warningIter = WarningManager::GetWarnings().begin();
-        warningIter != WarningManager::GetWarnings().end();
-        ++warningIter)
+         warningIter != WarningManager::GetWarnings().end(); ++warningIter)
         {
         warningsSortedByLabel.insert(std::make_pair(warningIter->GetDescription(), warningIter));
         }
     for (auto& warningLabel : warningsSortedByLabel)
         {
-        wxCheckBox* checkBox = new wxCheckBox(checksBoxSizer->GetStaticBox(), wxID_ANY,
-            warningLabel.second->GetDescription(),
-            wxDefaultPosition, wxDefaultSize, 0,
-            wxGenericValidator(&warningLabel.second->ShouldBeShown()) );
+        wxCheckBox* checkBox =
+            new wxCheckBox(checksBoxSizer->GetStaticBox(), wxID_ANY,
+                           warningLabel.second->GetDescription(), wxDefaultPosition, wxDefaultSize,
+                           0, wxGenericValidator(&warningLabel.second->ShouldBeShown()));
         checksBoxSizer->Add(checkBox, 0, wxALL, wxSizerFlags::GetDefaultBorder());
         }
 
-    mainSizer->Add(checksBoxSizer, 1, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(checksBoxSizer, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0,
-        wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
+                   wxSizerFlags::GetDefaultBorder());
 
     SetSizer(mainSizer);
     mainSizer->Fit(this);

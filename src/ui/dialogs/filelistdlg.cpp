@@ -16,47 +16,46 @@ void FileListDlg::CreateControls()
     m_infoBar = new wxInfoBar(this);
     mainSizer->Add(m_infoBar, wxSizerFlags().Expand());
 
-    const wxSizerFlags szFlags(wxSizerFlags().Expand().Border(wxDirection::wxALL,
-        wxSizerFlags::GetDefaultBorder()));
+    const wxSizerFlags szFlags(
+        wxSizerFlags().Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
 
     wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(controlsSizer, wxSizerFlags(1).Expand().
-        Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+    mainSizer->Add(controlsSizer, wxSizerFlags(1).Expand().Border(
+                                      wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
 
     // file list and toolbar
     wxBoxSizer* fileListSizer = new wxBoxSizer(wxVERTICAL);
-    controlsSizer->Add(fileListSizer, wxSizerFlags(2).Expand().
-        Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+    controlsSizer->Add(fileListSizer, wxSizerFlags(2).Expand().Border(
+                                          wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
 
-    auto buttonsSizer = new wxGridSizer(4, wxSize(wxSizerFlags::GetDefaultBorder(),
-        wxSizerFlags::GetDefaultBorder()));
+    auto buttonsSizer = new wxGridSizer(
+        4, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
 
     wxButton* button = new wxButton(this, wxID_OPEN, _(L"&Open File(s)..."));
-    button->SetBitmap(wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON,
-        FromDIP(wxSize(16, 16))));
+    button->SetBitmap(
+        wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 
 #ifdef __WXMSW__
     button = new wxButton(this, ID_FOLDER_OPEN, _(L"Open &Folder(s)..."));
-    button->SetBitmap(wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON,
-        FromDIP(wxSize(16, 16))));
+    button->SetBitmap(
+        wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 #endif
 
     button = new wxButton(this, wxID_DELETE, _(L"&Delete File(s)"));
-    button->SetBitmap(wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON,
-        FromDIP(wxSize(16, 16))));
+    button->SetBitmap(
+        wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 
     button = new wxButton(this, wxID_REFRESH, _(L"&Refresh List"));
-    button->SetBitmap(wxArtProvider::GetBitmap(wxART_REDO, wxART_BUTTON,
-        FromDIP(wxSize(16, 16))));
+    button->SetBitmap(wxArtProvider::GetBitmap(wxART_REDO, wxART_BUTTON, FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 
     fileListSizer->Add(buttonsSizer);
 
     m_listCtrl = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(600, 400)),
-                                wxLC_REPORT|wxLC_VIRTUAL);
+                                wxLC_REPORT | wxLC_VIRTUAL);
     m_listCtrl->EnableGridLines();
     m_listCtrl->EnableAlternateRowColours(false);
     m_listCtrl->InsertColumn(0, _(L"File"));
@@ -72,21 +71,19 @@ void FileListDlg::CreateControls()
 
     // file information
     wxBoxSizer* fileInfoSizer = new wxBoxSizer(wxVERTICAL);
-    m_thumbnail = new Wisteria::UI::Thumbnail(this, wxNullBitmap,
-                                              Wisteria::ClickMode::FullSizeViewable,
-                                              false, wxID_ANY,
-                                              wxDefaultPosition,
-                                              FromDIP(wxSize(256, 256)));
-    fileInfoSizer->Add(m_thumbnail, wxSizerFlags().
-        Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+    m_thumbnail =
+        new Wisteria::UI::Thumbnail(this, wxNullBitmap, Wisteria::ClickMode::FullSizeViewable,
+                                    false, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(256, 256)));
+    fileInfoSizer->Add(m_thumbnail,
+                       wxSizerFlags().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
 
     fileInfoSizer->AddStretchSpacer();
 
     m_label = new wxStaticText(this, wxID_ANY, L"\n\n\n");
     fileInfoSizer->Add(m_label, szFlags);
 
-    controlsSizer->Add(fileInfoSizer, wxSizerFlags(1).Expand().
-        Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+    controlsSizer->Add(fileInfoSizer, wxSizerFlags(1).Expand().Border(
+                                          wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
 
     mainSizer->Add(CreateSeparatedButtonSizer(wxCLOSE), szFlags);
 
@@ -99,9 +96,10 @@ void FileListDlg::CreateControls()
 void FileListDlg::BindEvents()
     {
     // item selection
-    Bind(wxEVT_LIST_ITEM_SELECTED,
+    Bind(
+        wxEVT_LIST_ITEM_SELECTED,
         [this](wxListEvent& selected)
-            {
+        {
             const wxString selectedFile = m_listCtrl->GetItemFilePath(selected.GetIndex());
             // file may have been deleted by the user while this dialog is open,
             // make sure it's actually still there.
@@ -112,105 +110,125 @@ void FileListDlg::BindEvents()
                 wxFileName fn(selectedFile);
                 wxDateTime accessedDt, modifiedDt, createdDt;
                 fn.GetTimes(&accessedDt, &modifiedDt, &createdDt);
-                const wxString fileInfo =
-                    wxString::Format(_(L"Name: %s\nSize: %s\nCreated: %s %s\nModified: %s %s"),
+                const wxString fileInfo = wxString::Format(
+                    _(L"Name: %s\nSize: %s\nCreated: %s %s\nModified: %s %s"),
                     wxFileName(m_listCtrl->GetSelectedText()).GetFullName(),
-                    fn.GetHumanReadableSize(),
-                    createdDt.FormatDate(), createdDt.FormatTime(),
+                    fn.GetHumanReadableSize(), createdDt.FormatDate(), createdDt.FormatTime(),
                     modifiedDt.FormatDate(), modifiedDt.FormatTime());
                 m_label->SetLabel(fileInfo);
                 GetSizer()->Layout();
                 }
             else
-                { m_listCtrl->DeleteItem(selected.GetIndex()); }
-            },
+                {
+                m_listCtrl->DeleteItem(selected.GetIndex());
+                }
+        },
         wxID_ANY);
 
     // open files
-    Bind(wxEVT_BUTTON,
+    Bind(
+        wxEVT_BUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
-            {
+        {
             // make sure user isn't accidentally opening too many files at once
             if (m_listCtrl->GetSelectedItemCount() > 10 &&
-                wxMessageBox(wxString::Format(
-                    _(L"Do you wish to open the selected %d files?"),
-                    m_listCtrl->GetSelectedItemCount()),
-                        _(L"Open Files"), wxYES_NO|wxICON_WARNING) == wxNO)
-                { return; }
+                wxMessageBox(wxString::Format(_(L"Do you wish to open the selected %d files?"),
+                                              m_listCtrl->GetSelectedItemCount()),
+                             _(L"Open Files"), wxYES_NO | wxICON_WARNING) == wxNO)
+                {
+                return;
+                }
             long item{ wxNOT_FOUND };
             for (;;)
                 {
                 item = m_listCtrl->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
                 if (item == wxNOT_FOUND)
-                    { break; }
-                if (wxFile::Exists(m_listCtrl->GetItemFilePath(item)) )
-                    { wxLaunchDefaultApplication(m_listCtrl->GetItemFilePath(item)); }
+                    {
+                    break;
+                    }
+                if (wxFile::Exists(m_listCtrl->GetItemFilePath(item)))
+                    {
+                    wxLaunchDefaultApplication(m_listCtrl->GetItemFilePath(item));
+                    }
                 }
-            },
+        },
         wxID_OPEN);
 
 #ifdef __WXMSW__
     // open folders
-    Bind(wxEVT_BUTTON,
+    Bind(
+        wxEVT_BUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
-            {
+        {
             // make sure user isn't accidentally opening too many folders at once
             if (m_listCtrl->GetSelectedItemCount() > 10 &&
-                wxMessageBox(
-                    wxString::Format(_(L"Do you wish to open the selected %d folders?"),
-                        m_listCtrl->GetSelectedItemCount()),
-                    _(L"Open Files"), wxYES_NO|wxICON_WARNING) == wxNO)
-                { return; }
+                wxMessageBox(wxString::Format(_(L"Do you wish to open the selected %d folders?"),
+                                              m_listCtrl->GetSelectedItemCount()),
+                             _(L"Open Files"), wxYES_NO | wxICON_WARNING) == wxNO)
+                {
+                return;
+                }
             long item{ wxNOT_FOUND };
             for (;;)
                 {
                 item = m_listCtrl->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
                 if (item == wxNOT_FOUND)
-                    { break; }
+                    {
+                    break;
+                    }
                 wxFileName fn(m_listCtrl->GetItemFilePath(item));
                 if (wxDir::Exists(fn.GetPath()))
-                    { ShellExecute(NULL, _DT(L"open"), fn.GetPath(), NULL, NULL, SW_SHOWNORMAL); }
+                    {
+                    ShellExecute(NULL, _DT(L"open"), fn.GetPath(), NULL, NULL, SW_SHOWNORMAL);
+                    }
                 }
-            },
+        },
         ID_FOLDER_OPEN);
 #endif
 
     // delete files
-    Bind(wxEVT_BUTTON,
+    Bind(
+        wxEVT_BUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
-            {
+        {
             if (m_promptOnDelete)
                 {
-                wxRichMessageDialog msg(this,
-                    _(L"Do you wish to delete the selected file(s)?"),
-                    _(L"Delete File"), wxYES_NO | wxICON_WARNING);
+                wxRichMessageDialog msg(this, _(L"Do you wish to delete the selected file(s)?"),
+                                        _(L"Delete File"), wxYES_NO | wxICON_WARNING);
                 msg.ShowCheckBox(_(L"Do not show this again"));
                 if (msg.ShowModal() == wxID_NO)
-                    { return; }
+                    {
+                    return;
+                    }
                 // 'Yes' to delete, see if they don't want to see this prompt again
                 else if (msg.IsCheckBoxChecked())
-                    { m_promptOnDelete = false; }
+                    {
+                    m_promptOnDelete = false;
+                    }
                 }
-             m_listCtrl->DeleteSelectedItems();
-            },
+            m_listCtrl->DeleteSelectedItems();
+        },
         wxID_DELETE);
 
     // file list refresh
-    Bind(wxEVT_BUTTON,
+    Bind(
+        wxEVT_BUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
-            {
+        {
             SetCursor(*wxHOURGLASS_CURSOR);
             wxWindowUpdateLocker lock(m_listCtrl);
             if (m_listCtrl->GetItemCount() > 0)
                 {
-                for (auto i = m_listCtrl->GetItemCount()-1; i >= 0; --i)
+                for (auto i = m_listCtrl->GetItemCount() - 1; i >= 0; --i)
                     {
                     const wxString selectedFile = m_listCtrl->GetItemFilePath(i);
                     if (!wxFile::Exists(selectedFile))
-                        { m_listCtrl->DeleteItem(i); }
+                        {
+                        m_listCtrl->DeleteItem(i);
+                        }
                     }
                 }
             SetCursor(wxNullCursor);
-            },
+        },
         wxID_REFRESH);
     }

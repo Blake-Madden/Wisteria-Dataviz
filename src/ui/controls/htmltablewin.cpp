@@ -7,20 +7,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "htmltablewin.h"
-#include "htmltablewinprintout.h"
-#include "../../import/html_extract_text.h"
 #include "../../import/html_encode.h"
+#include "../../import/html_extract_text.h"
+#include "htmltablewinprintout.h"
 
 using namespace Wisteria::UI;
 
 wxIMPLEMENT_DYNAMIC_CLASS(HtmlTableWindow, wxHtmlWindow)
 
-//------------------------------------------------------
-HtmlTableWindow::HtmlTableWindow(wxWindow *parent, wxWindowID id /*= wxID_ANY*/,
-            const wxPoint& pos /*= wxDefaultPosition*/,
-            const wxSize& size /*= wxDefaultSize*/,
-            long style /*= wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION | wxBORDER_THEME*/) :
-                wxHtmlWindow(parent, id, pos, size, style, L"HtmlTableWindow")
+    //------------------------------------------------------
+    HtmlTableWindow::HtmlTableWindow(
+        wxWindow* parent, wxWindowID id /*= wxID_ANY*/, const wxPoint& pos /*= wxDefaultPosition*/,
+        const wxSize& size /*= wxDefaultSize*/,
+        long style /*= wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION | wxBORDER_THEME*/)
+    : wxHtmlWindow(parent, id, pos, size, style, L"HtmlTableWindow")
     {
     m_menu.Append(wxID_COPY, _(L"Copy"));
     m_menu.AppendSeparator();
@@ -62,30 +62,31 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     printOut->SetWatermark(GetWatermark());
 
     wxString htmlText = *(GetParser()->GetSource());
-    const wchar_t* htmlEnd = htmlText.wc_str()+htmlText.length();
-    const wchar_t* tableStart =
-        lily_of_the_valley::html_extract_text::find_element(htmlText.wc_str(), htmlEnd,
-                                                            _DT(L"table"), false);
+    const wchar_t* htmlEnd = htmlText.wc_str() + htmlText.length();
+    const wchar_t* tableStart = lily_of_the_valley::html_extract_text::find_element(
+        htmlText.wc_str(), htmlEnd, _DT(L"table"), false);
     const wchar_t* tableEnd = nullptr;
     while (tableStart)
         {
-        tableEnd =
-            lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
-                                                                        _DT(L"table"));
+        tableEnd = lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
+                                                                               _DT(L"table"));
         if (tableEnd == nullptr)
-            { break; }
+            {
+            break;
+            }
         else
             {
             tableEnd = lily_of_the_valley::html_extract_text::find_close_tag(tableEnd);
             if (tableEnd == nullptr)
-                { break; }
+                {
+                break;
+                }
             // skip '>'
             ++tableEnd;
-            printOut->AddTable(wxString(tableStart, tableEnd-tableStart));
+            printOut->AddTable(wxString(tableStart, tableEnd - tableStart));
             }
-        tableStart =
-            lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
-                                                                _DT(L"table"), false);
+        tableStart = lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
+                                                                         _DT(L"table"), false);
         }
 
 #if defined(__WXMSW__) || defined(__WXOSX__)
@@ -95,20 +96,20 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
 #endif
     if (m_printData)
         {
-    #if defined(__WXMSW__) || defined(__WXOSX__)
+#if defined(__WXMSW__) || defined(__WXOSX__)
         dc = new wxPrinterDC(*m_printData);
-    #else
+#else
         dc = new wxPostScriptDC(*m_printData);
-    #endif
+#endif
         }
     else
         {
         wxPrintData pd;
-    #if defined(__WXMSW__) || defined(__WXOSX__)
+#if defined(__WXMSW__) || defined(__WXOSX__)
         dc = new wxPrinterDC(pd);
-    #else
+#else
         dc = new wxPostScriptDC(pd);
-    #endif
+#endif
         }
     printOut->SetDC(dc);
 
@@ -121,14 +122,14 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     printer.GetPrintDialogData().SetFromPage(1);
     printer.GetPrintDialogData().SetMinPage(1);
     printer.GetPrintDialogData().EnableSelection(false);
-    if (!printer.Print(this, printOut, true) )
+    if (!printer.Print(this, printOut, true))
         {
         // just show a message if a real error occurred. They may have just cancelled.
         if (printer.GetLastError() == wxPRINTER_ERROR)
             {
             wxMessageBox(_(L"An error occurred while printing.\n"
-                            "Your default printer may not be set correctly."),
-                         _(L"Print"), wxOK|wxICON_WARNING);
+                           "Your default printer may not be set correctly."),
+                         _(L"Print"), wxOK | wxICON_WARNING);
             }
         }
     if (m_printData)
@@ -164,31 +165,32 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
     printOutForPrinting->SetWatermark(GetWatermark());
 
     wxString htmlText = *(GetParser()->GetSource());
-    const wchar_t* htmlEnd = htmlText.wc_str()+htmlText.length();
-    const wchar_t* tableStart =
-        lily_of_the_valley::html_extract_text::find_element(htmlText.wc_str(), htmlEnd,
-                                                            _DT(L"table"), false);
+    const wchar_t* htmlEnd = htmlText.wc_str() + htmlText.length();
+    const wchar_t* tableStart = lily_of_the_valley::html_extract_text::find_element(
+        htmlText.wc_str(), htmlEnd, _DT(L"table"), false);
     const wchar_t* tableEnd = nullptr;
     while (tableStart)
         {
-        tableEnd =
-            lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
-                                                                        _DT(L"table"));
+        tableEnd = lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
+                                                                               _DT(L"table"));
         if (tableEnd == nullptr)
-            { break; }
+            {
+            break;
+            }
         else
             {
             tableEnd = lily_of_the_valley::html_extract_text::find_close_tag(tableEnd);
             if (tableEnd == nullptr)
-                { break; }
+                {
+                break;
+                }
             // skip '>'
             ++tableEnd;
-            printOut->AddTable(wxString(tableStart, tableEnd-tableStart));
-            printOutForPrinting->AddTable(wxString(tableStart, tableEnd-tableStart));
+            printOut->AddTable(wxString(tableStart, tableEnd - tableStart));
+            printOutForPrinting->AddTable(wxString(tableStart, tableEnd - tableStart));
             }
-        tableStart =
-            lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
-                                                                _DT(L"table"), false);
+        tableStart = lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
+                                                                         _DT(L"table"), false);
         }
     wxPrinterDC* dc = nullptr;
     wxPrinterDC* dc2 = nullptr;
@@ -213,22 +215,25 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
     preview->GetPrintDialogData().EnableSelection(false);
     if (!preview->IsOk())
         {
-        wxDELETE(preview); wxDELETE(dc); wxDELETE(dc2);
+        wxDELETE(preview);
+        wxDELETE(dc);
+        wxDELETE(dc2);
         wxMessageBox(_(L"An error occurred while previewing.\n"
-                        "Your default printer may not be set correctly."),
-                     _(L"Print Preview"), wxOK|wxICON_WARNING);
+                       "Your default printer may not be set correctly."),
+                     _(L"Print Preview"), wxOK | wxICON_WARNING);
         return;
         }
     int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
     wxClientDisplayRect(&x, &y, &width, &height);
     wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
-                                                wxDefaultPosition, wxSize(width, height));
+                                               wxDefaultPosition, wxSize(width, height));
 
     frame->Centre(wxBOTH);
     frame->Initialize();
     frame->Show(true);
 
-    delete dc; delete dc2;
+    delete dc;
+    delete dc2;
 #else
     wxFAIL_MSG(L"Print preview is Windows only!");
 #endif
@@ -237,22 +242,20 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
 //------------------------------------------------------
 void HtmlTableWindow::OnSave([[maybe_unused]] wxCommandEvent& event)
     {
-    wxFileDialog dialog
-            (
-            this,
-            _(L"Save As"),
-            wxEmptyString,
-            GetLabel(),
-            L"HTML (*.htm;*.html)|*.htm;*.html",
-            wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+    wxFileDialog dialog(this, _(L"Save As"), wxEmptyString, GetLabel(),
+                        L"HTML (*.htm;*.html)|*.htm;*.html", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
     if (dialog.ShowModal() != wxID_OK)
-        { return; }
+        {
+        return;
+        }
 
     wxFileName filePath = dialog.GetPath();
     // in case the extension is missing then use the selected filter
     if (filePath.GetExt().empty())
-        { filePath.SetExt(L"htm"); }
+        {
+        filePath.SetExt(L"htm");
+        }
 
     Save(filePath);
     }
@@ -274,9 +277,8 @@ bool HtmlTableWindow::Save(const wxFileName& path)
     const bool retVal = file.Write(htmlText);
     if (!retVal)
         {
-        wxMessageBox(wxString::Format(_(L"Failed to save document\n(%s)."),
-            path.GetFullPath()),
-            _(L"Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(wxString::Format(_(L"Failed to save document\n(%s)."), path.GetFullPath()),
+                     _(L"Error"), wxOK | wxICON_EXCLAMATION);
         }
     return retVal;
     }
@@ -294,31 +296,23 @@ void HtmlTableWindow::Copy()
         lily_of_the_valley::html_format::set_title(htmlText, GetLabel().ToStdWstring());
         lily_of_the_valley::html_format::set_encoding(htmlText);
         obj->Add(new wxHTMLDataObject(htmlText), true);
-        obj->Add(new wxTextDataObject(ToText()) );
+        obj->Add(new wxTextDataObject(ToText()));
         wxTheClipboard->SetData(obj);
         wxTheClipboard->Close();
         }
     }
 
 //------------------------------------------------------
-void HtmlTableWindow::OnSelectAll([[maybe_unused]] wxCommandEvent& event)
-    { SelectAll(); }
+void HtmlTableWindow::OnSelectAll([[maybe_unused]] wxCommandEvent& event) { SelectAll(); }
 
 //------------------------------------------------------
-void HtmlTableWindow::OnCopy([[maybe_unused]] wxCommandEvent& event)
-    {
-    Copy();
-    }
+void HtmlTableWindow::OnCopy([[maybe_unused]] wxCommandEvent& event) { Copy(); }
 
 //------------------------------------------------------
-void HtmlTableWindow::OnRightClick([[maybe_unused]] wxMouseEvent& event)
-    {
-    PopupMenu(&m_menu);
-    }
+void HtmlTableWindow::OnRightClick([[maybe_unused]] wxMouseEvent& event) { PopupMenu(&m_menu); }
 
 //------------------------------------------------------
 void HtmlTableWindow::OnFind([[maybe_unused]] wxFindDialogEvent& event)
     {
-    wxMessageBox(_(L"Find not supported in this window."),
-            _(L"Find"), wxOK|wxICON_INFORMATION);
+    wxMessageBox(_(L"Find not supported in this window."), _(L"Find"), wxOK | wxICON_INFORMATION);
     }

@@ -12,23 +12,24 @@
 #ifndef __SIDEBARBOOK_H__
 #define __SIDEBARBOOK_H__
 
+#include "sidebar.h"
+#include <wx/bookctrl.h>
 #include <wx/control.h>
 #include <wx/dynarray.h>
-#include <wx/bookctrl.h>
 #include <wx/imaglist.h>
 #include <wx/wupdlock.h>
-#include "sidebar.h"
 
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
 
-#define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn)                                                           \
+#define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn)                                                    \
     wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
 
 wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
 
-#define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn)                                                           \
+#define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn)                                                   \
     wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
+
 /// @endcond
 
 namespace Wisteria::UI
@@ -36,15 +37,15 @@ namespace Wisteria::UI
     /// @brief Class for connecting a sidebar's content with a set of dialog pages.
     class SideBarBook final : public wxControl
         {
-    public:
+      public:
         // flags for DoSetSelection()
         /// @private
-        static constexpr int SetSelection_SendEvent = 1;
+        constexpr static int SetSelection_SendEvent = 1;
 
         /// @brief Constructor.
         /// @param parent The parent window.
         /// @param id The ID of this control.
-        SideBarBook(wxWindow *parent, wxWindowID id);
+        SideBarBook(wxWindow* parent, wxWindowID id);
 
         /** @brief Adds a folder and its connected page.
             @param page The (dialog) page to connect.
@@ -53,11 +54,8 @@ namespace Wisteria::UI
             @param bSelect @c true to select the page after adding it.
             @param imageId The index into the image list to use as an icon.
             @returns @c true if the page was successfully added.*/
-        bool AddPage(wxWindow *page,
-                     const wxString& text,
-                     const wxWindowID Id,
-                     const bool bSelect = false,
-                     const int imageId = wxNOT_FOUND);
+        bool AddPage(wxWindow* page, const wxString& text, const wxWindowID Id,
+                     const bool bSelect = false, const int imageId = wxNOT_FOUND);
         /** @brief Adds a subitem to one of the folders.
             @param page The (dialog) page to connect.
             @param text The label for item in the sidebar.
@@ -67,11 +65,15 @@ namespace Wisteria::UI
             @returns @c true if the page was successfully added.*/
         bool AddSubPage(wxWindow* page, const wxString& text, const wxWindowID Id,
                         bool bSelect = false, int imageId = wxNOT_FOUND);
+
         /// @returns The panel which represents the given page.
         /// @param n The index of the page to return.
         [[nodiscard]]
         wxWindow* GetPage(size_t n) const
-            { return m_pages.at(n); }
+            {
+            return m_pages.at(n);
+            }
+
         /// @returns The current page or null if none.
         [[nodiscard]]
         wxWindow* GetCurrentPage() const
@@ -79,20 +81,25 @@ namespace Wisteria::UI
             const int n = GetSelection();
             return n == wxNOT_FOUND ? nullptr : GetPage(n);
             }
+
         /// @returns The number of pages in the dialog.
         [[nodiscard]]
         size_t GetPageCount() const noexcept
-            { return m_pages.size(); }
+            {
+            return m_pages.size();
+            }
 
         /// @brief Selects a page.
         /// @param n The index of the page to select.
         /// @returns The index of the selected page if successful; @c wxNOT_FOUND otherwise.
-        int SetSelection(size_t n)
-            { return DoSetSelection(n, SetSelection_SendEvent); }
+        int SetSelection(size_t n) { return DoSetSelection(n, SetSelection_SendEvent); }
+
         /// @returns The currently selected page or @c wxNOT_FOUND if none.
         [[nodiscard]]
         int GetSelection() const noexcept
-            { return m_selection; }
+            {
+            return m_selection;
+            }
 
         /// @private
         void UpdateSelectedPage(size_t newsel);
@@ -104,11 +111,16 @@ namespace Wisteria::UI
         /// @returns The sidebar.
         [[nodiscard]]
         SideBar* GetSideBar() noexcept
-            { return m_sidebar; }
+            {
+            return m_sidebar;
+            }
+
         /// @private
         [[nodiscard]]
         const SideBar* GetSideBar() const noexcept
-            { return m_sidebar; }
+            {
+            return m_sidebar;
+            }
 
         /// @returns The image list used for the sidebar.
         [[nodiscard]]
@@ -117,6 +129,7 @@ namespace Wisteria::UI
             assert(m_sidebar);
             return m_sidebar->GetImageList();
             }
+
         /// @returns The image list used for the sidebar (constantly).
         [[nodiscard]]
         const std::vector<wxBitmapBundle>& GetImageList() const
@@ -127,9 +140,9 @@ namespace Wisteria::UI
 
         /** @brief Sets the size for all the icons (in DIPs).
             @param sz The icons' sizes.*/
-        void SetIconSize(const wxSize sz)
-            { m_sidebar->SetIconSize(sz); }
-    protected:
+        void SetIconSize(const wxSize sz) { m_sidebar->SetIconSize(sz); }
+
+      protected:
         // @brief Sets the selection to the given page, sending the events (which can
         // possibly prevent the page change from taking place) if
         // SendEvent flag is included.
@@ -176,37 +189,44 @@ namespace Wisteria::UI
         void UpdateSize();
 
         /// @private
-        bool DoInsertPage(size_t nPage,
-                          wxWindow* page,
-                          [[maybe_unused]] const wxString& text,
+        bool DoInsertPage(size_t nPage, wxWindow* page, [[maybe_unused]] const wxString& text,
                           [[maybe_unused]] bool bSelect = false,
                           [[maybe_unused]] int imageId = wxNOT_FOUND);
 
         /// @returns @c true if we have @c wxBK_TOP or @c wxBK_BOTTOM style.
         [[nodiscard]]
         bool IsVertical() const noexcept
-            { return HasFlag(wxBK_BOTTOM|wxBK_TOP); }
+            {
+            return HasFlag(wxBK_BOTTOM | wxBK_TOP);
+            }
+
         // get/set size of area between book control area and page area
         /// @private
         [[nodiscard]]
         unsigned int GetInternalBorder() const noexcept
-            { return wxSizerFlags::GetDefaultBorder(); }
+            {
+            return wxSizerFlags::GetDefaultBorder();
+            }
+
         // choose the default border for this window
         /// @private
         [[nodiscard]]
         wxBorder GetDefaultBorder() const noexcept final
-            { return wxBORDER_NONE; }
+            {
+            return wxBORDER_NONE;
+            }
 
         /// @private
         [[nodiscard]]
         wxBookCtrlEvent* CreatePageChangingEvent() const;
         /// @private
-        void MakeChangedEvent(wxBookCtrlEvent &event);
+        void MakeChangedEvent(wxBookCtrlEvent& event);
 
         // event handlers
         /// @private
         void OnListSelected([[maybe_unused]] wxCommandEvent& event);
-    private:
+
+      private:
         SideBarBook() noexcept {}
 
         // the array of all pages of this control
@@ -225,7 +245,7 @@ namespace Wisteria::UI
 
         wxDECLARE_DYNAMIC_CLASS_NO_COPY(SideBarBook);
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

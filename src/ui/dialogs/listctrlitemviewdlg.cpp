@@ -50,23 +50,25 @@ void ListCtrlItemViewDlg::CreateControls()
 
     mainSizer->Add(m_grid, 1, wxALL | wxEXPAND, wxSizerFlags::GetDefaultBorder());
 
-    mainSizer->Add(new wxStaticLine(this),
-                   wxSizerFlags().Expand().Border(wxRIGHT|wxLEFT,wxSizerFlags::GetDefaultBorder()));
+    mainSizer->Add(new wxStaticLine(this), wxSizerFlags().Expand().Border(
+                                               wxRIGHT | wxLEFT, wxSizerFlags::GetDefaultBorder()));
     wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
     if (wxCHECK_VERSION(3, 3, 0))
         {
         wxButton* button = new wxButton(this, wxID_COPY);
-        button->SetBitmap(wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+        button->SetBitmap(
+            wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
         buttonSizer->Add(button, 0, wxRIGHT, wxSizerFlags::GetDefaultBorder());
         }
 
-    {
-    wxButton* button = new wxButton(this, wxID_CLOSE);
-    button->SetBitmap(wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-    button->SetDefault();
-    buttonSizer->Add(button, 0, wxRIGHT, wxSizerFlags::GetDefaultBorder());
-    }
+        {
+        wxButton* button = new wxButton(this, wxID_CLOSE);
+        button->SetBitmap(
+            wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+        button->SetDefault();
+        buttonSizer->Add(button, 0, wxRIGHT, wxSizerFlags::GetDefaultBorder());
+        }
 
-    mainSizer->Add(buttonSizer, 0, wxALIGN_RIGHT|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(buttonSizer, 0, wxALIGN_RIGHT | wxALL, wxSizerFlags::GetDefaultBorder());
     }

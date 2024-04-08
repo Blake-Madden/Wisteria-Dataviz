@@ -12,16 +12,16 @@
 #ifndef __INFOBAR_EX_H__
 #define __INFOBAR_EX_H__
 
-#include <wx/wx.h>
+#include <wx/artprov.h>
 #include <wx/bmpbuttn.h>
 #include <wx/button.h>
 #include <wx/dcmemory.h>
 #include <wx/settings.h>
+#include <wx/sizer.h>
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
-#include <wx/sizer.h>
 #include <wx/valgen.h>
-#include <wx/artprov.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -46,7 +46,7 @@ namespace Wisteria::UI
     */
     class InfoBarEx : public wxControl
         {
-    public:
+      public:
         /// @brief The default CTOR that should be used with Create()
         ///     (but remember that info bar is created hidden).
         InfoBarEx() = default;
@@ -63,10 +63,12 @@ namespace Wisteria::UI
             @param parent The parent window.
             @param winid The window ID.
             @param includeDontShowAgain Whether to show a "don't show this again" checkbox.*/
-        explicit InfoBarEx(wxWindow *parent, wxWindowID winid = wxID_ANY,
-            const bool includeDontShowAgain = true) :
-            m_includeDontShowAgain(includeDontShowAgain)
-            { Create(parent, winid); }
+        explicit InfoBarEx(wxWindow* parent, wxWindowID winid = wxID_ANY,
+                           const bool includeDontShowAgain = true)
+            : m_includeDontShowAgain(includeDontShowAgain)
+            {
+            Create(parent, winid);
+            }
 
         /** @brief Creates the control.
             @param parent The control's parent.
@@ -77,18 +79,16 @@ namespace Wisteria::UI
         /** @brief Shows a message.
             @param msg The message to display.
             @param flags The flags to use.*/
-        void ShowMessage(const wxString& msg,
-                         int flags = wxICON_INFORMATION);
+        void ShowMessage(const wxString& msg, int flags = wxICON_INFORMATION);
 
         /// @returns Whether the "Do not show this again" checkbox was checked at the
         ///     time of the window being closed.
         /// @note This should be called in your handler for the `wxID_CLOSE button` being clicked.
-        bool IsDontShowAgainChecked() const
-            { return m_dontShowAgain; }
+        bool IsDontShowAgainChecked() const { return m_dontShowAgain; }
 
         /// @returns Whether the "Do not show this again" checkbox is being shown.
-        bool IsIncludingDontShowAgainCheckbox() const
-            { return m_includeDontShowAgain; }
+        bool IsIncludingDontShowAgainCheckbox() const { return m_includeDontShowAgain; }
+
         /// @brief Sets whether the "Do not show this again" checkbox should be shown.
         /// @param includeCheckbox Whether to include the checkbox.
         void IncludeDontShowAgainCheckbox(const bool includeCheckbox)
@@ -135,7 +135,8 @@ namespace Wisteria::UI
         /// @param colour The color to use.
         /// @returns @c true upon success.
         bool SetForegroundColour(const wxColour& colour) final;
-    protected:
+
+      protected:
         /// @returns @c wxBORDER_NONE.
         /// @brief Info bar shouldn't have any border by default, the color difference
         ///     between it and the main window separates it well enough.
@@ -144,7 +145,8 @@ namespace Wisteria::UI
         /// @brief Updates the parent to take our new or changed size into account (notably
         ///     should be called when we're shown or hidden)
         void UpdateParent();
-    private:
+
+      private:
         // handler for the close button
         void OnButton(wxCommandEvent& event);
 
@@ -170,16 +172,14 @@ namespace Wisteria::UI
         // the effects to use when showing/hiding and duration for them: by default
         // the effect is determined by the info bar automatically depending on its
         // position and the default duration is used
-        wxShowEffect m_showEffect{ wxSHOW_EFFECT_MAX },
-                     m_hideEffect{ wxSHOW_EFFECT_MAX };
+        wxShowEffect m_showEffect{ wxSHOW_EFFECT_MAX }, m_hideEffect{ wxSHOW_EFFECT_MAX };
         int m_effectDuration{ 0 };
 
         bool m_includeDontShowAgain{ true };
         bool m_dontShowAgain{ false };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 
 #endif // __INFOBAR_EX_H__
-

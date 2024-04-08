@@ -12,19 +12,19 @@
 #ifndef __HTML_TABLE_WINDOW_H__
 #define __HTML_TABLE_WINDOW_H__
 
-#include <wx/wx.h>
-#include <wx/file.h>
-#include <wx/html/htmlwin.h>
-#include <wx/html/htmlcell.h>
-#include <wx/filename.h>
-#include <wx/clipbrd.h>
-#include <wx/fdrepdlg.h>
-#include <wx/menu.h>
-#include <wx/print.h>
-#include <wx/xrc/xmlres.h>
-#include <wx/html/htmprint.h>
 #include "../../base/canvas.h"
 #include "../../i18n-check/src/donttranslate.h"
+#include <wx/clipbrd.h>
+#include <wx/fdrepdlg.h>
+#include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/html/htmlcell.h>
+#include <wx/html/htmlwin.h>
+#include <wx/html/htmprint.h>
+#include <wx/menu.h>
+#include <wx/print.h>
+#include <wx/wx.h>
+#include <wx/xrc/xmlres.h>
 
 namespace Wisteria::UI
     {
@@ -32,17 +32,18 @@ namespace Wisteria::UI
     /// @details Includes built-in support for printing, exporting, and copying.
     class HtmlTableWindow : public wxHtmlWindow
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent window.
             @param id The window's ID.
             @param pos The window's position.
             @param size The window's size.
             @param style The window's style.*/
-        explicit HtmlTableWindow(wxWindow *parent, wxWindowID id = wxID_ANY,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION | wxBORDER_THEME);
+        explicit HtmlTableWindow(wxWindow* parent, wxWindowID id = wxID_ANY,
+                                 const wxPoint& pos = wxDefaultPosition,
+                                 const wxSize& size = wxDefaultSize,
+                                 long style = wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION |
+                                              wxBORDER_THEME);
         /// @private
         HtmlTableWindow(const HtmlTableWindow&) = delete;
         /// @private
@@ -50,67 +51,87 @@ namespace Wisteria::UI
 
         /** @brief Sets the printer settings.
             @param printData A pointer to the printer settings to use.*/
-        void SetPrinterSettings(wxPrintData* printData) noexcept
-            { m_printData = printData; }
+        void SetPrinterSettings(wxPrintData* printData) noexcept { m_printData = printData; }
 
         /// @brief Sets the left header used for printing.
         /// @param header The string to use.
-        void SetLeftPrinterHeader(wxString header)
-            { m_leftPrinterHeader = std::move(header); }
+        void SetLeftPrinterHeader(wxString header) { m_leftPrinterHeader = std::move(header); }
+
         /// @returns The left header used for printing.
         [[nodiscard]]
         const wxString& GetLeftPrinterHeader() const noexcept
-            { return m_leftPrinterHeader; }
+            {
+            return m_leftPrinterHeader;
+            }
+
         /// @brief Sets the center header used for printing.
         /// @param header The string to use.
-        void SetCenterPrinterHeader(wxString header)
-            { m_centerPrinterHeader = std::move(header); }
+        void SetCenterPrinterHeader(wxString header) { m_centerPrinterHeader = std::move(header); }
+
         /// @returns The center header used for printing.
         [[nodiscard]]
         const wxString& GetCenterPrinterHeader() const noexcept
-            { return m_centerPrinterHeader; }
+            {
+            return m_centerPrinterHeader;
+            }
+
         /// @brief Sets the right header used for printing.
         /// @param header The string to use.
-        void SetRightPrinterHeader(wxString header)
-            { m_rightPrinterHeader = std::move(header); }
+        void SetRightPrinterHeader(wxString header) { m_rightPrinterHeader = std::move(header); }
+
         /// @returns The right header used for printing.
         [[nodiscard]]
         const wxString& GetRightPrinterHeader() const noexcept
-            { return m_rightPrinterHeader; }
+            {
+            return m_rightPrinterHeader;
+            }
+
         /// @brief Sets the left footer used for printing.
         /// @param footer The string to use.
-        void SetLeftPrinterFooter(wxString footer)
-            { m_leftPrinterFooter = std::move(footer); }
+        void SetLeftPrinterFooter(wxString footer) { m_leftPrinterFooter = std::move(footer); }
+
         /// @returns The left footer used for printing.
         [[nodiscard]]
         const wxString& GetLeftPrinterFooter() const noexcept
-            { return m_leftPrinterFooter; }
+            {
+            return m_leftPrinterFooter;
+            }
+
         /// @brief Sets the center footer used for printing.
         /// @param footer The string to use.
-        void SetCenterPrinterFooter(wxString footer)
-            { m_centerPrinterFooter = std::move(footer); }
+        void SetCenterPrinterFooter(wxString footer) { m_centerPrinterFooter = std::move(footer); }
+
         /// @returns The center footer used for printing.
         [[nodiscard]]
         const wxString& GetCenterPrinterFooter() const noexcept
-            { return m_centerPrinterFooter; }
+            {
+            return m_centerPrinterFooter;
+            }
+
         /// @brief Sets the right footer used for printing.
         /// @param footer The string to use.
-        void SetRightPrinterFooter(wxString footer)
-            { m_rightPrinterFooter = std::move(footer); }
+        void SetRightPrinterFooter(wxString footer) { m_rightPrinterFooter = std::move(footer); }
+
         /// @returns The right footer used for printing.
         [[nodiscard]]
         const wxString& GetRightPrinterFooter() const noexcept
-            { return m_rightPrinterFooter; }
+            {
+            return m_rightPrinterFooter;
+            }
 
         /// @brief Sets the watermark for the list when printed.
         /// @param watermark The watermark information.
         void SetWatermark(Wisteria::Canvas::Watermark watermark)
-            { m_waterMark = std::move(watermark); }
+            {
+            m_waterMark = std::move(watermark);
+            }
 
         /// @returns The printer watermark.
         [[nodiscard]]
         const Wisteria::Canvas::Watermark& GetWatermark() const noexcept
-            { return m_waterMark; }
+            {
+            return m_waterMark;
+            }
 
         /// @brief Saving the contents of the window to HTML.
         /// @param path The path to save to.
@@ -120,8 +141,7 @@ namespace Wisteria::UI
         /// @brief Copies all the HTML tables to the clipboard.
         void Copy();
 
-    private:
-
+      private:
         HtmlTableWindow() = default;
 
         void OnSelectAll([[maybe_unused]] wxCommandEvent& event);
@@ -153,7 +173,8 @@ namespace Wisteria::UI
 
         wxDECLARE_DYNAMIC_CLASS(HtmlTableWindow);
         };
-    }
+    } // namespace Wisteria::UI
+
 /** @}*/
 
 #endif //__HTML_TABLE_WINDOW_H__

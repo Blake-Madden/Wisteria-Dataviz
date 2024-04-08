@@ -27,9 +27,9 @@
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_SIDEBAR_CLICK, wxCommandEvent);
 
-
 #define EVT_SIDEBAR_CLICK(winid, fn)                                                               \
     wx__DECLARE_EVT1(wxEVT_SIDEBAR_CLICK, winid, wxCommandEventHandler(fn))
+
 /// @endcond
 
 namespace Wisteria::UI

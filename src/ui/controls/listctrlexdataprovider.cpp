@@ -19,34 +19,47 @@ int DoubleWithTextCompare::Compare(const ListCtrlExDataProviderBase::DoubleWithL
     if (!std::isnan(cell1.m_numericValue) && !std::isnan(cell2.m_numericValue))
         {
         if (cell1.m_numericValue == cell2.m_numericValue)
-            { return 0; }
+            {
+            return 0;
+            }
         else if (cell1.m_numericValue < cell2.m_numericValue)
-            { return -1; }
+            {
+            return -1;
+            }
         else
-            { return 1; }
+            {
+            return 1;
+            }
         }
     // or cell1 is text and cell2 is numeric (Text is bigger than numbers [unless empty])...
     else if (std::isnan(cell1.m_numericValue) && !std::isnan(cell2.m_numericValue))
         {
         if (GetLabel(cell1.m_labelCode).empty())
-            { return -1; }
+            {
+            return -1;
+            }
         else
-            { return 1; }
+            {
+            return 1;
+            }
         }
     // or cell1 is numeric and cell2 is text...
     else if (!std::isnan(cell1.m_numericValue) && std::isnan(cell2.m_numericValue))
         {
         if (GetLabel(cell2.m_labelCode).empty())
-            { return 1; }
+            {
+            return 1;
+            }
         else
-            { return -1; }
+            {
+            return -1;
+            }
         }
     // or both items are text
     else
         {
-        return string_util::strnatordncasecmp(
-            GetLabel(cell1.m_labelCode).wc_str(),
-            GetLabel(cell2.m_labelCode).wc_str());
+        return string_util::strnatordncasecmp(GetLabel(cell1.m_labelCode).wc_str(),
+                                              GetLabel(cell2.m_labelCode).wc_str());
         }
     }
 
@@ -55,7 +68,11 @@ const wxString& DoubleWithTextCompare::GetLabel(const long id) const
     {
     auto pos = m_labelsMap.find(id);
     if (pos != m_labelsMap.cend())
-        { return pos->second->first; }
+        {
+        return pos->second->first;
+        }
     else
-        { return m_emptyCell; }
+        {
+        return m_emptyCell;
+        }
     }

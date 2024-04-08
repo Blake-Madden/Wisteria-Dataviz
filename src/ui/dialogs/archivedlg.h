@@ -12,23 +12,23 @@
 #ifndef __ARCHIVE_DLG_H__
 #define __ARCHIVE_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/statline.h>
-#include <wx/valgen.h>
-#include <wx/combobox.h>
-#include <wx/valtext.h>
-#include <wx/tokenzr.h>
-#include <wx/filename.h>
-#include <wx/artprov.h>
 #include "dialogwithhelp.h"
+#include <wx/artprov.h>
+#include <wx/combobox.h>
+#include <wx/filename.h>
+#include <wx/statline.h>
+#include <wx/string.h>
+#include <wx/tokenzr.h>
+#include <wx/valgen.h>
+#include <wx/valtext.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
     /** @brief Prompt for selecting an archive file and a file filter for files to select from it.*/
     class ArchiveDlg final : public DialogWithHelp
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent window.
             @param fullFileFilter The file filter.
@@ -38,9 +38,9 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
         ArchiveDlg(wxWindow* parent, const wxString& fullFileFilter, wxWindowID id = wxID_ANY,
-            const wxString& caption = _(L"Select Archive File"),
-            const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+                   const wxString& caption = _(L"Select Archive File"),
+                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                   long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private
         ArchiveDlg(const ArchiveDlg&) = delete;
         /// @private
@@ -53,11 +53,14 @@ namespace Wisteria::UI
         /// @returns The path of the selected archive file.
         [[nodiscard]]
         const wxString& GetPath() const noexcept
-            { return m_filePath; }
+            {
+            return m_filePath;
+            }
+
         /** @brief Sets the path of the default selected file.
             @param path The default file path to select.*/
-        void SetPath(const wxString& path)
-            { m_filePath = path; }
+        void SetPath(const wxString& path) { m_filePath = path; }
+
         /** @brief Sets the selected file filter.
             @param filter The file filter to display.*/
         void SetSelectedFileFilter(const wxString& filter)
@@ -69,6 +72,7 @@ namespace Wisteria::UI
                 TransferDataToWindow();
                 }
             }
+
         /// @returns The selected document filter.
         [[nodiscard]]
         wxString GetSelectedFileFilter()
@@ -76,18 +80,19 @@ namespace Wisteria::UI
             TransferDataFromWindow();
             return m_fileFilterCombo->GetString(m_selectedFileFilter);
             }
-    private:
+
+      private:
         void CreateControls();
         void OnFileButtonClick([[maybe_unused]] wxCommandEvent& event);
         void OnOK([[maybe_unused]] wxCommandEvent& event);
 
-        static constexpr int ID_FILE_BROWSE_BUTTON = wxID_HIGHEST;
+        constexpr static int ID_FILE_BROWSE_BUTTON = wxID_HIGHEST;
         wxString m_filePath;
         wxString m_fullFileFilter;
         int m_selectedFileFilter{ 0 };
         wxChoice* m_fileFilterCombo{ nullptr };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

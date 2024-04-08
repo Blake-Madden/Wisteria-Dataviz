@@ -12,19 +12,20 @@
 #ifndef __WARNING_MESSAGES_DLG_H__
 #define __WARNING_MESSAGES_DLG_H__
 
-#include <wx/wx.h>
+#include "dialogwithhelp.h"
 #include <wx/string.h>
 #include <wx/valgen.h>
-#include "dialogwithhelp.h"
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
     /// @brief Dialog to show all queued messages currently in the global WarningManager.
     class WarningMessagesDlg final : public DialogWithHelp
         {
-    public:
+      public:
         /// @brief Default constructor (should be used in conjunction with Create()).
         WarningMessagesDlg() = default;
+
         /** @brief Constructor.
             @param parent The parent window.
             @param id The window ID.
@@ -33,10 +34,14 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.*/
         explicit WarningMessagesDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
-                          const wxString& caption = _(L"Warnings & Prompts Display"),
-                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                          long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN)
-            { Create(parent, id, caption, pos, size, style); }
+                                    const wxString& caption = _(L"Warnings & Prompts Display"),
+                                    const wxPoint& pos = wxDefaultPosition,
+                                    const wxSize& size = wxDefaultSize,
+                                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN)
+            {
+            Create(parent, id, caption, pos, size, style);
+            }
+
         /// @private
         WarningMessagesDlg(const WarningMessagesDlg&) = delete;
         /// @private
@@ -57,10 +62,10 @@ namespace Wisteria::UI
         bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
                     const wxString& caption = _(L"Warnings & Prompts Display"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                    long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN)
+                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN)
             {
-            SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS|wxWS_EX_CONTEXTHELP);
-            DialogWithHelp::Create( parent, id, caption, pos, size, style );
+            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+            DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
             CreateControls();
             GetSizer()->Fit(this);
@@ -68,10 +73,11 @@ namespace Wisteria::UI
             Centre();
             return true;
             }
-    private:
+
+      private:
         void CreateControls();
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

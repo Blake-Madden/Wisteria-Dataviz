@@ -12,17 +12,17 @@
 #ifndef __THUMBNAIL_H__
 #define __THUMBNAIL_H__
 
-#include <wx/wx.h>
+#include "../../base/image.h"
 #include <wx/bitmap.h>
+#include <wx/dc.h>
+#include <wx/dcbuffer.h>
+#include <wx/dialog.h>
+#include <wx/dnd.h>
+#include <wx/filename.h>
 #include <wx/image.h>
 #include <wx/statbmp.h>
 #include <wx/statline.h>
-#include <wx/dialog.h>
-#include <wx/dc.h>
-#include <wx/dcbuffer.h>
-#include <wx/dnd.h>
-#include <wx/filename.h>
-#include "../../base/image.h"
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -30,11 +30,12 @@ namespace Wisteria::UI
     /// @private
     class EnlargedImageWindow : public wxDialog
         {
-    public:
+      public:
         EnlargedImageWindow(const wxBitmap& bitmap, wxWindow* parent, wxWindowID id = wxID_ANY,
                             const wxPoint& pos = wxDefaultPosition,
                             const wxSize& size = wxDefaultSize,
-                            long style = wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP|wxFULL_REPAINT_ON_RESIZE);
+                            long style = wxFRAME_NO_TASKBAR | wxSTAY_ON_TOP |
+                                         wxFULL_REPAINT_ON_RESIZE);
         EnlargedImageWindow() = delete;
         EnlargedImageWindow(const EnlargedImageWindow&) = delete;
         EnlargedImageWindow& operator=(const EnlargedImageWindow&) = delete;
@@ -43,12 +44,15 @@ namespace Wisteria::UI
         void OnClick(wxMouseEvent& event);
         void OnChar([[maybe_unused]] wxKeyEvent& event);
 
-        void SetBitmap(const wxBitmap& bitmap) noexcept
-            { m_bitmap = bitmap; }
+        void SetBitmap(const wxBitmap& bitmap) noexcept { m_bitmap = bitmap; }
+
         [[nodiscard]]
         wxBitmap& GetBitmap() noexcept
-            { return m_bitmap; }
-    protected:
+            {
+            return m_bitmap;
+            }
+
+      protected:
         wxBitmap m_bitmap;
         };
 
@@ -56,7 +60,7 @@ namespace Wisteria::UI
     ///     (optional) drag 'n' drop support.
     class Thumbnail : public wxWindow
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent window.
             @param bmp The (full-size) bitmap to show in the thumbnail
@@ -72,9 +76,8 @@ namespace Wisteria::UI
         Thumbnail(wxWindow* parent, const wxBitmap& bmp,
                   const ClickMode clickMode = ClickMode::FullSizeViewable,
                   const bool allowFileDrop = false, wxWindowID id = wxID_ANY,
-                  const wxPoint& pos = wxDefaultPosition,
-                  const wxSize& size = wxDefaultSize,
-                  long style = wxFULL_REPAINT_ON_RESIZE|wxBORDER_NONE,
+                  const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                  long style = wxFULL_REPAINT_ON_RESIZE | wxBORDER_NONE,
                   const wxString& name = L"ThumbnailCtrl");
         /// @private
         Thumbnail() = delete;
@@ -95,6 +98,7 @@ namespace Wisteria::UI
                 It will attempt to scale down to the current size of the control
                 (based on the image originally passed to the constructor).*/
         void SetBitmap(const wxBitmap& bmp);
+
         /** @brief Sets the opacity of the thumbnail when showing the image.
             @param opacity The opacity level (0-255).*/
         void SetOpacity(const uint8_t opacity)
@@ -103,11 +107,15 @@ namespace Wisteria::UI
             Refresh();
             Update();
             }
+
         /// @returns The opacity of the thumbnail.
         [[nodiscard]]
         uint8_t GetOpacity() const noexcept
-            { return m_opactity; }
-    private:
+            {
+            return m_opactity;
+            }
+
+      private:
         void OnResize(wxSizeEvent& event);
         void OnClick([[maybe_unused]] wxMouseEvent& event);
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
@@ -122,16 +130,16 @@ namespace Wisteria::UI
     /// @private
     class DropThumbnailImageFile : public wxFileDropTarget
         {
-    public:
-        DropThumbnailImageFile(Thumbnail *pOwner = nullptr) noexcept
-            { m_pOwner = pOwner; }
-        bool OnDropFiles([[maybe_unused]] wxCoord x,
-                         [[maybe_unused]] wxCoord y,
+      public:
+        DropThumbnailImageFile(Thumbnail* pOwner = nullptr) noexcept { m_pOwner = pOwner; }
+
+        bool OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_unused]] wxCoord y,
                          const wxArrayString& filenames) final;
-    private:
+
+      private:
         Thumbnail* m_pOwner{ nullptr };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

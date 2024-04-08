@@ -11,13 +11,12 @@
 namespace Wisteria::UI
     {
     //----------------------------------
-    EnlargedImageWindow::EnlargedImageWindow(const wxBitmap& bitmap,
-        wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
-        const wxPoint& pos /*= wxDefaultPosition*/,
-        const wxSize& size /*= wxDefaultSize*/,
-        long style /*= wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP|wxFULL_REPAINT_ON_RESIZE*/) :
-        wxDialog(parent, id, wxString{}, pos, size, style, L"EnlargedImageWindow"),
-        m_bitmap(bitmap)
+    EnlargedImageWindow::EnlargedImageWindow(
+        const wxBitmap& bitmap, wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
+        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+        long style /*= wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP|wxFULL_REPAINT_ON_RESIZE*/)
+        : wxDialog(parent, id, wxString{}, pos, size, style, L"EnlargedImageWindow"),
+          m_bitmap(bitmap)
         {
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetSize(GetBitmap().GetSize());
@@ -35,9 +34,13 @@ namespace Wisteria::UI
         if (event.LeftDown() || event.RightDown())
             {
             if (IsModal())
-                { EndModal(wxID_OK); }
+                {
+                EndModal(wxID_OK);
+                }
             else
-                { Close(); }
+                {
+                Close();
+                }
             }
         }
 
@@ -45,9 +48,13 @@ namespace Wisteria::UI
     void EnlargedImageWindow::OnChar([[maybe_unused]] wxKeyEvent& event)
         {
         if (IsModal())
-            { EndModal(wxID_OK); }
+            {
+            EndModal(wxID_OK);
+            }
         else
-            { Close(); }
+            {
+            Close();
+            }
         }
 
     //----------------------------------
@@ -60,16 +67,20 @@ namespace Wisteria::UI
         }
 
     //----------------------------------
-    bool DropThumbnailImageFile::OnDropFiles([[maybe_unused]] wxCoord x,
-        [[maybe_unused]] wxCoord y, const wxArrayString &filenames)
+    bool DropThumbnailImageFile::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_unused]] wxCoord y,
+                                             const wxArrayString& filenames)
         {
         if (filenames.size() && wxFileName::FileExists(filenames[0]))
             {
             wxImage img(filenames[0]);
             if (m_pOwner && img.IsOk())
-                { m_pOwner->SetBitmap(img); }
+                {
+                m_pOwner->SetBitmap(img);
+                }
             else
-                { return false; }
+                {
+                return false;
+                }
             }
         return true;
         }
@@ -81,11 +92,10 @@ namespace Wisteria::UI
                          const wxPoint& pos /*= wxDefaultPosition*/,
                          const wxSize& size /*= wxDefaultSize*/,
                          long style /*= wxFULL_REPAINT_ON_RESIZE|wxBORDER_SIMPLE*/,
-                         const wxString& name /*= L"Thumbnail"*/) :
-            wxWindow(parent, id, pos, wxDefaultSize, style, name),
-            m_img(bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage),
-            m_clickMode(clickMode),
-            m_opactity(wxALPHA_OPAQUE)
+                         const wxString& name /*= L"Thumbnail"*/)
+        : wxWindow(parent, id, pos, wxDefaultSize, style, name),
+          m_img(bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage), m_clickMode(clickMode),
+          m_opactity(wxALPHA_OPAQUE)
         {
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
@@ -173,29 +183,27 @@ namespace Wisteria::UI
             m_img.SetOpacity(GetOpacity());
             m_img.SetAnchoring(Anchoring::TopLeftCorner);
             m_img.SetAnchorPoint(
-                wxPoint(safe_divide(GetSize().GetWidth() -
-                                    m_img.GetImageSize().GetWidth(), 2),
-                        safe_divide(GetSize().GetHeight() -
-                                    m_img.GetImageSize().GetHeight(), 2)));
+                wxPoint(safe_divide(GetSize().GetWidth() - m_img.GetImageSize().GetWidth(), 2),
+                        safe_divide(GetSize().GetHeight() - m_img.GetImageSize().GetHeight(), 2)));
             m_img.Draw(dc);
             }
         else
             {
             if (m_clickMode == ClickMode::BrowseForImageFile)
                 {
-                const wxString label =_(L"Click to browse\nfor image...");
+                const wxString label = _(L"Click to browse\nfor image...");
                 wxCoord textWidth, textHeight;
                 dc.GetMultiLineTextExtent(label, &textWidth, &textHeight);
-                dc.DrawText(label, safe_divide(GetSize().GetWidth(),2) - safe_divide(textWidth,2),
-                    safe_divide(GetSize().GetHeight(),2)-safe_divide(textHeight,2));
+                dc.DrawText(label, safe_divide(GetSize().GetWidth(), 2) - safe_divide(textWidth, 2),
+                            safe_divide(GetSize().GetHeight(), 2) - safe_divide(textHeight, 2));
                 }
             else
                 {
                 const wxString label = _(L"No preview\navailable");
                 wxCoord textWidth, textHeight;
                 dc.GetMultiLineTextExtent(label, &textWidth, &textHeight);
-                dc.DrawText(label, safe_divide(GetSize().GetWidth(),2) - safe_divide(textWidth,2),
-                    safe_divide(GetSize().GetHeight(),2)-safe_divide(textHeight,2));
+                dc.DrawText(label, safe_divide(GetSize().GetWidth(), 2) - safe_divide(textWidth, 2),
+                            safe_divide(GetSize().GetHeight(), 2) - safe_divide(textHeight, 2));
                 }
             }
         }
@@ -221,19 +229,20 @@ namespace Wisteria::UI
             // then no reason to have click to view support
             if (m_img.GetOriginalImage().GetWidth() <= GetSize().GetWidth() &&
                 m_img.GetOriginalImage().GetHeight() <= GetSize().GetHeight())
-                { return; }
+                {
+                return;
+                }
             // rescale image if caller requested a size different from the original bitmap's size
             wxBitmap canvasBmp{ m_img.GetOriginalImage() };
 
-            const std::pair<double,double> scaledSize =
-                geometry::downscaled_size(
-                    std::make_pair<double, double>(canvasBmp.GetWidth(),canvasBmp.GetHeight()),
-                    std::make_pair<double, double>(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
-                                                   wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)));
+            const std::pair<double, double> scaledSize = geometry::downscaled_size(
+                std::make_pair<double, double>(canvasBmp.GetWidth(), canvasBmp.GetHeight()),
+                std::make_pair<double, double>(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
+                                               wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)));
             if (wxSize(scaledSize.first, scaledSize.second) != canvasBmp.GetSize())
                 {
-                canvasBmp = wxBitmap(canvasBmp.ConvertToImage().
-                    Rescale(scaledSize.first, scaledSize.second, wxIMAGE_QUALITY_HIGH));
+                canvasBmp = wxBitmap(canvasBmp.ConvertToImage().Rescale(
+                    scaledSize.first, scaledSize.second, wxIMAGE_QUALITY_HIGH));
                 }
             // add a little "click to close" label at the bottom of the full image
             wxMemoryDC memDC(canvasBmp);
@@ -246,19 +255,19 @@ namespace Wisteria::UI
             wxCoord width, height;
             const wxString label(_(L"Click to close"));
             memDC.GetTextExtent(label, &width, &height);
-            memDC.DrawRoundedRectangle(canvasBmp.GetWidth()-(width + 14),
-                                       canvasBmp.GetHeight()-(height + 14),
-                                       width+8, height + 8, 2);
-            memDC.DrawText(label, canvasBmp.GetWidth()-(width + 10),
-                           canvasBmp.GetHeight()-(height + 10));
+            memDC.DrawRoundedRectangle(canvasBmp.GetWidth() - (width + 14),
+                                       canvasBmp.GetHeight() - (height + 14), width + 8, height + 8,
+                                       2);
+            memDC.DrawText(label, canvasBmp.GetWidth() - (width + 10),
+                           canvasBmp.GetHeight() - (height + 10));
             // draw a border around the image (some platforms don't put a border around dialogs)
             memDC.SetPen(*wxBLACK_PEN);
-                memDC.DrawLine(0, 0, memDC.GetSize().GetWidth(), 0);
-                memDC.DrawLine(0, memDC.GetSize().GetHeight() - 1,
-                               memDC.GetSize().GetWidth(),memDC.GetSize().GetHeight()-1);
-                memDC.DrawLine(0, 0, 0, memDC.GetSize().GetHeight());
-                memDC.DrawLine(memDC.GetSize().GetWidth() - 1, 0,
-                               memDC.GetSize().GetWidth() - 1, memDC.GetSize().GetHeight());
+            memDC.DrawLine(0, 0, memDC.GetSize().GetWidth(), 0);
+            memDC.DrawLine(0, memDC.GetSize().GetHeight() - 1, memDC.GetSize().GetWidth(),
+                           memDC.GetSize().GetHeight() - 1);
+            memDC.DrawLine(0, 0, 0, memDC.GetSize().GetHeight());
+            memDC.DrawLine(memDC.GetSize().GetWidth() - 1, 0, memDC.GetSize().GetWidth() - 1,
+                           memDC.GetSize().GetHeight());
             memDC.SelectObject(wxNullBitmap);
 
             EnlargedImageWindow enlargedImage(canvasBmp, this);
@@ -268,10 +277,12 @@ namespace Wisteria::UI
         else if (m_clickMode == ClickMode::BrowseForImageFile)
             {
             wxFileDialog fileDlg(this, _(L"Select an Image"), wxString{}, wxString{},
-                          _(L"Image Files ") + wxImage::GetImageExtWildcard(),
-                          wxFD_OPEN|wxFD_PREVIEW);
+                                 _(L"Image Files ") + wxImage::GetImageExtWildcard(),
+                                 wxFD_OPEN | wxFD_PREVIEW);
             if (fileDlg.ShowModal() == wxID_OK)
-                { SetBitmap(wxBitmap(GraphItems::Image::LoadFile(fileDlg.GetPath()))); }
+                {
+                SetBitmap(wxBitmap(GraphItems::Image::LoadFile(fileDlg.GetPath())));
+                }
             }
         }
-    }
+    } // namespace Wisteria::UI
