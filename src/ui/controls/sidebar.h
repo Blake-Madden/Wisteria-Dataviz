@@ -24,12 +24,13 @@
 #include <wx/window.h>
 #include <wx/wx.h>
 
-/// @private
+/// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_SIDEBAR_CLICK, wxCommandEvent);
 
-/// @private
+
 #define EVT_SIDEBAR_CLICK(winid, fn)                                                               \
     wx__DECLARE_EVT1(wxEVT_SIDEBAR_CLICK, winid, wxCommandEventHandler(fn))
+/// @endcond
 
 namespace Wisteria::UI
     {

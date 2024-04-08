@@ -19,19 +19,17 @@
 #include <wx/wupdlock.h>
 #include "sidebar.h"
 
-/// @private
+/// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
 
-/// @private
 #define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn)                                                           \
     wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
 
-/// @private
 wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
 
-/// @private
 #define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn)                                                           \
     wx__DECLARE_EVT1(wxEVT_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
+/// @endcond
 
 namespace Wisteria::UI
     {
@@ -132,9 +130,9 @@ namespace Wisteria::UI
         void SetIconSize(const wxSize sz)
             { m_sidebar->SetIconSize(sz); }
     protected:
-        // set the selection to the given page, sending the events (which can
-        // possibly prevent the page change from taking place) if SendEvent flag is
-        // included
+        // @brief Sets the selection to the given page, sending the events (which can
+        // possibly prevent the page change from taking place) if
+        // SendEvent flag is included.
         /// @private
         int DoSetSelection(size_t nPage, int flags = 0);
         /// @brief Remove one page from the control and delete it.
