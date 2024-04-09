@@ -12,21 +12,21 @@
 #ifndef __WISTERIA_ICONS_H__
 #define __WISTERIA_ICONS_H__
 
-#include <vector>
-#include <set>
-#include <initializer_list>
+#include "../math/mathematics.h"
+#include "settings.h"
 #include <array>
+#include <initializer_list>
 #include <memory>
 #include <optional>
-#include <wx/wx.h>
-#include <wx/gdicmn.h>
+#include <set>
+#include <vector>
+#include <wx/bmpbndl.h>
 #include <wx/dcgraph.h>
+#include <wx/gdicmn.h>
+#include <wx/numformatter.h>
 #include <wx/string.h>
 #include <wx/uilocale.h>
-#include <wx/numformatter.h>
-#include <wx/bmpbndl.h>
-#include "settings.h"
-#include "../math/mathematics.h"
+#include <wx/wx.h>
 
 /// @brief Icons and icon schemes.
 namespace Wisteria::Icons
@@ -82,18 +82,18 @@ namespace Wisteria::Icons
         Text,                          /*!< A provided string.*/
         Tack,                          /*!< A tack (i.e., pen that holds paper to a corkboard).*/
         Banner,                        /*!< A banner sign (with custom text written across it).*/
-        WaterColorRectangle,           /*!< A warped rectangle that looks like a watercolor-filled box.*/
-        ThickWaterColorRectangle,      /*!< A warped rectangle that looks like a watercolor-filled box,
-                                            painted with a second coat.*/
-        GraduationCap,                 /*!< A graduation cap.*/
-        Book,                          /*!< A textbook.*/
-        Tire,                          /*!< A car tire.*/
-        Snowflake,                     /*!< A snowflake.*/
-        Newspaper,                     /*!< A newspaper.*/
-        Car,                           /*!< A car (specifically, a 2006 Scion xB).*/
-        Blackboard,                    /*!< A school blackboard.*/
-        Clock,                         /*!< An analog, 12-hour clock.*/
-        Ruler                          /*!< A measurement ruler.*/
+        WaterColorRectangle,      /*!< A warped rectangle that looks like a watercolor-filled box.*/
+        ThickWaterColorRectangle, /*!< A warped rectangle that looks like a watercolor-filled box,
+                                       painted with a second coat.*/
+        GraduationCap,            /*!< A graduation cap.*/
+        Book,                     /*!< A textbook.*/
+        Tire,                     /*!< A car tire.*/
+        Snowflake,                /*!< A snowflake.*/
+        Newspaper,                /*!< A newspaper.*/
+        Car,                      /*!< A car (specifically, a 2006 Scion xB).*/
+        Blackboard,               /*!< A school blackboard.*/
+        Clock,                    /*!< An analog, 12-hour clock.*/
+        Ruler                     /*!< A measurement ruler.*/
         };
 
     /// @brief Item to draw on a legend.
@@ -104,26 +104,26 @@ namespace Wisteria::Icons
         /** @brief Constructs a color gradient legend.
             @param colors The color gradient to use (must contain at least two colors).
             @note The colors are drawn top-to-bottom, starting from the first color.*/
-        explicit LegendIcon(const std::vector<wxColour>& colors) :
-            m_shape(IconShape::ColorGradient), m_colors(colors)
+        explicit LegendIcon(const std::vector<wxColour>& colors)
+            : m_shape(IconShape::ColorGradient), m_colors(colors)
             {
-            assert(m_colors.size() >= 2 &&
-                   L"Color gradient legend created with only one color!");
+            assert(m_colors.size() >= 2 && L"Color gradient legend created with only one color!");
             }
+
         /** @brief Constructs legend icon.
             @param img The image to draw as an icon.*/
-        explicit LegendIcon(const wxImage& img) :
-            m_shape(IconShape::Image), m_img(img)
-            {}
+        explicit LegendIcon(const wxImage& img) : m_shape(IconShape::Image), m_img(img) {}
+
         /** @brief Constructor.
             @param icon The icon type.
             @param pen The pen to outline the icon with.
             @param brush The brush to paint with.
             @param color A color to show under the brush (if it is a hatch pattern, for example).*/
         LegendIcon(const IconShape icon, const wxPen& pen, const wxBrush& brush,
-                   std::optional<wxColour> color = std::nullopt) :
-            m_shape(icon), m_pen(pen), m_brush(brush), m_baseColor(color), m_img(wxNullImage)
-            {}
+                   std::optional<wxColour> color = std::nullopt)
+            : m_shape(icon), m_pen(pen), m_brush(brush), m_baseColor(color), m_img(wxNullImage)
+            {
+            }
 
         IconShape m_shape{ IconShape::Blank }; /*!< The icon type.*/
         wxPen m_pen;                           /*!< The pen to draw with.*/
@@ -140,12 +140,17 @@ namespace Wisteria::Icons
         ///     which use DIPs.
         [[nodiscard]]
         static constexpr double GetIconWidthDIPs() noexcept
-            { return 16; }
+            {
+            return 16;
+            }
+
         /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowSeparator)
         ///     in DIPs.
         [[nodiscard]]
         static wxSize GetArrowheadSizeDIPs()
-            { return wxSize(2, 2); }
+            {
+            return wxSize(2, 2);
+            }
         };
 
     /// @brief Icons schemes for use on plots and legends.
@@ -154,35 +159,43 @@ namespace Wisteria::Icons
         /// @brief Base class for a list of shapes to use for groups.
         class IconScheme
             {
-        public:
+          public:
             /// @brief Constructor.
             /// @param shapes The vector of shapes to fill the scheme with.
-            explicit IconScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes)
-                {}
+            explicit IconScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes) {}
+
             /// @private
-            explicit IconScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes))
-                {}
+            explicit IconScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes)) {}
+
             /// @brief Constructor.
             /// @param shapes The initializer list of shapes to fill the scheme with.
             explicit IconScheme(const std::initializer_list<IconShape>& shapes) : m_shapes(shapes)
-                {}
+                {
+                }
+
             /// @brief Constructor.
             /// @param shapes The list of shapes to fill the scheme with.
             /// @param images The list of images to use for the points if point is
             ///     using IconShape::ImageIcon.
             IconScheme(const std::vector<IconShape>& shapes,
-                const std::vector<wxBitmapBundle>& images) :
-                m_shapes(shapes), m_iconImages(images)
-                {}
+                       const std::vector<wxBitmapBundle>& images)
+                : m_shapes(shapes), m_iconImages(images)
+                {
+                }
+
             /// @private
-            IconScheme(std::vector<IconShape>&& shapes,
-                std::vector<wxBitmapBundle>&& images) :
-                m_shapes(std::move(shapes)), m_iconImages(std::move(images))
-                {}
+            IconScheme(std::vector<IconShape>&& shapes, std::vector<wxBitmapBundle>&& images)
+                : m_shapes(std::move(shapes)), m_iconImages(std::move(images))
+                {
+                }
+
             /// @returns The list of shapes from the scheme.
             [[nodiscard]]
             const std::vector<IconShape>& GetShapes() const noexcept
-                { return m_shapes; }
+                {
+                return m_shapes;
+                }
+
             /** @returns The shape from a given index.\n
                     If no shapes are available, returns a blank icon.
                 @param index The index into the shape list to return. If index is outside
@@ -193,13 +206,14 @@ namespace Wisteria::Icons
             [[nodiscard]]
             IconShape GetShape(const size_t index) const
                 {
-                return (m_shapes.size() == 0) ?
-                    IconShape::Blank : m_shapes.at(index % m_shapes.size());
+                return (m_shapes.size() == 0) ? IconShape::Blank :
+                                                m_shapes.at(index % m_shapes.size());
                 }
+
             /** @brief Adds a shape to the scheme.
                 @param shape The shape to add.*/
-            void AddShape(const IconShape shape)
-                { m_shapes.push_back(shape); }
+            void AddShape(const IconShape shape) { m_shapes.push_back(shape); }
+
             /** @returns The image used for icons (if shape is set to @c IconShape::ImageIcon).\n
                     If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
                 @param index The index into the image list to return. If index is outside
@@ -210,14 +224,14 @@ namespace Wisteria::Icons
             [[nodiscard]]
             const wxBitmapBundle& GetImage(const size_t index) const noexcept
                 {
-                return (m_iconImages.size() == 0) ?
-                    m_emptyImage :
-                    m_iconImages.at(index % m_iconImages.size());
+                return (m_iconImages.size() == 0) ? m_emptyImage :
+                                                    m_iconImages.at(index % m_iconImages.size());
                 }
+
             /// @brief Removes all shapes from the collection.
-            void Clear() noexcept
-                { m_shapes.clear(); }
-        private:
+            void Clear() noexcept { m_shapes.clear(); }
+
+          private:
             std::vector<IconShape> m_shapes;
             std::vector<wxBitmapBundle> m_iconImages;
             wxBitmapBundle m_emptyImage;
@@ -226,31 +240,24 @@ namespace Wisteria::Icons
         /// @brief Standard shapes scheme.
         class StandardShapes : public IconScheme
             {
-        public:
-            StandardShapes() : IconScheme({ IconShape::Circle,
-                                            IconShape::Square,
-                                            IconShape::Hexagon,
-                                            IconShape::Diamond,
-                                            IconShape::TriangleUpward,
-                                            IconShape::TriangleDownward,
-                                            IconShape::Plus,
-                                            IconShape::Asterisk,
-                                            IconShape::TriangleRight,
-                                            IconShape::TriangleLeft })
-                {}
+          public:
+            StandardShapes()
+                : IconScheme({ IconShape::Circle, IconShape::Square, IconShape::Hexagon,
+                               IconShape::Diamond, IconShape::TriangleUpward,
+                               IconShape::TriangleDownward, IconShape::Plus, IconShape::Asterisk,
+                               IconShape::TriangleRight, IconShape::TriangleLeft })
+                {
+                }
             };
 
         /// @brief Semesters (fall, spring, and summer) icon scheme.
         class Semesters : public IconScheme
             {
-        public:
-            Semesters() : IconScheme({ IconShape::FallLeaf,
-                                       IconShape::Flower,
-                                       IconShape::Sun })
-                {}
+          public:
+            Semesters() : IconScheme({ IconShape::FallLeaf, IconShape::Flower, IconShape::Sun }) {}
             };
-        }
-    }
+        } // namespace Schemes
+    }     // namespace Wisteria::Icons
 
 /** @}*/
 

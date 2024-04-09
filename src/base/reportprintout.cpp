@@ -26,23 +26,21 @@ bool ReportPrintout::OnPrintPage(int page)
         const float marginY = GetMarginPadding(page);
 
         // add the margin to the graphic size
-        maxX += static_cast<wxCoord>(2*marginX);
-        maxY += static_cast<wxCoord>(2*marginY);
+        maxX += static_cast<wxCoord>(2 * marginX);
+        maxY += static_cast<wxCoord>(2 * marginY);
 
         // add space for the headers and footers (if being used)
         // measure a standard line of text
         // (and add 50% for padding)
         const auto textHeight = dc->GetTextExtent(L"Aq").GetHeight();
         long headerFooterUsedHeight{ 0 };
-        if (canvas->GetLeftPrinterHeader().length() ||
-            canvas->GetCenterPrinterHeader().length() ||
+        if (canvas->GetLeftPrinterHeader().length() || canvas->GetCenterPrinterHeader().length() ||
             canvas->GetRightPrinterHeader().length())
             {
             maxY += textHeight * 1.5;
             headerFooterUsedHeight += textHeight * 1.5;
             }
-        if (canvas->GetLeftPrinterFooter().length() ||
-            canvas->GetCenterPrinterFooter().length() ||
+        if (canvas->GetLeftPrinterFooter().length() || canvas->GetCenterPrinterFooter().length() ||
             canvas->GetRightPrinterFooter().length())
             {
             maxY += textHeight * 1.5;
@@ -60,17 +58,16 @@ bool ReportPrintout::OnPrintPage(int page)
         const float scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
 
         // calculate the position on the DC for centering the graphic
-        const float posX = safe_divide<float>(
-            (dcWidth -((maxX-(2*marginX))* std::min(scaleX,scaleY))), 2);
-        const float posY = safe_divide<float>(
-            (dcHeight - ((maxY-(headerFooterUsedHeight+(2*marginY))) *
-                std::min(scaleX,scaleY))), 2);
+        const float posX =
+            safe_divide<float>((dcWidth - ((maxX - (2 * marginX)) * std::min(scaleX, scaleY))), 2);
+        const float posY =
+            safe_divide<float>((dcHeight - ((maxY - (headerFooterUsedHeight + (2 * marginY))) *
+                                            std::min(scaleX, scaleY))),
+                               2);
 
         wxBitmap previewImg;
-        previewImg.CreateWithDIPSize(
-            wxSize(canvas->ToDIP(dcWidth),
-                   canvas->ToDIP(dcHeight)),
-            canvas->GetDPIScaleFactor());
+        previewImg.CreateWithDIPSize(wxSize(canvas->ToDIP(dcWidth), canvas->ToDIP(dcHeight)),
+                                     canvas->GetDPIScaleFactor());
         wxMemoryDC memDc(previewImg);
         memDc.Clear();
 #ifdef __WXMSW__
@@ -78,7 +75,9 @@ bool ReportPrintout::OnPrintPage(int page)
         wxGraphicsContext* context{ nullptr };
         auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
         if (renderer)
-            { context = renderer->CreateContext(memDc); }
+            {
+            context = renderer->CreateContext(memDc);
+            }
 
         if (context)
             {
@@ -122,63 +121,61 @@ bool ReportPrintout::OnPrintPage(int page)
         wxCoord width{ 0 }, height{ 0 };
 
         // draw the headers
-        if (canvas->GetLeftPrinterHeader().length() ||
-            canvas->GetCenterPrinterHeader().length() ||
+        if (canvas->GetLeftPrinterHeader().length() || canvas->GetCenterPrinterHeader().length() ||
             canvas->GetRightPrinterHeader().length())
             {
             if (canvas->GetLeftPrinterHeader().length())
                 {
                 dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterHeader(), page),
-                    static_cast<wxCoord>(marginX),
-                    static_cast<wxCoord>(marginY));
+                             static_cast<wxCoord>(marginX), static_cast<wxCoord>(marginY));
                 }
             if (canvas->GetCenterPrinterHeader().length())
                 {
-                dc->GetTextExtent(ExpandPrintString(
-                    canvas->GetCenterPrinterHeader(), page), &width, &height);
-                dc->DrawText(ExpandPrintString(canvas->GetCenterPrinterHeader(), page),
-                    static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprocal),2) -
-                                            safe_divide<float>(width,2)),
+                dc->GetTextExtent(ExpandPrintString(canvas->GetCenterPrinterHeader(), page), &width,
+                                  &height);
+                dc->DrawText(
+                    ExpandPrintString(canvas->GetCenterPrinterHeader(), page),
+                    static_cast<wxCoord>(safe_divide<float>((dcWidth * scaleXReciprocal), 2) -
+                                         safe_divide<float>(width, 2)),
                     static_cast<wxCoord>(marginY));
                 }
             if (canvas->GetRightPrinterHeader().length())
                 {
-                dc->GetTextExtent(ExpandPrintString(
-                    canvas->GetRightPrinterHeader(), page), &width, &height);
+                dc->GetTextExtent(ExpandPrintString(canvas->GetRightPrinterHeader(), page), &width,
+                                  &height);
                 dc->DrawText(ExpandPrintString(canvas->GetRightPrinterHeader(), page),
-                    static_cast<wxCoord>((dcWidth*scaleXReciprocal) - (marginX+width)),
-                    static_cast<wxCoord>(marginY));
+                             static_cast<wxCoord>((dcWidth * scaleXReciprocal) - (marginX + width)),
+                             static_cast<wxCoord>(marginY));
                 }
             }
         // draw the footers
-        if (canvas->GetLeftPrinterFooter().length() ||
-            canvas->GetCenterPrinterFooter().length() ||
+        if (canvas->GetLeftPrinterFooter().length() || canvas->GetCenterPrinterFooter().length() ||
             canvas->GetRightPrinterFooter().length())
             {
             dc->GetTextExtent(L"MeasurementTestString", &width, &height);
-            const long yPos = (dcHeight*scaleYReciprocal)-(marginY+height);
+            const long yPos = (dcHeight * scaleYReciprocal) - (marginY + height);
             if (canvas->GetLeftPrinterFooter().length())
                 {
                 dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterFooter(), page),
-                    static_cast<wxCoord>(marginX),
-                    yPos);
+                             static_cast<wxCoord>(marginX), yPos);
                 }
             if (canvas->GetCenterPrinterFooter().length())
                 {
-                dc->GetTextExtent(ExpandPrintString(
-                    canvas->GetCenterPrinterFooter(), page), &width, &height);
-                dc->DrawText(ExpandPrintString(canvas->GetCenterPrinterFooter(), page),
-                    static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprocal),2) -
-                        safe_divide<float>(width,2)),
+                dc->GetTextExtent(ExpandPrintString(canvas->GetCenterPrinterFooter(), page), &width,
+                                  &height);
+                dc->DrawText(
+                    ExpandPrintString(canvas->GetCenterPrinterFooter(), page),
+                    static_cast<wxCoord>(safe_divide<float>((dcWidth * scaleXReciprocal), 2) -
+                                         safe_divide<float>(width, 2)),
                     yPos);
                 }
             if (canvas->GetRightPrinterFooter().length())
                 {
-                dc->GetTextExtent(ExpandPrintString(
-                    canvas->GetRightPrinterFooter(), page), &width, &height);
-                dc->DrawText(ExpandPrintString(canvas->GetRightPrinterFooter(), page),
-                    static_cast<wxCoord>(((dcWidth*scaleXReciprocal) - (marginX+width))),
-                    yPos);
+                dc->GetTextExtent(ExpandPrintString(canvas->GetRightPrinterFooter(), page), &width,
+                                  &height);
+                dc->DrawText(
+                    ExpandPrintString(canvas->GetRightPrinterFooter(), page),
+                    static_cast<wxCoord>(((dcWidth * scaleXReciprocal) - (marginX + width))), yPos);
                 }
             }
 
@@ -190,23 +187,27 @@ bool ReportPrintout::OnPrintPage(int page)
         return true;
         }
     else
-        { return false; }
+        {
+        return false;
+        }
     }
 
 //------------------------------------------------------
-wxString ReportPrintout::ExpandPrintString(
-    const wxString& printString, const int pageNumber) const
+wxString ReportPrintout::ExpandPrintString(const wxString& printString, const int pageNumber) const
     {
     // page out of range, so don't do anything
     if (GetCanvasFromPageNumber(pageNumber) == nullptr)
-        { return printString; }
+        {
+        return printString;
+        }
     wxString expandedString = printString;
 
     expandedString.Replace(L"@PAGENUM@",
-        wxNumberFormatter::ToString(pageNumber, 0,
-                                    wxNumberFormatter::Style::Style_WithThousandsSep),
-        true);
-    expandedString.Replace(L"@PAGESCNT@",
+                           wxNumberFormatter::ToString(
+                               pageNumber, 0, wxNumberFormatter::Style::Style_WithThousandsSep),
+                           true);
+    expandedString.Replace(
+        L"@PAGESCNT@",
         wxNumberFormatter::ToString(m_canvases.size(), 0,
                                     wxNumberFormatter::Style::Style_WithThousandsSep),
         true);
@@ -220,18 +221,14 @@ wxString ReportPrintout::ExpandPrintString(
     }
 
 //------------------------------------------------------
-PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
-                                             const ReportPrintout* printOut) :
-    m_canvas(canvas),
-    m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
-    m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
-    m_originalSize(canvas ? canvas->GetSize() : wxSize())
+PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut)
+    : m_canvas(canvas), m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
+      m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
+      m_originalSize(canvas ? canvas->GetSize() : wxSize())
     {
     assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
     assert(printOut && L"Invalid printout passed to PrintFitToPageChanger!");
-    if (m_canvas != nullptr &&
-        printOut != nullptr &&
-        m_canvas->IsFittingToPageWhenPrinting())
+    if (m_canvas != nullptr && printOut != nullptr && m_canvas->IsFittingToPageWhenPrinting())
         {
         int w{ 0 }, h{ 0 };
         printOut->GetPageSizePixels(&w, &h);
@@ -246,9 +243,8 @@ PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
             // set the physical size of the window to the page's aspect ratio;
             // this will force a call to CalcAllSizes() and fit all the objects to the
             // altered drawing area
-            m_canvas->SetSize(
-                m_canvas->FromDIP(wxSize(m_canvas->GetCanvasMinWidthDIPs(),
-                    m_canvas->GetCanvasMinHeightDIPs())));
+            m_canvas->SetSize(m_canvas->FromDIP(
+                wxSize(m_canvas->GetCanvasMinWidthDIPs(), m_canvas->GetCanvasMinHeightDIPs())));
             }
         }
     }
@@ -266,12 +262,10 @@ PrintFitToPageChanger::~PrintFitToPageChanger()
     }
 
 //------------------------------------------------------
-FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas,
-                                                 const wxSize newSize) :
-    m_canvas(canvas),
-    m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
-    m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
-    m_originalSize(canvas ? canvas->GetSize() : wxSize())
+FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const wxSize newSize)
+    : m_canvas(canvas), m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
+      m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
+      m_originalSize(canvas ? canvas->GetSize() : wxSize())
     {
     assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr)
