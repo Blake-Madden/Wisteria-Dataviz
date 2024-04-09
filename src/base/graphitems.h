@@ -762,9 +762,9 @@ namespace Wisteria
                 @param scaling The current scaling to measure and render with.
                 @param label The label to attach to the element
                     (can be used for things like selection labels).*/
-            GraphItemBase(const double scaling, wxString label)
+            GraphItemBase(const double scaling, const wxString& label)
                 {
-                m_itemInfo.m_text = std::move(label);
+                m_itemInfo.m_text = label;
                 m_itemInfo.m_scaling = scaling;
                 assert(m_itemInfo.m_scaling > 0 &&
                        L"Scaling in canvas object is <= 0?!");
