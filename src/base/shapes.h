@@ -94,8 +94,8 @@ namespace Wisteria::GraphItems
             @param itemInfo Extended information (e.g., brush, pen) to draw with.\n
                 Which features are used are shape dependent.
             @param img An image to use for the shape if using IconShape::ImageIcon.*/
-        explicit ShapeRenderer(const GraphItemInfo& itemInfo, const wxBitmapBundle* img = nullptr)
-            : m_graphInfo(itemInfo), m_iconImage(img)
+        explicit ShapeRenderer(GraphItemInfo itemInfo, const wxBitmapBundle* img = nullptr)
+            : m_graphInfo(std::move(itemInfo)), m_iconImage(img)
             {
             }
 
