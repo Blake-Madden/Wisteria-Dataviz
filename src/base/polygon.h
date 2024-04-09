@@ -84,8 +84,8 @@ namespace Wisteria::GraphItems
             @param itemInfo Base information for the plot object.
             @param points The points of the polygon.
             @param N The number of points.*/
-        Polygon(const GraphItemInfo& itemInfo, const wxPoint* points, const int N)
-            : GraphItemBase(itemInfo)
+        Polygon(GraphItemInfo itemInfo, const wxPoint* points, const int N)
+            : GraphItemBase(std::move(itemInfo))
             {
             SetPoints(points, N);
             }
@@ -94,7 +94,8 @@ namespace Wisteria::GraphItems
             @param itemInfo Base information for the plot object.
             @param polygon An array of points (e.g., `std::array<wxPoint, 5>`).*/
         template<typename polygonT>
-        Polygon(const GraphItemInfo& itemInfo, const polygonT& polygon) : GraphItemBase(itemInfo)
+        Polygon(GraphItemInfo itemInfo, const polygonT& polygon)
+            : GraphItemBase(std::move(itemInfo))
             {
             SetPoints(polygon);
             }
@@ -215,7 +216,7 @@ namespace Wisteria::GraphItems
         /** @returns The area of a polygon using the shoelace formula.
             @param polygon The polygon's points.
             @details Based on
-           https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.
+            https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.
             @todo needs unit testing*/
         template<typename polygonT>
         [[nodiscard]]
