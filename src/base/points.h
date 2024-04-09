@@ -41,10 +41,10 @@ namespace Wisteria::GraphItems
             @param img An image to use for the point if point is using IconShape::ImageIcon.
             @warning Some icon shapes (e.g., @c ColorGradientIcon) are not
                 applicable here and will be drawn as a circle instead if used.*/
-        Point2D(const GraphItems::GraphItemInfo& itemInfo, const size_t radius,
+        Point2D(GraphItems::GraphItemInfo itemInfo, const size_t radius,
                 const Wisteria::Icons::IconShape& shape = Wisteria::Icons::IconShape::Circle,
                 const wxBitmapBundle* img = nullptr)
-            : GraphItemBase(itemInfo), m_shape(shape), m_iconImage(img), m_radius(radius)
+            : GraphItemBase(std::move(itemInfo), m_shape(shape), m_iconImage(img), m_radius(radius)
             {
             }
 
@@ -286,9 +286,9 @@ namespace Wisteria::GraphItems
             static_cast<std::vector<Point2D>::size_type>(-1)
         };
         /* Note that we don't use the base class's cached bounding box logic because
-            GetBoundingBox() doesn't calculate anything. Instead, we manage a bounding box
-            internally whenever a point is added.*/
-        wxRect m_boundingBox{ wxPoint(wxDefaultCoord, wxDefaultCoord), wxSize(0, 0) };
+           GetBoundingBox() doesn't calculate anything. Instead, we manage a bounding box
+           internally whenever a point is added.*/
+        wxRect m_boundingBox{ wxPoint{ wxDefaultCoord, wxDefaultCoord }, wxSize{ 0, 0 } };
         bool m_singlePointSelection{ true };
         LineStyle m_lineStyle{ LineStyle::Lines };
 
