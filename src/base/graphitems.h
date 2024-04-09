@@ -61,11 +61,7 @@ namespace Wisteria
     public:
         /// @brief Constructor.
         /// @param penStyles The list of pen & line styles to fill the scheme with.
-        explicit LineStyleScheme(const std::vector<std::pair<wxPenStyle, LineStyle>>& penStyles) :
-            m_lineStyles(penStyles)
-            {}
-        /// @private
-        explicit LineStyleScheme(std::vector<std::pair<wxPenStyle, LineStyle>>&& penStyles) :
+        explicit LineStyleScheme(std::vector<std::pair<wxPenStyle, LineStyle>> penStyles) :
             m_lineStyles(std::move(penStyles))
             {}
         /// @brief Constructor.
@@ -284,10 +280,8 @@ namespace Wisteria
         public:
             /// @brief Constructor.
             /// @param text The string displayed on the item.
-            explicit GraphItemInfo(const wxString& text) : m_text(text)
-                {}
-            /// @private
-            explicit GraphItemInfo(wxString&& text) : m_text(std::move(text))
+          explicit GraphItemInfo(wxString text)
+              : m_text(std::move(text))
                 {}
             /// @private
             GraphItemInfo() = default;
@@ -413,13 +407,7 @@ namespace Wisteria
             ///     when the item is selected, or text shown on the item.
             /// @param text The string to display.
             /// @returns A self reference.
-            GraphItemInfo& Text(const wxString& text)
-                {
-                m_text = text;
-                return *this;
-                }
-            /// @private
-            GraphItemInfo& Text(wxString&& text)
+            GraphItemInfo& Text(wxString text)
                 {
                 m_text = std::move(text);
                 return *this;
@@ -774,15 +762,7 @@ namespace Wisteria
                 @param scaling The current scaling to measure and render with.
                 @param label The label to attach to the element
                     (can be used for things like selection labels).*/
-            GraphItemBase(const double scaling, const wxString& label)
-                {
-                m_itemInfo.m_text = label;
-                m_itemInfo.m_scaling = scaling;
-                assert(m_itemInfo.m_scaling > 0 &&
-                       L"Scaling in canvas object is <= 0?!");
-                }
-            /// @private
-            GraphItemBase(const double scaling, wxString&& label)
+            GraphItemBase(const double scaling, wxString label)
                 {
                 m_itemInfo.m_text = std::move(label);
                 m_itemInfo.m_scaling = scaling;
@@ -1014,9 +994,9 @@ namespace Wisteria
 
             /** @brief Sets the label, which the caller can use (e.g., as a selection label).
                 @param label The text for the label.*/
-            virtual void SetText(const wxString& label)
+            virtual void SetText(wxString label)
                 {
-                m_itemInfo.m_text = label;
+                m_itemInfo.m_text = std::move(label);
                 InvalidateCachedBoundingBox();
                 }
              /// @returns The label associated with this element.
@@ -1551,12 +1531,6 @@ namespace Wisteria
             [[nodiscard]]
             const std::optional<wxRect>& GetClippingRect() const noexcept
                 { return m_itemInfo.m_clippingRect; }
-            /// @private
-            virtual void SetText(wxString&& label)
-                {
-                m_itemInfo.m_text = std::move(label);
-                InvalidateCachedBoundingBox();
-                }
         protected:
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.
