@@ -39,11 +39,7 @@ namespace Wisteria
         /// @private
         DCPenChangerIfDifferent(const DCPenChangerIfDifferent&) = delete;
         /// @private
-        DCPenChangerIfDifferent(DCPenChangerIfDifferent&&) = delete;
-        /// @private
         DCPenChangerIfDifferent& operator==(const DCPenChangerIfDifferent&) = delete;
-        /// @private
-        DCPenChangerIfDifferent& operator==(DCPenChangerIfDifferent&&) = delete;
 
         /// @private
         ~DCPenChangerIfDifferent()
@@ -81,11 +77,7 @@ namespace Wisteria
         /// @private
         DCBrushChangerIfDifferent(const DCBrushChangerIfDifferent&) = delete;
         /// @private
-        DCBrushChangerIfDifferent(DCBrushChangerIfDifferent&&) = delete;
-        /// @private
         DCBrushChangerIfDifferent& operator==(const DCBrushChangerIfDifferent&) = delete;
-        /// @private
-        DCBrushChangerIfDifferent& operator==(DCBrushChangerIfDifferent&&) = delete;
 
         /// @private
         ~DCBrushChangerIfDifferent()
@@ -123,11 +115,7 @@ namespace Wisteria
         /// @private
         DCFontChangerIfDifferent(const DCFontChangerIfDifferent&) = delete;
         /// @private
-        DCFontChangerIfDifferent(DCFontChangerIfDifferent&&) = delete;
-        /// @private
         DCFontChangerIfDifferent& operator==(const DCFontChangerIfDifferent&) = delete;
-        /// @private
-        DCFontChangerIfDifferent& operator==(DCFontChangerIfDifferent&&) = delete;
 
         /// @private
         ~DCFontChangerIfDifferent()
@@ -166,11 +154,7 @@ namespace Wisteria
         /// @private
         DCTextColourChangerIfDifferent(const DCTextColourChangerIfDifferent&) = delete;
         /// @private
-        DCTextColourChangerIfDifferent(DCTextColourChangerIfDifferent&&) = delete;
-        /// @private
         DCTextColourChangerIfDifferent& operator==(const DCTextColourChangerIfDifferent&) = delete;
-        /// @private
-        DCTextColourChangerIfDifferent& operator==(DCTextColourChangerIfDifferent&&) = delete;
 
         /// @private
         ~DCTextColourChangerIfDifferent()
