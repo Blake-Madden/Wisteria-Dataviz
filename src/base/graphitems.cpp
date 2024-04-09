@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "graphitems.h"
-#include "label.h"
 #include "image.h"
+#include "label.h"
 
 using namespace Wisteria::Colors;
 
@@ -19,8 +19,7 @@ namespace Wisteria::GraphItems
         {
         assert(m_itemInfo.m_dpiScaleFactor.has_value() &&
                L"Graph item should have a proper DPI scaling.");
-        return (m_itemInfo.m_dpiScaleFactor.has_value() ?
-                m_itemInfo.m_dpiScaleFactor.value() : 1);
+        return (m_itemInfo.m_dpiScaleFactor.has_value() ? m_itemInfo.m_dpiScaleFactor.value() : 1);
         }
 
     //-------------------------------------------
@@ -30,14 +29,17 @@ namespace Wisteria::GraphItems
         if (IsSelected() && IsShowingLabelWhenSelected() && !GetText().empty())
             {
             const wxRect ItemBoundingBox(GetBoundingBox(dc));
-            GraphItems::Label selectionLabel(GraphItemInfo(GetGraphItemInfo()).
-                Scaling(scaling).Pen(*wxBLACK_PEN).
-                DPIScaling(GetDPIScaleFactor()).
-                Padding(2, 2, 2, 2).FontBackgroundColor(*wxWHITE).
-                Anchoring(Anchoring::Center).
-                AnchorPoint(ItemBoundingBox.GetTopLeft() +
-                            wxPoint(ItemBoundingBox.GetWidth()/2,
-                            ItemBoundingBox.GetHeight()/2)));
+            GraphItems::Label selectionLabel(
+                GraphItemInfo(GetGraphItemInfo())
+                    .Scaling(scaling)
+                    .Pen(*wxBLACK_PEN)
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Padding(2, 2, 2, 2)
+                    .FontBackgroundColor(*wxWHITE)
+                    .Anchoring(Anchoring::Center)
+                    .AnchorPoint(
+                        ItemBoundingBox.GetTopLeft() +
+                        wxPoint(ItemBoundingBox.GetWidth() / 2, ItemBoundingBox.GetHeight() / 2)));
             selectionLabel.GetFont().MakeSmaller();
             const wxRect selectionLabelBox = selectionLabel.GetBoundingBox(dc);
             // if going out of the bottom of the bounding box then move it up to fit
@@ -45,28 +47,32 @@ namespace Wisteria::GraphItems
                 {
                 selectionLabel.SetAnchorPoint(
                     wxPoint(selectionLabel.GetAnchorPoint().x,
-                    selectionLabel.GetAnchorPoint().y-(selectionLabelBox.GetBottom()-boundingBox.GetBottom())));
+                            selectionLabel.GetAnchorPoint().y -
+                                (selectionLabelBox.GetBottom() - boundingBox.GetBottom())));
                 }
             // if going out of the top of the bounding box then move it down to fit
             if (!boundingBox.IsEmpty() && selectionLabelBox.GetTop() < boundingBox.GetTop())
                 {
                 selectionLabel.SetAnchorPoint(
                     wxPoint(selectionLabel.GetAnchorPoint().x,
-                    selectionLabel.GetAnchorPoint().y+(boundingBox.GetTop()-selectionLabelBox.GetTop())));
+                            selectionLabel.GetAnchorPoint().y +
+                                (boundingBox.GetTop() - selectionLabelBox.GetTop())));
                 }
             // if the right side is going out of the box then move it to the left to fit
             if (!boundingBox.IsEmpty() && selectionLabelBox.GetRight() > boundingBox.GetRight())
                 {
                 selectionLabel.SetAnchorPoint(
-                    wxPoint(selectionLabel.GetAnchorPoint().x-(selectionLabelBox.GetRight()-boundingBox.GetRight()),
-                    selectionLabel.GetAnchorPoint().y));
+                    wxPoint(selectionLabel.GetAnchorPoint().x -
+                                (selectionLabelBox.GetRight() - boundingBox.GetRight()),
+                            selectionLabel.GetAnchorPoint().y));
                 }
             // if the left side is going out of the box then move it to the right to fit
             if (!boundingBox.IsEmpty() && selectionLabelBox.GetLeft() < boundingBox.GetLeft())
                 {
                 selectionLabel.SetAnchorPoint(
-                    wxPoint(selectionLabel.GetAnchorPoint().x+(boundingBox.GetLeft()-selectionLabelBox.GetLeft()),
-                    selectionLabel.GetAnchorPoint().y));
+                    wxPoint(selectionLabel.GetAnchorPoint().x +
+                                (boundingBox.GetLeft() - selectionLabelBox.GetLeft()),
+                            selectionLabel.GetAnchorPoint().y));
                 }
             selectionLabel.Draw(dc);
             }
@@ -86,4 +92,4 @@ namespace Wisteria::GraphItems
         wxImage img(bmp.ConvertToImage());
         return wxBitmap(img);
         }
-    }
+    } // namespace Wisteria::GraphItems

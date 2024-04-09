@@ -16,8 +16,8 @@ namespace Wisteria::GraphItems
         {
         for (auto& line : m_lines)
             {
-            line.first += wxPoint(xToMove,yToMove);
-            line.second += wxPoint(xToMove,yToMove);
+            line.first += wxPoint(xToMove, yToMove);
+            line.second += wxPoint(xToMove, yToMove);
             }
         }
 
@@ -25,40 +25,48 @@ namespace Wisteria::GraphItems
     wxRect Lines::Draw(wxDC& dc) const
         {
         if (GetClippingRect())
-            { dc.SetClippingRegion(GetClippingRect().value()); }
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
 
         wxPen scaledPen(GetPen());
         if (GetPen().IsOk())
-            { scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth())); }
+            {
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
+            }
         wxDCPenChanger pc(dc, IsSelected() ?
-            wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) :
-            scaledPen);
+                                  wxPen(*wxBLACK, 2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                  scaledPen);
         for (const auto& line : m_lines)
             {
             if (GetLineStyle() == LineStyle::Arrows)
                 {
                 Polygon::DrawArrow(dc, line.first, line.second,
-                    wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
+                                   wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                 }
             else // Lines or Spline
-                { dc.DrawLine(line.first, line.second); }
+                {
+                dc.DrawLine(line.first, line.second);
+                }
             }
         // highlight the selected bounding box in debug mode
-        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
             {
             if (IsSelected())
                 {
                 wxPoint debugOutline[5]{ { 0, 0 } };
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
                 debugOutline[4] = debugOutline[0];
-                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, 2*scaledPen.GetWidth(),
-                                       wxPENSTYLE_SHORT_DASH));
+                wxDCPenChanger pcDebug(
+                    dc, wxPen(*wxRED, 2 * scaledPen.GetWidth(), wxPENSTYLE_SHORT_DASH));
                 dc.DrawLines(std::size(debugOutline), debugOutline);
                 }
             }
 
         if (GetClippingRect())
-            { dc.DestroyClippingRegion(); }
+            {
+            dc.DestroyClippingRegion();
+            }
         return GetBoundingBox(dc);
         }
 
@@ -66,10 +74,12 @@ namespace Wisteria::GraphItems
     wxRect Lines::GetBoundingBox([[maybe_unused]] wxDC& dc) const
         {
         if (m_lines.empty())
-            { return wxRect(); }
+            {
+            return wxRect();
+            }
 
-        double minX(m_lines[0].first.x), maxX(m_lines[0].first.x),
-               minY(m_lines[0].first.y), maxY((m_lines[0].first.y));
+        double minX(m_lines[0].first.x), maxX(m_lines[0].first.x), minY(m_lines[0].first.y),
+            maxY((m_lines[0].first.y));
 
         for (const auto& line : m_lines)
             {
@@ -79,7 +89,7 @@ namespace Wisteria::GraphItems
             minY = std::min<double>(minY, std::min(line.first.y, line.second.y));
             maxY = std::max<double>(maxY, std::max(line.first.y, line.second.y));
             }
-        return wxRect(wxRealPoint(minX, minY), wxRealPoint(maxX, maxY));
+        return wxRect{ wxRealPoint(minX, minY), wxRealPoint(maxX, maxY) };
         }
 
     //----------------------------------------------------------------
@@ -88,10 +98,13 @@ namespace Wisteria::GraphItems
         wxPoint pts[2]{ { 0, 0 } };
         for (const auto& line : m_lines)
             {
-            pts[0] = line.first; pts[1] = line.second;
+            pts[0] = line.first;
+            pts[1] = line.second;
             if (GraphItems::Polygon::IsInsidePolygon(pt, pts, 2))
-                { return true; }
+                {
+                return true;
+                }
             }
         return false;
         }
-    }
+    } // namespace Wisteria::GraphItems
