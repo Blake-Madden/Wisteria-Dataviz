@@ -94,10 +94,10 @@ namespace Wisteria::GraphItems
         ///     can be used to find the position of a label.
         /// @param label The label to describe what the line represents.
         /// @param pen The pen to use for the line.
-        ReferenceLine(const AxisType axisType, const double axisPosition, const wxString& label,
+        ReferenceLine(const AxisType axisType, const double axisPosition, wxString label,
                       const wxPen pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH))
-            : m_axisType(axisType), m_axisPosition(axisPosition), m_label(label), m_pen(pen),
-              m_compKey(label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
+            : m_axisType(axisType), m_axisPosition(axisPosition), m_label(std::move(label)),
+              m_pen(pen), m_compKey(label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
             {
             }
 
