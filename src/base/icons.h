@@ -162,10 +162,7 @@ namespace Wisteria::Icons
           public:
             /// @brief Constructor.
             /// @param shapes The vector of shapes to fill the scheme with.
-            explicit IconScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes) {}
-
-            /// @private
-            explicit IconScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes)) {}
+            explicit IconScheme(std::vector<IconShape> shapes) : m_shapes(std::move(shapes)) {}
 
             /// @brief Constructor.
             /// @param shapes The initializer list of shapes to fill the scheme with.
@@ -177,14 +174,7 @@ namespace Wisteria::Icons
             /// @param shapes The list of shapes to fill the scheme with.
             /// @param images The list of images to use for the points if point is
             ///     using IconShape::ImageIcon.
-            IconScheme(const std::vector<IconShape>& shapes,
-                       const std::vector<wxBitmapBundle>& images)
-                : m_shapes(shapes), m_iconImages(images)
-                {
-                }
-
-            /// @private
-            IconScheme(std::vector<IconShape>&& shapes, std::vector<wxBitmapBundle>&& images)
+            IconScheme(std::vector<IconShape> shapes, std::vector<wxBitmapBundle> images)
                 : m_shapes(std::move(shapes)), m_iconImages(std::move(images))
                 {
                 }
