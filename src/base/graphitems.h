@@ -407,9 +407,9 @@ namespace Wisteria
             ///     when the item is selected, or text shown on the item.
             /// @param text The string to display.
             /// @returns A self reference.
-            GraphItemInfo& Text(wxString text)
+            GraphItemInfo& Text(const wxString& text)
                 {
-                m_text = std::move(text);
+                m_text = text;
                 return *this;
                 }
             /// @brief Sets the anchoring.
@@ -994,9 +994,9 @@ namespace Wisteria
 
             /** @brief Sets the label, which the caller can use (e.g., as a selection label).
                 @param label The text for the label.*/
-            virtual void SetText(wxString label)
+            virtual void SetText(const wxString& label)
                 {
-                m_itemInfo.m_text = std::move(label);
+                m_itemInfo.m_text = label;
                 InvalidateCachedBoundingBox();
                 }
              /// @returns The label associated with this element.
