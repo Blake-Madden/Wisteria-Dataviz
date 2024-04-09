@@ -26,7 +26,7 @@ namespace Wisteria::Brushes
           public:
             /// @brief Constructor.
             /// @param brushes The vector of brushes to fill the scheme with.
-            explicit BrushScheme(const std::vector<wxBrush>& brushes) : m_brushes(brushes) {}
+            explicit BrushScheme(std::vector<wxBrush> brushes) : m_brushes(std::move(brushes)) {}
 
             /// @brief Constructor, which builds a list of brushes from a list of
             ///     brush styles and a color scheme.
@@ -66,9 +66,6 @@ namespace Wisteria::Brushes
                         wxBrush(colorScheme.GetColor(i), wxBrushStyle::wxBRUSHSTYLE_SOLID));
                     }
                 }
-
-            /// @private
-            explicit BrushScheme(std::vector<wxBrush>&& brushes) : m_brushes(std::move(brushes)) {}
 
             /// @brief Constructor.
             /// @param brushes The initializer list of brushes to fill the scheme with.
