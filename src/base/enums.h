@@ -158,8 +158,8 @@ namespace Wisteria
                                    will draw a frame around the text.*/
         };
 
-    /** @brief When calling `SetBoundingBox()` for a `Label`, this will control how the user-provided
-            bounding box is used.
+    /** @brief When calling `SetBoundingBox()` for a `Label`,
+            this will control how the user-provided bounding box is used.
         @internal This enum is a bitmask, do not make it strongly typed.*/
     enum LabelBoundingBoxContentAdjustment
         {
@@ -220,10 +220,10 @@ namespace Wisteria
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageHorizontalAlignment
         {
-        LeftAligned,   /*!< Text is aligned to the left of the label's bounding box.
-                            (This is the default.)*/
-        Centered,      /*!< Text is centered label's bounding box.*/
-        RightAligned   /*!< Text is aligned to the right of the label's bounding box.*/
+        LeftAligned, /*!< Text is aligned to the left of the label's bounding box.
+                          (This is the default.)*/
+        Centered,    /*!< Text is centered label's bounding box.*/
+        RightAligned /*!< Text is aligned to the right of the label's bounding box.*/
         };
 
     /// @brief Background visual styles to apply a label.
@@ -482,10 +482,10 @@ namespace Wisteria
     /// @brief How to round floating-point values when binning.
     enum class RoundingMethod
         {
-        Round,                 /*!< Round up or down.*/
-        RoundDown,             /*!< Round down (ceiling).*/
-        RoundUp,               /*!< Round up (floor).*/
-        NoRounding,            /*!< Do not round.*/
+        Round,      /*!< Round up or down.*/
+        RoundDown,  /*!< Round down (ceiling).*/
+        RoundUp,    /*!< Round up (floor).*/
+        NoRounding, /*!< Do not round.*/
         /// @private
         ROUNDING_METHOD_COUNT
         };
@@ -568,7 +568,7 @@ namespace Wisteria
         /// @brief Clicking on the thumbnail will prompt the user for an image file.
         BrowseForImageFile
         };
-    }
+    } // namespace Wisteria
 
 /** @}*/
 
