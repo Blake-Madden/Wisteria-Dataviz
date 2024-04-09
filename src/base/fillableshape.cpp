@@ -18,10 +18,14 @@ namespace Wisteria::GraphItems
         {
         assert(GetBrush().IsOk() && L"Fillable shape must have a valid brush!");
         if (!GetBrush().IsOk())
-            { return wxRect(); }
+            {
+            return wxRect();
+            }
 
         if (GetClippingRect())
-            { dc.SetClippingRegion(GetClippingRect().value()); }
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
 
         auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
@@ -33,11 +37,12 @@ namespace Wisteria::GraphItems
         wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
         // horizontal page alignment
         if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
-            { /*noop*/ }
+            { /*noop*/
+            }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
             shapeTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
-                safe_divide<double>(drawRect.GetWidth(), 2);
+                                    safe_divide<double>(drawRect.GetWidth(), 2);
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
@@ -45,11 +50,12 @@ namespace Wisteria::GraphItems
             }
         // vertical page alignment
         if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
-            { /*noop*/ }
+            { /*noop*/
+            }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
             shapeTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
-                safe_divide<double>(drawRect.GetHeight(), 2);
+                                    safe_divide<double>(drawRect.GetHeight(), 2);
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
@@ -62,7 +68,7 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(drawRect.GetSize());
         wxBitmap ghostedBmp(drawRect.GetSize());
 
-        // main image
+            // main image
             {
             Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
             wxMemoryDC memDC(bmp);
@@ -73,7 +79,8 @@ namespace Wisteria::GraphItems
             Shape::Draw(wxRect(drawRect.GetSize()), gdc);
             memDC.SelectObject(wxNullBitmap);
             }
-        // ghosted image (brush is translucent, the pen remains the same to show an outline/skeleton of the shape)
+            // ghosted image (brush is translucent, the pen remains the same to show an
+            // outline/skeleton of the shape)
             {
             Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT);
             wxMemoryDC memDC(ghostedBmp);
@@ -82,8 +89,9 @@ namespace Wisteria::GraphItems
             gdc.Clear();
 
             auto shapeInfo{ GraphItemBase::GetGraphItemInfo() };
-            shapeInfo.Brush(wxBrush(Colors::ColorContrast::ChangeOpacity(shapeInfo.GetBrush().GetColour(), 32),
-                            shapeInfo.GetBrush().GetStyle()));
+            shapeInfo.Brush(
+                wxBrush(Colors::ColorContrast::ChangeOpacity(shapeInfo.GetBrush().GetColour(), 32),
+                        shapeInfo.GetBrush().GetStyle()));
             Shape ghostShape(shapeInfo, GetShape(), GetSizeDIPS());
 
             ghostShape.Draw(wxRect(drawRect.GetSize()), gdc);
@@ -105,11 +113,9 @@ namespace Wisteria::GraphItems
             // nothing to draw above the ghosted image if empty
             if (compare_doubles_greater(m_fillPercent, math_constants::empty))
                 {
-                auto filledBmp = bmp.GetSubBitmap(
-                    wxRect(wxPoint(0, yCutOff),
-                        wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
-                dc.DrawBitmap(filledBmp,
-                    drawRect.GetLeftTop() + wxPoint(0, yCutOff), true);
+                auto filledBmp = bmp.GetSubBitmap(wxRect(
+                    wxPoint(0, yCutOff), wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
+                dc.DrawBitmap(filledBmp, drawRect.GetLeftTop() + wxPoint(0, yCutOff), true);
                 }
             }
 
@@ -122,8 +128,10 @@ namespace Wisteria::GraphItems
             }
 
         if (GetClippingRect())
-            { dc.DestroyClippingRegion(); }
+            {
+            dc.DestroyClippingRegion();
+            }
 
         return wxRect(dc.GetSize());
         }
-    }
+    } // namespace Wisteria::GraphItems

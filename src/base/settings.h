@@ -20,7 +20,7 @@ namespace Wisteria
     /** @brief Debug settings used throughout the library.
         @details This is a bitmask which can be used to control multiple flags.\n
             The following preprocessors can be defined to control which settings are enabled.
-    
+
         - @c DEBUG_LOG_INFO: enables @ LogExtraInfo.
         - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
         - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
@@ -34,7 +34,7 @@ namespace Wisteria
             Note that these are %Wisteria specific debugging features (e.g., bounding boxes
             being rendered). If running in debug mode, other debugging features (e.g., asserts)
             will still be in effect.
-    
+
         @internal Developer Note: this is used as a bitmask, don't strongly type it.*/
     enum DebugSettings
         {
@@ -64,65 +64,90 @@ namespace Wisteria
         };
 
 #if wxDEBUG_LEVEL >= 2
-    #define DEBUG_LOG_INFO
-    #define DEBUG_BOXES
-    #define DEBUG_FILE_IO
+#define DEBUG_LOG_INFO
+#define DEBUG_BOXES
+#define DEBUG_FILE_IO
 #endif
 
     /// @brief Class for managing global library settings.
     class Settings
         {
-    public:
+      public:
         /// @returns The default point radius.
         [[nodiscard]]
         static size_t GetPointRadius() noexcept
-            { return m_pointRadius; }
+            {
+            return m_pointRadius;
+            }
+
         /// @brief Sets the default point radius.
         /// @param radius The default point radius.
-        void SetPointRadius(const size_t radius) noexcept
-            { m_pointRadius = radius; }
+        void SetPointRadius(const size_t radius) noexcept { m_pointRadius = radius; }
+
         /// @returns The opacity value to use when making a color translucent.
         [[nodiscard]]
         static uint8_t GetTranslucencyValue() noexcept
-            { return m_translucencyValue; }
+            {
+            return m_translucencyValue;
+            }
+
         /// @brief Sets the opacity value to use when making a color translucent.
         ///     Default is 100;
         /// @param value The opacity level (should be between 0 [transparent] to 255 [opaque]).
         static void SetTranslucencyValue(const uint8_t value) noexcept
-            { m_translucencyValue = std::clamp<uint8_t>(value, 0, 255); }
+            {
+            m_translucencyValue = std::clamp<uint8_t>(value, 0, 255);
+            }
+
         /// @brief Gets the maximum number of items that can be displayed in a legend.
         /// @returns The maximum number of items that can be displayed in a legend.
         [[nodiscard]]
         static uint8_t GetMaxLegendItemCount() noexcept
-            { return m_maxLegendItems; }
+            {
+            return m_maxLegendItems;
+            }
+
         /// @brief Sets the maximum number of items that can be displayed in a legend.
         /// @details If there are more items in the legend, then an ellipsis will be shown.
         ///     The default number of items is 20.
         /// @param maxItems The maximum number of items that can be displayed in a legend.
         static void SetMaxLegendItemCount(const uint8_t maxItems) noexcept
-            { m_maxLegendItems = maxItems; }
+            {
+            m_maxLegendItems = maxItems;
+            }
+
         /// @brief Gets the maximum text length for legend labels.
         /// @returns The maximum text length.
         [[nodiscard]]
         static size_t GetMaxLegendTextLength() noexcept
-            { return m_maxLegendTextLength; }
+            {
+            return m_maxLegendTextLength;
+            }
 
         /// @brief Gets the maximum number of observations to show as a label in a bin.
         /// @returns The maximum number of observations to show in a bin label.
         [[nodiscard]]
         static size_t GetMaxObservationInBin() noexcept
-            { return m_maxObservationsInBin; }
+            {
+            return m_maxObservationsInBin;
+            }
 
         /// @brief Sets the radius of the rounded corner, which is used when using rounded
         ///     corners for labels, box plots, etc.
         /// @param roundedCornerRadius The rounded corner radius.
         static void SetBoxRoundedCornerRadius(const double roundedCornerRadius) noexcept
-            { m_roundedCornerRadius = roundedCornerRadius; }
+            {
+            m_roundedCornerRadius = roundedCornerRadius;
+            }
+
         /// @returns The radius of the rounded corner, which is used when using rounded
         ///     corners for labels, box plots, etc.
         [[nodiscard]]
         static double GetBoxRoundedCornerRadius() noexcept
-            { return m_roundedCornerRadius; }
+            {
+            return m_roundedCornerRadius;
+            }
+
         /// @brief Sets the maximum text length for legend labels.
         /// @details The default length is 40.
         /// @details If a label is longer than this,
@@ -130,10 +155,10 @@ namespace Wisteria
         /// @param length The maximum text length.
         static void SetMaxLegendTextLength(const size_t length) noexcept
             {
-            assert(length > 0 &&
-                   L"Max legend label lengths should be at least 1!");
+            assert(length > 0 && L"Max legend label lengths should be at least 1!");
             m_maxLegendTextLength = std::max<size_t>(1, length); // at least length of one
             }
+
         /// @brief Determines if a debug flag is enabled.
         /// @param flag The flag to check for.
         /// @returns @c true if the given flag is enabled.
@@ -141,51 +166,58 @@ namespace Wisteria
         ///     will be compiled out when the flag is not enabled.
         [[nodiscard]]
         static constexpr bool IsDebugFlagEnabled(const int flag) noexcept
-            { return (m_debugSettings & flag) == flag; }
+            {
+            return (m_debugSettings & flag) == flag;
+            }
+
         /// @returns No trailing zeroes and thousands separator format
         ///     for calls to @c wxNumberFormatter::ToString().
         [[nodiscard]]
         static auto GetDefaultNumberFormat() noexcept
             {
-            return wxNumberFormatter::Style::Style_WithThousandsSep|
+            return wxNumberFormatter::Style::Style_WithThousandsSep |
                    wxNumberFormatter::Style::Style_NoTrailingZeroes;
             }
+
         /// @returns The default color scheme to use for groups with the graphs.
         [[nodiscard]]
         static std::shared_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
-            { return std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk()); }
-    private:
+            {
+            return std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk());
+            }
+
+      private:
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };
         inline static size_t m_maxLegendTextLength{ 40 };
         inline static size_t m_pointRadius{ 4 };
         inline static double m_roundedCornerRadius{ 5 };
         inline static size_t m_maxObservationsInBin{ 25 };
-        static constexpr int m_debugSettings
-        {
+        constexpr static int m_debugSettings
+            {
 #ifdef DEBUG_LOG_INFO
-        DebugSettings::LogExtraInfo|
+            DebugSettings::LogExtraInfo |
 #endif
 #ifdef DEBUG_BOXES
-        DebugSettings::DrawBoundingBoxesOnSelection|
+                DebugSettings::DrawBoundingBoxesOnSelection |
 #endif
-#if defined (DEBUG_DRAW_INFO) || defined (DEBUG_DRAW_EXTRA_INFO)
-        DebugSettings::DrawInformationOnSelection|
+#if defined(DEBUG_DRAW_INFO) || defined(DEBUG_DRAW_EXTRA_INFO)
+                DebugSettings::DrawInformationOnSelection |
 #endif
 #ifdef DEBUG_DRAW_EXTRA_INFO
-        DebugSettings::DrawExtraInformation|
+                DebugSettings::DrawExtraInformation |
 #endif
 #ifdef DEBUG_EXPERIMENTAL_CODE
-        DebugSettings::IncludeExperimentalCode|
+                DebugSettings::IncludeExperimentalCode |
 #endif
 #ifdef DEBUG_FILE_IO
-        DebugSettings::AllowFileIO|
+                DebugSettings::AllowFileIO |
 #endif
-        DebugSettings::DebugNone
-        };
+                DebugSettings::DebugNone
+            }
         std::shared_ptr<Colors::Schemes::ColorScheme> m_defaultColorScheme;
         };
-    }
+    } // namespace Wisteria
 
 /** @}*/
 

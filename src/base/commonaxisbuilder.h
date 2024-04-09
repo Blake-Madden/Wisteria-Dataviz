@@ -12,8 +12,8 @@
 #ifndef __WISTERIA_COMMON_AXIS_BUILDER_H__
 #define __WISTERIA_COMMON_AXIS_BUILDER_H__
 
-#include "axis.h"
 #include "../graphs/graph2d.h"
+#include "axis.h"
 #include <vector>
 
 namespace Wisteria
@@ -22,7 +22,7 @@ namespace Wisteria
             from the same row or column.*/
     class CommonAxisBuilder
         {
-    public:
+      public:
         /** @brief Builds a common axis for graphs along a row.
             @details This function will perform the following:
             - A new axis will be copied from the tallest (i.e., highest Y value) graph's left axis
@@ -56,9 +56,9 @@ namespace Wisteria
                     { linePlot, boxPlot }, AxisType::RightYAxis));
             @endcode*/
         [[nodiscard]]
-        static std::shared_ptr<GraphItems::Axis> BuildYAxis(Canvas* canvas,
-            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
-            AxisType axisType);
+        static std::shared_ptr<GraphItems::Axis>
+        BuildYAxis(Canvas* canvas, std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
+                   AxisType axisType);
         /** @brief Builds a common axis for graphs along a column.
             @details This function will perform the following:
             - A new axis will be copied from the widest (i.e., highest X value) graph's bottom axis
@@ -99,13 +99,12 @@ namespace Wisteria
              canvas->CalcRowDimensions();
             @endcode*/
         [[nodiscard]]
-        static std::shared_ptr<GraphItems::Axis> BuildXAxis(Canvas* canvas,
-            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
-            AxisType axisType,
-            const bool useCommonLeftAxis = false);
+        static std::shared_ptr<GraphItems::Axis>
+        BuildXAxis(Canvas* canvas, std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
+                   AxisType axisType, const bool useCommonLeftAxis = false);
         };
-    };
+    }; // namespace Wisteria
 
-/** @}*/
+    /** @}*/
 
 #endif //__WISTERIA_COMMON_AXIS_BUILDER_H__

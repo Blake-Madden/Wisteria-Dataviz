@@ -13,27 +13,32 @@ using namespace Wisteria::GraphItems;
 namespace Wisteria
     {
     //----------------------------------------------------------------
-    std::shared_ptr<Axis>
-        CommonAxisBuilder::BuildYAxis(Canvas* canvas,
-            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
-            AxisType axisType)
+    std::shared_ptr<Axis> CommonAxisBuilder::BuildYAxis(
+        Canvas* canvas, std::vector<std::shared_ptr<Graphs::Graph2D>> graphs, AxisType axisType)
         {
         assert((axisType == AxisType::LeftYAxis || axisType == AxisType::RightYAxis) &&
-            L"BuildYAxis() requires a left or right axis type to be specified!");
+               L"BuildYAxis() requires a left or right axis type to be specified!");
         // fix bogus axis type
         if (axisType != AxisType::LeftYAxis && axisType != AxisType::RightYAxis)
-            { axisType = AxisType::LeftYAxis; }
+            {
+            axisType = AxisType::LeftYAxis;
+            }
 
         if (graphs.size() < 2)
-            { return nullptr; }
+            {
+            return nullptr;
+            }
 
         // see which plot has the largest range end and use that
         // (note that we will be assuming all plots are using the same range start [usually zero])
         Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetLeftYAxis() };
         for (const auto& graph : graphs)
             {
-            if (graph.get()->GetLeftYAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
-                { axisWithMaxRangeEnd.CopySettings(graph.get()->GetLeftYAxis()); }
+            if (graph.get()->GetLeftYAxis().GetRange().second >
+                axisWithMaxRangeEnd.GetRange().second)
+                {
+                axisWithMaxRangeEnd.CopySettings(graph.get()->GetLeftYAxis());
+                }
             }
         for (const auto& graph : graphs)
             {
@@ -66,27 +71,33 @@ namespace Wisteria
 
     //----------------------------------------------------------------
     std::shared_ptr<Axis>
-        CommonAxisBuilder::BuildXAxis(Canvas* canvas,
-            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
-            AxisType axisType,
-            const bool useCommonLeftAxis /*= false*/)
+    CommonAxisBuilder::BuildXAxis(Canvas* canvas,
+                                  std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
+                                  AxisType axisType, const bool useCommonLeftAxis /*= false*/)
         {
         assert((axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis) &&
-            L"BuildXAxis() requires a bottom or top axis type to be specified!");
+               L"BuildXAxis() requires a bottom or top axis type to be specified!");
         // fix bogus axis type
         if (axisType != AxisType::BottomXAxis && axisType != AxisType::TopXAxis)
-            { axisType = AxisType::BottomXAxis; }
+            {
+            axisType = AxisType::BottomXAxis;
+            }
 
         if (graphs.size() < 2)
-            { return nullptr; }
+            {
+            return nullptr;
+            }
 
         // see which plot has the largest range end and use that
         // (note that we will be assuming all plots are using the same range start [usually zero])
         Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetBottomXAxis() };
         for (const auto& graph : graphs)
             {
-            if (graph.get()->GetBottomXAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
-                { axisWithMaxRangeEnd.CopySettings(graph.get()->GetBottomXAxis()); }
+            if (graph.get()->GetBottomXAxis().GetRange().second >
+                axisWithMaxRangeEnd.GetRange().second)
+                {
+                axisWithMaxRangeEnd.CopySettings(graph.get()->GetBottomXAxis());
+                }
             }
         for (const auto& graph : graphs)
             {
@@ -121,22 +132,24 @@ namespace Wisteria
                 const auto minMaxVals = graph->GetLeftYAxis().GetRange();
                 if (rangesMinMax.has_value())
                     {
-                    rangesMinMax.value().first = std::min(minMaxVals.first,
-                                                          rangesMinMax.value().first);
-                    rangesMinMax.value().second = std::max(minMaxVals.second,
-                                                           rangesMinMax.value().second);
+                    rangesMinMax.value().first =
+                        std::min(minMaxVals.first, rangesMinMax.value().first);
+                    rangesMinMax.value().second =
+                        std::max(minMaxVals.second, rangesMinMax.value().second);
                     }
                 else
-                    { rangesMinMax = minMaxVals; }
+                    {
+                    rangesMinMax = minMaxVals;
+                    }
                 }
             for (auto& graph : graphs)
                 {
-                graph->GetLeftYAxis().SetRange(
-                    rangesMinMax.value().first, rangesMinMax.value().second,
-                    graph->GetLeftYAxis().GetPrecision());
+                graph->GetLeftYAxis().SetRange(rangesMinMax.value().first,
+                                               rangesMinMax.value().second,
+                                               graph->GetLeftYAxis().GetPrecision());
                 }
             }
 
         return commonAxis;
         }
-    }
+    } // namespace Wisteria
