@@ -771,7 +771,7 @@ namespace Wisteria
                 }
             /** @brief Constructor.
                 @param itemInfo Extended information to construct this item with.*/
-            explicit GraphItemBase(const GraphItemInfo& itemInfo) : m_itemInfo(itemInfo)
+            explicit GraphItemBase(GraphItemInfo itemInfo) : m_itemInfo(std::move(itemInfo))
                 {}
             /// @private
             virtual ~GraphItemBase() {}
