@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "shapes.h"
-#include "label.h"
 #include "image.h"
+#include "label.h"
 #include "polygon.h"
 
 using namespace Wisteria::Colors;
@@ -17,14 +17,15 @@ using namespace Wisteria::Icons;
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
-    GraphicsContextFallback::GraphicsContextFallback(
-        wxDC* dc, const wxRect rect)
+    GraphicsContextFallback::GraphicsContextFallback(wxDC* dc, const wxRect rect)
         {
         m_gc = nullptr;
         m_drawingToBitmap = false; // reset
         assert(dc && L"Invalid DC for graphics context!");
         if (dc == nullptr)
-            { return; }
+            {
+            return;
+            }
         m_rect = rect;
         m_dc = dc;
         m_gc = m_dc->GetGraphicsContext();
@@ -50,34 +51,44 @@ namespace Wisteria::GraphItems
         // onto the original DC
         if (m_drawingToBitmap)
             {
-            delete m_gc; m_gc = nullptr;
+            delete m_gc;
+            m_gc = nullptr;
             m_memDC.SelectObject(wxNullBitmap);
             m_bmp = m_bmp.GetSubBitmap(m_rect);
             m_dc->DrawBitmap(m_bmp, m_rect.GetTopLeft());
             }
         else
-            { m_gc->Flush(); }
+            {
+            m_gc->Flush();
+            }
         }
 
     //---------------------------------------------------
-    void Shape::SetBoundingBox(const wxRect& rect,
-        [[maybe_unused]] wxDC& dc,
-        [[maybe_unused]] const double parentScaling)
+    void Shape::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                               [[maybe_unused]] const double parentScaling)
         {
         m_sizeDIPs.x = (IsFixedWidthOnCanvas() ?
-            std::min<int>(m_shapeSizeDIPs.GetWidth(),
-                          DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth())) :
-            DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth()) );
+                            std::min<int>(m_shapeSizeDIPs.GetWidth(),
+                                          DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth())) :
+                            DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth()));
         m_sizeDIPs.y = DownscaleFromScreenAndCanvas(rect.GetSize().GetHeight());
 
         if (GetAnchoring() == Anchoring::TopLeftCorner)
-            { SetAnchorPoint(rect.GetTopLeft()); }
+            {
+            SetAnchorPoint(rect.GetTopLeft());
+            }
         else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-            { SetAnchorPoint(rect.GetBottomLeft()); }
+            {
+            SetAnchorPoint(rect.GetBottomLeft());
+            }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
-            { SetAnchorPoint(rect.GetTopRight()); }
+            {
+            SetAnchorPoint(rect.GetTopRight());
+            }
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
-            { SetAnchorPoint(rect.GetBottomRight()); }
+            {
+            SetAnchorPoint(rect.GetBottomRight());
+            }
         else if (GetAnchoring() == Anchoring::Center)
             {
             wxPoint pt = rect.GetTopLeft();
@@ -90,7 +101,9 @@ namespace Wisteria::GraphItems
     wxRect Shape::Draw(wxDC& dc) const
         {
         if (GetClippingRect())
-            { dc.SetClippingRegion(GetClippingRect().value()); }
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
 
         auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
@@ -102,11 +115,12 @@ namespace Wisteria::GraphItems
         wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
         // horizontal page alignment
         if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
-            { /*noop*/ }
+            { /*noop*/
+            }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
             shapeTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
-                safe_divide<double>(drawRect.GetWidth(), 2);
+                                    safe_divide<double>(drawRect.GetWidth(), 2);
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
@@ -114,11 +128,12 @@ namespace Wisteria::GraphItems
             }
         // vertical page alignment
         if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
-            { /*noop*/ }
+            { /*noop*/
+            }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
             shapeTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
-                safe_divide<double>(drawRect.GetHeight(), 2);
+                                    safe_divide<double>(drawRect.GetHeight(), 2);
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
@@ -135,80 +150,78 @@ namespace Wisteria::GraphItems
             wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
             wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(GetBoundingBox(dc));
-            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+            if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
-                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
-                                       wxPENSTYLE_DOT));
+                wxDCPenChanger pcDebug(dc,
+                                       wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 dc.DrawRectangle(drawRect);
                 }
             }
 
         if (GetClippingRect())
-            { dc.DestroyClippingRegion(); }
+            {
+            dc.DestroyClippingRegion();
+            }
 
         return bBox;
         }
 
     //---------------------------------------------------
-    Shape::Shape(GraphItems::GraphItemInfo itemInfo,
-        const Icons::IconShape shape,
-        const wxSize sz,
-        const wxBitmapBundle* img /*= nullptr*/) :
-        GraphItemBase(std::move(itemInfo)), m_shapeSizeDIPs(sz),
-        m_sizeDIPs(sz), m_shape(shape), m_renderer(itemInfo, img)
+    Shape::Shape(GraphItems::GraphItemInfo itemInfo, const Icons::IconShape shape, const wxSize sz,
+                 const wxBitmapBundle* img /*= nullptr*/)
+        : GraphItemBase(std::move(itemInfo)), m_shapeSizeDIPs(sz), m_sizeDIPs(sz), m_shape(shape),
+          m_renderer(itemInfo, img)
         {
-        const static std::map<Icons::IconShape, ShapeRenderer::DrawFunction> shapeMap =
-            {
-                { IconShape::Blank, nullptr },
-                { IconShape::ArrowRight, &ShapeRenderer::DrawRightArrow },
-                { IconShape::HorizontalLine, &ShapeRenderer::DrawHorizontalLine },
-                { IconShape::Circle, &ShapeRenderer::DrawCircle },
-                { IconShape::Square, &ShapeRenderer::DrawSquare },
-                { IconShape::Asterisk, &ShapeRenderer::DrawAsterisk },
-                { IconShape::Plus, &ShapeRenderer::DrawPlus },
-                { IconShape::TriangleUpward, &ShapeRenderer::DrawUpwardTriangle },
-                { IconShape::TriangleDownward, &ShapeRenderer::DrawDownwardTriangle },
-                { IconShape::TriangleRight, &ShapeRenderer::DrawRightTriangle },
-                { IconShape::TriangleLeft, &ShapeRenderer::DrawLeftTriangle },
-                { IconShape::Diamond, &ShapeRenderer::DrawDiamond },
-                { IconShape::Hexagon, &ShapeRenderer::DrawHexagon },
-                { IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
-                { IconShape::Sun, &ShapeRenderer::DrawSun },
-                { IconShape::Flower, &ShapeRenderer::DrawFlower },
-                { IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
-                { IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
-                { IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
-                { IconShape::GoRoadSign, &ShapeRenderer::DrawGoSign },
-                { IconShape::Image, &ShapeRenderer::DrawImage },
-                { IconShape::LeftCurlyBrace, &ShapeRenderer::DrawLeftCurlyBrace },
-                { IconShape::RightCurlyBrace, &ShapeRenderer::DrawRightCurlyBrace },
-                { IconShape::TopCurlyBrace, &ShapeRenderer::DrawTopCurlyBrace },
-                { IconShape::BottomCurlyBrace, &ShapeRenderer::DrawBottomCurlyBrace },
-                { IconShape::Man, &ShapeRenderer::DrawMan },
-                { IconShape::Woman, &ShapeRenderer::DrawWoman },
-                { IconShape::BusinessWoman, &ShapeRenderer::DrawBusinessWoman },
-                { IconShape::ChevronDownward, &ShapeRenderer::DrawChevronDownward },
-                { IconShape::ChevronUpward, &ShapeRenderer::DrawChevronUpward },
-                { IconShape::Text, &ShapeRenderer::DrawText },
-                { IconShape::Tack, &ShapeRenderer::DrawTack },
-                { IconShape::Banner, &ShapeRenderer::DrawBanner },
-                { IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
-                { IconShape::ThickWaterColorRectangle, &ShapeRenderer::DrawThickWaterColorRectangle },
-                { IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
-                { IconShape::Book, &ShapeRenderer::DrawBook },
-                { IconShape::Tire, &ShapeRenderer::DrawTire },
-                { IconShape::Snowflake, &ShapeRenderer::DrawSnowflake },
-                { IconShape::Newspaper, &ShapeRenderer::DrawNewspaper },
-                { IconShape::Car, &ShapeRenderer::DrawCar },
-                { IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
-                { IconShape::Clock, &ShapeRenderer::DrawClock },
-                { IconShape::Ruler, &ShapeRenderer::DrawRuler }
-            };
+        static const std::map<Icons::IconShape, ShapeRenderer::DrawFunction> shapeMap = {
+            { IconShape::Blank, nullptr },
+            { IconShape::ArrowRight, &ShapeRenderer::DrawRightArrow },
+            { IconShape::HorizontalLine, &ShapeRenderer::DrawHorizontalLine },
+            { IconShape::Circle, &ShapeRenderer::DrawCircle },
+            { IconShape::Square, &ShapeRenderer::DrawSquare },
+            { IconShape::Asterisk, &ShapeRenderer::DrawAsterisk },
+            { IconShape::Plus, &ShapeRenderer::DrawPlus },
+            { IconShape::TriangleUpward, &ShapeRenderer::DrawUpwardTriangle },
+            { IconShape::TriangleDownward, &ShapeRenderer::DrawDownwardTriangle },
+            { IconShape::TriangleRight, &ShapeRenderer::DrawRightTriangle },
+            { IconShape::TriangleLeft, &ShapeRenderer::DrawLeftTriangle },
+            { IconShape::Diamond, &ShapeRenderer::DrawDiamond },
+            { IconShape::Hexagon, &ShapeRenderer::DrawHexagon },
+            { IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
+            { IconShape::Sun, &ShapeRenderer::DrawSun },
+            { IconShape::Flower, &ShapeRenderer::DrawFlower },
+            { IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
+            { IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
+            { IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
+            { IconShape::GoRoadSign, &ShapeRenderer::DrawGoSign },
+            { IconShape::Image, &ShapeRenderer::DrawImage },
+            { IconShape::LeftCurlyBrace, &ShapeRenderer::DrawLeftCurlyBrace },
+            { IconShape::RightCurlyBrace, &ShapeRenderer::DrawRightCurlyBrace },
+            { IconShape::TopCurlyBrace, &ShapeRenderer::DrawTopCurlyBrace },
+            { IconShape::BottomCurlyBrace, &ShapeRenderer::DrawBottomCurlyBrace },
+            { IconShape::Man, &ShapeRenderer::DrawMan },
+            { IconShape::Woman, &ShapeRenderer::DrawWoman },
+            { IconShape::BusinessWoman, &ShapeRenderer::DrawBusinessWoman },
+            { IconShape::ChevronDownward, &ShapeRenderer::DrawChevronDownward },
+            { IconShape::ChevronUpward, &ShapeRenderer::DrawChevronUpward },
+            { IconShape::Text, &ShapeRenderer::DrawText },
+            { IconShape::Tack, &ShapeRenderer::DrawTack },
+            { IconShape::Banner, &ShapeRenderer::DrawBanner },
+            { IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
+            { IconShape::ThickWaterColorRectangle, &ShapeRenderer::DrawThickWaterColorRectangle },
+            { IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
+            { IconShape::Book, &ShapeRenderer::DrawBook },
+            { IconShape::Tire, &ShapeRenderer::DrawTire },
+            { IconShape::Snowflake, &ShapeRenderer::DrawSnowflake },
+            { IconShape::Newspaper, &ShapeRenderer::DrawNewspaper },
+            { IconShape::Car, &ShapeRenderer::DrawCar },
+            { IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
+            { IconShape::Clock, &ShapeRenderer::DrawClock },
+            { IconShape::Ruler, &ShapeRenderer::DrawRuler }
+        };
 
         // connect the rendering function to the shape
         const auto foundShape = shapeMap.find(m_shape);
-        m_drawFunction = (foundShape != shapeMap.cend()) ?
-            foundShape->second : nullptr;
+        m_drawFunction = (foundShape != shapeMap.cend()) ? foundShape->second : nullptr;
         }
 
     //---------------------------------------------------
@@ -216,11 +229,13 @@ namespace Wisteria::GraphItems
         {
         // apply any brush, pen, etc. changes if necessary
         if (m_rendererNeedsUpdating)
-            { m_renderer.m_graphInfo = GraphItemBase::GetGraphItemInfo(); }
+            {
+            m_renderer.m_graphInfo = GraphItemBase::GetGraphItemInfo();
+            }
         m_rendererNeedsUpdating = false;
 
         assert((m_shape == IconShape::Blank || m_drawFunction) &&
-            L"Shape failed to set drawing function!");
+               L"Shape failed to set drawing function!");
         if (m_drawFunction != nullptr)
             {
             (m_renderer.*m_drawFunction)(drawRect, dc);
@@ -232,13 +247,21 @@ namespace Wisteria::GraphItems
         {
         wxRect rect(ScaleToScreenAndCanvas(m_sizeDIPs));
         if (GetAnchoring() == Anchoring::TopLeftCorner)
-            { rect.SetTopLeft(GetAnchorPoint()); }
+            {
+            rect.SetTopLeft(GetAnchorPoint());
+            }
         else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-            { rect.SetBottomLeft(GetAnchorPoint()); }
+            {
+            rect.SetBottomLeft(GetAnchorPoint());
+            }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
-            { rect.SetTopRight(GetAnchorPoint()); }
+            {
+            rect.SetTopRight(GetAnchorPoint());
+            }
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
-            { rect.SetBottomRight(GetAnchorPoint()); }
+            {
+            rect.SetBottomRight(GetAnchorPoint());
+            }
         else if (GetAnchoring() == Anchoring::Center)
             {
             rect.SetTopLeft(GetAnchorPoint());

@@ -28,18 +28,22 @@ namespace Wisteria
 
         assert(parent && L"Parent window must not be null when building a canvas!");
         if (parent == nullptr)
-            { return reportPages; }
+            {
+            return reportPages;
+            }
         const auto json = wxSimpleJSON::LoadFile(m_configFilePath);
         if (!json->IsOk())
             {
-            wxMessageBox(json->GetLastError(),
-                         _(L"Configuration File Parsing Error"), wxOK|wxICON_WARNING|wxCENTRE);
+            wxMessageBox(json->GetLastError(), _(L"Configuration File Parsing Error"),
+                         wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
         const auto reportNameNode = json->GetProperty(_DT(L"name"));
         if (reportNameNode->IsOk())
-            { m_name = reportNameNode->GetValueString(); }
+            {
+            m_name = reportNameNode->GetValueString();
+            }
 
         // print settings
         wxPrintData reportPrintSettings;
@@ -49,33 +53,43 @@ namespace Wisteria
             const auto orientation = printNode->GetProperty(L"orientation")->GetValueString();
             if (orientation.CmpNoCase(L"horizontal") == 0 ||
                 orientation.CmpNoCase(L"landscape") == 0)
-                { reportPrintSettings.SetOrientation(wxPrintOrientation::wxLANDSCAPE); }
+                {
+                reportPrintSettings.SetOrientation(wxPrintOrientation::wxLANDSCAPE);
+                }
             else if (orientation.CmpNoCase(L"vertical") == 0 ||
-                orientation.CmpNoCase(L"portrait") == 0)
-                { reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT); }
+                     orientation.CmpNoCase(L"portrait") == 0)
+                {
+                reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT);
+                }
 
-            const auto paperSize = ReportEnumConvert::ConvertPaperSize(printNode->GetProperty(L"paper-size")->
-                GetValueString(L"paper-letter"));
+            const auto paperSize = ReportEnumConvert::ConvertPaperSize(
+                printNode->GetProperty(L"paper-size")->GetValueString(L"paper-letter"));
             if (paperSize.has_value())
-                { reportPrintSettings.SetPaperId(paperSize.value()); }
+                {
+                reportPrintSettings.SetPaperId(paperSize.value());
+                }
             }
 
         const auto datasetsNode = json->GetProperty(L"datasets");
         try
-            { LoadDatasets(datasetsNode); }
+            {
+            LoadDatasets(datasetsNode);
+            }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Datasets Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
+                         _(L"Datasets Section Error"), wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
         try
-            { LoadConstants(json->GetProperty(L"constants")); }
+            {
+            LoadConstants(json->GetProperty(L"constants"));
+            }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Constants Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
+                         _(L"Constants Section Error"), wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
@@ -96,22 +110,27 @@ namespace Wisteria
 
                     // page numbering
                     if (page->HasProperty(L"page-numbering"))
-                        { m_pageNumber = 1; }
+                        {
+                        m_pageNumber = 1;
+                        }
 
                     // background color
                     const auto bgColor = ConvertColor(page->GetProperty(L"background-color"));
                     if (bgColor.IsOk())
-                        { canvas->SetBackgroundColor(bgColor); }
+                        {
+                        canvas->SetBackgroundColor(bgColor);
+                        }
 
                     // background image
                     if (page->HasProperty(L"background-image"))
                         {
                         canvas->SetBackgroundImage(
-                            wxBitmapBundle(LoadImageFile(page->GetProperty(L"background-image"))) );
+                            wxBitmapBundle(LoadImageFile(page->GetProperty(L"background-image"))));
                         }
 
                     // copy print settings from report
-                    canvas->GetPrinterSettings().SetOrientation(reportPrintSettings.GetOrientation());
+                    canvas->GetPrinterSettings().SetOrientation(
+                        reportPrintSettings.GetOrientation());
 
                     size_t rowCount{ 0 };
                     const auto rowsProperty = page->GetProperty(L"rows");
@@ -122,7 +141,9 @@ namespace Wisteria
                         rowCount = rows.size();
                         // Empty page? Go to next one.
                         if (rows.size() == 0)
-                            { continue; }
+                            {
+                            continue;
+                            }
                         canvas->SetFixedObjectsGridSize(rows.size(), 1);
                         for (const auto& row : rows)
                             {
@@ -144,120 +165,142 @@ namespace Wisteria
                                         {
                                         try
                                             {
-                                            /* Along with adding graphs to the canvas, we also keep a list
-                                               of these graphs in case we need to connect any of them to
-                                               a common axis.
+                                            /* Along with adding graphs to the canvas, we also keep
+                                               a list of these graphs in case we need to connect any
+                                               of them to a common axis.
 
-                                               Graph loading functions will load the graph to the canvas
-                                               themselves because they may need to add an accompanying legend,
-                                               which that function will add to the canvas also.
+                                               Graph loading functions will load the graph to the
+                                               canvas themselves because they may need to add an
+                                               accompanying legend, which that function will add to
+                                               the canvas also.
 
-                                               Other objects like labels and images will be added to the canvas
-                                               here though, as we know it will just be that one object.*/
-                                            if (typeProperty->GetValueString().CmpNoCase(L"line-plot") == 0)
+                                               Other objects like labels and images will be added to
+                                               the canvas here though, as we know it will just be
+                                               that one object.*/
+                                            if (typeProperty->GetValueString().CmpNoCase(
+                                                    L"line-plot") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadLinePlot(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadLinePlot(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"heatmap") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"heatmap") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadHeatMap(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadHeatMap(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"gantt-chart") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"gantt-chart") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadGanttChart(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadGanttChart(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().
-                                                        CmpNoCase(L"candlestick-plot") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"candlestick-plot") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadCandlestickPlot(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadCandlestickPlot(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"w-curve-plot") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"w-curve-plot") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadWCurvePlot(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadWCurvePlot(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"likert-chart") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"likert-chart") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadLikertChart(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadLikertChart(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().
-                                                        CmpNoCase(L"linear-regression-roadmap") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"linear-regression-roadmap") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadLRRoadmap(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadLRRoadmap(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"pro-con-roadmap") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"pro-con-roadmap") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadProConRoadmap(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadProConRoadmap(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"word-cloud") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"word-cloud") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadWordCloud(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadWordCloud(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"sankey-diagram") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"sankey-diagram") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadSankeyDiagram(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadSankeyDiagram(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"box-plot") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadBoxPlot(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadBoxPlot(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"pie-chart") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"pie-chart") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadPieChart(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadPieChart(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"histogram") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"histogram") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadHistogram(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadHistogram(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().
-                                                        CmpNoCase(L"categorical-bar-chart") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"categorical-bar-chart") == 0)
                                                 {
-                                                embeddedGraphs.push_back(
-                                                    LoadCategoricalBarChart(item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(LoadCategoricalBarChart(
+                                                    item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"label") == 0)
                                                 {
-                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                canvas->SetFixedObject(
+                                                    currentRow, currentColumn,
                                                     LoadLabel(item, GraphItems::Label()));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"image") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"image") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
-                                                    LoadImage(item));
+                                                                       LoadImage(item));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"table") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"table") == 0)
                                                 {
                                                 LoadTable(item, canvas, currentRow, currentColumn);
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"common-axis") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"common-axis") == 0)
                                                 {
-                                                // Common axis cannot be created until we know all its children
-                                                // have been created. Add a placeholder for now and circle back
-                                                // after all other items have been added to the grid.
-                                                canvas->SetFixedObject(currentRow, currentColumn, nullptr);
+                                                // Common axis cannot be created until we know all
+                                                // its children have been created. Add a placeholder
+                                                // for now and circle back after all other items
+                                                // have been added to the grid.
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                                       nullptr);
                                                 LoadCommonAxis(item, currentRow, currentColumn);
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"shape") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"shape") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
-                                                    LoadShape(item));
+                                                                       LoadShape(item));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"fillable-shape") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"fillable-shape") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
-                                                    LoadFillableShape(item));
+                                                                       LoadFillableShape(item));
                                                 }
                                             // explicitly null item is a placeholder,
                                             // or possibly a blank row that will be consumed by the
@@ -265,15 +308,16 @@ namespace Wisteria
                                             else if (typeProperty->IsNull())
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
-                                                    nullptr);
+                                                                       nullptr);
                                                 }
                                             }
                                         // show error, but OK to keep going
                                         catch (const std::exception& err)
                                             {
-                                            wxMessageBox(wxString::FromUTF8(
-                                                         wxString::FromUTF8(err.what())),
-                                                         _(L"Canvas Item Error"), wxOK|wxICON_WARNING|wxCENTRE);
+                                            wxMessageBox(
+                                                wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                                                _(L"Canvas Item Error"),
+                                                wxOK | wxICON_WARNING | wxCENTRE);
                                             }
                                         }
                                     ++currentColumn;
@@ -290,32 +334,32 @@ namespace Wisteria
                             {
                             for (const auto& childId : commonAxisInfo.m_childrenIds)
                                 {
-                                auto childGraph = std::find_if(embeddedGraphs.cbegin(), embeddedGraphs.cend(),
+                                auto childGraph = std::find_if(
+                                    embeddedGraphs.cbegin(), embeddedGraphs.cend(),
                                     [&childId](const auto& graph) noexcept
-                                        {
-                                        return graph->GetId() == static_cast<long>(childId);
-                                        });
-                                if (childGraph != embeddedGraphs.end() &&
-                                    (*childGraph) != nullptr)
-                                    { childGraphs.push_back(*childGraph); }
+                                    { return graph->GetId() == static_cast<long>(childId); });
+                                if (childGraph != embeddedGraphs.end() && (*childGraph) != nullptr)
+                                    {
+                                    childGraphs.push_back(*childGraph);
+                                    }
                                 }
                             if (childGraphs.size() > 1)
                                 {
-                                auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis ||
-                                                    commonAxisInfo.m_axisType == AxisType::TopXAxis) ?
-                                    CommonAxisBuilder::BuildXAxis(canvas,
-                                        childGraphs, commonAxisInfo.m_axisType,
-                                        commonAxisInfo.m_commonPerpendicularAxis) :
-                                    CommonAxisBuilder::BuildYAxis(canvas,
-                                        childGraphs, commonAxisInfo.m_axisType);
+                                auto commonAxis =
+                                    (commonAxisInfo.m_axisType == AxisType::BottomXAxis ||
+                                     commonAxisInfo.m_axisType == AxisType::TopXAxis) ?
+                                        CommonAxisBuilder::BuildXAxis(
+                                            canvas, childGraphs, commonAxisInfo.m_axisType,
+                                            commonAxisInfo.m_commonPerpendicularAxis) :
+                                        CommonAxisBuilder::BuildYAxis(canvas, childGraphs,
+                                                                      commonAxisInfo.m_axisType);
                                 LoadAxis(commonAxisInfo.m_node, *commonAxis);
                                 LoadItem(commonAxisInfo.m_node, commonAxis);
                                 // force the row to its height and no more
                                 commonAxis->FitCanvasRowHeightToContent(true);
-                                canvas->SetFixedObject(
-                                    commonAxisInfo.m_gridPosition.first,
-                                    commonAxisInfo.m_gridPosition.second,
-                                    commonAxis);
+                                canvas->SetFixedObject(commonAxisInfo.m_gridPosition.first,
+                                                       commonAxisInfo.m_gridPosition.second,
+                                                       commonAxis);
                                 }
                             }
                         }
@@ -333,7 +377,9 @@ namespace Wisteria
             }
 
         for (auto& tlink : m_tableLinks)
-            { tlink.SyncTableSizes(); }
+            {
+            tlink.SyncTableSizes();
+            }
 
         return reportPages;
         }
@@ -4477,13 +4523,15 @@ namespace Wisteria
     wxColour ReportBuilder::ConvertColor(const wxSimpleJSON::Ptr_t& colorNode)
         {
         if (!colorNode->IsOk())
-            { return wxNullColour; }
+            {
+            return wxNullColour;
+            }
 
         return (colorNode->IsValueNull() ?
-            // using null in JSON for a color implies that we want
-            // a legit color that is transparent
-            wxTransparentColour :
-            ConvertColor(colorNode->GetValueString()));
+                    // using null in JSON for a color implies that we want
+                    // a legit color that is transparent
+                    wxTransparentColour :
+                    ConvertColor(colorNode->GetValueString()));
         }
 
     //---------------------------------------------------
@@ -4495,7 +4543,9 @@ namespace Wisteria
         // see if it is one of our defined colors
         auto foundPos = m_colorMap.find(std::wstring_view(colorStr.MakeLower().wc_str()));
         if (foundPos != m_colorMap.cend())
-            { return Colors::ColorBrewer::GetColor(foundPos->second); }
+            {
+            return Colors::ColorBrewer::GetColor(foundPos->second);
+            }
 
         return wxColour(colorStr);
         }
@@ -4559,8 +4609,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Brushes::Schemes::BrushScheme> ReportBuilder::LoadBrushScheme(
-        const wxSimpleJSON::Ptr_t& brushSchemeNode)
+    std::shared_ptr<Brushes::Schemes::BrushScheme>
+    ReportBuilder::LoadBrushScheme(const wxSimpleJSON::Ptr_t& brushSchemeNode)
         {
         const auto brushStylesNode = brushSchemeNode->GetProperty(L"brush-styles");
         if (brushStylesNode->IsOk() && brushStylesNode->IsValueArray())
@@ -4571,7 +4621,9 @@ namespace Wisteria
                 {
                 const auto bStyle = ReportEnumConvert::ConvertBrushStyle(brushStylesVal);
                 if (bStyle)
-                    { brushStyles.push_back(bStyle.value()); }
+                    {
+                    brushStyles.push_back(bStyle.value());
+                    }
                 }
             const auto colorScheme = LoadColorScheme(brushSchemeNode->GetProperty(L"color-scheme"));
             if (colorScheme)
@@ -4592,19 +4644,25 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Colors::Schemes::ColorScheme> ReportBuilder::LoadColorScheme(
-        const wxSimpleJSON::Ptr_t& colorSchemeNode)
+    std::shared_ptr<Colors::Schemes::ColorScheme>
+    ReportBuilder::LoadColorScheme(const wxSimpleJSON::Ptr_t& colorSchemeNode)
         {
         if (!colorSchemeNode->IsOk())
-            { return nullptr; }
+            {
+            return nullptr;
+            }
         else if (colorSchemeNode->IsValueArray())
             {
             std::vector<wxColour> colors;
             const auto colorValues = colorSchemeNode->GetValueStringVector();
             if (colorValues.size() == 0)
-                { return nullptr; }
+                {
+                return nullptr;
+                }
             for (const auto& color : colorValues)
-                { colors.emplace_back(ConvertColor(color)); }
+                {
+                colors.emplace_back(ConvertColor(color));
+                }
             return std::make_shared<Colors::Schemes::ColorScheme>(colors);
             }
         else if (colorSchemeNode->IsValueString())

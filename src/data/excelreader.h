@@ -12,12 +12,12 @@
 #ifndef __WISTERIA_EXCEL_H__
 #define __WISTERIA_EXCEL_H__
 
-#include <variant>
-#include <wx/wx.h>
-#include <wx/string.h>
 #include "../import/xlsx_extract_text.h"
-#include "../util/zipcatalog.h"
 #include "../util/memorymappedfile.h"
+#include "../util/zipcatalog.h"
+#include <variant>
+#include <wx/string.h>
+#include <wx/wx.h>
 
 namespace Wisteria::Data
     {
@@ -25,18 +25,25 @@ namespace Wisteria::Data
     /// @details This is a wrapper for lily_of_the_valley::xlsx_extract_text.
     class ExcelReader
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param filePath The path to the Excel file to load.
         explicit ExcelReader(const wxString& filePath) : m_filePath(filePath)
-            { LoadFile(filePath); }
+            {
+            LoadFile(filePath);
+            }
+
         /// @brief Loads an Excel file.
         /// @param filePath The path to the Excel file to load.
         void LoadFile(const wxString& filePath);
+
         /** @returns The list of worksheet names in the Excel file.*/
         [[nodiscard]]
         const std::vector<std::wstring>& GetWorksheetNames() const noexcept
-            { return m_xlsxTextExtractor.get_worksheet_names(); }
+            {
+            return m_xlsxTextExtractor.get_worksheet_names();
+            }
+
         /** @brief Reads a worksheet from the loaded workbook.
             @param worksheet The name or 1-based index of the worksheet to read.
             @param delimiter The character to delimit the columns with.
@@ -46,12 +53,13 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
         wxString ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
-            const wchar_t delimiter = L'\t');
-    private:
+                               const wchar_t delimiter = L'\t');
+
+      private:
         wxString m_filePath;
         lily_of_the_valley::xlsx_extract_text m_xlsxTextExtractor{ true };
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 
