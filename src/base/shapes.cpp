@@ -10,6 +10,8 @@
 #include "image.h"
 #include "label.h"
 #include "polygon.h"
+#include <wx/dcgraph.h>
+#include <wx/graphics.h>
 
 using namespace Wisteria::Colors;
 using namespace Wisteria::Icons;

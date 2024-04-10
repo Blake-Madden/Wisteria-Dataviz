@@ -16,8 +16,6 @@
 #include "colors.h"
 #include <initializer_list>
 #include <vector>
-#include <wx/dcgraph.h>
-#include <wx/gdicmn.h>
 #include <wx/string.h>
 #include <wx/wx.h>
 
