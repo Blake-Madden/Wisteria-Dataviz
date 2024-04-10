@@ -213,7 +213,7 @@ namespace Wisteria::Graphs
 
             /// @brief Constructor.
             /// @param name The name of the task.
-            explicit TaskInfo(const wxString& name) : m_name(name) {}
+            explicit TaskInfo(wxString name) : m_name(std::move(name)) {}
 
             /// @brief Sets who is carrying out the task.
             /// @param resource The resources assigned to the task.
@@ -323,15 +323,9 @@ namespace Wisteria::Graphs
 
         /** @brief Adds a task to the chart.
             @param taskInfo Information about the task.*/
-        void AddTask(const TaskInfo& taskInfo)
+        void AddTask(TaskInfo taskInfo)
             {
-            m_tasks.emplace_back(taskInfo);
-            Calculate();
-            }
-
-        void AddTask(TaskInfo&& taskInfo)
-            {
-            m_tasks.emplace_back(taskInfo);
+            m_tasks.push_back(std:move(taskInfo));
             Calculate();
             }
 
