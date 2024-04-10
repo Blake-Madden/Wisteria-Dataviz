@@ -112,7 +112,7 @@ std::vector<std::pair<wxString,Wisteria::SortDirection>> ListCtrlSortDlg::GetCol
                 (m_data->GetItemText(i, 1).CmpNoCase(GetAscendingLabel())==0) ?
                 Wisteria::SortDirection::SortAscending :
                 Wisteria::SortDirection::SortDescending;
-            columns.push_back(std::pair<wxString,Wisteria::SortDirection>(columnName, direction));
+            columns.push_back(std::make_pair(columnName, direction));
             }
         }
     return columns;

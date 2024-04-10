@@ -157,7 +157,7 @@ namespace Wisteria::Graphs
             maxWidth = std::max({ maxWidth, bBox.GetWidth() });
             maxHeight = std::max({ maxHeight, bBox.GetHeight() });
             origin.y += bBox.GetHeight();
-            labels.push_back(currentLabel);
+            labels.push_back(std::move(currentLabel));
             ++wordCount;
             }
 

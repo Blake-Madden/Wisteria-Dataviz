@@ -215,7 +215,7 @@ namespace Wisteria::Graphs
                 BoxAndWhisker box(GetBoxEffect(),
                                   GetBoxCorners(), GetOpacity());
                 box.SetData(data, continuousColumnName, groupColumnName, group, 0);
-                boxes.push_back(box);
+                boxes.push_back(std::move(box));
                 }
             }
         else
@@ -223,7 +223,7 @@ namespace Wisteria::Graphs
             BoxAndWhisker box(GetBoxEffect(),
                               GetBoxCorners(), GetOpacity());
             box.SetData(data, continuousColumnName, std::nullopt, 0, 0);
-            boxes.push_back(box);
+            boxes.push_back(std::move(box));
             }
 
         std::sort(boxes.begin(), boxes.end());

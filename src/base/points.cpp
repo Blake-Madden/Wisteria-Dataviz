@@ -76,6 +76,7 @@ namespace Wisteria::GraphItems
         pt.SetScaling(GetScaling());
         const wxRect ptBoundingBox = pt.GetBoundingBox(dc);
         m_points.push_back(pt);
+
         if (GetPoints().size() == 1)
             {
             m_boundingBox = ptBoundingBox;

@@ -201,9 +201,9 @@ namespace Wisteria::Graphs
         /** @brief Adds a custom axis that would be in addition to the regular X and Y
                 axes around the graph.
             @param axis The custom axis to add.*/
-        void AddCustomAxis(Wisteria::GraphItems::Axis& axis)
+        void AddCustomAxis(Wisteria::GraphItems::Axis axis)
             {
-            m_customAxes.push_back(axis);
+            m_customAxes.push_back(std::move(axis));
             }
 
         /** @brief Adds a reference line to draw across the graph.
@@ -211,8 +211,8 @@ namespace Wisteria::Graphs
                 and the graph will set the length of the line to be the full length of the
                 parallel axis for you.
             @param refLine The reference line to add.*/
-        void AddReferenceLine(const Wisteria::GraphItems::ReferenceLine& refLine)
-            { m_referenceLines.push_back(refLine); }
+        void AddReferenceLine(Wisteria::GraphItems::ReferenceLine refLine)
+            { m_referenceLines.push_back(std::move(refLine)); }
 
         /** @brief Adds a reference area to draw across the graph.
             @details The parent axis and starting points are specified in the composite
@@ -222,8 +222,8 @@ namespace Wisteria::Graphs
             @note Duplicate reference areas will be combined into one on the legend;
                 This is useful for instances of related events on a plot (e.g., recessions).
                 In this context, 'duplicate' means the areas have the same label and area color.*/
-        void AddReferenceArea(const Wisteria::GraphItems::ReferenceArea& refArea)
-            { m_referenceAreas.push_back(refArea); }
+        void AddReferenceArea(Wisteria::GraphItems::ReferenceArea refArea)
+            { m_referenceAreas.push_back(std::move(refArea)); }
         /// @}
 
         /** @name Visual Effect Functions
@@ -562,7 +562,7 @@ namespace Wisteria::Graphs
                 {
                 object->SetId(m_currentAssignedId++);
                 object->SetDPIScaleFactor(GetDPIScaleFactor());
-                m_plotObjects.push_back(object);
+                m_plotObjects.push_back(std::move(object));
                 }
             }
         /** @brief Sets the DPI scaling.

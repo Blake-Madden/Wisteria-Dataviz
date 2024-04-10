@@ -3450,7 +3450,7 @@ namespace Wisteria
                     {
                     TableLink tLink{ static_cast<size_t>(linkId.value()) };
                     tLink.AddTable(table);
-                    m_tableLinks.push_back(tLink);
+                    m_tableLinks.push_back(std::move(tLink));
                     }
                 }
             }

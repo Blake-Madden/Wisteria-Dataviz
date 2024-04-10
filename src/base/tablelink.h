@@ -41,7 +41,10 @@ namespace Wisteria
 
         /// @brief Adds a table to the list of connected tables.
         /// @param table The table to add.
-        void AddTable(const std::shared_ptr<Graphs::Table> table) { m_tables.push_back(table); }
+        void AddTable(std::shared_ptr<Graphs::Table> table)
+            {
+            m_tables.push_back(std::move(table));
+            }
 
         /// @brief Syncs the dimensions of the tables, so that they all have a minimum
         ///     number of rows and columns (based on the largest number of rows and columns).

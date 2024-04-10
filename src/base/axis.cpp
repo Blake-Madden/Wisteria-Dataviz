@@ -790,7 +790,7 @@ namespace Wisteria::GraphItems
                 TickMark tk(GetTickMarkDisplay(), i,
                     MajorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
                 GetPhysicalCoordinate(tk.m_position, tk.m_physicalCoordinate);
-                GetTickMarks().push_back(tk);
+                GetTickMarks().push_back(std::move(tk));
                 }
             // custom tick marks
             for (auto& tick : GetCustomTickMarks())
@@ -815,7 +815,7 @@ namespace Wisteria::GraphItems
                 TickMark tk(GetTickMarkDisplay(), i,
                     MajorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
                 GetPhysicalCoordinate(tk.m_position, tk.m_physicalCoordinate);
-                GetTickMarks().push_back(tk);
+                GetTickMarks().push_back(std::move(tk));
                 }
             // custom tick marks
             for (auto& tick : GetCustomTickMarks())

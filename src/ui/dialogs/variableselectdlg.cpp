@@ -187,7 +187,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         currentList.m_list = addVarControls(currentList.m_addId,
                                             currentList.m_removeId, currentList.m_label,
                                             style);
-        m_varLists.push_back(currentList);
+        m_varLists.push_back(std::move(currentList));
         }
 
     // make list columns growable, but not button columns

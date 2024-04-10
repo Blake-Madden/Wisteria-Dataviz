@@ -538,7 +538,7 @@ namespace Wisteria::Graphs
                 Calling this will clear all aggregations, footnotes, formatting commands, etc.*/
         void Sort(const size_t columnToSort, const SortDirection direction);
 
-        /// @brief Sorts the the table by the provided column (based on a specified order of labels in the column).
+        /// @brief Sorts the table by the provided column (based on a specified order of labels in the column).
         ///     This is similar to what @c forcats::fct_relevel() does in R.
         /// @param columnToSort The column to sort by.
         /// @param labels The labels in the column, sorted in the new order that they should

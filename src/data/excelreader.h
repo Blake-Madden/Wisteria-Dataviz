@@ -28,7 +28,7 @@ namespace Wisteria::Data
       public:
         /// @brief Constructor.
         /// @param filePath The path to the Excel file to load.
-        explicit ExcelReader(const wxString& filePath) : m_filePath(filePath)
+        explicit ExcelReader(wxString filePath) : m_filePath(std::move(filePath))
             {
             LoadFile(filePath);
             }

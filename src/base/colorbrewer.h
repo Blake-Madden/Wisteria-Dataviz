@@ -388,12 +388,6 @@ namespace Wisteria::Colors
                 assert(color.IsOk() && L"Invalid color passed to AddColor().");
                 m_colors.push_back(color);
                 }
-            /// @private
-            void AddColor(wxColour&& color)
-                {
-                assert(color.IsOk() && L"Invalid color passed to AddColor().");
-                m_colors.push_back(color);
-                }
             /// @brief Removes all colors from the collection.
             void Clear() noexcept
                 { m_colors.clear(); }

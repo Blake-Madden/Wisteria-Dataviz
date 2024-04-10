@@ -147,7 +147,7 @@ namespace Wisteria::Graphs
                                               pt->GetAnchorPoint());
                 }
             markerLabel->GetFont().MakeSmaller();
-            locationLabels.push_back(markerLabel);
+            locationLabels.push_back(std::move(markerLabel));
             }
 
         // end of the road (top)

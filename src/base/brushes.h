@@ -96,10 +96,7 @@ namespace Wisteria::Brushes
 
             /** @brief Adds a brush to the scheme.
                 @param brush The brush to add.*/
-            void AddBrush(const wxBrush& brush) { m_brushes.push_back(brush); }
-
-            /// @private
-            void AddBrush(wxBrush&& brush) { m_brushes.push_back(brush); }
+            void AddBrush(wxBrush brush) { m_brushes.push_back(std::move(brush)); }
 
             /// @brief Removes all brushes from the collection.
             void Clear() noexcept { m_brushes.clear(); }

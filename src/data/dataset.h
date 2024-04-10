@@ -234,8 +234,8 @@ namespace Wisteria::Data
             { m_data.resize(rowCount, val); }
         /** @brief Adds a value to the data.
             @param val The new value.*/
-        void AddValue(const T& val)
-            { m_data.push_back(val); }
+        void AddValue(T val)
+            { m_data.push_back(std::move(val)); }
     private:
         wxString m_name;
         std::vector<T> m_data;

@@ -456,7 +456,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pts[0]).Anchoring(Anchoring::TopLeftCorner));
                         const auto bBox{ groupLabel->GetBoundingBox(dc) };
                         groupLabel->Offset(0, -(bBox.GetHeight() * math_constants::half));
-                        labels.push_back(groupLabel);
+                        labels.push_back(std::move(groupLabel));
                         }
                     else if (labelSide == Side::Left &&
                         GetPhysicalCoordinates(group.m_xAxisLeft,
@@ -472,7 +472,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pts[0]).Anchoring(Anchoring::TopRightCorner));
                         const auto bBox{ groupLabel->GetBoundingBox(dc) };
                         groupLabel->Offset(0, -(bBox.GetHeight() * math_constants::half));
-                        labels.push_back(groupLabel);
+                        labels.push_back(std::move(groupLabel));
                         }
                     }
                 }

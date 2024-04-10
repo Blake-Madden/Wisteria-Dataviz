@@ -604,10 +604,7 @@ namespace Wisteria::Images::Schemes
 
         /** @brief Adds an image to the scheme.
             @param image The image to add.*/
-        void AddImage(const wxBitmapBundle& image) { m_images.push_back(image); }
-
-        /// @private
-        void AddImage(wxBitmapBundle&& image) { m_images.push_back(image); }
+        void AddImage(wxBitmapBundle image) { m_images.push_back(std::move(image)); }
 
         /// @brief Removes all images from the collection.
         void Clear() noexcept { m_images.clear(); }

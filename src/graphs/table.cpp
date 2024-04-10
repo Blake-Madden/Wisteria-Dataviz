@@ -1333,7 +1333,7 @@ namespace Wisteria::Graphs
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
                 smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
 
-                cellLabels.push_back(cellLabel); // need to homogenize scaling of text later
+                cellLabels.push_back(std::move(cellLabel)); // need to homogenize scaling of text later
 
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
                 if (cell.GetPrefix().length() && isPrefixSeparateLabel)
@@ -1374,7 +1374,7 @@ namespace Wisteria::Graphs
                     cellPrefixLabel->SetBoundingBox(boxRect, dc, GetScaling());
                     cellPrefixLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
                     cellPrefixLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
-                    cellLabels.push_back(cellPrefixLabel);
+                    cellLabels.push_back(std::move(cellPrefixLabel));
                     }
 
                 currentXPos += columnWidths[currentColumn];

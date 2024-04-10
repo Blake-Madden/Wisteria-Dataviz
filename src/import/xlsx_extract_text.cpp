@@ -703,7 +703,7 @@ namespace lily_of_the_valley
                 std::wstring worksheetName =
                     html_extract_text::read_attribute_as_string(text, L"name", false, true);
                 if (!worksheetName.empty())
-                    { m_worksheet_names.push_back(worksheetName); }
+                    { m_worksheet_names.push_back(std::move(worksheetName)); }
                 text += 5;
                 }
             }

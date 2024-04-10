@@ -1294,7 +1294,7 @@ namespace Wisteria::Graphs
                         // all blocks have been added.
                         // This ensures that decals that go outside of their block are
                         // eclipsed by the next block.
-                        decals.push_back(decalLabel);
+                        decals.push_back(std::move(decalLabel));
                         }
                     }
                 else
@@ -1737,7 +1737,7 @@ namespace Wisteria::Graphs
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
-                        decals.push_back(decalLabel);
+                        decals.push_back(std::move(decalLabel));
                         }
                     }
                 }

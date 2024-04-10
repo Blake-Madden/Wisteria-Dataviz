@@ -754,8 +754,8 @@ namespace Wisteria::Graphs
         /// @brief Adds a bracket to a group of questions.
         /// @param qBracket The bracket information, include the start and end questions
         ///     and the bracket title.
-        void AddQuestionsBracket(const QuestionsBracket& qBracket)
-            { m_questionBrackets.push_back(qBracket); }
+        void AddQuestionsBracket(QuestionsBracket qBracket)
+            { m_questionBrackets.push_back(std::move(qBracket)); }
 
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
