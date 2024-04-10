@@ -325,7 +325,7 @@ namespace Wisteria::Graphs
             @param taskInfo Information about the task.*/
         void AddTask(TaskInfo taskInfo)
             {
-            m_tasks.push_back(std:move(taskInfo));
+            m_tasks.push_back(std::move(taskInfo));
             Calculate();
             }
 

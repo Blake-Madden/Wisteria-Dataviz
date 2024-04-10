@@ -193,6 +193,7 @@ namespace Wisteria
         inline static size_t m_pointRadius{ 4 };
         inline static double m_roundedCornerRadius{ 5 };
         inline static size_t m_maxObservationsInBin{ 25 };
+        // clang-format off
         constexpr static int m_debugSettings
             {
 #ifdef DEBUG_LOG_INFO
@@ -214,7 +215,8 @@ namespace Wisteria
                 DebugSettings::AllowFileIO |
 #endif
                 DebugSettings::DebugNone
-            }
+            };
+        // clang-format on
         std::shared_ptr<Colors::Schemes::ColorScheme> m_defaultColorScheme;
         };
     } // namespace Wisteria
