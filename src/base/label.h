@@ -386,13 +386,6 @@ namespace Wisteria::GraphItems
         static void FixFont(wxFont& theFont);
         /// @}
 
-        /// @private
-        void SetText(wxString&& label) final
-            {
-            GraphItemBase::SetText(std::move(label));
-            CalcLongestLineLength();
-            InvalidateCachedBoundingBox();
-            }
     private:
         /** @brief Draws the line styling onto the background of the label.
             @param dc The dc to draw on.*/
