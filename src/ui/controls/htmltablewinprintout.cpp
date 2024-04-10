@@ -68,7 +68,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
                 int currentPageHeight = 0;
                 for (int i = m_pageStarts[page - 1].first; i <= m_pageStarts[page - 1].second; ++i)
                     {
-                    if (i < m_htmlTables.size())
+                    if (static_cast<size_t>(i) < m_htmlTables.size())
                         {
                         htmlRenderer.SetHtmlText(m_htmlTables[i]);
                         htmlRenderer.Render(marginX, bodyStart + currentPageHeight);
