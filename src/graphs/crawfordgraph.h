@@ -9,7 +9,7 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __CRAWFORD_GRAPH_H__ 
+#ifndef __CRAWFORD_GRAPH_H__
 #define __CRAWFORD_GRAPH_H__
 
 #include "groupgraph2d.h"
@@ -44,14 +44,15 @@ namespace Wisteria::Graphs
             *Bilingual Education Paper Series*, vol. 7, no. 8, 1984, pp. 1-17.*/
     class CrawfordGraph final : public GroupGraph2D
         {
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.
             @param colors The color scheme to apply to the points.
                Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
                Leave as null to use the standard shapes.*/
-        explicit CrawfordGraph(Wisteria::Canvas* canvas,
+        explicit CrawfordGraph(
+            Wisteria::Canvas* canvas,
             std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
@@ -71,13 +72,14 @@ namespace Wisteria::Graphs
                      const wxString& scoreColumnName,
                      const wxString& syllablesPer100WordsColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt);
-    private:
+
+      private:
         void RecalcSizes(wxDC& dc) final;
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         const Wisteria::Data::Column<double>* m_syllablesPer100WordsColumn{ nullptr };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

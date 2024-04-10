@@ -16,8 +16,9 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief A discrete heat map, which is a grid-based plot which compares each value from a vector and
-         maps them along a color scale (e.g., grayscale). Each cell shows an observation's
+    /** @brief A discrete heat map, which is a grid-based plot which compares each value
+         from a vector and maps them along a color scale (e.g., grayscale).
+         Each cell shows an observation's
          value and its color represents that value's scale in comparison to the other
          observations.
 
@@ -31,10 +32,10 @@ namespace Wisteria::Graphs
          | @image html Heatmap.svg width=90% | @image html HeatmapGrouped.svg width=90% |
 
         @par %Data:
-         This plot accepts a Data::Dataset where a continuous column is the data that is color mapped.
-         Also, this data series can optionally be grouped by a categorical column from the dataset.
-         Finally, an ID/label can optionally be assigned to each cell (corresponding to the data points)
-         that is displayed when selected by the client.
+         This plot accepts a Data::Dataset where a continuous column is the data that is color
+         mapped. Also, this data series can optionally be grouped by a categorical column
+         from the dataset. Finally, an ID/label can optionally be assigned to each cell
+         (corresponding to the data points) that is displayed when selected by the client.
 
          | NAME   | TEST_SCORE | WEEK   |
          | :--    | --:        | :--    |
@@ -69,9 +70,10 @@ namespace Wisteria::Graphs
          @par Missing Data:
          - Missing data in the ID column will result in an empty selection label for the cell.
          - Missing data in the group column will be shown as an empty row label (for the group).
-         - If the value is missing data, then that will be shown as a transparent cell with a red 'X' in the middle.\n
-           With the above dataset, a row for the student `Joe` will only have two valid cells
-           (for weeks 1 and 4), and two cells in the middle that are crossed out (for weeks 2 and 3).
+         - If the value is missing data, then that will be shown as a transparent cell with a red
+           'X' in the middle.\n With the above dataset, a row for the student `Joe` will only
+           have two valid cells (for weeks 1 and 4), and two cells in the middle that are
+           crossed out (for weeks 2 and 3).
 
          @par Example:
          @code
@@ -121,7 +123,7 @@ namespace Wisteria::Graphs
     */
     class HeatMap final : public GroupGraph2D
         {
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.
             @param colors The color scheme to apply to the points.\n
@@ -154,9 +156,9 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
-            const wxString& continuousColumnName,
-            std::optional<const wxString> groupColumnName = std::nullopt,
-            std::optional<size_t> groupColumnCount = std::nullopt);
+                     const wxString& continuousColumnName,
+                     std::optional<const wxString> groupColumnName = std::nullopt,
+                     std::optional<size_t> groupColumnCount = std::nullopt);
 
         /** @name Grouping Functions
             @brief Functions related to how grouped cells are displayed.
@@ -167,23 +169,29 @@ namespace Wisteria::Graphs
         /// @note This is only relevant if grouping is being used.
         [[nodiscard]]
         const wxString& GetGroupHeaderPrefix() const noexcept
-            { return m_groupHeaderPrefix; }
+            {
+            return m_groupHeaderPrefix;
+            }
+
         /** @brief Sets the prefix of the label shown above each column.
             @param prefix The group label.
             @note This is only relevant if grouping is being used.*/
-        void SetGroupHeaderPrefix(const wxString& prefix)
-            { m_groupHeaderPrefix = prefix; }
+        void SetGroupHeaderPrefix(const wxString& prefix) { m_groupHeaderPrefix = prefix; }
+
         /// @brief Whether to show group headers over each column.
         /// @param show @c true to show the column headers.
         /// @note This is only relevant if grouping is being used.
-        void ShowGroupHeaders(const bool show) noexcept
-            { m_showGroupHeaders = show; }
+        void ShowGroupHeaders(const bool show) noexcept { m_showGroupHeaders = show; }
+
         /// @brief Whether group headers are shown over each column.
         /// @note This is only relevant if grouping is being used.
         /// @returns @c true if group column headers are being shown.
         [[nodiscard]]
         bool IsShowingGroupHeaders() const noexcept
-            { return m_showGroupHeaders; }
+            {
+            return m_showGroupHeaders;
+            }
+
         /// @}
 
         /** @brief Builds and returns a legend.
@@ -191,20 +199,17 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
+        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader)
+        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint,
+                                                        const bool includeHeader)
             {
-            return CreateLegend(
-                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
+            return CreateLegend(LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
             }
-    private:
+
+      private:
         void RecalcSizes(wxDC& dc) final;
 
         struct HeatCell
@@ -214,15 +219,16 @@ namespace Wisteria::Graphs
             wxColour m_color;
             Data::GroupIdType m_groupId{ 0 };
             };
+
         std::vector<std::vector<HeatCell>> m_matrix;
         std::vector<wxColour> m_reversedColorSpectrum; // used for the legend
-        std::pair<double, double> m_range{ 0,0 };
+        std::pair<double, double> m_range{ 0, 0 };
         wxString m_groupHeaderPrefix{ _(L"Groups") };
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         bool m_showGroupHeaders{ true };
         size_t m_groupColumnCount{ 1 };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

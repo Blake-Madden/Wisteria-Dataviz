@@ -16,6 +16,7 @@
 
 namespace Wisteria::Graphs
     {
+    // clang-format off
     /** @brief A chart which shows the progress of events (e.g., tasks) along a timeline.
         @details These are useful for project management.
         @image html GanttChart.png width=90%
@@ -105,9 +106,10 @@ namespace Wisteria::Graphs
                     IncludeHeader(false).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         @endcode*/
+    // clang-format on
     class GanttChart final : public BarChart
         {
-    public:
+      public:
         /// @brief What to display on a task's bar.
         enum class TaskLabelDisplay
             {
@@ -129,7 +131,7 @@ namespace Wisteria::Graphs
         /// @param colors The color scheme to apply to the boxes.
         ///     Leave as null to use the default theme.
         explicit GanttChart(Wisteria::Canvas* canvas,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
+                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
         /** @brief Sets the data.
             @param data The data to use for the chart.
             @param interval The date interval to display across the axis.\n
@@ -155,12 +157,9 @@ namespace Wisteria::Graphs
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     const DateInterval interval,
-                     const FiscalYear FYType,
-                     const wxString& taskColumnName,
-                     const wxString& startDateColumnName,
-                     const wxString& endDateColumnName,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data, const DateInterval interval,
+                     const FiscalYear FYType, const wxString& taskColumnName,
+                     const wxString& startDateColumnName, const wxString& endDateColumnName,
                      std::optional<const wxString> resourceColumnName = std::nullopt,
                      std::optional<const wxString> descriptionColumnName = std::nullopt,
                      std::optional<const wxString> completionColumnName = std::nullopt,
@@ -169,24 +168,36 @@ namespace Wisteria::Graphs
         /// @returns The date intervals as they are shown along the scaling axis.
         [[nodiscard]]
         DateInterval GetDateDisplayInterval() const noexcept
-            { return m_dateDisplayInterval; }
+            {
+            return m_dateDisplayInterval;
+            }
+
         /// @returns The fiscal year type.
         [[nodiscard]]
         FiscalYear GetFiscalYearType() const noexcept
-            { return m_fyType; }
+            {
+            return m_fyType;
+            }
+
         /// @returns Which information is being displayed across the tasks.
         [[nodiscard]]
         TaskLabelDisplay GetLabelDisplay() const noexcept
-            { return m_labelDisplay; }
+            {
+            return m_labelDisplay;
+            }
+
         /// @brief Sets which information to display across the tasks.
         /// @param labelDisplay The label display type.
         void SetLabelDisplay(const TaskLabelDisplay labelDisplay) noexcept
             {
             m_labelDisplay = labelDisplay;
             for (auto& task : m_tasks)
-                { task.m_labelDisplay = m_labelDisplay; }
+                {
+                task.m_labelDisplay = m_labelDisplay;
+                }
             }
-    private:
+
+      private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it
         ///     inside of a call to GanttChart::AddTask().
@@ -195,17 +206,19 @@ namespace Wisteria::Graphs
         class TaskInfo
             {
             friend class GanttChart;
-        public:
+
+          public:
             /// @private
             TaskInfo() = default;
+
             /// @brief Constructor.
             /// @param name The name of the task.
-            explicit TaskInfo(const wxString& name) : m_name(name)
-                {}
+            explicit TaskInfo(const wxString& name) : m_name(name) {}
+
             /// @brief Sets who is carrying out the task.
             /// @param resource The resources assigned to the task.
             /// @returns A self reference.
-            /// @note Adding newlines around the resource name will make it taller 
+            /// @note Adding newlines around the resource name will make it taller
             ///     and hence will make the image next to it larger as well
             ///     (if you are displaying an image).
             /// @sa Image().
@@ -214,6 +227,7 @@ namespace Wisteria::Graphs
                 m_resource = resource;
                 return *this;
                 }
+
             /// @brief Sets the name, which will appear on the Y axis.
             /// @param name The name of the task.
             /// @returns A self reference.
@@ -222,6 +236,7 @@ namespace Wisteria::Graphs
                 m_name = name;
                 return *this;
                 }
+
             /// @brief Sets the description.
             /// @param description The description of the task.
             /// @returns A self reference.
@@ -230,6 +245,7 @@ namespace Wisteria::Graphs
                 m_description = description;
                 return *this;
                 }
+
             /// @brief An image to be displayed next to the resource assigned to the task.
             /// @param img The image for the task.
             /// @returns A self reference.
@@ -242,16 +258,19 @@ namespace Wisteria::Graphs
                 m_img = img;
                 return *this;
                 }
+
             /// @brief The start date of the task.
             /// @param start The start date of the task.
-            ///     Leave as an invalid date to have the task start at the beginning of the timeline.
-            ///     An arrow will be drawn to indicate that the task did not have a hard start date.
+            ///     Leave as an invalid date to have the task start at the beginning of the
+            ///     timeline. An arrow will be drawn to indicate that the task did not
+            ///     have a hard start date.
             /// @returns A self reference.
             TaskInfo& StartDate(const wxDateTime& start)
                 {
                 m_start = start;
                 return *this;
                 }
+
             /// @brief The end date of the task.
             /// @param end The end date of the task.
             ///     Leave as an invalid date have the task go to the end of the timeline.
@@ -262,6 +281,7 @@ namespace Wisteria::Graphs
                 m_end = end;
                 return *this;
                 }
+
             /// @brief How much of the task is already completed.
             /// @param percentFinished The percent (0-100) of how much is finished.
             /// @returns A self reference.
@@ -270,6 +290,7 @@ namespace Wisteria::Graphs
                 m_percentFinished = std::clamp<uint8_t>(percentFinished, 0, 100);
                 return *this;
                 }
+
             /// @brief Sets which information to display across the task.
             /// @param labelDisplay The label display type.
             /// @returns A self reference.
@@ -278,6 +299,7 @@ namespace Wisteria::Graphs
                 m_labelDisplay = labelDisplay;
                 return *this;
                 }
+
             /// @brief The task's bar color.
             /// @param color The color of the bar.
             /// @returns A self reference.
@@ -286,7 +308,8 @@ namespace Wisteria::Graphs
                 m_color = color;
                 return *this;
                 }
-        private:
+
+          private:
             wxString m_resource;
             wxString m_name;
             wxString m_description;
@@ -297,6 +320,7 @@ namespace Wisteria::Graphs
             TaskLabelDisplay m_labelDisplay{ TaskLabelDisplay::Days };
             wxColour m_color{ *wxBLACK };
             };
+
         /** @brief Adds a task to the chart.
             @param taskInfo Information about the task.*/
         void AddTask(const TaskInfo& taskInfo)
@@ -304,11 +328,13 @@ namespace Wisteria::Graphs
             m_tasks.emplace_back(taskInfo);
             Calculate();
             }
+
         void AddTask(TaskInfo&& taskInfo)
             {
             m_tasks.emplace_back(taskInfo);
             Calculate();
             }
+
         void Calculate();
         void RecalcSizes(wxDC& dc) final;
 
@@ -322,7 +348,7 @@ namespace Wisteria::Graphs
 
         wxString m_legendTitle;
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
