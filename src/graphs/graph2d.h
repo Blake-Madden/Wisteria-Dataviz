@@ -455,15 +455,9 @@ namespace Wisteria::Graphs
         const std::vector<Wisteria::GraphItems::ReferenceLine>& GetReferenceLines() const noexcept
             { return m_referenceLines; }
         /// @private
-        void AddReferenceLine(Wisteria::GraphItems::ReferenceLine&& refLine)
-            { m_referenceLines.emplace_back(refLine); }
-        /// @private
         [[nodiscard]]
         const std::vector<Wisteria::GraphItems::ReferenceArea>& GetReferenceAreas() const noexcept
             { return m_referenceAreas; }
-        /// @private
-        void AddReferenceArea(Wisteria::GraphItems::ReferenceArea&& refArea)
-            { m_referenceAreas.emplace_back(refArea); }
         /// @private
         [[nodiscard]]
         const GraphItems::Label& GetTitle() const noexcept
