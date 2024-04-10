@@ -16,20 +16,21 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Time-based plot which shows a commodity or stock's daily price over a given time period.
+    /** @brief Time-based plot which shows a commodity or stock's daily price over a
+         given time period.
 
-         Each day will show the commodity's opening and closing price (the candle or left/right hinges),
-         as well as the high and low price (the line).
+         Each day will show the commodity's opening and closing price
+         (the candle or left/right hinges), as well as the high and low price (the line).
 
          %Data can either be displayed with candlesticks or OHLC hinges.
 
          @image html CandlestickPlot.svg width=90%
 
         @par %Data:
-         This plot accepts a Data::Dataset where a date column is the days, and four continuous columns
-         are supplied for the opening, high, low, and closing values.
+         This plot accepts a Data::Dataset where a date column is the days,
+         and four continuous columns are supplied for the opening, high, low, and closing values.
 
-         | Date       | Close  | High   | Low    | Open  | 
+         | Date       | Close  | High   | Low    | Open  |
          | :--        | --:    | --:    | --:    | --:   |
          | 12/31/2021 | 23.352 | 23.095 | 23.39  | 23.07 |
          | 12/30/2021 | 23.06  | 22.87  | 23.155 | 22.63 |
@@ -81,12 +82,12 @@ namespace Wisteria::Graphs
 
           candlestickPlot->SetCanvasMargins(5, 5, 5, 5);
           canvas->SetFixedObject(0, 0, candlestickPlot);
-          
+
          @endcode
     */
     class CandlestickPlot : public Graph2D
         {
-    public:
+      public:
         /// @brief How to display the gains and losses
         enum class PlotType
             {
@@ -96,8 +97,7 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.*/
-        explicit CandlestickPlot(Canvas* canvas) :
-            Graph2D(canvas)
+        explicit CandlestickPlot(Canvas* canvas) : Graph2D(canvas)
             {
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
             GetLeftYAxis().StartAtZero(true);
@@ -115,8 +115,7 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
-                     const wxString& dateColumnName,
+        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& dateColumnName,
                      const wxString& openColumnName, const wxString& highColumnName,
                      const wxString& lowColumnName, const wxString& closeColumnName);
 
@@ -126,30 +125,36 @@ namespace Wisteria::Graphs
 
         /** @brief Sets whether this is an OHLC plot or candlestick plot.
             @param type The plot type to set this to.*/
-        void SetPlotType(const PlotType& type)
-            { m_chartType = type; }
+        void SetPlotType(const PlotType& type) { m_chartType = type; }
+
         /// @brief Gets/sets the brush used to paint days that saw a loss.
         /// @returns The brush used to paint days that saw a loss.
         [[nodiscard]]
         wxBrush& GetLossBrush() noexcept
-            { return m_lossBrush; }
+            {
+            return m_lossBrush;
+            }
+
         /// @brief Gets/sets the brush used to paint days that saw a gain.
         /// @returns The brush used to paint days that saw a gain.
         [[nodiscard]]
         wxBrush& GetGainBrush() noexcept
-            { return m_gainBrush; }
+            {
+            return m_gainBrush;
+            }
+
         /// @}
 
         /// @private
-        [[deprecated("Candlestick plot does not support legends.")]]
-        [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            [[maybe_unused]] const LegendOptions& options) final
+        [[deprecated("Candlestick plot does not support legends.")]] [[nodiscard]]
+        std::shared_ptr<GraphItems::Label>
+        CreateLegend([[maybe_unused]] const LegendOptions& options) final
             {
             wxFAIL_MSG(L"Candlestick plot does not support legends.");
             return nullptr;
             }
-    private:
+
+      private:
         struct Ohlc
             {
             wxDateTime m_date;
@@ -160,8 +165,8 @@ namespace Wisteria::Graphs
             };
 
         void Calculate(const std::shared_ptr<const Data::Dataset>& data,
-            const wxString& openColumnName, const wxString& highColumnName,
-            const wxString& lowColumnName, const wxString& closeColumnName);
+                       const wxString& openColumnName, const wxString& highColumnName,
+                       const wxString& lowColumnName, const wxString& closeColumnName);
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
 
@@ -171,7 +176,7 @@ namespace Wisteria::Graphs
         std::vector<Ohlc> m_ohlcs;
         PlotType m_chartType{ PlotType::Candlestick };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

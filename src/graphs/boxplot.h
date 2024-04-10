@@ -12,8 +12,8 @@
 #ifndef __WISTERIA_BOX_PLOT_H__
 #define __WISTERIA_BOX_PLOT_H__
 
-#include "graph2d.h"
 #include "../data/jitter.h"
+#include "graph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -67,25 +67,26 @@ namespace Wisteria::Graphs
         @todo Add notch support.*/
     class BoxPlot final : public Graph2D
         {
-    public:
+      public:
         /** @brief A box & whisker used for displaying distribution (and ranges) of data.*/
         class BoxAndWhisker
             {
             /// BoxPlot needs access to values the that client constructing the box doesn't need.
             friend class BoxPlot;
-        public:
+
+          public:
             /// @private
             BoxAndWhisker() = default;
+
             /** @brief Constructor.
                 @param effect The effect to display across the box.
                 @param boxCorners The corner display to use.
                 @param opacity The box's opacity.*/
-            BoxAndWhisker(const BoxEffect effect,
-                          const BoxCorners boxCorners,
+            BoxAndWhisker(const BoxEffect effect, const BoxCorners boxCorners,
                           const uint8_t opacity = wxALPHA_OPAQUE)
-                    : m_opacity(opacity),
-                      m_boxEffect(effect), m_boxCorners(boxCorners)
-                {}
+                : m_opacity(opacity), m_boxEffect(effect), m_boxCorners(boxCorners)
+                {
+                }
 
             /// @name Statistics Functions
             /// @brief Functions relating to the calculated statistics.
@@ -94,25 +95,40 @@ namespace Wisteria::Graphs
             /// @returns The middle line of the box (usually the median of the data).
             [[nodiscard]]
             double GetMiddlePoint() const noexcept
-                { return m_middlePoint; }
+                {
+                return m_middlePoint;
+                }
+
             /// @returns The lower side of the box.
             [[nodiscard]]
             double GetLowerControlLimit() const noexcept
-                { return m_lowerControlLimit; }
+                {
+                return m_lowerControlLimit;
+                }
+
             /// @returns The upper side of the box.
             [[nodiscard]]
             double GetUpperControlLimit() const noexcept
-                { return m_upperControlLimit; }
+                {
+                return m_upperControlLimit;
+                }
+
             /// @returns The value of the lower whisker (non-outlier range).
             ///     Any value lower than this is an outlier.
             [[nodiscard]]
             double GetLowerWhisker() const noexcept
-                { return m_lowerWhisker; }
+                {
+                return m_lowerWhisker;
+                }
+
             /// @returns The value of the upper whisker (non-outlier range).
             ///     Any value larger than this is an outlier.
             [[nodiscard]]
             double GetUpperWhisker() const noexcept
-                { return m_upperWhisker; }
+                {
+                return m_upperWhisker;
+                }
+
             /// @}
 
             /// @name Box Display Functions
@@ -122,29 +138,37 @@ namespace Wisteria::Graphs
             /// @returns The opacity (how opaque or translucent) the box is.
             [[nodiscard]]
             uint8_t GetOpacity() const noexcept
-                { return m_opacity; }
+                {
+                return m_opacity;
+                }
+
             /** @brief Sets he opacity (how opaque or translucent) the box is.
                 @param opacity The opacity level.*/
-            void SetOpacity(const uint8_t opacity) noexcept
-                { m_opacity = opacity; }
+            void SetOpacity(const uint8_t opacity) noexcept { m_opacity = opacity; }
 
             /// @returns The effect (e.g., color gradient) displayed across the box(es).
             [[nodiscard]]
             BoxEffect GetBoxEffect() const noexcept
-                { return m_boxEffect; }
+                {
+                return m_boxEffect;
+                }
+
             /** @brief Sets the effect displayed on the boxes.
                 @param boxEffect The effect to use.
                 @sa SetImageScheme().*/
-            void SetBoxEffect(const BoxEffect boxEffect) noexcept
-                { m_boxEffect = boxEffect; }
+            void SetBoxEffect(const BoxEffect boxEffect) noexcept { m_boxEffect = boxEffect; }
+
             /// @returns How the corners of the boxes are drawn.
             [[nodiscard]]
             BoxCorners GetBoxCorners() const noexcept
-                { return m_boxCorners; }
+                {
+                return m_boxCorners;
+                }
+
             /** @brief Sets how the corners of the boxes are drawn.
                 @param boxCorners The corner display to use.*/
-            void SetBoxCorners(const BoxCorners boxCorners) noexcept
-                { m_boxCorners = boxCorners; }
+            void SetBoxCorners(const BoxCorners boxCorners) noexcept { m_boxCorners = boxCorners; }
+
             /// @}
 
             /// @name Label & Point Functions
@@ -154,35 +178,43 @@ namespace Wisteria::Graphs
             /// @returns @c true if displaying labels on the hinges, midpoint, and outliers.
             [[nodiscard]]
             bool IsShowingLabels() const noexcept
-                { return m_displayLabels; }
+                {
+                return m_displayLabels;
+                }
+
             /// @brief Sets whether to display labels on the hinges, midpoint, and outliers.
             /// @param display Whether to display the labels.
-            void ShowLabels(const bool display = true) noexcept
-                { m_displayLabels = display; }
+            void ShowLabels(const bool display = true) noexcept { m_displayLabels = display; }
 
             /// @returns @c true if all data points are being displayed.
             [[nodiscard]]
             bool IsShowingAllPoints() const noexcept
-                { return m_showAllPoints; }
+                {
+                return m_showAllPoints;
+                }
+
             /// @brief Specifies whether to display all data points on the boxes and whiskers.
             /// @param display Whether to display the points.
             /// @note Outliers are always displayed as points.
-            void ShowAllPoints(const bool display = true) noexcept
-                { m_showAllPoints = display; }
+            void ShowAllPoints(const bool display = true) noexcept { m_showAllPoints = display; }
+
             /// @}
 
             /// @private
             [[nodiscard]]
-            bool operator<(const BoxAndWhisker& that) const noexcept
+            bool
+            operator<(const BoxAndWhisker& that) const noexcept
                 {
                 return wxUILocale::GetCurrent().CompareStrings(
-                    m_groupColumn->GetLabelFromID(m_groupId),
-                    that.m_groupColumn->GetLabelFromID(that.m_groupId),
-                        wxCompare_CaseInsensitive) < 0;
+                           m_groupColumn->GetLabelFromID(m_groupId),
+                           that.m_groupColumn->GetLabelFromID(that.m_groupId),
+                           wxCompare_CaseInsensitive) < 0;
                 }
-        private:
+
+          private:
             /// @name Data Functions
-            /// @brief Functions relating to setting up the data and how the statistics are calculated.
+            /// @brief Functions relating to setting up the data and how the
+            /// statistics are calculated.
             /// @{
 
             /** @brief Sets the data for the box.
@@ -190,22 +222,26 @@ namespace Wisteria::Graphs
                     This would usually be 25, giving you the standard quartiles range.
                 @param data The data to assign to the box.
                 @param useGrouping Whether to filter the data to a specific group ID for this box.
-                @param groupId The group ID for this box. Data points from @c data will only be used for
-                    his box if their group ID is @c groupId. Has no effect if @c useGrouping if @c false.
+                @param groupId The group ID for this box. Data points from @c data will only be used
+                    for his box if their group ID is @c groupId.
+                    Has no effect if @c useGrouping if @c false.
                 @param schemeIndex The index into the icon/color/brush schemes.
-                @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-                    The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-                    when formatting it for an error message.*/
+                @throws std::runtime_error If any columns can't be found by name, throws an
+                    exception.\n The exception's @c what() message is UTF-8 encoded,
+                    so pass it to @c wxString::FromUTF8() when formatting it for
+                    an error message.*/
             void SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName,
-                         const Data::GroupIdType groupId,
-                         const size_t schemeIndex);
+                         const Data::GroupIdType groupId, const size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
             [[nodiscard]]
             const std::shared_ptr<const Data::Dataset>& GetDataset() const noexcept
-                { return m_data; }
+                {
+                return m_data;
+                }
+
             /// @}
 
             /// @name Axis Functions
@@ -216,19 +252,24 @@ namespace Wisteria::Graphs
             ///      is aligned with.
             [[nodiscard]]
             double GetXAxisPosition() const noexcept
-                { return m_xAxisPosition; }
+                {
+                return m_xAxisPosition;
+                }
+
             /** @brief Sets where the box should be aligned on the X axis.
                 @param position The position on the X axis to place the box.
                 @note The parent box plot will manage this value, you do not need to call
                     them when creating a box.*/
-            void SetXAxisPosition(const double position) noexcept
-                { m_xAxisPosition = position; }
+            void SetXAxisPosition(const double position) noexcept { m_xAxisPosition = position; }
+
             /// @}
 
             /// @returns The box's index into the icon/color/brush schemes.
             [[nodiscard]]
             size_t GetSchemeIndex() const noexcept
-                { return m_schemeIndex; }
+                {
+                return m_schemeIndex;
+                }
 
             /// @brief Calculates the outlier and box ranges.
             void Calculate();
@@ -275,9 +316,9 @@ namespace Wisteria::Graphs
             @param shapes The shape scheme to use for the points.\n
                 Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
-            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
+                         std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
+                         std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
+                         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
         /** @brief Sets the data.
             @details Also sets the percentiles used for the box range (must be between 1 and 49)
@@ -290,8 +331,8 @@ namespace Wisteria::Graphs
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-                The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-                when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to @c
+                wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt);
@@ -308,10 +349,14 @@ namespace Wisteria::Graphs
             assert(index < m_boxes.size() && L"Invalid index in GetBox()!");
             return m_boxes.at(index);
             }
+
         /// @returns The number of boxes (i.e., data distributions) being plotted.
         [[nodiscard]]
         size_t GetBoxCount() const noexcept
-            { return m_boxes.size(); }
+            {
+            return m_boxes.size();
+            }
+
         /// @}
 
         /// @name Label Functions
@@ -321,11 +366,14 @@ namespace Wisteria::Graphs
         /// @returns The numeric precision displayed on the labels.
         [[nodiscard]]
         uint8_t GetLabelPrecision() const noexcept
-            { return m_labelPrecision; }
+            {
+            return m_labelPrecision;
+            }
+
         /// @brief Sets the numeric precision for labels in the plot. (Default is 1.)
         /// @param precision The precision to use for the labels.
-        void SetLabelPrecision(const uint8_t precision) noexcept
-            { m_labelPrecision = precision; }
+        void SetLabelPrecision(const uint8_t precision) noexcept { m_labelPrecision = precision; }
+
         /// @}
 
         /// @name Legend Functions
@@ -335,12 +383,15 @@ namespace Wisteria::Graphs
         /// @returns Whether a legend is included directly on the plot (when showing just one box).
         [[nodiscard]]
         bool IsOverlayingLegend() const noexcept
-            { return m_overlayLegend; }
+            {
+            return m_overlayLegend;
+            }
+
         /** @brief Overlays a legend on top of the plot.
             @param overlay @c true to include the legend on the plot.
             @note This only applies when a displaying single-series box.*/
-        void IncludedOverlayingLegend(const bool overlay) noexcept
-            { m_overlayLegend = overlay; }
+        void IncludedOverlayingLegend(const bool overlay) noexcept { m_overlayLegend = overlay; }
+
         /** @brief Builds and returns a legend for single-box plots,
                 showing the various statistics.
             @details This can then be managed by the parent canvas and placed next to the plot.
@@ -352,8 +403,8 @@ namespace Wisteria::Graphs
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
+        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+
         /// @}
 
         /// @name Box Effect Functions
@@ -365,38 +416,51 @@ namespace Wisteria::Graphs
         /// @returns The opacity (how opaque or translucent) the box is.
         [[nodiscard]]
         uint8_t GetOpacity() const noexcept
-            { return m_opacity; }
+            {
+            return m_opacity;
+            }
+
         /** @brief Sets he opacity (how opaque or translucent) the box is.
             @param opacity The opacity level.*/
         void SetOpacity(const uint8_t opacity) noexcept
             {
             for (auto& box : m_boxes)
-                { box.SetOpacity(opacity); }
+                {
+                box.SetOpacity(opacity);
+                }
             m_opacity = opacity;
             }
 
         /// @returns The effect (e.g., color gradient) displayed across the box(es).
         [[nodiscard]]
         BoxEffect GetBoxEffect() const noexcept
-            { return m_boxEffect; }
+            {
+            return m_boxEffect;
+            }
+
         /** @brief Sets the effect displayed on the boxes.
             @param boxEffect The effect to use.*/
         void SetBoxEffect(const BoxEffect boxEffect) noexcept
             {
             for (auto& box : m_boxes)
-                { box.SetBoxEffect(boxEffect); }
+                {
+                box.SetBoxEffect(boxEffect);
+                }
             m_boxEffect = boxEffect;
             }
 
         /// @returns How the corners of the boxes are drawn.
         [[nodiscard]]
         BoxCorners GetBoxCorners() const noexcept
-            { return m_boxCorners; }
+            {
+            return m_boxCorners;
+            }
+
         /** @brief Sets how the corners of the boxes are drawn.
             @param boxCorners The corner display to use.
             @note Rounded corners are only applied if drawing with BoxEffect::Solid.*/
-        void SetBoxCorners(const BoxCorners boxCorners) noexcept
-            { m_boxCorners = boxCorners; }
+        void SetBoxCorners(const BoxCorners boxCorners) noexcept { m_boxCorners = boxCorners; }
+
         /// @}
 
         /// @name Label & Point Functions
@@ -406,59 +470,80 @@ namespace Wisteria::Graphs
         /// @returns @c true if displaying labels on the hinges, midpoint, and outliers.
         [[nodiscard]]
         bool IsShowingLabels() const noexcept
-            { return m_displayLabels; }
+            {
+            return m_displayLabels;
+            }
+
         /// @brief Sets whether to display labels on the hinges, midpoint, and outliers.
         /// @param display Whether to display the labels.
         void ShowLabels(const bool display = true) noexcept
             {
             for (auto& box : m_boxes)
-                { box.ShowLabels(display); }
+                {
+                box.ShowLabels(display);
+                }
             m_displayLabels = display;
             }
 
         /// @returns @c true if all data points are being displayed.
         [[nodiscard]]
         bool IsShowingAllPoints() const noexcept
-            { return m_showAllPoints; }
+            {
+            return m_showAllPoints;
+            }
+
         /// @brief Specifies whether to display all data points on the boxes and whiskers.
         /// @param display Whether to display the points.
         /// @note Outliers are always displayed as points.
         void ShowAllPoints(const bool display = true) noexcept
             {
             for (auto& box : m_boxes)
-                { box.ShowAllPoints(display); }
+                {
+                box.ShowAllPoints(display);
+                }
             m_showAllPoints = display;
             }
 
         /// @returns The default color of the points.
         [[nodiscard]]
         wxColour GetPointColor() const noexcept
-            { return m_pointColour; }
+            {
+            return m_pointColour;
+            }
+
         /** @brief Sets the default color of the points.
             @param color The color to use.*/
         void SetPointColor(const wxColour color) noexcept
             {
             if (color.IsOk())
-                { m_pointColour = color; }
+                {
+                m_pointColour = color;
+                }
             }
+
         /// @}
 
         /// @private
         [[nodiscard]]
         const BoxAndWhisker& GetBox(const size_t index) const
-            { return m_boxes[index]; }
+            {
+            return m_boxes[index];
+            }
+
         /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint)
-            { return CreateLegend(LegendOptions().PlacementHint(hint)); }
-    private:
+        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
+            {
+            return CreateLegend(LegendOptions().PlacementHint(hint));
+            }
+
+      private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.
             @note If only one box is on the plot, then no labels will be shown on the bottom X axis
                 (even if a custom label is provided for where the box is). To override this,
-                call `GetBottomXAxis().ShowAxisLabels(true)` after adding the box and its custom label.*/
+                call `GetBottomXAxis().ShowAxisLabels(true)` after adding the box and its custom
+           label.*/
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes(wxDC& dc) final;
 
@@ -477,7 +562,7 @@ namespace Wisteria::Graphs
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
