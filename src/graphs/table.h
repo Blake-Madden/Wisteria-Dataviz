@@ -291,10 +291,10 @@ namespace Wisteria::Graphs
             /// @param showRightBorder Whether to show the right border.
             /// @param showBottomBorder Whether to show the bottom border.
             /// @param showLeftBorder Whether to show the left border.
-            TableCell(const CellValueType& value, const wxColour bgColor,
+            TableCell(CellValueType value, const wxColour bgColor,
                       const bool showTopBorder = true, const bool showRightBorder = true,
                       const bool showBottomBorder = true, const bool showLeftBorder = true)
-                : m_value(value), m_bgColor(bgColor), m_showTopBorder(showTopBorder),
+                : m_value(std::move(value)), m_bgColor(bgColor), m_showTopBorder(showTopBorder),
                   m_showRightBorder(showRightBorder), m_showBottomBorder(showBottomBorder),
                   m_showLeftBorder(showLeftBorder)
                 {

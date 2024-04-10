@@ -1040,10 +1040,10 @@ namespace Wisteria::Graphs
                     {
                     continue;
                     }
-                const auto val = GetCell(row, column).GetDoubleValue();
+                auto val = GetCell(row, column).GetDoubleValue();
                 if (!std::isnan(val))
                     {
-                    values.push_back(val);
+                    values.push_back(std::move(val));
                     }
                 }
             const auto meanVal = statistics::mean(values);
