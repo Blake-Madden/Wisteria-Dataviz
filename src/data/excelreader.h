@@ -30,7 +30,7 @@ namespace Wisteria::Data
         /// @param filePath The path to the Excel file to load.
         explicit ExcelReader(wxString filePath) : m_filePath(std::move(filePath))
             {
-            LoadFile(filePath);
+            LoadFile(m_filePath);
             }
 
         /// @brief Loads an Excel file.
