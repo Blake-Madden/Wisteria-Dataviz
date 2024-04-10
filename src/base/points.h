@@ -44,7 +44,7 @@ namespace Wisteria::GraphItems
         Point2D(GraphItems::GraphItemInfo itemInfo, const size_t radius,
                 const Wisteria::Icons::IconShape& shape = Wisteria::Icons::IconShape::Circle,
                 const wxBitmapBundle* img = nullptr)
-            : GraphItemBase(std::move(itemInfo), m_shape(shape), m_iconImage(img), m_radius(radius)
+            : GraphItemBase(std::move(itemInfo)), m_shape(shape), m_iconImage(img), m_radius(radius)
             {
             }
 
