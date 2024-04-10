@@ -1025,9 +1025,10 @@ namespace Wisteria::GraphItems
                 if it is determined that that is the best way to fit them along the axis.
             @param enable Whether to enable auto stacking.
             @note By default, this is turned on for horizontal axes,
-                but turned off for vertical axes.\nStacking labels on a vertical axis
-                can look a bit odd (especially with text labels), so caller should
-                explicitly enable this for vertical axes if they really want it.*/
+                but turned off for vertical axes.\n
+                Stacking labels on a vertical axis can look a bit odd
+                (especially with text labels), so caller should explicitly enable this
+                for vertical axes if they really want it.*/
         void EnableAutoStacking(const bool enable) noexcept { m_enableAutoStacking = enable; }
 
         /// @returns @c true if axis can override label stacking if it determines that is the
