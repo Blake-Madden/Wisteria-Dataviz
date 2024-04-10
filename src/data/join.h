@@ -19,7 +19,7 @@ namespace Wisteria::Data
     /// @brief Interface for joining datasets.
     class DatasetJoin
         {
-    public:
+      public:
         /// @private
         DatasetJoin() = default;
         /// @private
@@ -62,13 +62,13 @@ namespace Wisteria::Data
             @throws std::runtime_error If invalid columns or dataset are provided,
                 throws an exception.*/
         [[nodiscard]]
-        static std::shared_ptr<Dataset> LeftJoinUnique(
-            const std::shared_ptr<const Dataset>& leftDataset,
-            const std::shared_ptr<const Dataset>& rightDataset,
-            const std::vector<std::pair<wxString, wxString>>& byColumns,
-            const wxString& suffix = L".x");
+        static std::shared_ptr<Dataset>
+        LeftJoinUnique(const std::shared_ptr<const Dataset>& leftDataset,
+                       const std::shared_ptr<const Dataset>& rightDataset,
+                       const std::vector<std::pair<wxString, wxString>>& byColumns,
+                       const wxString& suffix = L".x");
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 
