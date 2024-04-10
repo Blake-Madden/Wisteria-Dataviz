@@ -68,10 +68,13 @@ bool HtmlTablePrintout::OnPrintPage(int page)
                 int currentPageHeight = 0;
                 for (int i = m_pageStarts[page - 1].first; i <= m_pageStarts[page - 1].second; ++i)
                     {
-                    htmlRenderer.SetHtmlText(m_htmlTables[i]);
-                    htmlRenderer.Render(marginX, bodyStart + currentPageHeight);
-                    currentPageHeight +=
-                        htmlRenderer.GetTotalHeight() + wxSizerFlags::GetDefaultBorder();
+                    if (i < m_htmlTables.size())
+                        {
+                        htmlRenderer.SetHtmlText(m_htmlTables[i]);
+                        htmlRenderer.Render(marginX, bodyStart + currentPageHeight);
+                        currentPageHeight +=
+                            htmlRenderer.GetTotalHeight() + wxSizerFlags::GetDefaultBorder();
+                        }
                     }
             };
 
