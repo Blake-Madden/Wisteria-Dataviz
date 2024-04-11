@@ -45,11 +45,7 @@ namespace Wisteria::UI
         /// @private
         WarningMessagesDlg(const WarningMessagesDlg&) = delete;
         /// @private
-        WarningMessagesDlg(WarningMessagesDlg&&) = delete;
-        /// @private
         WarningMessagesDlg& operator=(const WarningMessagesDlg&) = delete;
-        /// @private
-        WarningMessagesDlg& operator=(WarningMessagesDlg&&) = delete;
 
         /** @brief Creation, used in conjunction with empty constructor.
             @param parent The parent window.
