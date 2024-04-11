@@ -12,21 +12,21 @@
 #ifndef __VARIABLE_SELECT_DLG_H__
 #define __VARIABLE_SELECT_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/valgen.h>
-#include <wx/listctrl.h>
+#include "../../data/dataset.h"
+#include <wx/artprov.h>
 #include <wx/dialog.h>
 #include <wx/gbsizer.h>
+#include <wx/listctrl.h>
 #include <wx/stattext.h>
-#include <wx/artprov.h>
+#include <wx/string.h>
+#include <wx/valgen.h>
 #include <wx/wupdlock.h>
-#include "../../data/dataset.h"
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
     /** @brief Dialog for selecting variables for an analysis.
-    
+
         @par Example:
         @code
          // This will create a selection dialog with a list
@@ -43,7 +43,7 @@ namespace Wisteria::UI
         @endcode*/
     class VariableSelectDlg final : public wxDialog
         {
-    public:
+      public:
         /// @brief Definition for a variable list for a user to select.
         /// @details Examples of this could be a list of categoricals,
         ///     a single grouping variable, an X variable, etc.\n
@@ -52,7 +52,8 @@ namespace Wisteria::UI
         class VariableListInfo
             {
             friend class VariableSelectDlg;
-        public:
+
+          public:
             /// @brief Sets the list's label.
             /// @param label The label to display above the variable list.
             /// @returns A self reference.
@@ -61,6 +62,7 @@ namespace Wisteria::UI
                 m_label = label;
                 return *this;
                 }
+
             /// @brief Sets whether the list can hold multiple variables or just one.
             /// @details The default is for the list to allow multiple variables.
             /// @param singleSelection @c true to only allow one variable to be
@@ -71,6 +73,7 @@ namespace Wisteria::UI
                 m_singleSelection = singleSelection;
                 return *this;
                 }
+
             /// @brief Sets whether a variable must be selected for this list.
             /// @details The default is for the list to be required.
             /// @param required @c true to force the user to select a variable for this list.
@@ -80,7 +83,8 @@ namespace Wisteria::UI
                 m_required = required;
                 return *this;
                 }
-        private:
+
+          private:
             wxString m_label;
             bool m_singleSelection{ false };
             bool m_required{ true };
@@ -88,7 +92,8 @@ namespace Wisteria::UI
 
         /** @brief Constructor.
             @param parent The dialog's parent.
-            @param columnInfo The list of columns (and their respective data types) to choose from.\n
+            @param columnInfo The list of columns (and their respective data types) to
+                choose from.\n
                 This will usually be the result from a call to `Data::Dataset::ReadColumnInfo()`.
             @param varInfo Definitions for the variable lists that the user can specify.
             @param id The dialog's ID.
@@ -97,12 +102,11 @@ namespace Wisteria::UI
             @param size The default size of the dialog.
             @param style The dialog's style.*/
         VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
-                          const std::vector<VariableListInfo>& varInfo,
-                          wxWindowID id = wxID_ANY,
+                          const std::vector<VariableListInfo>& varInfo, wxWindowID id = wxID_ANY,
                           const wxString& caption = _(L"Select Variables"),
                           const wxPoint& pos = wxDefaultPosition,
                           const wxSize& size = wxDefaultSize,
-                          long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
+                          long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private
         VariableSelectDlg() = delete;
         /// @private
@@ -113,12 +117,13 @@ namespace Wisteria::UI
         /// @brief Gets the variables that a user has moved into a given list.
         /// @details The list is accessed by index, in the order that the variable definitions
         ///     were passed to the constructor. For example, if the VariableListInfo passed to the
-        ///     constructor included a continuous and grouping set of variable lists (in that order),
-        ///     then `1` will return the variables in the grouping list.
+        ///     constructor included a continuous and grouping set of variable lists (in that
+        ///     order), then `1` will return the variables in the grouping list.
         /// @param listIndex The index of the client-defined variable list.
         /// @returns A list of the variable names that the user has selected for a given list.
         std::vector<wxString> GetSelectedVariables(const size_t listIndex) const;
-    private:
+
+      private:
         struct VariableList
             {
             wxString m_label;
@@ -150,7 +155,7 @@ namespace Wisteria::UI
         wxListView* m_mainVarlist{ nullptr };
         std::vector<VariableList> m_varLists;
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

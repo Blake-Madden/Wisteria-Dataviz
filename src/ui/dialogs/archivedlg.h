@@ -44,11 +44,7 @@ namespace Wisteria::UI
         /// @private
         ArchiveDlg(const ArchiveDlg&) = delete;
         /// @private
-        ArchiveDlg(ArchiveDlg&&) = delete;
-        /// @private
         ArchiveDlg& operator=(const ArchiveDlg&) = delete;
-        /// @private
-        ArchiveDlg& operator=(ArchiveDlg&&) = delete;
 
         /// @returns The path of the selected archive file.
         [[nodiscard]]

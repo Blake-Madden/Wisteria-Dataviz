@@ -11,14 +11,14 @@
 using namespace Wisteria::UI;
 
 //-------------------------------------------------------------
-GetDirFilterDialog::GetDirFilterDialog(wxWindow* parent, const wxString& fullFileFilter,
-                    wxWindowID id /*= wxID_ANY*/,
-                    const wxString& caption /*= _(L"Select Directory")*/,
-                    const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
-                    long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/) :
-                m_fullFileFilter(fullFileFilter)
+GetDirFilterDialog::GetDirFilterDialog(
+    wxWindow* parent, const wxString& fullFileFilter, wxWindowID id /*= wxID_ANY*/,
+    const wxString& caption /*= _(L"Select Directory")*/,
+    const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+    long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/)
+    : m_fullFileFilter(fullFileFilter)
     {
-    SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS|wxWS_EX_CONTEXTHELP);
+    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
     DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
     CreateControls();
@@ -38,14 +38,18 @@ void GetDirFilterDialog::OnOK([[maybe_unused]] wxCommandEvent& event)
     if (m_filePath.empty() || !wxFileName::DirExists(m_filePath))
         {
         wxMessageBox(_(L"Please select a valid folder."), _(L"Invalid Folder"),
-                     wxICON_EXCLAMATION|wxOK, this);
+                     wxICON_EXCLAMATION | wxOK, this);
         return;
         }
 
     if (IsModal())
-        { EndModal(wxID_OK); }
+        {
+        EndModal(wxID_OK);
+        }
     else
-        { Show(false); }
+        {
+        Show(false);
+        }
     }
 
 //-------------------------------------------------------------
@@ -55,7 +59,9 @@ void GetDirFilterDialog::OnFolderButtonClick([[maybe_unused]] wxCommandEvent& ev
     wxDirDialog dirDlg(this);
     dirDlg.SetPath(m_filePath);
     if (dirDlg.ShowModal() != wxID_OK)
-        { return; }
+        {
+        return;
+        }
     m_filePath = dirDlg.GetPath();
     TransferDataToWindow();
     SetFocus();
@@ -67,45 +73,48 @@ void GetDirFilterDialog::CreateControls()
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(fileBrowseBoxSizer, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(fileBrowseBoxSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
 
-    wxTextCtrl* filePathEdit = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
-        wxSize(FromDIP(wxSize(600, 600)).GetWidth(), -1), wxTE_RICH2|wxBORDER_THEME,
-        wxGenericValidator(&m_filePath) );
+    wxTextCtrl* filePathEdit =
+        new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
+                       wxSize(FromDIP(wxSize(600, 600)).GetWidth(), -1),
+                       wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
     filePathEdit->AutoCompleteFileNames();
     fileBrowseBoxSizer->Add(filePathEdit, 1, wxEXPAND);
 
-    wxBitmapButton* fileBrowseButton = new wxBitmapButton(this, ID_FOLDER_BROWSE_BUTTON,
-        wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
+    wxBitmapButton* fileBrowseButton =
+        new wxBitmapButton(this, ID_FOLDER_BROWSE_BUTTON,
+                           wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
     fileBrowseBoxSizer->Add(fileBrowseButton, 0, wxALIGN_CENTER_VERTICAL);
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(fileTypeSizer, 0, wxEXPAND);
     fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:"),
-                                        wxDefaultPosition, wxDefaultSize, 0), 0,
-                                        wxALIGN_CENTER_VERTICAL|wxLEFT,
-                                        wxSizerFlags::GetDefaultBorder());
+                                        wxDefaultPosition, wxDefaultSize, 0),
+                       0, wxALIGN_CENTER_VERTICAL | wxLEFT, wxSizerFlags::GetDefaultBorder());
     wxArrayString choiceStrings;
     wxStringTokenizer tkz(m_fullFileFilter, L"|", wxTOKEN_STRTOK);
-    while (tkz.HasMoreTokens() )
+    while (tkz.HasMoreTokens())
         {
         wxString currentFilter = tkz.GetNextToken();
         if (currentFilter.length() && currentFilter[0] != L'*')
-            { choiceStrings.Add(currentFilter); }
+            {
+            choiceStrings.Add(currentFilter);
+            }
         }
     m_fileFilterCombo = new wxChoice(this, wxID_ANY, wxDefaultPosition,
-                                     wxSize(FromDIP(wxSize(100, 100)).GetWidth(),-1),
+                                     wxSize(FromDIP(wxSize(100, 100)).GetWidth(), -1),
                                      choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
-    fileTypeSizer->Add(m_fileFilterCombo, 1, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    fileTypeSizer->Add(m_fileFilterCombo, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
 
-    wxCheckBox* recurseDirsCheckBox = new wxCheckBox(this, wxID_ANY,
-        _(L"&Search directories recursively"), wxDefaultPosition, wxDefaultSize, 0,
-        wxGenericValidator(&m_isRecursive) );
-    mainSizer->Add(recurseDirsCheckBox, 0, wxALIGN_LEFT|wxALL, wxSizerFlags::GetDefaultBorder());
+    wxCheckBox* recurseDirsCheckBox =
+        new wxCheckBox(this, wxID_ANY, _(L"&Search directories recursively"), wxDefaultPosition,
+                       wxDefaultSize, 0, wxGenericValidator(&m_isRecursive));
+    mainSizer->Add(recurseDirsCheckBox, 0, wxALIGN_LEFT | wxALL, wxSizerFlags::GetDefaultBorder());
     mainSizer->AddStretchSpacer(1);
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0,
-        wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
+                   wxSizerFlags::GetDefaultBorder());
 
     SetSizerAndFit(mainSizer);
 

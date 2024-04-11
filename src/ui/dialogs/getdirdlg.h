@@ -12,17 +12,17 @@
 #ifndef __GET_DIR_DLG_H__
 #define __GET_DIR_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/string.h>
-#include <wx/statline.h>
-#include <wx/valgen.h>
-#include <wx/dirdlg.h>
-#include <wx/combobox.h>
-#include <wx/valtext.h>
-#include <wx/tokenzr.h>
-#include <wx/filename.h>
-#include <wx/artprov.h>
 #include "dialogwithhelp.h"
+#include <wx/artprov.h>
+#include <wx/combobox.h>
+#include <wx/dirdlg.h>
+#include <wx/filename.h>
+#include <wx/statline.h>
+#include <wx/string.h>
+#include <wx/tokenzr.h>
+#include <wx/valgen.h>
+#include <wx/valtext.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -31,7 +31,7 @@ namespace Wisteria::UI
             and whether the search should be recursive.*/
     class GetDirFilterDialog final : public DialogWithHelp
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent window.
             @param fullFileFilter The file filter.
@@ -41,27 +41,26 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
         GetDirFilterDialog(wxWindow* parent, const wxString& fullFileFilter,
-            wxWindowID id = wxID_ANY,
-            const wxString& caption = _(L"Select Directory"),
-            const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+                           wxWindowID id = wxID_ANY,
+                           const wxString& caption = _(L"Select Directory"),
+                           const wxPoint& pos = wxDefaultPosition,
+                           const wxSize& size = wxDefaultSize,
+                           long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private
         GetDirFilterDialog(const GetDirFilterDialog&) = delete;
         /// @private
-        GetDirFilterDialog(GetDirFilterDialog&&) = delete;
-        /// @private
         GetDirFilterDialog& operator=(const GetDirFilterDialog&) = delete;
-        /// @private
-        GetDirFilterDialog& operator=(GetDirFilterDialog&&) = delete;
 
         /// @returns The path of the selected folder.
         [[nodiscard]]
         const wxString& GetPath() const noexcept
-            { return m_filePath; }
+            {
+            return m_filePath;
+            }
+
         /** @brief Sets the path of the default selected folder.
             @param path The default folder path to select.*/
-        void SetPath(const wxString& path)
-            { m_filePath = path; }
+        void SetPath(const wxString& path) { m_filePath = path; }
 
         /** @brief Sets the selected file filter.
             @param filter The file filter to display.*/
@@ -74,6 +73,7 @@ namespace Wisteria::UI
                 TransferDataToWindow();
                 }
             }
+
         /// @returns The selected file filter.
         [[nodiscard]]
         wxString GetSelectedFileFilter()
@@ -81,23 +81,27 @@ namespace Wisteria::UI
             TransferDataFromWindow();
             return m_fileFilterCombo->GetString(m_selectedFileFilter);
             }
+
         /// @returns @c true if "recursive" checkbox is checked.
         [[nodiscard]]
         bool IsRecursive() const noexcept
-            { return m_isRecursive; }
-    private:
+            {
+            return m_isRecursive;
+            }
+
+      private:
         void CreateControls();
         void OnFolderButtonClick([[maybe_unused]] wxCommandEvent& event);
         void OnOK([[maybe_unused]] wxCommandEvent& event);
 
-        static constexpr int ID_FOLDER_BROWSE_BUTTON = wxID_HIGHEST;
+        constexpr static int ID_FOLDER_BROWSE_BUTTON = wxID_HIGHEST;
         wxString m_filePath;
         wxString m_fullFileFilter;
         int m_selectedFileFilter{ 0 };
         bool m_isRecursive{ true };
         wxChoice* m_fileFilterCombo{ nullptr };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 
