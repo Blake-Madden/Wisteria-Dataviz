@@ -12,14 +12,14 @@
 #ifndef __LIST_DIALOG_H__
 #define __LIST_DIALOG_H__
 
-#include <wx/wx.h>
-#include <wx/dialog.h>
-#include <wx/valgen.h>
-#include <wx/checklst.h>
-#include <wx/bmpbuttn.h>
+#include "../../util/logfile.h"
 #include "../controls/listctrlex.h"
 #include "../controls/searchpanel.h"
-#include "../../util/logfile.h"
+#include <wx/bmpbuttn.h>
+#include <wx/checklst.h>
+#include <wx/dialog.h>
+#include <wx/valgen.h>
+#include <wx/wx.h>
 
 /// @brief Which features to include for a ListDlg.
 enum ListDlgFlags
@@ -27,11 +27,11 @@ enum ListDlgFlags
     /// @brief No ribbon buttons.
     LD_NO_BUTTONS = 0,
     /// @brief A save button.
-    LD_SAVE_BUTTON  = 1,
+    LD_SAVE_BUTTON = 1,
     /// @brief A copy button.
     LD_COPY_BUTTON = 1 << 1,
     /// @brief A print button.
-    LD_PRINT_BUTTON  = 1 << 2,
+    LD_PRINT_BUTTON = 1 << 2,
     /// @brief A select all button.
     LD_SELECT_ALL_BUTTON = 1 << 3,
     /// @brief A find button.
@@ -61,7 +61,7 @@ enum ListDlgFlags
 /// @brief A dialog with a list control and various buttons.
 class ListDlg final : public wxDialog
     {
-public:
+  public:
     /** @brief Constructor.
         @param values The values to fill into the list.
         @param usecheckBoxes @c true to show checkboxes in the list control.
@@ -76,41 +76,30 @@ public:
         @param pos The dialog's position.
         @param size The dialog's size.
         @param style The dialog's style.*/
-    ListDlg(wxWindow* parent, const wxArrayString& values,
-        const bool usecheckBoxes,
-        const wxColour bkColor,
-        const wxColour hoverColor,
-        const wxColour foreColor,
-        const long buttonStyle = LD_NO_BUTTONS,
-        wxWindowID id = wxID_ANY,
-        const wxString& caption = wxString{},
-        const wxString& label = wxString{},
-        const wxPoint& pos = wxDefaultPosition,
-        const wxSize& size = wxSize(600, 250),
-        long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-     /** @brief Constructor that won't show the checkbox.
-         @param parent The parent window.
-         @param bkColor The dialog's background color.
-         @param hoverColor The list control's hover color.
-         @param foreColor The dialog's foreground color.
-         @param buttonStyle The ListDlgFlags style for which features to include.
-         @param id The dialog's ID.
-         @param caption The dialog's caption.
-         @param label The checkbox's label.
-         @param pos The dialog's position.
-         @param size The dialog's size.
-         @param style The dialog's style.*/
-     ListDlg(wxWindow* parent,
-             const wxColour bkColor,
-             const wxColour hoverColor,
-             const wxColour foreColor,
-             const long buttonStyle = LD_NO_BUTTONS,
-             wxWindowID id = wxID_ANY,
-             const wxString& caption = wxString{},
-             const wxString& label = wxString{},
-             const wxPoint& pos = wxDefaultPosition,
-             const wxSize& size = wxSize(600, 250),
-             long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+    ListDlg(wxWindow* parent, const wxArrayString& values, const bool usecheckBoxes,
+            const wxColour bkColor, const wxColour hoverColor, const wxColour foreColor,
+            const long buttonStyle = LD_NO_BUTTONS, wxWindowID id = wxID_ANY,
+            const wxString& caption = wxString{}, const wxString& label = wxString{},
+            const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(600, 250),
+            long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+    /** @brief Constructor that won't show the checkbox.
+        @param parent The parent window.
+        @param bkColor The dialog's background color.
+        @param hoverColor The list control's hover color.
+        @param foreColor The dialog's foreground color.
+        @param buttonStyle The ListDlgFlags style for which features to include.
+        @param id The dialog's ID.
+        @param caption The dialog's caption.
+        @param label The checkbox's label.
+        @param pos The dialog's position.
+        @param size The dialog's size.
+        @param style The dialog's style.*/
+    ListDlg(wxWindow* parent, const wxColour bkColor, const wxColour hoverColor,
+            const wxColour foreColor, const long buttonStyle = LD_NO_BUTTONS,
+            wxWindowID id = wxID_ANY, const wxString& caption = wxString{},
+            const wxString& label = wxString{}, const wxPoint& pos = wxDefaultPosition,
+            const wxSize& size = wxSize(600, 250),
+            long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
     /// @private
     ListDlg(const ListDlg&) = delete;
     /// @private
@@ -119,37 +108,57 @@ public:
     /// @returns The list's data provider.
     [[nodiscard]]
     std::shared_ptr<ListCtrlExDataProvider>& GetData()
-        { return m_data; }
+        {
+        return m_data;
+        }
+
     /// @returns The list.
     [[nodiscard]]
     ListCtrlEx* GetListCtrl() noexcept
-        { return m_list; }
+        {
+        return m_list;
+        }
+
     /// @returns The dialog's ribbon.
     [[nodiscard]]
     wxRibbonBar* GetRibbon() noexcept
-        { return m_ribbon; }
+        {
+        return m_ribbon;
+        }
+
     /// @returns An array of the selected strings.
     [[nodiscard]]
     const wxArrayString& GetSelectedItems() const noexcept
-        { return m_selectedItems; }
+        {
+        return m_selectedItems;
+        }
+
     /// @returns @c true if the checkbox at the bottom of the dialog is checked.
     [[nodiscard]]
     bool IsCheckBoxChecked() const noexcept
-        { return m_dontShowAgain; }
+        {
+        return m_dontShowAgain;
+        }
+
     /// @brief Sets the label for the checkbox on the dialog.
     /// @param label The text to display.
     void SetCheckBoxLabel(const wxString label)
         {
         if (m_checkBox)
-            { m_checkBox->SetLabel(label); }
+            {
+            m_checkBox->SetLabel(label);
+            }
         }
+
     /// @brief Sets the help sort topic for the list control.
     /// @param helpProjectPath The help folder.
     /// @param topicPath The subpath to the topic.
     void SetSortHelpTopic(const wxString& helpProjectPath, const wxString& topicPath)
         {
         if (m_list)
-            { m_list->SetSortHelpTopic(helpProjectPath, topicPath); }
+            {
+            m_list->SetSortHelpTopic(helpProjectPath, topicPath);
+            }
         }
 
     /// @brief Sets the log file reporter to read and write from
@@ -165,8 +174,7 @@ public:
         OnReadLog(event);
         }
 
-private:
-
+  private:
     void BindEvents();
     /// Creates the controls and sizers
     void CreateControls();
@@ -218,6 +226,6 @@ private:
     wxDateTime m_sourceFileLastModified;
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__LIST_DIALOG_H__

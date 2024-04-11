@@ -12,20 +12,20 @@
 #ifndef __IMAGEEXPORT_DLG_H__
 #define __IMAGEEXPORT_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/valgen.h>
-#include <wx/combobox.h>
-#include <wx/fontdlg.h>
-#include <wx/tooltip.h>
-#include <wx/image.h>
-#include <wx/bitmap.h>
-#include <wx/spinctrl.h>
-#include <wx/dialog.h>
-#include <wx/filename.h>
-#include <wx/mstream.h>
+#include "../../i18n-check/src/donttranslate.h"
 #include "../../math/mathematics.h"
 #include "../controls/thumbnail.h"
-#include "../../i18n-check/src/donttranslate.h"
+#include <wx/bitmap.h>
+#include <wx/combobox.h>
+#include <wx/dialog.h>
+#include <wx/filename.h>
+#include <wx/fontdlg.h>
+#include <wx/image.h>
+#include <wx/mstream.h>
+#include <wx/spinctrl.h>
+#include <wx/tooltip.h>
+#include <wx/valgen.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -70,7 +70,7 @@ namespace Wisteria::UI
     ///     need to use this interface.
     class ImageExportDlg final : public wxDialog
         {
-    public:
+      public:
         /** @brief Default constructor.
             @param parent The parent window.
             @param bitmapType The image format to export as.
@@ -81,19 +81,16 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        ImageExportDlg(wxWindow* parent, const wxBitmapType bitmapType,
-                       const wxBitmap& previewImg,
-                       const ImageExportOptions& options,
-                       wxWindowID id = wxID_ANY,
+        ImageExportDlg(wxWindow* parent, const wxBitmapType bitmapType, const wxBitmap& previewImg,
+                       const ImageExportOptions& options, wxWindowID id = wxID_ANY,
                        const wxString& caption = _(L"Image Export Options"),
-                       const wxPoint& pos = wxDefaultPosition,
-                       const wxSize& size = wxDefaultSize,
-                       long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN) :
-                       m_options(options),
-                       m_originalBitmap(previewImg)
+                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                       long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN)
+            : m_options(options), m_originalBitmap(previewImg)
             {
             Create(parent, bitmapType, id, caption, pos, size, style);
             }
+
         /// @brief Two-step constructor.
         ImageExportDlg() = default;
         /// @private
@@ -119,7 +116,10 @@ namespace Wisteria::UI
         /// @returns The options selected by the user.
         [[nodiscard]]
         ImageExportOptions GetOptions() const noexcept
-            { return m_options; }
+            {
+            return m_options;
+            }
+
         /** @brief Sets the help topic for the dialog.
             @param helpProjectDirectory The folder/base URL where the topics are stored.
             @param topicPath The path (after @c helpProjectDirectory) to the topic.*/
@@ -128,21 +128,23 @@ namespace Wisteria::UI
             m_helpProjectFolder = helpProjectDirectory;
             m_helpTopic = topicPath;
             }
-    private:
+
+      private:
         void CreateControls(const wxBitmapType bitmapType);
 
         void OnOK([[maybe_unused]] wxCommandEvent& event);
         void OnOptionsChanged([[maybe_unused]] wxCommandEvent& event);
         void OnSizeChanged(wxSpinEvent& event);
+
         void OnHelpClicked([[maybe_unused]] wxCommandEvent& event)
             {
             if (m_helpTopic.length())
                 {
-                wxLaunchDefaultBrowser(
-                    wxFileName::FileNameToURL(m_helpProjectFolder +
-                                              wxFileName::GetPathSeparator() + m_helpTopic));
+                wxLaunchDefaultBrowser(wxFileName::FileNameToURL(
+                    m_helpProjectFolder + wxFileName::GetPathSeparator() + m_helpTopic));
                 }
             }
+
         void OnContextHelp([[maybe_unused]] wxHelpEvent& event)
             {
             wxCommandEvent cmd;
@@ -166,7 +168,7 @@ namespace Wisteria::UI
         wxString m_helpProjectFolder;
         wxString m_helpTopic;
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

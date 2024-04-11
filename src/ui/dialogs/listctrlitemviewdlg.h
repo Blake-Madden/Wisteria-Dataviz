@@ -12,13 +12,13 @@
 #ifndef __LISTCTRL_ITEM_VIEW_DLG_H__
 #define __LISTCTRL_ITEM_VIEW_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/artprov.h>
-#include <wx/string.h>
-#include <wx/statline.h>
-#include <wx/grid.h>
-#include <wx/utils.h>
 #include <vector>
+#include <wx/artprov.h>
+#include <wx/grid.h>
+#include <wx/statline.h>
+#include <wx/string.h>
+#include <wx/utils.h>
+#include <wx/wx.h>
 
 struct RowTableItem
     {
@@ -42,10 +42,7 @@ class ListRowTable final : public wxGridStringTable
 
     /// @brief Constructor.
     /// @param values The values to show.
-    explicit ListRowTable(std::vector<RowTableItem> values)
-        : m_values(std::move(values))
-        {
-        }
+    explicit ListRowTable(std::vector<RowTableItem> values) : m_values(std::move(values)) {}
 
     /// @private
     [[nodiscard]]
@@ -68,8 +65,8 @@ class ListRowTable final : public wxGridStringTable
         wxCHECK_MSG((row >= 0 && row < GetNumberRows()) && (col >= 0 && col < GetNumberCols()),
                     wxString{}, L"invalid row or column index in ListRowTable");
         return (static_cast<size_t>(row) < m_values.size() && (col == 0 || col == 1)) ?
-            (col == 0 ? m_values[row].m_column : m_values[row].m_value) :
-            wxString{};
+                   (col == 0 ? m_values[row].m_column : m_values[row].m_value) :
+                   wxString{};
         }
 
     /// @private
@@ -89,7 +86,7 @@ class ListRowTable final : public wxGridStringTable
 
 class ListCtrlItemViewDlg final : public wxDialog
     {
-public:
+  public:
     /** @brief Constructor.
         @note This dialog needs a 2-step construction. Call this constructor, fill its list
               via AddValue(), then call Create().*/
@@ -106,12 +103,13 @@ public:
         @param pos The position of this dialog.
         @param size The size of this dialog.
         @param style The style of this dialog.*/
-    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Item"),
-                const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
+                const wxString& caption = _(L"View Item"), const wxPoint& pos = wxDefaultPosition,
+                const wxSize& size = wxDefaultSize,
                 long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
         {
-        SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
-        wxDialog::Create( parent, id, caption, pos, size, style );
+        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+        wxDialog::Create(parent, id, caption, pos, size, style);
 
         CreateControls();
         GetSizer()->Fit(this);
@@ -122,16 +120,17 @@ public:
         return true;
         }
 
-    /** Adds a value to the list.
+    /** @brief Adds a value to the list.
         @param columnName The header of the column.
         @param value The value to display in the grid.*/
     void AddValue(const wxString& columnName, const wxString& value)
         {
-        m_values.emplace_back(RowTableItem(columnName, value));
+        m_values.push_back(RowTableItem(columnName, value));
         }
 
     void OnButtonClick(wxCommandEvent& event);
-private:
+
+  private:
     void CreateControls();
 
     std::vector<RowTableItem> m_values;
@@ -139,6 +138,6 @@ private:
     wxGrid* m_grid{ nullptr };
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__LISTCTRL_ITEM_VIEW_DLG_H__

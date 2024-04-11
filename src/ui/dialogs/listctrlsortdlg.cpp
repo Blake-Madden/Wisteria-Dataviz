@@ -15,12 +15,11 @@ void ListCtrlSortDlg::CreateControls()
     mainSizer->SetMinSize(FromDIP(wxSize(500, 300)));
 
     wxBoxSizer* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(optionsSizer, 1, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(optionsSizer, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
 
     // construct this first so that we can measure the row height
-    m_columnList = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition,
-                                  wxDefaultSize,
-                                  wxLC_VIRTUAL|wxLC_REPORT|wxLC_ALIGN_LEFT|wxBORDER_THEME);
+    m_columnList = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                  wxLC_VIRTUAL | wxLC_REPORT | wxLC_ALIGN_LEFT | wxBORDER_THEME);
     m_columnList->SetSortable(false);
     m_columnList->EnableItemAdd(false);
     m_columnList->EnableGridLines();
@@ -42,35 +41,35 @@ void ListCtrlSortDlg::CreateControls()
     wxBoxSizer* labelsSizer = new wxBoxSizer(wxVERTICAL);
     // align the "sort by" label next to the first row
     wxRect rect;
-    m_columnList->GetItemRect(0,rect);
+    m_columnList->GetItemRect(0, rect);
     labelsSizer->AddSpacer(rect.GetHeight() + 3);
-    wxStaticText* label = new wxStaticText(this, wxID_STATIC, _(L"Sort by:"),
-                                           wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* label =
+        new wxStaticText(this, wxID_STATIC, _(L"Sort by:"), wxDefaultPosition, wxDefaultSize, 0);
     labelsSizer->Add(label, 0);
     if (m_columnChoices.size() > 1)
         {
-        label = new wxStaticText(this, wxID_STATIC, _(L"...then by:"),
-                                 wxDefaultPosition, wxDefaultSize, 0);
+        label = new wxStaticText(this, wxID_STATIC, _(L"...then by:"), wxDefaultPosition,
+                                 wxDefaultSize, 0);
         labelsSizer->Add(label, 0, wxTOP, wxSizerFlags::GetDefaultBorder());
         }
     optionsSizer->Add(labelsSizer, 0, wxALL, wxSizerFlags::GetDefaultBorder());
 
     optionsSizer->Add(m_columnList, 1, wxEXPAND);
 
-    wxStaticText* infoText = new wxStaticText(this, wxID_ANY,
-        _(L"Double click a field to add or edit a sort criterion."));
+    wxStaticText* infoText = new wxStaticText(
+        this, wxID_ANY, _(L"Double click a field to add or edit a sort criterion."));
     infoText->Wrap(GetSize().GetWidth());
-    mainSizer->Add(infoText, 0, wxALL|wxEXPAND, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(infoText, 0, wxALL | wxEXPAND, wxSizerFlags::GetDefaultBorder());
 
-    mainSizer->Add(CreateButtonSizer(wxOK|wxCANCEL|wxHELP), 0, wxEXPAND|wxALL,
-                                     wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
+                   wxSizerFlags::GetDefaultBorder());
 
     SetSizerAndFit(mainSizer);
     }
 
 //------------------------------------------------
 void ListCtrlSortDlg::FillSortCriteria(
-    const std::vector<std::pair<size_t,Wisteria::SortDirection>>& sortColumns)
+    const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns)
     {
     assert(sortColumns.size() <= m_columnChoices.size());
     m_columnList->SetVirtualDataSize(m_columnChoices.Count(), 2);
@@ -88,9 +87,11 @@ void ListCtrlSortDlg::FillSortCriteria(
             if (sortColumns[i].first < m_columnChoices.size())
                 {
                 m_columnList->SetItemText(i, 0, m_columnChoices[sortColumns[i].first]);
-                m_columnList->SetItemText(i, 1,
+                m_columnList->SetItemText(
+                    i, 1,
                     (sortColumns[i].second == Wisteria::SortDirection::SortAscending) ?
-                        GetAscendingLabel() : GetDescendingLabel());
+                        GetAscendingLabel() :
+                        GetDescendingLabel());
                 }
             }
         }
@@ -98,20 +99,22 @@ void ListCtrlSortDlg::FillSortCriteria(
     }
 
 //------------------------------------------------
-std::vector<std::pair<wxString,Wisteria::SortDirection>> ListCtrlSortDlg::GetColumnsInfo() const
+std::vector<std::pair<wxString, Wisteria::SortDirection>> ListCtrlSortDlg::GetColumnsInfo() const
     {
-    std::vector<std::pair<wxString,Wisteria::SortDirection>> columns;
+    std::vector<std::pair<wxString, Wisteria::SortDirection>> columns;
     if (m_data)
         {
         for (size_t i = 0; i < m_data->GetItemCount(); ++i)
             {
             const wxString columnName = m_data->GetItemText(i, 0);
             if (columnName.empty())
-                { continue; }
+                {
+                continue;
+                }
             const Wisteria::SortDirection direction =
-                (m_data->GetItemText(i, 1).CmpNoCase(GetAscendingLabel())==0) ?
-                Wisteria::SortDirection::SortAscending :
-                Wisteria::SortDirection::SortDescending;
+                (m_data->GetItemText(i, 1).CmpNoCase(GetAscendingLabel()) == 0) ?
+                    Wisteria::SortDirection::SortAscending :
+                    Wisteria::SortDirection::SortDescending;
             columns.push_back(std::make_pair(columnName, direction));
             }
         }

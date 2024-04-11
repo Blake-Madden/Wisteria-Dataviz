@@ -12,16 +12,16 @@
 #ifndef __LISTCTRL_SORT_DLG_H__
 #define __LISTCTRL_SORT_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/string.h>
-#include "dialogwithhelp.h"
-#include "../controls/listctrlex.h"
 #include "../../base/graphitems.h"
+#include "../controls/listctrlex.h"
+#include "dialogwithhelp.h"
+#include <wx/string.h>
+#include <wx/wx.h>
 
 /// @brief A dialog to specify how to sort a list control.
 class ListCtrlSortDlg final : public Wisteria::UI::DialogWithHelp
     {
-public:
+  public:
     /** @brief Constructor.
         @param parent The parent window.
         @param columnChoices The column names from the buddy list control.
@@ -30,12 +30,15 @@ public:
         @param pos The dialog's position.
         @param size The dialog's size.
         @param style The dialog's style.*/
-    ListCtrlSortDlg(wxWindow* parent, const wxArrayString& columnChoices,
-                    wxWindowID id = wxID_ANY, const wxString& caption = _(L"Sort Columns"),
+    ListCtrlSortDlg(wxWindow* parent, const wxArrayString& columnChoices, wxWindowID id = wxID_ANY,
+                    const wxString& caption = _(L"Sort Columns"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                    long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) :
-            m_columnChoices(columnChoices)
-        { Create(parent, id, caption, pos, size, style); }
+                    long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+        : m_columnChoices(columnChoices)
+        {
+        Create(parent, id, caption, pos, size, style);
+        }
+
     /// @private
     ListCtrlSortDlg(const ListCtrlSortDlg& that) = delete;
     /// @private
@@ -43,12 +46,14 @@ public:
 
     /// @brief Sets the column sorting information.
     /// @param sortColumns The columns to sort by.
-    void FillSortCriteria(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns);
+    void
+    FillSortCriteria(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns);
 
     /// @returns The columns' names and sorting information.
     [[nodiscard]]
     std::vector<std::pair<wxString, Wisteria::SortDirection>> GetColumnsInfo() const;
-private:
+
+  private:
     /// Creation
     bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
                 const wxString& caption = _(L"Sort Columns"),
@@ -62,21 +67,28 @@ private:
         Centre();
         return true;
         }
+
     void CreateControls();
+
     [[nodiscard]]
     const static wxString GetAscendingLabel()
-        { return _(L"Smallest to Largest"); }
+        {
+        return _(L"Smallest to Largest");
+        }
 
     [[nodiscard]]
     const static wxString GetDescendingLabel()
-        { return _(L"Largest to Smallest"); }
+        {
+        return _(L"Largest to Smallest");
+        }
 
     wxArrayString m_columnChoices;
     ListCtrlEx* m_columnList{ nullptr };
-    std::shared_ptr<ListCtrlExNumericDataProvider> m_data
-        { std::make_shared<ListCtrlExNumericDataProvider>() };
+    std::shared_ptr<ListCtrlExNumericDataProvider> m_data{
+        std::make_shared<ListCtrlExNumericDataProvider>()
+    };
     };
 
-/** @}*/
+    /** @}*/
 
 #endif //__LISTCTRL_SORT_DLG_H__

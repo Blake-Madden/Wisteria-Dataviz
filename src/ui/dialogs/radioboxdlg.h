@@ -12,15 +12,15 @@
 #ifndef __RADIOCHOICE_DIALOG_H__
 #define __RADIOCHOICE_DIALOG_H__
 
-#include <wx/wx.h>
+#include "../../math/safe_math.h"
+#include "dialogwithhelp.h"
+#include <wx/bannerwindow.h>
 #include <wx/dialog.h>
-#include <wx/valgen.h>
+#include <wx/filename.h>
 #include <wx/html/htmlwin.h>
 #include <wx/htmllbox.h>
-#include <wx/filename.h>
-#include <wx/bannerwindow.h>
-#include "dialogwithhelp.h"
-#include "../../math/safe_math.h"
+#include <wx/valgen.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -30,7 +30,7 @@ namespace Wisteria::UI
     ///     instead of a list.
     class RadioBoxDlg final : public DialogWithHelp
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent window.
             @param bannerLabel A label to show at the top of the dialog.
@@ -44,19 +44,14 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        RadioBoxDlg(wxWindow* parent,
-                 const wxString& bannerLabel,
-                 const wxString& bannerDescription,
-                 const wxString& optionsLabel,
-                 const wxString& caption,
-                 const wxArrayString& choices, const wxArrayString& descriptions,
-                 const bool showHelpButton = false,
-                 wxWindowID id = wxID_ANY,
-                 const wxPoint& pos = wxDefaultPosition,
-                 const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE) :
-                 m_choices(choices),
-                 m_descriptions(descriptions), m_bannerLabel(bannerLabel),
-                 m_bannerDescription(bannerDescription), m_optionsLabel(optionsLabel)
+        RadioBoxDlg(wxWindow* parent, const wxString& bannerLabel,
+                    const wxString& bannerDescription, const wxString& optionsLabel,
+                    const wxString& caption, const wxArrayString& choices,
+                    const wxArrayString& descriptions, const bool showHelpButton = false,
+                    wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
+                    const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE)
+            : m_choices(choices), m_descriptions(descriptions), m_bannerLabel(bannerLabel),
+              m_bannerDescription(bannerDescription), m_optionsLabel(optionsLabel)
             {
             SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
             DialogWithHelp::Create(parent, id, caption, pos, size, style);
@@ -67,16 +62,21 @@ namespace Wisteria::UI
 
             Bind(wxEVT_RADIOBOX, &RadioBoxDlg::OnRadioBoxChange, this);
             }
+
         /// @private
         RadioBoxDlg() = delete;
         /// @private
         RadioBoxDlg(const RadioBoxDlg&) = delete;
         /// @private
         RadioBoxDlg& operator=(const RadioBoxDlg&) = delete;
+
         /// @returns The selected item.
         [[nodiscard]]
         int GetSelection() const noexcept
-            { return m_selected; }
+            {
+            return m_selected;
+            }
+
         /** @brief Sets the selected item (i.e., radio button index).
             @param selected The radio button to select.*/
         void SetSelection(const int selected)
@@ -84,16 +84,23 @@ namespace Wisteria::UI
             assert(m_choices.GetCount());
             assert(selected >= 0);
             if (selected < 0)
-                { m_selected = 0; }
+                {
+                m_selected = 0;
+                }
             else if (selected >= static_cast<int>(m_choices.GetCount()))
-                { m_selected = static_cast<int>(m_choices.GetCount())-1; }
+                {
+                m_selected = static_cast<int>(m_choices.GetCount()) - 1;
+                }
             else
-                { m_selected = selected; }
+                {
+                m_selected = selected;
+                }
             TransferDataToWindow();
             wxCommandEvent cmd;
             OnRadioBoxChange(cmd);
             }
-    private:
+
+      private:
         /// Creates the controls and sizers.
         void CreateControls(const bool showHelpButton);
         void OnRadioBoxChange([[maybe_unused]] wxCommandEvent& event);
@@ -110,7 +117,7 @@ namespace Wisteria::UI
         wxString m_helpProjectFolder;
         wxString m_helpTopic;
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

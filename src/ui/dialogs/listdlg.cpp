@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "listdlg.h"
-#include "../ribbon/artmetro.h"
 #include "../../import/text_matrix.h"
+#include "../ribbon/artmetro.h"
 
 //------------------------------------------------------
 void ListDlg::OnFind(wxFindDialogEvent& event)
@@ -24,7 +24,9 @@ void ListDlg::OnFind(wxFindDialogEvent& event)
 void ListDlg::OnSort(wxRibbonButtonBarEvent& event)
     {
     if (m_list)
-        { m_list->OnMultiColumSort(event); }
+        {
+        m_list->OnMultiColumSort(event);
+        }
     }
 
 //------------------------------------------------------
@@ -35,7 +37,9 @@ void ListDlg::OnSave(wxRibbonButtonBarEvent& event)
         wxFAIL_MSG(L"Save not supported for checklist control");
         }
     else if (m_list)
-        { m_list->OnSave(event); }
+        {
+        m_list->OnSave(event);
+        }
     }
 
 //------------------------------------------------------
@@ -46,7 +50,9 @@ void ListDlg::OnPrint(wxRibbonButtonBarEvent& event)
         wxFAIL_MSG(L"Print not supported for checklist control");
         }
     else if (m_list)
-        { m_list->OnPrint(event); }
+        {
+        m_list->OnPrint(event);
+        }
     }
 
 //------------------------------------------------------
@@ -55,10 +61,14 @@ void ListDlg::OnSelectAll([[maybe_unused]] wxRibbonButtonBarEvent& event)
     if (m_usecheckBoxes && m_checkList)
         {
         for (size_t i = 0; i < m_checkList->GetCount(); ++i)
-            { m_checkList->Check(i); }
+            {
+            m_checkList->Check(i);
+            }
         }
     else if (m_list)
-        { m_list->SelectAll(); }
+        {
+        m_list->SelectAll();
+        }
     }
 
 //------------------------------------------------------
@@ -78,35 +88,33 @@ void ListDlg::OnCopy([[maybe_unused]] wxRibbonButtonBarEvent& event)
                 selectedText += currentSelectedItem + wxString(L"\n");
                 }
             }
-        selectedText.Trim(true); selectedText.Trim(false);
+        selectedText.Trim(true);
+        selectedText.Trim(false);
         if (wxTheClipboard->Open() && selectedText.length() > 0)
             {
             wxTheClipboard->Clear();
             wxDataObjectComposite* obj = new wxDataObjectComposite();
-            obj->Add(new wxTextDataObject(selectedText) );
+            obj->Add(new wxTextDataObject(selectedText));
             wxTheClipboard->SetData(obj);
             wxTheClipboard->Close();
             }
         }
     else if (m_list)
-        { m_list->Copy(true,false); }
+        {
+        m_list->Copy(true, false);
+        }
     }
 
 //------------------------------------------------------
 ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool usecheckBoxes,
-            const wxColour bkColor,
-            const wxColour hoverColor,
-            const wxColour foreColor,
-            const long buttonStyle /*= LD_NO_BUTTONS*/,
-            wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
-            const wxString& label /*= wxString{}*/,
-            const wxPoint& pos /*= wxDefaultPosition*/,
-            const wxSize& size /*= wxSize(600, 250)*/,
-            long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/) :
-            m_usecheckBoxes(usecheckBoxes),
-            m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
-            m_values(values),
-            m_realTimeTimer(this)
+                 const wxColour bkColor, const wxColour hoverColor, const wxColour foreColor,
+                 const long buttonStyle /*= LD_NO_BUTTONS*/, wxWindowID id /*= wxID_ANY*/,
+                 const wxString& caption /*= wxString{}*/, const wxString& label /*= wxString{}*/,
+                 const wxPoint& pos /*= wxDefaultPosition*/,
+                 const wxSize& size /*= wxSize(600, 250)*/,
+                 long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
+    : m_usecheckBoxes(usecheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
+      m_hoverColor(hoverColor), m_values(values), m_realTimeTimer(this)
     {
     GetData()->SetValues(values);
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
@@ -123,21 +131,16 @@ ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool usech
     }
 
 //------------------------------------------------------
-ListDlg::ListDlg(wxWindow* parent,
-        const wxColour bkColor,
-        const wxColour hoverColor,
-        const wxColour foreColor,
-        const long buttonStyle /*= LD_NO_BUTTONS*/,
-        wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
-        const wxString& label /*= wxString{}*/,
-        const wxPoint& pos /*= wxDefaultPosition*/,
-        const wxSize& size /*= wxSize(600, 250)*/,
-        long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/) :
-        m_usecheckBoxes(false),
-        m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
-        m_realTimeTimer(this)
+ListDlg::ListDlg(wxWindow* parent, const wxColour bkColor, const wxColour hoverColor,
+                 const wxColour foreColor, const long buttonStyle /*= LD_NO_BUTTONS*/,
+                 wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
+                 const wxString& label /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
+                 const wxSize& size /*= wxSize(600, 250)*/,
+                 long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
+    : m_usecheckBoxes(false), m_buttonStyle(buttonStyle), m_label(label), m_hoverColor(hoverColor),
+      m_realTimeTimer(this)
     {
-    SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
+    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
     SetMinSize(FromDIP(wxSize(600, 250)));
 
@@ -167,28 +170,31 @@ void ListDlg::BindEvents()
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnCopy, this, wxID_COPY);
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSelectAll, this, wxID_SELECTALL);
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnSort, this, XRCID("ID_LIST_SORT"));
-    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,[this]([[maybe_unused]] wxRibbonButtonBarEvent&)
-            {
+    Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+        {
             if (m_logFile != nullptr)
                 {
                 m_logFile->Clear();
                 m_list->DeleteAllItems();
                 }
-            },
+        },
         XRCID("ID_CLEAR"));
     Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnReadLog, this, XRCID("ID_REFRESH"));
-    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-            &ListDlg::OnRealTimeUpdate, this,
-            XRCID("ID_REALTIME_UPDATE"));
+    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &ListDlg::OnRealTimeUpdate, this,
+         XRCID("ID_REALTIME_UPDATE"));
     Bind(wxEVT_TIMER, &ListDlg::OnRealTimeTimer, this);
-    Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,[this]([[maybe_unused]] wxRibbonButtonBarEvent& evt)
-            {
+    Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]] wxRibbonButtonBarEvent& evt)
+        {
             m_isLogVerbose = !m_isLogVerbose;
             if (m_logFile != nullptr)
                 {
                 m_logFile->SetVerbose(m_isLogVerbose);
                 }
-            },
+        },
         XRCID("ID_VERBOSE_LOG"));
 
     Bind(wxEVT_FIND, &ListDlg::OnFind, this);
@@ -205,7 +211,7 @@ void ListDlg::CreateControls()
     if (m_label.length())
         {
         wxBoxSizer* labelSizer = new wxBoxSizer(wxHORIZONTAL);
-        labelSizer->Add(new wxStaticText(this, wxID_STATIC, m_label), 0, wxALIGN_CENTER|wxALL, 0);
+        labelSizer->Add(new wxStaticText(this, wxID_STATIC, m_label), 0, wxALIGN_CENTER | wxALL, 0);
         labelSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
         mainSizer->Add(labelSizer, 0, wxALL, wxSizerFlags::GetDefaultBorder());
         }
@@ -223,27 +229,30 @@ void ListDlg::CreateControls()
         (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_SAVE_BUTTON) ||
         (m_buttonStyle & LD_PRINT_BUTTON))
         {
-        m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition,
-                                              wxDefaultSize, wxRIBBON_BAR_FLOW_HORIZONTAL);
+        m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                   wxRIBBON_BAR_FLOW_HORIZONTAL);
         wxRibbonPage* homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
         // export
         if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
             {
-            wxRibbonPanel* exportPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Export"),
-                                                          wxNullBitmap, wxDefaultPosition,
-                                                          wxDefaultSize,
-                                                          wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+            wxRibbonPanel* exportPage =
+                new wxRibbonPanel(homePage, wxID_ANY, _(L"Export"), wxNullBitmap, wxDefaultPosition,
+                                  wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE);
             wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(exportPage);
             if (m_buttonStyle & LD_SAVE_BUTTON)
                 {
-                buttonBar->AddButton(wxID_SAVE, _(L"Save"),
-                    wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(32, 32))).ConvertToImage(),
+                buttonBar->AddButton(
+                    wxID_SAVE, _(L"Save"),
+                    wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
                     _(L"Save the list."));
                 }
             if (m_buttonStyle & LD_PRINT_BUTTON)
                 {
-                buttonBar->AddButton(wxID_PRINT, _(L"Print"),
-                    wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON, FromDIP(wxSize(32, 32))).ConvertToImage(),
+                buttonBar->AddButton(
+                    wxID_PRINT, _(L"Print"),
+                    wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON, FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
                     _(L"Print the list."));
                 }
             }
@@ -252,76 +261,94 @@ void ListDlg::CreateControls()
             (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_CLEAR_BUTTON) ||
             (m_buttonStyle & LD_REFRESH_BUTTON) || (m_buttonStyle & LD_LOG_VERBOSE_BUTTON))
             {
-            wxRibbonPanel* editPage = new wxRibbonPanel(homePage, ID_EDIT_PANEL, _(L"Edit"),
-                                                        wxNullBitmap, wxDefaultPosition,
-                                                        wxDefaultSize,
-                                                        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+            wxRibbonPanel* editPage = new wxRibbonPanel(
+                homePage, ID_EDIT_PANEL, _(L"Edit"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+                wxRIBBON_PANEL_NO_AUTO_MINIMISE);
             wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
             if (m_buttonStyle & LD_COPY_BUTTON)
                 {
-                buttonBar->AddButton(wxID_COPY, _(L"Copy Selection"),
-                    wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Copy the selected items."));
+                buttonBar->AddButton(
+                    wxID_COPY, _(L"Copy Selection"),
+                    wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
+                    _(L"Copy the selected items."));
                 }
             if (m_buttonStyle & LD_SELECT_ALL_BUTTON)
                 {
                 buttonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
-                    wxArtProvider::GetBitmap(L"ID_SELECT_ALL", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Select the entire list."));
+                                     wxArtProvider::GetBitmap(L"ID_SELECT_ALL", wxART_BUTTON,
+                                                              FromDIP(wxSize(32, 32)))
+                                         .ConvertToImage(),
+                                     _(L"Select the entire list."));
                 }
             if (m_buttonStyle & LD_SORT_BUTTON)
                 {
-                buttonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
-                    wxArtProvider::GetBitmap(L"ID_LIST_SORT", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Sort the list."));
+                buttonBar->AddButton(
+                    XRCID("ID_LIST_SORT"), _(L"Sort"),
+                    wxArtProvider::GetBitmap(L"ID_LIST_SORT", wxART_BUTTON, FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
+                    _(L"Sort the list."));
                 }
             if (m_buttonStyle & LD_CLEAR_BUTTON)
                 {
-                buttonBar->AddButton(XRCID("ID_CLEAR"), _(L"Clear"),
-                    wxArtProvider::GetBitmap(L"ID_CLEAR", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(), _(L"Clear the log report."));
+                buttonBar->AddButton(
+                    XRCID("ID_CLEAR"), _(L"Clear"),
+                    wxArtProvider::GetBitmap(L"ID_CLEAR", wxART_BUTTON, FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
+                    _(L"Clear the log report."));
                 }
             if (m_buttonStyle & LD_REFRESH_BUTTON)
                 {
-                buttonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
-                    wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(),
+                buttonBar->AddButton(
+                    XRCID("ID_REFRESH"), _(L"Refresh"),
+                    wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON, FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
                     _(L"Refresh the log report."));
                 buttonBar->AddToggleButton(XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
-                    wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(),
-                    _(L"Refresh the log report automatically."));
+                                           wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE",
+                                                                    wxART_BUTTON,
+                                                                    FromDIP(wxSize(32, 32)))
+                                               .ConvertToImage(),
+                                           _(L"Refresh the log report automatically."));
                 buttonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
                 }
             if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON)
                 {
-                buttonBar->AddToggleButton(XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
+                buttonBar->AddToggleButton(
+                    XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
                     wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))).ConvertToImage(),
+                                             FromDIP(wxSize(32, 32)))
+                        .ConvertToImage(),
                     _(L"Toggles whether the logging system includes more detailed information."));
                 buttonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                 }
             }
         m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
-        mainSizer->Add(m_ribbon, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(m_ribbon, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
         m_ribbon->Realise();
         }
 
     if (m_usecheckBoxes)
         {
         for (size_t i = 0; i < m_values.GetCount(); ++i)
-            { m_values[i] = wxControl::EscapeMnemonics(m_values[i]); }
-        m_checkList = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition,
-            wxDefaultSize, m_values, wxLB_EXTENDED|wxLB_SORT);
+            {
+            m_values[i] = wxControl::EscapeMnemonics(m_values[i]);
+            }
+        m_checkList = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_values,
+                                         wxLB_EXTENDED | wxLB_SORT);
         mainSizer->Add(m_checkList, 1, wxEXPAND);
         }
     else
         {
         long flags{ wxLC_VIRTUAL | wxLC_REPORT | wxLC_ALIGN_LEFT };
         if (!(m_buttonStyle & LD_COLUMN_HEADERS))
-            { flags |= wxLC_NO_HEADER; }
+            {
+            flags |= wxLC_NO_HEADER;
+            }
         if (m_buttonStyle & LD_SINGLE_SELECTION)
-            { flags |= wxLC_SINGLE_SEL; }
+            {
+            flags |= wxLC_SINGLE_SEL;
+            }
         m_list = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, GetSize(), flags);
         m_list->SetLabel(GetLabel());
         m_list->EnableGridLines();
@@ -337,31 +364,31 @@ void ListDlg::CreateControls()
     wxSizer* OkCancelSizer = nullptr;
     if (m_buttonStyle & LD_OK_CANCEL_BUTTONS)
         {
-        OkCancelSizer = CreateButtonSizer(wxOK|wxCANCEL);
-        mainSizer->Add(OkCancelSizer, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+        OkCancelSizer = CreateButtonSizer(wxOK | wxCANCEL);
+        mainSizer->Add(OkCancelSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
         SetAffirmativeId(wxID_OK);
         SetEscapeId(wxID_CANCEL);
         }
     else if (m_buttonStyle & LD_YES_NO_BUTTONS)
         {
         OkCancelSizer = CreateButtonSizer(wxYES_NO);
-        mainSizer->Add(OkCancelSizer, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(OkCancelSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
         SetAffirmativeId(wxID_YES);
         SetEscapeId(wxID_NO);
         }
     else if (m_buttonStyle & LD_CLOSE_BUTTON)
         {
         OkCancelSizer = CreateButtonSizer(wxCLOSE);
-        mainSizer->Add(OkCancelSizer, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(OkCancelSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
         SetAffirmativeId(wxID_CLOSE);
         }
 
     if ((m_buttonStyle & LD_DONT_SHOW_AGAIN) && OkCancelSizer)
         {
-        m_checkBox = new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"),
-                                    wxDefaultPosition , wxDefaultSize, wxCHK_2STATE,
-                                    wxGenericValidator(&m_dontShowAgain));
-        OkCancelSizer->Insert(0, m_checkBox, 0, wxALL|wxEXPAND, wxSizerFlags::GetDefaultBorder());
+        m_checkBox =
+            new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"), wxDefaultPosition,
+                           wxDefaultSize, wxCHK_2STATE, wxGenericValidator(&m_dontShowAgain));
+        OkCancelSizer->Insert(0, m_checkBox, 0, wxALL | wxEXPAND, wxSizerFlags::GetDefaultBorder());
         }
 
     SetSizerAndFit(mainSizer);
@@ -380,8 +407,8 @@ void ListDlg::SetActiveLog(LogFile* log)
         wxWindow* editBar = editPanel->FindWindow(ID_EDIT_BUTTON_BAR);
         if (editBar != nullptr && editBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
             {
-            dynamic_cast<wxRibbonButtonBar*>(editBar)->ToggleButton(
-                XRCID("ID_VERBOSE_LOG"), m_logFile->GetVerbose());
+            dynamic_cast<wxRibbonButtonBar*>(editBar)->ToggleButton(XRCID("ID_VERBOSE_LOG"),
+                                                                    m_logFile->GetVerbose());
             }
         }
 
@@ -413,16 +440,15 @@ void ListDlg::OnReadLog([[maybe_unused]] wxCommandEvent& event)
 
         GetListCtrl()->DeleteAllItems();
 
-        const lily_of_the_valley::text_column_delimited_character_parser
-                                                parser(L'\t');
+        const lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
         lily_of_the_valley::text_column<lily_of_the_valley::text_column_delimited_character_parser>
-                                        myColumn(parser, std::nullopt);
+            myColumn(parser, std::nullopt);
         lily_of_the_valley::text_row<ListCtrlExDataProvider::ListCellString> myRow(std::nullopt);
         myRow.treat_consecutive_delimitors_as_one(false);
         myRow.add_column(myColumn);
 
-        lily_of_the_valley::text_matrix<ListCtrlExDataProvider::ListCellString>
-            importer(&GetData()->GetMatrix());
+        lily_of_the_valley::text_matrix<ListCtrlExDataProvider::ListCellString> importer(
+            &GetData()->GetMatrix());
         importer.add_row_definition(myRow);
 
         // see how many lines are in the file
@@ -442,12 +468,12 @@ void ListDlg::OnReadLog([[maybe_unused]] wxCommandEvent& event)
                 (currentRow.find(_DT(L"Error: ", DTExplanation::LogMessage)) != wxString::npos) ?
                     wxColour(242, 94, 101) :
                 (currentRow.find(_DT(L"Warning: ")) != wxString::npos) ? *wxYELLOW :
-                (currentRow.find(_DT(L"Debug: ")) != wxString::npos) ? wxColour(143, 214, 159) :
-                wxNullColour;
+                (currentRow.find(_DT(L"Debug: ")) != wxString::npos)   ? wxColour(143, 214, 159) :
+                                                                         wxNullColour;
             if (rowColor.IsOk())
                 {
-                GetListCtrl()->SetRowAttributes(i,
-                    wxListItemAttr(*wxBLACK, rowColor, GetListCtrl()->GetFont()));
+                GetListCtrl()->SetRowAttributes(
+                    i, wxListItemAttr(*wxBLACK, rowColor, GetListCtrl()->GetFont()));
                 }
             }
 
@@ -485,8 +511,7 @@ void ListDlg::OnRealTimeTimer([[maybe_unused]] wxTimerEvent& event)
         // just update the window if the log file changed
         const auto previousModTime{ m_sourceFileLastModified };
         m_sourceFileLastModified = wxFileName(m_logFile->GetLogFilePath()).GetModificationTime();
-        if (m_sourceFileLastModified.IsValid() &&
-            previousModTime.IsValid() &&
+        if (m_sourceFileLastModified.IsValid() && previousModTime.IsValid() &&
             previousModTime < m_sourceFileLastModified)
             {
             Readlog();
@@ -504,9 +529,13 @@ void ListDlg::OnNegative(wxCommandEvent& event)
     TransferDataFromWindow();
 
     if (IsModal())
-        { EndModal(event.GetId()); }
+        {
+        EndModal(event.GetId());
+        }
     else
-        { Show(false); }
+        {
+        Show(false);
+        }
     }
 
 //------------------------------------------------------
@@ -516,9 +545,13 @@ void ListDlg::OnClose([[maybe_unused]] wxCloseEvent& event)
     SetFocusIgnoringChildren();
 
     if (IsModal())
-        { EndModal(wxID_CLOSE); }
+        {
+        EndModal(wxID_CLOSE);
+        }
     else
-        { Hide(); }
+        {
+        Hide();
+        }
     }
 
 //------------------------------------------------------
@@ -549,7 +582,9 @@ void ListDlg::OnAffirmative(wxCommandEvent& event)
             {
             item = m_list->GetNextItem(item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
             if (item == wxNOT_FOUND)
-                { break; }
+                {
+                break;
+                }
             m_selectedItems.Add(m_list->GetItemText(item));
             }
         }
@@ -557,7 +592,11 @@ void ListDlg::OnAffirmative(wxCommandEvent& event)
     TransferDataFromWindow();
 
     if (IsModal())
-        { EndModal(event.GetId()); }
+        {
+        EndModal(event.GetId());
+        }
     else
-        { Show(false); }
+        {
+        Show(false);
+        }
     }

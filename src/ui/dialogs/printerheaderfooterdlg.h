@@ -12,16 +12,16 @@
 #ifndef __PRINTERHEADERFOOTER_DLG_H__
 #define __PRINTERHEADERFOOTER_DLG_H__
 
-#include <wx/wx.h>
-#include <wx/spinctrl.h>
-#include <wx/valgen.h>
-#include <wx/textdlg.h>
-#include <wx/combobox.h>
-#include <wx/tooltip.h>
-#include <wx/regex.h>
-#include <set>
-#include "dialogwithhelp.h"
 #include "../../i18n-check/src/donttranslate.h"
+#include "dialogwithhelp.h"
+#include <set>
+#include <wx/combobox.h>
+#include <wx/regex.h>
+#include <wx/spinctrl.h>
+#include <wx/textdlg.h>
+#include <wx/tooltip.h>
+#include <wx/valgen.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -36,7 +36,7 @@ namespace Wisteria::UI
          - `@PAGESCNT@`: The number of printed pages.*/
     class PrinterHeaderFooterDlg final : public DialogWithHelp
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent window.
             @param leftPrinterHeader The default left printer header.
@@ -50,25 +50,27 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        PrinterHeaderFooterDlg(wxWindow* parent,
-                          const wxString& leftPrinterHeader, const wxString& centerPrinterHeader,
-                          const wxString& rightPrinterHeader, const wxString& leftPrinterFooter,
-                          const wxString& centerPrinterFooter, const wxString& rightPrinterFooter,
-                          wxWindowID id = wxID_ANY, const wxString& caption = _(L"Printer Headers & Footers"),
-                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                          long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER) :
-                          DialogWithHelp(parent, id, caption, pos, size, style),
-                          m_leftPrinterHeader(leftPrinterHeader), m_centerPrinterHeader(centerPrinterHeader),
-                          m_rightPrinterHeader(rightPrinterHeader), m_leftPrinterFooter(leftPrinterFooter),
-                          m_centerPrinterFooter(centerPrinterFooter), m_rightPrinterFooter(rightPrinterFooter)
+        PrinterHeaderFooterDlg(
+            wxWindow* parent, const wxString& leftPrinterHeader,
+            const wxString& centerPrinterHeader, const wxString& rightPrinterHeader,
+            const wxString& leftPrinterFooter, const wxString& centerPrinterFooter,
+            const wxString& rightPrinterFooter, wxWindowID id = wxID_ANY,
+            const wxString& caption = _(L"Printer Headers & Footers"),
+            const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
+            : DialogWithHelp(parent, id, caption, pos, size, style),
+              m_leftPrinterHeader(leftPrinterHeader), m_centerPrinterHeader(centerPrinterHeader),
+              m_rightPrinterHeader(rightPrinterHeader), m_leftPrinterFooter(leftPrinterFooter),
+              m_centerPrinterFooter(centerPrinterFooter), m_rightPrinterFooter(rightPrinterFooter)
             {
-            SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS|wxDIALOG_EX_METAL);
+            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxDIALOG_EX_METAL);
             CreateControls();
 
             Bind(wxEVT_BUTTON, &PrinterHeaderFooterDlg::OnOK, this, wxID_OK);
 
             Centre();
             }
+
         /// @private
         PrinterHeaderFooterDlg(const PrinterHeaderFooterDlg&) = delete;
         /// @private
@@ -79,24 +81,24 @@ namespace Wisteria::UI
         PrinterHeaderFooterDlg& operator=(PrinterHeaderFooterDlg&&) = delete;
 
         /// @returns The left header.
-        const wxString& GetLeftPrinterHeader() const noexcept
-            { return m_leftPrinterHeader; }
+        const wxString& GetLeftPrinterHeader() const noexcept { return m_leftPrinterHeader; }
+
         /// @returns The center header.
-        const wxString& GetCenterPrinterHeader() const noexcept
-            { return m_centerPrinterHeader; }
+        const wxString& GetCenterPrinterHeader() const noexcept { return m_centerPrinterHeader; }
+
         /// @returns The right header.
-        const wxString& GetRightPrinterHeader() const noexcept
-            { return m_rightPrinterHeader; }
+        const wxString& GetRightPrinterHeader() const noexcept { return m_rightPrinterHeader; }
+
         /// @returns The left footer.
-        const wxString& GetLeftPrinterFooter() const noexcept
-            { return m_leftPrinterFooter; }
+        const wxString& GetLeftPrinterFooter() const noexcept { return m_leftPrinterFooter; }
+
         /// @returns The center footer.
-        const wxString& GetCenterPrinterFooter() const noexcept
-            { return m_centerPrinterFooter; }
+        const wxString& GetCenterPrinterFooter() const noexcept { return m_centerPrinterFooter; }
+
         /// @returns The right footer.
-        const wxString& GetRightPrinterFooter() const noexcept
-            { return m_rightPrinterFooter; }
-    private:
+        const wxString& GetRightPrinterFooter() const noexcept { return m_rightPrinterFooter; }
+
+      private:
         void CreateControls();
         void OnOK([[maybe_unused]] wxCommandEvent& event);
         [[nodiscard]]
@@ -129,7 +131,7 @@ namespace Wisteria::UI
         wxComboBox* centerFooterPrinterCombo{ nullptr };
         wxComboBox* rightFooterPrinterCombo{ nullptr };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 
