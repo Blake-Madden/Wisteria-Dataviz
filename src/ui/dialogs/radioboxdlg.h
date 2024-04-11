@@ -72,11 +72,7 @@ namespace Wisteria::UI
         /// @private
         RadioBoxDlg(const RadioBoxDlg&) = delete;
         /// @private
-        RadioBoxDlg(RadioBoxDlg&&) = delete;
-        /// @private
         RadioBoxDlg& operator=(const RadioBoxDlg&) = delete;
-        /// @private
-        RadioBoxDlg& operator=(RadioBoxDlg&&) = delete;
         /// @returns The selected item.
         [[nodiscard]]
         int GetSelection() const noexcept
