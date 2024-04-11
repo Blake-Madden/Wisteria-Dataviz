@@ -50,18 +50,22 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        PrinterHeaderFooterDlg(
-            wxWindow* parent, const wxString& leftPrinterHeader,
-            const wxString& centerPrinterHeader, const wxString& rightPrinterHeader,
-            const wxString& leftPrinterFooter, const wxString& centerPrinterFooter,
-            const wxString& rightPrinterFooter, wxWindowID id = wxID_ANY,
-            const wxString& caption = _(L"Printer Headers & Footers"),
-            const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
+        PrinterHeaderFooterDlg(wxWindow* parent, wxString leftPrinterHeader,
+                               wxString centerPrinterHeader, wxString rightPrinterHeader,
+                               wxString leftPrinterFooter, wxString centerPrinterFooter,
+                               wxString rightPrinterFooter, wxWindowID id = wxID_ANY,
+                               const wxString& caption = _(L"Printer Headers & Footers"),
+                               const wxPoint& pos = wxDefaultPosition,
+                               const wxSize& size = wxDefaultSize,
+                               long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
+                                            wxRESIZE_BORDER)
             : DialogWithHelp(parent, id, caption, pos, size, style),
-              m_leftPrinterHeader(leftPrinterHeader), m_centerPrinterHeader(centerPrinterHeader),
-              m_rightPrinterHeader(rightPrinterHeader), m_leftPrinterFooter(leftPrinterFooter),
-              m_centerPrinterFooter(centerPrinterFooter), m_rightPrinterFooter(rightPrinterFooter)
+              m_leftPrinterHeader(std::move(leftPrinterHeader)),
+              m_centerPrinterHeader(std::move(centerPrinterHeader)),
+              m_rightPrinterHeader(std::move(rightPrinterHeader)),
+              m_leftPrinterFooter(std::move(leftPrinterFooter)),
+              m_centerPrinterFooter(std::move(centerPrinterFooter)),
+              m_rightPrinterFooter(std::move(rightPrinterFooter))
             {
             SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxDIALOG_EX_METAL);
             CreateControls();
@@ -74,11 +78,7 @@ namespace Wisteria::UI
         /// @private
         PrinterHeaderFooterDlg(const PrinterHeaderFooterDlg&) = delete;
         /// @private
-        PrinterHeaderFooterDlg(PrinterHeaderFooterDlg&&) = delete;
-        /// @private
         PrinterHeaderFooterDlg& operator=(const PrinterHeaderFooterDlg&) = delete;
-        /// @private
-        PrinterHeaderFooterDlg& operator=(PrinterHeaderFooterDlg&&) = delete;
 
         /// @returns The left header.
         const wxString& GetLeftPrinterHeader() const noexcept { return m_leftPrinterHeader; }

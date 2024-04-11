@@ -44,14 +44,15 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        RadioBoxDlg(wxWindow* parent, const wxString& bannerLabel,
-                    const wxString& bannerDescription, const wxString& optionsLabel,
-                    const wxString& caption, const wxArrayString& choices,
+        RadioBoxDlg(wxWindow* parent, wxString bannerLabel, wxString bannerDescription,
+                    wxString optionsLabel, const wxString& caption, const wxArrayString& choices,
                     const wxArrayString& descriptions, const bool showHelpButton = false,
                     wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
                     const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE)
-            : m_choices(choices), m_descriptions(descriptions), m_bannerLabel(bannerLabel),
-              m_bannerDescription(bannerDescription), m_optionsLabel(optionsLabel)
+            : m_choices(choices), m_descriptions(descriptions),
+              m_bannerLabel(std::move(bannerLabel)),
+              m_bannerDescription(std::move(bannerDescription)),
+              m_optionsLabel(std::move(optionsLabel))
             {
             SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
             DialogWithHelp::Create(parent, id, caption, pos, size, style);
