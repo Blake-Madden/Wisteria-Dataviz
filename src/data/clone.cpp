@@ -7,10 +7,14 @@ namespace Wisteria::Data
         {
         // source hasn't been set yet, so return null
         if (m_fromDataset == nullptr)
-            { return nullptr; }
+            {
+            return nullptr;
+            }
 
         while (HasMoreRows())
-            { CopyNextRow(); }
+            {
+            CopyNextRow();
+            }
 
         return m_toDataset;
         }
@@ -36,35 +40,37 @@ namespace Wisteria::Data
         m_toDataset->GetIdColumn().Reserve(m_fromDataset->GetIdColumn().GetRowCount());
 
         // date columns
-        m_toDataset->GetDateColumns().reserve(
-            m_fromDataset->GetDateColumns().size());
+        m_toDataset->GetDateColumns().reserve(m_fromDataset->GetDateColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetDateColumns())
             {
             m_toDataset->AddDateColumn(srcColumn.GetName());
             auto newColumn = m_toDataset->GetDateColumn(srcColumn.GetName());
             if (newColumn != m_toDataset->GetDateColumns().cend())
-                { newColumn->Reserve(srcColumn.GetRowCount()); }
+                {
+                newColumn->Reserve(srcColumn.GetRowCount());
+                }
             }
         // continuous columns
-        m_toDataset->GetContinuousColumns().reserve(
-            m_fromDataset->GetContinuousColumns().size());
+        m_toDataset->GetContinuousColumns().reserve(m_fromDataset->GetContinuousColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetContinuousColumns())
             {
             m_toDataset->AddContinuousColumn(srcColumn.GetName());
             auto newColumn = m_toDataset->GetContinuousColumn(srcColumn.GetName());
             if (newColumn != m_toDataset->GetContinuousColumns().cend())
-                { newColumn->Reserve(srcColumn.GetRowCount()); }
+                {
+                newColumn->Reserve(srcColumn.GetRowCount());
+                }
             }
         // categorical columns
-        m_toDataset->GetCategoricalColumns().reserve(
-            m_fromDataset->GetCategoricalColumns().size());
+        m_toDataset->GetCategoricalColumns().reserve(m_fromDataset->GetCategoricalColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetCategoricalColumns())
             {
-            m_toDataset->AddCategoricalColumn(srcColumn.GetName(),
-                                              srcColumn.GetStringTable());
+            m_toDataset->AddCategoricalColumn(srcColumn.GetName(), srcColumn.GetStringTable());
             auto newColumn = m_toDataset->GetCategoricalColumn(srcColumn.GetName());
             if (newColumn != m_toDataset->GetCategoricalColumns().cend())
-                { newColumn->Reserve(srcColumn.GetRowCount()); }
+                {
+                newColumn->Reserve(srcColumn.GetRowCount());
+                }
             }
 
         // map the variables between the source and destination datasets
@@ -75,8 +81,8 @@ namespace Wisteria::Data
     void DatasetClone::MapColumns()
         {
         // ID
-        m_idColumnsMap.insert(std::make_pair(&m_fromDataset->GetIdColumn(),
-                                             &m_toDataset->GetIdColumn()));
+        m_idColumnsMap.insert(
+            std::make_pair(&m_fromDataset->GetIdColumn(), &m_toDataset->GetIdColumn()));
 
         // continuous
         m_continuousColumnsMap.clear();
@@ -84,51 +90,47 @@ namespace Wisteria::Data
         // which the client should not be doing
         // cppcheck-suppress assertWithSideEffect
         assert(m_fromDataset->GetContinuousColumns().size() ==
-               m_toDataset->GetContinuousColumns().size() &&
+                   m_toDataset->GetContinuousColumns().size() &&
                L"Continuous column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetContinuousColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
             assert(m_fromDataset->GetContinuousColumn(i).GetName() ==
-                   m_toDataset->GetContinuousColumn(i).GetName() &&
+                       m_toDataset->GetContinuousColumn(i).GetName() &&
                    L"Continuous columns aren't mapped correctly!");
-            m_continuousColumnsMap.insert(
-                std::make_pair(&m_fromDataset->GetContinuousColumn(i),
-                               &m_toDataset->GetContinuousColumn(i)));
+            m_continuousColumnsMap.insert(std::make_pair(&m_fromDataset->GetContinuousColumn(i),
+                                                         &m_toDataset->GetContinuousColumn(i)));
             }
 
         // categoricals
         m_catColumnsMap.clear();
         // cppcheck-suppress assertWithSideEffect
         assert(m_fromDataset->GetCategoricalColumns().size() ==
-               m_toDataset->GetCategoricalColumns().size() &&
+                   m_toDataset->GetCategoricalColumns().size() &&
                L"Categorical column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetCategoricalColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
             assert(m_fromDataset->GetCategoricalColumn(i).GetName() ==
-                   m_toDataset->GetCategoricalColumn(i).GetName() &&
+                       m_toDataset->GetCategoricalColumn(i).GetName() &&
                    L"Categorical columns aren't mapped correctly!");
-            m_catColumnsMap.insert(
-                std::make_pair(&m_fromDataset->GetCategoricalColumn(i),
-                               &m_toDataset->GetCategoricalColumn(i)));
+            m_catColumnsMap.insert(std::make_pair(&m_fromDataset->GetCategoricalColumn(i),
+                                                  &m_toDataset->GetCategoricalColumn(i)));
             }
 
         // dates
         m_dateColumnsMap.clear();
         // cppcheck-suppress assertWithSideEffect
-        assert(m_fromDataset->GetDateColumns().size() ==
-               m_toDataset->GetDateColumns().size() &&
+        assert(m_fromDataset->GetDateColumns().size() == m_toDataset->GetDateColumns().size() &&
                L"Date column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetDateColumns().size(); ++i)
             {
             // cppcheck-suppress assertWithSideEffect
             assert(m_fromDataset->GetDateColumn(i).GetName() ==
-                   m_toDataset->GetDateColumn(i).GetName() &&
+                       m_toDataset->GetDateColumn(i).GetName() &&
                    L"Date columns aren't mapped correctly!");
             m_dateColumnsMap.insert(
-                std::make_pair(&m_fromDataset->GetDateColumn(i),
-                               &m_toDataset->GetDateColumn(i)));
+                std::make_pair(&m_fromDataset->GetDateColumn(i), &m_toDataset->GetDateColumn(i)));
             }
         }
 
@@ -136,7 +138,9 @@ namespace Wisteria::Data
     void DatasetClone::CopyNextRow()
         {
         if (!HasMoreRows())
-            { return; }
+            {
+            return;
+            }
 
         // copy values from source to destination columns
         for (const auto& col : m_idColumnsMap)
@@ -158,4 +162,4 @@ namespace Wisteria::Data
 
         ++m_currentSrcRow;
         }
-    }
+    } // namespace Wisteria::Data

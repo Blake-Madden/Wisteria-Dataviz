@@ -11,10 +11,9 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------------------------
-    void TextClassifier::SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
-        const wxString& categoryColumnName,
-        const std::optional<wxString>& subCategoryColumnName,
-        const wxString& patternsColumnName,
+    void TextClassifier::SetClassifierData(
+        std::shared_ptr<const Data::Dataset> classifierData, const wxString& categoryColumnName,
+        const std::optional<wxString>& subCategoryColumnName, const wxString& patternsColumnName,
         const std::optional<wxString>& negationPatternsColumnName)
         {
         // reset
@@ -25,38 +24,43 @@ namespace Wisteria::Data
         auto categoryCol = classifierData->GetCategoricalColumn(categoryColumnName);
         if (categoryCol == classifierData->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': category column not found for text classifier."),
-                categoryColumnName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': category column not found for text classifier."),
+                                 categoryColumnName)
+                    .ToUTF8());
             }
-        auto subCategoryCol = (subCategoryColumnName.has_value() ?
-            classifierData->GetCategoricalColumn(subCategoryColumnName.value()) :
-            classifierData->GetCategoricalColumns().cend());
+        auto subCategoryCol =
+            (subCategoryColumnName.has_value() ?
+                 classifierData->GetCategoricalColumn(subCategoryColumnName.value()) :
+                 classifierData->GetCategoricalColumns().cend());
         if (subCategoryColumnName &&
             subCategoryCol == classifierData->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': sub-category column not found for text classifier."),
-                subCategoryColumnName.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': sub-category column not found for text classifier."),
+                                 subCategoryColumnName.value())
+                    .ToUTF8());
             }
         auto patternCol = classifierData->GetCategoricalColumn(patternsColumnName);
         if (patternCol == classifierData->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': patterns column not found for text classifier."),
-                patternsColumnName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': patterns column not found for text classifier."),
+                                 patternsColumnName)
+                    .ToUTF8());
             }
-        auto negationPatternCol = (negationPatternsColumnName.has_value() ?
-            classifierData->GetCategoricalColumn(negationPatternsColumnName.value()) :
-            classifierData->GetCategoricalColumns().cend());
+        auto negationPatternCol =
+            (negationPatternsColumnName.has_value() ?
+                 classifierData->GetCategoricalColumn(negationPatternsColumnName.value()) :
+                 classifierData->GetCategoricalColumns().cend());
 
         // used later when classifying a dataset
         m_categoryColumnName = categoryColumnName;
         m_subCategoryColumnName = subCategoryColumnName;
         m_categoriesStringTable = categoryCol->GetStringTable();
-        m_subCategoriesStringTable = (subCategoryColumnName ?
-            subCategoryCol->GetStringTable() :
-            ColumnWithStringTable::StringTableType());
+        m_subCategoriesStringTable =
+            (subCategoryColumnName ? subCategoryCol->GetStringTable() :
+                                     ColumnWithStringTable::StringTableType());
         auto subCatMDCode = ColumnWithStringTable::FindMissingDataCode(m_subCategoriesStringTable);
         // if no missing data value in the string table, then add it
         if (!subCatMDCode)
@@ -74,25 +78,25 @@ namespace Wisteria::Data
 
             const wxString negatingReValue =
                 (negationPatternCol != classifierData->GetCategoricalColumns().cend()) ?
-                negationPatternCol->GetLabelFromID(negationPatternCol->GetValue(i)) :
-                wxString();
+                    negationPatternCol->GetLabelFromID(negationPatternCol->GetValue(i)) :
+                    wxString();
 
             if (reValue.length() && re.IsValid())
                 {
                 m_categoryPatternsMap.insert(
                     std::make_pair(categoryCol->GetValue(i),
-                        (subCategoryColumnName ? subCategoryCol->GetValue(i) : subCatMDCode.value())),
+                                   (subCategoryColumnName ? subCategoryCol->GetValue(i) :
+                                                            subCatMDCode.value())),
                     std::make_pair(std::make_shared<wxRegEx>(reValue),
-                        // empty string can be seen as valid, so an uninitialized wxRegEx
-                        // if there is no string
-                        negatingReValue.length() ?
-                        std::make_shared<wxRegEx>(negatingReValue) :
-                        std::make_shared<wxRegEx>()));
+                                   // empty string can be seen as valid, so an uninitialized wxRegEx
+                                   // if there is no string
+                                   negatingReValue.length() ?
+                                       std::make_shared<wxRegEx>(negatingReValue) :
+                                       std::make_shared<wxRegEx>()));
                 }
             else
                 {
-                wxLogWarning(L"'%s': regular expression syntax error for category '%s.'",
-                             reValue,
+                wxLogWarning(L"'%s': regular expression syntax error for category '%s.'", reValue,
                              categoryCol->GetLabelFromID(categoryCol->GetValue(i)));
                 }
             }
@@ -100,20 +104,22 @@ namespace Wisteria::Data
 
     //----------------------------------------------------------------
     std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
-        TextClassifier::ClassifyData(
-                    std::shared_ptr<const Data::Dataset> contentData,
-                    const wxString& contentColumnName)
+    TextClassifier::ClassifyData(std::shared_ptr<const Data::Dataset> contentData,
+                                 const wxString& contentColumnName)
         {
         // nothing patterns or categories loaded from previous call to SetClassifierData()?
         if (m_categoryPatternsMap.get_data().size() == 0)
-            { return std::make_pair(nullptr, nullptr); }
+            {
+            return std::make_pair(nullptr, nullptr);
+            }
 
         auto contentColumn = contentData->GetCategoricalColumn(contentColumnName);
         if (contentColumn == contentData->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': content column not found in dataset being classified."),
-                contentColumnName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': content column not found in dataset being classified."),
+                                 contentColumnName)
+                    .ToUTF8());
             }
 
         // output will be the comments and categories that they matched against
@@ -122,13 +128,14 @@ namespace Wisteria::Data
         classifiedData->AddCategoricalColumn(m_categoryColumnName, m_categoriesStringTable);
         if (m_subCategoryColumnName)
             {
-            classifiedData->AddCategoricalColumn(
-                m_subCategoryColumnName.value(), m_subCategoriesStringTable);
+            classifiedData->AddCategoricalColumn(m_subCategoryColumnName.value(),
+                                                 m_subCategoriesStringTable);
             }
 
         auto unclassifiedData = std::make_shared<Data::Dataset>();
         unclassifiedData->AddCategoricalColumn(contentColumnName, contentColumn->GetStringTable());
-        const auto mdCode = ColumnWithStringTable::FindMissingDataCode(contentColumn->GetStringTable());
+        const auto mdCode =
+            ColumnWithStringTable::FindMissingDataCode(contentColumn->GetStringTable());
 
         for (size_t i = 0; i < contentData->GetRowCount(); ++i)
             {
@@ -141,10 +148,11 @@ namespace Wisteria::Data
                 for (const auto& re : regexes.first)
                     {
                     if (re.first->IsValid() &&
-                        re.first->Matches(contentColumn->GetLabelFromID(contentColumn->GetValue(i))) &&
+                        re.first->Matches(
+                            contentColumn->GetLabelFromID(contentColumn->GetValue(i))) &&
                         // either no negating regex or it doesn't match it
-                        (!re.second->IsValid() ||
-                         !re.second->Matches(contentColumn->GetLabelFromID(contentColumn->GetValue(i)))))
+                        (!re.second->IsValid() || !re.second->Matches(contentColumn->GetLabelFromID(
+                                                      contentColumn->GetValue(i)))))
                         {
                         categoryRegexMatched = true;
                         matchedAnyCategory = true;
@@ -163,8 +171,8 @@ namespace Wisteria::Data
                         }
                     else
                         {
-                        classifiedData->AddRow(Data::RowInfo().Categoricals(
-                            { contentColumn->GetValue(i), id.first }));
+                        classifiedData->AddRow(
+                            Data::RowInfo().Categoricals({ contentColumn->GetValue(i), id.first }));
                         }
                     }
                 }
@@ -173,12 +181,12 @@ namespace Wisteria::Data
                 // don't write out empty comments
                 if (contentColumn->GetValue(i) != mdCode)
                     {
-                    unclassifiedData->AddRow(Data::RowInfo().Categoricals(
-                        { contentColumn->GetValue(i) }));
+                    unclassifiedData->AddRow(
+                        Data::RowInfo().Categoricals({ contentColumn->GetValue(i) }));
                     }
                 }
             }
 
         return std::make_pair(classifiedData, unclassifiedData);
         }
-    }
+    } // namespace Wisteria::Data

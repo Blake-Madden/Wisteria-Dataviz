@@ -21,23 +21,31 @@ namespace Wisteria::Data
     class PivotedWiderRow
         {
         friend class Pivot;
-    public:
+
+      public:
         PivotedWiderRow(const wxString& id,
-            std::vector<std::pair<wxString, CategoricalOrIdDataType>>& idColumns,
-            std::map<wxString, double, wxStringLessNoCase>& pivotedColumns) :
-            m_Id(id), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
-            {}
+                        std::vector<std::pair<wxString, CategoricalOrIdDataType>>& idColumns,
+                        std::map<wxString, double, wxStringLessNoCase>& pivotedColumns)
+            : m_Id(id), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
+            {
+            }
+
         /// @private
         [[nodiscard]]
-        bool operator<(const PivotedWiderRow& that) const
-            { return m_Id.CmpNoCase(that.m_Id) < 0; }
+        bool
+        operator<(const PivotedWiderRow& that) const
+            {
+            return m_Id.CmpNoCase(that.m_Id) < 0;
+            }
+
         /// @brief Combines rows with the same ID(s), adding new pivoted
         ///     columns, or combining values with common pivots.
         void Combine(const PivotedWiderRow& that);
         /// @brief Adds any missing pivoted columns and sets its value to NaN.
         void Expand(const std::set<wxString, wxStringLessNoCase>& pivotedColumnNames,
                     const double fillValue = std::numeric_limits<double>::quiet_NaN());
-    private:
+
+      private:
         // ID hash, which is the ID column(s) names combined into one string
         wxString m_Id;
         // ID columns, used for grouping and comparing rows
@@ -50,7 +58,7 @@ namespace Wisteria::Data
     /** @brief Pivots a dataset wider (a.k.a. unstacking or melting data).*/
     class Pivot
         {
-    public:
+      public:
         /// @brief Constructor.
         Pivot() = default;
         /// @private
@@ -83,21 +91,20 @@ namespace Wisteria::Data
             @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset> PivotWider(
-            const std::shared_ptr<const Dataset>& dataset,
-            const std::vector<wxString>& IdColumns,
-            const wxString& namesFromColumn,
-            const std::vector<wxString>& valuesFromColumns,
-            const wxString& namesSep = L"_",
-            const wxString& namesPrefix = wxEmptyString,
-            const double fillValue = std::numeric_limits<double>::quiet_NaN());
+        std::shared_ptr<Dataset>
+        PivotWider(const std::shared_ptr<const Dataset>& dataset,
+                   const std::vector<wxString>& IdColumns, const wxString& namesFromColumn,
+                   const std::vector<wxString>& valuesFromColumns, const wxString& namesSep = L"_",
+                   const wxString& namesPrefix = wxEmptyString,
+                   const double fillValue = std::numeric_limits<double>::quiet_NaN());
 
         /** @brief Combines multiple columns into a grouping column and value column.\n
                 Multiple target grouping columns can also be created if a regular expression
                 is provided to split the initial columns' names.
             @details Pivoting longer is also known as stacking, casting, or gathering
                 a dataset. This is useful for converting a "one row for each observation" dataset
-                into a dataset with grouping columns (which is generally more appropriate for analyses).
+                into a dataset with grouping columns
+                (which is generally more appropriate for analyses).
             @param dataset The dataset to pivot.
             @param columnsToKeep The columns to not pivot. These will be copied to the new dataset
                 and will have their values filled in all new rows created from their observation.
@@ -106,26 +113,29 @@ namespace Wisteria::Data
                 Note that the output will be sorted based on the ordering of these columns.
             @param fromColumns The continuous column(s) to pivot into longer format.
             @param namesTo The target column(s) to move the names from the @c fromColumns into.\n
-                Basically, this will be a grouping column that uses the original column names as its groups.
+                Basically, this will be a grouping column that uses the original
+                column names as its groups.
             @param valuesTo The column to move the values from the @c fromColumns into.\n
-                This will essentially be the values from the @c fromColumns stacked on top of each other.
-                The original column name for each value will appear next to it in the @c namesTo column.
-            @param namesPattern If needing to split the names of the columns into multiple target columns,
-                this regular expression can be used. It should contain capture groups, where each group
+                This will essentially be the values from the @c fromColumns stacked on
+                top of each other.
+                The original column name for each value will appear next to it in the
+                @c namesTo column.
+            @param namesPattern If needing to split the names of the columns into
+                multiple target columns, this regular expression can be used.
+                It should contain capture groups, where each group
                 will be the name of a new target column.\n
-                Leave blank (the default) to use the full name(s) of the @c fromColumns as the labels.
+                Leave blank (the default) to use the full name(s) of the
+                @c fromColumns as the labels.
             @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset> PivotLonger(
-            const std::shared_ptr<const Dataset>& dataset,
-            const std::vector<wxString>& columnsToKeep,
-            const std::vector<wxString>& fromColumns,
-            const std::vector<wxString>& namesTo,
-            const wxString& valuesTo,
-            const wxString& namesPattern = wxEmptyString);
+        std::shared_ptr<Dataset>
+        PivotLonger(const std::shared_ptr<const Dataset>& dataset,
+                    const std::vector<wxString>& columnsToKeep,
+                    const std::vector<wxString>& fromColumns, const std::vector<wxString>& namesTo,
+                    const wxString& valuesTo, const wxString& namesPattern = wxEmptyString);
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 

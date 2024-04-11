@@ -12,12 +12,12 @@
 #ifndef __WISTERIA_JITTER_H__
 #define __WISTERIA_JITTER_H__
 
-#include <algorithm>
-#include "../math/safe_math.h"
-#include "../math/mathematics.h"
-#include "../util/frequencymap.h"
-#include "../base/graphitems.h"
 #include "../base/axis.h"
+#include "../base/graphitems.h"
+#include "../math/mathematics.h"
+#include "../math/safe_math.h"
+#include "../util/frequencymap.h"
+#include <algorithm>
 
 namespace Wisteria::Data
     {
@@ -74,23 +74,24 @@ namespace Wisteria::Data
        */
     class Jitter
         {
-    public:
+      public:
         /** @brief Constructor.
             @param jitterWidth The entire width (in pixels) around both sides of the axis where
                 you can jitter points out to.
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
                 For example, LeftYAxis will cause jittering along the x axis.*/
-        Jitter(const size_t jitterWidth, const AxisType dominantAxis) :
-            m_jitterSideWidth(safe_divide<size_t>(jitterWidth, 2)),
-            m_dominantAxis(dominantAxis)
-            {}
+        Jitter(const size_t jitterWidth, const AxisType dominantAxis)
+            : m_jitterSideWidth(safe_divide<size_t>(jitterWidth, 2)), m_dominantAxis(dominantAxis)
+            {
+            }
+
         /** @brief Constructor.
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
                 For example, LeftYAxis will cause jittering along the x axis.*/
-        explicit Jitter(const AxisType dominantAxis) : m_dominantAxis(dominantAxis)
-            {}
+        explicit Jitter(const AxisType dominantAxis) : m_dominantAxis(dominantAxis) {}
+
         /// @private
         Jitter() = delete;
 
@@ -98,7 +99,8 @@ namespace Wisteria::Data
                 based on the point with the highest frequency.
             @param points The data points to analyze.
             @note This only needs to be called once after a plot's data changes,
-                does not need to be called after calls to SetJitterWidth() or ResetJitterData().*/
+                does not need to be called after calls to SetJitterWidth() or
+                ResetJitterData().*/
         template<typename T>
         void CalcSpread(const frequency_set<T>& points) noexcept
             {
@@ -107,13 +109,12 @@ namespace Wisteria::Data
                 m_numberOfPointsOnEachSide = 0;
                 return;
                 }
-            m_numberOfPointsOnEachSide =
-                static_cast<size_t>(round_to_integer(
-                safe_divide<double>(
-                    std::max_element(points.get_data().cbegin(), points.get_data().cend(),
-                        [](const auto& first, const auto& second)
-                            { return first.second < second.second; })->second,
-                    2)));
+            m_numberOfPointsOnEachSide = static_cast<size_t>(round_to_integer(safe_divide<double>(
+                std::max_element(points.get_data().cbegin(), points.get_data().cend(),
+                                 [](const auto& first, const auto& second)
+                                 { return first.second < second.second; })
+                    ->second,
+                2)));
             }
 
         /** @brief Sets the width of how far the points can be jittered around the axis.
@@ -130,8 +131,7 @@ namespace Wisteria::Data
             @details Will not affect the number of points on each side of the axis,
                 just clears data from previous jittering calls.
             @note Calling SetJitterWidth() will call this for you.*/
-        void ResetJitterData() noexcept
-            { m_plottedPoints.clear(); }
+        void ResetJitterData() noexcept { m_plottedPoints.clear(); }
 
         /** @brief Jitters a point.
             @param[in,out] pt The point to be jittered (along the non-dominant axis).
@@ -142,22 +142,24 @@ namespace Wisteria::Data
                 (or SetJitterWidth()) before performing another series of calls to this function.*/
         bool JitterPoint(wxPoint& pt)
             {
-            if (m_dominantAxis == AxisType::LeftYAxis ||
-                m_dominantAxis == AxisType::RightYAxis)
+            if (m_dominantAxis == AxisType::LeftYAxis || m_dominantAxis == AxisType::RightYAxis)
                 {
                 const auto plottedPointInfo = m_plottedPoints.insert(pt.y);
                 // only jitter if there is already another point on the axis line
                 if (plottedPointInfo->second > 1)
                     {
                     // if an even number of points, jitter to the left
-                    pt.x += is_even(plottedPointInfo->second) ?
-                        -static_cast<wxCoord>(safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second,2),
+                    pt.x +=
+                        is_even(plottedPointInfo->second) ?
+                            -static_cast<wxCoord>(
+                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
                                                    1, m_numberOfPointsOnEachSide)) :
-                        // or to the right if odd
-                        static_cast<wxCoord>(safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second,2),
-                                                1, m_numberOfPointsOnEachSide));
+                            // or to the right if odd
+                            static_cast<wxCoord>(
+                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
+                                                   1, m_numberOfPointsOnEachSide));
                     return true;
                     }
                 return false;
@@ -167,25 +169,29 @@ namespace Wisteria::Data
                 const auto plottedPointInfo = m_plottedPoints.insert(pt.x);
                 if (plottedPointInfo->second > 1)
                     {
-                    pt.y += is_even(plottedPointInfo->second) ?
-                        -static_cast<wxCoord>(safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second,2),
+                    pt.y +=
+                        is_even(plottedPointInfo->second) ?
+                            -static_cast<wxCoord>(
+                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
                                                    1, m_numberOfPointsOnEachSide)) :
-                         static_cast<wxCoord>(safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second,2),
+                            static_cast<wxCoord>(
+                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
                                                    1, m_numberOfPointsOnEachSide));
                     return true;
                     }
                 return false;
                 }
             }
-    private:
+
+      private:
         frequency_set<wxCoord> m_plottedPoints;
         size_t m_jitterSideWidth{ 0 };
         size_t m_numberOfPointsOnEachSide{ 50 };
         AxisType m_dominantAxis{ AxisType::LeftYAxis };
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 

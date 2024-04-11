@@ -32,19 +32,20 @@ namespace Wisteria::Data
     /// @private
     class ColumnFilter
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param fromDataset The dataset to subset.
         /// @param subsetCriterion The filter criteria.
         ColumnFilter(const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo& subsetCriterion);
+                     const ColumnFilterInfo& subsetCriterion);
         /** @brief Determines if the given row in the dataset meets the criteria
                 of this filter.
             @param rowPosition The row index in the dataset to review.
             @returns @c true if the row matches the filter, @c false otherwise.*/
         [[nodiscard]]
         bool MeetsCriterion(const size_t rowPosition) const;
-    private:
+
+      private:
         const Wisteria::Data::Column<wxString>* m_idColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
@@ -89,7 +90,7 @@ namespace Wisteria::Data
     */
     class Subset final : public DatasetClone
         {
-    public:
+      public:
         /// @brief Constructor.
         Subset() = default;
         /// @private
@@ -106,9 +107,8 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset> SubsetSimple(
-            const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo& columnFilter);
+        std::shared_ptr<Dataset> SubsetSimple(const std::shared_ptr<const Dataset>& fromDataset,
+                                              const ColumnFilterInfo& columnFilter);
         /** @brief Creates a subset, based on multiple filters that are ORed together.
             @details In other words, if any of the filters match against an observation,
                 then it will included in the subset.
@@ -121,9 +121,8 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset> SubsetOr(
-            const std::shared_ptr<const Dataset>& fromDataset,
-            const std::vector<ColumnFilterInfo>& columnFilters);
+        std::shared_ptr<Dataset> SubsetOr(const std::shared_ptr<const Dataset>& fromDataset,
+                                          const std::vector<ColumnFilterInfo>& columnFilters);
         /** @brief Creates a subset, based on multiple filters that are ANDed together.
             @details In other words, all the filters must match against an observation
                 for it to be included in the subset.
@@ -136,9 +135,8 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset> SubsetAnd(
-            const std::shared_ptr<const Dataset>& fromDataset,
-            const std::vector<ColumnFilterInfo>& columnFilters);
+        std::shared_ptr<Dataset> SubsetAnd(const std::shared_ptr<const Dataset>& fromDataset,
+                                           const std::vector<ColumnFilterInfo>& columnFilters);
         /** @brief Creates a subset from a contiguous block of rows based on sentinel values.
             @details Given a column and pair of start and end labels, will create a subset
                 which only includes the rows that match the start and end labels and all
@@ -155,14 +153,12 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset> SubsetSection(
-            const std::shared_ptr<const Dataset>& fromDataset,
-            const wxString& column,
-            const wxString& startRowLabel,
-            const wxString& endRowLabel,
-            const bool includeSentinelLabels);
+        std::shared_ptr<Dataset>
+        SubsetSection(const std::shared_ptr<const Dataset>& fromDataset, const wxString& column,
+                      const wxString& startRowLabel, const wxString& endRowLabel,
+                      const bool includeSentinelLabels);
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 

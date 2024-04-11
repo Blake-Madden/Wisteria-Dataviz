@@ -22,7 +22,7 @@ namespace Wisteria::Data
     ///     then use a deep copy construction.
     class DatasetClone
         {
-    public:
+      public:
         /// @private
         DatasetClone() = default;
         /// @private
@@ -43,33 +43,47 @@ namespace Wisteria::Data
         ///     hasn't been called.
         [[nodiscard]]
         std::shared_ptr<Dataset> Clone();
-    protected:
+
+      protected:
         /// @returns @c true if there are more rows that can be copied or skipped.
         [[nodiscard]]
         bool HasMoreRows() const noexcept
-            { return m_currentSrcRow < m_fromDataset->GetRowCount(); }
+            {
+            return m_currentSrcRow < m_fromDataset->GetRowCount();
+            }
+
         /// @brief Skip the next row in the source file, not copying it into the destination.
-        void SkipNextRow() noexcept
-            { ++m_currentSrcRow; }
+        void SkipNextRow() noexcept { ++m_currentSrcRow; }
+
         /// @brief Copies the next row from the source dataset into the destination.
         void CopyNextRow();
+
         /// @brief Get the cloned (i.e., destination) dataset.
         /// @details Derived classes can call this after calls to CopyNextRow() and
         ///     SkipNextRow() are finished.
         /// @returns The cloned dataset.
         [[nodiscard]]
         std::shared_ptr<Dataset> GetClone() const
-            { return m_toDataset; }
+            {
+            return m_toDataset;
+            }
+
         /// @returns The source dataset.
         [[nodiscard]]
         const std::shared_ptr<const Dataset>& GetSource() const noexcept
-            { return m_fromDataset; }
+            {
+            return m_fromDataset;
+            }
+
         /// @returns The position of the next row queued to be copied or skipped.\n
         ///     Will return @c std::nullopt if all rows have been processed and there are no more.
         [[nodiscard]]
         std::optional<size_t> GetNextRowPosition() const noexcept
-            { return HasMoreRows() ? std::optional<size_t>(m_currentSrcRow) : std::nullopt; }
-    private:
+            {
+            return HasMoreRows() ? std::optional<size_t>(m_currentSrcRow) : std::nullopt;
+            }
+
+      private:
         /// @brief Builds a map of pointers to the corresponding columns between the datasets.
         void MapColumns();
 
@@ -84,7 +98,7 @@ namespace Wisteria::Data
         std::map<const ColumnWithStringTable*, ColumnWithStringTable*> m_catColumnsMap;
         std::map<const Column<double>*, Column<double>*> m_continuousColumnsMap;
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 

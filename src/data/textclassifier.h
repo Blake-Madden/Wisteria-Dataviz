@@ -12,11 +12,12 @@
 #ifndef __WISTERIA_TEXT_CLASSIFIER_H__
 #define __WISTERIA_TEXT_CLASSIFIER_H__
 
-#include "dataset.h"
 #include "../util/frequencymap.h"
+#include "dataset.h"
 
 namespace Wisteria::Data
     {
+    // clang-format off
     /** @brief Classifies the items from a text column into categories, based on a
          series of pre-defined categories and their respective regular expressions.
 
@@ -40,22 +41,23 @@ namespace Wisteria::Data
          | Athletics       |             | (?i)stadium                        |                |
          | Food & Beverage |             | (?i)\\bfood\\b                     |                |
          | Food & Beverage |             | (?i)pretzel                        |                |
-         | Programs        | CompSci     | (?i)software                       |                |     
+         | Programs        | CompSci     | (?i)software                       |                |
          | Programs        | Engineering | (?i)engineer                       | (?i)software   |
 
          This will build a classifier with the categories `Facilities`, `Athletics`,
-         `Food & Beverage`, and `Programs`. Each of these categories will have their own set of regexes.
+         `Food & Beverage`, and `Programs`. Each of these categories will have their own
+         set of regexes.
 
          For example, any text that matches `(?i)stadium ` or `(?i)(basket|base|soft)ball`
-         will be classified as `Athletics`. Likewise, that same text will additionally be classified
-         as `Facilities` because that category also as the regex `(?i)stadium`.
+         will be classified as `Athletics`. Likewise, that same text will additionally be
+         classified as `Facilities` because that category also as the regex `(?i)stadium`.
 
          As another example, any text matching `(?i)\bparking` will be classified into
          `Facilities` along with the sub-category `Parking Lot`.
 
          Finally, matches can be negated with an optional negation column. In the above example,
-         any comment that contains `(?i)engineer` will be classified into `Programs` and the sub-category
-         `Engineering` **unless** it also contains `(?i)software`.
+         any comment that contains `(?i)engineer` will be classified into `Programs` and
+         the sub-category `Engineering` **unless** it also contains `(?i)software`.
 
         @note The regex supported by this class is PCRE syntax described at
          https://www.pcre.org/current/doc/html/pcre2syntax.html.
@@ -90,9 +92,10 @@ namespace Wisteria::Data
          | The printer in the library was out of paper :( |
         @todo Add unit tests.
     */
+    // clang-format on
     class TextClassifier
         {
-    public:
+      public:
         /** @brief Sets the categories and their respective regular expressions
                 used to classify text into them.
             @param classifierData The dataset with the categories and regexes in it.
@@ -143,10 +146,10 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
         std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
-                        ClassifyData(
-                            std::shared_ptr<const Data::Dataset> contentData,
-                            const wxString& contentColumnName);
-    private:
+        ClassifyData(std::shared_ptr<const Data::Dataset> contentData,
+                     const wxString& contentColumnName);
+
+      private:
         using IdPair = std::pair<Data::GroupIdType, Data::GroupIdType>;
         // wxRegEx cannot be copy constructed by design, so use shared pointers instead
         using RegExPair = std::pair<std::shared_ptr<wxRegEx>, std::shared_ptr<wxRegEx>>;
@@ -157,7 +160,7 @@ namespace Wisteria::Data
         ColumnWithStringTable::StringTableType m_categoriesStringTable;
         ColumnWithStringTable::StringTableType m_subCategoriesStringTable;
         };
-    }
+    } // namespace Wisteria::Data
 
 /** @}*/
 
