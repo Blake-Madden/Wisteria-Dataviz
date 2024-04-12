@@ -12,10 +12,10 @@
 #ifndef __GRIDEXPORT_DLG_H__
 #define __GRIDEXPORT_DLG_H__
 
-#include <wx/wx.h>
+#include "dialogwithhelp.h"
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
-#include "dialogwithhelp.h"
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -51,17 +51,17 @@ namespace Wisteria::UI
     /// Formats for exporting a grid/list control.
     enum class GridExportFormat
         {
-        ExportText,  /*!< Plain (tab-delimited) text.*/
-        ExportHtml,  /*!< HTML table.*/
-        ExportRtf,   /*!< Rich Text Format.*/
-        ExportLaTeX  /*!< LaTeX.*/
+        ExportText, /*!< Plain (tab-delimited) text.*/
+        ExportHtml, /*!< HTML table.*/
+        ExportRtf,  /*!< Rich Text Format.*/
+        ExportLaTeX /*!< LaTeX.*/
         };
 
     /// @brief Dialog for requesting export options for
     ///     a grid or list control.
     class GridExportDlg final : public DialogWithHelp
         {
-    public:
+      public:
         /** @brief Constructor.
             @param parent The parent to this dialog.
             @param rowCount The total number of rows in the control that is being exported.
@@ -73,12 +73,10 @@ namespace Wisteria::UI
             @param size The dialog's size.
             @param style The dialog's window styling.*/
         GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
-            const GridExportFormat& exportFormat,
-            wxWindowID id = wxID_ANY,
-            const wxString& caption = _(L"List Export Options"),
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+                      const GridExportFormat& exportFormat, wxWindowID id = wxID_ANY,
+                      const wxString& caption = _(L"List Export Options"),
+                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                      long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private
         GridExportDlg(const GridExportDlg&) = delete;
         /// @private
@@ -87,12 +85,17 @@ namespace Wisteria::UI
         /// @returns @c true if user requested pagination in the output.
         [[nodiscard]]
         bool IsPaginating() const noexcept
-            { return m_options.m_pageUsingPrinterSettings; }
+            {
+            return m_options.m_pageUsingPrinterSettings;
+            }
 
         /// @returns @c true if user requested column headers in the output.
         [[nodiscard]]
         bool IsIncludingColumnHeaders() const noexcept
-            { return m_options.m_includeColumnHeaders; }
+            {
+            return m_options.m_includeColumnHeaders;
+            }
+
         /** @brief Sets whether to include column headers in the output.
             @param includeColumnHeaders @c true to include column headers,
                 @c false to exclude them.*/
@@ -105,7 +108,10 @@ namespace Wisteria::UI
         /// @returns @c true if user requested to export only the rows that are selected.
         [[nodiscard]]
         bool IsExportingSelectedRows() const noexcept
-            { return m_options.m_exportSelected; }
+            {
+            return m_options.m_exportSelected;
+            }
+
         /** @brief Specifies whether to export all rows, or just the ones that are selected.
             @param exportSelectedRows @c true to export just the rows that are selected;
                 @c false to export all rows.*/
@@ -120,29 +126,42 @@ namespace Wisteria::UI
         /// @note Will be @c -1 if not specified.
         [[nodiscard]]
         int GetFromRow() const noexcept
-            { return m_options.m_fromRow; }
+            {
+            return m_options.m_fromRow;
+            }
+
         /// @returns The requested ending row (1-indexed).
         /// @note Will be @c -1 if not specified.
         [[nodiscard]]
         int GetToRow() const noexcept
-            { return m_options.m_toRow; }
+            {
+            return m_options.m_toRow;
+            }
 
         /// @returns The requested start column (1-indexed).
         /// @note Will be @c -1 if not specified.
         [[nodiscard]]
         int GetFromColumn() const noexcept
-            { return m_options.m_fromColumn; }
+            {
+            return m_options.m_fromColumn;
+            }
+
         /// @returns The requested ending column (1-indexed).
         /// @note Will be @c -1 if not specified.
         [[nodiscard]]
         int GetToColumn() const noexcept
-            { return m_options.m_toColumn; }
+            {
+            return m_options.m_toColumn;
+            }
 
         /// @returns The user's specified options.
         [[nodiscard]]
         const GridExportOptions& GetExportOptions() const noexcept
-            { return m_options; }
-    private:
+            {
+            return m_options;
+            }
+
+      private:
         void CreateControls();
 
         GridExportOptions m_options;
@@ -163,7 +182,7 @@ namespace Wisteria::UI
             ID_ROWS_TO_LABEL
             };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

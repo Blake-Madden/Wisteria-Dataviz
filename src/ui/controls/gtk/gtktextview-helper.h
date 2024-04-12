@@ -17,20 +17,20 @@
 #define __GTK_TEXTVIEW_PANGO_MARKUP__
 
 #ifdef __WXGTK__
+#include <cstring>
 #include <gtk/gtk.h>
-#include <gtk/gtktextiter.h>
-#include <gtk/gtktexttag.h>
 #include <gtk/gtktextchild.h>
 #include <gtk/gtktextiter.h>
-#include <cstring>
+#include <gtk/gtktexttag.h>
 #include <string>
 #include <vector>
-#include <wx/wx.h>
-#include <wx/string.h>
+#include <wx/gtk/print.h>
 #include <wx/log.h>
 #include <wx/paper.h>
-#include <wx/gtk/print.h>
+#include <wx/string.h>
+#include <wx/wx.h>
 
+// clang-format off
 // Printing system for GtkTextView
 //--------------------------------
 
@@ -610,6 +610,8 @@ void
 text_buffer_set_markup(GtkTextBuffer *buffer,
                        const gchar   *markup,
                        gint           len);
+
+// clang-format on
 
 #endif // __WXGTK__
 #endif // __GTK_TEXTVIEW_PANGO_MARKUP__

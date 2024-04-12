@@ -11,10 +11,11 @@
      SPDX-License-Identifier: wxWindows
 @{*/
 
-#include <algorithm>
 #include "gtktextview-helper.h"
 #include "../../../debug/debug_profile.h"
+#include <algorithm>
 
+// clang-format off
 #ifdef __WXGTK__
 
 //-------------------------------------------------
@@ -409,3 +410,4 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
     }
 
 #endif
+// clang-format on
