@@ -6,24 +6,22 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <chrono>
 #include "downloadfile.h"
 #include "fileutil.h"
+#include <chrono>
 
 //--------------------------------------------------
 void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
     {
-    assert(m_handler &&
-           L"Call SetEventHandler() to connect an event handler!");
+    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download queue could not start because event handler "
-                    "has not been connected.");
+                   "has not been connected.");
         return;
         }
 
-    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
-        m_handler, url, m_currentId++);
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(m_handler, url, m_currentId++);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
@@ -37,8 +35,7 @@ wxString QueueDownload::GetLocalPath(const int ID) const
     {
     std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     auto downloadInfo = m_downloads.find(ID);
-    return (downloadInfo != m_downloads.cend()) ?
-        downloadInfo->second : wxString{};
+    return (downloadInfo != m_downloads.cend()) ? downloadInfo->second : wxString{};
     }
 
 //--------------------------------------------------
@@ -47,23 +44,29 @@ void QueueDownload::Remove(const int ID)
     std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     auto downloadInfo = m_downloads.find(ID);
     if (downloadInfo != m_downloads.cend())
-        { m_downloads.erase(downloadInfo); }
+        {
+        m_downloads.erase(downloadInfo);
+        }
     // Reset the ID if everything has been processed.
     if (m_downloads.size() == 0)
-        { m_currentId = 0; }
+        {
+        m_currentId = 0;
+        }
     }
 
 //--------------------------------------------------
 void QueueDownload::CancelPending()
     {
     std::for_each(m_requests.begin(), m_requests.end(),
-        [](wxWebRequest& request)
-        {
-        if (request.IsOk() &&
-            (request.GetState() == wxWebRequest::State_Active ||
-             request.GetState() == wxWebRequest::State_Unauthorized))
-            { request.Cancel(); }
-        });
+                  [](wxWebRequest& request)
+                  {
+                      if (request.IsOk() &&
+                          (request.GetState() == wxWebRequest::State_Active ||
+                           request.GetState() == wxWebRequest::State_Unauthorized))
+                          {
+                          request.Cancel();
+                          }
+                  });
     }
 
 //--------------------------------------------------
@@ -79,19 +82,22 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         if (!downloadPath.empty())
             {
             if (wxFileName::FileExists(downloadPath))
-                { wxFileName(downloadPath).SetPermissions(wxS_DEFAULT); }
+                {
+                wxFileName(downloadPath).SetPermissions(wxS_DEFAULT);
+                }
 
             if (!wxRenameFile(evt.GetDataFile(), downloadPath) &&
-                !RenameFileShortenName(evt.GetDataFile(), downloadPath) )
-                { wxLogError(L"Could not move %s", evt.GetDataFile()); }
+                !RenameFileShortenName(evt.GetDataFile(), downloadPath))
+                {
+                wxLogError(L"Could not move %s", evt.GetDataFile());
+                }
             Remove(evt.GetId());
             }
         break;
         }
     case wxWebRequest::State_Failed:
-        wxLogError(L"Web Request failed: %s (%s)",
-            evt.GetErrorDescription(),
-            QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
+        wxLogError(L"Web Request failed: %s (%s)", evt.GetErrorDescription(),
+                   QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
         Remove(evt.GetId());
         break;
     case wxWebRequest::State_Cancelled:
@@ -99,13 +105,13 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         break;
     case wxWebRequest::State_Unauthorized:
         {
-        const auto requestPos = std::find_if(m_requests.cbegin(), m_requests.cend(),
-            [&evt](const auto& request)
-            {
-                return request.GetId() == evt.GetId();
-            });
+        const auto requestPos =
+            std::find_if(m_requests.cbegin(), m_requests.cend(),
+                         [&evt](const auto& request) { return request.GetId() == evt.GetId(); });
         if (requestPos == m_requests.cend())
-            { Remove(evt.GetId()); }
+            {
+            Remove(evt.GetId());
+            }
         else
             {
             if (!requestPos->GetAuthChallenge().IsOk())
@@ -117,21 +123,17 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
             else if (IsPeerVerifyDisabled())
                 {
                 wxLogStatus(L"Credentials were requested, but will not be used because "
-                             "SSL certificate verification is disabled.");
+                            "SSL certificate verification is disabled.");
                 Remove(evt.GetId());
                 break;
                 }
 
             wxWebCredentials cred;
-            wxCredentialEntryDialog dialog
-                (
+            wxCredentialEntryDialog dialog(
                 wxTheApp->GetTopWindow(),
-                wxString::Format
-                    (_(L"Please enter credentials for accessing\n%s"),
-                    evt.GetResponse().GetURL() ),
-                wxTheApp->GetAppName(),
-                cred
-                );
+                wxString::Format(_(L"Please enter credentials for accessing\n%s"),
+                                 evt.GetResponse().GetURL()),
+                wxTheApp->GetAppName(), cred);
             if (dialog.ShowModal() == wxID_OK)
                 {
                 requestPos->GetAuthChallenge().SetCredentials(cred);
@@ -157,12 +159,11 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
 bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath,
                             std::optional<uint32_t> minFileDownloadSizeKilobytes /*= std::nullopt*/)
     {
-    assert(m_handler &&
-        L"Call SetEventHandler() to connect an event handler!");
+    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download could not start because event handler "
-                    "has not been connected.");
+                   "has not been connected.");
         return false;
         }
     wxLogVerbose(L"Downloading '%s'", url);
@@ -171,8 +172,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     m_downloadPath = localDownloadPath;
     m_minFileDownloadSizeKilobytes = minFileDownloadSizeKilobytes;
 
-    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
-        m_handler, url);
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(m_handler, url);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
@@ -195,8 +195,9 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
                 request.Cancel();
                 }
             else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                    GetTimeout() && m_bytesReceived == 0)
+                     std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                         GetTimeout() &&
+                     m_bytesReceived == 0)
                 {
                 m_timedOut = true;
                 wxLogError(
@@ -234,12 +235,11 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
 //--------------------------------------------------
 void FileDownload::RequestResponse(const wxString& url)
     {
-    assert(m_handler &&
-        L"Call SetEventHandler() to connect an event handler!");
+    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download could not start because event handler "
-                    "has not been connected.");
+                   "has not been connected.");
         return;
         }
     // note that you need to printf the string before passing to wxLog
@@ -248,8 +248,7 @@ void FileDownload::RequestResponse(const wxString& url)
 
     Reset(true);
 
-    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
-        m_handler, url);
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(m_handler, url);
     request.SetStorage(wxWebRequest::Storage_None);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
@@ -269,8 +268,9 @@ void FileDownload::RequestResponse(const wxString& url)
             // also check time out this way in case we are stuck in Idle and the event
             // is no longer being processed
             else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                    GetTimeout() && m_bytesReceived == 0)
+                     std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                         GetTimeout() &&
+                     m_bytesReceived == 0)
                 {
                 m_timedOut = true;
                 wxLogError(
@@ -300,20 +300,18 @@ void FileDownload::RequestResponse(const wxString& url)
 //--------------------------------------------------
 bool FileDownload::Read(const wxString& url)
     {
-    assert(m_handler &&
-        L"Call SetEventHandler() to connect an event handler!");
+    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download could not start because event handler "
-                    "has not been connected.");
+                   "has not been connected.");
         return false;
         }
     wxLogVerbose(L"Reading '%s'", url);
 
     Reset(true);
 
-    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
-        m_handler, url);
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(m_handler, url);
     request.SetStorage(wxWebRequest::Storage_Memory);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
@@ -331,8 +329,9 @@ bool FileDownload::Read(const wxString& url)
                 request.Cancel();
                 }
             else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                    GetTimeout() && m_bytesReceived == 0)
+                     std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                         GetTimeout() &&
+                     m_bytesReceived == 0)
                 {
                 m_timedOut = true;
                 wxLogError(
@@ -367,16 +366,21 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     m_server = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
                     evt.GetResponse().GetHeader(_DT(L"Server")) :
                     wxString{});
-    m_lastStatus = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
-                     evt.GetResponse().GetStatus() : 404);
-    m_lastStatusText = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
-                    evt.GetResponse().GetStatusText() : wxString{});
-    m_lastUrl = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
-                  evt.GetResponse().GetURL() : wxString{});
+    m_lastStatus =
+        ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetStatus() :
+                                                                 404);
+    m_lastStatusText =
+        ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetStatusText() :
+                                                                 wxString{});
+    m_lastUrl =
+        ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetURL() :
+                                                                 wxString{});
     m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
-                          evt.GetResponse().GetHeader(_DT(L"Content-Type")) : wxString{});
-    m_lastStatusInfo = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
-                    evt.GetResponse().AsString() : wxString{});
+                             evt.GetResponse().GetHeader(_DT(L"Content-Type")) :
+                             wxString{});
+    m_lastStatusInfo =
+        ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().AsString() :
+                                                                 wxString{});
     m_lastState =
         (evt.GetRequest().IsOk() ? evt.GetRequest().GetState() : wxWebRequest::State::State_Failed);
     // if a redirected error page, parse it down to its readable content
@@ -394,9 +398,10 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
         // Cloudflare forces the use of javascript to block robots
         if (m_lastStatus == 403 && m_server.CmpNoCase(_DT(L"cloudflare")) == 0)
             {
-            m_lastStatusInfo.insert(0, _(L"Webpage is using Cloudflare protection and "
-                "can only be accessed via an interactive browser. "
-                "Please use a browser to download this page.\n\nResponse from website:\n"));
+            m_lastStatusInfo.insert(
+                0, _(L"Webpage is using Cloudflare protection and "
+                     "can only be accessed via an interactive browser. "
+                     "Please use a browser to download this page.\n\nResponse from website:\n"));
             }
         }
     }
@@ -411,117 +416,129 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
 
     switch (evt.GetState())
         {
-        // Request completed
-        case wxWebRequest::State_Completed:
+    // Request completed
+    case wxWebRequest::State_Completed:
+        {
+        // if file was downloaded to a temp file,
+        // copy it to the requested location
+        if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_File)
             {
-            // if file was downloaded to a temp file,
-            // copy it to the requested location
-            if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_File)
+            if (wxFileName::FileExists(m_downloadPath))
                 {
-                if (wxFileName::FileExists(m_downloadPath))
-                    { wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT); }
-
-                if (!wxRenameFile(evt.GetDataFile(), m_downloadPath) &&
-                    !RenameFileShortenName(evt.GetDataFile(), m_downloadPath) )
-                    { wxLogError(L"Could not move %s", evt.GetDataFile()); }
-                else
-                    { m_downloadSuccessful = true; }
-                }
-            // otherwise, it was requested to be read into a buffer
-            else if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_Memory)
-                {
-                m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
-                if (m_buffer.size() > 1)
-                    {
-                    evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
-                    }
-                }
-            m_statusHasBeenProcessed = true;
-            LoadResponseInfo(evt);
-            break;
-            }
-        case wxWebRequest::State_Failed:
-            if (evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk())
-                {
-                wxLogError(L"'%s', web Request failed: %s (%s)",
-                    evt.GetRequest().GetResponse().GetURL(),
-                    evt.GetErrorDescription(),
-                    QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
-                }
-            else
-                {
-                wxLogError(L"Web Request failed: %s",
-                    evt.GetErrorDescription());
-                }
-            m_statusHasBeenProcessed = true;
-            LoadResponseInfo(evt);
-            break;
-        case wxWebRequest::State_Cancelled:
-            m_statusHasBeenProcessed = true;
-            LoadResponseInfo(evt);
-            break;
-        case wxWebRequest::State_Unauthorized:
-            {
-            if (evt.GetRequest().IsOk() &&
-                !evt.GetRequest().GetAuthChallenge().IsOk())
-                {
-                wxLogStatus(L"Unexpectedly missing authentication challenge");
-                break;
-                }
-            else if (IsPeerVerifyDisabled())
-                {
-                wxLogStatus(L"Credentials were requested, but will not be used because "
-                             "SSL certificate verification is disabled.");
-                break;
+                wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT);
                 }
 
-            wxWebCredentials cred;
-            wxCredentialEntryDialog dialog(
-                wxTheApp->GetTopWindow(),
-                wxString::Format(
-                    _(L"Please enter credentials for accessing\n%s"),
-                    evt.GetResponse().GetURL() ), wxTheApp->GetAppName(), cred);
-            if (dialog.ShowModal() == wxID_OK)
-                {
-                evt.GetRequest().GetAuthChallenge().SetCredentials(cred);
-                wxLogStatus(L"Trying to authenticate...");
-                }
-            else
-                {
-                wxLogStatus(L"Authentication challenge canceled");
-                }
-            m_statusHasBeenProcessed = true;
-            LoadResponseInfo(evt);
-            break;
-            }
-        case wxWebRequest::State_Active:
-            [[fallthrough]];
-        case wxWebRequest::State_Idle:
-            if (evt.GetRequest().IsOk() &&
-                evt.GetRequest().GetBytesExpectedToReceive() != 0 &&
+            // if downloaded to temp folder, check size constraints (if in use)
+            // to see if we should "download" it to the final destination
+            if (wxFileName::FileExists(evt.GetDataFile()) &&
                 m_minFileDownloadSizeKilobytes.has_value() &&
                 m_minFileDownloadSizeKilobytes.value() >
-                    evt.GetRequest().GetBytesExpectedToReceive())
+                    (wxFileName::GetSize(evt.GetDataFile()) / 1024))
                 {
-                // Don't bother loading the response info;
-                // only Download uses then and will fill in response info manually
-                // if this error occurs.
                 m_downloadTooSmall = true;
                 }
-            /* Check after XX seconds as to whether any data has been received;
-               if not, then quit.*/
-            if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                    GetTimeout() && m_bytesReceived == 0)
+            else if (!wxRenameFile(evt.GetDataFile(), m_downloadPath) &&
+                     !RenameFileShortenName(evt.GetDataFile(), m_downloadPath))
                 {
-                wxLogError(
-                    L"Page timed out after %s seconds. Response code #%d (%s).",
-                    std::to_wstring(
-                        std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()),
-                    m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
-                LoadResponseInfo(evt);
-                m_timedOut = true;
+                wxLogError(L"Could not move %s", evt.GetDataFile());
                 }
+            else
+                {
+                m_downloadSuccessful = true;
+                }
+            }
+        // otherwise, it was requested to be read into a buffer
+        else if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_Memory)
+            {
+            m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
+            if (m_buffer.size() > 1)
+                {
+                evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
+                }
+            }
+        m_statusHasBeenProcessed = true;
+        LoadResponseInfo(evt);
+        break;
+        }
+    case wxWebRequest::State_Failed:
+        if (evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk())
+            {
+            wxLogError(
+                L"'%s', web Request failed: %s (%s)", evt.GetRequest().GetResponse().GetURL(),
+                evt.GetErrorDescription(),
+                QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
+            }
+        else
+            {
+            wxLogError(L"Web Request failed: %s", evt.GetErrorDescription());
+            }
+        m_statusHasBeenProcessed = true;
+        LoadResponseInfo(evt);
+        break;
+    case wxWebRequest::State_Cancelled:
+        m_statusHasBeenProcessed = true;
+        LoadResponseInfo(evt);
+        break;
+    case wxWebRequest::State_Unauthorized:
+        {
+        if (evt.GetRequest().IsOk() && !evt.GetRequest().GetAuthChallenge().IsOk())
+            {
+            wxLogStatus(L"Unexpectedly missing authentication challenge");
             break;
+            }
+        else if (IsPeerVerifyDisabled())
+            {
+            wxLogStatus(L"Credentials were requested, but will not be used because "
+                        "SSL certificate verification is disabled.");
+            break;
+            }
+
+        wxWebCredentials cred;
+        wxCredentialEntryDialog dialog(
+            wxTheApp->GetTopWindow(),
+            wxString::Format(_(L"Please enter credentials for accessing\n%s"),
+                             evt.GetResponse().GetURL()),
+            wxTheApp->GetAppName(), cred);
+        if (dialog.ShowModal() == wxID_OK)
+            {
+            evt.GetRequest().GetAuthChallenge().SetCredentials(cred);
+            wxLogStatus(L"Trying to authenticate...");
+            }
+        else
+            {
+            wxLogStatus(L"Authentication challenge canceled");
+            }
+        m_statusHasBeenProcessed = true;
+        LoadResponseInfo(evt);
+        break;
+        }
+    case wxWebRequest::State_Active:
+        [[fallthrough]];
+    case wxWebRequest::State_Idle:
+        if (evt.GetRequest().IsOk() && evt.GetRequest().GetBytesExpectedToReceive() != 0 &&
+            m_minFileDownloadSizeKilobytes.has_value() &&
+            m_minFileDownloadSizeKilobytes.value() > evt.GetRequest().GetBytesExpectedToReceive())
+            {
+            // Don't bother loading the response info;
+            // only Download uses then and will fill in response info manually
+            // if this error occurs.
+            m_downloadTooSmall = true;
+            }
+        /* Check after XX seconds as to whether any data has been received;
+           if not, then quit.*/
+        if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
+            std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                GetTimeout() &&
+            m_bytesReceived == 0)
+            {
+            wxLogError(
+                L"Page timed out after %s seconds. Response code #%d (%s).",
+                std::to_wstring(
+                    std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()),
+                m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
+            LoadResponseInfo(evt);
+            m_timedOut = true;
+            }
+        break;
         }
     }
