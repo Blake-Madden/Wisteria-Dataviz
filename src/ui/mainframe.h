@@ -12,24 +12,24 @@
 #ifndef __BASEMAINFRAME_H__
 #define __BASEMAINFRAME_H__
 
-#include <wx/wx.h>
-#include <wx/docview.h>
-#include <wx/dnd.h>
-#include <wx/event.h>
 #include <wx/bitmap.h>
-#include <wx/filename.h>
 #include <wx/dc.h>
 #include <wx/dcgraph.h>
-#include <wx/xrc/xmlres.h>
-#include <wx/xrc/xh_statbar.h>
-#include <wx/xrc/xh_menu.h>
-#include <wx/xrc/xh_bmp.h>
-#include <wx/xrc/xh_toolb.h>
+#include <wx/dnd.h>
+#include <wx/docview.h>
+#include <wx/event.h>
+#include <wx/filename.h>
+#include <wx/paper.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
 #include <wx/ribbon/gallery.h>
 #include <wx/ribbon/toolbar.h>
-#include <wx/paper.h>
+#include <wx/wx.h>
+#include <wx/xrc/xh_bmp.h>
+#include <wx/xrc/xh_menu.h>
+#include <wx/xrc/xh_statbar.h>
+#include <wx/xrc/xh_toolb.h>
+#include <wx/xrc/xmlres.h>
 
 namespace Wisteria::UI
     {
@@ -37,15 +37,15 @@ namespace Wisteria::UI
     ///     when the client fires a new document event.
     class DocManager final : public wxDocManager
         {
-    public:
+      public:
         /// @private
         [[nodiscard]]
-        wxDocTemplate* SelectDocumentType(wxDocTemplate **templates, int noTemplates,
-                                          bool sort = false);
+        wxDocTemplate* SelectDocumentType(wxDocTemplate** templates, int noTemplates,
+                                          bool sortDocs = false);
         };
 
-    /// @brief Single-document application parent frame with built-in ribbon, multi-document template,
-    ///     and help support.
+    /// @brief Single-document application parent frame with built-in ribbon,
+    ///     multi-document template, and help support.
     /// @details This is the initial application frame from which children frames are spawned from
     ///     and managed. This is the main (top-level) window of the application.\n
     ///     \n
@@ -57,7 +57,7 @@ namespace Wisteria::UI
     ///     from the same folder.
     class BaseMainFrame : public wxDocParentFrame
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param manager The document manager.
         /// @param frame The parent application frame.
@@ -67,10 +67,10 @@ namespace Wisteria::UI
         /// @param title The title of the frame.
         /// @param pos The position of the frame.
         /// @param size The size of the frame.
-        /// @param style The window style. 
+        /// @param style The window style.
         BaseMainFrame(wxDocManager* manager, wxFrame* frame,
-                      const wxArrayString& defaultFileExtentions,
-                      const wxString& title, const wxPoint& pos, const wxSize& size, long style);
+                      const wxArrayString& defaultFileExtentions, const wxString& title,
+                      const wxPoint& pos, const wxSize& size, long style);
         /// @private
         BaseMainFrame(const BaseMainFrame&) = delete;
         /// @private
@@ -97,46 +97,57 @@ namespace Wisteria::UI
         /// @brief Holds printer settings for use globally.
         /// @param printData The printer settings to point to.
         /// @note Does not own this, it just receives it from the application framework
-        void SetPrintData(wxPrintData* printData) noexcept
-            { m_printData = printData; }
+        void SetPrintData(wxPrintData* printData) noexcept { m_printData = printData; }
 
         /// @returns The list of file types (extensions) that the app supports.
         [[nodiscard]]
         const wxArrayString& GetDefaultFileExtentions() const noexcept
-            { return m_defaultFileExtentions; }
+            {
+            return m_defaultFileExtentions;
+            }
+
         /// @brief Sets the list of file types (extensions) that the app supports.
         /// @details These are what are shown when the client fires a new document event
         ///     (if there are more than one file extension).
         /// @param extensions The supported extensions.
         void SetDefaultFileExtentions(const wxArrayString& extensions)
-            { m_defaultFileExtentions = extensions; }
+            {
+            m_defaultFileExtentions = extensions;
+            }
 
         /// @returns The program's logo.
         [[nodiscard]]
         const wxBitmap& GetLogo() const noexcept
-            { return m_logo; }
+            {
+            return m_logo;
+            }
+
         /// @brief Sets the program's logo.
         /// @param logo The logo for the program.
-        void SetLogo(const wxBitmap& logo)
-            { m_logo = logo; }
+        void SetLogo(const wxBitmap& logo) { m_logo = logo; }
 
         /// @brief Sets the directory where the documentation is stored.
         /// @param helpFolder The help folder.
         /// @details When a help event if fired, "index.html" in this folder will
         ///     be opened in the system's default browser.
-        void SetHelpDirectory(const wxString& helpFolder)
-            { m_helpFolder = helpFolder; }
+        void SetHelpDirectory(const wxString& helpFolder) { m_helpFolder = helpFolder; }
+
         /// @returns The directory where the documentation is stored.
         [[nodiscard]]
         const wxString& GetHelpDirectory() const noexcept
-            { return m_helpFolder; }
+            {
+            return m_helpFolder;
+            }
 
         /// @returns The ribbon control.
         /// @note Will be null if not in use.
         [[nodiscard]]
         wxRibbonBar* GetRibbon() noexcept
-            { return m_ribbon; }
-    private:
+            {
+            return m_ribbon;
+            }
+
+      private:
         // Ribbon features
         /// @private
         void OnRibbonButtonBarClick(wxRibbonButtonBarEvent& evt);
@@ -154,19 +165,19 @@ namespace Wisteria::UI
     /// @brief drag 'n' drop file support for the mainframe.
     class DropFiles final : public wxFileDropTarget
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param frame The main frame to connect the D'n'D support to.
-        explicit DropFiles(BaseMainFrame *frame) :
-            m_frame(frame)
-            {}
+        explicit DropFiles(BaseMainFrame* frame) : m_frame(frame) {}
+
         /// @private
         bool OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_unused]] wxCoord y,
                          const wxArrayString& filenames) final;
-    private:
+
+      private:
         BaseMainFrame* m_frame{ nullptr };
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 
