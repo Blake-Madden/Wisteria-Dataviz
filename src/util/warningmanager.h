@@ -25,8 +25,8 @@ struct WarningMessage
     {
     /// @brief Constructor that is only used for quick searching when all you have is the ID.
     /// @param id The messages ID.
-    explicit WarningMessage(const wxString& id) : m_Id(id)
-        {}
+    explicit WarningMessage(wxString id) : m_Id(std::move(id)) {}
+
     /// @brief Constructor.
     /// @param id The messages ID.
     /// @param message The message.
@@ -34,11 +34,12 @@ struct WarningMessage
     /// @param description The description.
     /// @param flags The flags.
     /// @param onlyShowOnce @c true if the warning should only be shown once to the user.
-    WarningMessage(const wxString& id, const wxString& message, const wxString& title,
-        const wxString& description, const int flags, const bool onlyShowOnce = false) :
-        m_Id(id), m_Message(message), m_title(title), m_description(description), m_flags(flags),
-        m_onlyShowOnce(onlyShowOnce)
-        {}
+    WarningMessage(wxString id, wxString message, wxString title, wxString description,
+                   const int flags, const bool onlyShowOnce = false)
+        : m_Id(std::move(id)), m_Message(std::move(message)), m_title(std::move(title)),
+          m_description(std::move(description)), m_flags(flags), m_onlyShowOnce(onlyShowOnce)
+        {
+        }
     /// @private
     [[nodiscard]]
     bool operator<(const WarningMessage& that) const
