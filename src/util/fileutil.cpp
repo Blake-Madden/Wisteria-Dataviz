@@ -782,3 +782,31 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
 
     return true;
     }
+
+//---------------------------------------------------
+wxString CreateNewFileName(const wxString& filePath)
+    {
+    wxString dir, name, ext;
+    // False positive with cppcheck when using --library=wxwidgets,
+    // as this version of SplitPath returns void.
+    // cppcheck-suppress ignoredReturnValue
+    wxFileName::SplitPath(filePath, &dir, &name, &ext);
+    wxString newFilePath;
+    for (size_t i = 0; i < 1'000; ++i)
+        {
+        newFilePath =
+            wxString::Format(L"%s%c%s%04u.%s", dir, wxFileName::GetPathSeparator(), name, i, ext);
+        if (!wxFileName::FileExists(newFilePath))
+            {
+            // create the file as we will use it later
+            wxFile file(newFilePath, wxFile::write);
+            if (!file.IsOpened())
+                {
+                continue;
+                }
+            return newFilePath;
+            }
+        }
+
+    return wxString{};
+    }

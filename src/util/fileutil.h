@@ -298,6 +298,15 @@ bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrF
 /// @todo: currently fails to copy over empty folders
 bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory);
 
+/** @brief Creates a new file based on @c filePath, embedding a numeric
+            sequence in it (making it unique).
+            This is useful for saving a file and not overwriting one that
+            already exists with the same name.
+        @param filePath The original filepath
+        @returns The new filepath that was created.*/
+[[nodiscard]]
+wxString CreateNewFileName(const wxString& filePath);
+
 /** @}*/
 
 #endif //__FILE_UTIL_H__
