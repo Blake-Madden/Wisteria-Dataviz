@@ -25,7 +25,7 @@ class ExcelTable final : public wxGridTableBase
     {
   public:
     /// @private
-    ExcelTable() = default;
+    ExcelTable() = delete;
 
     /// @brief Constructor.
     /// @param wrk The worksheet to preview.
@@ -73,7 +73,6 @@ class ExcelTable final : public wxGridTableBase
   private:
     lily_of_the_valley::xlsx_extract_text::worksheet* m_wrk{ nullptr };
     lily_of_the_valley::xlsx_extract_text* m_excelFile{ nullptr };
-    DECLARE_DYNAMIC_CLASS_NO_COPY(ExcelTable)
     };
 
 /// @brief Import preview dialog for an Excel worksheet.
@@ -101,11 +100,16 @@ class ExcelPreviewDlg final : public Wisteria::UI::DialogWithHelp
         SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
+        Bind(wxEVT_BUTTON, &ExcelPreviewDlg::OnOK, this, wxID_OK);
+        Bind(wxEVT_RADIOBOX, &ExcelPreviewDlg::OnChangeImportMethod, this);
+
         CreateControls();
         GetSizer()->SetSizeHints(this);
         Centre();
         }
 
+    /// @private
+    ExcelPreviewDlg() = delete;
     /// @private
     ExcelPreviewDlg(const ExcelPreviewDlg& that) = delete;
     /// @private
@@ -167,9 +171,6 @@ class ExcelPreviewDlg final : public Wisteria::UI::DialogWithHelp
     std::set<int> m_selectedRows;
     std::set<int> m_selectedColumns;
     std::vector<std::pair<wxGridCellCoords, wxGridCellCoords>> m_selectedBlocks;
-
-    ExcelPreviewDlg() = default;
-    DECLARE_EVENT_TABLE()
     };
 
     /** @}*/

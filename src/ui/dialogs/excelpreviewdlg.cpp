@@ -10,13 +10,6 @@
 #include <wx/spinctrl.h>
 #include <wx/busyinfo.h>
 
-IMPLEMENT_DYNAMIC_CLASS(ExcelTable, wxGridTableBase)
-
-BEGIN_EVENT_TABLE(ExcelPreviewDlg, DialogWithHelp)
-    EVT_BUTTON(wxID_OK, ExcelPreviewDlg::OnOK)
-    EVT_RADIOBOX(wxID_ANY, ExcelPreviewDlg::OnChangeImportMethod)
-END_EVENT_TABLE()
-
 //-------------------------------------------------------------
 void ExcelPreviewDlg::OnChangeImportMethod([[maybe_unused]] wxCommandEvent& event)
     {
