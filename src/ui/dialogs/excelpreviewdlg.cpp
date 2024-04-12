@@ -29,6 +29,13 @@ void ExcelPreviewDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     wxGridCellCoordsArray selCells = m_grid->GetSelectedCells();
     for (size_t i = 0; i < selCells.Count(); ++i)
         { m_selectedCells.push_back(selCells[i]); }
+    // the focused cell (in case there are no selections, we treat the
+    // focused cell as selected)
+    /// @todo use IsFullySpecified() when API is available in wx 3.3.0
+    if (m_grid->GetGridCursorCoords() != wxGridNoCellCoords)
+        {
+        m_selectedCells.push_back(m_grid->GetGridCursorCoords());
+        }
     // rows
     wxArrayInt selRows = m_grid->GetSelectedRows();
     for (size_t i = 0; i < selRows.Count(); ++i)
