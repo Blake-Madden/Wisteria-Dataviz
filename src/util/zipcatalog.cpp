@@ -11,8 +11,7 @@
 using namespace Wisteria;
 
 //------------------------------------------------
-ZipCatalog::ZipCatalog(const void* data, size_t len)
-    { Init(data,len); }
+ZipCatalog::ZipCatalog(const void* data, size_t len) { Init(data, len); }
 
 //------------------------------------------------
 ZipCatalog::ZipCatalog(const wxString& zipFilePath)
@@ -20,12 +19,18 @@ ZipCatalog::ZipCatalog(const wxString& zipFilePath)
     try
         {
         if (wxFileName::FileExists(zipFilePath) && m_mapfile.MapFile(zipFilePath, true, true))
-            { Init(static_cast<char*>(m_mapfile.GetStream()), m_mapfile.GetMapSize()); }
+            {
+            Init(static_cast<char*>(m_mapfile.GetStream()), m_mapfile.GetMapSize());
+            }
         else
-            { wxLogError(L"Error reading ZIP file: %s", zipFilePath); }
+            {
+            wxLogError(L"Error reading ZIP file: %s", zipFilePath);
+            }
         }
     catch (...)
-        { wxLogError(L"Error reading ZIP file: %s", zipFilePath); }
+        {
+        wxLogError(L"Error reading ZIP file: %s", zipFilePath);
+        }
     }
 
 //------------------------------------------------
@@ -33,20 +38,26 @@ void ZipCatalog::Init(const void* data, size_t len)
     {
     // reset data in case a new archive is being used now
     for (auto& entry : m_catalog)
-        { wxDELETE(entry.second); }
+        {
+        wxDELETE(entry.second);
+        }
     m_catalog.clear();
     ClearMessages();
     wxDELETE(m_inzip);
 
-    m_inzip = new wxZipInputStream(new wxMemoryInputStream(data,len));
+    m_inzip = new wxZipInputStream(new wxMemoryInputStream(data, len));
     wxZipEntry* entry{ nullptr };
     // load the zip catalog (just files, no folders)
     while ((entry = m_inzip->GetNextEntry()) != nullptr)
         {
         if (!entry->IsDir())
-            { m_catalog[entry->GetInternalName()] = entry; }
+            {
+            m_catalog[entry->GetInternalName()] = entry;
+            }
         else
-            { wxDELETE(entry); }
+            {
+            wxDELETE(entry);
+            }
         }
     }
 
@@ -54,7 +65,9 @@ void ZipCatalog::Init(const void* data, size_t len)
 ZipCatalog::~ZipCatalog()
     {
     for (auto& entry : m_catalog)
-        { wxDELETE(entry.second); }
+        {
+        wxDELETE(entry.second);
+        }
     wxDELETE(m_inzip); // will implicitly delete the memory stream that it is wrapping
     }
 
@@ -62,7 +75,9 @@ ZipCatalog::~ZipCatalog()
 bool ZipCatalog::ReadFile(const wxString& path, wxOutputStream& memstream) const
     {
     if (!m_inzip)
-        { return false; }
+        {
+        return false;
+        }
     wxZipEntry* entry = Find(path);
     if (!entry)
         {
@@ -70,7 +85,9 @@ bool ZipCatalog::ReadFile(const wxString& path, wxOutputStream& memstream) const
         return false;
         }
     else if (entry->GetCompressedSize() == 0)
-        { return false; }
+        {
+        return false;
+        }
 
     if (m_inzip->OpenEntry(*entry))
         {
@@ -87,14 +104,17 @@ wxString ZipCatalog::ReadTextFile(const wxString& path) const
     {
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
-        { return wxString{}; }
+        {
+        return wxString{};
+        }
     const wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
     assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile!");
     // empty file
-    if (theBuffer == nullptr ||
-        theBuffer->GetBufferSize() == 0 ||
+    if (theBuffer == nullptr || theBuffer->GetBufferSize() == 0 ||
         theBuffer->GetBufferStart() == nullptr)
-        { return wxString{}; }
+        {
+        return wxString{};
+        }
     return Wisteria::TextStream::CharStreamToUnicode(
         static_cast<const char*>(theBuffer->GetBufferStart()), theBuffer->GetBufferSize());
     }
@@ -117,12 +137,14 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
     // map the char* data and convert it to Unicode (into another temp file)
     MemoryMappedFile mappedTempFile;
     try
-        { mappedTempFile.MapFile(charStreamTempFilePath, true, true); }
+        {
+        mappedTempFile.MapFile(charStreamTempFilePath, true, true);
+        }
     catch (...)
         {
-        wxMessageBox(wxString::Format(
-            _(L"Error reading extracted file from temp folder: %s"), path),
-            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(
+            wxString::Format(_(L"Error reading extracted file from temp folder: %s"), path),
+            _(L"Read Error"), wxOK | wxICON_EXCLAMATION);
         return wxString{};
         }
     if (mappedTempFile.IsOk())
@@ -130,45 +152,47 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
         // temp file for the converted text into
         const wxString UnicodeTempFilePath = wxFileName::CreateTempFileName(
             wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() + L"RS");
-        // Dump the char* buffer a few times into it to make it big enough to
-        // hold the converted data.
+            // Dump the char* buffer a few times into it to make it big enough to
+            // hold the converted data.
             {
             wxFileOutputStream UnicodeTempFile(UnicodeTempFilePath);
-            UnicodeTempFile.Write(
-                static_cast<const char*>(mappedTempFile.GetStream()),
-                                         mappedTempFile.GetMapSize()).
-                Write(static_cast<const char*>(mappedTempFile.GetStream()),
-                                               mappedTempFile.GetMapSize()).
-                Write(static_cast<const wchar_t*>(mappedTempFile.GetStream()),
-                                                  mappedTempFile.GetMapSize()).
-                Write(L"\0\0", sizeof(wchar_t)); // space for a null terminator
+            UnicodeTempFile
+                .Write(static_cast<const char*>(mappedTempFile.GetStream()),
+                       mappedTempFile.GetMapSize())
+                .Write(static_cast<const char*>(mappedTempFile.GetStream()),
+                       mappedTempFile.GetMapSize())
+                .Write(static_cast<const wchar_t*>(mappedTempFile.GetStream()),
+                       mappedTempFile.GetMapSize())
+                .Write(L"\0\0", sizeof(wchar_t)); // space for a null terminator
             }
-        // convert the text directly into the unicode temp file
+            // convert the text directly into the unicode temp file
             {
             MemoryMappedFile mappedUnicodeFile;
             try
-                { mappedUnicodeFile.MapFile(UnicodeTempFilePath, false, true); }
+                {
+                mappedUnicodeFile.MapFile(UnicodeTempFilePath, false, true);
+                }
             catch (...)
                 {
-                wxMessageBox(wxString::Format(
-                    _(L"Error reading extracted file from temp folder: %s"), path),
-                    _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
+                wxMessageBox(
+                    wxString::Format(_(L"Error reading extracted file from temp folder: %s"), path),
+                    _(L"Read Error"), wxOK | wxICON_EXCLAMATION);
                 return wxString{};
                 }
             if (mappedUnicodeFile.IsOk())
                 {
                 Wisteria::TextStream::CharStreamToUnicode(
                     static_cast<wchar_t*>(mappedUnicodeFile.GetStream()),
-                                          (mappedUnicodeFile.GetMapSize()/sizeof(wchar_t)),
+                    (mappedUnicodeFile.GetMapSize() / sizeof(wchar_t)),
                     static_cast<const char*>(mappedTempFile.GetStream()),
-                                             mappedTempFile.GetMapSize());
+                    mappedTempFile.GetMapSize());
                 }
             else
                 {
                 wxLogError(L"Error writing extracted file to temp folder: %s", path);
-                wxMessageBox(wxString::Format(
-                    _(L"Error writing extracted file to temp folder: %s"), path),
-                    _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
+                wxMessageBox(
+                    wxString::Format(_(L"Error writing extracted file to temp folder: %s"), path),
+                    _(L"Read Error"), wxOK | wxICON_EXCLAMATION);
                 mappedUnicodeFile.UnmapFile();
                 wxRemoveFile(UnicodeTempFilePath);
                 return wxString{};
@@ -181,9 +205,9 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
         }
     else
         {
-        wxMessageBox(wxString::Format(
-            _(L"Error reading extracted file from temp folder: %s"), path),
-            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(
+            wxString::Format(_(L"Error reading extracted file from temp folder: %s"), path),
+            _(L"Read Error"), wxOK | wxICON_EXCLAMATION);
         wxRemoveFile(charStreamTempFilePath);
         return wxString{};
         }
@@ -194,7 +218,9 @@ wxBitmap ZipCatalog::ReadSVG(const wxString& path, const wxSize size) const
     {
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
-        { return wxBitmap{}; }
+        {
+        return wxBitmap{};
+        }
     // convert it from the stream
     const auto bmp = wxBitmapBundle::FromSVG(
         static_cast<const wxByte*>(memstream.GetOutputStreamBuffer()->GetBufferStart()),
@@ -207,13 +233,17 @@ wxBitmap ZipCatalog::ReadBitmap(const wxString& path, const wxBitmapType bitmapT
     {
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
-        { return wxNullBitmap; }
+        {
+        return wxNullBitmap;
+        }
     // convert it from the stream
     wxMemoryInputStream stream(memstream.GetOutputStreamBuffer()->GetBufferStart(),
                                memstream.GetLength());
     wxImage img;
     if (!img.LoadFile(stream, bitmapType))
-        { return wxNullBitmap; }
+        {
+        return wxNullBitmap;
+        }
 
     return wxBitmap(img);
     }
@@ -234,10 +264,14 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
         {
         const size_t bytes_read = stream_in->Read(&m_readBuffer[0], bufferSize).LastRead();
         if (!bytes_read)
+            {
             break;
+            }
 
         if (stream_out.Write(&m_readBuffer[0], bytes_read).LastWrite() != bytes_read)
+            {
             break;
+            }
         }
     if (stream_out.GetLength() == 0 && !m_readErrorShown)
         {
@@ -261,7 +295,7 @@ void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, con
     zip.Write(lily_of_the_valley::unicode_extract_text::get_bom_utf8(),
               std::strlen(lily_of_the_valley::unicode_extract_text::get_bom_utf8()));
     assert(fileTextConvertedBuffer.length() == std::strlen(fileTextConvertedBuffer.data()) &&
-        L"Invalid buffer size when writing from ZipCatalog!");
+           L"Invalid buffer size when writing from ZipCatalog!");
     zip.Write(fileTextConvertedBuffer.data(), fileTextConvertedBuffer.length());
     txt.Close();
     }
@@ -271,13 +305,16 @@ wxArrayString ZipCatalog::GetFilesInFolder(const wxString& path) const
     {
     wxArrayString files;
     wxString formattedPath = path;
-    if (path.length() &&
-        path[path.length()-1] != L'/' && path[path.length()-1] != L'\\')
-        { formattedPath = path + L'/'; }
+    if (path.length() && path[path.length() - 1] != L'/' && path[path.length() - 1] != L'\\')
+        {
+        formattedPath = path + L'/';
+        }
     for (const auto& entry : m_catalog)
         {
-        if (entry.first.StartsWith(wxZipEntry::GetInternalName(formattedPath)) )
-            { files.Add(wxZipEntry::GetInternalName(entry.first)); }
+        if (entry.first.StartsWith(wxZipEntry::GetInternalName(formattedPath)))
+            {
+            files.Add(wxZipEntry::GetInternalName(entry.first));
+            }
         }
     return files;
     }
@@ -288,6 +325,8 @@ wxArrayString ZipCatalog::GetPaths() const
     wxArrayString files;
     files.Alloc(m_catalog.size());
     for (const auto& entry : m_catalog)
-        { files.Add(wxZipEntry::GetInternalName(entry.first)); }
+        {
+        files.Add(wxZipEntry::GetInternalName(entry.first));
+        }
     return files;
     }

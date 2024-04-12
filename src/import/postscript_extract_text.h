@@ -37,12 +37,13 @@ namespace lily_of_the_valley
             // This buffer can be accessed from get_filtered_text() and its length
             // from get_filtered_text_length(). Call these to copy the text into
             // a wide string.
-            std::wstring fileText(psExtract.get_filtered_text(), psExtract.get_filtered_text_length());
+            std::wstring fileText(psExtract.get_filtered_text(),
+                                  psExtract.get_filtered_text_length());
             }
         @endcode*/
     class postscript_extract_text final : public extract_text
         {
-    public:
+      public:
         /** @brief Main interface for extracting plain text from a Postscript buffer.
             @details Supports Postscript up to version 2.
             @param ps_buffer The Postscript text to convert to plain text.
@@ -50,25 +51,36 @@ namespace lily_of_the_valley
             @returns A pointer to the parsed text, or null upon failure.\n
                 Call get_filtered_text_length() to get the length of the parsed text.
             @throws postscript_header_not_found If an invalid document.
-            @throws postscript_version_not_supported if document is a newer version of 
+            @throws postscript_version_not_supported if document is a newer version of
                 Postscript that is not supported.*/
         [[nodiscard]]
-        const wchar_t* operator()(const char* ps_buffer, const size_t text_length);
+        const wchar_t*
+        operator()(const char* ps_buffer, const size_t text_length);
+
         /** @returns The title from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
         [[nodiscard]]
         const std::string& get_title() const noexcept
-            { return m_title; }
+            {
+            return m_title;
+            }
+
         /// @brief Exception thrown when a Postscript is missing its header
         ///     (more than likely an invalid Postscript file).
-        class postscript_header_not_found : public std::exception {};
+        class postscript_header_not_found : public std::exception
+            {
+            };
+
         /// @brief Exception thrown when an unsupported version of Postscript is being parsed.
-        class postscript_version_not_supported : public std::exception {};
-    private:
+        class postscript_version_not_supported : public std::exception
+            {
+            };
+
+      private:
         std::string m_title;
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 

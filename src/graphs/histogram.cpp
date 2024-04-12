@@ -193,7 +193,7 @@ namespace Wisteria::Graphs
             Bar theBar(GetBinsStart().value(),
                 { BarBlock(BarBlockInfo().Brush(GetBrushScheme()->GetBrush(0)).
                     Color(GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour)) },
-                wxString(wxEmptyString),
+                       wxString{},
                 GraphItems::Label(wxEmptyString), GetBarEffect(), GetBarOpacity());
             AddBar(theBar);
             }
@@ -518,7 +518,7 @@ namespace Wisteria::Graphs
                  GetBinLabelDisplay() == BinLabelDisplay::NoDisplay ||
                  // for ranges, there is no concept of group name
                  GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
-                    wxString(wxEmptyString) :
+                    wxString{} :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                     wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?

@@ -19,12 +19,13 @@ namespace lily_of_the_valley
     /// @brief Functor to extract text from an IDL stream.
     class idl_extract_text final : public extract_text
         {
-    public:
+      public:
         /** @brief Main interface for extracting plain text from an IDL buffer.
             @param idl_buffer The IDL text to strip.
             @returns A pointer to the parsed text, or null upon failure.*/
         [[nodiscard]]
-        const wchar_t* operator()(const std::wstring_view idl_buffer)
+        const wchar_t*
+        operator()(const std::wstring_view idl_buffer)
             {
             static const std::wstring HELP_STRING{ L"helpstring(\"" };
             clear_log();
@@ -46,7 +47,9 @@ namespace lily_of_the_valley
                 nextHelpStr += HELP_STRING.length();
                 const auto endOfHelpStr = idl_buffer.find(L'\"', nextHelpStr);
                 if (endOfHelpStr == std::wstring_view::npos)
-                    { break; }
+                    {
+                    break;
+                    }
                 add_characters(idl_buffer.substr(nextHelpStr, (endOfHelpStr - nextHelpStr)));
                 add_character(L'\n');
                 add_character(L'\n');
@@ -57,7 +60,7 @@ namespace lily_of_the_valley
             return get_filtered_text();
             }
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 

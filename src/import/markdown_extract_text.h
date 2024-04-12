@@ -12,22 +12,23 @@
 #ifndef __MARKDOWN_TEXT_EXTRACT_H__
 #define __MARKDOWN_TEXT_EXTRACT_H__
 
-#include <regex>
 #include "html_extract_text.h"
+#include <regex>
 
 namespace lily_of_the_valley
     {
     /// @brief Extracts plain text from a Markdown file.
     class markdown_extract_text final : public html_extract_text
         {
-    public:
+      public:
         /** @brief Main interface for extracting plain text from a Markdown file.
             @param md_text The markdown text to parse.
             @returns The parsed text from the Markdown stream.*/
         [[nodiscard]]
-        const wchar_t* operator()(const std::wstring_view md_text);
+        const wchar_t*
+        operator()(const std::wstring_view md_text);
 #ifndef __UNITTEST
-    private:
+      private:
 #endif
         /** @returns @c true if text marks the start of a Markdown metadata section.
             @param md_text The start of the Markdown text.
@@ -37,7 +38,9 @@ namespace lily_of_the_valley
         static bool has_metadata_section(const wchar_t* md_text)
             {
             if (md_text == nullptr)
-                { return false; }
+                {
+                return false;
+                }
             // does the first line start with ---
             return (std::wcsncmp(md_text, L"---", 3) == 0);
             }
@@ -50,7 +53,9 @@ namespace lily_of_the_valley
         static const wchar_t* find_metadata_section_end(const wchar_t* md_text) noexcept
             {
             if (md_text == nullptr)
-                { return nullptr; }
+                {
+                return nullptr;
+                }
             // step over first line
             auto eol = string_util::strcspn_pointer(md_text, L"\r\n", 2);
             if (eol == nullptr)
@@ -78,7 +83,7 @@ namespace lily_of_the_valley
 
         std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 

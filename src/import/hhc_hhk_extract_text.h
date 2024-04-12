@@ -20,7 +20,7 @@ namespace lily_of_the_valley
             HHC (Microsoft® HTML Workshop Table of Contents) stream.*/
     class hhc_hhk_extract_text final : public html_extract_text
         {
-    public:
+      public:
         /** @brief Main interface for extracting plain text from an HTML Workshop index or
                 table of contents buffer.
             @details This text is the labels shown in the TOC and index.
@@ -28,7 +28,8 @@ namespace lily_of_the_valley
             @param text_length The length of the text.
             @returns A pointer to the parsed text, or null upon failure.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length)
+        const wchar_t*
+        operator()(const wchar_t* html_text, const size_t text_length)
             {
             clear_log();
             if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
@@ -36,7 +37,7 @@ namespace lily_of_the_valley
                 set_filtered_text_length(0);
                 return nullptr;
                 }
-            assert(text_length <= std::wcslen(html_text) );
+            assert(text_length <= std::wcslen(html_text));
 
             if (!allocate_text_buffer(text_length))
                 {
@@ -55,10 +56,10 @@ namespace lily_of_the_valley
 
                 if (currentTag == L"param")
                     {
-                    if (read_attribute_as_string(start + 6/*skip "<param"*/, L"name", false, false) == L"Name")
+                    if (read_attribute_as_string(start + 6 /*skip "<param"*/, L"name", false,
+                                                 false) == L"Name")
                         {
-                        attribValue =
-                            read_attribute_as_string(start + 6, L"value", false, true);
+                        attribValue = read_attribute_as_string(start + 6, L"value", false, true);
                         parse_raw_text(attribValue.c_str(), attribValue.length());
                         add_character(L'\n');
                         add_character(L'\n');
@@ -67,14 +68,16 @@ namespace lily_of_the_valley
                 // find the next starting tag
                 start = std::wcschr(start + 1, L'<');
                 if (!start)
-                    { break; }
+                    {
+                    break;
+                    }
                 }
 
             return get_filtered_text();
             }
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
-    
+
 #endif //__HHC_HHK_EXTRACT_TEXT_H__

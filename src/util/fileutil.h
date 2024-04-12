@@ -12,27 +12,27 @@
 #ifndef __FILE_UTIL_H__
 #define __FILE_UTIL_H__
 
-#include <wx/wx.h>
-#include <wx/file.h>
-#include <wx/string.h>
-#include <wx/filename.h>
-#include <wx/regex.h>
-#include <wx/filefn.h>
-#include <wx/dir.h>
-#include <wx/progdlg.h>
-#include <wx/arrstr.h>
-#include <wx/tokenzr.h>
+#include <initializer_list>
 #include <map>
 #include <memory>
 #include <string>
-#include <initializer_list>
+#include <wx/arrstr.h>
+#include <wx/dir.h>
+#include <wx/file.h>
+#include <wx/filefn.h>
+#include <wx/filename.h>
+#include <wx/progdlg.h>
+#include <wx/regex.h>
+#include <wx/string.h>
+#include <wx/tokenzr.h>
+#include <wx/wx.h>
 #ifdef __WXMSW__
-    #include <windows.h>
-    #include <shlobj.h>
+#include <shlobj.h>
+#include <windows.h>
 #endif
 #include "../data/dataset.h"
-#include "../i18n-check/src/string_util.h"
 #include "../i18n-check/src/donttranslate.h"
+#include "../i18n-check/src/string_util.h"
 
 /// @brief The filepaths that a string may be resolved to.
 enum class FilePathType
@@ -49,7 +49,7 @@ enum class FilePathType
                         determining that and opening it accordingly.
                         @note The path syntax is `path/file.zip#subfile`.*/
     ExcelCell        /*!< A cell address inside of an Excel 2007 file.
-                        May or may not be an URL or local file--caller is responsible for 
+                        May or may not be an URL or local file--caller is responsible for
                         determining that and opening it accordingly.
                         @note The path syntax is `path/file.xlsx#sheet_name#cell`.*/
     };
@@ -59,92 +59,133 @@ enum class FilePathType
         and determining specifically which sort of path it is.*/
 class FilePathResolverBase
     {
-public:
+  public:
     /// @private
     FilePathResolverBase() = default;
+
     /** @brief Resolves a string to see if it is a file path.
         @param path The string to resolve to a file path.
         @note Set @c attemptToConnect to false if performance is a concern.*/
-    explicit FilePathResolverBase(const wxString& path)
-        { ResolvePath(path); }
+    explicit FilePathResolverBase(const wxString& path) { ResolvePath(path); }
+
     /** @brief Resolves a string to see if it is a file path.
         @param path The string to resolve to a file path.
         @param pathsToSearch A list of local paths to look in if @c path is a relative local path.
         @returns The resolved path.*/
-    wxString ResolvePath(const wxString& path,
-                         std::initializer_list<wxString> pathsToSearch =
-                             std::initializer_list<wxString>{});
+    wxString
+    ResolvePath(const wxString& path,
+                std::initializer_list<wxString> pathsToSearch = std::initializer_list<wxString>{});
+
     /** @returns The (possibly) corrected path that the supplied path was resolved to.
             This includes correcting slashes, encoding spaces, and stripping
             file protocol prefixes.*/
     [[nodiscard]]
     wxString GetResolvedPath() const
-        { return m_path; }
+        {
+        return m_path;
+        }
+
     /// @returns @c true if filepath is on the local system or a network
     ///     (e.g., network drive or UNC path).
     [[nodiscard]]
     bool IsLocalOrNetworkFile() const noexcept
-        { return m_fileType == FilePathType::LocalOrNetwork; }
+        {
+        return m_fileType == FilePathType::LocalOrNetwork;
+        }
+
     /** @returns @c true if filepath is an internet URL.
         @note This encompasses HTTP, HTTPS, FTP, and Gopher paths.
             (And "www" paths if the prefix is missing).*/
     [[nodiscard]]
     bool IsWebFile() const noexcept
-        { return (m_fileType == FilePathType::HTTP || m_fileType == FilePathType::HTTPS ||
-                 m_fileType == FilePathType::FTP || m_fileType == FilePathType::Gopher); }
+        {
+        return (m_fileType == FilePathType::HTTP || m_fileType == FilePathType::HTTPS ||
+                m_fileType == FilePathType::FTP || m_fileType == FilePathType::Gopher);
+        }
+
     /** @returns @c true if an HTTP path.
         @note Prefer IsWebFile() if simply needing to verify that a path is an URL.*/
     [[nodiscard]]
     bool IsHTTPFile() const noexcept
-        { return m_fileType == FilePathType::HTTP; }
+        {
+        return m_fileType == FilePathType::HTTP;
+        }
+
     /** @returns @c true if an HTTPS path.
         @note Prefer IsWebFile() if simply needing to verify that a path is an URL.*/
     [[nodiscard]]
     bool IsHTTPSFile() const noexcept
-        { return m_fileType == FilePathType::HTTPS; }
+        {
+        return m_fileType == FilePathType::HTTPS;
+        }
+
     /** @returns @c true if an FTP path.
         @note Prefer IsWebFile() if simply needing to verify that a path is an URL.*/
     [[nodiscard]]
     bool IsFTPFile() const noexcept
-        { return m_fileType == FilePathType::FTP; }
+        {
+        return m_fileType == FilePathType::FTP;
+        }
+
     /** @returns @c true if a Gopher path.
         @note Prefer IsWebFile() if simply needing to verify that a path is an URL.*/
     [[nodiscard]]
     bool IsGopherFile() const noexcept
-        { return m_fileType == FilePathType::Gopher; }
+        {
+        return m_fileType == FilePathType::Gopher;
+        }
+
     /** @returns @c true if the text supplied didn't appear to be any sort of filepath or URL.*/
     [[nodiscard]]
     bool IsInvalidFile() const noexcept
-        { return m_fileType == FilePathType::InvalidFileType; }
+        {
+        return m_fileType == FilePathType::InvalidFileType;
+        }
+
     /** @returns @c true if path is a file inside of an archive file.
         @note The file may actually be local (or on a network),
         but because we use special syntax for paths to archive subfiles
         then we have to consider its path type as something special.*/
     [[nodiscard]]
     bool IsArchivedFile() const noexcept
-        { return m_fileType == FilePathType::ArchivedFile; }
+        {
+        return m_fileType == FilePathType::ArchivedFile;
+        }
+
     /** @returns @c true if path is a cell inside of an Excel 2007 file.
         @note The file may actually be local (or on a network),
             but because we use special syntax for paths to Excel cells
             then we have to consider its path type as something special.*/
     [[nodiscard]]
     bool IsExcelCell() const noexcept
-        { return m_fileType == FilePathType::ExcelCell; }
+        {
+        return m_fileType == FilePathType::ExcelCell;
+        }
+
     /// @returns @c true if filepath has a supported spreadsheet extension.
     /// @param fn The filepath to review.
     [[nodiscard]]
     static bool IsSpreadsheet(const wxFileName& fn)
-        { return (fn.GetExt().CmpNoCase(L"xlsx") == 0); }
+        {
+        return (fn.GetExt().CmpNoCase(L"xlsx") == 0);
+        }
+
     /// @returns @c true if filepath has a supported archive extension.
     /// @param fn The filepath to review.
     [[nodiscard]]
     static bool IsArchive(const wxFileName& fn)
-        { return (fn.GetExt().CmpNoCase(_DT(L"zip")) == 0); }
+        {
+        return (fn.GetExt().CmpNoCase(_DT(L"zip")) == 0);
+        }
+
     /// @returns The specific type of filepath detected.
     [[nodiscard]]
     FilePathType GetFileType() const noexcept
-        { return m_fileType; }
-protected:
+        {
+        return m_fileType;
+        }
+
+  protected:
     /// @private
     [[nodiscard]]
     static bool HasWindowsPrefix(const wxString& str);
@@ -154,10 +195,14 @@ protected:
     /// @private
     [[nodiscard]]
     static bool HasNetworkPrefix(const wxString& str);
+
     /// @private
     [[nodiscard]]
     static bool HasLocalOrNetworkPrefix(const wxString& str)
-        { return (HasWindowsPrefix(str) || HasUnixPrefix(str) || HasNetworkPrefix(str)); }
+        {
+        return (HasWindowsPrefix(str) || HasUnixPrefix(str) || HasNetworkPrefix(str));
+        }
+
     /// @private
     wxString m_path;
     /// @private
@@ -244,8 +289,8 @@ bool RemoveEmptyDirsRecursively(const wxString& rootDirectory);
     @param fileOrFolderToCombine The file to added.
     @param[out] newPath The final path.
     @returns @c true if successful.*/
-bool PathCombine(const wxString& directoryToCombineWith,
-                 const wxString& fileOrFolderToCombine, wxString& newPath);
+bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrFolderToCombine,
+                 wxString& newPath);
 /// @brief Moves a directory and its files.
 /// @param fromDirectory The folder to move.
 /// @param toDirectory Where to move the folder to.

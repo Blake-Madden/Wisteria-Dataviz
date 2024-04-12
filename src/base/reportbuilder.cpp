@@ -1385,7 +1385,7 @@ namespace Wisteria
         return re.Matches(formula) ?
             wxNumberFormatter::ToString(m_pageNumber, 0,
                 wxNumberFormatter::Style::Style_WithThousandsSep) :
-            wxString(wxEmptyString);
+                   wxString{};
         }
 
     //---------------------------------------------------
