@@ -12,32 +12,32 @@
 #ifndef __BASEAPP_H__
 #define __BASEAPP_H__
 
-#include <wx/wx.h>
-#include <wx/stdpaths.h>
-#include <wx/print.h>
-#include <wx/printdlg.h>
-#include <wx/utils.h>
-#include <wx/mimetype.h>
-#include <wx/docview.h>
-#include <wx/fs_zip.h>
-#include <wx/sysopt.h>
-#include <wx/splash.h>
-#include <wx/image.h>
-#include <wx/fileconf.h>
-#include <wx/cmdline.h>
-#include <wx/debugrpt.h>
-#include <wx/log.h>
-#include <wx/uilocale.h>
-#include <wx/fs_mem.h>
-#include <wx/config.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/webrequest.h>
+#include "../debug/debug_profile.h"
+#include "../i18n-check/src/donttranslate.h"
+#include "../math/safe_math.h"
 #include "../util/logfile.h"
 #include "../util/resource_manager.h"
-#include "../i18n-check/src/donttranslate.h"
-#include "../debug/debug_profile.h"
-#include "../math/safe_math.h"
 #include "mainframe.h"
+#include <wx/cmdline.h>
+#include <wx/config.h>
+#include <wx/debugrpt.h>
+#include <wx/docview.h>
+#include <wx/fileconf.h>
+#include <wx/fs_mem.h>
+#include <wx/fs_zip.h>
+#include <wx/image.h>
+#include <wx/log.h>
+#include <wx/mimetype.h>
+#include <wx/print.h>
+#include <wx/printdlg.h>
+#include <wx/propgrid/propgrid.h>
+#include <wx/splash.h>
+#include <wx/stdpaths.h>
+#include <wx/sysopt.h>
+#include <wx/uilocale.h>
+#include <wx/utils.h>
+#include <wx/webrequest.h>
+#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -46,7 +46,7 @@ namespace Wisteria::UI
     ///     main frame built-in.
     class BaseApp : public wxApp
         {
-    public:
+      public:
         /// @brief Constructor.
         BaseApp();
         /// @private
@@ -68,16 +68,20 @@ namespace Wisteria::UI
         /// @returns The number of active documents.
         [[nodiscard]]
         size_t GetDocumentCount() const
-            { return m_docManager->GetDocuments().GetCount(); }
+            {
+            return m_docManager->GetDocuments().GetCount();
+            }
 
         /// @returns The application's main file extension.
         [[nodiscard]]
         const wxString& GetAppFileExtension() const noexcept
-            { return m_fileExtension; }
+            {
+            return m_fileExtension;
+            }
+
         /// @brief Sets the application's main file extension.
         /// @param extension The file extension to use.
-        void SetAppFileExtension(const wxString& extension)
-            { m_fileExtension = extension; }
+        void SetAppFileExtension(const wxString& extension) { m_fileExtension = extension; }
 
         // MRU menu functions
         /// @private
@@ -90,11 +94,17 @@ namespace Wisteria::UI
         /// @returns The mainframe.
         [[nodiscard]]
         BaseMainFrame* GetMainFrame() noexcept
-            { return m_mainFrame; }
+            {
+            return m_mainFrame;
+            }
+
         /// @private
         [[nodiscard]]
         const BaseMainFrame* GetMainFrame() const noexcept
-            { return m_mainFrame; }
+            {
+            return m_mainFrame;
+            }
+
         /// @brief Sets the mainframe.
         /// @param frame The mainframe to use.
         void SetMainFrame(BaseMainFrame* frame)
@@ -106,45 +116,60 @@ namespace Wisteria::UI
         /// @returns The document manager.
         [[nodiscard]]
         wxDocManager* GetDocManager() noexcept
-            { return m_docManager; }
+            {
+            return m_docManager;
+            }
+
         /// @brief Sets the document manager.
         /// @param docManager The document manager to use.
-        void SetDocManager(wxDocManager* docManager) noexcept
-            { m_docManager = docManager; }
+        void SetDocManager(wxDocManager* docManager) noexcept { m_docManager = docManager; }
 
         /// @brief Sets a descriptive name for the application's document type.
         /// @param documentTypeName The descriptives.
         void SetDocumentTypeName(const wxString& documentTypeName)
-            { m_documentTypeName = documentTypeName; }
+            {
+            m_documentTypeName = documentTypeName;
+            }
 
         /// @returns The application's document version number.
         [[nodiscard]]
         const wxString& GetDocumentVersionNumber() const noexcept
-            { return m_documentVersionNumber; }
+            {
+            return m_documentVersionNumber;
+            }
+
         /// @brief Sets the application's document version number.
         /// @param versionNumber The version number.
         void SetDocumentVersionNumber(const wxString& versionNumber)
-            { m_documentVersionNumber = versionNumber; }
+            {
+            m_documentVersionNumber = versionNumber;
+            }
 
         /// @returns The application's subname.
         [[nodiscard]]
         const wxString& GetAppSubName() const noexcept
-            { return m_appSubName; }
+            {
+            return m_appSubName;
+            }
+
         /// @brief Sets the application's subname.
         /// @param name The subname.
-        void SetAppSubName(const wxString& name)
-            { m_appSubName = name; }
+        void SetAppSubName(const wxString& name) { m_appSubName = name; }
 
         /// @returns The path of where the debug profiling data is being saved.
         /// @details This is only used if profiling is enabled.
         [[nodiscard]]
         const wxString& GetProfileReportPath() const noexcept
-            { return m_profileReportPath; }
+            {
+            return m_profileReportPath;
+            }
 
         /// @returns Everything sent to the logging system as a formatted string.
         [[nodiscard]]
         wxString GetLogReport()
-            { return m_logFile->Read(); }
+            {
+            return m_logFile->Read();
+            }
 
         /// @return The file logging systems used by the application.
         [[nodiscard]]
@@ -155,8 +180,7 @@ namespace Wisteria::UI
 
         /// @brief Sets a support email for the application.
         /// @param email The email address.
-        void SetSupportEmail(const wxString& email)
-            { m_supportEmail = email; }
+        void SetSupportEmail(const wxString& email) { m_supportEmail = email; }
 
         /// @returns The printer settings.
         [[nodiscard]]
@@ -164,11 +188,15 @@ namespace Wisteria::UI
             {
             if (GetMainFrame())
                 {
-                return &GetMainFrame()->GetDocumentManager()->
-                    GetPageSetupDialogData().GetPrintData();
+                return &GetMainFrame()
+                            ->GetDocumentManager()
+                            ->GetPageSetupDialogData()
+                            .GetPrintData();
                 }
             else
-                { return nullptr; }
+                {
+                return nullptr;
+                }
             }
 
         /// @returns The path to a file in the application's resource directory,
@@ -187,12 +215,16 @@ namespace Wisteria::UI
         ///     XRC files from a resource archive.
         [[nodiscard]]
         ResourceManager& GetResourceManager() noexcept
-            { return m_resManager; }
+            {
+            return m_resManager;
+            }
 
         /// @private
         [[nodiscard]]
         const ResourceManager& GetResourceManager() const noexcept
-            { return m_resManager; }
+            {
+            return m_resManager;
+            }
 
         /** @brief Creates a program's splashscreen using a base image and
                 various program information.
@@ -206,12 +238,12 @@ namespace Wisteria::UI
             @returns The decorated splashscreen.*/
         [[nodiscard]]
         wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
-            const wxString& appSubName, const wxString& vendorName,
-            const bool includeCopyright);
-    private:
+                                    const wxString& appSubName, const wxString& vendorName,
+                                    const bool includeCopyright);
+
+      private:
         [[nodiscard]]
-        wxString FindResourceFileWithAppInfo(const wxString& folder,
-                                             const wxString& subFile) const;
+        wxString FindResourceFileWithAppInfo(const wxString& folder, const wxString& subFile) const;
         [[nodiscard]]
         wxString FindResourceDirectoryWithAppInfo(const wxString& folder,
                                                   const wxString& subFile) const;
@@ -228,7 +260,7 @@ namespace Wisteria::UI
         wxString m_profileReportPath;
         wxString m_supportEmail;
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 
