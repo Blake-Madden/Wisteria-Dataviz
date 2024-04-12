@@ -9,8 +9,6 @@
 #include "mainframe.h"
 #include "dialogs/radioboxdlg.h"
 
-using namespace Wisteria;
-
 //----------------------------------------------------------
 wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** templates,
                                                             int noTemplates, bool sortDocs)
