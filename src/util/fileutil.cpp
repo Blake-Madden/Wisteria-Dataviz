@@ -792,7 +792,7 @@ wxString CreateNewFileName(const wxString& filePath)
     // cppcheck-suppress ignoredReturnValue
     wxFileName::SplitPath(filePath, &dir, &name, &ext);
     wxString newFilePath;
-    for (size_t i = 0; i < 1'000; ++i)
+    for (int i = 0; i < 1'000; ++i)
         {
         newFilePath =
             wxString::Format(L"%s%c%s%04u.%s", dir, wxFileName::GetPathSeparator(), name, i, ext);
