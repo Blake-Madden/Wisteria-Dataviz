@@ -325,6 +325,13 @@ class FileDownload
         return m_disablePeerVerify;
         }
 
+    /// @brief Sets the minimum size that a file has to be to download it.
+    /// @param size The minimum file size, in kilobytes.
+    void SetMinimumDownloadFileSizeInKilobytes(const std::optional<uint32_t> size)
+        {
+        m_minFileDownloadSizeKilobytes = size;
+        }
+
     /// @brief Sets the number of seconds before a request, read, or download will quit
     ///     due to inactivity.
     /// @param timeout The number of seconds to wait before timing out.
@@ -341,11 +348,8 @@ class FileDownload
     /// @brief Downloads a web file to a local path.
     /// @param url The web file to download.
     /// @param localDownloadPath Where to download to.
-    /// @param minFileDownloadSizeKilobytes The minimum size that a file has to be to download it.\n
-    ///     Setting to `std::nullopt` will not enforce any file size constraints.
     /// @returns @c true if download was successful.
-    bool Download(const wxString& url, const wxString& localDownloadPath,
-                  std::optional<uint32_t> minFileDownloadSizeKilobytes = std::nullopt);
+    bool Download(const wxString& url, const wxString& localDownloadPath);
 
     /// @brief Reads the requested URL.
     /// @details This will be synchronous, so will not return until the

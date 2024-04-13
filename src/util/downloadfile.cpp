@@ -156,8 +156,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
     }
 
 //--------------------------------------------------
-bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath,
-                            std::optional<uint32_t> minFileDownloadSizeKilobytes /*= std::nullopt*/)
+bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath)
     {
     assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
@@ -170,7 +169,6 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
 
     Reset(true);
     m_downloadPath = localDownloadPath;
-    m_minFileDownloadSizeKilobytes = minFileDownloadSizeKilobytes;
 
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(m_handler, url);
     request.SetStorage(wxWebRequest::Storage_File);
@@ -428,8 +426,12 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT);
                 }
 
-            // if downloaded to temp folder, check size constraints (if in use)
-            // to see if we should "download" it to the final destination
+            /* Check size constraints (if in use)
+               to see if we should "download" it to the final destination.
+             
+               Note that we need to check file size constraints here after already
+               downloading because GetBytesExpectedToReceive() during the connection
+               stage can be packet size and not reflect the ultimate file size.*/
             if (wxFileName::FileExists(evt.GetDataFile()) &&
                 m_minFileDownloadSizeKilobytes.has_value() &&
                 m_minFileDownloadSizeKilobytes.value() >
@@ -515,15 +517,6 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     case wxWebRequest::State_Active:
         [[fallthrough]];
     case wxWebRequest::State_Idle:
-        if (evt.GetRequest().IsOk() && evt.GetRequest().GetBytesExpectedToReceive() != 0 &&
-            m_minFileDownloadSizeKilobytes.has_value() &&
-            m_minFileDownloadSizeKilobytes.value() > evt.GetRequest().GetBytesExpectedToReceive())
-            {
-            // Don't bother loading the response info;
-            // only Download uses then and will fill in response info manually
-            // if this error occurs.
-            m_downloadTooSmall = true;
-            }
         /* Check after XX seconds as to whether any data has been received;
            if not, then quit.*/
         if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
