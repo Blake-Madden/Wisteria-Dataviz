@@ -795,7 +795,7 @@ wxString CreateNewFileName(const wxString& filePath)
     for (int i = 0; i < 1'000; ++i)
         {
         newFilePath =
-            wxString::Format(L"%s%c%s%04u.%s", dir, wxFileName::GetPathSeparator(), name, i, ext);
+            wxString::Format(L"%s%c%s%04d.%s", dir, wxFileName::GetPathSeparator(), name, i, ext);
         if (!wxFileName::FileExists(newFilePath))
             {
             // create the file as we will use it later
