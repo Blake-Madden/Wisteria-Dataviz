@@ -96,7 +96,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         break;
         }
     case wxWebRequest::State_Failed:
-        wxLogError(L"Web Request failed: %s (%s)", evt.GetErrorDescription(),
+        wxLogError(L"Web request failed: %s (%s)", evt.GetErrorDescription(),
                    QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
         Remove(evt.GetId());
         break;
@@ -361,6 +361,7 @@ bool FileDownload::Read(const wxString& url)
 //--------------------------------------------------
 void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     {
+    wxLogVerbose(L"Processing response info...");
     m_server = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
                     evt.GetResponse().GetHeader(_DT(L"Server")) :
                     wxString{});
@@ -384,6 +385,8 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     // if a redirected error page, parse it down to its readable content
     if (m_lastStatus != 200)
         {
+        wxLogVerbose(L"Processing response status info...");
+        wxLogVerbose(L"Full response: %s", m_lastStatusInfo);
         lily_of_the_valley::html_extract_text hExtract;
         hExtract.include_no_script_sections(true);
         const wchar_t* const filteredMsg =
@@ -466,13 +469,13 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
         if (evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk())
             {
             wxLogError(
-                L"'%s', web Request failed: %s (%s)", evt.GetRequest().GetResponse().GetURL(),
+                L"'%s', web request failed: %s (%s)", evt.GetRequest().GetResponse().GetURL(),
                 evt.GetErrorDescription(),
                 QueueDownload::GetResponseMessage(evt.GetRequest().GetResponse().GetStatus()));
             }
         else
             {
-            wxLogError(L"Web Request failed: %s", evt.GetErrorDescription());
+            wxLogError(L"Web request failed: %s", evt.GetErrorDescription());
             }
         m_statusHasBeenProcessed = true;
         LoadResponseInfo(evt);
