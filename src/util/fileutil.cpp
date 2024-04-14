@@ -810,3 +810,49 @@ wxString CreateNewFileName(const wxString& filePath)
 
     return wxString{};
     }
+
+//---------------------------------------------------
+wxString GetExtensionOrDomain(const wxString& url)
+    {
+    if (url.empty())
+        {
+        return wxString{};
+        }
+
+    const size_t lastSlash = url.rfind(L'/');
+    const size_t startPos = ((lastSlash != wxString::npos) ? (lastSlash + 1) : 0);
+
+    // Any sort of page with a query.
+    // Note that some pages are malformed and missing the variable assignment,
+    // so only look for the initial query (i.e., the '?') and go back from there.
+    if (const size_t queryPos = url.find(L'?', startPos); queryPos != wxString::npos)
+        {
+        // might be a JS, CSS, or other extension, so get the real extension
+        // in front of the query...
+        const wxFileName fn(url.substr(startPos, queryPos - startPos));
+        if (fn.HasExt())
+            {
+            return fn.GetExt();
+            }
+        // sometimes, the "webpage" name is simply "js" or something like that,
+        // so treat it as such if it has a query being passed to it
+        else if (fn.GetName().CmpNoCase(L"js") == 0 || fn.GetName().CmpNoCase(L"css") == 0)
+            {
+            return fn.GetName();
+            }
+        }
+    else
+        {
+        if (lastSlash == url.length() - 1)
+            {
+            return wxString{};
+            }
+        const wxFileName fn(url.substr(startPos));
+        if (fn.HasExt())
+            {
+            return fn.GetExt();
+            }
+        }
+
+    return wxString{};
+    }

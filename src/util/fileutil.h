@@ -307,6 +307,11 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory);
 [[nodiscard]]
 wxString CreateNewFileName(const wxString& filePath);
 
+/** @returns The extension (or simply domain) from an URL.
+    @param url The URL to parse.*/
+[[nodiscard]]
+wxString GetExtensionOrDomain(const wxString& url);
+
 /** @}*/
 
 #endif //__FILE_UTIL_H__

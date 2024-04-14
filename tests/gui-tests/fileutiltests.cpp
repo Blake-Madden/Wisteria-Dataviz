@@ -2,17 +2,41 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../../src/util/fileutil.h"
 
+TEST_CASE("Web page extensions", "[file]")
+    {
+    CHECK(GetExtensionOrDomain(L"").empty());
+    CHECK(GetExtensionOrDomain(L"/").empty());
+    CHECK(GetExtensionOrDomain(L"//").empty());
+    CHECK(GetExtensionOrDomain(L"business").empty());
+    CHECK(GetExtensionOrDomain(L"/business").empty());
+    CHECK(GetExtensionOrDomain(L"org").empty());
+
+    CHECK(GetExtensionOrDomain(L"business.org") == wxString{ "org" });
+    CHECK(GetExtensionOrDomain(L"/business.org") == wxString{ "org" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business.doc") ==
+          wxString{ "doc" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business").empty());
+
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business.doc?5145") == wxString{ "doc" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business.js?5145") == wxString{ "js" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business.js?id=501") == wxString{ "js" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business.js?id=501;l=en") == wxString{ "js" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/business.js.php?id=501;l=en") == wxString{ "php" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/js?5") == wxString{ "js" });
+    CHECK(GetExtensionOrDomain(L"www.mycompany.com/css?en") == wxString{ "css" });
+    }
+
 TEST_CASE("Parse title from file name", "[parse-title]")
     {
     SECTION("Local File")
         {
-        CHECK(ParseTitleFromFileName(L"c:\\files\\file.txt") == wxT("file"));
-        CHECK(ParseTitleFromFileName(L"/users/files/file.txt") == wxT("file"));
+        CHECK(ParseTitleFromFileName(L"c:\\files\\file.txt") == wxString("file"));
+        CHECK(ParseTitleFromFileName(L"/users/files/file.txt") == wxString("file"));
         }
     SECTION("Local File Illegal Chars")
         {
-        CHECK(ParseTitleFromFileName(L"c:\\files\\fi?l*e.txt") == wxT("file"));
-        CHECK(ParseTitleFromFileName(L"/users/files/fi?l*e.txt") == wxT("file"));
+        CHECK(ParseTitleFromFileName(L"c:\\files\\fi?l*e.txt") == wxString("file"));
+        CHECK(ParseTitleFromFileName(L"/users/files/fi?l*e.txt") == wxString("file"));
         }
     SECTION("Url Ending With Slash")
         {
