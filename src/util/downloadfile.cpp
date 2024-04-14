@@ -390,7 +390,7 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
             hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
         if (filteredMsg != nullptr && hExtract.get_filtered_text_length())
             {
-            m_lastStatusInfo.assign(filteredMsg);
+            m_lastStatusInfo.assign(filteredMsg, hExtract.get_filtered_text_length());
             m_lastStatusInfo.Trim(true).Trim(false);
             }
         // Cloudflare forces the use of javascript to block robots
