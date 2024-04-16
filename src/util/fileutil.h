@@ -312,6 +312,15 @@ wxString CreateNewFileName(const wxString& filePath);
 [[nodiscard]]
 wxString GetExtensionOrDomain(const wxString& url);
 
+/** @returns The last common folder between two paths.
+    @param path1 The first path to compare.
+    @param path2 The second path to compare.
+    @warning This assumes that both paths are using the same
+        (and consistent) path separators; otherwise, `/` and `\`
+        are both supported.*/
+[[nodiscard]]
+wxString GetCommonFolder(const wxString& path1, const wxString& path2);
+
 /** @}*/
 
 #endif //__FILE_UTIL_H__

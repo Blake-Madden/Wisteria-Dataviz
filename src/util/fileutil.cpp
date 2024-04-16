@@ -856,3 +856,81 @@ wxString GetExtensionOrDomain(const wxString& url)
 
     return wxString{};
     }
+
+//---------------------------------------------------
+wxString GetCommonFolder(const wxString& path1, const wxString& path2)
+    {
+    const size_t cmpLen = std::min(path1.length(), path2.length());
+    if (cmpLen == 0)
+        {
+        return wxString{};
+        }
+
+    size_t i = 0;
+    for (; i < cmpLen; ++i)
+        {
+        if (std::towlower(path1[i]) != std::towlower(path2[i]))
+            {
+            break;
+            }
+        }
+    // no matching chars?
+    if (i == 0)
+        {
+        return wxString{};
+        }
+    // step back to the last character that was the same
+    else
+        {
+        --i;
+        }
+
+    const auto getFolderStartPos = [](const auto& path, const size_t startRPos)
+        {
+        size_t lastForwardSlash = path.rfind(L'/', startRPos);
+        size_t lastBackSlash = path.rfind(L'\\', startRPos);
+        size_t lastSlash =
+            ((lastForwardSlash != wxString::npos) ? lastForwardSlash : lastBackSlash);
+        return ((lastSlash != wxString::npos) ? lastSlash : 0);
+        };
+
+    // if last match was a path separator, then step back and return the
+    // previous folder
+    if (path1[i] == L'/' || path1[i] == L'\\')
+        {
+        // if starting off with separator, then no common folder
+        if (i == 0)
+            {
+            return wxString{};
+            }
+        const size_t path1Start = getFolderStartPos(path1, --i);
+        const bool hasOffset =
+            (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
+        return path1.substr(path1Start + (hasOffset ? 1 : 0),
+                            (i - path1Start) + (hasOffset ? 0 : 1));
+        }
+    // otherwise, we are on a file of folder name that has the same prefix
+    // between the two paths, but we want to ignore that. Step back to the
+    // previous separator (which will be the end of the previous folder)
+    // and then step back again to the start of the folder.
+    else
+        {
+        size_t path1Start = getFolderStartPos(path1, i);
+        i = path1Start;
+        // no matching chars?
+        if (i == 0)
+            {
+            return wxString{};
+            }
+        // step back to the last character that was the same
+        else
+            {
+            --i;
+            }
+        path1Start = getFolderStartPos(path1, i);
+        const bool hasOffset =
+            (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
+        return path1.substr(path1Start + (hasOffset ? 1 : 0),
+                            (i - path1Start) + (hasOffset ? 0 : 1));
+        }
+    }

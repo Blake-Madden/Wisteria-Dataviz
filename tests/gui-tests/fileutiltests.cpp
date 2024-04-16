@@ -2,6 +2,30 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../../src/util/fileutil.h"
 
+TEST_CASE("Common folder", "[file]")
+    {
+    CHECK(GetCommonFolder(L"z:/user/bob/stuff", L"c:/user/bob/stuffing").empty());
+    CHECK(GetCommonFolder(L"/stuff", L"c:/user/bob/stuffing").empty());
+    CHECK(GetCommonFolder(L"", L"c:/user/bob/stuffing").empty());
+    CHECK(GetCommonFolder(L"//", L"//").empty());
+    CHECK(GetCommonFolder(L"stuff//", L"stuff//").empty()); // top common folder is missing
+    CHECK(GetCommonFolder(L"/stuff", L"").empty());
+    CHECK(GetCommonFolder(L"", L"").empty());
+    CHECK(GetCommonFolder(L"/", L"/").empty());
+    CHECK(GetCommonFolder(L"/", L"\\").empty());
+    CHECK(GetCommonFolder(L"data\\stuff\\", L"data/stuff/").empty()); // inconsistent separators
+
+    CHECK(GetCommonFolder(L"c:/user/bob/stuff", L"c:/user/bob/things") == wxString(L"bob"));
+    CHECK(GetCommonFolder(L"c:/USER/bob/stuff", L"c:/user/bob/stuffing") == wxString(L"bob"));
+    CHECK(GetCommonFolder(L"data/stuff", L"data/user/bob/stuffing") == wxString(L"data"));
+    CHECK(GetCommonFolder(L"data/stuff", L"DATA/stuffing") == wxString(L"data"));
+    CHECK(GetCommonFolder(L"data/stuff", L"data/stuffing") == wxString(L"data"));
+    CHECK(GetCommonFolder(L"data/stuff.txt", L"data/stuff.txt") == wxString(L"data"));
+    CHECK(GetCommonFolder(L"data/stuff", L"data/stuff") == wxString(L"data"));
+    CHECK(GetCommonFolder(L"data/stuff/", L"data/stuff/") == wxString(L"stuff"));
+    CHECK(GetCommonFolder(L"data\\stuff\\", L"data\\stuff\\") == wxString(L"stuff"));
+    }
+
 TEST_CASE("Web page extensions", "[file]")
     {
     CHECK(GetExtensionOrDomain(L"").empty());
