@@ -177,6 +177,45 @@ Finally, for certain types of date-based axes, `AddBrackets()` can add a series 
 smaller date blocks along the axis. For example, this can be used to show the start and end of each quarter of
 the axis's fiscal years.
 
+Dual Axes
+=============================
+
+Dual axes can be created, where one axis shows one scale and the opposite-side axis shows a different scale.
+This can be useful to display, for example, Celsius vs. Fahrenheit or Metric vs. Imperial measurements.
+
+    C  100 -|                   | - 212  F
+    E       |                   |        A
+    L   75 -|                   | - 167  H
+    S       |                   |        R
+    I   50 -|                   |        E
+    U       |                   | - 98   N
+    S   25 -|                   |        H
+            |                   |        E
+         0 -|                   | - 32   I
+            ---------------------        T
+
+```cpp
+// set the range of the Celsius scale, going from 0-100
+// with major tickmarks every 25 degrees
+linePlot->GetLeftYAxis().GetTitle().SetText(L"\u00B0Celsius");
+linePlot->GetLeftYAxis().SetRange(0, 100, 0, 25, 1);
+// ensure that the left axis isn't copying over the opposite axis
+linePlot->MirrorYAxis(false);
+
+// get the range of the Celcius axis and then fill opposite axis
+// with the corresponding Fahrenheit values
+const auto cel2fahr = [](double cel)
+    { return (cel * 9.0 / 5.0) + 32; };
+const auto [celRangeStart, celRangeEnd] = linePlot->GetLeftYAxis().GetRange();
+linePlot->GetRightYAxis().GetTitle().SetText(L"\u00B0Fahrenheit");
+// Note that you must call this overload of SetRange(), passing false
+// for the includeExtraInterval argument. This will force the axis
+// to use the provided range exactly as-is (without any adjustment),
+// thus ensuring that the two axes line up as expected.
+linePlot->GetRightYAxis().SetRange(
+    cel2fahr(celRangeStart), cel2fahr(celRangeEnd), 0, false);
+```
+
 Brackets
 =============================
 
