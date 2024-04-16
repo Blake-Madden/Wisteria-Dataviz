@@ -202,7 +202,7 @@ linePlot->GetLeftYAxis().SetRange(0, 100, 0, 25, 1);
 // ensure that the left axis isn't copying over the opposite axis
 linePlot->MirrorYAxis(false);
 
-// get the range of the Celcius axis and then fill opposite axis
+// get the range of the Celsius axis and then fill opposite axis
 // with the corresponding Fahrenheit values
 const auto cel2fahr = [](double cel)
     { return (cel * 9.0 / 5.0) + 32; };
