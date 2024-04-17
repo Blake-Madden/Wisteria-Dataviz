@@ -476,8 +476,6 @@ void ListCtrlEx::RemoveAll(const wxString& valueToRemove)
 void ListCtrlEx::DeleteSelectedItems()
     {
     wxWindowUpdateLocker noUpdates(this);
-    const long style = GetExtraStyle();
-    SetExtraStyle(style|wxWS_EX_BLOCK_EVENTS);
     long item = wxNOT_FOUND;
     const long firstSelected = GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
     for (;;)
@@ -501,7 +499,6 @@ void ListCtrlEx::DeleteSelectedItems()
     else if (firstSelected > 0 &&
              firstSelected-1 < GetItemCount())
         { Select(firstSelected-1); }
-    SetExtraStyle(style);
     Refresh();
     SetItemBeenEditedByUser(true);
     }
