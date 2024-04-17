@@ -56,7 +56,7 @@ void ArchiveDlg::OnFileButtonClick([[maybe_unused]] wxCommandEvent& event)
     TransferDataFromWindow();
     wxFileDialog dialog(this, _(L"Select Archive File"), wxEmptyString, wxEmptyString,
                         _(L"Archive files (*.zip)|*.zip"),
-                        wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW | wxFD_MULTIPLE);
+                        wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
     if (dialog.ShowModal() != wxID_OK)
         {
