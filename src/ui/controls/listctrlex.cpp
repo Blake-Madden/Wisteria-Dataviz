@@ -486,8 +486,14 @@ void ListCtrlEx::DeleteSelectedItems()
         if (m_enableFileDelete)
             {
             const wxString filePath = GetItemFilePath(item);
-            if (filePath.length() && wxFile::Exists(filePath))
-                { SendToRecycleBinOrDelete(filePath); }
+            if (filePath.length() && wxFile::Exists(filePath) && m_deletePrompt.length())
+                {
+                if (wxMessageBox(m_deletePrompt, _(L"Delete Item"),
+                                    wxYES_NO | wxICON_WARNING) == wxYES)
+                    {
+                    SendToRecycleBinOrDelete(filePath);
+                    }
+                }
             }
         DeleteItem(item--);
         }
