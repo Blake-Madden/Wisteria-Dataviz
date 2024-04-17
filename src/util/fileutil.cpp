@@ -858,12 +858,12 @@ wxString GetExtensionOrDomain(const wxString& url)
     }
 
 //---------------------------------------------------
-wxString GetCommonFolder(const wxString& path1, const wxString& path2)
+std::pair<wxString, size_t> GetCommonFolder(const wxString& path1, const wxString& path2)
     {
     const size_t cmpLen = std::min(path1.length(), path2.length());
     if (cmpLen == 0)
         {
-        return wxString{};
+        return std::make_pair(wxString{}, wxString::npos);
         }
 
     size_t i = 0;
@@ -877,7 +877,7 @@ wxString GetCommonFolder(const wxString& path1, const wxString& path2)
     // no matching chars?
     if (i == 0)
         {
-        return wxString{};
+        return std::make_pair(wxString{}, wxString::npos);
         }
     // step back to the last character that was the same
     else
@@ -886,13 +886,13 @@ wxString GetCommonFolder(const wxString& path1, const wxString& path2)
         }
 
     const auto getFolderStartPos = [](const auto& path, const size_t startRPos)
-        {
+    {
         size_t lastForwardSlash = path.rfind(L'/', startRPos);
         size_t lastBackSlash = path.rfind(L'\\', startRPos);
         size_t lastSlash =
             ((lastForwardSlash != wxString::npos) ? lastForwardSlash : lastBackSlash);
         return ((lastSlash != wxString::npos) ? lastSlash : 0);
-        };
+    };
 
     // if last match was a path separator, then step back and return the
     // previous folder
@@ -901,13 +901,13 @@ wxString GetCommonFolder(const wxString& path1, const wxString& path2)
         // if starting off with separator, then no common folder
         if (i == 0)
             {
-            return wxString{};
+            return std::make_pair(wxString{}, wxString::npos);
             }
         const size_t path1Start = getFolderStartPos(path1, --i);
-        const bool hasOffset =
-            (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
-        return path1.substr(path1Start + (hasOffset ? 1 : 0),
-                            (i - path1Start) + (hasOffset ? 0 : 1));
+        const bool hasOffset = (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
+        return std::make_pair(
+            path1.substr(path1Start + (hasOffset ? 1 : 0), (i - path1Start) + (hasOffset ? 0 : 1)),
+            path1Start + (hasOffset ? 1 : 0));
         }
     // otherwise, we are on a file of folder name that has the same prefix
     // between the two paths, but we want to ignore that. Step back to the
@@ -920,7 +920,7 @@ wxString GetCommonFolder(const wxString& path1, const wxString& path2)
         // no matching chars?
         if (i == 0)
             {
-            return wxString{};
+            return std::make_pair(wxString{}, wxString::npos);
             }
         // step back to the last character that was the same
         else
@@ -928,9 +928,9 @@ wxString GetCommonFolder(const wxString& path1, const wxString& path2)
             --i;
             }
         path1Start = getFolderStartPos(path1, i);
-        const bool hasOffset =
-            (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
-        return path1.substr(path1Start + (hasOffset ? 1 : 0),
-                            (i - path1Start) + (hasOffset ? 0 : 1));
+        const bool hasOffset = (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
+        return std::make_pair(
+            path1.substr(path1Start + (hasOffset ? 1 : 0), (i - path1Start) + (hasOffset ? 0 : 1)),
+            path1Start + (hasOffset ? 1 : 0));
         }
     }
