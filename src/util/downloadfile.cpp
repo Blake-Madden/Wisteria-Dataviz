@@ -183,22 +183,25 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
             {
             wxYield();
 
-            if (m_timedOut || m_cancelled)
+            if (m_lastState == wxWebRequest::State_Active && !m_statusHasBeenProcessed)
                 {
-                request.Cancel();
-                }
-            else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                     std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                         GetTimeout() &&
-                     m_bytesReceived == 0)
-                {
-                m_timedOut = true;
-                wxLogError(
-                    L"Page timed out after %s seconds. Response code #%d (%s).",
-                    std::to_wstring(
-                        std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()),
-                    m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
-                request.Cancel();
+                if (m_timedOut || m_cancelled)
+                    {
+                    request.Cancel();
+                    }
+                else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
+                         std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                             GetTimeout() &&
+                         m_bytesReceived == 0)
+                    {
+                    m_timedOut = true;
+                    wxLogError(L"Page timed out after %s seconds. Response code #%d (%s).",
+                               std::to_wstring(
+                                   std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds)
+                                       .count()),
+                               m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
+                    request.Cancel();
+                    }
                 }
             }
 
@@ -254,24 +257,27 @@ void FileDownload::RequestResponse(const wxString& url)
             {
             wxYield();
 
-            if (m_timedOut || m_cancelled)
+            if (m_lastState == wxWebRequest::State_Active && !m_statusHasBeenProcessed)
                 {
-                request.Cancel();
-                }
-            // also check time out this way in case we are stuck in Idle and the event
-            // is no longer being processed
-            else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                     std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                         GetTimeout() &&
-                     m_bytesReceived == 0)
-                {
-                m_timedOut = true;
-                wxLogError(
-                    L"Page timed out after %s seconds. Response code #%d (%s).",
-                    std::to_wstring(
-                        std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()),
-                    m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
-                request.Cancel();
+                if (m_timedOut || m_cancelled)
+                    {
+                    request.Cancel();
+                    }
+                // also check time out this way in case we are stuck in Idle and the event
+                // is no longer being processed
+                else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
+                         std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                             GetTimeout() &&
+                         m_bytesReceived == 0)
+                    {
+                    m_timedOut = true;
+                    wxLogError(L"Page timed out after %s seconds. Response code #%d (%s).",
+                               std::to_wstring(
+                                   std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds)
+                                       .count()),
+                               m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
+                    request.Cancel();
+                    }
                 }
             }
         wxLogVerbose(L"Requesting response from '%s' complete.", url);
@@ -317,22 +323,25 @@ bool FileDownload::Read(const wxString& url)
             {
             wxYield();
 
-            if (m_timedOut || m_cancelled)
+            if (m_lastState == wxWebRequest::State_Active && !m_statusHasBeenProcessed)
                 {
-                request.Cancel();
-                }
-            else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
-                     std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
-                         GetTimeout() &&
-                     m_bytesReceived == 0)
-                {
-                m_timedOut = true;
-                wxLogError(
-                    L"Page timed out after %s seconds. Response code #%d (%s).",
-                    std::to_wstring(
-                        std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count()),
-                    m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
-                request.Cancel();
+                if (m_timedOut || m_cancelled)
+                    {
+                    request.Cancel();
+                    }
+                else if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
+                         std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >
+                             GetTimeout() &&
+                         m_bytesReceived == 0)
+                    {
+                    m_timedOut = true;
+                    wxLogError(L"Page timed out after %s seconds. Response code #%d (%s).",
+                               std::to_wstring(
+                                   std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds)
+                                       .count()),
+                               m_lastStatus, QueueDownload::GetResponseMessage(m_lastStatus));
+                    request.Cancel();
+                    }
                 }
             }
 
@@ -408,6 +417,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     if (evt.GetRequest().IsOk())
         {
         m_bytesReceived = evt.GetRequest().GetBytesReceived();
+        m_lastState = evt.GetRequest().GetState();
         }
 
     switch (evt.GetState())
