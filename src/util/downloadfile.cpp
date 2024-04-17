@@ -183,11 +183,6 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
             {
             wxYield();
 
-            if (m_downloadTooSmall)
-                {
-                request.Cancel();
-                }
-
             if (m_timedOut || m_cancelled)
                 {
                 request.Cancel();
