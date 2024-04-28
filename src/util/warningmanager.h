@@ -224,8 +224,6 @@ class WarningManager
         {
         std::vector<WarningMessage>::iterator warningPos = std::lower_bound(
             m_warningManager.begin(), m_warningManager.end(), WarningMessage(messageId));
-        assert(messageId.empty() ||
-               (warningPos != m_warningManager.end() && warningPos->GetId() == messageId));
         return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId) ?
                    warningPos :
                    m_warningManager.end();
@@ -238,8 +236,6 @@ class WarningManager
         {
         std::vector<WarningMessage>::iterator warningPos = std::lower_bound(
             m_warningManager.begin(), m_warningManager.end(), WarningMessage(messageId));
-        assert(messageId.empty() ||
-               (warningPos != m_warningManager.end() && warningPos->GetId() == messageId));
         return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId);
         }
 
