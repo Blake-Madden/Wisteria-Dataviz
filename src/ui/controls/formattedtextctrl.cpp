@@ -1282,7 +1282,8 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextRtf(
     }
 
 //-----------------------------------------------------------
-wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /*= true*/)
+wxString
+FormattedTextCtrl::GetFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags /*= true*/)
     {
     wxString text;
 #ifdef __WXMSW__
@@ -1308,7 +1309,6 @@ wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /
     text = wxString(buffer.c_str(), *wxConvCurrent);
     buffer.clear();
 #elif defined(__WXGTK__)
-    wxUnusedVar(fixHighlightingTags);
     return GtkGetFormattedText(GtkFormat::RtfFormat, true);
 #else
     text = GetTextPeer()->GetRtfValue();

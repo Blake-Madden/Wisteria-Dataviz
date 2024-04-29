@@ -669,13 +669,12 @@ public:
     void SetItemText(const size_t row, const size_t column, const wxString& text,
                      const Wisteria::NumberFormatInfo format =
                         Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
-                     const double sortableValue =
+                     [[maybe_unused]] const double sortableValue =
                         std::numeric_limits<double>::quiet_NaN()/*Not used here*/) final
         {
         assert(std::isnan(sortableValue) &&
             L"Numeric sortable value not supported by ListCtrlExDataProvider, "
              "use ListCtrlExNumericDataProvider instead.");
-        wxUnusedVar(sortableValue);
         ListCellString& cell = m_virtualData.operator[](row).operator[](column);
         cell.m_strVal = text;
         cell.SetNumberFormatType(format);
@@ -684,13 +683,12 @@ public:
     void SetItemText(const size_t row, const size_t column, wxString&& text,
                      const Wisteria::NumberFormatInfo format =
                         Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
-                     const double sortableValue =
+                     [[maybe_unused]] const double sortableValue =
                         std::numeric_limits<double>::quiet_NaN()/*Not used here*/) final
         {
         assert(std::isnan(sortableValue) &&
             L"Numeric sortable value not supported by ListCtrlExDataProvider, "
              "use ListCtrlExNumericDataProvider instead.");
-        wxUnusedVar(sortableValue);
         ListCellString& cell = m_virtualData.operator[](row).operator[](column);
         cell.m_strVal = std::move(text);
         cell.SetNumberFormatType(format);

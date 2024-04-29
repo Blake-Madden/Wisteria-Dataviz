@@ -126,7 +126,7 @@ public:
     ///     This is necessary for some programs that don't support the "highlight" or "cb"
     ///     command (e.g., LibreOffice).
     [[nodiscard]]
-    wxString GetFormattedTextRtf(const bool fixHighlightingTags = true);
+    wxString GetFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags = true);
     /// @returns The length of the formatted text (this includes the length of all markup tags).
     [[nodiscard]]
     unsigned long GetFormattedTextLength() const noexcept
