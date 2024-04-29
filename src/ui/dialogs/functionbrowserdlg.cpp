@@ -194,7 +194,6 @@ wxString FunctionBrowserDlg::FormatFunctionSignature(wxString signature)
 void FunctionBrowserDlg::OnInsertButtonClick([[maybe_unused]] wxCommandEvent& event)
     {
     InsertFunction();
-    Close();
     }
 
 //------------------------------------------------
