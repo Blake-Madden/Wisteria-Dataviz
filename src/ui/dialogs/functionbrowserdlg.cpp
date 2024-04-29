@@ -228,6 +228,7 @@ void FunctionBrowserDlg::InsertFunction()
             styleWindow->AddText(functionStr);
             styleWindow->SetSelection(styleWindow->GetCurrentPos(), styleWindow->GetCurrentPos());
             }
+        m_editWindow->SetFocus();
         }
     }
 
@@ -238,7 +239,7 @@ bool FunctionBrowserDlg::Create(
     const wxString& firstWindowCaption /*= _(L"Categories:")*/,
     const wxString& secondWindowCaption /*= _(L"Functions/Operators:")*/,
     const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
-    long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/)
+    long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
     {
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     DialogWithHelp::Create(parent, id, caption, pos, size, style);
