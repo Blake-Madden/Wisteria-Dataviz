@@ -8,8 +8,6 @@
 
 #include "functionbrowserdlg.h"
 
-wxIMPLEMENT_CLASS(FunctionBrowserDlg, DialogWithHelp)
-
     //------------------------------------------------
     void FunctionBrowserDlg::OnHyperlinkClicked(wxHtmlLinkEvent& event)
     {

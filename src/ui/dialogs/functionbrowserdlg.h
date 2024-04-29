@@ -225,8 +225,6 @@ class FunctionBrowserDlg final : public Wisteria::UI::DialogWithHelp
     Wisteria::UI::SideBar* m_categoryList{ nullptr };
     wxListBox* m_functionList{ nullptr };
     wxHtmlWindow* m_functionDescriptionWindow{ nullptr };
-
-    wxDECLARE_CLASS(FunctionBrowserDlg);
     };
 
     /** @}*/
