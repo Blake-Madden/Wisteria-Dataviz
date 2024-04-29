@@ -8,8 +8,8 @@
 
 #include "functionbrowserdlg.h"
 
-    //------------------------------------------------
-    void FunctionBrowserDlg::OnHyperlinkClicked(wxHtmlLinkEvent& event)
+//------------------------------------------------
+void FunctionBrowserDlg::OnHyperlinkClicked(wxHtmlLinkEvent& event)
     {
     const auto [parentPos, childPos] = m_categoryList->FindSubItem(event.GetLinkInfo().GetHref());
     if (parentPos.has_value())
@@ -260,6 +260,7 @@ bool FunctionBrowserDlg::Create(
     Bind(wxEVT_SIDEBAR_CLICK, &FunctionBrowserDlg::OnListSelected, this,
          FunctionBrowserDlg::ID_CATEGORY_LIST);
     Bind(wxEVT_LISTBOX, &FunctionBrowserDlg::OnListSelected, this);
+    Bind(wxEVT_LISTBOX_DCLICK, [this]([[maybe_unused]] wxCommandEvent&) { InsertFunction(); });
     Bind(wxEVT_HTML_LINK_CLICKED, &FunctionBrowserDlg::OnHyperlinkClicked, this);
 
     return true;
