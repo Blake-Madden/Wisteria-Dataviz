@@ -120,6 +120,13 @@ namespace Wisteria::UI
             return m_opactity;
             }
 
+        /// @returns The underlying image.
+        [[nodiscard]]
+        const Wisteria::GraphItems::Image& GetImage() const noexcept
+            {
+            return m_img;
+            }
+
       private:
         void OnResize(wxSizeEvent& event);
         void OnClick([[maybe_unused]] wxMouseEvent& event);
