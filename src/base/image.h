@@ -172,6 +172,15 @@ namespace Wisteria::GraphItems
                 review the file type.*/
         [[nodiscard]]
         static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
+
+            /// @returns The file filter string for opening our supported image types.
+        [[nodiscard]]
+        static wxString GetImageFileFilter()
+            {
+            return _(
+                LR"(Image Files (*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx)|*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|Bitmap (*.bmp)|*.bmp|JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|PNG (*.png)|*.png|GIF (*.gif)|*.gif|Targa (*.tga)|*.tga|TIFF (*.tif;*.tiff)|*.tif;*.tiff|PCX (*.pcx)|*.pcx)");
+            }
+
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).
             @param filePath The filepath of the image to load.
             @note Memory mapping is used when loading, which can help memory usage when
