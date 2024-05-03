@@ -1971,8 +1971,72 @@ namespace html_utilities
         return pos->second;
         }
 
+    const std::wstring_view javascript_hyperlink_parse::HTML_SCRIPT{ L"script" };
+    const std::wstring_view javascript_hyperlink_parse::HTML_SCRIPT_WITH_ANGLE{ L"<script" };
+    const std::wstring_view javascript_hyperlink_parse::HTML_SCRIPT_END{ L"</script>" };
+
     //------------------------------------------------------------------
-    const wchar_t* javascript_hyperlink_parse::operator()() noexcept
+    std::wstring javascript_hyperlink_parse::get_cookies(std::wstring_view htmlText)
+        {
+        static const std::wregex docCookie(
+            LR"((document[.]cookie\s*=\s*['"]([\w\-=;\s]+)['"]))", std::regex_constants::icase);
+        std::wstring cookie;
+
+        while (htmlText.length() > 0)
+            {
+            size_t startOfScriptSection =
+                htmlText.find(javascript_hyperlink_parse::HTML_SCRIPT_WITH_ANGLE);
+            if (startOfScriptSection == std::wstring_view::npos)
+                {
+                break;
+                }
+            size_t endOfScriptSection =
+                htmlText.find(javascript_hyperlink_parse::HTML_SCRIPT_END);
+            if (endOfScriptSection == std::wstring_view::npos)
+                {
+                break;
+                }
+
+            std::wstring_view scriptBlock =
+                htmlText.substr(startOfScriptSection, endOfScriptSection - startOfScriptSection);
+
+            if (std::match_results<const wchar_t*> matches;
+                std::regex_search(scriptBlock.data(), scriptBlock.data() + scriptBlock.length(),
+                                  matches, docCookie) &&
+                matches.length() >= 3)
+                {
+                // if being pieced together with more values, just grab the initial key/value
+                // assignment in the string and ignore the rest
+                std::wstring cookieValue{ matches[2] };
+                if (size_t semiCPos = cookieValue.rfind(L';');
+                    semiCPos != std::wstring::npos)
+                    {
+                    cookieValue.erase(semiCPos);
+                    }
+                string_util::rtrim(cookieValue);
+
+                // if something like "key=" and then it is pieced together with a variable in the
+                // JS, then we can't do anything with this
+                if (cookieValue.length() > 0 && cookieValue.back() != L'=')
+                    {
+                    // prep for more possible cookies from other <script> sections
+                    cookie += cookieValue + L"; ";
+                    }
+                }
+
+            htmlText =
+                htmlText.substr(endOfScriptSection + javascript_hyperlink_parse::HTML_SCRIPT_END.length());
+            }
+
+        if (cookie.length() > 2 && cookie.compare(cookie.length() - 2, 2, L"; ", 2) == 0)
+            {
+            cookie.erase(cookie.length() - 2);
+            }
+        return cookie;
+        }
+
+    //------------------------------------------------------------------
+    const wchar_t* javascript_hyperlink_parse::operator()()
         {
         // if the end is null (should not happen) or if the current position
         // is null or at the terminator then we are done
@@ -2120,8 +2184,6 @@ namespace html_utilities
         static const std::wstring_view HTML_META(L"meta");
         static const std::wstring_view HTML_IFRAME(L"iframe");
         static const std::wstring_view HTML_FRAME(L"frame");
-        static const std::wstring_view HTML_SCRIPT(L"script");
-        static const std::wstring_view HTML_SCRIPT_END(L"</script>");
         static const std::wstring_view HTML_IMAGE(L"img");
         static const std::wstring_view DATA_IMAGE(L"data:image");
         // if we are in an embedded script block, then continue parsing the
@@ -2161,13 +2223,12 @@ namespace html_utilities
                     html_extract_text::compare_element(m_html_text+1,
                         HTML_IMAGE, true);
                 m_inside_of_script_section = m_current_link_is_javascript =
-                    html_extract_text::compare_element(m_html_text+1,
-                        HTML_SCRIPT, false);
+                    html_extract_text::compare_element(m_html_text+1, javascript_hyperlink_parse::HTML_SCRIPT, false);
                 if (m_inside_of_script_section)
                     {
                     const wchar_t* endAngle = html_extract_text::find_close_tag(m_html_text);
-                    const wchar_t* endOfScriptSection =
-                        string_util::stristr<wchar_t>(m_html_text, HTML_SCRIPT_END.data());
+                    const wchar_t* endOfScriptSection = string_util::stristr<wchar_t>(
+                        m_html_text, javascript_hyperlink_parse::HTML_SCRIPT_END.data());
                     if (endAngle && (endAngle < m_html_text_end) &&
                         endOfScriptSection && (endOfScriptSection < m_html_text_end))
                         { m_javascript_hyperlink_parse.set(endAngle, endOfScriptSection-endAngle); }

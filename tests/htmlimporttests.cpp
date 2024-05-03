@@ -1204,6 +1204,85 @@ TEST_CASE("HTML Parser", "[html import]")
         }
     }
 
+TEST_CASE("JS Parser", "[html import]")
+    {
+    SECTION("Cookie Null")
+        {
+        std::wstring_view text = LR"()";
+
+        CHECK(javascript_hyperlink_parse::get_cookies(text).empty());
+        }
+    SECTION("Cookie")
+        {
+        std::wstring_view text =
+            LR"(Click to continue
+<script language=javascript>
+var expires = dateToUTCString();
+var name = 'Joe';
+document.cookie ="theToken=1; expires=" + expires + "; path="/"";
+</script>
+Some more html text on the page.)";
+
+        CHECK(javascript_hyperlink_parse::get_cookies(text) == std::wstring{ L"theToken=1" });
+        }
+    SECTION("Cookies")
+        {
+        std::wstring_view text = LR"(Click to continue
+<script>
+var expires = dateToUTCString();
+var name = 'Joe';
+document.cookie ="max-age=1";
+</script>
+<script language=javascript>
+var expires = dateToUTCString();
+var name = 'Joe';
+document.cookie ="theToken=1; expires=" + expires + "; path="/"";
+</script>
+Some more html text on the page.)";
+
+        CHECK(javascript_hyperlink_parse::get_cookies(text) == std::wstring{ L"max-age=1; theToken=1" });
+        }
+    SECTION("Cookies Missing Value")
+        {
+        std::wstring_view text = LR"(Click to continue
+<script>
+var expires = dateToUTCString();
+var name = 'Joe';
+document.cookie ="name=" + name;
+</script>
+<script language=javascript>
+var expires = dateToUTCString();
+var name = 'Joe';
+document.cookie ="theToken=1; expires=" + expires + "; path="/"";
+</script>
+Some more html text on the page.)";
+
+        CHECK(javascript_hyperlink_parse::get_cookies(text) ==
+              std::wstring{ L"theToken=1" });
+        }
+
+    SECTION("Cookies Bad Script Section")
+        {
+        std::wstring_view text = LR"(Click to continue
+<script>
+var expires = dateToUTCString();
+var name = 'Joe';
+document.cookie ="name=" + name;
+
+Some more html text on the page.)";
+
+        CHECK(javascript_hyperlink_parse::get_cookies(text).empty());
+        }
+
+    SECTION("Cookies No Script Section")
+        {
+        std::wstring_view text = LR"(Click to continue
+Some more html text on the page.)";
+
+        CHECK(javascript_hyperlink_parse::get_cookies(text).empty());
+        }
+    }
+
 TEST_CASE("Hyperlink Parser", "[html import]")
     {
     SECTION("Null")

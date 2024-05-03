@@ -16,6 +16,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <regex>
 #include "extract_text.h"
 
 /// @brief Helper classes for HTML parsing.
@@ -25,7 +26,7 @@ namespace html_utilities
             (for the notorious Symbol font).*/
     class symbol_font_table
         {
-    public:
+      public:
         /// @private
         symbol_font_table();
         /** Finds a letter's symbol equivalent and returns it.
@@ -36,33 +37,41 @@ namespace html_utilities
                 For example, 'S' will return 'Σ'.*/
         [[nodiscard]]
         wchar_t find(const wchar_t letter) const;
-    private:
+
+      private:
         std::unordered_map<wchar_t, wchar_t> m_symbol_table;
         };
 
     /** @brief Class to convert an HTML entity (e.g., "&amp;") to its literal value.*/
     class html_entity_table
         {
-    public:
+      public:
         /// @private
         html_entity_table();
+
         /** @returns The unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.*/
         [[nodiscard]]
-        wchar_t operator[](const std::wstring_view html_entity) const
-            { return find(html_entity); }
+        wchar_t
+        operator[](const std::wstring_view html_entity) const
+            {
+            return find(html_entity);
+            }
+
         /** @brief Searches for an entity.
             @returns The unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.
             @note This function first must do a case sensitive search because some HTML entities
-                are case sensitive (e.g., "Dagger" and "dagger" result in different values). Of course,
-                before XHTML, most HTML was very liberal with casing, so if a case sensitive search fails,
-                then a case insensitive search is performed. In this case, whatever the HTML author's
-                intention for something like "&SIGMA;" may be misinterpreted (should it be a lowercase or
-                uppercase sigma symbol?)--the price you pay for sloppy HTML.*/
+                are case sensitive (e.g., "Dagger" and "dagger" result in different values).
+                Of course, before XHTML, most HTML was very liberal with casing,
+                so if a case sensitive search fails, then a case insensitive search is performed.
+                In this case, whatever the HTML author's intention for something like "&SIGMA;"
+                may be misinterpreted (should it be a lowercase or uppercase sigma symbol?)--
+                the price you pay for sloppy HTML.*/
         [[nodiscard]]
         wchar_t find(const std::wstring_view html_entity) const;
-    private:
+
+      private:
         std::unordered_map<std::wstring_view, wchar_t> m_table;
         };
 
@@ -72,33 +81,56 @@ namespace html_utilities
             appear to be a path to a file or webpage.*/
     class javascript_hyperlink_parse
         {
-    public:
+      public:
         /// @private
         javascript_hyperlink_parse() = default;
+
         /** @brief Constructor.
             @param js_text The JavaScript to analyze.
             @param length The length of js_text.*/
-        javascript_hyperlink_parse(const wchar_t* js_text, const size_t length) noexcept :
-          m_js_text_start(js_text), m_js_text_end(js_text+length)
-            {}
+        javascript_hyperlink_parse(const wchar_t* js_text, const size_t length) noexcept
+            : m_js_text_start(js_text), m_js_text_end(js_text + length)
+            {
+            }
+
         /** @brief Sets the JavaScript to analyze.
             @param js_text The JavaScript to analyze.
             @param length The length of js_text.*/
         void set(const wchar_t* js_text, const size_t length) noexcept
             {
             m_js_text_start = js_text;
-            m_js_text_end = (js_text+length);
+            m_js_text_end = (js_text + length);
             m_current_hyperlink_length = 0;
             }
+
         /** @brief Main function that returns the next link in the file.
             @returns A pointer to the next link, or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t* operator()() noexcept;
+        const wchar_t*
+        operator()();
+
         /** @returns The length of the current hyperlink.*/
         [[nodiscard]]
         inline size_t get_current_hyperlink_length() const noexcept
-            { return m_current_hyperlink_length; }
-    private:
+            {
+            return m_current_hyperlink_length;
+            }
+
+        /** @brief Parses JS sections from an HTML block and searches for cookie setting code.\n
+                The cookie values will then be extracted and returned.
+            @param htmlText The HTML text to parse.
+            @returns The cookie values set within JS script blocks (if any).*/
+        [[nodiscard]]
+        static std::wstring get_cookies(std::wstring_view htmlText);
+
+        /// @private
+        static const std::wstring_view HTML_SCRIPT;
+        /// @private
+        static const std::wstring_view HTML_SCRIPT_WITH_ANGLE;
+        /// @private
+        static const std::wstring_view HTML_SCRIPT_END;
+
+      private:
         const wchar_t* m_js_text_start{ nullptr };
         const wchar_t* m_js_text_end{ nullptr };
         size_t m_current_hyperlink_length{ 0 };
@@ -108,22 +140,29 @@ namespace html_utilities
             returns the image links in it, one-by-one.*/
     class html_image_parse
         {
-    public:
+      public:
         /** @brief Constructor.
             @param html_text The HTML text to analyze.
             @param length The length of html_text.*/
-        html_image_parse(const wchar_t* html_text, const size_t length) noexcept :
-                m_html_text(html_text), m_html_text_end(html_text+length)
-            {}
+        html_image_parse(const wchar_t* html_text, const size_t length) noexcept
+            : m_html_text(html_text), m_html_text_end(html_text + length)
+            {
+            }
+
         /** @brief Main function that returns the next link in the file.
             @returns either the next link or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t* operator()();
+        const wchar_t*
+        operator()();
+
         /** @returns The length of the current hyperlink.*/
         [[nodiscard]]
         inline size_t get_current_hyperlink_length() const noexcept
-            { return m_current_hyperlink_length; }
-    private:
+            {
+            return m_current_hyperlink_length;
+            }
+
+      private:
         const wchar_t* m_html_text{ nullptr };
         const wchar_t* m_html_text_end{ nullptr };
         size_t m_current_hyperlink_length{ 0 };
