@@ -104,7 +104,7 @@ class QueueDownload
 
     /** @brief Sets the user agent to send the server when connecting.
         @param userAgent The user agent to use.*/
-    void SetUserAgent(wxString userAgent) { m_userAgent = std::move(userAgent); }
+    void SetUserAgent(const wxString& userAgent) { m_userAgent = userAgent; }
 
     [[nodiscard]]
     /// @returns The user agent being sent when connecting.
@@ -302,7 +302,7 @@ class FileDownload
 
     /** @brief Sets the user agent to send the server when connecting.
         @param userAgent The user agent to use.*/
-    void SetUserAgent(wxString userAgent) { m_userAgent = std::move(userAgent); }
+    void SetUserAgent(const wxString& userAgent) { m_userAgent = userAgent; }
 
     /// @returns The user agent being sent when connecting.
     [[nodiscard]]
