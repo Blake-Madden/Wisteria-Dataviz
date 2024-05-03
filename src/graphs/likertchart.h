@@ -17,7 +17,8 @@
 namespace Wisteria::Graphs
     {
     /** @brief A chart which shows the breakdown of Likert-scale survey responses.
-        @details Questions' responses can either be plotted as a single bar or split into grouped bar.
+        @details Questions' responses can either be plotted as a single bar or
+         split into grouped bar.
          Also, multiple levels of Likert scales are supported.
 
          | 3-Point Scale   | 7-Point Scale |
@@ -25,10 +26,11 @@ namespace Wisteria::Graphs
          | @image html Likert3Point.png width=90% | @image html Likert7Point.png width=90% |
 
         @par %Data:
-         This plot accepts a Data::Dataset where the specified categorical columns represent questions
-         and their respective responses. (A string table must be assigned via SetLabels() to these
-         columns after import, and that will be used for the legend.) Additionally, a group column
-         can optionally be used to subdivide the responses on the chart.
+         This plot accepts a Data::Dataset where the specified categorical columns represent
+         questions and their respective responses. (A string table must be assigned via SetLabels()
+         to these columns after import, and that will be used for the legend.)
+         Additionally, a group column can optionally be used to subdivide the
+         responses on the chart.
 
          | GENDER | Question 1 | Question 2 |
          | :--    | --:        | --:        |
@@ -47,8 +49,9 @@ namespace Wisteria::Graphs
 
          ...
 
-        @warning The question columns must be imported using @c CategoricalImportMethod::ReadAsIntegers,
-         and the missing data code must be left as the default @c 0.
+        @warning The question columns must be imported using
+            @c CategoricalImportMethod::ReadAsIntegers,
+            and the missing data code must be left as the default @c 0.
 
         @par Missing Data:
          - Missing data in the group column will be displayed as empty labels.
@@ -72,8 +75,8 @@ namespace Wisteria::Graphs
              Dataset::ImportInfoFromPreview(
                  Dataset::ReadColumnInfo(datasetPath, L',')));
 
-         // Although we know that the data is @c SevenPointCategorized (i.e., 7-point), we can
-         // also deduce the scale from the data this way:
+         // Although we know that the data is @c SevenPointCategorized (i.e., 7-point),
+         // we can also deduce the scale from the data this way:
          //
          // const auto likertScale = LikertChart::DeduceScale(surveyData
          //                                       surveyData->GetCategoricalColumnNames());
@@ -180,7 +183,7 @@ namespace Wisteria::Graphs
          https://www.airweb.org/article/2021/08/20/data-visualization-quick-tips*/
     class LikertChart final : public BarChart
         {
-    private:
+      private:
         /** @brief A three-point (e.g., disagree, neutral, or agree) Likert question.
             @details This will be the question, how many responses it got,
                 and the number of responses at each point/level.
@@ -191,33 +194,38 @@ namespace Wisteria::Graphs
             {
             friend class LikertChart;
             friend class LikertCategorizedThreePointSurveyQuestion;
-        public:
+
+          public:
             /// @brief Constructor.
             /// @param question The question (or categorical label).
             /// @param negativeCount The number of negative responses.
             /// @param neutralCount The number of neutral responses.
             /// @param positiveCount The number of positive responses.
             /// @param naCount The number of non-responses.
-            LikertThreePointSurveyQuestion(const wxString& question,
-                const size_t negativeCount, const size_t neutralCount,
-                const size_t positiveCount, const size_t naCount = 0) : m_question(question)
+            LikertThreePointSurveyQuestion(const wxString& question, const size_t negativeCount,
+                                           const size_t neutralCount, const size_t positiveCount,
+                                           const size_t naCount = 0)
+                : m_question(question)
                 {
-                m_responses = negativeCount+positiveCount+neutralCount+naCount;
-                m_negativeRate = round(safe_divide<double>(negativeCount, m_responses)*100);
-                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses)*100);
+                m_responses = negativeCount + positiveCount + neutralCount + naCount;
+                m_negativeRate = round(safe_divide<double>(negativeCount, m_responses) * 100);
+                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses) * 100);
                 m_positiveRate = round(safe_divide<double>(positiveCount, m_responses) * 100);
                 // those who left the question blank
-                m_naRate = round(safe_divide<double>(naCount, m_responses)*100);
+                m_naRate = round(safe_divide<double>(naCount, m_responses) * 100);
                 }
+
             /// @private
             /// @note This is using locale-sensitive sorting.
             [[nodiscard]]
-            bool operator<(const LikertThreePointSurveyQuestion& that) const
+            bool
+            operator<(const LikertThreePointSurveyQuestion& that) const
                 {
-                return (wxUILocale::GetCurrent().CompareStrings(
-                    m_question, that.m_question, wxCompare_CaseInsensitive) < 0);
+                return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question,
+                                                                wxCompare_CaseInsensitive) < 0);
                 }
-        private:
+
+          private:
             wxString m_question;
             size_t m_responses{ 0 };
             double m_negativeRate{ 0 };
@@ -237,11 +245,14 @@ namespace Wisteria::Graphs
         class LikertCategorizedThreePointSurveyQuestion
             {
             friend class LikertChart;
-        public:
+
+          public:
             /// @private
-            explicit LikertCategorizedThreePointSurveyQuestion(const wxString& question) :
-                m_question(question)
-                {}
+            explicit LikertCategorizedThreePointSurveyQuestion(const wxString& question)
+                : m_question(question)
+                {
+                }
+
             /// @brief Adds a series of responses for a category (e.g., female responses).
             /// @param categoricalResponse The responses and their categorical label.
             /// @note For this response object, the "question" field will be used
@@ -251,7 +262,8 @@ namespace Wisteria::Graphs
                 m_threePointCategories.insert(categoricalResponse);
                 m_responses += categoricalResponse.m_responses;
                 }
-        private:
+
+          private:
             wxString m_question;
             size_t m_responses{ 0 };
             std::multiset<LikertThreePointSurveyQuestion> m_threePointCategories;
@@ -268,7 +280,8 @@ namespace Wisteria::Graphs
             {
             friend class LikertChart;
             friend class LikertCategorizedFivePointSurveyQuestion;
-        public:
+
+          public:
             /// @brief Constructor.
             /// @param question The question (or categorical label).
             /// @param negative1Count The number of (strongly) negative responses.
@@ -277,30 +290,33 @@ namespace Wisteria::Graphs
             /// @param positive1Count The number of (somewhat) positive responses.
             /// @param positive2Count The number of (strongly) positive responses.
             /// @param naCount The number of non-responses.
-            LikertFivePointSurveyQuestion(const wxString& question,
-                const size_t negative1Count, const size_t negative2Count,
-                const size_t neutralCount,
-                const size_t positive1Count, const size_t positive2Count,
-                const size_t naCount = 0) : m_question(question)
+            LikertFivePointSurveyQuestion(const wxString& question, const size_t negative1Count,
+                                          const size_t negative2Count, const size_t neutralCount,
+                                          const size_t positive1Count, const size_t positive2Count,
+                                          const size_t naCount = 0)
+                : m_question(question)
                 {
-                m_responses = negative1Count + negative2Count + positive1Count +
-                              positive2Count + neutralCount+naCount;
-                m_negative1Rate = round(safe_divide<double>(negative1Count, m_responses)*100);
-                m_negative2Rate = round(safe_divide<double>(negative2Count, m_responses)*100);
-                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses)*100);
-                m_positive1Rate = round(safe_divide<double>(positive1Count, m_responses)*100);
-                m_positive2Rate = round(safe_divide<double>(positive2Count, m_responses)*100);
+                m_responses = negative1Count + negative2Count + positive1Count + positive2Count +
+                              neutralCount + naCount;
+                m_negative1Rate = round(safe_divide<double>(negative1Count, m_responses) * 100);
+                m_negative2Rate = round(safe_divide<double>(negative2Count, m_responses) * 100);
+                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses) * 100);
+                m_positive1Rate = round(safe_divide<double>(positive1Count, m_responses) * 100);
+                m_positive2Rate = round(safe_divide<double>(positive2Count, m_responses) * 100);
                 // those who left the question blank
-                m_naRate = round(safe_divide<double>(naCount, m_responses)*100);
+                m_naRate = round(safe_divide<double>(naCount, m_responses) * 100);
                 }
+
             /// @private
             [[nodiscard]]
-            bool operator<(const LikertFivePointSurveyQuestion& that) const
+            bool
+            operator<(const LikertFivePointSurveyQuestion& that) const
                 {
                 return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question,
                                                                 wxCompare_CaseInsensitive) < 0);
                 }
-        private:
+
+          private:
             wxString m_question;
             size_t m_responses{ 0 };
             double m_negative1Rate{ 0 };
@@ -321,11 +337,14 @@ namespace Wisteria::Graphs
         class LikertCategorizedFivePointSurveyQuestion
             {
             friend class LikertChart;
-        public:
+
+          public:
             /// @private
-            explicit LikertCategorizedFivePointSurveyQuestion(const wxString& question) :
-                m_question(question)
-                {}
+            explicit LikertCategorizedFivePointSurveyQuestion(const wxString& question)
+                : m_question(question)
+                {
+                }
+
             /// @brief Adds a series of responses for a category (e.g., female responses).
             /// @param categoricalResponse The responses and their categorical label.
             /// @note For this response object, the "question" field will be used
@@ -335,7 +354,8 @@ namespace Wisteria::Graphs
                 m_fivePointCategories.insert(categoricalResponse);
                 m_responses += categoricalResponse.m_responses;
                 }
-        private:
+
+          private:
             wxString m_question;
             size_t m_responses{ 0 };
             std::multiset<LikertFivePointSurveyQuestion> m_fivePointCategories;
@@ -352,7 +372,8 @@ namespace Wisteria::Graphs
             {
             friend class LikertCategorizedSevenPointSurveyQuestion;
             friend class LikertChart;
-        public:
+
+          public:
             /// @brief Constructor.
             /// @param question The question (or categorical label).
             /// @param negative1Count The number of (strongly) negative responses.
@@ -363,37 +384,36 @@ namespace Wisteria::Graphs
             /// @param positive2Count The number of positive responses.
             /// @param positive3Count The number of (strongly) positive responses.
             /// @param naCount The number of non-responses.
-            LikertSevenPointSurveyQuestion(const wxString& question,
-                const size_t negative1Count,
-                const size_t negative2Count,
-                const size_t negative3Count,
-                const size_t neutralCount,
-                const size_t positive1Count,
-                const size_t positive2Count,
-                const size_t positive3Count,
-                const size_t naCount = 0) : m_question(question)
+            LikertSevenPointSurveyQuestion(const wxString& question, const size_t negative1Count,
+                                           const size_t negative2Count, const size_t negative3Count,
+                                           const size_t neutralCount, const size_t positive1Count,
+                                           const size_t positive2Count, const size_t positive3Count,
+                                           const size_t naCount = 0)
+                : m_question(question)
                 {
-                m_responses = negative1Count + negative2Count + negative3Count +
-                              positive1Count + positive2Count + positive3Count +
-                              neutralCount + naCount;
-                m_negative1Rate = round(safe_divide<double>(negative1Count, m_responses)*100);
-                m_negative2Rate = round(safe_divide<double>(negative2Count, m_responses)*100);
-                m_negative3Rate = round(safe_divide<double>(negative3Count, m_responses)*100);
-                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses)*100);
-                m_positive1Rate = round(safe_divide<double>(positive1Count, m_responses)*100);
-                m_positive2Rate = round(safe_divide<double>(positive2Count, m_responses)*100);
-                m_positive3Rate = round(safe_divide<double>(positive3Count, m_responses)*100);
+                m_responses = negative1Count + negative2Count + negative3Count + positive1Count +
+                              positive2Count + positive3Count + neutralCount + naCount;
+                m_negative1Rate = round(safe_divide<double>(negative1Count, m_responses) * 100);
+                m_negative2Rate = round(safe_divide<double>(negative2Count, m_responses) * 100);
+                m_negative3Rate = round(safe_divide<double>(negative3Count, m_responses) * 100);
+                m_neutralRate = round(safe_divide<double>(neutralCount, m_responses) * 100);
+                m_positive1Rate = round(safe_divide<double>(positive1Count, m_responses) * 100);
+                m_positive2Rate = round(safe_divide<double>(positive2Count, m_responses) * 100);
+                m_positive3Rate = round(safe_divide<double>(positive3Count, m_responses) * 100);
                 // those who left the question blank
-                m_naRate = round(safe_divide<double>(naCount, m_responses)*100);
+                m_naRate = round(safe_divide<double>(naCount, m_responses) * 100);
                 }
+
             /// @private
             [[nodiscard]]
-            bool operator<(const LikertSevenPointSurveyQuestion& that) const
+            bool
+            operator<(const LikertSevenPointSurveyQuestion& that) const
                 {
                 return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question,
                                                                 wxCompare_CaseInsensitive) < 0);
                 }
-        private:
+
+          private:
             wxString m_question;
             size_t m_responses{ 0 };
             double m_negative1Rate{ 0 };
@@ -412,16 +432,19 @@ namespace Wisteria::Graphs
             @details This will be the question, how many responses it got, and the number
                 of responses at each point/level for each category (all under the main question).
             @note The neutral and non-response categories are optional.
-                If all responses entered have 0 for either of these categories, then their respective
-                sections won't appear on the chart.*/
+                If all responses entered have 0 for either of these categories, then their
+                respective sections won't appear on the chart.*/
         class LikertCategorizedSevenPointSurveyQuestion
             {
             friend class LikertChart;
-        public:
+
+          public:
             /// @private
-            explicit LikertCategorizedSevenPointSurveyQuestion(const wxString& question) :
-                m_question(question)
-                {}
+            explicit LikertCategorizedSevenPointSurveyQuestion(const wxString& question)
+                : m_question(question)
+                {
+                }
+
             /// @brief Adds a series of responses for a category (e.g., female responses).
             /// @param categoricalResponse The responses and their categorical label.
             /// @note For this response object, the "question" field will be used
@@ -431,12 +454,14 @@ namespace Wisteria::Graphs
                 m_sevenPointCategories.insert(categoricalResponse);
                 m_responses += categoricalResponse.m_responses;
                 }
-        private:
+
+          private:
             wxString m_question;
             size_t m_responses{ 0 };
             std::multiset<LikertSevenPointSurveyQuestion> m_sevenPointCategories;
             };
-    public:
+
+      public:
         /// @brief The type of responses to a Likert survey question.
         enum class LikertSurveyQuestionFormat
             {
@@ -504,13 +529,13 @@ namespace Wisteria::Graphs
                  It is required that all categorical columns use the same labels in their
                  string tables.
              - The grouping column is used for grouping the responses.
-             (This only applies if using a categorized chart type.)
-             This will split the question row into smaller rows, one for each category.
-             An example of this would be demographic labels for the respondents.
-             The values in the categorical columns should be coded as 1-7
-             (or depending on how high the scale is) and should be imported
-             using @c CategoricalImportMethod::ReadAsIntegers.
-             Then, you should assign your string table to these columns via SetLabels().
+               (This only applies if using a categorized chart type.)
+               This will split the question row into smaller rows, one for each category.
+               An example of this would be demographic labels for the respondents.
+               The values in the categorical columns should be coded as 1-7
+               (or depending on how high the scale is) and should be imported
+               using @c CategoricalImportMethod::ReadAsIntegers.
+               Then, you should assign your string table to these columns via SetLabels().
 
              Note that missing responses in the categorical columns can either be blank or
              coded as zero.
@@ -529,8 +554,8 @@ namespace Wisteria::Graphs
                  The exception's @c what() message is UTF-8 encoded, so pass it to
                  @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
-            const std::vector<wxString>& questionColumns,
-            const std::optional<wxString> groupColumnName = std::nullopt);
+                     const std::vector<wxString>& questionColumns,
+                     const std::optional<wxString> groupColumnName = std::nullopt);
 
         /** @brief Sets a common string table to the specified categorical columns
                 (i.e., questions) in a dataset.
@@ -550,8 +575,8 @@ namespace Wisteria::Graphs
             @param type The Likert scale to create labels for.
             @returns A string table with a stock set of labels for the given Likert scale.*/
         [[nodiscard]]
-        static Data::ColumnWithStringTable::StringTableType CreateLabels(
-            const LikertSurveyQuestionFormat& type);
+        static Data::ColumnWithStringTable::StringTableType
+        CreateLabels(const LikertSurveyQuestionFormat& type);
 
         /** @brief Determines which type of scale (e.g., 1-5) the data is using.
             @details Call this prior to constructing a LikertChart object to help deduce
@@ -574,10 +599,10 @@ namespace Wisteria::Graphs
                  The exception's @c what() message is UTF-8 encoded, so pass it to
                  @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        static LikertSurveyQuestionFormat DeduceScale(
-            const std::shared_ptr<Data::Dataset>& data,
-            const std::vector<wxString>& questionColumns,
-            std::optional<wxString> groupColumnName = std::nullopt);
+        static LikertSurveyQuestionFormat
+        DeduceScale(const std::shared_ptr<Data::Dataset>& data,
+                    const std::vector<wxString>& questionColumns,
+                    std::optional<wxString> groupColumnName = std::nullopt);
 
         /** @brief Collapses the data into the simplest scale
                 (either 3- or 2-point, depending on whether there is a neutral level).
@@ -585,18 +610,22 @@ namespace Wisteria::Graphs
                 although SetLabels() can be called afterwards if you wish to customize these
                 labels further.
 
-             - For 4-point scales, this collapses all negative levels to 1 and all positive levels to 2.
-             This assumes that all categorical columns (i.e., questions) are coded 0-4
-             (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
-             - For 5-point scales, this collapses all negative levels to 1 and all positive levels to 3.
-             This assumes that all categorical columns (i.e., questions) are coded 0-5
-             (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
-             - This 6-point scales, this collapses all negative levels to 1 and all positive levels to 2.
-             This assumes that all categorical columns (i.e., questions) are coded 0-6
-             (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
-             - For 7-point scales, this collapses all negative levels to 1 and all positive levels to 3.
-             This assumes that all categorical columns (i.e., questions) are coded 0-7
-             (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
+             - For 4-point scales, this collapses all negative levels to 1 and
+               all positive levels to 2.
+               This assumes that all categorical columns (i.e., questions) are coded 0-4
+               (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
+             - For 5-point scales, this collapses all negative levels to 1 and
+               all positive levels to 3.
+               This assumes that all categorical columns (i.e., questions) are coded 0-5
+               (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
+             - This 6-point scales, this collapses all negative levels to 1 and
+               all positive levels to 2.
+               This assumes that all categorical columns (i.e., questions) are coded 0-6
+               (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
+             - For 7-point scales, this collapses all negative levels to 1 and
+               all positive levels to 3.
+               This assumes that all categorical columns (i.e., questions) are coded 0-7
+               (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
 
             @param[in,out] data The dataset to simplify/collapse.
             @param questionColumns The vector of categorical columns to use as questions.
@@ -607,8 +636,8 @@ namespace Wisteria::Graphs
                 respective stock labels.*/
         [[nodiscard]]
         static LikertSurveyQuestionFormat Simplify(std::shared_ptr<Data::Dataset>& data,
-            const std::vector<wxString>& questionColumns,
-            LikertSurveyQuestionFormat currentFormat);
+                                                   const std::vector<wxString>& questionColumns,
+                                                   LikertSurveyQuestionFormat currentFormat);
 
         /// @name Chart Type Functions
         /// @brief Functions relating to the chart's design
@@ -618,7 +647,9 @@ namespace Wisteria::Graphs
         /// @returns The type of questions used for this survey.
         [[nodiscard]]
         LikertSurveyQuestionFormat GetSurveyType() const noexcept
-            { return m_surveyType; }
+            {
+            return m_surveyType;
+            }
 
         /** @brief Gets the number of levels in the survey (e.g., @c ThreePoint -> 3).
             @returns The number of levels in the survey.*/
@@ -626,18 +657,25 @@ namespace Wisteria::Graphs
         size_t GetLevelCount() const noexcept
             {
             return (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
-                    GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized) ? 2 :
+                    GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized) ?
+                       2 :
                    (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint ||
-                    GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized) ? 3 :
+                    GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized) ?
+                       3 :
                    (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint ||
-                    GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized) ? 4 :
+                    GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized) ?
+                       4 :
                    (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint ||
-                    GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized) ? 5 :
+                    GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized) ?
+                       5 :
                    (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
-                    GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized) ? 6 :
+                    GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized) ?
+                       6 :
                    (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
-                   // cppcheck-suppress duplicateValueTernary
-                    GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized) ? 7 :7;
+                    // cppcheck-suppress duplicateValueTernary
+                    GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized) ?
+                       7 :
+                       7;
             }
 
         /// @brief Gets whether the chart type is categorized
@@ -648,6 +686,7 @@ namespace Wisteria::Graphs
             {
             return IsCategorized(GetSurveyType());
             }
+
         /// @}
 
         /// @name Section Header Functions
@@ -661,47 +700,68 @@ namespace Wisteria::Graphs
 
         /// @brief Show section headers (e.g., @c "Positive" for positive responses).
         /// @param show Whether to show the headers.
-        void ShowSectionHeaders(const bool show) noexcept
-            { m_showSectionHeaders = show; }
+        void ShowSectionHeaders(const bool show) noexcept { m_showSectionHeaders = show; }
+
         /// @returns Whether headers are being shown above the bars.
         [[nodiscard]]
         bool IsShowingSectionHeaders() const noexcept
-            { return m_showSectionHeaders; }
+            {
+            return m_showSectionHeaders;
+            }
+
         /// @brief Gets the label displayed about the positive response area.
         /// @returns The positive section label.
         [[nodiscard]]
         const wxString& GetPositiveHeader() const noexcept
-            { return m_positiveHeaderLabel; }
+            {
+            return m_positiveHeaderLabel;
+            }
+
         /// @brief Sets the positive area section header.
         /// @param label The label to display.
         void SetPositiveHeader(const wxString& label)
             {
             if (label.length())
-                { m_positiveHeaderLabel = label; }
+                {
+                m_positiveHeaderLabel = label;
+                }
             }
+
         /// @brief Gets the label displayed about the negative response area.
         /// @returns The negative section label.
         [[nodiscard]]
         const wxString& GetNegativeHeader() const noexcept
-            { return m_negativeHeaderLabel; }
+            {
+            return m_negativeHeaderLabel;
+            }
+
         /// @brief Sets the negative area section header.
         /// @param label The label to display.
         void SetNegativeHeader(const wxString& label)
             {
             if (label.length())
-                { m_negativeHeaderLabel = label; }
+                {
+                m_negativeHeaderLabel = label;
+                }
             }
+
         /// @returns The no-response label.
         [[nodiscard]]
         const wxString& GetNoResponseHeader() const noexcept
-            { return m_noHeaderLabel; }
+            {
+            return m_noHeaderLabel;
+            }
+
         /// @brief Sets the no-response section header.
         /// @param label The label to display.
         void SetNoResponseHeader(const wxString& label)
             {
             if (label.length())
-                { m_noHeaderLabel = label; }
+                {
+                m_noHeaderLabel = label;
+                }
             }
+
         /// @}
 
         /// @name Bar & Label Functions
@@ -710,21 +770,25 @@ namespace Wisteria::Graphs
 
         /// @brief Show response counts next to each question.
         /// @param show Whether to show the counts.
-        void ShowResponseCounts(const bool show) noexcept
-            { m_showResponseCounts = show; }
+        void ShowResponseCounts(const bool show) noexcept { m_showResponseCounts = show; }
+
         /// @returns Whether response counts are being shown next to each question.
         [[nodiscard]]
         bool IsShowingResponseCounts() const noexcept
-            { return m_showResponseCounts; }
+            {
+            return m_showResponseCounts;
+            }
 
         /// @brief Show percentages on the bars.
         /// @param show Whether to show the percentages.
-        void ShowPercentages(const bool show) noexcept
-            { m_showPercentages = show; }
+        void ShowPercentages(const bool show) noexcept { m_showPercentages = show; }
+
         /// @returns Whether percentages are being shown on the bars.
         [[nodiscard]]
         bool IsShowingPercentages() const noexcept
-            { return m_showPercentages; }
+            {
+            return m_showPercentages;
+            }
 
         /// @brief Sets bars' widths to be relative to their number of responses.
         /// @details Only applies to categorized charts.
@@ -733,11 +797,17 @@ namespace Wisteria::Graphs
         ///     category with the most responses. (The category with the most responses will
         ///     be a full-width bar, and the others are scaled to that.)
         void SetBarSizesToRespondentSize(const bool adjust) noexcept
-            { m_adjustBarWidthsToRespondentSize = adjust; }
+            {
+            m_adjustBarWidthsToRespondentSize = adjust;
+            }
+
         /// @returns Whether the bars' width are relative to their number of responses.
         [[nodiscard]]
         bool IsSettingBarSizesToRespondentSize() const noexcept
-            { return m_adjustBarWidthsToRespondentSize; }
+            {
+            return m_adjustBarWidthsToRespondentSize;
+            }
+
         /// @}
 
         /// @brief A bracket going from one question to another.
@@ -755,23 +825,25 @@ namespace Wisteria::Graphs
         /// @param qBracket The bracket information, include the start and end questions
         ///     and the bracket title.
         void AddQuestionsBracket(QuestionsBracket qBracket)
-            { m_questionBrackets.push_back(std::move(qBracket)); }
+            {
+            m_questionBrackets.push_back(std::move(qBracket));
+            }
 
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
+        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint)
-            { return CreateLegend(LegendOptions().PlacementHint(hint) ); }
-    private:
+        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
+            {
+            return CreateLegend(LegendOptions().PlacementHint(hint));
+            }
+
+      private:
         /** @brief Determines if a format is categorized (i.e., using a grouping variable).
             @param format The format to review.
             @returns @c true if the specified format is categorized.*/
@@ -780,14 +852,16 @@ namespace Wisteria::Graphs
         /// @brief Draws the brackets connected to questions.
         void AddQuestionBrackets();
         /** @brief Converts a 4-point scale dataset to 2-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
+            @details Basically, this collapses all negative levels to 1 and
+                all positive levels to 2.
                 This assumes that all categorical columns (i.e., questions) are coded 0-4
                 (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
 
             @param data The dataset to collapse.
             @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-2
-                and their respective labels (no response, negative, neutral, positive).
+            @param condensedCodes The simplified string table to use.
+                This should include values 0-2 and their respective labels
+                (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
             @par Example:
             @code
@@ -798,18 +872,21 @@ namespace Wisteria::Graphs
                     { 2, L"Agree" }
                 });
             @endcode*/
-        static void Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       const std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        static void
+        Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
+                           const std::vector<wxString>& questionColumns,
+                           const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 5-point scale dataset to 3-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
-                This assumes that all categorical columns (i.e., questions) are coded 0-5
+            @details Basically, this collapses all negative levels to 1 and
+                all positive levels to 3. This assumes that all categorical columns
+                (i.e., questions) are coded 0-5
                 (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
 
             @param data The dataset to collapse.
             @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-3
-                and their respective labels (no response, negative, neutral, positive).
+            @param condensedCodes The simplified string table to use.
+                This should include values 0-3 and their respective labels
+                (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
             @par Example:
             @code
@@ -821,18 +898,21 @@ namespace Wisteria::Graphs
                     { 3, L"Agree" }
                 });
             @endcode*/
-        static void Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       const std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        static void
+        Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
+                           const std::vector<wxString>& questionColumns,
+                           const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 6-point scale dataset to 2-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
+            @details Basically, this collapses all negative levels to 1 and
+                all positive levels to 2.
                 This assumes that all categorical columns (i.e., questions) are coded 0-6
                 (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
 
             @param data The dataset to collapse.
             @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-2
-                and their respective labels (no response, negative, neutral, positive).
+            @param condensedCodes The simplified string table to use.
+                This should include values 0-2 and their respective labels
+                (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
             @par Example:
             @code
@@ -843,18 +923,21 @@ namespace Wisteria::Graphs
                     { 2, L"Agree" }
                 });
             @endcode*/
-        static void Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       const std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        static void
+        Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
+                           const std::vector<wxString>& questionColumns,
+                           const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 7-point scale dataset to 3-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
+            @details Basically, this collapses all negative levels to 1 and
+                all positive levels to 3.
                 This assumes that all categorical columns (i.e., questions) are coded 0-7
                 (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
 
             @param data The dataset to collapse.
             @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-3
-                and their respective labels (no response, negative, neutral, positive).
+            @param condensedCodes The simplified string table to use.
+                This should include values 0-3 and their respective labels
+                (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
             @par Example:
             @code
@@ -866,59 +949,76 @@ namespace Wisteria::Graphs
                     { 3, L"Agree" }
                 });
             @endcode*/
-        static void Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       const std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        static void
+        Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
+                           const std::vector<wxString>& questionColumns,
+                           const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Gets the categorized version of survey format
                 (e.g., ThreePoint -> ThreePointCategorized).
             @returns The categorized version of survey format.
             @param format The survey format to make categorized.*/
         [[nodiscard]]
-        static LikertSurveyQuestionFormat MakeFormatCategorized(
-            const LikertSurveyQuestionFormat format) noexcept;
+        static LikertSurveyQuestionFormat
+        MakeFormatCategorized(const LikertSurveyQuestionFormat format) noexcept;
         /** @brief Gets the uncategorized version of survey format
                 (e.g., ThreePointCategorized -> ThreePoint).
             @returns The uncategorized version of survey format.
             @param format The survey format to make uncategorized.*/
         [[nodiscard]]
-        static LikertSurveyQuestionFormat MakeFormatUncategorized(
-            const LikertSurveyQuestionFormat format) noexcept;
+        static LikertSurveyQuestionFormat
+        MakeFormatUncategorized(const LikertSurveyQuestionFormat format) noexcept;
+
         /// @brief Sets the color for the weakest negative point
         ///     (stronger points will be shades of this color).
         /// @param color The color to use.
         void SetNegativeColor(const wxColour color)
             {
             if (color.IsOk())
-                { m_negativeColor = color; }
+                {
+                m_negativeColor = color;
+                }
             }
+
         /// @returns The color used for the weakest (i.e., closest to neutral) negative point.
         [[nodiscard]]
         wxColour GetNegativeColor() const noexcept
-            { return m_negativeColor; }
+            {
+            return m_negativeColor;
+            }
 
         /// @brief Sets the color for the neutral bars.
         /// @param color The color to use.
         void SetNeutralColor(const wxColour color)
             {
             if (color.IsOk())
-                { m_neutralColor = color; }
+                {
+                m_neutralColor = color;
+                }
             }
+
         /// @returns The color used for the neutral bars.
         [[nodiscard]]
         wxColour GetNeutralColor() const noexcept
-            { return m_neutralColor; }
+            {
+            return m_neutralColor;
+            }
 
         /// @brief Sets the color for the no-response bars.
         /// @param color The color to use.
         void SetNoResponseColor(const wxColour color)
             {
             if (color.IsOk())
-                { m_noResponseColor = color; }
+                {
+                m_noResponseColor = color;
+                }
             }
+
         /// @returns The color used for the no-response bars.
         [[nodiscard]]
         wxColour GetNoResponseColor() const noexcept
-            { return m_noResponseColor; }
+            {
+            return m_noResponseColor;
+            }
 
         /// @brief Sets the color for the weakest positive point
         ///     (higher points will be shades of this color).
@@ -926,12 +1026,17 @@ namespace Wisteria::Graphs
         void SetPositiveColor(const wxColour color)
             {
             if (color.IsOk())
-                { m_positiveColor = color; }
+                {
+                m_positiveColor = color;
+                }
             }
+
         /// @returns The color used for the weakest (i.e., closest to neutral) positive point.
         [[nodiscard]]
         wxColour GetPositiveColor() const noexcept
-            { return m_positiveColor; }
+            {
+            return m_positiveColor;
+            }
 
         /// @returns The positive response label at a given point.
         /// @param point The positive point label to return.
@@ -941,10 +1046,11 @@ namespace Wisteria::Graphs
             {
             assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
             return (point == 1) ? m_positive1Label :
-                (point == 2) ? m_positive2Label :
-                (point == 3) ? m_positive3Label :
-                m_nullString;
+                   (point == 2) ? m_positive2Label :
+                   (point == 3) ? m_positive3Label :
+                                  m_nullString;
             }
+
         /// @returns The negative response label at a given point.
         /// @param point The negative point label to return. Values should be 1-3, going from
         ///     the strongest negative response to the weakest.
@@ -953,14 +1059,17 @@ namespace Wisteria::Graphs
             {
             assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
             return (point == 1) ? m_negative1Label :
-                (point == 2) ? m_negative2Label :
-                (point == 3) ? m_negative3Label :
-                m_nullString;
+                   (point == 2) ? m_negative2Label :
+                   (point == 3) ? m_negative3Label :
+                                  m_nullString;
             }
+
         /// @returns The neutral response label.
         [[nodiscard]]
         const wxString& GetNeutralLabel() const noexcept
-            { return m_neutralLabel; }
+            {
+            return m_neutralLabel;
+            }
 
         /// @brief Sets the negative response label at a given point.
         /// @param label The label to display.
@@ -971,7 +1080,9 @@ namespace Wisteria::Graphs
             {
             assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
             if (label.empty())
-                { return; }
+                {
+                return;
+                }
             switch (point)
                 {
             case 1:
@@ -998,7 +1109,9 @@ namespace Wisteria::Graphs
             {
             assert(point >= 1 && point <= 3 && "Incorrect point specified for label!");
             if (label.empty())
-                { return; }
+                {
+                return;
+                }
             switch (point)
                 {
             case 1:
@@ -1020,7 +1133,9 @@ namespace Wisteria::Graphs
         void SetNeutralLabel(const wxString& label)
             {
             if (label.length())
-                { m_neutralLabel = label; }
+                {
+                m_neutralLabel = label;
+                }
             }
 
         /// @details When categorization is used, we overlay extra bars on top of the categorical
@@ -1030,7 +1145,10 @@ namespace Wisteria::Graphs
         /// @returns The number of slots for bars on the plot.
         [[nodiscard]]
         size_t GetBarSlotCount() const noexcept final
-            { return m_responseBarCount; }
+            {
+            return m_responseBarCount;
+            }
+
         /// @private
         void RecalcSizes(wxDC& dc) final;
 
@@ -1043,8 +1161,7 @@ namespace Wisteria::Graphs
         /// @param question The survey question.
         /// @param groups The group values column.
         /// @param responses The responses.
-        void AddSurveyQuestion(const wxString& question,
-                               const Data::ColumnWithStringTable& groups,
+        void AddSurveyQuestion(const wxString& question, const Data::ColumnWithStringTable& groups,
                                const Data::ColumnWithStringTable& responses);
 
         /// @brief Add a three-point (e.g., agree, disagree, or neutral) Likert response.
@@ -1098,20 +1215,31 @@ namespace Wisteria::Graphs
             {
             auto catLabelBlock = bar.FindBlock(tag);
             if (catLabelBlock != bar.GetBlocks().end())
-                { catLabelBlock->SetCustomWidth(1); }
+                {
+                catLabelBlock->SetCustomWidth(1);
+                }
             }
+
         /// @brief Tag for category label bar block.
         [[nodiscard]]
         wxString GetCategoryBlockLabel() const
-            { return _DT(L"CATEGORY_LABEL", DTExplanation::InternalKeyword); }
+            {
+            return _DT(L"CATEGORY_LABEL", DTExplanation::InternalKeyword);
+            }
+
         /// @brief Tag for neutral label bar block.
         [[nodiscard]]
         wxString GetNeutralBlockLabel() const
-            { return _DT(L"NEUTRAL_BLOCK"); }
+            {
+            return _DT(L"NEUTRAL_BLOCK");
+            }
+
         /// @brief Tag for neutral label bar block.
         [[nodiscard]]
         wxString GetQuestionBlockLabel() const
-            { return _DT(L"QUESTION_BLOCK"); }
+            {
+            return _DT(L"QUESTION_BLOCK");
+            }
 
         std::vector<LikertThreePointSurveyQuestion> m_threePointQuestions;
         std::vector<LikertCategorizedThreePointSurveyQuestion> m_threePointCategorizedQuestions;
@@ -1122,7 +1250,7 @@ namespace Wisteria::Graphs
         // always present and always a full-scale of 100
         constexpr static double m_questionBlockSize{ 100 };
         // always consumes a fifth of the question block (if being shown)
-        constexpr static double m_responseCountBlockSize{ m_questionBlockSize/5 };
+        constexpr static double m_responseCountBlockSize{ m_questionBlockSize / 5 };
         // other block sizes
         double m_categoryBlockSize{ 0 };
         double m_negativeBlockSize{ 0 };
@@ -1164,7 +1292,7 @@ namespace Wisteria::Graphs
 
         std::vector<QuestionsBracket> m_questionBrackets;
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
