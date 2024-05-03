@@ -467,6 +467,14 @@ namespace Wisteria::GraphItems
                 maintain the image's aspect ratio.*/
         wxSize SetBestSize(const wxSize suggestedSz);
 
+        /** @brief Calculates the image's size to fit inside of the specified bounding box.
+            @param suggestedSz The suggested bounding box size.
+            @returns The new size of the image based on the suggested size.
+            @note The image's new size may be different from the suggested size here, as it will
+                maintain the image's aspect ratio.*/
+        [[nodiscard]]
+        wxSize GetBestSize(const wxSize suggestedSz) const;
+
         /// @returns How the image's size is adjusted when its bounding box is changed.
         [[nodiscard]]
         ResizeMethod GetResizeMethod() const noexcept

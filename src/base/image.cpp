@@ -713,11 +713,17 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxSize Image::SetBestSize(const wxSize suggestedSz)
         {
+        m_size = m_frameSize = GetBestSize(suggestedSz);
+        return m_size;
+        }
+
+    //-------------------------------------------
+    wxSize Image::GetBestSize(const wxSize suggestedSz) const
+        {
         const auto [width, height] = geometry::downscaled_size(
             std::make_pair<double, double>(m_originalImg.GetWidth(), m_originalImg.GetHeight()),
             wxSizeToPair(suggestedSz));
-        m_size = m_frameSize = wxSize(std::ceil(width), std::ceil(height));
-        return m_size;
+        return wxSize(std::ceil(width), std::ceil(height));
         }
 
     //-------------------------------------------
