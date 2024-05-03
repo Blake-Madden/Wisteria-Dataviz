@@ -24,6 +24,11 @@
 #include <wx/statline.h>
 #include <wx/wx.h>
 
+wxDECLARE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
+
+#define EVT_THUMBNAIL_CHANGED(winid, fn)                                                           \
+    wx__DECLARE_EVT1(wxEVT_THUMBNAIL_CHANGED, winid, wxCommandEventHandler(fn))
+
 namespace Wisteria::UI
     {
     /// @brief Helper class to show a thumbnail fullscreen.

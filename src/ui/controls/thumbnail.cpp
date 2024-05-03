@@ -8,6 +8,8 @@
 
 #include "thumbnail.h"
 
+wxDEFINE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
+
 namespace Wisteria::UI
     {
     //----------------------------------
@@ -154,6 +156,10 @@ namespace Wisteria::UI
             }
         Refresh();
         Update();
+
+        wxCommandEvent cevent(wxEVT_THUMBNAIL_CHANGED, GetId());
+        cevent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(cevent);
         }
 
     //----------------------------------
@@ -168,6 +174,11 @@ namespace Wisteria::UI
             }
         Refresh();
         Update();
+
+        wxCommandEvent cevent(wxEVT_THUMBNAIL_CHANGED, GetId());
+        cevent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(cevent);
+
         return (m_img.IsOk());
         }
 
