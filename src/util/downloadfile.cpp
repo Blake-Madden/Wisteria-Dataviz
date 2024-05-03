@@ -174,6 +174,10 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
+    if (GetCookies().length() > 0)
+        {
+        request.SetHeader(L"Cookie", GetCookies());
+        }
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     if (request.IsOk())
         {
@@ -248,6 +252,10 @@ void FileDownload::RequestResponse(const wxString& url)
     request.SetStorage(wxWebRequest::Storage_None);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
+    if (GetCookies().length() > 0)
+        {
+        request.SetHeader(L"Cookie", GetCookies());
+        }
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     if (request.IsOk())
         {
@@ -314,6 +322,10 @@ bool FileDownload::Read(const wxString& url)
     request.SetStorage(wxWebRequest::Storage_Memory);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
+    if (GetCookies().length() > 0)
+        {
+        request.SetHeader(L"Cookie", GetCookies());
+        }
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     if (request.IsOk())
         {

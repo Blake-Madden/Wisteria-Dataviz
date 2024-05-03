@@ -310,6 +310,17 @@ class FileDownload
         {
         return m_userAgent;
         }
+    
+    /** @brief Sets the cookies to send the server when connecting.
+        @param cookies The cookies to use.*/
+    void SetCookies(const wxString& cookies) { m_cookies = cookies; }
+
+    /// @returns The cookies being sent when connecting.
+    [[nodiscard]]
+    const wxString& GetCookies() const noexcept
+        {
+        return m_cookies;
+        }
 
     /** @brief Disable SSL certificate verification.
         @details This can be used to connect to self signed servers or other
@@ -460,6 +471,7 @@ class FileDownload
     mutable std::mutex m_mutex;
     std::vector<char> m_buffer;
     wxString m_userAgent;
+    wxString m_cookies;
     std::optional<uint32_t> m_minFileDownloadSizeKilobytes{ std::nullopt };
 
     int m_timeoutSeconds{ 30 };
