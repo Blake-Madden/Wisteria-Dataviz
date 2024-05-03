@@ -104,6 +104,11 @@ namespace Wisteria::UI
                 (based on the image originally passed to the constructor).*/
         void SetBitmap(const wxBitmap& bmp);
 
+        /** @brief Sets the minimum size for the control.
+            @details This is a hint, as the aspect ratio of the image will override this.
+            @param minSize The minimum size to use.*/
+        void SetMinSize(const wxSize& minSize) final;
+
         /** @brief Sets the opacity of the thumbnail when showing the image.
             @param opacity The opacity level (0-255).*/
         void SetOpacity(const uint8_t opacity)

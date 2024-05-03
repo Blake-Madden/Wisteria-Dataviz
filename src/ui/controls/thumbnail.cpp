@@ -93,7 +93,7 @@ namespace Wisteria::UI
                          const bool allowFileDrop /*= false*/, wxWindowID id /*= wxID_ANY*/,
                          const wxPoint& pos /*= wxDefaultPosition*/,
                          const wxSize& size /*= wxDefaultSize*/,
-                         long style /*= wxFULL_REPAINT_ON_RESIZE|wxBORDER_SIMPLE*/,
+                         long style /*= wxFULL_REPAINT_ON_RESIZE | wxBORDER_SIMPLE*/,
                          const wxString& name /*= L"Thumbnail"*/)
         : wxWindow(parent, id, pos, wxDefaultSize, style, name),
           m_img(bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage), m_clickMode(clickMode),
@@ -105,13 +105,13 @@ namespace Wisteria::UI
         // but our default value will need to be adjusted if that is what will be used.
         m_baseSize = size.IsFullySpecified() ? size : FromDIP(m_baseSize);
         SetSize(m_baseSize);
-        SetMinSize(m_baseSize);
+        wxWindow::SetMinSize(m_baseSize);
 
         if (m_img.IsOk())
             {
             const wxSize newSize = m_img.SetBestSize(GetSize());
             SetSize(newSize);
-            SetMinSize(newSize);
+            wxWindow::SetMinSize(newSize);
             }
 
         // if original image is smaller or same size as this control,
@@ -142,6 +142,14 @@ namespace Wisteria::UI
         Update();
         }
 
+   //----------------------------------
+    void Thumbnail::SetMinSize(const wxSize& size)
+        {
+        m_img.SetSize(size);
+        SetSize(size);
+        wxWindow::SetMinSize(size);
+        }
+
     //----------------------------------
     void Thumbnail::SetBitmap(const wxBitmap& bmp)
         {
@@ -152,7 +160,7 @@ namespace Wisteria::UI
             // adjust that to the image's aspect ratio
             const wxSize newSize = m_img.SetBestSize(m_baseSize);
             SetSize(newSize);
-            SetMinSize(newSize);
+            wxWindow::SetMinSize(newSize);
             }
         Refresh();
         Update();
@@ -170,7 +178,7 @@ namespace Wisteria::UI
             {
             const wxSize newSize = m_img.SetBestSize(m_baseSize);
             SetSize(newSize);
-            SetMinSize(newSize);
+            wxWindow::SetMinSize(newSize);
             }
         Refresh();
         Update();
