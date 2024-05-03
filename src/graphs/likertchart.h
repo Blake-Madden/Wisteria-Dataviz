@@ -202,10 +202,10 @@ namespace Wisteria::Graphs
             /// @param neutralCount The number of neutral responses.
             /// @param positiveCount The number of positive responses.
             /// @param naCount The number of non-responses.
-            LikertThreePointSurveyQuestion(const wxString& question, const size_t negativeCount,
+            LikertThreePointSurveyQuestion(wxString question, const size_t negativeCount,
                                            const size_t neutralCount, const size_t positiveCount,
                                            const size_t naCount = 0)
-                : m_question(question)
+                : m_question(std::move(question))
                 {
                 m_responses = negativeCount + positiveCount + neutralCount + naCount;
                 m_negativeRate = round(safe_divide<double>(negativeCount, m_responses) * 100);
@@ -248,8 +248,8 @@ namespace Wisteria::Graphs
 
           public:
             /// @private
-            explicit LikertCategorizedThreePointSurveyQuestion(const wxString& question)
-                : m_question(question)
+            explicit LikertCategorizedThreePointSurveyQuestion(wxString question)
+                : m_question(std::move(question))
                 {
                 }
 
@@ -290,11 +290,11 @@ namespace Wisteria::Graphs
             /// @param positive1Count The number of (somewhat) positive responses.
             /// @param positive2Count The number of (strongly) positive responses.
             /// @param naCount The number of non-responses.
-            LikertFivePointSurveyQuestion(const wxString& question, const size_t negative1Count,
+            LikertFivePointSurveyQuestion(wxString question, const size_t negative1Count,
                                           const size_t negative2Count, const size_t neutralCount,
                                           const size_t positive1Count, const size_t positive2Count,
                                           const size_t naCount = 0)
-                : m_question(question)
+                : m_question(std::move(question))
                 {
                 m_responses = negative1Count + negative2Count + positive1Count + positive2Count +
                               neutralCount + naCount;
@@ -340,8 +340,8 @@ namespace Wisteria::Graphs
 
           public:
             /// @private
-            explicit LikertCategorizedFivePointSurveyQuestion(const wxString& question)
-                : m_question(question)
+            explicit LikertCategorizedFivePointSurveyQuestion(wxString question)
+                : m_question(std::move(question))
                 {
                 }
 
@@ -384,12 +384,12 @@ namespace Wisteria::Graphs
             /// @param positive2Count The number of positive responses.
             /// @param positive3Count The number of (strongly) positive responses.
             /// @param naCount The number of non-responses.
-            LikertSevenPointSurveyQuestion(const wxString& question, const size_t negative1Count,
+            LikertSevenPointSurveyQuestion(wxString question, const size_t negative1Count,
                                            const size_t negative2Count, const size_t negative3Count,
                                            const size_t neutralCount, const size_t positive1Count,
                                            const size_t positive2Count, const size_t positive3Count,
                                            const size_t naCount = 0)
-                : m_question(question)
+                : m_question(std::move(question))
                 {
                 m_responses = negative1Count + negative2Count + negative3Count + positive1Count +
                               positive2Count + positive3Count + neutralCount + naCount;
@@ -440,8 +440,8 @@ namespace Wisteria::Graphs
 
           public:
             /// @private
-            explicit LikertCategorizedSevenPointSurveyQuestion(const wxString& question)
-                : m_question(question)
+            explicit LikertCategorizedSevenPointSurveyQuestion(wxString question)
+                : m_question(std::move(question))
                 {
                 }
 
