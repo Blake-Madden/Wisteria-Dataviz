@@ -446,7 +446,7 @@ namespace Wisteria::Graphs
             ThreePoint,            /*!< Negative, neutral, and positive responses.*/
             ThreePointCategorized, /*!< Negative, neutral, and positive responses,
                                         with sub categories (e.g., male vs. female).*/
-            FourPoint,             /*!< Strong negative, negative, neutral, positive,
+            FourPoint,             /*!< Strong negative, negative, positive,
                                         and strong positive responses.*/
             FourPointCategorized,  /*!< Strong negative, negative, positive, and strong
                                         positive responses, with sub categories
@@ -522,7 +522,7 @@ namespace Wisteria::Graphs
                 Also, call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @warning The string tables in the categorical columns need to be synchronized prior
-                to calling this. In other works, ensure that the columns use the same string
+                to calling this. In other words, ensure that the columns use the same string
                 and integral code assignments.\n
                 This should be done after the data is imported and prior to calling this function.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
