@@ -1056,7 +1056,8 @@ EXCLUDE                = ../../src/easyexif \
                          ../../src/CRCpp \
                          ../../src/utfcpp \
                          ../../src/ui/controls/gtk/gtktextview-helper.h \
-                         ../../src/ui/controls/gtk/gtktextview-helper.cpp
+                         ../../src/ui/controls/gtk/gtktextview-helper.cpp \
+                         ../../src/base/image.cpp
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -2311,6 +2312,10 @@ DOCBOOK_OUTPUT         = docbook
 # The default value is: NO.
 
 GENERATE_AUTOGEN_DEF   = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to Sqlite3 output
+#---------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------
 # Configuration options related to the Perl module output

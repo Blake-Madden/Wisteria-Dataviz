@@ -58,6 +58,7 @@ class ImageMergeDlg final : public Wisteria::UI::DialogWithHelp
     /// @private
     ImageMergeDlg& operator=(const ImageMergeDlg& that) = delete;
 
+    /// @returns The output path that the client provided.
     [[nodiscard]]
     const wxString& GetMergedFilePath() const noexcept
         {

@@ -24,10 +24,12 @@
 #include <wx/statline.h>
 #include <wx/wx.h>
 
+/// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
 
 #define EVT_THUMBNAIL_CHANGED(winid, fn)                                                           \
     wx__DECLARE_EVT1(wxEVT_THUMBNAIL_CHANGED, winid, wxCommandEventHandler(fn))
+/// @endcond 
 
 namespace Wisteria::UI
     {
