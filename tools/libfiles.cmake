@@ -57,9 +57,11 @@ SET(WISTERIA_SRC
     src/import/xlsx_extract_text.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/imageexportdlg.cpp
+    src/ui/dialogs/imagemergedlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp
+    src/ui/dialogs/variableselectdlg.cpp
     src/util/fileutil.cpp
     src/util/formulaformat.cpp
     src/util/logfile.cpp

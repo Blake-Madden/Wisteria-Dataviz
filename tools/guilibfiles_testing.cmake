@@ -80,6 +80,7 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/gridexportdlg.cpp
     ../../src/ui/dialogs/htmltablepanel.cpp
     ../../src/ui/dialogs/imageexportdlg.cpp
+    ../../src/ui/dialogs/imagemergedlg.cpp
     ../../src/ui/dialogs/listctrlitemviewdlg.cpp
     ../../src/ui/dialogs/listctrlsortdlg.cpp
     ../../src/ui/dialogs/listdlg.cpp
