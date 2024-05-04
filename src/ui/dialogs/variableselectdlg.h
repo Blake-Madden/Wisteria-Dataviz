@@ -37,7 +37,7 @@ namespace Wisteria::UI
             VariableSelectDlg::VariableListInfo().Label(_(L"Questions")),
             VariableSelectDlg::VariableListInfo().Label(_(L"Grouping")).
                 SingleSelection(true).Required(false)
-            }
+            });
         if (selectVarsDlg.ShowModal() == wxID_OK)
            ...
         @endcode*/
