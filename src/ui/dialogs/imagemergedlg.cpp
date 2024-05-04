@@ -148,6 +148,7 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::AdjustThumbnailsHorizontally()
         {
+        wxWindowUpdateLocker noUpdates(m_horizontalThumbsSizer->GetStaticBox());
         int maxHeight{ 0 };
         for (const auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
             {
@@ -180,6 +181,7 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::AdjustThumbnailsVertically()
         {
+        wxWindowUpdateLocker noUpdates(m_verticalThumbsSizer->GetStaticBox());
         int maxWidth{ 0 };
         for (const auto* sizerItem : m_verticalThumbsSizer->GetChildren())
             {
