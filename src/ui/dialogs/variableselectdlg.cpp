@@ -200,7 +200,9 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
                                (wxLC_REPORT | wxLC_NO_HEADER);
         currentList.m_list = addVarControls(
             currentList.m_addId, currentList.m_removeId,
-            currentList.m_label + (currentList.m_required ? wxString{} : _(L" (optional)")), style);
+            (currentList.m_required ? currentList.m_label :
+                                      wxString::Format(_(L"%s (optional)"), currentList.m_label)),
+            style);
         m_varLists.push_back(std::move(currentList));
         }
 
