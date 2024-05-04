@@ -11,8 +11,7 @@
 using namespace Wisteria;
 using namespace Wisteria::UI;
 
-VariableSelectDlg::VariableSelectDlg(wxWindow* parent,
-                                     Data::Dataset::ColumnPreviewInfo columnInfo,
+VariableSelectDlg::VariableSelectDlg(wxWindow* parent, Data::Dataset::ColumnPreviewInfo columnInfo,
                                      const std::vector<VariableListInfo>& varInfo,
                                      wxWindowID id /*= wxID_ANY*/,
                                      const wxString& caption /*= _(L"Select Variables")*/,
@@ -257,15 +256,27 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
             },
             varList.m_removeId);
 
-        // double click var in list on the right will remove it and send it back
+        // double clicking var in a list on the right will remove it and send it back
         // to the main list on the left
-        varList.m_list->Bind(
-            wxEVT_LEFT_DCLICK,
-            [&, this]([[maybe_unused]] wxMouseEvent&)
-            {
-                MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
-                UpdateButtonStates();
-            });
+        varList.m_list->Bind(wxEVT_LEFT_DCLICK,
+                             [&, this]([[maybe_unused]] wxMouseEvent&)
+                             {
+                                 MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
+                                 UpdateButtonStates();
+                             });
+        }
+
+    // double clicking var in the main list will move it to the list on
+    // the right (if there is only one)
+    if (m_varLists.size() == 1)
+        {
+        m_mainVarlist->Bind(wxEVT_LEFT_DCLICK,
+                            [&, this]([[maybe_unused]] wxMouseEvent&)
+                            {
+                                MoveSelectedVariablesBetweenLists(m_mainVarlist,
+                                                                  m_varLists[0].m_list);
+                                UpdateButtonStates();
+                            });
         }
 
     UpdateButtonStates();
