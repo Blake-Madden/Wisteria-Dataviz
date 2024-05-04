@@ -96,6 +96,13 @@ namespace Wisteria::Data
     class TextClassifier
         {
       public:
+        /// @brief Default constructor.
+        TextClassifier() = default;
+        /// @private
+        TextClassifier(const TextClassifier&) = delete;
+        /// @private
+        TextClassifier& operator=(const TextClassifier&) = delete;
+
         /** @brief Sets the categories and their respective regular expressions
                 used to classify text into them.
             @param classifierData The dataset with the categories and regexes in it.
