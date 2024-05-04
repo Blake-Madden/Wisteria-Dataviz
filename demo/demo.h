@@ -112,7 +112,7 @@ class MyFrame final : public wxMDIParentFrame
     void OnPrintWindow(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
     void OnCopyWindow(wxCommandEvent& event);
-    void OnTextClassifier(wxCommandEvent& event);
+    void OnTextClassifier([[maybe_unused]] wxCommandEvent& event);
     };
 
 class MyChild final : public wxMDIChildFrame

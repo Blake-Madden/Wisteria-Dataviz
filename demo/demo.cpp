@@ -228,7 +228,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     return mbar;
     }
 
-void MyFrame::OnTextClassifier(wxCommandEvent& event)
+void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog classiferFileDlg(
         this, _(L"Select Classifier Data"), wxString{}, wxString{},
