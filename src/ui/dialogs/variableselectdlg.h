@@ -75,7 +75,7 @@ namespace Wisteria::UI
                 }
 
             /// @brief Sets whether a variable must be selected for this list.
-            /// @details The default is for the list to be required.
+            /// @details The default is for the list to be optional (i.e., not required).
             /// @param required @c true to force the user to select a variable for this list.
             /// @returns A self reference.
             VariableListInfo& Required(const bool required)
