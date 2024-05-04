@@ -4,6 +4,7 @@
 #include "../../src/ui/controls/listctrlex.h"
 
 using namespace Catch::Matchers;
+using namespace Wisteria::UI;
 
 TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
     {

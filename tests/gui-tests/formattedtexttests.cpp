@@ -2,6 +2,8 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../../src/ui/controls/formattedtextctrl.h"
 
+using namespace Wisteria::UI;
+
 TEST_CASE("Formatted text control", "[controls][text-control]")
     {
      FormattedTextCtrl* m_textCtrl = new FormattedTextCtrl(wxTheApp->GetTopWindow());
