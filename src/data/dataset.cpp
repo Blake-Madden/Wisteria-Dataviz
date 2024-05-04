@@ -1025,9 +1025,8 @@ namespace Wisteria::Data
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
         const std::variant<wxString, size_t>& worksheet /*= L""*/)
         {
-        const auto fileExt{ wxFileName(filePath).GetExt() };
-        const auto delim = (fileExt.CmpNoCase(L"csv") == 0) ?
-                            L',' : L'\t';
+        const wxString fileExt{ wxFileName(filePath).GetExt() };
+        const wchar_t delim = GetDelimiterFromExtension(filePath);
 
         wxString fileText;
         if (fileExt.CmpNoCase(L"xlsx") == 0)

@@ -1367,6 +1367,14 @@ namespace Wisteria::Data
             @brief Functions related to importing data into a dataset.*/
         /// @{
 
+        /** @brief Deduces a files delimiter from its file extension.
+            @param filePath The file path to review.
+            @returns The suggested delimiter to use.*/
+        [[nodiscard]]
+        static wchar_t GetDelimiterFromExtension(const wxString& filePath)
+            {
+            return ((wxFileName(filePath).GetExt().CmpNoCase(L"csv") == 0) ? L',' : L'\t');
+            }
         /** @brief Reads the column names from a file and deduces their data types.
             @param filePath The path to the data file.
             @param importInfo Import settings (row start and MD code are used).
