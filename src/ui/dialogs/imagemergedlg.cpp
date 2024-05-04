@@ -25,13 +25,18 @@ namespace Wisteria::UI
 
         m_horizontalThumbsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this);
 
+        m_baseImagePath = wxFileName{ ((imgPaths.size() > 0) ? wxFileName(imgPaths[0]) : wxString{}) };
+
+        wxString imageNames;
         for (const auto& imgPath : imgPaths)
             {
+            imageNames += wxFileName{ imgPath }.GetName();
             m_horizontalThumbsSizer->Add(
                 new Wisteria::UI::Thumbnail(m_horizontalThumbsSizer->GetStaticBox(),
                                             Wisteria::GraphItems::Image::LoadFile(imgPath),
                                             Wisteria::ClickMode::BrowseForImageFile, true));
             }
+        m_baseImagePath.SetName(imageNames);
 
         AdjustThumbnailsHorizontally();
 
@@ -114,6 +119,15 @@ namespace Wisteria::UI
                         {
                         images.push_back(thumb->GetImage().GetOriginalImage());
                         }
+                    }
+
+                wxFileDialog fd(this, _(L"Select Output Image"), m_baseImagePath.GetPath(),
+                                m_baseImagePath.GetFullName(),
+                                Wisteria::GraphItems::Image::GetImageFileFilter(),
+                                wxFD_SAVE | wxFD_OVERWRITE_PROMPT | wxFD_PREVIEW);
+                if (fd.ShowModal() != wxID_OK)
+                    {
+                    return;
                     }
 
                 m_mergedFilePath = fd.GetPath();

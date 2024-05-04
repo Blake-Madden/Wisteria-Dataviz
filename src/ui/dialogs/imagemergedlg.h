@@ -74,7 +74,9 @@ namespace Wisteria::UI
         void AdjustThumbnailsHorizontally();
         void AdjustThumbnailsVertically();
 
+        wxFileName m_baseImagePath;
         int m_orientRadio{ 0 };
+
         wxStaticBoxSizer* m_horizontalThumbsSizer{ nullptr };
         wxStaticBoxSizer* m_verticalThumbsSizer{ nullptr };
 
