@@ -198,8 +198,9 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         const long style = currentList.m_singleSelection ?
                                (wxLC_REPORT | wxLC_NO_HEADER | wxLC_SINGLE_SEL) :
                                (wxLC_REPORT | wxLC_NO_HEADER);
-        currentList.m_list =
-            addVarControls(currentList.m_addId, currentList.m_removeId, currentList.m_label, style);
+        currentList.m_list = addVarControls(
+            currentList.m_addId, currentList.m_removeId,
+            currentList.m_label + (currentList.m_required ? wxString{} : _(L" (optional)")), style);
         m_varLists.push_back(std::move(currentList));
         }
 
@@ -251,7 +252,7 @@ bool VariableSelectDlg::Validate()
         {
         if (varList.m_required && varList.m_list && varList.m_list->GetItemCount() == 0)
             {
-            wxMessageBox(wxString::Format(_(L"Variable(s) must be selected for the %s list."),
+            wxMessageBox(wxString::Format(_(L"Variable(s) must be selected for the '%s' list."),
                                           varList.m_label),
                          _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
             return false;
