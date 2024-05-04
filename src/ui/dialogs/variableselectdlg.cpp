@@ -11,11 +11,14 @@
 using namespace Wisteria;
 using namespace Wisteria::UI;
 
-VariableSelectDlg::VariableSelectDlg(
-    wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
-    const std::vector<VariableListInfo>& varInfo, wxWindowID id /*= wxID_ANY*/,
-    const wxString& caption /*= _(L"Set Opacity")*/, const wxPoint& pos /*= wxDefaultPosition*/,
-    const wxSize& size /*= wxDefaultSize*/, long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
+VariableSelectDlg::VariableSelectDlg(wxWindow* parent,
+                                     const Data::Dataset::ColumnPreviewInfo& columnInfo,
+                                     const std::vector<VariableListInfo>& varInfo,
+                                     wxWindowID id /*= wxID_ANY*/,
+                                     const wxString& caption /*= _(L"Select Variables")*/,
+                                     const wxPoint& pos /*= wxDefaultPosition*/,
+                                     const wxSize& size /*= wxDefaultSize*/,
+                                     long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
     : m_columnInfo(columnInfo)
     {
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
@@ -24,6 +27,18 @@ VariableSelectDlg::VariableSelectDlg(
     CreateControls(varInfo);
 
     Centre();
+
+    // make the variable columns the width of their boxes
+    Bind(wxEVT_SIZE,
+         [this](wxSizeEvent& evt)
+         {
+             m_mainVarlist->SetColumnWidth(0, m_mainVarlist->GetSize().GetWidth());
+             for (auto& varList : m_varLists)
+                 {
+                 varList.m_list->SetColumnWidth(0, varList.m_list->GetSize().GetWidth());
+                 }
+             evt.Skip();
+         });
     }
 
 //-------------------------------------------------------------
@@ -72,7 +87,7 @@ void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list, wxLi
         {
         otherList->InsertItem(otherList->GetItemCount(), str);
         }
-    otherList->SetColumnWidth(0, wxLIST_AUTOSIZE);
+
     RemoveSelectedVariablesFromList(list);
     }
 
@@ -146,7 +161,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         {
         m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
         }
-    m_mainVarlist->SetColumnWidth(0, wxLIST_AUTOSIZE);
+
     varsSizer->Add(m_mainVarlist, wxGBPosition(1, 0), wxGBSpan(3, 1), wxEXPAND | wxALL);
 
     // set up the variable groups on the right side
