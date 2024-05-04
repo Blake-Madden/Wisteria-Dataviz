@@ -101,7 +101,7 @@ namespace Wisteria::UI
             @param pos The dialog's position on the screen.
             @param size The default size of the dialog.
             @param style The dialog's style.*/
-        VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
+        VariableSelectDlg(wxWindow* parent, Data::Dataset::ColumnPreviewInfo columnInfo,
                           const std::vector<VariableListInfo>& varInfo, wxWindowID id = wxID_ANY,
                           const wxString& caption = _(L"Select Variables"),
                           const wxPoint& pos = wxDefaultPosition,

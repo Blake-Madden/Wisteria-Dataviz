@@ -12,14 +12,14 @@ using namespace Wisteria;
 using namespace Wisteria::UI;
 
 VariableSelectDlg::VariableSelectDlg(wxWindow* parent,
-                                     const Data::Dataset::ColumnPreviewInfo& columnInfo,
+                                     Data::Dataset::ColumnPreviewInfo columnInfo,
                                      const std::vector<VariableListInfo>& varInfo,
                                      wxWindowID id /*= wxID_ANY*/,
                                      const wxString& caption /*= _(L"Select Variables")*/,
                                      const wxPoint& pos /*= wxDefaultPosition*/,
                                      const wxSize& size /*= wxDefaultSize*/,
                                      long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
-    : m_columnInfo(columnInfo)
+    : m_columnInfo(std::move(columnInfo))
     {
     SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
