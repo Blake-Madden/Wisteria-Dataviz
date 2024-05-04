@@ -56,9 +56,6 @@ set(wxWidgets_USE_STATIC 1)
 find_package(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net richtext REQUIRED CONFIG)
 
 # Include the wxWidgets use file to initialize various settings
-if(wxWidgets_USE_FILE)
-    include(${wxWidgets_USE_FILE})
-endif()
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 message(STATUS "Adding wxWidgets: ${wxPLATFORM_LIB_DIR}")
 
