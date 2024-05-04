@@ -100,7 +100,13 @@ bool Wisteria::UI::BaseApp::OnInit()
         }
 #ifdef __WXMSW__
     if (wxGraphicsRenderer::GetDirect2DRenderer())
-        { wxLogMessage(L"Direct2D Rendering Available: will attempt to use Direct2D"); }
+        {
+        wxLogMessage(L"Direct2D Rendering: available; will attempt to use Direct2D");
+        }
+    else
+        {
+        wxLogMessage(L"Direct2D Rendering: unavailable");
+        }
 #endif
     wxLogMessage(L"Web Engine: %s",
                  wxWebSession::GetDefault().GetLibraryVersionInfo().GetVersionString());
