@@ -1420,7 +1420,9 @@ namespace Wisteria::Data
         static ImportInfo ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo);
         /** @brief Imports a text file into the dataset.
             @param filePath The path to the data file.
-            @param info The definition for which columns to import and how to map them.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
             @param delimiter The delimiter to parse the columns with.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
                 throws an exception.\n
@@ -1441,7 +1443,9 @@ namespace Wisteria::Data
                         const wchar_t delimiter);
         /** @brief Imports raw text into the dataset.
             @param fileText The text buffer to parse and load into the dataset.
-            @param info The definition for which columns to import and how to map them.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
             @param delimiter The delimiter to parse the columns with.
             @throws std::runtime_error If any named columns aren't found,
                 throws an exception.\n
@@ -1453,7 +1457,9 @@ namespace Wisteria::Data
         /** @brief Imports a comma-separated file into the dataset.
             @details This is a shortcut for ImportText(), using commas as the column separator.
             @param filePath The path to the data file.
-            @param info The definition for which columns to import and how to map them.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
@@ -1463,7 +1469,9 @@ namespace Wisteria::Data
         /** @brief Imports a tab-separated file into the dataset.
             @details This is a shortcut for ImportText(), using tabs as the column separator.
             @param filePath The path to the data file.
-            @param info The definition for which columns to import and how to map them.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
@@ -1473,7 +1481,9 @@ namespace Wisteria::Data
         /** @brief Imports a Excel workbook (*.xlsx) into the dataset.
             @param filePath The path to the data file.
             @param worksheet The name or 1-based index of the worksheet.
-            @param info The definition for which columns to import and how to map them.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
             @throws std::runtime_error If the worksheet can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

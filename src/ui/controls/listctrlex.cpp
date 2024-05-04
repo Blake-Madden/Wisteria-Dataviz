@@ -15,19 +15,17 @@
 
 wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
+
 namespace Wisteria::UI
     {
-    wxIMPLEMENT_DYNAMIC_CLASS(ListCtrlEx, wxListView)
-
-        //------------------------------------------------------
-        ListEditTextCtrl::ListEditTextCtrl(wxWindow* parent, ListCtrlEx* owner,
-                                           wxWindowID id /*= wxID_ANY*/,
-                                           wxString value /*= wxString{}*/,
-                                           const wxPoint& pos /*= wxDefaultPosition*/,
-                                           const wxSize& size /*= wxDefaultSize*/,
-                                           long style /*= 0*/,
-                                           const wxValidator& validator /*= wxDefaultValidator*/,
-                                           const wxString& name /*= L"ListEditTextCtrl"*/)
+    //------------------------------------------------------
+    ListEditTextCtrl::ListEditTextCtrl(
+        wxWindow * parent, ListCtrlEx * owner, wxWindowID id /*= wxID_ANY*/,
+        wxString value /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
+        const wxSize& size /*= wxDefaultSize*/, long style /*= 0*/,
+        const wxValidator& validator /*= wxDefaultValidator*/,
+        const wxString& name /*= L"ListEditTextCtrl"*/)
         : wxTextCtrl(parent, id, value, pos, size, style, validator, name), m_owner(owner),
           m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {
