@@ -1369,8 +1369,8 @@ namespace Wisteria::Data
 
         /** @brief Reads the column names from a file and deduces their data types.
             @param filePath The path to the data file.
-            @param rowPreviewCount The number of rows to read when deducing column types.
             @param importInfo Import settings (row start and MD code are used).
+            @param rowPreviewCount The number of rows to read when deducing column types.
             @param worksheet If loading an Excel workbook, the name or
                 1-based index of the worksheet.
             @returns A vector of column names and their respective data types.\n
