@@ -127,8 +127,8 @@ namespace Wisteria::UI
         struct VariableList
             {
             wxString m_label;
-            int m_addId{ wxID_ANY };
-            int m_removeId{ wxID_ANY };
+            wxWindowID m_addId{ wxID_ANY };
+            wxWindowID m_removeId{ wxID_ANY };
             bool m_singleSelection{ false };
             bool m_required{ true };
             wxListView* m_list{ nullptr };

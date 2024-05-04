@@ -242,7 +242,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         assert(varList.m_list && L"User-defined list not created!");
         Bind(
             wxEVT_BUTTON,
-            [&, this](wxCommandEvent&)
+            [&, this]([[maybe_unused]] wxCommandEvent&)
             {
                 MoveSelectedVariablesBetweenLists(m_mainVarlist, varList.m_list);
                 UpdateButtonStates();
@@ -250,12 +250,22 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
             varList.m_addId);
         Bind(
             wxEVT_BUTTON,
-            [&, this](wxCommandEvent&)
+            [&, this]([[maybe_unused]] wxCommandEvent&)
             {
                 MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
                 UpdateButtonStates();
             },
             varList.m_removeId);
+
+        // double click var in list on the right will remove it and send it back
+        // to the main list on the left
+        varList.m_list->Bind(
+            wxEVT_LEFT_DCLICK,
+            [&, this]([[maybe_unused]] wxMouseEvent&)
+            {
+                MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
+                UpdateButtonStates();
+            });
         }
 
     UpdateButtonStates();
