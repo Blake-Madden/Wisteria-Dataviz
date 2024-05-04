@@ -101,16 +101,12 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [this]([[maybe_unused]] wxCommandEvent)
             {
-                wxFileDialog fd(this, _(L"Select Output Image"), wxString{}, wxString{},
-                                Wisteria::GraphItems::Image::GetImageFileFilter(),
-                                wxFD_OPEN | wxFD_PREVIEW);
-                if (fd.ShowModal() != wxID_OK)
-                    {
-                    return;
-                    }
-
                 std::vector<wxImage> images;
-                for (const auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
+
+                const auto* thumbSize =
+                    (m_orientRadio == 0) ? m_horizontalThumbsSizer : m_verticalThumbsSizer;
+
+                for (const auto* sizerItem : thumbSize->GetChildren())
                     {
                     if (const auto* thumb{
                             dynamic_cast<const Wisteria::UI::Thumbnail*>(sizerItem->GetWindow()) };
