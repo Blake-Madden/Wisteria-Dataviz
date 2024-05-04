@@ -44,19 +44,19 @@ VariableSelectDlg::VariableSelectDlg(wxWindow* parent,
 //-------------------------------------------------------------
 void VariableSelectDlg::UpdateButtonStates()
     {
-    // enable/disable the Add/Remove
+    // enable/disable the Add/Remove buttons
     for (const auto& varList : m_varLists)
         {
         assert(m_mainVarlist && L"Main variable list not created!");
-        auto* button = FindWindowById(varList.m_removeId);
+        auto* button = FindWindowById(varList.m_removeId, this);
         if (button && m_mainVarlist)
             {
-            button->Enable(varList.m_list->GetSelectedItemCount());
+            button->Enable(varList.m_list->GetSelectedItemCount() > 0);
             }
-        button = FindWindowById(varList.m_addId);
+        button = FindWindowById(varList.m_addId, this);
         if (button && m_mainVarlist)
             {
-            button->Enable(m_mainVarlist->GetSelectedItemCount());
+            button->Enable(m_mainVarlist->GetSelectedItemCount() > 0);
             }
         }
     }
@@ -130,14 +130,14 @@ std::vector<wxString> VariableSelectDlg::GetSelectedVariables(const size_t listI
     if (listIndex >= m_varLists.size())
         {
         wxFAIL_MSG(L"Invalid index specified for variable list!");
-        return std::vector<wxString>();
+        return std::vector<wxString>{};
         }
     const auto& varList = m_varLists[listIndex];
     std::vector<wxString> strings;
     strings.reserve(varList.m_list->GetItemCount());
     for (auto i = 0; i < varList.m_list->GetItemCount(); ++i)
         {
-        strings.emplace_back(varList.m_list->GetItemText(i));
+        strings.push_back(varList.m_list->GetItemText(i));
         }
     return strings;
     }
@@ -156,7 +156,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
                    wxGBSpan(1, 1), wxEXPAND | wxALL);
     m_mainVarlist = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                    wxLC_REPORT | wxLC_NO_HEADER);
-    m_mainVarlist->InsertColumn(0, wxEmptyString);
+    m_mainVarlist->InsertColumn(0, wxString{});
     for (const auto& [name, type] : m_columnInfo)
         {
         m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
@@ -191,7 +191,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         currentLabelRow += 2;
 
         auto list = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
-        list->InsertColumn(0, wxEmptyString);
+        list->InsertColumn(0, wxString{});
         varsSizer->Add(list, wxGBPosition(currentListRow, 2), wxGBSpan(1, 1), wxEXPAND | wxALL);
         currentListRow += 2;
 
@@ -226,7 +226,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
     varsSizer->AddGrowableCol(2);
 
     mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
-                   wxSizerFlags(0).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+                   wxSizerFlags().Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     SetSizerAndFit(mainSizer);
 
