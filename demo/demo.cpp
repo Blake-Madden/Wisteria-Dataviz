@@ -17,6 +17,7 @@ using namespace Wisteria::GraphItems;
 using namespace Wisteria::Data;
 using namespace Wisteria::Icons;
 using namespace Wisteria::Icons::Schemes;
+using namespace Wisteria::UI;
 
 wxIMPLEMENT_APP(MyApp);
 
@@ -152,6 +153,8 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnCloseAll, this, wxID_CLOSE_ALL);
     Bind(wxEVT_MENU, &MyFrame::OnCloseAll, this, wxID_CLOSE_ALL);
     Bind(wxEVT_MENU, &MyFrame::OnClose, this, wxID_CLOSE);
+
+    Bind(wxEVT_MENU, &MyFrame::OnTextClassifier, this, MyApp::ID_TEXT_CLASSIFIER);
     }
 
 wxMenuBar* MyFrame::CreateMainMenubar()
@@ -203,8 +206,11 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->AppendSeparator();
 
     fileMenu->Append(wxID_SAVE, _(L"&Save\tCtrl+S"), _(L"Save as Image"));
-    fileMenu->Append(wxID_PRINT, _(L"&Print\tCtrl+P"), _(L"Print"));
-    fileMenu->Append(MyApp::ID_PRINT_ALL, _(L"&Print All"), _(L"Print All"));
+    fileMenu->Append(wxID_PRINT, _(L"&Print...\tCtrl+P"), _(L"Print"));
+    fileMenu->Append(MyApp::ID_PRINT_ALL, _(L"&Print All..."), _(L"Print All"));
+    fileMenu->AppendSeparator();
+
+    fileMenu->Append(MyApp::ID_TEXT_CLASSIFIER, _(L"&Text Classifier..."), _(L"Demonstrates the Text Classifier feature"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(wxID_CLOSE, _(L"&Close child\tCtrl+F4"));
@@ -213,13 +219,106 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(wxID_EXIT, _(L"&Exit\tAlt-X"), _(L"Quit the program"));
 
     wxMenu* menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ABOUT, _(L"&About\tF1"));
+    menuHelp->Append(wxID_ABOUT, _(L"&About...\tF1"));
 
     wxMenuBar* mbar = new wxMenuBar;
     mbar->Append(fileMenu, _(L"&File"));
     mbar->Append(menuHelp, _(L"&Help"));
 
     return mbar;
+    }
+
+void MyFrame::OnTextClassifier(wxCommandEvent& event)
+    {
+    wxFileDialog classiferFileDlg(
+        this, _(L"Select Classifier Data"), wxString{}, wxString{},
+        _(L"Tab Delimited Files (*.txt;*.txt)|*.txt;*.txt|CSV Files (*.csv;*.csv)|*.csv;*.csv"),
+        wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+    if (classiferFileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    VariableSelectDlg classiferVarDlg(
+        this, Dataset::ReadColumnInfo(classiferFileDlg.GetPath()),
+        { VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Categories"))
+              .SingleSelection(true),
+          VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Subcategories"))
+              .SingleSelection(true)
+              .Required(false),
+          VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Patterns"))
+              .SingleSelection(true),
+          VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Negation Patterns"))
+              .SingleSelection(true)
+              .Required(false) });
+    if (classiferVarDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    wxFileDialog surveyFileDlg(this, _(L"Select Survey Data"), wxString{}, wxString{},
+                               _(L"Tab Delimited Files (*.txt;*.txt)|*.txt;*.txt|CSV Files "
+                                 "(*.csv;*.csv)|*.csv;*.csv"),
+                               wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+    if (surveyFileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    VariableSelectDlg surveyVarDlg(this, Dataset::ReadColumnInfo(surveyFileDlg.GetPath()),
+                                   { VariableSelectDlg::VariableListInfo()
+                                         .Label(_(L"Comments"))
+                                         .SingleSelection(true) });
+    if (surveyVarDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    auto classifierData = std::make_shared<Data::Dataset>();
+    auto surveyData = std::make_shared<Data::Dataset>();
+    try
+        {
+        classifierData->ImportText(
+            classiferFileDlg.GetPath(),
+            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath())),
+            Dataset::GetDelimiterFromExtension(classiferFileDlg.GetPath()));
+
+        surveyData->ImportText(
+            surveyFileDlg.GetPath(),
+            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath())),
+            Dataset::GetDelimiterFromExtension(surveyFileDlg.GetPath()));
+
+        Wisteria::Data::TextClassifier textClassifier;
+        textClassifier.SetClassifierData(
+            classifierData, classiferVarDlg.GetSelectedVariables(0)[0],
+            (classiferVarDlg.GetSelectedVariables(1).size() > 0 ?
+                 std::optional<wxString>{ classiferVarDlg.GetSelectedVariables(1)[0] } :
+                 std::nullopt),
+            classiferVarDlg.GetSelectedVariables(2)[0],
+            (classiferVarDlg.GetSelectedVariables(3).size() > 0 ?
+                 std::optional<wxString>{ classiferVarDlg.GetSelectedVariables(3)[0] } :
+                 std::nullopt));
+        const auto [matchedData, unclassifiedData] =
+            textClassifier.ClassifyData(surveyData, surveyVarDlg.GetSelectedVariables(0)[0]);
+        matchedData->ExportCSV(wxFileName{ surveyFileDlg.GetPath() }.GetPathWithSep() +
+                               L"Matched.csv");
+        unclassifiedData->ExportCSV(wxFileName{ surveyFileDlg.GetPath() }.GetPathWithSep() +
+                               L"Unclassified.csv");
+
+        wxMessageBox(_(L"Matched and Unclassified output files successfully created."),
+                     _(L"Text Classification Complete"), wxOK | wxCENTRE);
+        }
+    catch (const std::exception& err)
+        {
+        wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                     wxOK | wxICON_ERROR | wxCENTRE);
+        return;
+        }
     }
 
 void MyFrame::OnQuit([[maybe_unused]] wxCommandEvent& event)
@@ -230,7 +329,7 @@ void MyFrame::OnQuit([[maybe_unused]] wxCommandEvent& event)
 void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     {
     wxAboutDialogInfo aboutInfo;
-    aboutInfo.SetCopyright(L"Copyright (c) 2022");
+    aboutInfo.SetCopyright(L"Copyright (c) 2024");
     wxArrayString devs;
     devs.Add(L"Blake Madden");
     aboutInfo.SetDevelopers(devs);

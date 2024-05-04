@@ -8,23 +8,15 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /////////////////////////////////////////////////////////////////////////////
 
-#include <wx/wx.h>
-#include <wx/mdi.h>
-#include <wx/toolbar.h>
-#include <wx/artprov.h>
-#include <wx/sysopt.h>
-#include <wx/stdpaths.h>
-#include <wx/filename.h>
-#include <wx/aboutdlg.h>
-#include <wx/uilocale.h>
 #include "../src/base/canvas.h"
 #include "../src/base/commonaxisbuilder.h"
 #include "../src/base/image.h"
 #include "../src/base/label.h"
 #include "../src/base/reportbuilder.h"
 #include "../src/base/reportprintout.h"
-#include "../src/data/subset.h"
 #include "../src/data/pivot.h"
+#include "../src/data/subset.h"
+#include "../src/data/textclassifier.h"
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
 #include "../src/graphs/candlestickplot.h"
@@ -42,7 +34,17 @@
 #include "../src/graphs/wcurveplot.h"
 #include "../src/graphs/wordcloud.h"
 #include "../src/import/text_matrix.h"
+#include "../src/ui/dialogs/variableselectdlg.h"
 #include "../src/util/logfile.h"
+#include <wx/aboutdlg.h>
+#include <wx/artprov.h>
+#include <wx/filename.h>
+#include <wx/mdi.h>
+#include <wx/stdpaths.h>
+#include <wx/sysopt.h>
+#include <wx/toolbar.h>
+#include <wx/uilocale.h>
+#include <wx/wx.h>
 
 #ifndef __WISTERIA_DEMO_H__
 #define __WISTERIA_DEMO_H__
@@ -50,8 +52,9 @@
 // Define a new application
 class MyApp final : public wxApp
     {
-public:
+  public:
     virtual bool OnInit() final;
+
     enum ControlIDs
         {
         ID_NEW_BOXPLOT = wxID_HIGHEST,
@@ -84,37 +87,42 @@ public:
         ID_NEW_GROUPED_SANKEY_DIAGRAM,
         ID_NEW_WORD_CLOUD,
         ID_NEW_TABLE,
-        ID_PRINT_ALL
+        ID_PRINT_ALL,
+        ID_TEXT_CLASSIFIER
         };
     };
 
 // Define a new frame
 class MyFrame final : public wxMDIParentFrame
     {
-public:
+  public:
     MyFrame();
     static wxMenuBar* CreateMainMenubar();
-private:
+
+  private:
     void InitToolBar(wxToolBar* toolBar);
 
-    void OnAbout([[maybe_unused]]wxCommandEvent& event);
+    void OnAbout([[maybe_unused]] wxCommandEvent& event);
     void OnNewWindow(wxCommandEvent& event);
     void OnOpenProject(wxCommandEvent& event);
-    void OnQuit([[maybe_unused]]wxCommandEvent& event);
-    void OnCloseAll([[maybe_unused]]wxCommandEvent& event);
-    void OnClose([[maybe_unused]]wxCommandEvent& event);
+    void OnQuit([[maybe_unused]] wxCommandEvent& event);
+    void OnCloseAll([[maybe_unused]] wxCommandEvent& event);
+    void OnClose([[maybe_unused]] wxCommandEvent& event);
     void OnSaveWindow(wxCommandEvent& event);
     void OnPrintWindow(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
     void OnCopyWindow(wxCommandEvent& event);
+    void OnTextClassifier(wxCommandEvent& event);
     };
 
 class MyChild final : public wxMDIChildFrame
     {
     friend MyFrame;
-public:
+
+  public:
     MyChild(wxMDIParentFrame* parent);
-private:
+
+  private:
     Wisteria::Canvas* m_canvas{ nullptr };
     };
 
