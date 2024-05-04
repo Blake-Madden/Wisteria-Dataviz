@@ -49,12 +49,12 @@
     #define HDF_SORTDOWN 0x200
 #endif
 
-/// @private
+/// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
-/// @brief Event sent when a list control is edited.
 #define EVT_LISTCTRLEX_EDITED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_LISTCTRLEX_EDITED, winid, wxCommandEventHandler(fn))
+/// @endcond
 
 class ListCtrlEx;
 
