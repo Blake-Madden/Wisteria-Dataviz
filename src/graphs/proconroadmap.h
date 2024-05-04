@@ -38,8 +38,8 @@ namespace Wisteria::Graphs
             counts of the sentiments are used.)\n
             \n
             The example below shows a @c Strength column that will have its categories aggregated
-            by the graph. Meanwhile, the @c Weakness column will be loaded using the pre-calculated
-            totals from the corresponding @c WeaknessTotals column.
+            by frequency. Meanwhile, the @c Weakness column will be loaded using
+            the pre-calculated totals from the corresponding @c WeaknessTotals column.
 
             | Strength                 | Weakness            | WeaknessTotals |
             | :--                      | :--                 | --:            |
@@ -49,7 +49,9 @@ namespace Wisteria::Graphs
             ...
 
         @par Missing Data:
-            Missing sentiment labels or aggregate counts will result in list-wise deletion.
+            Missing sentiment labels will be ignored.
+            Missing aggregate values (if aggregate column is provided) will result
+            in the corresponding label being ignored.
 
         @par Example:
         @code
