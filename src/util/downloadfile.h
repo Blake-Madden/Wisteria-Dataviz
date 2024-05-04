@@ -310,7 +310,7 @@ class FileDownload
         {
         return m_userAgent;
         }
-    
+
     /** @brief Sets the cookies to send the server when connecting.
         @param cookies The cookies to use.*/
     void SetCookies(const wxString& cookies) { m_cookies = cookies; }
