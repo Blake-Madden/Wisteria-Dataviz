@@ -1,0 +1,65 @@
+project:
+  type: book
+  output-dir: "manual"
+toc: true
+toc-depth: 2
+biblio-title: References
+bibliography: cites.bib
+biblio-style: mla
+link-citations: true
+nocite: '@*'
+csl: modern-language-association.csl
+pdf-cover: "images/cover.pdf"
+number-sections: true
+crossref:
+  chapters: true
+book:
+  title: Wisteria DataViz
+  subtitle: JSON Syntax Reference Manual
+  author: Blake Madden
+  date: today
+  date-format: long
+  output-file: "WisteriaSyntaxReferenceManual"
+  language: en
+  search: false
+  cover-image: "images/cover.png"
+  image: "images/cover.png"
+  navbar:
+    logo: wisteria-dv.svg
+    right:
+      - icon: github
+        href: https://github.com/Blake-Madden/Wisteria-Dataviz
+        aria-label: Github
+  chapters:
+    - index.qmd
+    - part: "Projects"
+      chapters:
+      - project.qmd
+    - part: "Data & Constants"
+      chapters:
+      - constants.qmd
+      - datasets.qmd
+    - part: "Page Items"
+      chapters:
+      - page-items.qmd
+    - part: "Graphs"
+      chapters:
+      - graphs.qmd
+    - part: "Notes"
+      chapters:
+      - notes.qmd 
+format:
+  pdf:
+    documentclass: book
+    template: latex/default.tex
+    include-in-header: latex/preamble.tex
+    latex-engine: xelatex
+    keep-tex: true
+    citation-package: biblatex
+    lot: true
+    code-block-bg: false
+  html:
+    theme: cosmo
+    html-math-method: katex
+    css: style.css
+    smooth-scroll: true

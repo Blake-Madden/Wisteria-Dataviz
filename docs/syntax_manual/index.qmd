@@ -1,18 +1,8 @@
---- 
-title: "Wisteria Programming Manual"
-author: "Blake Madden"
-site: bookdown::bookdown_site
-documentclass: book
-date: 2023
-links-as-notes: true
-link-citations: yes
----
-
 ```{r, include=FALSE}
 source('R/appdown.r')
 ```
 
-# Overview
+# Overview {-}
 
 A report can be loaded directly from a JSON project file using the `ReportBuilder` class.
 These reports can consist of a single page (i.e., a canvas), or a series of multiple pages.

@@ -1,5 +1,3 @@
-# (PART) Project Settings {-}
-
 # Project Section
 
 At the root level of a project file, overall settings for the project are defined. The following properties are available at this level:

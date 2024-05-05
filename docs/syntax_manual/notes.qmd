@@ -1,5 +1,3 @@
-# (PART) Notes {-}
-
 # Notes {#notes}
 
 Color values can either be hex encoded (e.g., `"#FF0000"` for red) or a named value (`"pumpkin"`). For a full list

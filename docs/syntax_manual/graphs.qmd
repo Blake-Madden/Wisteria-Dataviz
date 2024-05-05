@@ -1,5 +1,3 @@
-# (PART) Graphs {-}
-
 # Common Graph Properties
 
 The following section details properties common to all graphs.

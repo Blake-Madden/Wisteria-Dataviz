@@ -1,5 +1,3 @@
-# (PART) Data & Constants {-}
-
 # Constants {#constants-properties}
 
 Properties for the `"constants"` node:

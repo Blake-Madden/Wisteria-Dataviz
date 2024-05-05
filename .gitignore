@@ -11,9 +11,13 @@
 /out/
 /docs/doxygen/html/
 /docs/syntax_manual/_book
-/docs/syntax_anual/_main.log
+/docs/syntax_manual/.quarto
+/docs/syntax_manual/_main.log
+/docs/syntax_manual/manual
+*.tex
 /tools/ColorCode.txt
 /tools/ColorReportMap.txt
+
 # Compiler helper files
 CMakeSettings.json
 cpp.hint
@@ -28,7 +32,6 @@ cpp.hint
 *.doc
 *.ods
 *.xlsx
-*.pdf
 
 # Prerequisites
 *.d
@@ -64,4 +67,3 @@ cpp.hint
 *.out
 *.app
 *.manifest
-

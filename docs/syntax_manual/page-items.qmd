@@ -1,5 +1,3 @@
-# (PART) Page Items{-}
-
 # Basic Page Items
 
 ## All Items {#item-properties .unnumbered}
