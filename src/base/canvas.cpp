@@ -519,7 +519,7 @@ namespace Wisteria
                 PageVerticalAlignment::TopAligned :
                 PageVerticalAlignment::BottomAligned);
             leftMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
-            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return leftMarginWidth;
         }
@@ -546,7 +546,7 @@ namespace Wisteria
                 PageVerticalAlignment::BottomAligned);
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
-            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return rightMarginWidth;
         }
@@ -570,7 +570,7 @@ namespace Wisteria
                 PageHorizontalAlignment::RightAligned :
                 PageHorizontalAlignment::LeftAligned);
             topMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return topMarginHeight;
         }
@@ -596,7 +596,7 @@ namespace Wisteria
                 PageHorizontalAlignment::LeftAligned);
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             bottomMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return bottomMarginHeight;
         }

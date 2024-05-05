@@ -146,7 +146,7 @@ namespace Wisteria::Graphs
                 wxSize(GetPlotAreaBoundingBox().GetWidth(),
                        GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
             auto currentLabel =
-                std::make_shared<GraphItems::Label>(GraphItemInfo(word.m_word).
+                std::make_unique<GraphItems::Label>(GraphItemInfo(word.m_word).
                     Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()).
                     Anchoring(Anchoring::TopLeftCorner).AnchorPoint(origin).
                     FontColor(GetColorScheme()->GetRecycledColor(wordCount)));
@@ -222,7 +222,7 @@ namespace Wisteria::Graphs
         {
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
-            AddObject(std::make_shared<GraphItems::Polygon>(
+            AddObject(std::make_unique<GraphItems::Polygon>(
                 GraphItemInfo().Pen(*wxBLUE), polygon));
             }
 

@@ -1340,7 +1340,7 @@ namespace Wisteria::Graphs
 
         // measure the text
         wxPoint pts[4];
-        std::vector<std::shared_ptr<Label>> cellLabels;
+        std::vector<std::unique_ptr<Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         size_t currentRow{ 0 }, currentColumn{ 0 };
         wxCoord currentXPos{ drawArea.GetX() };
@@ -1430,7 +1430,7 @@ namespace Wisteria::Graphs
                      cell.m_valueFormat == TableCellFormat::Accounting);
 
                 const auto cellText = cell.GetDisplayValue();
-                auto cellLabel = std::make_shared<Label>(
+                auto cellLabel = std::make_unique<Label>(
                     GraphItemInfo((isPrefixSeparateLabel ? wxString{} : cell.GetPrefix()) +
                                   (cellText.length() ? cellText : wxString(L" ")))
                         .Pen(wxNullPen)
@@ -1470,7 +1470,7 @@ namespace Wisteria::Graphs
                                                                           L"\x25B2")) :
                             cell.GetPrefix();
                     const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE };
-                    auto cellPrefixLabel = std::make_shared<Label>(
+                    auto cellPrefixLabel = std::make_unique<Label>(
                         GraphItemInfo(prefix)
                             .Pen(wxNullPen)
                             .Padding(5, 5, 5, 5)
@@ -1517,7 +1517,7 @@ namespace Wisteria::Graphs
                 {
                 cellLabel->Offset(horizontalAlignmentOffset, verticalAlignmentOffset);
                 }
-            AddObject(cellLabel);
+            AddObject(std::move(cellLabel));
             }
 
         // draw the row borders
@@ -1547,8 +1547,8 @@ namespace Wisteria::Graphs
             ++currentRow;
             }
 
-        auto highlightedBorderLines = std::make_shared<Lines>(GetHighlightPen(), GetScaling());
-        auto borderLines = std::make_shared<Lines>(GetPen(), GetScaling());
+        auto highlightedBorderLines = std::make_unique<Lines>(GetHighlightPen(), GetScaling());
+        auto borderLines = std::make_unique<Lines>(GetPen(), GetScaling());
         borderLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
         currentRow = currentColumn = 0;
         currentXPos = drawArea.GetX();
@@ -1727,8 +1727,8 @@ namespace Wisteria::Graphs
                 }
             }
 
-        AddObject(borderLines);
-        AddObject(highlightedBorderLines);
+        AddObject(std::move(borderLines));
+        AddObject(std::move(highlightedBorderLines));
 
         // add gutter messages
         const auto rightGutter =
@@ -1746,7 +1746,7 @@ namespace Wisteria::Graphs
             // sort by rows, top-to-bottom
             std::sort(note.m_cells.begin(), note.m_cells.end(),
                       [](const auto& lv, const auto& rv) noexcept { return lv.m_row < rv.m_row; });
-            auto noteConnectionLines = std::make_shared<Lines>(
+            auto noteConnectionLines = std::make_unique<Lines>(
                 note.m_connectionLinePen.has_value() ? note.m_connectionLinePen.value() :
                                                        GetHighlightPen(),
                 GetScaling());
@@ -1775,9 +1775,10 @@ namespace Wisteria::Graphs
                 noteConnectionLines->AddLine(
                     wxPoint(rightGutter.GetX() + connectionOverhangWidth, cellsYMiddle),
                     wxPoint(rightGutter.GetX() + connectionOverhangWidth * 2, cellsYMiddle));
-                AddObject(noteConnectionLines);
+                AddObject(std::move(noteConnectionLines));
+
                 // add the note into the gutter
-                auto noteLabel = std::make_shared<Label>(
+                auto noteLabel = std::make_unique<Label>(
                     GraphItemInfo(note.m_note)
                         .Pen(wxNullPen)
                         // use same text scale as the table (or 1.0 if the table font is really small)
@@ -1806,7 +1807,7 @@ namespace Wisteria::Graphs
                     noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
                                               wxPoint(0, bBox.GetHeight() / 2));
                     }
-                AddObject(noteLabel);
+                AddObject(std::move(noteLabel));
                 }
             else
                 {
@@ -1830,9 +1831,10 @@ namespace Wisteria::Graphs
                 noteConnectionLines->AddLine(
                     wxPoint(leftGutter.GetRight() - connectionOverhangWidth, cellsYMiddle),
                     wxPoint(leftGutter.GetRight() - connectionOverhangWidth * 2, cellsYMiddle));
-                AddObject(noteConnectionLines);
+                AddObject(std::move(noteConnectionLines));
+
                 // add the note into the gutter
-                auto noteLabel = std::make_shared<Label>(
+                auto noteLabel = std::make_unique<Label>(
                     GraphItemInfo(note.m_note)
                         .Pen(wxNullPen)
                         // use same text scale as the table
@@ -1860,7 +1862,7 @@ namespace Wisteria::Graphs
                     noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
                                               wxPoint(0, bBox.GetHeight() / 2));
                     }
-                AddObject(noteLabel);
+                AddObject(std::move(noteLabel));
                 }
             // Base graph resets the scaling for caption to 1.0 and it's a
             // template object that's copied, so you need to adjust the font size

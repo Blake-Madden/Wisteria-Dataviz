@@ -378,7 +378,7 @@ namespace Wisteria::Graphs
         Graph2D(canvas)
         {
         SetBrushScheme(brushes != nullptr ? brushes :
-            std::make_shared<Brushes::Schemes::BrushScheme>
+            std::make_unique<Brushes::Schemes::BrushScheme>
             (*Settings::GetDefaultColorScheme()));
         SetColorScheme(colors);
 
@@ -1525,7 +1525,7 @@ namespace Wisteria::Graphs
             const auto marginRect = wxRect(GetPlotAreaBoundingBox().GetTopLeft(),
                 wxSize(xDiff, GetPlotAreaBoundingBox().GetHeight()));
 
-            auto gutterLabel = std::make_shared<Label>(GetLeftMarginNote());
+            auto gutterLabel = std::make_unique<Label>(GetLeftMarginNote());
             gutterLabel->GetGraphItemInfo().
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
@@ -1535,7 +1535,7 @@ namespace Wisteria::Graphs
             gutterLabel->SplitTextToFitBoundingBox(dc, marginRect.GetSize());
             gutterLabel->SetBoundingBox(marginRect, dc, GetScaling());
 
-            AddObject(gutterLabel);
+            AddObject(std::move(gutterLabel));
             }
         if (GetRightMarginNote().GetText().length())
             {
@@ -1544,7 +1544,7 @@ namespace Wisteria::Graphs
                 wxPoint(pieDrawArea.GetTopRight().x, GetPlotAreaBoundingBox().GetTop()),
                 wxSize(xDiff, GetPlotAreaBoundingBox().GetHeight()));
 
-            auto gutterLabel = std::make_shared<Label>(GetRightMarginNote());
+            auto gutterLabel = std::make_unique<Label>(GetRightMarginNote());
             gutterLabel->GetGraphItemInfo().
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
@@ -1554,7 +1554,7 @@ namespace Wisteria::Graphs
             gutterLabel->SplitTextToFitBoundingBox(dc, marginRect.GetSize());
             gutterLabel->SetBoundingBox(marginRect, dc, GetScaling());
 
-            AddObject(gutterLabel);
+            AddObject(std::move(gutterLabel));
             }
         }
 

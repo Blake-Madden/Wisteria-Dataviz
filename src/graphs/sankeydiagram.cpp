@@ -319,7 +319,7 @@ namespace Wisteria::Graphs
                                         Polygon::PointToPair(pts[9])));
 
                             auto streamRibbon{
-                                std::make_shared<GraphItems::Polygon>(
+                                std::make_unique<GraphItems::Polygon>(
                                 GraphItemInfo(wxString::Format(L"%s \x2192 %s", group.m_label, downstreamGroup.first)).
                                 Pen(wxNullPen).
                                 Brush(ColorContrast::ChangeOpacity(currentColor, 100)).
@@ -329,7 +329,7 @@ namespace Wisteria::Graphs
                                 Polygon::PolygonShape::CurvyRectangle :
                                 Polygon::PolygonShape::Irregular);
 
-                            AddObject(streamRibbon);
+                            AddObject(std::move(streamRibbon));
                             downstreamGroupPos->m_currentYAxisPosition -= streamWidth;
                             group.m_currentYAxisPosition -= streamWidth;
                             }
@@ -389,7 +389,7 @@ namespace Wisteria::Graphs
                         GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
                         GetPhysicalCoordinates(group.m_xAxisRight, group.m_currentYAxisPosition, pts[3]))
                         {
-                        AddObject(std::make_shared<GraphItems::Polygon>(
+                        AddObject(std::make_unique<GraphItems::Polygon>(
                             GraphItemInfo(group.m_label).Pen(wxNullPen).
                             Brush(GetBrushScheme()->GetBrush(colorIndex)).
                             Scaling(GetScaling()),
@@ -447,7 +447,7 @@ namespace Wisteria::Graphs
                                 ((group.m_yAxisTopPosition - group.m_yAxisBottomPosition) *
                                     math_constants::half), pts[0]))
                         {
-                        auto groupLabel = std::make_shared<GraphItems::Label>(
+                        auto groupLabel = std::make_unique<GraphItems::Label>(
                             GraphItemInfo(boxLabel).
                             Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                             Pen(wxNullPen).
@@ -464,7 +464,7 @@ namespace Wisteria::Graphs
                                 ((group.m_yAxisTopPosition - group.m_yAxisBottomPosition) *
                                     math_constants::half), pts[0]))
                         {
-                        auto groupLabel = std::make_shared<GraphItems::Label>(
+                        auto groupLabel = std::make_unique<GraphItems::Label>(
                             GraphItemInfo(boxLabel).
                             Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                             Pen(wxNullPen).

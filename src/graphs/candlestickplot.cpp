@@ -196,7 +196,7 @@ namespace Wisteria::Graphs
                 continue;
                 }
             const auto wickX = lowPt.x;
-            auto wick = std::make_shared<GraphItems::Lines>(
+            auto wick = std::make_unique<GraphItems::Lines>(
                 wxPen((ohlc.m_open <= ohlc.m_close ?
                            ColorContrast::Shade(m_gainBrush.GetColour(), .2) :
                            ColorContrast::Shade(m_lossBrush.GetColour(), .2))),
@@ -222,9 +222,9 @@ namespace Wisteria::Graphs
 
             if (m_chartType == PlotType::Candlestick)
                 {
-                AddObject(wick);
+                AddObject(std::move(wick));
 
-                auto candle = std::make_shared<GraphItems::Polygon>(
+                auto candle = std::make_unique<GraphItems::Polygon>(
                     GraphItemInfo(ohlcInfo).Brush(
                         (ohlc.m_open <= ohlc.m_close ? m_gainBrush : m_lossBrush)),
                     &points[0], std::size(points));
@@ -235,7 +235,7 @@ namespace Wisteria::Graphs
                     {
                     candle->GetPen() = wxNullPen;
                     }
-                AddObject(candle);
+                AddObject(std::move(candle));
                 }
             else
                 {
@@ -243,7 +243,7 @@ namespace Wisteria::Graphs
                 points[2].x = wickX;
                 wick->AddLine(points[0], points[1]);
                 wick->AddLine(points[2], points[3]);
-                AddObject(wick);
+                AddObject(std::move(wick));
                 }
             }
         }

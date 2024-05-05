@@ -181,9 +181,9 @@ namespace Wisteria
 
         /// @returns The default color scheme to use for groups with the graphs.
         [[nodiscard]]
-        static std::shared_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
+        static std::unique_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
             {
-            return std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk());
+            return std::make_unique<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk());
             }
 
       private:

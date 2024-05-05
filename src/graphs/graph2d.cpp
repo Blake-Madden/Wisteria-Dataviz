@@ -693,18 +693,18 @@ namespace Wisteria::Graphs
             {
             wxPoint boxPoints[4]{ {0, 0} };
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
-            auto box = std::make_shared<GraphItems::Polygon>(
-                                GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN).
-                                Brush(wxColour(GetPlotBackgroundColor())).
-                                Scaling(GetScaling()),
-                                boxPoints, std::size(boxPoints));
-            AddObject(box);
+            AddObject(
+                std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
+                                                          .Pen(*wxBLACK_PEN)
+                                                          .Brush(wxColour(GetPlotBackgroundColor()))
+                                                          .Scaling(GetScaling()),
+                                                      boxPoints, std::size(boxPoints)));
             }
 
         // fill in the plot background image
         if (m_plotAreaBgImage.IsOk() && m_bgImageOpacity != wxALPHA_TRANSPARENT)
             {
-            auto img = std::make_shared<Image>(
+            auto img = std::make_unique<Image>(
                 (m_plotAreaImageFit == ImageFit::Shrink ?
                     Image::ShrinkImageToRect(
                         m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
@@ -722,7 +722,7 @@ namespace Wisteria::Graphs
                     (((GetPlotAreaBoundingBox().GetHeight() - img->GetImageSize().GetHeight()) / 2))) :
                 GetPlotAreaBoundingBox().GetTopLeft());
             img->SetOpacity(m_bgImageOpacity);
-            AddObject(img);
+            AddObject(std::move(img));
             }
 
         // draw the X axis grid lines
@@ -731,7 +731,7 @@ namespace Wisteria::Graphs
             GetBottomXAxis().GetAxisPointsCount() > 2)
             {
             auto xAxisLines =
-                std::make_shared<Wisteria::GraphItems::Lines>(
+                std::make_unique<Wisteria::GraphItems::Lines>(
                     GetBottomXAxis().GetGridlinePen(), GetScaling());
             for (auto pos = GetBottomXAxis().GetAxisPoints().cbegin()+1;
                 pos != GetBottomXAxis().GetAxisPoints().cend()-1;
@@ -743,7 +743,7 @@ namespace Wisteria::Graphs
                     wxPoint(static_cast<wxCoord>(pos->GetPhysicalCoordinate()),
                         (GetPlotAreaBoundingBox().GetY() + GetPlotAreaBoundingBox().GetHeight())));
                 }
-            AddObject(xAxisLines);
+            AddObject(std::move(xAxisLines));
             }
 
         // draw the Y axis grid lines
@@ -752,7 +752,7 @@ namespace Wisteria::Graphs
             GetLeftYAxis().GetAxisPointsCount() > 2)
             {
             auto yAxisLines =
-                std::make_shared<Wisteria::GraphItems::Lines>(GetLeftYAxis().GetGridlinePen(),
+                std::make_unique<Wisteria::GraphItems::Lines>(GetLeftYAxis().GetGridlinePen(),
                                                               GetScaling());
             for (auto pos = GetLeftYAxis().GetAxisPoints().cbegin()+1;
                 pos != GetLeftYAxis().GetAxisPoints().cend()-1;
@@ -763,20 +763,20 @@ namespace Wisteria::Graphs
                     wxPoint((GetPlotAreaBoundingBox().GetX()+GetPlotAreaBoundingBox().GetWidth()),
                         static_cast<wxCoord>(pos->GetPhysicalCoordinate())) );
                 }
-            AddObject(yAxisLines);
+            AddObject(std::move(yAxisLines));
             }
 
         // draw the axes on the plot area (on top of the gridlines)
         // (AdjustPlotArea() will have already set the axes' points)
-        AddObject(std::make_shared<Axis>(GetBottomXAxis()));
-        AddObject(std::make_shared<Axis>(GetTopXAxis()));
-        AddObject(std::make_shared<Axis>(GetLeftYAxis()));
-        AddObject(std::make_shared<Axis>(GetRightYAxis()));
+        AddObject(std::make_unique<Axis>(GetBottomXAxis()));
+        AddObject(std::make_unique<Axis>(GetTopXAxis()));
+        AddObject(std::make_unique<Axis>(GetLeftYAxis()));
+        AddObject(std::make_unique<Axis>(GetRightYAxis()));
 
         // draw the title
         if (GetTitle().GetText().length())
             {
-            auto title = std::make_shared<GraphItems::Label>(GetTitle());
+            auto title = std::make_unique<GraphItems::Label>(GetTitle());
             if (title->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
                 title->SetAnchoring(Anchoring::TopLeftCorner);
@@ -800,7 +800,7 @@ namespace Wisteria::Graphs
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing());
                 title->SetAnchorPoint(topPt);
                 }
-            AddObject(title);
+            AddObject(std::move(title));
             }
 
         // draw the subtitle
@@ -810,7 +810,7 @@ namespace Wisteria::Graphs
                 GetTitle().GetBoundingBox(dc).GetHeight() +
                 ScaleToScreenAndCanvas(GetTitle().GetLineSpacing()) :
                 0);
-            auto subtitle = std::make_shared<GraphItems::Label>(GetSubtitle());
+            auto subtitle = std::make_unique<GraphItems::Label>(GetSubtitle());
             if (subtitle->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
                 subtitle->SetAnchoring(Anchoring::TopLeftCorner);
@@ -834,13 +834,13 @@ namespace Wisteria::Graphs
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing())+titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
                 }
-            AddObject(subtitle);
+            AddObject(std::move(subtitle));
             }
 
         // draw the caption
         if (GetCaption().GetText().length())
             {
-            auto caption = std::make_shared<GraphItems::Label>(GetCaption());
+            auto caption = std::make_unique<GraphItems::Label>(GetCaption());
             if (caption->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
                 caption->SetAnchoring(Anchoring::BottomLeftCorner);
@@ -864,18 +864,20 @@ namespace Wisteria::Graphs
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing());
                 caption->SetAnchorPoint(bottomPt);
                 }
-            AddObject(caption);
+            AddObject(std::move(caption));
             }
 
         // custom axes
         for (const auto& customAxis : GetCustomAxes())
-            { AddObject(std::make_shared<Axis>(customAxis)); }
+            {
+            AddObject(std::make_unique<Axis>(customAxis));
+            }
 
         // reference lines
         for (const auto& refLine : GetReferenceLines())
             {
             wxCoord axisCoord{ 0 };
-            auto dividerLine = std::make_shared<GraphItems::Lines>(
+            auto dividerLine = std::make_unique<GraphItems::Lines>(
                 wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()), GetScaling());
             if (refLine.m_axisType == AxisType::LeftYAxis ||
                 refLine.m_axisType == AxisType::RightYAxis)
@@ -887,7 +889,7 @@ namespace Wisteria::Graphs
                     dividerLine->AddLine(
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord),
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord));
-                    AddObject(dividerLine);
+                    AddObject(std::move(dividerLine));
                     }
                 }
             else if (refLine.m_axisType == AxisType::BottomXAxis ||
@@ -900,7 +902,7 @@ namespace Wisteria::Graphs
                     dividerLine->AddLine(
                         wxPoint(axisCoord, GetLeftYAxis().GetBottomPoint().y),
                         wxPoint(axisCoord, GetLeftYAxis().GetTopPoint().y));
-                    AddObject(dividerLine);
+                    AddObject(std::move(dividerLine));
                     }
                 }
             }
@@ -909,9 +911,9 @@ namespace Wisteria::Graphs
         for (const auto& refArea : GetReferenceAreas())
             {
             wxCoord axisCoord1{ 0 }, axisCoord2{ 0 };
-            auto dividerLine1 = std::make_shared<GraphItems::Lines>(
+            auto dividerLine1 = std::make_unique<GraphItems::Lines>(
                 wxPen(refArea.m_pen.GetColour(), 1, refArea.m_pen.GetStyle()), GetScaling());
-            auto dividerLine2 = std::make_shared<GraphItems::Lines>(
+            auto dividerLine2 = std::make_unique<GraphItems::Lines>(
                 wxPen(refArea.m_pen.GetColour(), 1, refArea.m_pen.GetStyle()), GetScaling());
             if (refArea.m_axisType == AxisType::LeftYAxis ||
                 refArea.m_axisType == AxisType::RightYAxis)
@@ -928,7 +930,7 @@ namespace Wisteria::Graphs
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2),
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2)
                         };
-                    auto area = std::make_shared<GraphItems::Polygon>(
+                    auto area = std::make_unique<GraphItems::Polygon>(
                         GraphItemInfo().
                         Pen(wxNullPen),
                         boxPoints, std::size(boxPoints));
@@ -953,7 +955,7 @@ namespace Wisteria::Graphs
                                 refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::North));
                         }
-                    AddObject(area);
+                    AddObject(std::move(area));
 
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
                         refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromTopToBottom)
@@ -961,7 +963,7 @@ namespace Wisteria::Graphs
                         dividerLine1->AddLine(
                             wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord1),
                             wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord1));
-                        AddObject(dividerLine1);
+                        AddObject(std::move(dividerLine1));
                         }
 
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
@@ -970,7 +972,7 @@ namespace Wisteria::Graphs
                         dividerLine2->AddLine(
                             wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2),
                             wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2));
-                        AddObject(dividerLine2);
+                        AddObject(std::move(dividerLine2));
                         }
                     }
                 }
@@ -989,7 +991,7 @@ namespace Wisteria::Graphs
                         wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y),
                         wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y)
                         };
-                    auto area = std::make_shared<GraphItems::Polygon>(
+                    auto area = std::make_unique<GraphItems::Polygon>(
                         GraphItemInfo().
                         Pen(wxNullPen),
                         boxPoints, std::size(boxPoints));
@@ -1014,7 +1016,7 @@ namespace Wisteria::Graphs
                                 refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::Left));
                         }
-                    AddObject(area);
+                    AddObject(std::move(area));
 
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
                         refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromLeftToRight)
@@ -1022,7 +1024,7 @@ namespace Wisteria::Graphs
                         dividerLine1->AddLine(
                             wxPoint(axisCoord1, GetLeftYAxis().GetBottomPoint().y),
                             wxPoint(axisCoord1, GetLeftYAxis().GetTopPoint().y));
-                        AddObject(dividerLine1);
+                        AddObject(std::move(dividerLine1));
                         }
 
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
@@ -1031,7 +1033,7 @@ namespace Wisteria::Graphs
                         dividerLine2->AddLine(
                             wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y),
                             wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y));
-                        AddObject(dividerLine2);
+                        AddObject(std::move(dividerLine2));
                         }
                     }
                 }

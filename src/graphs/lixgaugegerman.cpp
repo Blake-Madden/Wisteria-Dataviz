@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
         SetColorScheme(colors != nullptr ? colors :
             Settings::GetDefaultColorScheme());
         SetShapeScheme(shapes != nullptr ? shapes :
-            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+            std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                 Wisteria::Icons::Schemes::StandardShapes()));
 
         if (GetCanvas() != nullptr)
@@ -217,7 +217,7 @@ namespace Wisteria::Graphs
 
         m_jitter.SetJitterWidth(static_cast<size_t>(ptRight-ptLeft));
 
-        auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
+        auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
@@ -252,6 +252,6 @@ namespace Wisteria::Graphs
                     GetShapeScheme()->GetShape(colorIndex)), dc);
                 }
             }
-        AddObject(points);
+        AddObject(std::move(points));
         }
     }

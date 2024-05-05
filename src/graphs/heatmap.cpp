@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
         {
         SetColorScheme(colors != nullptr ?
                            colors :
-                           std::make_shared<ColorScheme>(ColorScheme{ *wxWHITE, *wxBLACK }));
+                           std::make_unique<ColorScheme>(ColorScheme{ *wxWHITE, *wxBLACK }));
 
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);
@@ -359,7 +359,7 @@ namespace Wisteria::Graphs
                                                           m_matrix.size()));
 
                 auto columnHeader =
-                    std::make_shared<GraphItems::Label>(GraphItemInfo(headerString)
+                    std::make_unique<GraphItems::Label>(GraphItemInfo(headerString)
                                                             .Scaling(GetScaling())
                                                             .Pen(wxNullPen)
                                                             .Font(groupHeaderLabelFont)
@@ -367,7 +367,7 @@ namespace Wisteria::Graphs
                 columnHeader->SetFontColor(GetBottomXAxis().GetFontColor());
                 columnHeader->Offset(0, -groupHeaderLabelHeight);
                 columnHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                AddObject(columnHeader);
+                AddObject(std::move(columnHeader));
                 }
             // then the column's cells
             for (const auto& cell : row)
@@ -390,14 +390,14 @@ namespace Wisteria::Graphs
                 pts[3] = wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
                                  drawArea.GetTopLeft().y + (currentRow * boxWidth));
                 // keep scaling at 1 since this is set to a specific size on the plot
-                auto box = std::make_shared<GraphItems::Polygon>(
+                auto box = std::make_unique<GraphItems::Polygon>(
                     GraphItems::GraphItemInfo(cell.m_selectionLabel).Pen(GetPen()).Brush(cellColor),
                     pts, std::size(pts));
                 const wxRect boxRect(pts[0], pts[2]);
 
-                AddObject(box);
+                AddObject(std::move(box));
                 // show the value of the cell, centered on it
-                AddObject(std::make_shared<GraphItems::Label>(
+                AddObject(std::make_unique<GraphItems::Label>(
                     GraphItemInfo(cell.m_valueLabel)
                         .Font(boxLabelFont)
                         .Pen(wxNullPen)
@@ -415,7 +415,7 @@ namespace Wisteria::Graphs
             if (hasGroupLabels)
                 {
                 // add a group label
-                auto groupRowLabel = std::make_shared<GraphItems::Label>(
+                auto groupRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItemInfo(GetGroupColumn()->GetLabelFromID(currentGroupdStart))
                         .Anchoring(Anchoring::TopLeftCorner)
                         .
@@ -428,7 +428,7 @@ namespace Wisteria::Graphs
                         .LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
                 groupRowLabel->SetMinimumUserSizeDIPs(dc.ToDIP(groupLabelWidth),
                                                       dc.ToDIP(boxWidth));
-                AddObject(groupRowLabel);
+                AddObject(std::move(groupRowLabel));
                 }
 
             ++currentGroupdStart;

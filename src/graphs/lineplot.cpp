@@ -222,7 +222,7 @@ namespace Wisteria::Graphs
 
         for (auto& line : m_lines)
             {
-            auto points = std::make_shared<GraphItems::Points2D>(line.GetPen());
+            auto points = std::make_unique<GraphItems::Points2D>(line.GetPen());
             points->SetScaling(GetScaling());
             points->SetDPIScaleFactor(GetDPIScaleFactor());
             points->SetLineStyle(line.GetStyle());
@@ -258,7 +258,7 @@ namespace Wisteria::Graphs
                                     line.m_shape,
                                     &line.m_shapeImg), dc);
                 }
-            AddObject(points);
+            AddObject(std::move(points));
             }
         }
 

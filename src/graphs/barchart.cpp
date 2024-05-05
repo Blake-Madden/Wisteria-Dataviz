@@ -945,7 +945,7 @@ namespace Wisteria::Graphs
                             {
                             wxRect imgSubRect{ barRect };
                             imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY());
-                            auto barImage = std::make_shared<Image>(
+                            auto barImage = std::make_unique<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
@@ -955,12 +955,12 @@ namespace Wisteria::Graphs
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
+                            AddObject(std::move(barImage));
                             }
                         else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
                             {
                             const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
-                            auto barImage = std::make_shared<Image>(
+                            auto barImage = std::make_unique<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
@@ -972,7 +972,7 @@ namespace Wisteria::Graphs
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
+                            AddObject(std::move(barImage));
                             }
                         else if (bar.GetEffect() == BoxEffect::StippleImage &&
                                  GetStippleBrush().IsOk() )
@@ -980,7 +980,7 @@ namespace Wisteria::Graphs
                             assert((bar.GetShape() == BarShape::Rectangle) &&
                                     L"Non-rectangular shapes not currently "
                                     "supported with stipple bar effect.");
-                            auto barImage = std::make_shared<Image>(
+                            auto barImage = std::make_unique<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
@@ -996,7 +996,7 @@ namespace Wisteria::Graphs
                             // Image's native shadow renderer.
                             barImage->SetShadowType(ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
+                            AddObject(std::move(barImage));
                             }
                         else if (bar.GetEffect() == BoxEffect::StippleShape)
                             {
@@ -1022,7 +1022,7 @@ namespace Wisteria::Graphs
                             while (currentXLeft < (lineXStart + barLength))
                                 {
                                 const wxSize stippleImgSize(shapeWidth, barWidth);
-                                auto shape = std::make_shared<Shape>(
+                                auto shape = std::make_unique<Shape>(
                                     GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }.
                                     Pen(wxNullPen).Brush(GetStippleShapeColor()).
                                     AnchorPoint(wxPoint(currentXLeft, lineYStart)).
@@ -1032,14 +1032,14 @@ namespace Wisteria::Graphs
                                 shape->SetBoundingBox(wxRect(wxPoint(currentXLeft, lineYStart),
                                                       wxSize(shapeWidth, barWidth)), dc, GetScaling());
                                 shape->SetClippingRect(barRect);
-                                AddObject(shape);
+                                AddObject(std::move(shape));
                                 currentXLeft += stippleImgSize.GetWidth();
                                 }
                             }
                         // color-filled bar
                         else
                             {
-                            std::shared_ptr<GraphItems::Polygon> box{ nullptr };
+                            std::unique_ptr<GraphItems::Polygon> box{ nullptr };
                             GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
@@ -1062,12 +1062,12 @@ namespace Wisteria::Graphs
                                             barRect.GetRightBottom(),
                                             barRect.GetLeftBottom() // close polygon
                                             };
-                                        AddObject(std::make_shared<GraphItems::Polygon>(
+                                        AddObject(std::make_unique<GraphItems::Polygon>(
                                             GraphItemInfo().Pen(wxNullPen).Brush(GraphItemBase::GetShadowColour()),
                                             shadowPts, std::size(shadowPts)));
                                         }
                                     }
-                                box = std::make_shared<GraphItems::Polygon>(
+                                box = std::make_unique<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(*wxBLACK_PEN).Brush(blockBrush).Scaling(GetScaling()).
                                     Outline(true, true, true, true).
@@ -1088,7 +1088,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[4] = wxPoint(barNeckRect.GetRight(), barRect.GetBottom());
                                 arrowPoints[5] = barNeckRect.GetBottomRight();
                                 arrowPoints[6] = barNeckRect.GetBottomLeft();
-                                box = std::make_shared<GraphItems::Polygon>(
+                                box = std::make_unique<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(*wxBLACK_PEN).Brush(blockBrush).Scaling(GetScaling()).
                                     Outline(true, true, true, true).
@@ -1194,7 +1194,7 @@ namespace Wisteria::Graphs
                                 SetDefaultLegendShape(Icons::IconShape::Square);
                                 }
                             // add the box to the plot item collection
-                            AddObject(box);
+                            AddObject(std::move(box));
                             }
                         }
                     // add the decal (if there is one)
@@ -1204,7 +1204,7 @@ namespace Wisteria::Graphs
                         const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
                         wxRect decalRect(barNeckRect); decalRect.Deflate(leftPadding, 0);
 
-                        auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
+                        auto decalLabel = std::make_unique<GraphItems::Label>(barBlock.GetDecal());
                         decalLabel->GetGraphItemInfo().Pen(wxNullPen).
                             Text(barBlock.ExpandDecalLabel()).
                             Scaling(GetScaling()).
@@ -1400,7 +1400,7 @@ namespace Wisteria::Graphs
                             {
                             wxRect imgSubRect{ barRect };
                             imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY() );
-                            auto barImage = std::make_shared<Image>(
+                            auto barImage = std::make_unique<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
@@ -1410,12 +1410,12 @@ namespace Wisteria::Graphs
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                 ShadowType::RightSideShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
+                            AddObject(std::move(barImage));
                             }
                         else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
                             {
                             const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
-                            auto barImage = std::make_shared<Image>(
+                            auto barImage = std::make_unique<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
@@ -1428,7 +1428,7 @@ namespace Wisteria::Graphs
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
+                            AddObject(std::move(barImage));
                             }
                         else if (bar.GetEffect() == BoxEffect::StippleImage &&
                                  GetStippleBrush().IsOk() )
@@ -1436,7 +1436,7 @@ namespace Wisteria::Graphs
                             assert((bar.GetShape() == BarShape::Rectangle) &&
                                     L"Non-rectangular shapes not currently "
                                     "supported with stipple bar effect.");
-                            auto barImage = std::make_shared<Image>(
+                            auto barImage = std::make_unique<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
@@ -1452,7 +1452,7 @@ namespace Wisteria::Graphs
                             // Image's native shadow renderer.
                             barImage->SetShadowType(ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
+                            AddObject(std::move(barImage));
                             }
                         else if (bar.GetEffect() == BoxEffect::StippleShape)
                             {
@@ -1471,7 +1471,7 @@ namespace Wisteria::Graphs
                             while ((currentYTop + shapeHeight) > lineYEnd)
                                 {
                                 const wxSize stippleImgSize(barWidth, shapeHeight);
-                                auto shape = std::make_shared<Shape>(
+                                auto shape = std::make_unique<Shape>(
                                     GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }.
                                     Pen(wxNullPen).Brush(GetStippleShapeColor()).
                                     AnchorPoint(wxPoint(lineXStart, currentYTop)).
@@ -1482,13 +1482,13 @@ namespace Wisteria::Graphs
                                     wxRect(wxPoint(lineXStart, currentYTop),
                                            wxSize(barWidth, shapeHeight)), dc, GetScaling());
                                 shape->SetClippingRect(barRect);
-                                AddObject(shape);
+                                AddObject(std::move(shape));
                                 currentYTop -= stippleImgSize.GetHeight();
                                 }
                             }
                         else
                             {
-                            std::shared_ptr<GraphItems::Polygon> box{ nullptr };
+                            std::unique_ptr<GraphItems::Polygon> box{ nullptr };
                             GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
@@ -1508,13 +1508,13 @@ namespace Wisteria::Graphs
                                             barRect.GetRightTop() + wxPoint(0, scaledShadowOffset),
                                             barRect.GetRightBottom()
                                             };
-                                        AddObject(std::make_shared<GraphItems::Polygon>(
+                                        AddObject(std::make_unique<GraphItems::Polygon>(
                                             GraphItemInfo().Pen(wxNullPen).Brush(GraphItemBase::GetShadowColour()),
                                             shadowPts, std::size(shadowPts)));
                                         }
                                     }
 
-                                box = std::make_shared<GraphItems::Polygon>(
+                                box = std::make_unique<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(*wxBLACK_PEN).Brush(blockBrush).Scaling(GetScaling()).
                                     Outline(true, true, true, true).
@@ -1537,7 +1537,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[4] = wxPoint(barRect.GetRight(), barNeckRect.GetTop());
                                 arrowPoints[5] = barNeckRect.GetTopRight();
                                 arrowPoints[6] = barNeckRect.GetBottomRight();
-                                box = std::make_shared<GraphItems::Polygon>(
+                                box = std::make_unique<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(*wxBLACK_PEN).Brush(blockBrush).
                                     Outline(true, true, true, true).
@@ -1642,7 +1642,7 @@ namespace Wisteria::Graphs
                                 SetDefaultLegendShape(Icons::IconShape::Square);
                                 }
                             // add the box to the plot item collection
-                            AddObject(box);
+                            AddObject(std::move(box));
                             }
                         }
                     // add the decal (if there is one)
@@ -1652,7 +1652,7 @@ namespace Wisteria::Graphs
                         const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
                         wxRect decalRect(barNeckRect); decalRect.Deflate(leftPadding, 0);
 
-                        auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
+                        auto decalLabel = std::make_unique<GraphItems::Label>(barBlock.GetDecal());
                         decalLabel->GetGraphItemInfo().Pen(wxNullPen).
                             Text(barBlock.ExpandDecalLabel()).
                             Scaling(GetScaling()).
@@ -1757,7 +1757,7 @@ namespace Wisteria::Graphs
                     wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (bBox.GetWidth()/2),
                             middlePointOfBarEnd.y));
 
-                auto barLabel = std::make_shared<GraphItems::Label>(bar.GetLabel());
+                auto barLabel = std::make_unique<GraphItems::Label>(bar.GetLabel());
                 bBox = barLabel->GetBoundingBox(dc);
 
                 if (!Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()))
@@ -1774,7 +1774,7 @@ namespace Wisteria::Graphs
                         }
                     }
 
-                AddObject(barLabel);
+                AddObject(std::move(barLabel));
                 middlePointOfBarEnd.x += bBox.GetWidth() + (labelSpacingFromLine * 2);
                 }
             else if (GetBarOrientation() == Orientation::Vertical &&
@@ -1786,7 +1786,7 @@ namespace Wisteria::Graphs
                             middlePointOfBarEnd.y -
                             (labelSpacingFromLine + (bBox.GetHeight()/2))));
 
-                auto barLabel = std::make_shared<GraphItems::Label>(bar.GetLabel());
+                auto barLabel = std::make_unique<GraphItems::Label>(bar.GetLabel());
                 bBox = barLabel->GetBoundingBox(dc);
 
                 if (!Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()))
@@ -1805,7 +1805,7 @@ namespace Wisteria::Graphs
                         }
                     }
 
-                AddObject(barLabel);
+                AddObject(std::move(barLabel));
                 middlePointOfBarEnd.y -= bBox.GetHeight() + (labelSpacingFromLine * 2);
                 }
 
@@ -1939,18 +1939,16 @@ namespace Wisteria::Graphs
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
                         theBar.SetAxisPosition(barAxisPos);
 
-                        const auto braces = std::make_shared<Shape>(
-                            GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
-                            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
-                            AnchorPoint(wxPoint(
-                                brackStartXPos,
-                                std::min(brackPos1.y, brackPos2.y) - yOffset)).
-                            Anchoring(Anchoring::TopLeftCorner),
+                        AddObject(std::make_unique<Shape>(
+                            GraphItemInfo()
+                                .Pen(wxPen(*wxBLACK, 2))
+                                .Scaling(GetScaling())
+                                .DPIScaling(GetDPIScaleFactor())
+                                .AnchorPoint(wxPoint(brackStartXPos,
+                                                     std::min(brackPos1.y, brackPos2.y) - yOffset))
+                                .Anchoring(Anchoring::TopLeftCorner),
                             Icons::IconShape::RightCurlyBrace,
-                            wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)),
-                            nullptr);
-
-                        AddObject(braces);
+                            wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)), nullptr));
                         drawBar(theBar, false, 0);
                         // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
@@ -2022,18 +2020,17 @@ namespace Wisteria::Graphs
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
                         theBar.SetAxisPosition(barAxisPos);
 
-                        const auto braces = std::make_shared<Shape>(
-                            GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
-                            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
-                            AnchorPoint(wxPoint(
-                                std::min(brackPos1.x, brackPos2.x) - xOffset,
-                                brackStartYPos - ScaleToScreenAndCanvas(bracesWidth))).
-                            Anchoring(Anchoring::TopLeftCorner),
+                        AddObject(std::make_unique<Shape>(
+                            GraphItemInfo()
+                                .Pen(wxPen(*wxBLACK, 2))
+                                .Scaling(GetScaling())
+                                .DPIScaling(GetDPIScaleFactor())
+                                .AnchorPoint(
+                                    wxPoint(std::min(brackPos1.x, brackPos2.x) - xOffset,
+                                            brackStartYPos - ScaleToScreenAndCanvas(bracesWidth)))
+                                .Anchoring(Anchoring::TopLeftCorner),
                             Icons::IconShape::TopCurlyBrace,
-                            wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth),
-                            nullptr);
-
-                        AddObject(braces);
+                            wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth), nullptr));
                         drawBar(theBar, false, 0);
                         // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)

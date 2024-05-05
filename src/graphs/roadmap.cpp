@@ -69,17 +69,19 @@ namespace Wisteria::Graphs
 
         wxCoord xPt{ 0 }, yPt{ 0 };
         std::vector<wxPoint> pts;
-        std::vector<std::shared_ptr<Point2D>> locations;
-        std::vector<std::shared_ptr<Label>> locationLabels;
+        std::vector<std::unique_ptr<Point2D>> locations;
+        std::vector<std::unique_ptr<Label>> locationLabels;
         auto labelConnectionLines =
-            std::make_shared<Lines>(
+            std::make_unique<Lines>(
                 wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), 1,
                       wxPenStyle::wxPENSTYLE_LONG_DASH),
                 GetScaling());
 
         // start of the road (bottom)
         if (GetBottomXAxis().GetPhysicalCoordinate(middleX, xPt))
-            { pts.push_back({ xPt, GetBoundingBox(dc).GetBottom() }); }
+            {
+            pts.push_back({ xPt, GetBoundingBox(dc).GetBottom() });
+            }
 
         // the curves in the road
         for (size_t i = 0; i < GetRoadStops().size(); ++i)
@@ -90,10 +92,12 @@ namespace Wisteria::Graphs
                                  (GetRoadStops()[i].GetValue() >= 0 ?
                                      rightRoadRange : leftRoadRange)), xPt) &&
                 GetLeftYAxis().GetPhysicalCoordinate(i + 1, yPt))
-                { pts.push_back({ xPt, yPt }); }
+                {
+                pts.push_back({ xPt, yPt });
+                }
 
             // the location marker:
-            auto pt = std::make_shared<Point2D>(
+            auto pt = std::make_unique<Point2D>(
                 GraphItemInfo().Brush((GetRoadStops()[i].GetValue() >= 0 ?
                     GetPositiveIcon().second :
                     GetNegativeIcon().second)).
@@ -104,7 +108,6 @@ namespace Wisteria::Graphs
                              std::make_pair(0.0, GetMagnitude()), pointSizesRange),
                 (GetRoadStops()[i].GetValue() >= 0 ?
                     GetPositiveIcon().first : GetNegativeIcon().first));
-            locations.push_back(pt);
 
             const wxString markerText =
                 (m_markerLabelDisplay == MarkerLabelDisplay::NameAndValue) ?
@@ -119,7 +122,7 @@ namespace Wisteria::Graphs
                             wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                 GetRoadStops()[i].GetName();
 
-            auto markerLabel = std::make_shared<Label>(
+            auto markerLabel = std::make_unique<Label>(
                 GraphItemInfo(GraphItemInfo(markerText).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
@@ -147,57 +150,67 @@ namespace Wisteria::Graphs
                                               pt->GetAnchorPoint());
                 }
             markerLabel->GetFont().MakeSmaller();
+            locations.push_back(std::move(pt));
             locationLabels.push_back(std::move(markerLabel));
             }
 
         // end of the road (top)
         if (GetBottomXAxis().GetPhysicalCoordinate(middleX, xPt))
-            { pts.push_back({ xPt, GetBoundingBox(dc).GetTop() }); }
+            {
+            pts.push_back({ xPt, GetBoundingBox(dc).GetTop() });
+            }
 
         // the road pavement
         assert(m_roadPen.IsOk() && L"Valid road pen needed to draw road!");
         wxPen scaledRoadPen = m_roadPen;
         scaledRoadPen.SetWidth(ScaleToScreenAndCanvas(scaledRoadPen.GetWidth()));
-        auto pavement = std::make_shared<GraphItems::Points2D>(scaledRoadPen);
-        pavement->SetDPIScaleFactor(GetDPIScaleFactor());
-        pavement->GetClippingRect() = GetPlotAreaBoundingBox();
-        pavement->SetLineStyle(LineStyle::Spline);
-        for (const auto& pt : pts)
+
             {
-            pavement->AddPoint(
-                Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).
-                    DPIScaling(GetDPIScaleFactor()),
-                    0, IconShape::Blank), dc);
+            auto pavement = std::make_unique<GraphItems::Points2D>(scaledRoadPen);
+            pavement->SetDPIScaleFactor(GetDPIScaleFactor());
+            pavement->GetClippingRect() = GetPlotAreaBoundingBox();
+            pavement->SetLineStyle(LineStyle::Spline);
+            for (const auto& pt : pts)
+                {
+                pavement->AddPoint(
+                    Point2D(
+                        GraphItemInfo().AnchorPoint({ pt.x, pt.y }).DPIScaling(GetDPIScaleFactor()),
+                        0, IconShape::Blank),
+                    dc);
+                }
+            AddObject(std::move(pavement));
             }
-        AddObject(pavement);
 
         // the lane separator, which is a tenth as wide as the road
         if (GetLaneSeparatorStyle() != LaneSeparatorStyle::NoDisplay &&
             m_laneSeparatorPen.IsOk())
             {
             m_laneSeparatorPen.SetWidth(
-                pavement->GetPen().GetWidth() /
+                scaledRoadPen.GetWidth() /
                 (m_laneSeparatorStyle == LaneSeparatorStyle::DoubleLine ? 5 : 10));
-            auto laneSep = std::make_shared<GraphItems::Points2D>(m_laneSeparatorPen);
-            laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
-            laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
-            laneSep->SetLineStyle(LineStyle::Spline);
-            for (const auto& pt : pts)
+
                 {
-                laneSep->AddPoint(
-                    Point2D(GraphItemInfo().
-                        AnchorPoint(pt).
-                        DPIScaling(GetDPIScaleFactor()),
-                        0, IconShape::Blank), dc);
+                auto laneSep = std::make_unique<GraphItems::Points2D>(m_laneSeparatorPen);
+                laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
+                laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
+                laneSep->SetLineStyle(LineStyle::Spline);
+                for (const auto& pt : pts)
+                    {
+                    laneSep->AddPoint(
+                        Point2D(GraphItemInfo().AnchorPoint(pt).DPIScaling(GetDPIScaleFactor()), 0,
+                                IconShape::Blank),
+                        dc);
+                    }
+                AddObject(std::move(laneSep));
                 }
-            AddObject(laneSep);
+
             // if a double line, then draw a road colored line down the middle
             // of the lane separator to make it look like two lines
             if (m_laneSeparatorStyle == LaneSeparatorStyle::DoubleLine)
                 {
                 wxPen lineSepPen = wxPen(m_roadPen.GetColour(),
                                          m_laneSeparatorPen.GetWidth() * math_constants::third);
-                auto laneSepRoadLine = std::make_shared<GraphItems::Points2D>(lineSepPen);
+                auto laneSepRoadLine = std::make_unique<GraphItems::Points2D>(lineSepPen);
                 laneSepRoadLine->SetDPIScaleFactor(GetDPIScaleFactor());
                 laneSepRoadLine->GetClippingRect() = GetPlotAreaBoundingBox();
                 laneSepRoadLine->SetLineStyle(LineStyle::Spline);
@@ -209,11 +222,11 @@ namespace Wisteria::Graphs
                             DPIScaling(GetDPIScaleFactor()),
                             0, IconShape::Blank), dc);
                     }
-                AddObject(laneSepRoadLine);
+                AddObject(std::move(laneSepRoadLine));
                 }
             }
 
-        AddObject(labelConnectionLines);
+        AddObject(std::move(labelConnectionLines));
         // adjust the labels to fit and make them use a uniform scale
         auto smallestLabelScaling = GetScaling();
         auto leftTextArea = GetPlotAreaBoundingBox();
@@ -252,12 +265,14 @@ namespace Wisteria::Graphs
         for (auto& locationLabel : locationLabels)
             {
             locationLabel->SetScaling(smallestLabelScaling);
-            AddObject(locationLabel);
+            AddObject(std::move(locationLabel));
             }
         // add the location markers on top, going forward from the horizon to the starting point
         std::reverse(locations.begin(), locations.end());
         for (auto& location : locations)
-            { AddObject(location); }
+            {
+            AddObject(std::move(location));
+            }
         }
 
     //----------------------------------------------------------------
