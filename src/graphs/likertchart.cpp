@@ -933,7 +933,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LikertChart::AddSurveyQuestion(const LikertThreePointSurveyQuestion& question)
         {
-        m_threePointQuestions.emplace_back(question);
+        m_threePointQuestions.push_back(question);
         m_negativeBlockSize = std::max(m_negativeBlockSize,
             next_interval(question.m_negativeRate, 2));
         m_positiveBlockSize = std::max(m_positiveBlockSize,
@@ -949,7 +949,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LikertChart::AddSurveyQuestion(const LikertCategorizedThreePointSurveyQuestion& question)
         {
-        m_threePointCategorizedQuestions.emplace_back(question);
+        m_threePointCategorizedQuestions.push_back(question);
         for (const auto& category : question.m_threePointCategories)
             {
             m_negativeBlockSize = std::max(m_negativeBlockSize,
@@ -968,7 +968,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LikertChart::AddSurveyQuestion(const LikertFivePointSurveyQuestion& question)
         {
-        m_fivePointQuestions.emplace_back(question);
+        m_fivePointQuestions.push_back(question);
         m_negativeBlockSize = std::max(m_negativeBlockSize,
             next_interval(question.m_negative1Rate+question.m_negative2Rate, 2));
         m_positiveBlockSize = std::max(m_positiveBlockSize,
@@ -984,7 +984,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LikertChart::AddSurveyQuestion(const LikertCategorizedFivePointSurveyQuestion& question)
         {
-        m_fivePointCategorizedQuestions.emplace_back(question);
+        m_fivePointCategorizedQuestions.push_back(question);
         for (const auto& category : question.m_fivePointCategories)
             {
             m_negativeBlockSize = std::max(m_negativeBlockSize,
@@ -1003,7 +1003,7 @@ namespace Wisteria::Graphs
      //----------------------------------------------------------------
     void LikertChart::AddSurveyQuestion(const LikertSevenPointSurveyQuestion& question)
         {
-        m_sevenPointQuestions.emplace_back(question);
+        m_sevenPointQuestions.push_back(question);
         m_negativeBlockSize = std::max(m_negativeBlockSize,
             next_interval(question.m_negative1Rate+question.m_negative2Rate+question.m_negative3Rate, 2));
         m_positiveBlockSize = std::max(m_positiveBlockSize,
@@ -1019,7 +1019,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LikertChart::AddSurveyQuestion(const LikertCategorizedSevenPointSurveyQuestion& question)
         {
-        m_sevenPointCategorizedQuestions.emplace_back(question);
+        m_sevenPointCategorizedQuestions.push_back(question);
         for (const auto& category : question.m_sevenPointCategories)
             {
             m_negativeBlockSize = std::max(m_negativeBlockSize,
@@ -2188,7 +2188,7 @@ namespace Wisteria::Graphs
             for (const auto& question : m_threePointCategorizedQuestions)
                 {
                 accumulated += question.m_threePointCategories.size();
-                fullDividerLines.emplace_back(accumulated-1);
+                fullDividerLines.push_back(accumulated - 1);
                 }
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized ||
@@ -2198,7 +2198,7 @@ namespace Wisteria::Graphs
             for (const auto& question : m_fivePointCategorizedQuestions)
                 {
                 accumulated += question.m_fivePointCategories.size();
-                fullDividerLines.emplace_back(accumulated-1);
+                fullDividerLines.push_back(accumulated - 1);
                 }
             }
         else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized ||
@@ -2208,7 +2208,7 @@ namespace Wisteria::Graphs
             for (const auto& question : m_sevenPointCategorizedQuestions)
                 {
                 accumulated += question.m_sevenPointCategories.size();
-                fullDividerLines.emplace_back(accumulated-1);
+                fullDividerLines.push_back(accumulated - 1);
                 }
             }
 

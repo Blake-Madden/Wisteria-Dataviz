@@ -269,10 +269,10 @@ namespace Wisteria::Graphs
             DPIScaling(GetDPIScaleFactor()));
 
         wxString legendText = GetPositiveLegendLabel() + L"\n" + GetNegativeLegendLabel();
-        legend->GetLegendIcons().emplace_back(
+        legend->GetLegendIcons().push_back(
                 LegendIcon(GetPositiveIcon().first, *wxBLACK,
                     GetPositiveIcon().second));
-        legend->GetLegendIcons().emplace_back(
+        legend->GetLegendIcons().push_back(
                 LegendIcon(GetNegativeIcon().first, *wxBLACK,
                     GetNegativeIcon().second));
 

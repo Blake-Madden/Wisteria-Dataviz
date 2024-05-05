@@ -569,7 +569,7 @@ namespace Wisteria::Graphs
                     Normally, it's preferred to let AddBar() handle this.*/
             void AddBlock(const BarBlock& block) noexcept
                 {
-                m_blocks.emplace_back(block);
+                m_blocks.push_back(block);
                 m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(),
                     0.0f,
                     [](const auto initVal, const auto& bBlock)

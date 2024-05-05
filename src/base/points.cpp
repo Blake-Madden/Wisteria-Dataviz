@@ -263,14 +263,14 @@ namespace Wisteria::GraphItems
                         if (!startPt.IsFullySpecified())
                             {
                             startPt = m_points[i].GetAnchorPoint();
-                            currentSegment.emplace_back(startPt);
+                            currentSegment.push_back(startPt);
                             continue;
                             }
                         // or we are at the end of the points and there is a previous
                         // valid starting point in the segment
                         else if (i == m_points.size() - 1)
                             {
-                            currentSegment.emplace_back(m_points[i].GetAnchorPoint());
+                            currentSegment.push_back(m_points[i].GetAnchorPoint());
                             if (currentSegment.size() > 1)
                                 {
                                 dc.DrawSpline(currentSegment.size(), &currentSegment.front());
@@ -280,7 +280,7 @@ namespace Wisteria::GraphItems
                         // and the end
                         else
                             {
-                            currentSegment.emplace_back(m_points[i].GetAnchorPoint());
+                            currentSegment.push_back(m_points[i].GetAnchorPoint());
                             }
                         }
                     // encountered invalid point, so draw the current segment and then reset

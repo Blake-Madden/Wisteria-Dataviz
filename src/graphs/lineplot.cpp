@@ -298,13 +298,13 @@ namespace Wisteria::Graphs
             legendText.append(currentLabel.c_str()).append(L"\n");
             if (showingMarkers)
                 {
-                legend->GetLegendIcons().emplace_back(
+                legend->GetLegendIcons().push_back(
                     LegendIcon(line.m_shape, *wxBLACK,
                         line.GetPen().GetColour()));
                 }
             else
                 {
-                legend->GetLegendIcons().emplace_back(
+                legend->GetLegendIcons().push_back(
                     LegendIcon(IconShape::HorizontalLine,
                         line.GetPen(),
                         line.GetPen().GetColour()));

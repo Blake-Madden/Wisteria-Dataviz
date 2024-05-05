@@ -519,7 +519,7 @@ namespace Wisteria
                 PageVerticalAlignment::TopAligned :
                 PageVerticalAlignment::BottomAligned);
             leftMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
-            GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return leftMarginWidth;
         }
@@ -546,7 +546,7 @@ namespace Wisteria
                 PageVerticalAlignment::BottomAligned);
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
-            GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return rightMarginWidth;
         }
@@ -570,7 +570,7 @@ namespace Wisteria
                 PageHorizontalAlignment::RightAligned :
                 PageHorizontalAlignment::LeftAligned);
             topMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return topMarginHeight;
         }
@@ -596,7 +596,7 @@ namespace Wisteria
                 PageHorizontalAlignment::LeftAligned);
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             bottomMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
+            GetTitles().push_back(std::make_shared<GraphItems::Label>(title));
             }
         return bottomMarginHeight;
         }
@@ -871,8 +871,8 @@ namespace Wisteria
                         if (objectsPos != nullptr &&
                             !objectsPos->GetContentRect().IsEmpty())
                             {
-                            topPoints.emplace_back(objectsPos->GetContentRect().GetTop());
-                            bottomPoints.emplace_back(objectsPos->GetContentRect().GetBottom());
+                            topPoints.push_back(objectsPos->GetContentRect().GetTop());
+                            bottomPoints.push_back(objectsPos->GetContentRect().GetBottom());
                             }
                         }
                     if (topPoints.size() && bottomPoints.size())
@@ -921,8 +921,8 @@ namespace Wisteria
                         if (objectPos != nullptr &&
                             !objectPos->GetContentRect().IsEmpty())
                             {
-                            leftPoints.emplace_back(objectPos->GetContentRect().GetLeft());
-                            rightPoints.emplace_back(objectPos->GetContentRect().GetRight());
+                            leftPoints.push_back(objectPos->GetContentRect().GetLeft());
+                            rightPoints.push_back(objectPos->GetContentRect().GetRight());
                             }
                         }
                     // the grid is jagged, so stop aligning the columns

@@ -122,7 +122,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             GetColorScheme() ?
             wxBrush(GetColorScheme()->GetColor(schemeIndex)) :
             *wxTRANSPARENT_BRUSH);
-        legend->GetLegendIcons().emplace_back(
+        legend->GetLegendIcons().push_back(
                 LegendIcon((GetShapeScheme() ?
                             GetShapeScheme()->GetShape(schemeIndex) :
                             m_defaultLegendShape),
@@ -151,7 +151,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
                 GetColorScheme() ?
                 wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
                 *wxTRANSPARENT_BRUSH);
-            legend->GetLegendIcons().emplace_back(
+            legend->GetLegendIcons().push_back(
                     LegendIcon((GetShapeScheme() ?
                                 GetShapeScheme()->GetShape(mdSchemeIndex) :
                         m_defaultLegendShape),

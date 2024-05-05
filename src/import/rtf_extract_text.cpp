@@ -438,7 +438,7 @@ namespace lily_of_the_valley
                         if (lastSection == std::string::npos)
                             { break; }
  
-                        m_font_table.emplace_back(fontText.substr(++lastSection));
+                        m_font_table.push_back(fontText.substr(++lastSection));
 
                         currentChar = std::strchr(endOfFont, '{');
                         }

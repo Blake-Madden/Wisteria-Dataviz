@@ -578,7 +578,7 @@ namespace lily_of_the_valley
                 log_message(L"DOC parser: invalid property offset. File may be corrupt.");
                 continue;
                 }
-            sectorStarts.emplace_back(
+            sectorStarts.push_back(
                 static_cast<size_t>(read_int(propBuffer.data(), 16)));
             }
                                 
@@ -1095,7 +1095,7 @@ namespace lily_of_the_valley
                     m_short_sector_size : m_sector_size)) ))
                 { break; }
 
-            cfbObj->m_sectors.emplace_back(currentSector);
+            cfbObj->m_sectors.push_back(currentSector);
 
             // read next sector value from associated buffer
             const auto nextSector =

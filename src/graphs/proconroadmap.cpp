@@ -124,7 +124,7 @@ namespace Wisteria::Graphs
         // add the influencers as road stops
         for (const auto& influencer : influencers.get_data())
             {
-            GetRoadStops().emplace_back(
+            GetRoadStops().push_back(
                 RoadStopInfo(influencer.first).
                 Value(influencer.second.second));
             }

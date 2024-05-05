@@ -126,13 +126,13 @@ namespace Wisteria::Data
             if (IdColumnsIters.m_IdColumn != nullptr)
                 {
                 currentKey = IdColumnsIters.m_IdColumn->GetValue(i);
-                idColumns.emplace_back(std::make_pair(IdColumnsIters.m_IdColumn->GetName(),
+                idColumns.push_back(std::make_pair(IdColumnsIters.m_IdColumn->GetName(),
                                                       IdColumnsIters.m_IdColumn->GetValue(i)));
                 }
             for (const auto& catCol : IdColumnsIters.m_catColumns)
                 {
                 currentKey += catCol->GetValueAsLabel(i);
-                idColumns.emplace_back(std::make_pair(catCol->GetName(),
+                idColumns.push_back(std::make_pair(catCol->GetName(),
                                                       // ID, not the string, to be optimal
                                                       catCol->GetValue(i)));
                 }

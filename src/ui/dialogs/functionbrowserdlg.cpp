@@ -96,7 +96,7 @@ namespace Wisteria::UI
                             "<span style=\"color:blue\"><a href=\"%s\">%s</a></span></span></tt>.",
                             _(L"Returns the object as a "), retVal, retVal);
                         }
-                    m_currentFunctionsAndDescriptions.emplace_back(
+                    m_currentFunctionsAndDescriptions.push_back(
                         FormatFunctionSignature(currentFunctionSignature),
                         currentDescriptionAndRetVal);
                     }

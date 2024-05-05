@@ -810,7 +810,9 @@ namespace Wisteria
             if (funcName.CmpNoCase(L"everything") == 0)
                 {
                 if (dataset->GetIdColumn().GetName().length())
-                    { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                    {
+                    columns.push_back(dataset->GetIdColumn().GetName());
+                    }
                 const auto catCols{ dataset->GetCategoricalColumnNames() };
                 const auto contCols{ dataset->GetContinuousColumnNames() };
                 const auto dateCols{ dataset->GetDateColumnNames() };
@@ -832,21 +834,29 @@ namespace Wisteria
                         {
                         // get columns that contain the string
                         if (columnRE.Matches(dataset->GetIdColumn().GetName()) )
-                            { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                            {
+                            columns.push_back(dataset->GetIdColumn().GetName());
+                            }
                         for (const auto& col : dataset->GetCategoricalColumns())
                             {
                             if (columnRE.Matches(col.GetName()))
-                                { columns.emplace_back(col.GetName()); }
+                                {
+                                columns.push_back(col.GetName());
+                                }
                             }
                         for (const auto& col : dataset->GetContinuousColumns())
                             {
                             if (columnRE.Matches(col.GetName()))
-                                { columns.emplace_back(col.GetName()); }
+                                {
+                                columns.push_back(col.GetName());
+                                }
                             }
                         for (const auto& col : dataset->GetDateColumns())
                             {
                             if (columnRE.Matches(col.GetName()))
-                                { columns.emplace_back(col.GetName()); }
+                                {
+                                columns.push_back(col.GetName());
+                                }
                             }
                         return columns;
                         }
@@ -861,21 +871,29 @@ namespace Wisteria
                         // get columns that DON'T contain the string
                         if (dataset->GetIdColumn().GetName().length() &&
                             !columnRE.Matches(dataset->GetIdColumn().GetName()) )
-                            { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                            {
+                            columns.push_back(dataset->GetIdColumn().GetName());
+                            }
                         for (const auto& col : dataset->GetCategoricalColumns())
                             {
                             if (!columnRE.Matches(col.GetName()))
-                                { columns.emplace_back(col.GetName()); }
+                                {
+                                columns.push_back(col.GetName());
+                                }
                             }
                         for (const auto& col : dataset->GetContinuousColumns())
                             {
                             if (!columnRE.Matches(col.GetName()))
-                                { columns.emplace_back(col.GetName()); }
+                                {
+                                columns.push_back(col.GetName());
+                                }
                             }
                         for (const auto& col : dataset->GetDateColumns())
                             {
                             if (!columnRE.Matches(col.GetName()))
-                                { columns.emplace_back(col.GetName()); }
+                                {
+                                columns.push_back(col.GetName());
+                                }
                             }
                         return columns;
                         }
@@ -1655,7 +1673,9 @@ namespace Wisteria
                                 _(L"Subset missing filters.").ToUTF8());
                             }
                         for (const auto& filternode : filterAndNodes)
-                            { cf.emplace_back(loadColumnFilter(filternode)); }
+                            {
+                            cf.push_back(loadColumnFilter(filternode));
+                            }
 
                         subsettedDataset = dataSubsetter.SubsetAnd(parentToSubset, cf);
                         }
@@ -1670,7 +1690,9 @@ namespace Wisteria
                                 _(L"Subset missing filters.").ToUTF8());
                             }
                         for (const auto& filternode : filterOrNodes)
-                            { cf.emplace_back(loadColumnFilter(filternode)); }
+                            {
+                            cf.push_back(loadColumnFilter(filternode));
+                            }
 
                         subsettedDataset = dataSubsetter.SubsetOr(parentToSubset, cf);
                         }
@@ -4661,7 +4683,7 @@ namespace Wisteria
                 }
             for (const auto& color : colorValues)
                 {
-                colors.emplace_back(ConvertColor(color));
+                colors.push_back(ConvertColor(color));
                 }
             return std::make_shared<Colors::Schemes::ColorScheme>(colors);
             }
@@ -4733,7 +4755,9 @@ namespace Wisteria
                 {
                 const auto iconValue = ReportEnumConvert::ConvertIcon(icon);
                 if (iconValue.has_value())
-                    { icons.emplace_back(iconValue.value()); }
+                    {
+                    icons.push_back(iconValue.value());
+                    }
                 }
             if (icons.size() == 0)
                 { return nullptr; }
@@ -5045,7 +5069,9 @@ namespace Wisteria
             std::vector<wxBitmapBundle> images;
             const auto imgNodes = imageSchemeNode->GetValueArrayObject();
             for (const auto& imgNode : imgNodes)
-                { images.emplace_back(LoadImageFile(imgNode)); }
+                {
+                images.push_back(LoadImageFile(imgNode));
+                }
             graph->SetImageScheme(
                 std::make_shared<Images::Schemes::ImageScheme>(std::move(images)));
             }
@@ -5141,7 +5167,7 @@ namespace Wisteria
                                                            interestPoint->GetProperty(L"y"));
                         if (xPos.has_value() && yPos.has_value())
                             {
-                            interestPointPostions.emplace_back(
+                            interestPointPostions.push_back(
                                 wxPoint(xPos.value(), yPos.value()));
                             }
                         }

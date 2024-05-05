@@ -390,7 +390,7 @@ namespace Wisteria::Graphs
                         {
                         std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
-                        bins[0].emplace_back(
+                        bins[0].push_back(
                             comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
                                 valuesCounter(1.0, theSet)));
                         }
@@ -412,7 +412,7 @@ namespace Wisteria::Graphs
                         {
                         std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
-                        bins[j].emplace_back(
+                        bins[j].push_back(
                             comparable_first_pair((IsUsingGrouping() ?
                                 GetGroupColumn()->GetValue(i) :
                                 static_cast<Data::GroupIdType>(0)), valuesCounter(1, theSet)));

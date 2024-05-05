@@ -792,7 +792,7 @@ namespace Wisteria::Graphs
                 GetCell(cell.m_row, cell.m_column).SetBackgroundColor(cellNote.m_bgColor);
                 }
             }
-        m_cellAnnotations.emplace_back(cellNote);
+        m_cellAnnotations.push_back(cellNote);
         }
 
     //----------------------------------------------------------------
@@ -817,7 +817,7 @@ namespace Wisteria::Graphs
                 GetCell(cell.m_row, cell.m_column).SetBackgroundColor(cellNote.m_bgColor);
                 }
             }
-        m_cellAnnotations.emplace_back(cellNote);
+        m_cellAnnotations.push_back(cellNote);
         }
 
     //----------------------------------------------------------------

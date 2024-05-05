@@ -12,47 +12,63 @@
 #ifndef __TAG_FILTER_H__
 #define __TAG_FILTER_H__
 
-#include <vector>
-#include <map>
 #include "extract_text.h"
+#include <map>
+#include <vector>
 
 namespace lily_of_the_valley
     {
     /// @brief Tag pairs to mark text to be excluded.
     class text_filter_tag
         {
-    public:
+      public:
         /** @brief Constructor.
             @param start_tag The opening tag.
             @param end_tag The closing tag.*/
-        text_filter_tag(const std::wstring& start_tag, const std::wstring& end_tag) :
-            m_start_tag(start_tag), m_end_tag(end_tag),
-            m_tags_identical(m_start_tag == m_end_tag)
-            {}
+        text_filter_tag(const std::wstring& start_tag, const std::wstring& end_tag)
+            : m_start_tag(start_tag), m_end_tag(end_tag), m_tags_identical(m_start_tag == m_end_tag)
+            {
+            }
+
         /// @private
-        text_filter_tag(std::wstring&& start_tag, std::wstring&& end_tag) :
-            m_start_tag(std::move(start_tag)), m_end_tag(std::move(end_tag)),
-            m_tags_identical(m_start_tag == m_end_tag)
-            {}
+        text_filter_tag(std::wstring&& start_tag, std::wstring&& end_tag)
+            : m_start_tag(std::move(start_tag)), m_end_tag(std::move(end_tag)),
+              m_tags_identical(m_start_tag == m_end_tag)
+            {
+            }
+
         /// @brief Determines if a block of text is an opening tag.
         /// @param text The block of text to review.
         /// @returns @c true if @c text is the start of a filtered section.
         [[nodiscard]]
-        bool operator==(const wchar_t* text) const noexcept
-            { return std::wcsncmp(m_start_tag.c_str(), text, m_start_tag.length()) == 0; }
+        bool
+        operator==(const wchar_t* text) const noexcept
+            {
+            return std::wcsncmp(m_start_tag.c_str(), text, m_start_tag.length()) == 0;
+            }
+
         /// @returns The opening tag.
         [[nodiscard]]
         const std::wstring& get_start_tag() const noexcept
-            { return m_start_tag; }
+            {
+            return m_start_tag;
+            }
+
         /// @returns The closing tag.
         [[nodiscard]]
         const std::wstring& get_end_tag() const noexcept
-            { return m_end_tag; }
+            {
+            return m_end_tag;
+            }
+
         /// @returns @c true if the opening and closing tags are the same.
         [[nodiscard]]
         bool tags_are_identical() const noexcept
-            { return m_tags_identical; }
-    private:
+            {
+            return m_tags_identical;
+            }
+
+      private:
         std::wstring m_start_tag;
         std::wstring m_end_tag;
         bool m_tags_identical{ false };
@@ -61,7 +77,7 @@ namespace lily_of_the_valley
     /// @brief Filters tagged sections out of a block of text.
     class tag_filter : public extract_text
         {
-    public:
+      public:
         /** @brief Filters blocks of text from a text stream based on pairs of tags
                 which denote the blocks to ignore.
             @param text The text stream to filter.
@@ -69,7 +85,8 @@ namespace lily_of_the_valley
             @returns The text stream, with any sections within the filter tags removed.
             @sa add_filter_tag().*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* text, const size_t length)
+        const wchar_t*
+        operator()(const wchar_t* text, const size_t length)
             {
             if (text == nullptr || length == 0)
                 {
@@ -95,20 +112,23 @@ namespace lily_of_the_valley
                     sectionsToIncludeMarkers.insert(
                         std::make_pair(currentInclusionStart, i - currentInclusionStart));
                     // find the end tag for the current exclusion block
-                    const wchar_t* const endTag = exclusion_tag_pos->tags_are_identical() ?
-                        std::wcsstr(text + i + exclusion_tag_pos->get_start_tag().length(),
-                        exclusion_tag_pos->get_end_tag().c_str()) :
-                        // start/end tags are different, so overlapping tags are
-                        // OK here and should be checked for
-                        string_util::find_matching_close_tag(
-                            text + i + exclusion_tag_pos->get_start_tag().length(),
-                        exclusion_tag_pos->get_start_tag().c_str(),
-                        exclusion_tag_pos->get_end_tag().c_str());
+                    const wchar_t* const endTag =
+                        exclusion_tag_pos->tags_are_identical() ?
+                            std::wcsstr(text + i + exclusion_tag_pos->get_start_tag().length(),
+                                        exclusion_tag_pos->get_end_tag().c_str()) :
+                            // start/end tags are different, so overlapping tags are
+                            // OK here and should be checked for
+                            string_util::find_matching_close_tag(
+                                text + i + exclusion_tag_pos->get_start_tag().length(),
+                                exclusion_tag_pos->get_start_tag().c_str(),
+                                exclusion_tag_pos->get_end_tag().c_str());
                     // if not found then exclude the rest of the text;
                     // otherwise, move to the end of that tag and start the next
                     // inclusion block from there.
                     if (endTag == nullptr || endTag >= text + length)
-                        { break; }
+                        {
+                        break;
+                        }
                     else
                         {
                         currentInclusionStart = i =
@@ -116,7 +136,9 @@ namespace lily_of_the_valley
                         }
                     }
                 else
-                    { ++i; }
+                    {
+                    ++i;
+                    }
                 }
             // add the rest of the text block to be included
             sectionsToIncludeMarkers.insert(
@@ -124,26 +146,31 @@ namespace lily_of_the_valley
 
             // copy the included text blocks into the buffer
             for (auto inclusionsPos = sectionsToIncludeMarkers.cbegin();
-                inclusionsPos != sectionsToIncludeMarkers.cend();
-                ++inclusionsPos)
-                { add_characters(text+inclusionsPos->first, inclusionsPos->second); }
+                 inclusionsPos != sectionsToIncludeMarkers.cend(); ++inclusionsPos)
+                {
+                add_characters(text + inclusionsPos->first, inclusionsPos->second);
+                }
 
             return get_filtered_text();
             }
+
         /// @brief Adds a set of filtering tags.
         /// @param tags The pair of tags to use for blocking out sections of text.
         void add_filter_tag(const text_filter_tag& tags) noexcept
-            { m_text_filter_tags.push_back(tags); }
+            {
+            m_text_filter_tags.push_back(tags);
+            }
+
         /// @private
-        void add_filter_tag(text_filter_tag&& tags) noexcept
-            { m_text_filter_tags.emplace_back(tags); }
+        void add_filter_tag(text_filter_tag&& tags) noexcept { m_text_filter_tags.push_back(tags); }
+
         /// @brief Removes the filter tags.
-        void clear_tags() noexcept
-            { m_text_filter_tags.clear(); }
-    private:
+        void clear_tags() noexcept { m_text_filter_tags.clear(); }
+
+      private:
         std::vector<text_filter_tag> m_text_filter_tags;
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 

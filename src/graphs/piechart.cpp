@@ -259,37 +259,37 @@ namespace Wisteria::GraphItems
         // in case the rect doesn't start at (0, 0), offset the point
         startSweep.first += m_pieArea.GetTopLeft().x;
         startSweep.second += m_pieArea.GetTopLeft().y;
-        points.emplace_back(Polygon::PairToPoint(startSweep));
+        points.push_back(Polygon::PairToPoint(startSweep));
 
         auto middleSweep1 = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
             ((m_endAngle-m_startAngle) * math_constants::quarter) + m_startAngle);
         middleSweep1.first += m_pieArea.GetTopLeft().x;
         middleSweep1.second += m_pieArea.GetTopLeft().y;
-        points.emplace_back(Polygon::PairToPoint(middleSweep1));
+        points.push_back(Polygon::PairToPoint(middleSweep1));
 
         auto middleSweep2 = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
             ((m_endAngle-m_startAngle) * math_constants::half) + m_startAngle);
         middleSweep2.first += m_pieArea.GetTopLeft().x;
         middleSweep2.second += m_pieArea.GetTopLeft().y;
-        points.emplace_back(Polygon::PairToPoint(middleSweep2));
+        points.push_back(Polygon::PairToPoint(middleSweep2));
 
         auto middleSweep3 = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
             ((m_endAngle-m_startAngle) * math_constants::three_quarters) + m_startAngle);
         middleSweep3.first += m_pieArea.GetTopLeft().x;
         middleSweep3.second += m_pieArea.GetTopLeft().y;
-        points.emplace_back(Polygon::PairToPoint(middleSweep3));
+        points.push_back(Polygon::PairToPoint(middleSweep3));
 
         auto endSweep = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_endAngle);
         endSweep.first += m_pieArea.GetTopLeft().x;
         endSweep.second += m_pieArea.GetTopLeft().y;
-        points.emplace_back(Polygon::PairToPoint(endSweep));
+        points.push_back(Polygon::PairToPoint(endSweep));
 
         // center of pie
-        points.emplace_back(wxPoint(m_pieArea.GetLeft() + (m_pieArea.GetWidth() / 2),
+        points.push_back(wxPoint(m_pieArea.GetLeft() + (m_pieArea.GetWidth() / 2),
             m_pieArea.GetTop() + (m_pieArea.GetHeight() / 2)));
 
         return points;
@@ -542,7 +542,7 @@ namespace Wisteria::Graphs
                 // the slices with the current outer ring group
                 for (const auto& innerGroup : innerGroupOuterRing.second)
                     {
-                    currentOuterSliceSlices.emplace_back(
+                    currentOuterSliceSlices.push_back(
                         SliceInfo{
                                  (useContinuousGroup2Column ?
                                     std::to_wstring(innerGroup.first) :
@@ -756,22 +756,22 @@ namespace Wisteria::Graphs
                     }
                 if (isTopLeft)
                     {
-                    outerTopLeftLabelAndLines.emplace_back(
+                    outerTopLeftLabelAndLines.push_back(
                         std::make_pair(outerLabel, connectionLine));
                     }
                 else if (isBottomLeft)
                     {
-                    outerBottomLeftLabelAndLines.emplace_back(
+                    outerBottomLeftLabelAndLines.push_back(
                         std::make_pair(outerLabel, connectionLine));
                     }
                 else if (isTopRight)
                     {
-                    outerTopRightLabelAndLines.emplace_back(
+                    outerTopRightLabelAndLines.push_back(
                         std::make_pair(outerLabel, connectionLine));
                     }
                 else if (isBottomRight)
                     {
-                    outerBottomRightLabelAndLines.emplace_back(
+                    outerBottomRightLabelAndLines.push_back(
                         std::make_pair(outerLabel, connectionLine));
                     }
                 }
@@ -856,7 +856,7 @@ namespace Wisteria::Graphs
                     smallestMiddleLabelFontSize =
                         std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
                     }
-                middleLabels.emplace_back(middleLabel);
+                middleLabels.push_back(middleLabel);
                 }
 
             startAngle += GetOuterPie().at(i).m_percent * 360;
@@ -1000,7 +1000,7 @@ namespace Wisteria::Graphs
                     smallestMiddleLabelFontSize =
                         std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
                     }
-                middleLabels.emplace_back(middleLabel);
+                middleLabels.push_back(middleLabel);
                 }
 
             startAngle += GetInnerPie().at(i).m_percent * 360;
@@ -1576,7 +1576,7 @@ namespace Wisteria::Graphs
             [&](const auto& slice) noexcept
                 {
                 if (compare_doubles(slice.m_percent, maxPie.m_percent))
-                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                    { pieLabels.push_back(slice.m_groupLabel); }
                 }
             );
 
@@ -1601,7 +1601,7 @@ namespace Wisteria::Graphs
             [&](const auto& slice) noexcept
                 {
                 if (compare_doubles(slice.m_percent, minPie.m_percent))
-                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                    { pieLabels.push_back(slice.m_groupLabel); }
                 }
             );
 
@@ -1626,7 +1626,7 @@ namespace Wisteria::Graphs
             [&](const auto& slice) noexcept
                 {
                 if (compare_doubles(slice.m_percent, maxPie.m_percent))
-                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                    { pieLabels.push_back(slice.m_groupLabel); }
                 }
             );
 
@@ -1662,7 +1662,7 @@ namespace Wisteria::Graphs
                 [&](const auto& slice) noexcept
                     {
                     if (compare_doubles(slice->m_percent, maxPie->m_percent))
-                        { pieLabels.emplace_back(slice->m_groupLabel); }
+                        { pieLabels.push_back(slice->m_groupLabel); }
                     }
                 );
             }
@@ -1688,7 +1688,7 @@ namespace Wisteria::Graphs
             [&](const auto& slice) noexcept
                 {
                 if (compare_doubles(slice.m_percent, minPie.m_percent))
-                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                    { pieLabels.push_back(slice.m_groupLabel); }
                 }
             );
 
@@ -1724,7 +1724,7 @@ namespace Wisteria::Graphs
                 [&](const auto& slice) noexcept
                     {
                     if (compare_doubles(slice->m_percent, minPie->m_percent))
-                        { pieLabels.emplace_back(slice->m_groupLabel); }
+                        { pieLabels.push_back(slice->m_groupLabel); }
                     }
                 );
             }
@@ -1817,7 +1817,7 @@ namespace Wisteria::Graphs
             {
             if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
                 showcasedOuterIndices.cend())
-                { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
+                { innerLabelsForGroups.push_back(innerSlice.GetGroupLabel()); }
             }
 
         if (outerLabelRingToShow == Perimeter::Inner)
@@ -1847,7 +1847,7 @@ namespace Wisteria::Graphs
             {
             if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
                 showcasedOuterIndices.cend())
-                { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
+                { innerLabelsForGroups.push_back(innerSlice.GetGroupLabel()); }
             }
 
         if (outerLabelRingToShow == Perimeter::Inner)
@@ -1891,7 +1891,7 @@ namespace Wisteria::Graphs
             {
             if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
                 showcasedOuterIndices.cend())
-                { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
+                { innerLabelsForGroups.push_back(innerSlice.GetGroupLabel()); }
             }
 
         if (outerLabelRingToShow == Perimeter::Inner)
@@ -2051,13 +2051,13 @@ namespace Wisteria::Graphs
         wxString legendText{ GetOuterPie().at(0).GetGroupLabel() + L"\n \n" };
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
-        legend->GetLegendIcons().emplace_back(
+        legend->GetLegendIcons().push_back(
             LegendIcon(IconShape::HorizontalLine, *wxBLACK_PEN,
                 GetBrushScheme()->GetBrush(0),
                         GetColorScheme() ?
                             std::optional<wxColour>(GetColorScheme()->GetColor(0)) :
                             std::nullopt));
-        legend->GetLegendIcons().emplace_back(
+        legend->GetLegendIcons().push_back(
             LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
 
         size_t lineCount{ 0 };
@@ -2112,16 +2112,16 @@ namespace Wisteria::Graphs
                     GetOuterPie().at(currentParentSliceIndex).GetGroupLabel()).append(L"\n \n");
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
-                legend->GetLegendIcons().emplace_back(
+                legend->GetLegendIcons().push_back(
                     LegendIcon(IconShape::HorizontalLine, *wxBLACK_PEN, *wxBLACK_BRUSH));
-                legend->GetLegendIcons().emplace_back(
+                legend->GetLegendIcons().push_back(
                     LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
                 }
 
             // add icon and text (after group separator, if needed)
             legendText.append(currentLabel.c_str()).append(L"\n");
             ++currentLine;
-            legend->GetLegendIcons().emplace_back(
+            legend->GetLegendIcons().push_back(
                     LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN, sliceBrush, sliceColor));
             }
         legend->SetText(legendText.Trim());
@@ -2161,7 +2161,7 @@ namespace Wisteria::Graphs
                 currentLabel.append(L"\u2026");
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
-            legend->GetLegendIcons().emplace_back(
+            legend->GetLegendIcons().push_back(
                     LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN,
                         GetBrushScheme()->GetBrush(i),
                         GetColorScheme() ?

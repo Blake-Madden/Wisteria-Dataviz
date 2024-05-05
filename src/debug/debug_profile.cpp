@@ -31,7 +31,7 @@ namespace __debug
             if (extra_info)
                 { m_extra_info.assign(extra_info); }
             }
-        m_duration_times.emplace_back(duration_time);
+        m_duration_times.push_back(duration_time);
         }
 
     __profiler::__profiler(const char* name) :

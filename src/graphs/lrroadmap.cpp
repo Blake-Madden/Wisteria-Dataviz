@@ -96,7 +96,7 @@ namespace Wisteria::Graphs
                                   std::optional<double>(pValueColumn->GetValue(i)) :
                                   std::nullopt)) )
                 {
-                GetRoadStops().emplace_back(
+                GetRoadStops().push_back(
                     RoadStopInfo(predictorColumn->GetLabelFromID(predictorColumn->GetValue(i))).
                     Value(coefficientColumn->GetValue(i)));
                 }

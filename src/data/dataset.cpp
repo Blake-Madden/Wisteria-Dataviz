@@ -1498,7 +1498,7 @@ namespace Wisteria::Data
                 if (dateColumnIndices.at(i))
                     {
                     const auto& currentDateInfo{ dateColumnIndices.at(i).value() };
-                    dateValues.emplace_back(
+                    dateValues.push_back(
                         ConvertToDate(currentRow.at(currentDateInfo.m_index),
                             currentDateInfo.m_importMethod, currentDateInfo.m_formatStr));
                     }
@@ -1513,13 +1513,13 @@ namespace Wisteria::Data
                     {
                     if (catColumnIndices.at(i).value().m_importMethod == CategoricalImportMethod::ReadAsStrings)
                         {
-                        catCodes.emplace_back(
+                        catCodes.push_back(
                             categoricalVars.at(i).LoadCode(
                                 replaceStrings(currentRow.at(catColumnIndices.at(i).value().m_index))) );
                         }
                     else
                         {
-                        catCodes.emplace_back(
+                        catCodes.push_back(
                             ConvertToGroupId(
                                 currentRow.at(catColumnIndices.at(i).value().m_index),
                                 catColumnIndices.at(i).value().m_mdCode));
@@ -1534,7 +1534,7 @@ namespace Wisteria::Data
                 {
                 if (continuousColumnIndices.at(i))
                     {
-                    continuousValues.emplace_back(
+                    continuousValues.push_back(
                         ConvertToDouble(
                             currentRow.at(continuousColumnIndices.at(i).value()),
                             info.m_continuousMDRecodeValue));

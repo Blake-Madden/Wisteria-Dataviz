@@ -1325,14 +1325,18 @@ namespace Wisteria::GraphItems
                     {
                     // break the line into separate letters
                     for (const auto letter : textLine)
-                        { tokenizedLineLetters.emplace_back(letter); }
+                        {
+                        tokenizedLineLetters.push_back(letter);
+                        }
                     }
                 else
                     {
                     // split at each space (i.e., word)
                     wxStringTokenizer tkzr(textLine, L" ", wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
                     while (tkzr.HasMoreTokens())
-                        { tokenizedLineLetters.emplace_back(tkzr.GetNextToken()); }
+                        {
+                        tokenizedLineLetters.push_back(tkzr.GetNextToken());
+                        }
                     }
                 // need at least two letters for justifying text
                 if (tokenizedLineLetters.size() < 2)
@@ -1529,14 +1533,18 @@ namespace Wisteria::GraphItems
                     {
                     // break the line into separate letters
                     for (const auto letter : textLine)
-                        { tokenizedLineLetters.emplace_back(letter); }
+                        {
+                        tokenizedLineLetters.push_back(letter);
+                        }
                     }
                 else
                     {
                     // split at each space (i.e., word)
                     wxStringTokenizer tkzr(textLine, L" ", wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
                     while (tkzr.HasMoreTokens())
-                        { tokenizedLineLetters.emplace_back(tkzr.GetNextToken()); }
+                        {
+                        tokenizedLineLetters.push_back(tkzr.GetNextToken());
+                        }
                     }
                 // need at least two letters for justifying text
                 if (tokenizedLineLetters.size() < 2)

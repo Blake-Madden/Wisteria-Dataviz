@@ -200,11 +200,11 @@ namespace Wisteria::Graphs
                                            &leftMarginVals, &rightMarginVals]
             (const wxRect gutter)
             {
-            topMarginVals.emplace_back(GetLeftYAxis().GetTopPoint().y - gutter.GetTop());
-            bottomMarginVals.emplace_back(gutter.GetBottom() - GetLeftYAxis().GetBottomPoint().y);
+            topMarginVals.push_back(GetLeftYAxis().GetTopPoint().y - gutter.GetTop());
+            bottomMarginVals.push_back(gutter.GetBottom() - GetLeftYAxis().GetBottomPoint().y);
 
-            leftMarginVals.emplace_back(GetBottomXAxis().GetLeftPoint().x - gutter.GetLeft());
-            rightMarginVals.emplace_back(gutter.GetRight() - GetBottomXAxis().GetRightPoint().x);
+            leftMarginVals.push_back(GetBottomXAxis().GetLeftPoint().x - gutter.GetLeft());
+            rightMarginVals.push_back(gutter.GetRight() - GetBottomXAxis().GetRightPoint().x);
             };
 
         addGutterDifferences(GetLeftYAxis().GetBoundingBox(dc));

@@ -2115,7 +2115,7 @@ namespace Wisteria::UI
                     MemoryMappedFile mf(tempFilePath, true, true);
                     if (mf.IsOk())
                         {
-                        m_encodedImages.emplace_back(
+                        m_encodedImages.push_back(
                             wxString::Format(L"<img src='data:png;base64, %s'></img>",
                                              wxBase64Encode(mf.GetStream(), mf.GetMapSize())));
                         }

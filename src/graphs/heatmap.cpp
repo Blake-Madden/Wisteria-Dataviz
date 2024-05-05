@@ -125,7 +125,7 @@ namespace Wisteria::Graphs
                     {
                     std::vector<HeatCell> newRow;
                     newRow.resize(maxItemByColumnCount->second);
-                    m_matrix.emplace_back(newRow);
+                    m_matrix.push_back(newRow);
                     }
                 // shouldn't happen, just done as sanity check
                 if (currentRow >= m_matrix.size() || currentColumn >= m_matrix[currentRow].size())
@@ -475,7 +475,7 @@ namespace Wisteria::Graphs
                             legend->GetText());
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
-        legend->GetLegendIcons().emplace_back(LegendIcon(m_reversedColorSpectrum));
+        legend->GetLegendIcons().push_back(LegendIcon(m_reversedColorSpectrum));
 
         AddReferenceLinesAndAreasToLegend(legend);
         AdjustLegendSettings(legend, options.GetPlacementHint());

@@ -53,7 +53,7 @@ void PrinterHeaderFooterDlg::UCaseEmbeddedTags(wxString& str)
         // Find the size of the first match
         if (re.GetMatch(&start, &len, 0))
             {
-            embeddedTags.emplace_back(re.GetMatch(processText, 0));
+            embeddedTags.push_back(re.GetMatch(processText, 0));
 
             // Move past the current tag, preparing to find the next one
             processText = processText.substr(start + len);

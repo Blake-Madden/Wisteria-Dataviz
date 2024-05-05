@@ -102,7 +102,7 @@ std::vector<wxString> VariableSelectDlg::GetSelectedVariablesInList(wxListView* 
             {
             break;
             }
-        selStrings.emplace_back(list->GetItemText(item));
+        selStrings.push_back(list->GetItemText(item));
         }
     return selStrings;
     }
