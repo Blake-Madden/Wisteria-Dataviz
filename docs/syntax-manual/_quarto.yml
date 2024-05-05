@@ -14,7 +14,7 @@ number-sections: true
 crossref:
   chapters: true
 book:
-  title: Wisteria DataViz
+  title: Wisteria Dataviz
   subtitle: JSON Syntax Reference Manual
   author: Blake Madden
   date: today
