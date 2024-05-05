@@ -10,11 +10,11 @@
 /build/
 /out/
 /docs/doxygen/html/
-/docs/syntax_manual/_book
-/docs/syntax_manual/.quarto
-/docs/syntax_manual/_main.log
-/docs/syntax_manual/manual
-*.tex
+/docs/syntax-manual/_book
+/docs/syntax-manual/.quarto
+/docs/syntax-manual/_main.log
+/docs/syntax-manual/manual
+/docs/syntax-manual/WisteriaSyntaxReferenceManual.tex
 /tools/ColorCode.txt
 /tools/ColorReportMap.txt
 
