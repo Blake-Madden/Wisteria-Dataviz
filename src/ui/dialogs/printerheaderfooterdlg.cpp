@@ -132,7 +132,7 @@ void PrinterHeaderFooterDlg::CreateControls()
                          wxSizerFlags::GetDefaultBorder());
 
     wxArrayString choiceStrings;
-    choiceStrings.Add(L"");
+    choiceStrings.Add(wxString{});
     choiceStrings.Add(DONTTRANSLATE(L"@TITLE@", DTExplanation::InternalKeyword));
     choiceStrings.Add(DONTTRANSLATE(L"@PAGENUM@"));
     choiceStrings.Add(_(L"Page @PAGENUM@ of @PAGESCNT@"));

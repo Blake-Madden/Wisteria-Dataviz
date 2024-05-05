@@ -66,7 +66,7 @@ namespace Wisteria::GraphItems
             level == AxisResetLevel::AllSettings)
             {
             GetTitle() = GetHeader() = GetFooter() =
-                Label(GraphItemInfo(L"").DPIScaling(GetDPIScaleFactor()));
+                Label(GraphItemInfo(wxString{}).DPIScaling(GetDPIScaleFactor()));
             }
         if (level == AxisResetLevel::RangeAndLabelValues ||
             level == AxisResetLevel::AllSettings)

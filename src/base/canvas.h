@@ -12,46 +12,47 @@
 #ifndef __WISTERIA_CANVAS_H__
 #define __WISTERIA_CANVAS_H__
 
-#include <wx/wx.h>
-#include <wx/dcbuffer.h>
-#include <wx/dcmemory.h>
-#include <wx/dcprint.h>
-#include <wx/dcps.h>
-#include <wx/dcgraph.h>
-#include <wx/bitmap.h>
-#include <wx/image.h>
-#include <wx/filename.h>
-#include <wx/dataobj.h>
-#include <wx/clipbrd.h>
-#include <wx/print.h>
-#include <wx/printdlg.h>
-#include <wx/file.h>
-#include <wx/tokenzr.h>
-#include <wx/graphics.h>
-#include <wx/dragimag.h>
-#include <wx/html/helpctrl.h>
-#include <wx/dcsvg.h>
-#include <wx/quantize.h>
-#include <wx/event.h>
-#include <wx/wupdlock.h>
-#include <cmath>
-#include <vector>
-#include <map>
-#include <set>
-#include <algorithm>
-#include <stdexcept>
+#include "../ui/dialogs/imageexportdlg.h"
+#include "../ui/dialogs/radioboxdlg.h"
 #include "graphitems.h"
 #include "image.h"
 #include "label.h"
-#include "../ui/dialogs/imageexportdlg.h"
-#include "../ui/dialogs/radioboxdlg.h"
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <set>
+#include <stdexcept>
+#include <vector>
+#include <wx/bitmap.h>
+#include <wx/clipbrd.h>
+#include <wx/dataobj.h>
+#include <wx/dcbuffer.h>
+#include <wx/dcgraph.h>
+#include <wx/dcmemory.h>
+#include <wx/dcprint.h>
+#include <wx/dcps.h>
+#include <wx/dcsvg.h>
+#include <wx/dragimag.h>
+#include <wx/event.h>
+#include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/graphics.h>
+#include <wx/html/helpctrl.h>
+#include <wx/image.h>
+#include <wx/print.h>
+#include <wx/printdlg.h>
+#include <wx/quantize.h>
+#include <wx/tokenzr.h>
+#include <wx/wupdlock.h>
+#include <wx/wx.h>
 
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
-#define EVT_WISTERIA_CANVAS_DCLICK(winid, fn)                                                               \
+#define EVT_WISTERIA_CANVAS_DCLICK(winid, fn)                                                      \
     wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winid, wxCommandEventHandler(fn))
-/// @endcond 
+
+/// @endcond
 
 namespace Wisteria
     {
@@ -61,18 +62,21 @@ namespace Wisteria
     /// @sa Canvas::CalcMinWidthProportion() and Canvas::CalcMinHeightProportion().
     class CanvasItemScalingChanger
         {
-    public:
+      public:
         /// @brief Constructor; switches an object to use its initial scaling
         ///     when it was added to the canvas.
         /// @param object The object to change.
         /// @sa Canvas::SetFixedObject() for when an object's initial scaling is cached.
-        explicit CanvasItemScalingChanger(std::shared_ptr<GraphItems::GraphItemBase> object) :
-            m_obj(object), m_originalScaling(object->GetScaling())
-            { m_obj->SetScaling(m_obj->GetOriginalCanvasScaling()); }
+        explicit CanvasItemScalingChanger(std::shared_ptr<GraphItems::GraphItemBase> object)
+            : m_obj(object), m_originalScaling(object->GetScaling())
+            {
+            m_obj->SetScaling(m_obj->GetOriginalCanvasScaling());
+            }
+
         /// @brief Destructor; resets the object back to its original scaling.
-        ~CanvasItemScalingChanger()
-            { m_obj->SetScaling(m_originalScaling); }
-    private:
+        ~CanvasItemScalingChanger() { m_obj->SetScaling(m_originalScaling); }
+
+      private:
         std::shared_ptr<GraphItems::GraphItemBase> m_obj{ nullptr };
         double m_originalScaling{ 1.0 };
         };
@@ -81,22 +85,26 @@ namespace Wisteria
     class Canvas final : public wxScrolledWindow
         {
         wxDECLARE_DYNAMIC_CLASS(Canvas);
-    public:
+
+      public:
         friend class ReportPrintout;
         friend class FitToSaveOptionsChanger;
 
         /// @brief Class describing a row of items on the canvas.
         class CanvasRowInfo
             {
-        public:
+          public:
             /// @brief Constructor.
             /// @param prop The proportion of the canvas's height that this row consumes.
-            explicit CanvasRowInfo(const double prop) : m_heightProportion(prop)
-                {}
+            explicit CanvasRowInfo(const double prop) : m_heightProportion(prop) {}
+
             /// @returns The height proportion of the canvas that this row consumes.
             [[nodiscard]]
             double GetHeightProportion() const noexcept
-                { return m_heightProportion; }
+                {
+                return m_heightProportion;
+                }
+
             /// @brief The proportion of the canvas's height that this row consumes.
             /// @param prop The height proportion (0.0 - 1.0).
             /// @returns A self reference.
@@ -105,11 +113,15 @@ namespace Wisteria
                 m_heightProportion = prop;
                 return *this;
                 }
+
             /// @returns @c true if row's height proportion is relative to the entire
             ///     canvas, regardless of canvas padding and titles.
             [[nodiscard]]
             bool IsProportionLocked() const noexcept
-                { return m_lockProportion; }
+                {
+                return m_lockProportion;
+                }
+
             /// @brief If @c true, the row's height proportion is relative to the entire
             ///     canvas, regardless of canvas padding and titles.
             /// @details This is useful for horizontally placed legends, so that
@@ -126,10 +138,14 @@ namespace Wisteria
                 m_lockProportion = locked;
                 return *this;
                 }
+
             /// @returns The number of rows that this row should consume.
             [[nodiscard]]
             size_t GetRowCount() const noexcept
-                { return m_rowCount; }
+                {
+                return m_rowCount;
+                }
+
             /// @brief Sets the number of rows that this row should consume.
             /// @param rCount The number of rows.
             /// @returns A self reference.
@@ -138,7 +154,8 @@ namespace Wisteria
                 m_rowCount = rCount;
                 return *this;
                 }
-        private:
+
+          private:
             double m_heightProportion{ 1.0 };
             bool m_lockProportion{ false };
             size_t m_rowCount{ 1 };
@@ -151,9 +168,8 @@ namespace Wisteria
             @param size The initial size of the canvas; will change size relative to @c parent.
             @param flags Window flags passed to wxScrolledWindow.*/
         explicit Canvas(wxWindow* parent, int itemId = wxID_ANY,
-               const wxPoint& pos = wxDefaultPosition,
-               const wxSize& size = wxDefaultSize,
-               const long flags = 0);
+                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                        const long flags = 0);
         /// @private
         Canvas() = default;
         /// @private
@@ -182,13 +198,15 @@ namespace Wisteria
         /// @returns The background color of the canvas.
         [[nodiscard]]
         const wxColour& GetBackgroundColor() const noexcept
-            { return m_bgColor; }
+            {
+            return m_bgColor;
+            }
+
         /** @brief Sets the background color of the canvas.
             @param color The color to apply to the background.
             @param includeLinearGradient Whether to apply this color as a linear gradient
                 (going towards white) across the background.*/
-        void SetBackgroundColor(const wxColor& color,
-                                const bool includeLinearGradient = false)
+        void SetBackgroundColor(const wxColor& color, const bool includeLinearGradient = false)
             {
             if (color.IsOk())
                 {
@@ -196,6 +214,7 @@ namespace Wisteria
                 m_bgColorUseLinearGradient = includeLinearGradient;
                 }
             }
+
         /** @brief Sets the background image being drawn on the canvas.
             @param backgroundImage The image to draw on the background.
             @param opacity The opacity to render the image with.
@@ -212,6 +231,7 @@ namespace Wisteria
             @endcode*/
         void SetBackgroundImage(const wxBitmapBundle& backgroundImage,
                                 const uint8_t opacity = wxALPHA_OPAQUE) noexcept;
+
         /// @}
 
         /** @name Watermark Functions
@@ -220,13 +240,14 @@ namespace Wisteria
 
         /// @brief Overlays translucent text diagonally across the canvas.
         /// @param watermark The text to draw as the watermark (e.g., a copyright notice).
-        void SetWatermark(const wxString& watermark)
-            { m_watermark = watermark; }
+        void SetWatermark(const wxString& watermark) { m_watermark = watermark; }
+
         /// @returns The watermark label shown across the canvas.
         /// @note The tags `@DATETIME@`, `@DATE@`, and `@TIME@` are expanded to their literal
         ///     values at time of rendering.
         [[nodiscard]]
         wxString GetWatermark() const;
+
         /// @brief Overlays a translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
         /// @param sz The suggested size of the watermark (in DIPs).\n
@@ -237,6 +258,7 @@ namespace Wisteria
             m_watermarkImg = watermark;
             m_watermarkImgSizeDIPs = sz;
             }
+
         /// @}
 
         /** @name Size Functions
@@ -244,7 +266,8 @@ namespace Wisteria
         /// @{
 
         /// @brief Sets the aspect ratio of the canvas to its printer settings.
-        /// @details Call this after setting the paper size and orientation via SetPrinterSettings().
+        /// @details Call this after setting the paper size and orientation via
+        ///     SetPrinterSettings().
         /// @sa SetPrinterSettings(), MaintainAspectRatio(), FitToPageWhenPrinting().
         void SetSizeFromPaperSize();
 
@@ -252,44 +275,64 @@ namespace Wisteria
         ///     is resized.
         [[nodiscard]]
         bool IsMaintainingAspectRatio() const noexcept
-            { return m_maintainAspectRatio; }
+            {
+            return m_maintainAspectRatio;
+            }
+
         /// @brief Set to @c true for the drawing area to maintain its aspect ratio when the
         ///     window is resized.
-        /// @details The aspect ratio is controlled by SetCanvasMinWidthDIPs()/SetCanvasMinHeightDIPs()
+        /// @details The aspect ratio is controlled by
+        ///     SetCanvasMinWidthDIPs()/SetCanvasMinHeightDIPs()
         ///     or SetSizeFromPaperSize().\n
         ///     This is useful for reports (i.e., canvases with multiple items on it).
         /// @param maintain @c true to maintain the aspect ratio when resizing.
-        void MaintainAspectRatio(const bool maintain) noexcept
-            { m_maintainAspectRatio = maintain; }
+        void MaintainAspectRatio(const bool maintain) noexcept { m_maintainAspectRatio = maintain; }
+
         /// @returns The minimum width that the canvas can be. It will be forced to be this
         ///     wide even as its parent is resized.
         [[nodiscard]]
         int GetCanvasMinWidthDIPs() const noexcept
-            { return m_canvasMinSizeDIPs.GetWidth(); }
+            {
+            return m_canvasMinSizeDIPs.GetWidth();
+            }
+
         /** @brief Sets the minimum height that the canvas can be. It will be forced to be
                 this tall even as its parent is resized.
             @param minWidth The minimum width to use.*/
         void SetCanvasMinWidthDIPs(const int minWidth) noexcept
-           { m_canvasMinSizeDIPs.SetWidth(minWidth); }
+            {
+            m_canvasMinSizeDIPs.SetWidth(minWidth);
+            }
+
         /// @returns The minimum height that the canvas can be. It will be forced to be this
         ///     tall even as its parent is resized.
         [[nodiscard]]
         int GetCanvasMinHeightDIPs() const noexcept
-           { return m_canvasMinSizeDIPs.GetHeight(); }
+            {
+            return m_canvasMinSizeDIPs.GetHeight();
+            }
+
         /** @brief Sets the minimum height that the canvas can be. It will be forced to be this
                 tall even as its parent is resized.
             @param minHeight The minimum height to use.*/
         void SetCanvasMinHeightDIPs(const int minHeight);
+
         /// @returns The default minimum width used for canvas.
         ///     Can be overridden by SetCanvasMinWidthDIPs().
         [[nodiscard]]
         static int GetDefaultCanvasWidthDIPs() noexcept
-            { return m_defaultWidthDIPs; }
+            {
+            return m_defaultWidthDIPs;
+            }
+
         /// @returns The default minimum height used for canvas.
         ///     Can be overridden by SetCanvasMinHeightDIPs().
         [[nodiscard]]
         static int GetDefaultCanvasHeightDIPs() noexcept
-            { return m_defaultHeightDIPs; }
+            {
+            return m_defaultHeightDIPs;
+            }
+
         /** @brief Calculates the minimum percent of the canvas an item should consume
                 when at 1.0 scaling.
             @param item The item to measure.
@@ -311,14 +354,15 @@ namespace Wisteria
             // SetBoundingBox(), as we will be resizing this item from scratch
             item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
             item->RecalcSizes(gdc);
-            return std::min(1.0, safe_divide<double>(
-                item->GetBoundingBox(gdc).GetWidth() +
-                    // canvas margins are not part of the bounding box calculation,
-                    // so those need to be factored in here
-                    gdc.FromDIP(item->GetLeftCanvasMargin()) +
-                    gdc.FromDIP(item->GetRightCanvasMargin()),
-                gdc.FromDIP(GetCanvasMinWidthDIPs())));
+            return std::min(
+                1.0, safe_divide<double>(item->GetBoundingBox(gdc).GetWidth() +
+                                             // canvas margins are not part of the bounding box
+                                             // calculation, so those need to be factored in here
+                                             gdc.FromDIP(item->GetLeftCanvasMargin()) +
+                                             gdc.FromDIP(item->GetRightCanvasMargin()),
+                                         gdc.FromDIP(GetCanvasMinWidthDIPs())));
             }
+
         /** @brief Calculates the minimum percent of the canvas an item should consume
                 when at @c 1.0 scaling.
             @param item The item to measure.
@@ -334,12 +378,12 @@ namespace Wisteria
             CanvasItemScalingChanger sc(item);
             item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
             item->RecalcSizes(gdc);
-            return safe_divide<double>(
-                item->GetBoundingBox(gdc).GetHeight() +
-                    gdc.FromDIP(item->GetTopCanvasMargin()) +
-                    gdc.FromDIP(item->GetBottomCanvasMargin()),
-                gdc.FromDIP(GetCanvasMinHeightDIPs()));
+            return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight() +
+                                           gdc.FromDIP(item->GetTopCanvasMargin()) +
+                                           gdc.FromDIP(item->GetBottomCanvasMargin()),
+                                       gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
+
         /// @brief Calculates the proportions of the canvas that each row and column
         ///     should consume.
         /// @details This takes into account items (and rows) whose content size will
@@ -372,9 +416,10 @@ namespace Wisteria
         /// @returns The size of the fixed object grid (number of rows x columns).
         [[nodiscard]]
         std::pair<size_t, size_t> GetFixedObjectsGridSize() const;
+
         /// @brief Removes all fixed objects and sets the grid back to (0, 0).
-        void ClearFixedObjects()
-            { m_fixedObjects.clear(); }
+        void ClearFixedObjects() { m_fixedObjects.clear(); }
+
         /** @brief Sets the fixed object at the given row and column.
             @param row The row location of the item being set.
             @param column The column location of the item being set.
@@ -385,25 +430,26 @@ namespace Wisteria
         /// @param row The row of the object.
         /// @param column The column of the object.
         [[nodiscard]]
-        std::shared_ptr<GraphItems::GraphItemBase>
-                          GetFixedObject(const size_t row, const size_t column);
+        std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row,
+                                                                  const size_t column);
         /// @returns The fixed object with the given ID, or null if not found.
         /// @param itemId The ID of the object to look for.
         [[nodiscard]]
-        std::shared_ptr<GraphItems::GraphItemBase>
-            FindFixedObject(const long itemId) noexcept;
+        std::shared_ptr<GraphItems::GraphItemBase> FindFixedObject(const long itemId) noexcept;
 
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots
                  (as well as stand-alone axes) across a row to have the same height and positions.
             @param align @c true to align row contents.*/
-        void AlignRowContent(const bool align) noexcept
-            { m_alignRowContent = align; }
+        void AlignRowContent(const bool align) noexcept { m_alignRowContent = align; }
+
         /// @returns @c true if items (e.g., plots, common axes) are having their content
         ///     aligned with each other across each row.
         [[nodiscard]]
         bool IsRowContentAligned() const noexcept
-            { return m_alignRowContent; }
+            {
+            return m_alignRowContent;
+            }
 
         /** @brief Whether to align the content of items down each column.
             @details Items (e.g., graphs) will have their content adjusted
@@ -414,34 +460,38 @@ namespace Wisteria
             @param align @c true to align column contents.
             @note If the grid is jagged, then the content alignment will stop on the first
                 row that has less columns than the top row. For example, if a canvas has three rows,
-                where the first and last rows have two graphs and the second only has one graph, then
-                the X axes of the first column of graphs will be aligned, but not the second column.
+                where the first and last rows have two graphs and the second only has one graph,
+                then the X axes of the first column of graphs will be aligned,
+                but not the second column.
                 This is because the second row does not have a second column, so alignment adjusting
                 stops at that point.*/
-        void AlignColumnContent(const bool align) noexcept
-            { m_alignColumnContent = align; }
+        void AlignColumnContent(const bool align) noexcept { m_alignColumnContent = align; }
+
         /// @returns @c true if items (e.g., plots, common axes) are having their content
         ///     aligned with each other down each column.
         [[nodiscard]]
         bool IsColumnContentAligned() const noexcept
-            { return m_alignColumnContent; }
+            {
+            return m_alignColumnContent;
+            }
 
         /** @brief Accesses attributes for a row.
             @details This can be used for adjusting the row's canvas height proportion.
             @param row The row index to access.
             @returns The row information at the specified index.
             @warning When setting a row's proportion, be sure to reset all other row proportions
-                as well; otherwise, they will not all add up to 100%. This is because when a grid size
-                is specified, the rows are given uniform proportions. If one is changes, then the sum
-                of all row proportions will be more or less than 100%. You must adjust all other rows
+                as well; otherwise, they will not all add up to 100%.
+                This is because when a grid size is specified, the rows are given
+                uniform proportions. If one is changes, then the sum of all row proportions
+                will be more or less than 100%. You must adjust all other rows
                 accordingly.*/
         [[nodiscard]]
         CanvasRowInfo& GetRowInfo(const size_t row) noexcept
             {
-            assert(row < m_rowsInfo.size() &&
-                L"Invalid row in call to GetRowInfo()!");
+            assert(row < m_rowsInfo.size() && L"Invalid row in call to GetRowInfo()!");
             return m_rowsInfo.at(row);
             }
+
         /// @}
 
         /** @name Free-floating objects Functions
@@ -458,9 +508,11 @@ namespace Wisteria
                 added to this collection.
             @returns The free-floating objects.*/
         [[nodiscard]]
-        std::vector<std::shared_ptr<GraphItems::GraphItemBase>>&
-                          GetFreeFloatingObjects() noexcept
-            { return m_freeFloatingObjects; }
+        std::vector<std::shared_ptr<GraphItems::GraphItemBase>>& GetFreeFloatingObjects() noexcept
+            {
+            return m_freeFloatingObjects;
+            }
+
         /// @}
 
         /** @name Title Functions
@@ -472,19 +524,31 @@ namespace Wisteria
         ///     title on the canvas.
         [[nodiscard]]
         std::vector<GraphItems::Label>& GetTopTitles() noexcept
-            { return m_topTitles; }
+            {
+            return m_topTitles;
+            }
+
         /// @returns The bottom titles. This can be used to add or edit a bottom title.
         [[nodiscard]]
         std::vector<GraphItems::Label>& GetBottomTitles() noexcept
-            { return m_bottomTitles; }
+            {
+            return m_bottomTitles;
+            }
+
         /// @returns The left titles. This can be used to add or edit a left title.
         [[nodiscard]]
         std::vector<GraphItems::Label>& GetLeftTitles() noexcept
-            { return m_leftTitles; }
+            {
+            return m_leftTitles;
+            }
+
         /// @returns The right titles. This can be used to add or edit a right title.
         [[nodiscard]]
         std::vector<GraphItems::Label>& GetRightTitles() noexcept
-            { return m_rightTitles; }
+            {
+            return m_rightTitles;
+            }
+
         /// @}
 
         /** @name Zoom Functions
@@ -497,6 +561,7 @@ namespace Wisteria
         void ZoomOut();
         /// @brief Resets the scaling of the canvas to the default.
         void ZoomReset();
+
         /// @}
 
         /** @name Print Functions
@@ -506,19 +571,24 @@ namespace Wisteria
 
         /** @brief Sets the printer data, which includes paper size, orientation, etc.
             @param printData The printer data (i.e., system print settings).*/
-        void SetPrinterSettings(const wxPrintData& printData) noexcept
-            { m_printData = printData; }
+        void SetPrinterSettings(const wxPrintData& printData) noexcept { m_printData = printData; }
+
         /** @brief Access the printer data. This is useful for changing the print
                 settings for the canvas (e.g., changing the paper orientation).
             @returns The printer data.*/
         [[nodiscard]]
         wxPrintData& GetPrinterSettings() noexcept
-            { return m_printData; }
+            {
+            return m_printData;
+            }
 
         /// @returns @c true If fitting the canvas's content to the full page when printing.
         [[nodiscard]]
         bool IsFittingToPageWhenPrinting() const noexcept
-            { return m_fitToPageWhenPrinting; }
+            {
+            return m_fitToPageWhenPrinting;
+            }
+
         /** @brief Adjusts the canvas's content to fit the page when printing.
             @details The default is to draw the content as-is onto the paper,
                 maintaining its aspect ratio. (This aspect ratio is controlled
@@ -526,61 +596,74 @@ namespace Wisteria
                 Setting this to @c true will adjust the canvas's aspect ratio
                 to fit the paper's size, resulting in filling the entire page.
             @param fit @c true to fit the canvas to the entire printed page.*/
-        void FitToPageWhenPrinting(const bool fit) noexcept
-            { m_fitToPageWhenPrinting = fit; }
+        void FitToPageWhenPrinting(const bool fit) noexcept { m_fitToPageWhenPrinting = fit; }
 
         /// @brief Sets the left printer header string.
         /// @param header The string to set as the left header (when printed).
-        void SetLeftPrinterHeader(const wxString& header)
-            { m_leftPrinterHeader = header; }
+        void SetLeftPrinterHeader(const wxString& header) { m_leftPrinterHeader = header; }
+
         /// @returns The left printer header string.
         [[nodiscard]]
         const wxString& GetLeftPrinterHeader() const noexcept
-            { return m_leftPrinterHeader; }
+            {
+            return m_leftPrinterHeader;
+            }
 
         /// @brief Sets the center printer header string.
         /// @param header The string to set as the center header (when printed).
-        void SetCenterPrinterHeader(const wxString& header)
-            { m_centerPrinterHeader = header; }
+        void SetCenterPrinterHeader(const wxString& header) { m_centerPrinterHeader = header; }
+
         /// @returns The center printer header string.
         [[nodiscard]]
         const wxString& GetCenterPrinterHeader() const noexcept
-            { return m_centerPrinterHeader; }
+            {
+            return m_centerPrinterHeader;
+            }
 
         /// @brief Sets the right printer header string.
         /// @param header The string to set as the right header (when printed).
-        void SetRightPrinterHeader(const wxString& header)
-            { m_rightPrinterHeader = header; }
+        void SetRightPrinterHeader(const wxString& header) { m_rightPrinterHeader = header; }
+
         /// @returns The right printer header string.
         [[nodiscard]]
         const wxString& GetRightPrinterHeader() const noexcept
-            { return m_rightPrinterHeader; }
+            {
+            return m_rightPrinterHeader;
+            }
 
         /// @brief Sets the left printer footer string.
         /// @param footer The string to set as the left footer (when printed).
-        void SetLeftPrinterFooter(const wxString& footer)
-            { m_leftPrinterFooter = footer; }
+        void SetLeftPrinterFooter(const wxString& footer) { m_leftPrinterFooter = footer; }
+
         /// @returns The left printer footer string.
-        [[nodiscard]]const wxString& GetLeftPrinterFooter() const noexcept
-            { return m_leftPrinterFooter; }
+        [[nodiscard]]
+        const wxString& GetLeftPrinterFooter() const noexcept
+            {
+            return m_leftPrinterFooter;
+            }
 
         /// @brief Sets the center printer footer string.
         /// @param footer The string to set as the center footer (when printed).
-        void SetCenterPrinterFooter(const wxString& footer)
-            { m_centerPrinterFooter = footer; }
+        void SetCenterPrinterFooter(const wxString& footer) { m_centerPrinterFooter = footer; }
+
         /// @returns The center printer footer string.
         [[nodiscard]]
         const wxString& GetCenterPrinterFooter() const noexcept
-            { return m_centerPrinterFooter; }
+            {
+            return m_centerPrinterFooter;
+            }
 
         /// @brief Sets the right printer footer string.
         /// @param footer The string to set as the right footer (when printed).
-        void SetRightPrinterFooter(const wxString& footer)
-            { m_rightPrinterFooter = footer; }
+        void SetRightPrinterFooter(const wxString& footer) { m_rightPrinterFooter = footer; }
+
         /// @returns The right printer footer string.
         [[nodiscard]]
         const wxString& GetRightPrinterFooter() const noexcept
-            { return m_rightPrinterFooter; }
+            {
+            return m_rightPrinterFooter;
+            }
+
         /// @}
 
         /// @brief Calculates the sizes of all objects on the canvas.
@@ -588,6 +671,7 @@ namespace Wisteria
         /// @details Call this if changes have been made to a subobject
         ///     (e.g., a plot) and you wish to refresh the content.
         void CalcAllSizes(wxDC& dc);
+
         /** @brief The scaling of the canvas's size compared to the minimum size.
             @details This is used to see how much fonts and lines need to be increased to match the
                 current zoom level (i.e., the window size compared to the minimum dimensions).
@@ -598,10 +682,7 @@ namespace Wisteria
             // aspect ratio is the same when resizing or zooming the window,
             // so using width or height is interchangeable here
             return std::max<double>(
-                safe_divide<double>(
-                    GetCanvasRectDIPs().GetWidth(),
-                    GetCanvasMinWidthDIPs()),
-                1.0f);
+                safe_divide<double>(GetCanvasRectDIPs().GetWidth(), GetCanvasMinWidthDIPs()), 1.0f);
             }
 
         /// @brief Saves the canvas as an image.
@@ -662,7 +743,10 @@ namespace Wisteria
         /// @private
         [[nodiscard]]
         const wxPrintData& GetPrinterSettings() const noexcept
-            { return m_printData; }
+            {
+            return m_printData;
+            }
+
         /// @private
         void SetBackgroundImage(wxBitmapBundle&& backgroundImage,
                                 const uint8_t opacity = wxALPHA_OPAQUE) noexcept
@@ -670,41 +754,60 @@ namespace Wisteria
             m_bgImage = std::move(backgroundImage);
             m_bgOpacity = opacity;
             }
+
         /// @private
         void SetWatermarkLogo(wxBitmapBundle&& watermark, const wxSize sz) noexcept
             {
             m_watermarkImg = std::move(watermark);
             m_watermarkImgSizeDIPs = sz;
             }
+
         /// @private
         [[nodiscard]]
         const std::vector<GraphItems::Label>& GetTopTitles() const noexcept
-            { return m_topTitles; }
+            {
+            return m_topTitles;
+            }
+
         /// @private
         [[nodiscard]]
         const std::vector<GraphItems::Label>& GetBottomTitles() const noexcept
-            { return m_bottomTitles; }
+            {
+            return m_bottomTitles;
+            }
+
         /// @private
         [[nodiscard]]
         const std::vector<GraphItems::Label>& GetLeftTitles() const noexcept
-            { return m_leftTitles; }
+            {
+            return m_leftTitles;
+            }
+
         /// @private
         [[nodiscard]]
         const std::vector<GraphItems::Label>& GetRightTitles() const noexcept
-            { return m_rightTitles; }
+            {
+            return m_rightTitles;
+            }
+
         /// @private
         [[nodiscard]]
-        const std::shared_ptr<GraphItems::GraphItemBase>
-                          GetFixedObject(const size_t row, const size_t column) const;
-    private:
+        const std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row,
+                                                                        const size_t column) const;
+
+      private:
         /// @brief Divides the width of a row into columns, taking into account items
         ///     whose width should not be more than its content (at default scaling).
         /// @param row The row to calculate.
         void CalcColumnWidths(const size_t row);
+
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]]
         wxBitmapBundle& GetBackgroundImage() noexcept
-            { return m_bgImage; }
+            {
+            return m_bgImage;
+            }
+
         /** @brief Draws the left titles.
             @returns How much of the left margin of the plot those title take up.
             @param dc DC to measure with.
@@ -730,11 +833,12 @@ namespace Wisteria
         [[nodiscard]]
         long CalcBottomTitles(wxDC& dc, const long spacingWidth);
 
-        /// @returns The top-level floating (i.e., not anchored) object on the canvas located at @c pt.
+        /// @returns The top-level floating (i.e., not anchored) object on the
+        ///     canvas located at @c pt.
         /// @param pt The point to look at.
         [[nodiscard]]
         std::vector<std::shared_ptr<GraphItems::GraphItemBase>>::reverse_iterator
-            FindFreeFloatingObject(const wxPoint& pt, wxDC& dc);
+        FindFreeFloatingObject(const wxPoint& pt, wxDC& dc);
 
         enum class DragMode
             {
@@ -752,12 +856,16 @@ namespace Wisteria
         ///     the OS for those. Instead, font sizes should only be scaled to the canvas's scaling.
         [[nodiscard]]
         double ScaleToScreenAndCanvas(const double value, wxDC& dc) const noexcept
-            { return value * GetScaling() * dc.FromDIP(1); }
+            {
+            return value * GetScaling() * dc.FromDIP(1);
+            }
 
         /// @returns The rectangle area of the canvas.
         [[nodiscard]]
         const wxRect& GetCanvasRectDIPs() const noexcept
-            { return m_rectDIPs; }
+            {
+            return m_rectDIPs;
+            }
 
         // Events
         void OnResize(wxSizeEvent& event);
@@ -768,27 +876,37 @@ namespace Wisteria
 
         [[nodiscard]]
         auto& GetFixedObjects() noexcept
-            { return m_fixedObjects; }
+            {
+            return m_fixedObjects;
+            }
+
         [[nodiscard]]
         const auto& GetFixedObjects() const noexcept
-            { return m_fixedObjects; }
+            {
+            return m_fixedObjects;
+            }
 
         [[nodiscard]]
         std::vector<std::shared_ptr<GraphItems::Label>>& GetTitles() noexcept
-            { return m_titles; }
+            {
+            return m_titles;
+            }
+
         [[nodiscard]]
         const std::vector<std::shared_ptr<GraphItems::Label>>& GetTitles() const noexcept
-            { return m_titles; }
+            {
+            return m_titles;
+            }
 
-        static constexpr double ZOOM_FACTOR{ 1.5 };
+        constexpr static double ZOOM_FACTOR{ 1.5 };
         int m_zoomLevel{ 0 };
 
         // the current drawing rect
         wxRect m_rectDIPs;
         // the minimum size of the canvas
         wxSize m_canvasMinSizeDIPs{ 0, 0 };
-        static constexpr int m_defaultWidthDIPs{ 700 };
-        static constexpr int m_defaultHeightDIPs{ 500 };
+        constexpr static int m_defaultWidthDIPs{ 700 };
+        constexpr static int m_defaultHeightDIPs{ 500 };
 
         bool m_maintainAspectRatio{ false };
 
@@ -840,7 +958,7 @@ namespace Wisteria
 
         wxString m_debugInfo;
         };
-    }
+    } // namespace Wisteria
 
 /** @}*/
 

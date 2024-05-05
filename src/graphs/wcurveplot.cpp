@@ -125,7 +125,7 @@ namespace Wisteria::Graphs
             return wxString::Format(_(L"Tenth %s"), m_timeLabel);
             break;
         default:
-            return L"";
+            return wxString{};
             }
         }
     }

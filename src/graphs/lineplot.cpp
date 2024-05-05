@@ -102,7 +102,7 @@ namespace Wisteria::Graphs
         else
             {
             Line ln;
-            ln.SetGroupInfo(groupColumnName, 0, L"");
+            ln.SetGroupInfo(groupColumnName, 0, wxString{});
             ln.GetPen().SetColour(GetColorScheme()->GetColor(0));
             if (IsAutoSplining() && !IsDataSingleDirection(data, 0))
                 {

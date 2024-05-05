@@ -58,25 +58,25 @@ namespace Wisteria::Graphs
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::Solid) );
+            wxString{}, Label(_(L"Bugs")), BoxEffect::Solid) );
 
          plot->AddBar(BarChart::Bar(2,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Solid));
+            wxString{}, Label(_(L"Pending feature requests")), BoxEffect::Solid));
 
          plot->AddBar(BarChart::Bar(3,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Solid));
+            wxString{}, Label(_(L"Unfinished help topics")), BoxEffect::Solid));
 
          plot->AddBar(BarChart::Bar(4,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Solid));
+            wxString{}, Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
@@ -104,7 +104,7 @@ namespace Wisteria::Graphs
             BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::Glassy,
+            wxString{}, Label(_(L"Bugs")), BoxEffect::Glassy,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2) );
@@ -116,7 +116,7 @@ namespace Wisteria::Graphs
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Glassy,
+            wxString{}, Label(_(L"Pending feature requests")), BoxEffect::Glassy,
             // this bar will be translucent
             75, 1));
 
@@ -124,14 +124,14 @@ namespace Wisteria::Graphs
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
+            wxString{}, Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
          plot->AddBar(BarChart::Bar(4.5,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Glassy,
+            wxString{}, Label(_(L"Missing unit tests")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
          // only show the labels on the axis

@@ -1135,7 +1135,7 @@ namespace Wisteria::Graphs
                     LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                 ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
-               L"", Label(), GetBarEffect(), GetBarOpacity());
+               wxString{}, Label(), GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         // Scale bars down to 90% so that we have spaces between bars.
@@ -1301,7 +1301,7 @@ namespace Wisteria::Graphs
                         LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                     ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
-                   L"", Label(), GetBarEffect(), GetBarOpacity());
+                   wxString{}, Label(), GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
@@ -1428,7 +1428,7 @@ namespace Wisteria::Graphs
                 FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                 ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
-               L"", Label(), GetBarEffect(), GetBarOpacity());
+               wxString{}, Label(), GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         if (IsSettingBarSizesToRespondentSize())
@@ -1600,7 +1600,7 @@ namespace Wisteria::Graphs
                     FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                     ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
-                   L"", Label(), GetBarEffect(), GetBarOpacity());
+                   wxString{}, Label(), GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
@@ -1750,7 +1750,7 @@ namespace Wisteria::Graphs
                 FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                 ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
-               L"", Label(), GetBarEffect(), GetBarOpacity());
+               wxString{}, Label(), GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         if (IsSettingBarSizesToRespondentSize())
@@ -1950,7 +1950,7 @@ namespace Wisteria::Graphs
                     FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                     ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
-                   L"", Label(), GetBarEffect(), GetBarOpacity());
+                   wxString{}, Label(), GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())

@@ -1286,7 +1286,7 @@ namespace Wisteria::Graphs
         wxString m_negativeHeaderLabel{ _(L"Disagree") };
         wxString m_noHeaderLabel{ _(L"No Response") };
 
-        wxString m_nullString{ L"" };
+        wxString m_nullString;
 
         LikertSurveyQuestionFormat m_surveyType{ LikertSurveyQuestionFormat::ThreePoint };
 

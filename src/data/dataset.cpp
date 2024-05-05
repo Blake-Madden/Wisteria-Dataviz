@@ -1007,8 +1007,7 @@ namespace Wisteria::Data
                 }
             else if (colInfo.second == Data::Dataset::ColumnImportType::Date)
                 {
-                dateInfo.push_back(
-                    { colInfo.first, DateImportMethod::Automatic, L"" });
+                dateInfo.push_back({ colInfo.first, DateImportMethod::Automatic, wxString{} });
                 }
             else if (colInfo.second == Data::Dataset::ColumnImportType::Numeric)
                 {
@@ -1023,7 +1022,7 @@ namespace Wisteria::Data
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
         const ImportInfo& importInfo /*= ImportInfo{}*/,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        const std::variant<wxString, size_t>& worksheet /*= L""*/)
+        const std::variant<wxString, size_t>& worksheet /*= wxString{}*/)
         {
         const wxString fileExt{ wxFileName(filePath).GetExt() };
         const wchar_t delim = GetDelimiterFromExtension(filePath);

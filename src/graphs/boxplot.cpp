@@ -235,7 +235,9 @@ namespace Wisteria::Graphs
     void BoxPlot::AddBox(const BoxAndWhisker& box)
         {
         if (GetDataset() == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         m_boxes.push_back(box);
         const BoxAndWhisker& currentBox = m_boxes[m_boxes.size()-1];
@@ -244,18 +246,15 @@ namespace Wisteria::Graphs
             0, 1, 1);
         if (GetBoxCount() > 1)
             { GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels); }
-        for (auto boxPos = m_boxes.begin();
-             boxPos != m_boxes.end();
-             ++boxPos)
+        for (auto boxPos = m_boxes.begin(); boxPos != m_boxes.end(); ++boxPos)
             {
             const size_t axisOffset = (m_boxes.size() > 1) ? 1 : 2;
-            const double boxAxisPosition = (boxPos-m_boxes.begin()) + axisOffset;
+            const double boxAxisPosition = (boxPos - m_boxes.begin()) + axisOffset;
             const wxString groupIdLabel = boxPos->m_useGrouping ?
-                m_groupColumn->GetLabelFromID(boxPos->m_groupId) :
-                wxString(L"");
+                                              m_groupColumn->GetLabelFromID(boxPos->m_groupId) :
+                                              wxString{};
             boxPos->SetXAxisPosition(boxAxisPosition);
-            GetBottomXAxis().SetCustomLabel(boxAxisPosition,
-                Label(groupIdLabel));
+            GetBottomXAxis().SetCustomLabel(boxAxisPosition, Label(groupIdLabel));
             }
 
         // see how much room is needed for the whiskers and data points
