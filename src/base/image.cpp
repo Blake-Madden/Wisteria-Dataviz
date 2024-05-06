@@ -216,7 +216,7 @@ namespace Wisteria::GraphItems
         // If total bytes in a row of image is not divisible by four, 
         // blank bytes will be padded to the end of the row.
         // nBytesInARow bytes are the actual size of a row instead of nWidth * 3.
-        // If width is 9, then actual bytes in a row will will be 28, and not 27.
+        // If width is 9, then actual bytes in a row will be 28, and not 27.
         const int nBytesInARow = std::ceil(image.GetWidth() * 3 / 4.0) * 4.0;
 
         constexpr auto rgbBufferSize{ 256 };

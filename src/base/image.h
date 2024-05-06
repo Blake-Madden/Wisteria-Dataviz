@@ -406,7 +406,7 @@ namespace Wisteria::GraphItems
                 by author Santhosh G_. Santhosh G_'s code was based on
                 http://supercomputingblog.com/graphics/oil-painting-algorithm/, which is also the
                 source for the explanations for @c radius and @c intensity.\n
-                This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
+                This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage OilPainting(const wxImage& image, const uint8_t radius = 10,
                                    const float intensity = 40);
@@ -416,7 +416,7 @@ namespace Wisteria::GraphItems
             @returns The sepia-toned image.
             @note Adapted from https://www.codeproject.com/articles/996192/some-cool-image-effects,
                 by Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata.\n
-                This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
+                This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage Sepia(const wxImage& image, const uint8_t magnitude = 75);
         /** @brief Applies a frosted glass window effect to an image.
@@ -429,7 +429,7 @@ namespace Wisteria::GraphItems
                 The authors state that this algorithm is
                 'based on the Lecture Notes by Prof. Onur Guleryuz of Polytechnic University,
                 New York.'\n
-                This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
+                This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage FrostedGlass(const wxImage& image,
                                     const Wisteria::Orientation orientation = Orientation::Both,

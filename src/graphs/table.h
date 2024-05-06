@@ -39,7 +39,8 @@ namespace Wisteria::Graphs
             (see GroupRow() and GroupColumn()).
             Numerous other functions are available for customizing the content and appearance of
             cells, rows, and columns (e.g., GetCell() or BoldRow()). Rows and columns can also be
-            inserted, which can be useful for group separators.\n \n
+            inserted, which can be useful for group separators.\n
+            \n
             After the data has been edited and
             formatted, aggregate columns and rows (e.g., subtotals) can be added via
             InsertAggregateColumn() and InsertAggregateRow().\n \n Finally, once the table is built,
@@ -291,9 +292,9 @@ namespace Wisteria::Graphs
             /// @param showRightBorder Whether to show the right border.
             /// @param showBottomBorder Whether to show the bottom border.
             /// @param showLeftBorder Whether to show the left border.
-            TableCell(CellValueType value, const wxColour bgColor,
-                      const bool showTopBorder = true, const bool showRightBorder = true,
-                      const bool showBottomBorder = true, const bool showLeftBorder = true)
+            TableCell(CellValueType value, const wxColour bgColor, const bool showTopBorder = true,
+                      const bool showRightBorder = true, const bool showBottomBorder = true,
+                      const bool showLeftBorder = true)
                 : m_value(std::move(value)), m_bgColor(bgColor), m_showTopBorder(showTopBorder),
                   m_showRightBorder(showRightBorder), m_showBottomBorder(showBottomBorder),
                   m_showLeftBorder(showLeftBorder)

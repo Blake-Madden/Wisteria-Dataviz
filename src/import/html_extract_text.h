@@ -587,7 +587,7 @@ namespace lily_of_the_valley
             @param text The HTML stream to parse.*/
         [[nodiscard]]
         static std::wstring get_body(const std::wstring_view& text);
-        /** @returns The the CSS style section from an HTML buffer.
+        /** @returns The CSS style section from an HTML buffer.
             @param text The HTML stream to parse.*/
         [[nodiscard]]
         static std::wstring get_style_section(const std::wstring_view& text);
