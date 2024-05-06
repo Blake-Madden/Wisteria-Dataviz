@@ -587,7 +587,7 @@ namespace Wisteria::Graphs
         Graph2D::RecalcSizes(dc);
 
         std::vector<std::unique_ptr<GraphItemBase>> addedObjects;
-        const auto queueObjectForOffsetting = [&addedObjects, this](auto obj)
+        const auto queueObjectForOffsetting = [&addedObjects](auto obj)
             {
             addedObjects.push_back(std::move(obj));
             };
