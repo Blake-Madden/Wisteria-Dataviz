@@ -1561,6 +1561,20 @@ namespace Wisteria::Data
         // set the names for the columns
         SetColumnNames(info);
         }
+        
+    //----------------------------------------------
+    void Dataset::Import(const wxString& filePath, const ImportInfo& info)
+        {
+        if (wxFileName{ filePath }.GetExt().CmpNoCase(L"xlsx") == 0)
+            {
+            Data::ExcelReader xlReader(filePath);
+            ImportTextRaw(xlReader.ReadWorksheet(static_cast<size_t>(1)), info, L'\t');
+            }
+        else
+            {
+            ImportText(filePath, info, GetDelimiterFromExtension(filePath));
+            }
+        }
 
     //----------------------------------------------
     void Dataset::ImportText(const wxString& filePath, const ImportInfo& info,
