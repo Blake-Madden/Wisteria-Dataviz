@@ -56,7 +56,7 @@ namespace Wisteria::Data
     /// @brief Map of regular expressions and their replacement strings.
     /// @details Technically this is a vector, so the order that this map is created
     ///     is preserved.
-    /// @internal Needs to be shared pointers because @c wxRegEx has a private CTOR.
+    /// @internal Needs to be pointers because @c wxRegEx has a private CTOR.
     using RegExMap = std::vector<std::pair<std::shared_ptr<wxRegEx>, wxString>>;
     /// @brief The integral type used for looking up a label from a grouping column's string table.
     /// @details Grouping column string tables are maps that consist of a @c GroupIdType
@@ -876,7 +876,7 @@ namespace Wisteria::Data
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data,
-                missing data to a vale, or fixing misspellings in the input data.
+                missing data to a value, or fixing misspellings in the input data.
             @par Example:
             @code
              auto commentsData = std::make_shared<Data::Dataset>();
@@ -891,6 +891,21 @@ namespace Wisteria::Data
                     // replace 'foot ball' with 'football'
                     { std::make_shared<wxRegEx>(L"(?i)foot ball"), L"football" }
                     }));
+            @endcode
+            @par Example using a replacement dataset:
+            @code
+             auto replaceDataset = std::make_shared<Data::Dataset>();
+             ...
+             // import a dataset containing regex patterns in one column
+             // and their respective replacements in another column
+             ...
+             auto commentsData = std::make_shared<Data::Dataset>();
+             commentsData->ImportCSV(L"Comments.csv",
+                Data::ImportInfo().CategoricalColumns({
+                    { L"Comments", CategoricalImportMethod::ReadAsStrings }
+                    }).
+                ReplacementStrings(DatasetToRegExMap(replaceDataset, L"Patterns",
+                    L"Replacements")));
             @endcode
             @param replaceStrings The map of regular expressions to match against
                 and what to replace them with.
@@ -1528,7 +1543,7 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param importInfo Import settings (row start and MD code are used).
             @param rowPreviewCount The number of rows to read when deducing column types.
-            @param worksheet If loading an Excel workbook, the name or
+            @param worksheet If loading an *Excel* workbook, the name or
                 1-based index of the worksheet.
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
@@ -1648,7 +1663,7 @@ namespace Wisteria::Data
             ImportText(filePath, info, L'\t');
             }
 
-        /** @brief Imports a Excel workbook (*.xlsx) into the dataset.
+        /** @brief Imports an *Excel* workbook (*.xlsx) into the dataset.
             @param filePath The path to the data file.
             @param worksheet The name or 1-based index of the worksheet.
             @param info The definition for which columns to import and how to map them.\n

@@ -504,7 +504,7 @@ namespace Wisteria
         /** @brief Gets/sets the free floating (i.e., movable) objects on the canvas.
             @note These items are never cleared by the canvas itself and are not connected
                 to the anything. When the canvas is resized, the size and position of these
-                items does <b>not</b> change. Also, the canvas takes ownership of any objects
+                items do <b>not</b> change. Also, the canvas takes ownership of any objects
                 added to this collection.
             @returns The free-floating objects.*/
         [[nodiscard]]
@@ -936,12 +936,17 @@ namespace Wisteria
         // internal container for the above titles
         std::vector<std::unique_ptr<GraphItems::Label>> m_titles;
 
-        // embedded object (e.g., graphs, legends)
+        // embedded objects (e.g., graphs, legends)
+        // Note that these persist until they are explicitly swapped or cleard by the client,
+        // so being shared_ptrs is fine.
         std::vector<std::vector<std::shared_ptr<GraphItems::GraphItemBase>>> m_fixedObjects;
         std::vector<CanvasRowInfo> m_rowsInfo;
 
         // draggable items
-        std::shared_ptr<wxDragImage> m_dragImage;
+        // (note that these objects must be share_ptrs because a state-based share_ptr must be
+        //  used during drag events; this is OK because these are NOT destroyed during resizing,
+        //  they persist during the lifetime of canvas [at least])
+        std::unique_ptr<wxDragImage> m_dragImage;
         std::vector<std::shared_ptr<GraphItems::GraphItemBase>> m_freeFloatingObjects;
 
         // watermarks and logos

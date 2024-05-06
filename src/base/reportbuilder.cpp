@@ -1748,9 +1748,10 @@ namespace Wisteria
                 const auto replacements = mutateCat->GetProperty(L"replacements")->GetValueArrayObject();
                 for (const auto& replacement : replacements)
                     {
-                    reMap.push_back(std::make_pair(
-                        std::make_shared<wxRegEx>(replacement->GetProperty(L"pattern")->GetValueString()),
-                        replacement->GetProperty(L"replacement")->GetValueString()));
+                    reMap.push_back(
+                        std::make_pair(std::make_unique<wxRegEx>(
+                                           replacement->GetProperty(L"pattern")->GetValueString()),
+                                       replacement->GetProperty(L"replacement")->GetValueString()));
                     }
 
                 dataset->MutateCategoricalColumn(

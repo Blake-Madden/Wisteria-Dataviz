@@ -467,9 +467,9 @@ namespace Wisteria::Data
                 wxLogWarning(L"'%s': regular expression syntax error.", currentRegex);
                 continue;
                 }
-            reMap.push_back(std::make_pair(
-                std::make_shared<wxRegEx>(currentRegex),
-                replaceColumn->GetLabelFromID(replaceColumn->GetValue(i))));
+            reMap.push_back(
+                std::make_pair(std::move(std::make_unique<wxRegEx>(currentRegex)),
+                               replaceColumn->GetLabelFromID(replaceColumn->GetValue(i))));
             }
 
         return reMap;
