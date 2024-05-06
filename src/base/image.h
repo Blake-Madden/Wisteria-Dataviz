@@ -173,7 +173,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
 
-            /// @returns The file filter string for opening our supported image types.
+        /// @returns The file filter string for opening our supported image types.
         [[nodiscard]]
         static wxString GetImageFileFilter()
             {

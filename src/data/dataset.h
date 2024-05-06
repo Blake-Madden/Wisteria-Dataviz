@@ -1695,6 +1695,14 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportCSV(const wxString& filePath) const { ExportText(filePath, L',', true); }
 
+        /// @returns The file filter string for opening our supported data import types.
+        [[nodiscard]]
+        static wxString GetDataFileFilter()
+            {
+            return _(
+                LR"(Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|Excel Files (*.xlsx)|*.xlsx)");
+            }
+
         /// @}
 
         /// @private
