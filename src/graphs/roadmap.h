@@ -95,7 +95,7 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
+        std::unique_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) final;
 
         /** @brief Sets how to display the labels next to the road stops.
@@ -135,7 +135,7 @@ namespace Wisteria::Graphs
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]]
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
+        std::unique_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
             const bool includeHeader)
             {

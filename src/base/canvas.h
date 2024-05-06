@@ -67,17 +67,17 @@ namespace Wisteria
         ///     when it was added to the canvas.
         /// @param object The object to change.
         /// @sa Canvas::SetFixedObject() for when an object's initial scaling is cached.
-        explicit CanvasItemScalingChanger(std::shared_ptr<GraphItems::GraphItemBase> object)
-            : m_obj(object), m_originalScaling(object->GetScaling())
+        explicit CanvasItemScalingChanger(GraphItems::GraphItemBase& object)
+            : m_obj(object), m_originalScaling(object.GetScaling())
             {
-            m_obj->SetScaling(m_obj->GetOriginalCanvasScaling());
+            m_obj.SetScaling(m_obj.GetOriginalCanvasScaling());
             }
 
         /// @brief Destructor; resets the object back to its original scaling.
-        ~CanvasItemScalingChanger() { m_obj->SetScaling(m_originalScaling); }
+        ~CanvasItemScalingChanger() { m_obj.SetScaling(m_originalScaling); }
 
       private:
-        std::shared_ptr<GraphItems::GraphItemBase> m_obj{ nullptr };
+        GraphItems::GraphItemBase& m_obj;
         double m_originalScaling{ 1.0 };
         };
 
@@ -343,7 +343,7 @@ namespace Wisteria
                 object prior to calling this because those are factored into this calculation.
             @note This is a low-level function. Prefer using CalcRowDimensions() instead.*/
         [[nodiscard]]
-        double CalcMinWidthProportion(std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
+        double CalcMinWidthProportion(Wisteria::GraphItems::GraphItemBase& item)
             {
             wxGCDC gdc(this);
             // switch the object to (temporarily) use its original scaling from the client
@@ -352,14 +352,14 @@ namespace Wisteria
             CanvasItemScalingChanger sc(item);
             // also, reset any previous min size information for a call to the object's
             // SetBoundingBox(), as we will be resizing this item from scratch
-            item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
-            item->RecalcSizes(gdc);
+            item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+            item.RecalcSizes(gdc);
             return std::min(
-                1.0, safe_divide<double>(item->GetBoundingBox(gdc).GetWidth() +
+                1.0, safe_divide<double>(item.GetBoundingBox(gdc).GetWidth() +
                                              // canvas margins are not part of the bounding box
                                              // calculation, so those need to be factored in here
-                                             gdc.FromDIP(item->GetLeftCanvasMargin()) +
-                                             gdc.FromDIP(item->GetRightCanvasMargin()),
+                                             gdc.FromDIP(item.GetLeftCanvasMargin()) +
+                                             gdc.FromDIP(item.GetRightCanvasMargin()),
                                          gdc.FromDIP(GetCanvasMinWidthDIPs())));
             }
 
@@ -372,15 +372,15 @@ namespace Wisteria
                 object prior to calling this because those are factored into this calculation.
             @note This is a low-level function. Prefer using CalcRowDimensions() instead.*/
         [[nodiscard]]
-        double CalcMinHeightProportion(std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
+        double CalcMinHeightProportion(Wisteria::GraphItems::GraphItemBase& item)
             {
             wxGCDC gdc(this);
             CanvasItemScalingChanger sc(item);
-            item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
-            item->RecalcSizes(gdc);
-            return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight() +
-                                           gdc.FromDIP(item->GetTopCanvasMargin()) +
-                                           gdc.FromDIP(item->GetBottomCanvasMargin()),
+            item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+            item.RecalcSizes(gdc);
+            return safe_divide<double>(item.GetBoundingBox(gdc).GetHeight() +
+                                           gdc.FromDIP(item.GetTopCanvasMargin()) +
+                                           gdc.FromDIP(item.GetBottomCanvasMargin()),
                                        gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
 
@@ -887,13 +887,13 @@ namespace Wisteria
             }
 
         [[nodiscard]]
-        std::vector<std::shared_ptr<GraphItems::Label>>& GetTitles() noexcept
+        std::vector<std::unique_ptr<GraphItems::Label>>& GetTitles() noexcept
             {
             return m_titles;
             }
 
         [[nodiscard]]
-        const std::vector<std::shared_ptr<GraphItems::Label>>& GetTitles() const noexcept
+        const std::vector<std::unique_ptr<GraphItems::Label>>& GetTitles() const noexcept
             {
             return m_titles;
             }
@@ -934,7 +934,7 @@ namespace Wisteria
         std::vector<GraphItems::Label> m_topTitles;
         std::vector<GraphItems::Label> m_bottomTitles;
         // internal container for the above titles
-        std::vector<std::shared_ptr<GraphItems::Label>> m_titles;
+        std::vector<std::unique_ptr<GraphItems::Label>> m_titles;
 
         // embedded object (e.g., graphs, legends)
         std::vector<std::vector<std::shared_ptr<GraphItems::GraphItemBase>>> m_fixedObjects;

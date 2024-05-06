@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
         {
         SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
         SetShapeScheme(shapes != nullptr ? shapes :
-                                           std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                                           std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
 
         if (GetCanvas() != nullptr)
@@ -83,13 +83,13 @@ namespace Wisteria::Graphs
         wxPoint pt;
         if (GetPhysicalCoordinates(2.0, 218, pt))
             {
-            auto sentenceLabel = std::make_shared<GraphItems::Label>(
+            auto sentenceLabel = std::make_unique<GraphItems::Label>(
                 GraphItemInfo(_(L"Number of Sentences\nper 100 Words"))
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
                     .AnchorPoint(pt));
             sentenceLabel->SetTextAlignment(TextAlignment::Centered);
-            AddObject(sentenceLabel);
+            AddObject(std::move(sentenceLabel));
             }
 
         const auto addTextPoint = [this](const double xValue, const double yValue,
@@ -98,7 +98,7 @@ namespace Wisteria::Graphs
             wxPoint textPt;
             if (GetPhysicalCoordinates(xValue, yValue, textPt))
                 {
-                AddObject(std::make_shared<GraphItems::Label>(
+                AddObject(std::make_unique<GraphItems::Label>(
                     GraphItemInfo()
                         .Scaling(GetScaling())
                         .Pen(wxNullPen)
@@ -123,7 +123,7 @@ namespace Wisteria::Graphs
         // 1.5 score
         if (GetPhysicalCoordinates(1.5, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -133,7 +133,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -143,7 +143,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -153,7 +153,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -163,7 +163,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -173,7 +173,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -183,7 +183,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 174, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -193,7 +193,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 172, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -203,7 +203,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 170, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -213,7 +213,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(1.5, 168, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -224,7 +224,7 @@ namespace Wisteria::Graphs
         // 2.0 score
         if (GetPhysicalCoordinates(2.0, 190, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -234,7 +234,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 188, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -244,7 +244,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -254,7 +254,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -264,7 +264,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -274,7 +274,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -284,7 +284,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -294,7 +294,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -304,7 +304,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 174, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -314,7 +314,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 172, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -324,7 +324,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.0, 170, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -335,7 +335,7 @@ namespace Wisteria::Graphs
         // 2.5 score
         if (GetPhysicalCoordinates(2.5, 190, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -345,7 +345,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 188, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -355,7 +355,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -365,7 +365,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -375,7 +375,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -385,7 +385,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -395,7 +395,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -405,7 +405,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -415,7 +415,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 174, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -425,7 +425,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 172, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -435,7 +435,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(2.5, 170, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -446,7 +446,7 @@ namespace Wisteria::Graphs
         // 3.0 score
         if (GetPhysicalCoordinates(3.0, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -456,7 +456,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 198, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -466,7 +466,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 196, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -476,7 +476,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 194, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -486,7 +486,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 192, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -496,7 +496,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 190, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -506,7 +506,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 188, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -516,7 +516,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -526,7 +526,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -536,7 +536,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -546,7 +546,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -556,7 +556,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -566,7 +566,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.0, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -577,7 +577,7 @@ namespace Wisteria::Graphs
         // 3.5 score
         if (GetPhysicalCoordinates(3.5, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -587,7 +587,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 198, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -597,7 +597,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 196, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -607,7 +607,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 194, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -617,7 +617,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 192, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -627,7 +627,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 190, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -637,7 +637,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 188, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -647,7 +647,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -657,7 +657,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -667,7 +667,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -677,7 +677,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -687,7 +687,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -697,7 +697,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(3.5, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -708,7 +708,7 @@ namespace Wisteria::Graphs
         // 4.0 score
         if (GetPhysicalCoordinates(4.0, 206, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -718,7 +718,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 204, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -728,7 +728,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 202, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -738,7 +738,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -748,7 +748,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 198, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -758,7 +758,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 196, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -768,7 +768,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 194, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -778,7 +778,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 192, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -788,7 +788,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 190, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -798,7 +798,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 188, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -808,7 +808,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -818,7 +818,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -828,7 +828,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -838,7 +838,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -848,7 +848,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -858,7 +858,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.0, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -869,7 +869,7 @@ namespace Wisteria::Graphs
         // 4.5 score
         if (GetPhysicalCoordinates(4.5, 206, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -879,7 +879,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 204, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -889,7 +889,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 202, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -899,7 +899,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -909,7 +909,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 198, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -919,7 +919,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 196, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -929,7 +929,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 194, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -939,7 +939,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 192, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -949,7 +949,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 190, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -959,7 +959,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 188, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -969,7 +969,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 186, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -979,7 +979,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 184, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -989,7 +989,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 182, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -999,7 +999,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 180, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1009,7 +1009,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 178, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1019,7 +1019,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(4.5, 176, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1030,7 +1030,7 @@ namespace Wisteria::Graphs
         // 5.0 score
         if (GetPhysicalCoordinates(5.0, 212, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1039,7 +1039,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 210, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1048,7 +1048,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 208, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1057,7 +1057,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 206, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1066,7 +1066,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 204, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1075,7 +1075,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 202, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1084,7 +1084,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1093,7 +1093,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 198, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1102,7 +1102,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 196, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1111,7 +1111,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 194, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1120,7 +1120,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.0, 192, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1130,7 +1130,7 @@ namespace Wisteria::Graphs
         // 5.5 score
         if (GetPhysicalCoordinates(5.5, 212, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1139,7 +1139,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 210, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1148,7 +1148,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 208, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1157,7 +1157,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 206, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1166,7 +1166,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 204, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1175,7 +1175,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 202, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1184,7 +1184,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1193,7 +1193,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 198, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1202,7 +1202,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 196, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1211,7 +1211,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 194, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1220,7 +1220,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(5.5, 192, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1230,7 +1230,7 @@ namespace Wisteria::Graphs
         // 6.0 score
         if (GetPhysicalCoordinates(6.0, 214, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1239,7 +1239,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 212, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1248,7 +1248,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 210, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1257,7 +1257,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 208, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1266,7 +1266,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 206, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1275,7 +1275,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 204, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1284,7 +1284,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 202, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1293,7 +1293,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.0, 200, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1303,7 +1303,7 @@ namespace Wisteria::Graphs
         // 6.5 score
         if (GetPhysicalCoordinates(6.5, 220, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1312,7 +1312,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 218, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1321,7 +1321,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 216, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1330,7 +1330,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 214, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1339,7 +1339,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 212, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1348,7 +1348,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 210, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1357,7 +1357,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 208, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1366,7 +1366,7 @@ namespace Wisteria::Graphs
             }
         if (GetPhysicalCoordinates(6.5, 206, pt))
             {
-            AddObject(std::make_shared<GraphItems::Label>(
+            AddObject(std::make_unique<GraphItems::Label>(
                 GraphItemInfo()
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
@@ -1380,7 +1380,7 @@ namespace Wisteria::Graphs
             }
 
         // plot the data
-        auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
+        auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
@@ -1412,6 +1412,6 @@ namespace Wisteria::Graphs
                                  dc);
                 }
             }
-        AddObject(points);
+        AddObject(std::move(points));
         }
     } // namespace Wisteria::Graphs

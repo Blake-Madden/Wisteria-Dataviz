@@ -13,8 +13,10 @@ using namespace Wisteria::GraphItems;
 namespace Wisteria
     {
     //----------------------------------------------------------------
-    std::shared_ptr<Axis> CommonAxisBuilder::BuildYAxis(
-        Canvas* canvas, std::vector<std::shared_ptr<Graphs::Graph2D>> graphs, AxisType axisType)
+    std::unique_ptr<Axis>
+    CommonAxisBuilder::BuildYAxis(Canvas* canvas,
+                                  const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
+                                  AxisType axisType)
         {
         assert((axisType == AxisType::LeftYAxis || axisType == AxisType::RightYAxis) &&
                L"BuildYAxis() requires a left or right axis type to be specified!");
@@ -52,7 +54,7 @@ namespace Wisteria
             graph.get()->GetRightYAxis().GetTitle().Show(false);
             }
         // create a common axis, also copied from the tallest plot's left axis
-        auto commonAxis = std::make_shared<Axis>(axisType);
+        auto commonAxis = std::make_unique<Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the left side of its
@@ -60,7 +62,7 @@ namespace Wisteria
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         commonAxis->SetCanvasMargins(0, 0, 0, 10);
         // Get the canvas size of the axis and add it to the canvas.
-        commonAxis->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(commonAxis));
+        commonAxis->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(*commonAxis));
         commonAxis->SetFixedWidthOnCanvas(true);
 
         // tell the canvas to align the plots and stand-alone axes across each row
@@ -70,9 +72,9 @@ namespace Wisteria
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Axis>
+    std::unique_ptr<Axis>
     CommonAxisBuilder::BuildXAxis(Canvas* canvas,
-                                  std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
+                                  const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                                   AxisType axisType, const bool useCommonLeftAxis /*= false*/)
         {
         assert((axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis) &&
@@ -111,14 +113,14 @@ namespace Wisteria
             graph.get()->GetTopXAxis().GetTitle().Show(false);
             }
         // create a common axis, also copied from the widest plot's bottom axis
-        auto commonAxis = std::make_shared<Axis>(axisType);
+        auto commonAxis = std::make_unique<Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the bottom side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         commonAxis->SetCanvasMargins(10, 0, 5, 0);
         // get the canvas size of the axis and add it to the canvas
-        commonAxis->SetCanvasHeightProportion(canvas->CalcMinHeightProportion(commonAxis));
+        commonAxis->SetCanvasHeightProportion(canvas->CalcMinHeightProportion(*commonAxis));
         commonAxis->FitCanvasRowHeightToContent(true);
 
         // tell the canvas to align the plots and stand-alone axes down each column

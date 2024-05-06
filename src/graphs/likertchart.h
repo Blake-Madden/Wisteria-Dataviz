@@ -834,11 +834,11 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
             {
             return CreateLegend(LegendOptions().PlacementHint(hint));
             }

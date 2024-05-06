@@ -202,7 +202,8 @@ namespace Wisteria::Graphs
         /// @private
         [[deprecated("Sankey diagram does not support legends.")]]
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
+        std::unique_ptr<GraphItems::Label>
+        CreateLegend(
             [[maybe_unused]] const LegendOptions& options) final
             {
             wxFAIL_MSG(L"Sankey diagram does not support legends.");

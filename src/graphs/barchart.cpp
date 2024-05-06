@@ -821,7 +821,7 @@ namespace Wisteria::Graphs
         const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
         const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
 
-        std::vector<std::shared_ptr<GraphItems::Label>> decals;
+        std::vector<std::unique_ptr<GraphItems::Label>> decals;
         double barWidth{ 0 };
         wxRect barRect;
         wxImage scaledCommonImg;
@@ -1830,7 +1830,9 @@ namespace Wisteria::Graphs
 
         // draw the decals on top of the blocks
         for (auto& decal : decals)
-            { AddObject(decal); }
+            {
+            AddObject(std::move(decal));
+            }
         decals.clear();
 
         // add the brackets and bars for any bar groups
@@ -1952,7 +1954,9 @@ namespace Wisteria::Graphs
                         drawBar(theBar, false, 0);
                         // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
-                            { AddObject(decal); }
+                            {
+                            AddObject(std::move(decal));
+                            }
                         }
                     }
                 }
@@ -2034,7 +2038,9 @@ namespace Wisteria::Graphs
                         drawBar(theBar, false, 0);
                         // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
-                            { AddObject(decal); }
+                            {
+                            AddObject(std::move(decal));
+                            }
                         }
                     }
                 }

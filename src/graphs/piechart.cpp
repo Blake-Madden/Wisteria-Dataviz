@@ -17,13 +17,13 @@ using namespace Wisteria::Icons::Schemes;
 namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateMiddleLabel(wxDC& dc,
+    std::unique_ptr<Label> PieSlice::CreateMiddleLabel(wxDC& dc,
         const double pieProportion,
         const BinLabelDisplay labelDisplay,
         const std::shared_ptr<const TextReplace> abbreviate /*= nullptr*/)
         {
         const auto arcMiddle = GetMiddleOfArc(pieProportion);
-        auto pieLabel = std::make_shared<Label>(GetGraphItemInfo());
+        auto pieLabel = std::make_unique<Label>(GetGraphItemInfo());
         // if less than 1%, then use higher precision so that it doesn't just show as "0%"
         const auto percStr = wxNumberFormatter::ToString(m_percent * 100,
             ((m_percent * 100) < 1) ? 2 : 0,
@@ -81,7 +81,7 @@ namespace Wisteria::GraphItems
         const auto orginalText{ pieLabel->GetText() };
 
         // make it fit in the slice and return it (or null if too small)
-        const auto fitLabelToSlice = [this, &dc](auto pieSliceLabel)
+        const auto fitLabelToSlice = [this, &dc](auto& pieSliceLabel)
             {
             auto points = GetPolygon();
             bool middleLabelIsTooSmall{ false };
@@ -111,7 +111,7 @@ namespace Wisteria::GraphItems
                         }
                     }
                 }
-            return middleLabelIsTooSmall ? nullptr : pieSliceLabel;
+            return middleLabelIsTooSmall ? nullptr : std::move(pieSliceLabel);
             };
 
         auto scaledPieLabel = fitLabelToSlice(pieLabel);
@@ -145,16 +145,16 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(const BinLabelDisplay labelDisplay)
+    std::unique_ptr<Label> PieSlice::CreateOuterLabel(const BinLabelDisplay labelDisplay)
         { return CreateOuterLabel(m_pieArea, labelDisplay); }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(const wxRect& pieArea,
+    std::unique_ptr<Label> PieSlice::CreateOuterLabel(const wxRect& pieArea,
                                                       const BinLabelDisplay labelDisplay)
         {
         const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(1.0, pieArea);
-        auto pieLabel = std::make_shared<Label>(GetGraphItemInfo());
+        auto pieLabel = std::make_unique<Label>(GetGraphItemInfo());
         pieLabel->GetGraphItemInfo().Pen(wxNullPen).
             Scaling(GetScaling()).
             Padding(0, 4, 0, 4).
@@ -584,11 +584,10 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
-        std::vector<std::shared_ptr<GraphItemBase>> addedObjects;
-        const auto addObjectAndQueueForOffsetting = [&addedObjects, this](auto obj)
+        std::vector<std::unique_ptr<GraphItemBase>> addedObjects;
+        const auto queueObjectForOffsetting = [&addedObjects, this](auto obj)
             {
-            AddObject(obj);
-            addedObjects.push_back(obj);
+            addedObjects.push_back(std::move(obj));
             };
 
         // get a square inside of the drawing area for the pie
@@ -641,13 +640,12 @@ namespace Wisteria::Graphs
 
         // shrinks an outer label to fit within the plotting area
         // and also draws a connection line from the label to the pie slice
-        using labelLinePair = std::vector<std::pair<
-            std::shared_ptr<Label>,
-            std::shared_ptr<Points2D>>>;
+        using labelLinePair =
+            std::vector<std::pair<std::unique_ptr<Label>, std::unique_ptr<Points2D>>>;
         labelLinePair outerTopLeftLabelAndLines, outerBottomLeftLabelAndLines,
-                      outerTopRightLabelAndLines, outerBottomRightLabelAndLines;
+            outerTopRightLabelAndLines, outerBottomRightLabelAndLines;
 
-        const auto createLabelAndConnectionLine = [&](auto pSlice, bool isInnerSlice)
+        const auto createLabelAndConnectionLine = [&](const auto& pSlice, bool isInnerSlice)
             {
             auto outerLabel = pSlice->CreateOuterLabel(
                 (isInnerSlice ? outerPieDrawArea : pieDrawArea),
@@ -694,7 +692,7 @@ namespace Wisteria::Graphs
                 smallestOuterLabelFontSize =
                     std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
 
-                std::shared_ptr<Points2D> connectionLine{ nullptr };
+                std::unique_ptr<Points2D> connectionLine{ nullptr };
                 const bool isTopLeft = outerLabel->GetAnchoring() == Anchoring::BottomRightCorner;
                 const bool isBottomLeft = outerLabel->GetAnchoring() == Anchoring::TopRightCorner;
                 const bool isLeft = (isTopLeft || isBottomLeft);
@@ -705,7 +703,7 @@ namespace Wisteria::Graphs
                     // a line connecting the inner slice to its outside label
                     auto arcMiddle = pSlice->GetMiddleOfArc(1);
                     connectionLine =
-                        std::make_shared<Points2D>(GetInnerPieConnectionLinePen());
+                        std::make_unique<Points2D>(GetInnerPieConnectionLinePen());
                     connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
                     connectionLine->SetSelectable(false);
                     connectionLine->AddPoint(Point2D(
@@ -735,8 +733,7 @@ namespace Wisteria::Graphs
                     if (GetLabelPlacement() == LabelPlacement::Flush)
                         {
                         auto arcMiddle = pSlice->GetMiddleOfArc(1);
-                        connectionLine =
-                            std::make_shared<Points2D>(GetInnerPieConnectionLinePen());
+                        connectionLine = std::make_unique<Points2D>(GetInnerPieConnectionLinePen());
                         connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
                         connectionLine->SetSelectable(false);
                         connectionLine->AddPoint(Point2D(
@@ -757,29 +754,29 @@ namespace Wisteria::Graphs
                 if (isTopLeft)
                     {
                     outerTopLeftLabelAndLines.push_back(
-                        std::make_pair(outerLabel, connectionLine));
+                        std::make_pair(std::move(outerLabel), std::move(connectionLine)));
                     }
                 else if (isBottomLeft)
                     {
                     outerBottomLeftLabelAndLines.push_back(
-                        std::make_pair(outerLabel, connectionLine));
+                        std::make_pair(std::move(outerLabel), std::move(connectionLine)));
                     }
                 else if (isTopRight)
                     {
                     outerTopRightLabelAndLines.push_back(
-                        std::make_pair(outerLabel, connectionLine));
+                        std::make_pair(std::move(outerLabel), std::move(connectionLine)));
                     }
                 else if (isBottomRight)
                     {
                     outerBottomRightLabelAndLines.push_back(
-                        std::make_pair(outerLabel, connectionLine));
+                        std::make_pair(std::move(outerLabel), std::move(connectionLine)));
                     }
                 }
             };
 
         // outer (main) pie
         double startAngle{ 0.0 };
-        std::vector<std::shared_ptr<Label>> middleLabels;
+        std::vector<std::unique_ptr<Label>> middleLabels;
         int smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
@@ -793,7 +790,7 @@ namespace Wisteria::Graphs
             sliceBrush.SetColour(GetOuterPie().at(i).IsGhosted() ?
                     ColorContrast::ChangeOpacity(GetBrushScheme()->GetBrush(i).GetColour(), GetGhostOpacity()) :
                     GetBrushScheme()->GetBrush(i).GetColour());
-            auto pSlice = std::make_shared<PieSlice>(
+            auto pSlice = std::make_unique<PieSlice>(
                 GraphItemInfo(GetOuterPie().at(i).GetGroupLabel()).
                 Brush(sliceBrush).BaseColor(sliceColor).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
@@ -833,7 +830,7 @@ namespace Wisteria::Graphs
                 if (sliceBmp.IsOk())
                     { pSlice->GetBrush() = wxBrush(sliceBmp); }
                 }
-            addObjectAndQueueForOffsetting(pSlice);
+
             if (GetOuterPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, false); }
 
@@ -856,9 +853,10 @@ namespace Wisteria::Graphs
                     smallestMiddleLabelFontSize =
                         std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
                     }
-                middleLabels.push_back(middleLabel);
+                middleLabels.push_back(std::move(middleLabel));
                 }
 
+            queueObjectForOffsetting(std::move(pSlice));
             startAngle += GetOuterPie().at(i).m_percent * 360;
             }
         // make the outer ring middle labels have a common font size
@@ -867,9 +865,10 @@ namespace Wisteria::Graphs
             if (middleLabel != nullptr)
                 {
                 middleLabel->GetFont().SetPointSize(smallestMiddleLabelFontSize);
-                addObjectAndQueueForOffsetting(middleLabel);
+                queueObjectForOffsetting(std::move(middleLabel));
                 }
             }
+        middleLabels.clear();
 
         // inner pie
         startAngle = 0;
@@ -881,7 +880,6 @@ namespace Wisteria::Graphs
                 std::nullopt
             };
         auto sliceBrush{ GetBrushScheme()->GetBrush(0) };
-        middleLabels.clear();
         smallestMiddleLabelFontSize = GetBottomXAxis().GetFont().GetPointSize();
 
         const double sliceProportion = safe_divide<double>(1 -
@@ -936,7 +934,7 @@ namespace Wisteria::Graphs
 
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
 
-            auto pSlice = std::make_shared<PieSlice>(
+            auto pSlice = std::make_unique<PieSlice>(
                 GraphItemInfo(GetInnerPie().at(i).GetGroupLabel()).
                 Brush(sliceBrushToUse).BaseColor(sliceColorToUse).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
@@ -980,7 +978,6 @@ namespace Wisteria::Graphs
             if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
                 (!parentIsGhosted || GetInnerPie().at(i).IsGhosted()) )
                 { pSlice->GetBrush() = *wxTRANSPARENT_BRUSH; }
-            addObjectAndQueueForOffsetting(pSlice);
 
             if (GetInnerPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, true); }
@@ -1000,9 +997,10 @@ namespace Wisteria::Graphs
                     smallestMiddleLabelFontSize =
                         std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
                     }
-                middleLabels.push_back(middleLabel);
+                middleLabels.push_back(std::move(middleLabel));
                 }
 
+            queueObjectForOffsetting(std::move(pSlice));
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
 
@@ -1036,10 +1034,9 @@ namespace Wisteria::Graphs
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
-                std::shared_ptr<Label> nextLabel =
-                                        (i+1 < outerTopLeftLabelAndLines.size() ?
-                                         outerTopLeftLabelAndLines[i+1].first :
-                                         nullptr);
+                Label* nextLabel = (i + 1 < outerTopLeftLabelAndLines.size() ?
+                                        outerTopLeftLabelAndLines[i + 1].first.get() :
+                                        nullptr);
                 // push label to the left and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
@@ -1076,7 +1073,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            addObjectAndQueueForOffsetting(outerLabel);
+
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1100,8 +1097,9 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                addObjectAndQueueForOffsetting(outerLine);
+                queueObjectForOffsetting(std::move(outerLine));
                 }
+            queueObjectForOffsetting(std::move(outerLabel));
             }
         // left-side labels, bottom quadrant
         for (size_t i = 0; i < outerBottomLeftLabelAndLines.size(); ++i)
@@ -1114,10 +1112,9 @@ namespace Wisteria::Graphs
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
-                const std::shared_ptr<Label> nextLabel =
-                                        (i+1 < outerBottomLeftLabelAndLines.size() ?
-                                         outerBottomLeftLabelAndLines[i+1].first :
-                                         nullptr);
+                const Label* nextLabel = (i + 1 < outerBottomLeftLabelAndLines.size() ?
+                                              outerBottomLeftLabelAndLines[i + 1].first.get() :
+                                              nullptr);
                 // push label to the left and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
@@ -1154,7 +1151,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            addObjectAndQueueForOffsetting(outerLabel);
+
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1178,8 +1175,9 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                addObjectAndQueueForOffsetting(outerLine);
+                queueObjectForOffsetting(std::move(outerLine));
                 }
+            queueObjectForOffsetting(std::move(outerLabel));
             }
 
         // do the same for the right-side labels
@@ -1208,10 +1206,9 @@ namespace Wisteria::Graphs
             outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
-                std::shared_ptr<Label> nextLabel =
-                                        (i+1 < outerTopRightLabelAndLines.size() ?
-                                         outerTopRightLabelAndLines[i+1].first :
-                                         nullptr);
+                Label* nextLabel = (i + 1 < outerTopRightLabelAndLines.size() ?
+                                        outerTopRightLabelAndLines[i + 1].first.get() :
+                                        nullptr);
                 // push label to the right and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
@@ -1250,7 +1247,6 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            addObjectAndQueueForOffsetting(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1273,8 +1269,9 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                addObjectAndQueueForOffsetting(outerLine);
+                queueObjectForOffsetting(std::move(outerLine));
                 }
+            queueObjectForOffsetting(std::move(outerLabel));
             }
         // right-side labels, bottom quadrant (drawn counter clockwise)
         for (size_t i = 0; i < outerBottomRightLabelAndLines.size(); ++i)
@@ -1287,10 +1284,9 @@ namespace Wisteria::Graphs
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
-                std::shared_ptr<Label> nextLabel =
-                                        (i+1 < outerBottomRightLabelAndLines.size() ?
-                                         outerBottomRightLabelAndLines[i+1].first :
-                                         nullptr);
+                Label* nextLabel = (i + 1 < outerBottomRightLabelAndLines.size() ?
+                                        outerBottomRightLabelAndLines[i + 1].first.get() :
+                                        nullptr);
                 // push label to the right and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
@@ -1329,7 +1325,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            addObjectAndQueueForOffsetting(outerLabel);
+
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1352,8 +1348,9 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                addObjectAndQueueForOffsetting(outerLine);
+                queueObjectForOffsetting(std::move(outerLine));
                 }
+            queueObjectForOffsetting(std::move(outerLabel));
             }
 
         // make the inner ring center labels have a common font size
@@ -1362,16 +1359,17 @@ namespace Wisteria::Graphs
             if (middleLabel != nullptr)
                 {
                 middleLabel->GetFont().SetPointSize(smallestMiddleLabelFontSize);
-                addObjectAndQueueForOffsetting(middleLabel);
+                queueObjectForOffsetting(std::move(middleLabel));
                 }
             }
+        middleLabels.clear();
 
         // center hole, if a donut
         if (IsIncludingDonutHole())
             {
             const wxPoint centerPt(pieDrawArea.GetLeft() + (pieDrawArea.GetWidth() / 2),
                 pieDrawArea.GetTop() + (pieDrawArea.GetHeight() / 2));
-            auto donutHole = std::make_shared<Point2D>(
+            auto donutHole = std::make_unique<Point2D>(
                 GraphItemInfo().Brush(GetDonutHoleColor()).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Selectable(false).
@@ -1381,11 +1379,10 @@ namespace Wisteria::Graphs
                 0);
             const double holeRadius{ (pieDrawArea.GetWidth() * GetDonutHoleProportion()) / 2 };
             donutHole->SetRadius(donutHole->DownscaleFromScreenAndCanvas(holeRadius));
-            addObjectAndQueueForOffsetting(donutHole);
 
             if (GetDonutHoleLabel().GetText().length())
                 {
-                auto donutHoleLabel = std::make_shared<Label>(GetDonutHoleLabel());
+                auto donutHoleLabel = std::make_unique<Label>(GetDonutHoleLabel());
                 donutHoleLabel->GetGraphItemInfo().Pen(wxNullPen).
                     DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                     LabelPageVerticalAlignment(PageVerticalAlignment::Centered).
@@ -1401,8 +1398,9 @@ namespace Wisteria::Graphs
                     wxRect(donutHoleLabelCorner,
                            wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
                     dc, GetScaling());
-                addObjectAndQueueForOffsetting(donutHoleLabel);
+                queueObjectForOffsetting(std::move(donutHoleLabel));
                 }
+            queueObjectForOffsetting(std::move(donutHole));
             }
 
         // Resplits labels that may be been split. This is meant to take advantage
@@ -1431,14 +1429,14 @@ namespace Wisteria::Graphs
                 {
                 if (side == Side::Right)
                     {
-                    auto connectionPt = labelAndLine.second->GetPoints().back().GetAnchorPoint();
+                    wxPoint connectionPt = labelAndLine.second->GetPoints().back().GetAnchorPoint();
                     connectionPt.y += labelBox.GetHeight() / 2;
                     labelAndLine.first->SetAnchorPoint(connectionPt);
                     labelAndLine.first->SetAnchoring(Anchoring::BottomLeftCorner);
                     }
                 else
                     {
-                    auto connectionPt = labelAndLine.second->GetPoints().back().GetAnchorPoint();
+                    wxPoint connectionPt = labelAndLine.second->GetPoints().back().GetAnchorPoint();
                     connectionPt.y += labelBox.GetHeight() / 2;
                     labelAndLine.first->SetAnchorPoint(connectionPt);
                     labelAndLine.first->SetAnchoring(Anchoring::BottomRightCorner);
@@ -1516,6 +1514,11 @@ namespace Wisteria::Graphs
                         { refitLabelAndLine(labelAndLine, Side::Left); }
                     });
                 }
+            }
+
+        for (auto& addedObject : addedObjects)
+            {
+            AddObject(std::move(addedObject));
             }
 
         // see if there is a note to show in an empty gutter (if there is one)
@@ -2033,7 +2036,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> PieChart::CreateInnerPieLegend(
+    std::unique_ptr<GraphItems::Label>
+    PieChart::CreateInnerPieLegend(
         const LegendCanvasPlacementHint hint)
         {
         assert(GetInnerPie().size() > 1 &&
@@ -2041,7 +2045,7 @@ namespace Wisteria::Graphs
         if (GetInnerPie().size() == 0)
             { return nullptr; }
 
-        auto legend = std::make_shared<GraphItems::Label>(
+        auto legend = std::make_unique<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
 
@@ -2129,17 +2133,18 @@ namespace Wisteria::Graphs
         if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             { legend->SetLabelStyle(LabelStyle::LinedPaper); }
 
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(*legend, hint);
         return legend;
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> PieChart::CreateOuterPieLegend(
+    std::unique_ptr<GraphItems::Label>
+    PieChart::CreateOuterPieLegend(
         const LegendCanvasPlacementHint hint)
         {
         assert(GetOuterPie().size() > 1 &&
                L"Outer ring of pie chart empty, cannot create legend!");
-        auto legend = std::make_shared<GraphItems::Label>(
+        auto legend = std::make_unique<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
 
@@ -2170,7 +2175,7 @@ namespace Wisteria::Graphs
             }
         legend->SetText(legendText.Trim());
 
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(*legend, hint);
         return legend;
         }
     }

@@ -147,7 +147,7 @@ namespace Wisteria::Graphs
 
         /// @private
         [[deprecated("Candlestick plot does not support legends.")]] [[nodiscard]]
-        std::shared_ptr<GraphItems::Label>
+        std::unique_ptr<GraphItems::Label>
         CreateLegend([[maybe_unused]] const LegendOptions& options) final
             {
             wxFAIL_MSG(L"Candlestick plot does not support legends.");

@@ -67,13 +67,13 @@ void GroupGraph2D::BuildGroupIdMap()
     }
 
 //----------------------------------------------------------------
-std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
+std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     const LegendOptions& options)
     {
     if (!IsUsingGrouping() || GetGroupCount() == 0)
         { return nullptr; }
 
-    auto legend = std::make_shared<GraphItems::Label>(
+    auto legend = std::make_unique<GraphItems::Label>(
         GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
         DPIScaling(GetDPIScaleFactor()));
 
@@ -171,7 +171,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
         }
     legend->SetText(legendText.Trim());
 
-    AddReferenceLinesAndAreasToLegend(legend);
-    AdjustLegendSettings(legend, options.GetPlacementHint());
+    AddReferenceLinesAndAreasToLegend(*legend);
+    AdjustLegendSettings(*legend, options.GetPlacementHint());
     return legend;
     }

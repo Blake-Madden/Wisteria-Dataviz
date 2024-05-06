@@ -263,12 +263,12 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(const LegendOptions& options)
+    std::unique_ptr<GraphItems::Label> LinePlot::CreateLegend(const LegendOptions& options)
         {
         if (!IsUsingGrouping())
             { return nullptr; }
 
-        auto legend = std::make_shared<GraphItems::Label>(
+        auto legend = std::make_unique<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
 
@@ -318,8 +318,8 @@ namespace Wisteria::Graphs
             }
         legend->SetText(legendText.Trim());
 
-        AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, options.GetPlacementHint());
+        AddReferenceLinesAndAreasToLegend(*legend);
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
     }

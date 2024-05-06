@@ -406,7 +406,7 @@ namespace Wisteria::Graphs
             {
             std::array<wxPoint, 4> pts{};
 
-            std::vector<std::shared_ptr<GraphItems::Label>> labels;
+            std::vector<std::unique_ptr<GraphItems::Label>> labels;
             for (auto& group : m_sankeyColumns[colIndex])
                 {
                 if (group.m_isShown &&
@@ -524,8 +524,10 @@ namespace Wisteria::Graphs
                     }
                 }
 
-            for (const auto& label : labels)
-                { AddObject(label); }
+            for (auto& label : labels)
+                {
+                AddObject(std::move(label));
+                }
             };
 
         if (m_sankeyColumns.size() == 2)

@@ -70,12 +70,13 @@ namespace Wisteria::Graphs
     private:
         [[deprecated("Word clouds do not support legends.")]]
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
+      std::unique_ptr<GraphItems::Label>
+      CreateLegend(
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
 
         // randomly positions labels with a rect
-        void TryPlaceLabelsInPolygon(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
+        void TryPlaceLabelsInPolygon(std::vector<std::unique_ptr<GraphItems::Label>>& labels,
                                   wxDC& dc, const std::vector<wxPoint>& polygon);
 
         void AdjustRectToDrawArea(wxRect& rect, const wxRect& drawArea) const

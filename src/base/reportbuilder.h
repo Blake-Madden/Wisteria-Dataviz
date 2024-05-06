@@ -117,7 +117,7 @@ namespace Wisteria
         /// @param itemNode The JSON node to parse.
         /// @param item[in,out] The item to write the properties to.
         void LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
-                      std::shared_ptr<GraphItems::GraphItemBase> item);
+                      GraphItems::GraphItemBase& item);
         /// @brief Finalizes loading options for a graph.
         /// @details This will load general graph options from a node,
         ///     apply them to the graph, and add the graph (and possibly its legend) to the canvas.
@@ -288,10 +288,10 @@ namespace Wisteria
                                                    size_t& currentColumn);
 
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode);
+        std::unique_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode);
 
         [[nodiscard]]
-        std::shared_ptr<GraphItems::FillableShape>
+        std::unique_ptr<GraphItems::FillableShape>
         LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode);
 
         /// @brief Loads properties from a JSON node into an axis.
@@ -324,7 +324,7 @@ namespace Wisteria
         /// @param imageNode The image node to parse.
         /// @returns The image that was loaded, or null upon failure.
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode);
+        std::unique_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode);
 
         /// @brief Loads a bitmap node.
         /// @param bmpNode The bitmap node to parse.

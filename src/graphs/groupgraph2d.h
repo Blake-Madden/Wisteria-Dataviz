@@ -40,7 +40,7 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
+        std::unique_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) override;
 
         /// @returns The number of subgroups found during the last call to SetData().\n

@@ -134,7 +134,7 @@ namespace Wisteria::Graphs
         Graph2D::RecalcSizes(dc);
 
         // create the word labels and stack them on top of each other
-        std::vector<std::shared_ptr<GraphItems::Label>> labels;
+        std::vector<std::unique_ptr<GraphItems::Label>> labels;
         wxPoint origin = GetPlotAreaBoundingBox().GetTopLeft();
         size_t wordCount{ 0 };
         double labelsArea{ 0.0 };
@@ -217,7 +217,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void WordCloud::TryPlaceLabelsInPolygon(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
+    void WordCloud::TryPlaceLabelsInPolygon(std::vector<std::unique_ptr<GraphItems::Label>>& labels,
                                             wxDC& dc, const std::vector<wxPoint>& polygon)
         {
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
@@ -228,7 +228,8 @@ namespace Wisteria::Graphs
 
         std::vector<wxRect> drawnRects;
 
-        // random positioning lambda for the last label in the list
+        // Random positioning lambda for the last label in the list.
+        // Returns true if the label was std::move'd into the graph.
         const auto tryPlaceLabel = [&dc, &polygon, &drawnRects, this]
                                     (auto& label, const auto& polyBoundingBox,
                                      const wxPoint pt)
@@ -287,7 +288,7 @@ namespace Wisteria::Graphs
                 // place it and add it to be rendered
                 drawnRects.push_back(bBox);
                 label->SetAnchorPoint(bBox.GetTopLeft());
-                AddObject(label);
+                AddObject(std::move(label));
 
                 return true;
                 }
@@ -343,7 +344,7 @@ namespace Wisteria::Graphs
                         { centerPoint.x - (bBox.GetWidth() / 2),
                           centerPoint.y - (bBox.GetHeight() / 2) });
                     drawnRects.push_back(bBox);
-                    AddObject((*labelPos));
+                    AddObject(std::move(*labelPos));
                     labelPos = labels.erase(labelPos);
                     }
                 else

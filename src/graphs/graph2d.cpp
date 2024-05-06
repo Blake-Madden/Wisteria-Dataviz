@@ -19,12 +19,12 @@ namespace Wisteria::Graphs
     std::mt19937 Graph2D::m_mt{ std::random_device{}() };
 
     //----------------------------------------------------------------
-    void Graph2D::AddReferenceLinesAndAreasToLegend(std::shared_ptr<GraphItems::Label>& legend) const
+    void Graph2D::AddReferenceLinesAndAreasToLegend(GraphItems::Label& legend) const
         {
         if (GetReferenceLines().empty() && GetReferenceAreas().empty())
             { return; }
 
-        legend->GetLegendIcons().push_back(
+        legend.GetLegendIcons().push_back(
             LegendIcon(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2), wxNullColour));
         wxString textLines;
 
@@ -48,7 +48,7 @@ namespace Wisteria::Graphs
         for (const auto& refLine : refLines)
             {
             textLines += refLine.m_label + L"\n";
-            legend->GetLegendIcons().push_back(
+            legend.GetLegendIcons().push_back(
                 LegendIcon(IconShape::HorizontalLine,
                            wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()),
                            ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
@@ -75,17 +75,17 @@ namespace Wisteria::Graphs
         for (const auto& refArea : refAreas)
             {
             textLines += refArea.m_label + L"\n";
-            legend->GetLegendIcons().push_back(
+            legend.GetLegendIcons().push_back(
                 LegendIcon(IconShape::Square,
                            wxPen(refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle()),
                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
                                                         Settings::GetTranslucencyValue())));
             }
-        legend->SetText(legend->GetText() + L"\n \n" + textLines.Trim());
+        legend.SetText(legend.GetText() + L"\n \n" + textLines.Trim());
         }
 
     //----------------------------------------------------------------
-    void Graph2D::AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
+    void Graph2D::AdjustLegendSettings(GraphItems::Label& legend,
                                        const LegendCanvasPlacementHint hint)
         {
         if (GetCanvas() == nullptr)
@@ -94,48 +94,48 @@ namespace Wisteria::Graphs
             return;
             }
 
-        legend->SetBoxCorners(BoxCorners::Rounded);
+        legend.SetBoxCorners(BoxCorners::Rounded);
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
-            legend->GetGraphItemInfo().Pen(*wxBLACK_PEN).
-                Padding(4, 4, 4, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4)).
+            legend.GetGraphItemInfo().Pen(*wxBLACK_PEN).
+                Padding(4, 4, 4, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4)).
                 FontBackgroundColor(*wxWHITE);
-            legend->GetFont().MakeSmaller();
-            legend->GetHeaderInfo().GetFont().MakeSmaller();
+            legend.GetFont().MakeSmaller();
+            legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
         else if (hint == LegendCanvasPlacementHint::LeftOfGraph)
             {
-            legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
-            legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
-            legend->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
-            legend->GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
+            legend.SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
+            legend.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
+            legend.SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
+            legend.GetGraphItemInfo().Pen(wxNullPen).
+                Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4).
                 FixedWidthOnCanvas(true);
-            legend->GetFont().MakeSmaller();
-            legend->GetHeaderInfo().GetFont().MakeSmaller();
+            legend.GetFont().MakeSmaller();
+            legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
         else if (hint == LegendCanvasPlacementHint::RightOfGraph)
             {
-            legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
-            legend->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
-            legend->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
-            legend->GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
+            legend.SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
+            legend.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
+            legend.SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
+            legend.GetGraphItemInfo().Pen(wxNullPen).
+                Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4).
                 FixedWidthOnCanvas(true);
-            legend->GetFont().MakeSmaller();
-            legend->GetHeaderInfo().GetFont().MakeSmaller();
+            legend.GetFont().MakeSmaller();
+            legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
         // don't make font smaller since canvases' aspect ratio makes it so that making it
         // taller won't increase the height of the area as much as the width if the legend
         // was off to the right of the graph
         else if (hint == LegendCanvasPlacementHint::AboveOrBeneathGraph)
             {
-            legend->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
-            legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
-            legend->GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
+            legend.SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
+            legend.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
+            legend.GetGraphItemInfo().Pen(wxNullPen).
+                Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4).
                 FitCanvasHeightToContent(true);
             }

@@ -364,7 +364,7 @@ namespace Wisteria::Graphs
             @details This is graph-type specific and must be defined in derived graph classes.
             @param options Options for how to build the legend.
             @returns The legend for the plot.*/
-        virtual std::shared_ptr<GraphItems::Label> CreateLegend(
+        virtual std::unique_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) = 0;
 
         /// @returns The image scheme used for various plots (e.g., bar charts and box plots).
@@ -496,7 +496,7 @@ namespace Wisteria::Graphs
             @param Finds and returns a pointer to a continuous column
                 from the loaded dataset. If not found, throws.*/
         [[nodiscard]]
-        const Wisteria::Data::Column<double>* GetContinuousColumnRequired(const wxString& colName)
+        const Wisteria::Data::Column<double>* GetContinuousColumnRequired(const wxString& colName) const
             {
             auto continuousCol =
                 GetDataset()->GetContinuousColumn(colName);
@@ -528,7 +528,7 @@ namespace Wisteria::Graphs
                 a derived graph type.
             @param[in,out] legend The legend to adjust.
             @param hint A hint about where the legend will be placed.*/
-        void AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
+        void AdjustLegendSettings(GraphItems::Label& legend,
                                   const LegendCanvasPlacementHint hint);
         /** @brief Adds information about any reference lines/areas in the graph onto the legend.
             @details This will be a separate section added to the bottom of the legend,
@@ -538,7 +538,7 @@ namespace Wisteria::Graphs
             @note Duplicate reference areas will be combined into one;
                 This is useful for multiple instances of the same event on a plot
                 (e.g., recessions).*/
-        void AddReferenceLinesAndAreasToLegend(std::shared_ptr<GraphItems::Label>& legend) const;
+        void AddReferenceLinesAndAreasToLegend(GraphItems::Label& legend) const;
         /// @returns A non-const version of the parent canvas.
         /// @details This should be used in derived classes when needing to call
         ///     `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeightDIPs()`.
@@ -550,7 +550,7 @@ namespace Wisteria::Graphs
             @note The canvas of @c object is set to the plot's, but its scaling
                 is preserved as objects may be using the parent's scaling or a different
                 one, depending on how it was constructed.*/
-        void AddObject(std::shared_ptr<GraphItems::GraphItemBase> object)
+        void AddObject(std::unique_ptr<GraphItems::GraphItemBase> object)
             {
             if (object != nullptr)
                 {
@@ -759,7 +759,7 @@ namespace Wisteria::Graphs
         wxRect m_plotRect;
         bool m_mirrorXAxis{ false };
         bool m_mirrorYAxis{ false };
-        std::vector<std::shared_ptr<GraphItems::GraphItemBase>> m_plotObjects;
+        std::vector<std::unique_ptr<GraphItems::GraphItemBase>> m_plotObjects;
         std::vector<EmbeddedObject> m_embeddedObjects;
         GraphItems::Label m_title;
         GraphItems::Label m_subtitle;

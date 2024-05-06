@@ -200,7 +200,7 @@ void LixGauge::RecalcSizes(wxDC& dc)
         { return; }
 
     // draw outer lines
-    auto outerLines = std::make_shared<GraphItems::Lines>(*wxBLACK_PEN, GetScaling());
+    auto outerLines = std::make_unique<GraphItems::Lines>(*wxBLACK_PEN, GetScaling());
     wxCoord coordX1{ 0 }, coordX2{ 0 }, coordY1{ 0 }, coordY2{ 0 }, coordY3{ 0 };
     const auto [startX, endX] = GetBottomXAxis().GetRange();
     const auto [startY, endY] = GetLeftYAxis().GetRange();
@@ -214,7 +214,7 @@ void LixGauge::RecalcSizes(wxDC& dc)
         outerLines->AddLine(wxPoint(coordX1, coordY2), wxPoint(coordX2, coordY2));
         outerLines->AddLine(wxPoint(coordX1, coordY3), wxPoint(coordX2, coordY3));
         }
-    AddObject(outerLines);
+    AddObject(std::move(outerLines));
 
     // start plotting the points
     const auto middleRuler{ GetCustomAxes()[1] };
@@ -223,7 +223,7 @@ void LixGauge::RecalcSizes(wxDC& dc)
 
     m_jitter.SetJitterWidth(static_cast<size_t>(ptRight-ptLeft));
 
-    auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
+    auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
     points->SetScaling(GetScaling());
     points->SetDPIScaleFactor(GetDPIScaleFactor());
     points->Reserve(GetDataset()->GetRowCount());
@@ -258,5 +258,5 @@ void LixGauge::RecalcSizes(wxDC& dc)
                 GetShapeScheme()->GetShape(colorIndex)), dc);
             }
         }
-    AddObject(points);
+    AddObject(std::move(points));
     }

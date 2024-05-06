@@ -443,7 +443,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 IncludeHeader(true).
                 PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
         legend->SetLine(0, _(L"Range of Scores"));
-        subframe->m_canvas->SetFixedObject(0, 1, legend);
+        subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
         // after changing legend's text, recalculate how much of the
         // canvas it should consume
@@ -489,7 +489,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             LegendOptions().
                 IncludeHeader(true).
                 PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
-        subframe->m_canvas->SetFixedObject(0, 1, legend);
+        subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
         }
     // Histogram
     else if (event.GetId() == MyApp::ID_NEW_HISTOGRAM)
@@ -767,7 +767,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 IncludeHeader(false).
                 PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
         legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
-        subframe->m_canvas->SetFixedObject(0, 1, legend);
+        subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
         // to add another right-aligned legend under the graph, uncomment the following:
 
@@ -1518,7 +1518,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             LegendOptions().
                 IncludeHeader(true).
                 PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
-        subframe->m_canvas->SetFixedObject(1, 0, legend);
+        subframe->m_canvas->SetFixedObject(1, 0, std::move(legend));
 
         subframe->m_canvas->CalcRowDimensions();
         }
@@ -1606,7 +1606,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add everything to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, SWroadmap);
         subframe->m_canvas->SetFixedObject(1, 0, OTroadmap);
-        subframe->m_canvas->SetFixedObject(2, 0, legend);
+        subframe->m_canvas->SetFixedObject(2, 0, std::move(legend));
         subframe->m_canvas->GetRowInfo(2).LockProportion(true);
 
         subframe->m_canvas->CalcRowDimensions();
@@ -1649,7 +1649,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // Uncomment this to add a story-telling note at the bottom corner:
 
-        /* auto storyNote = std::make_shared<Label>(
+        /* auto storyNote = std::make_unique<Label>(
             GraphItemInfo(_(L"Frank reported that he experienced a"
                 " \u201Cdownward spiral\u201D during his first year on campus.")).
             Anchoring(Anchoring::BottomLeftCorner).
@@ -1937,7 +1937,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 IncludeHeader(false).
                 PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
-        linePlot->AddAnnotation(lineLegend,
+        linePlot->AddAnnotation(std::move(lineLegend),
             wxPoint(linePlot->GetBottomXAxis().GetRange().second,
                     linePlot->GetLeftYAxis().GetRange().first));
 

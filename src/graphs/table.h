@@ -1515,8 +1515,8 @@ namespace Wisteria::Graphs
 
       private:
         [[deprecated("Tables do not support legends.")]] [[nodiscard]]
-        std::shared_ptr<GraphItems::Label>
-        CreateLegend([[maybe_unused]] const LegendOptions& options) override
+        std::unique_ptr<GraphItems::Label>
+        CreateLegend([[maybe_unused]] const LegendOptions& options) final
             {
             return nullptr;
             }

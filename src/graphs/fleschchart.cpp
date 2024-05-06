@@ -24,7 +24,7 @@ namespace Wisteria::Graphs
         SetColorScheme(colors != nullptr ? colors :
             Settings::GetDefaultColorScheme());
         SetShapeScheme(shapes != nullptr ? shapes :
-            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+            std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                 Wisteria::Icons::Schemes::StandardShapes()));
 
         if (GetCanvas() != nullptr)
@@ -272,7 +272,7 @@ namespace Wisteria::Graphs
             }
 
         // add instruction label
-        auto legend = std::make_shared<GraphItems::Label>(
+        auto legend = std::make_unique<GraphItems::Label>(
                 GraphItemInfo(_(L"HOW TO USE THIS CHART\n"
                     "       Take a pencil or ruler and connect your\n"
                     "\U0000201CWords per Sentence\U0000201D figure (left) with your\n"
@@ -290,7 +290,7 @@ namespace Wisteria::Graphs
             GetFont().MakeBold().MakeSmaller();
         legend->SetBoxCorners(BoxCorners::Straight);
         legend->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-        AddObject(legend);
+        AddObject(std::move(legend));
 
         if (GetDataset() == nullptr)
             { return; }
@@ -305,7 +305,7 @@ namespace Wisteria::Graphs
         const auto& syllablesRuler{ GetCustomAxes()[2] };
         m_jitterSyllables.SetJitterWidth(syllablesRuler.CalcTickMarkOuterWidth()*2);
 
-        auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
+        auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount() * 3); // point for each ruler
@@ -344,11 +344,11 @@ namespace Wisteria::Graphs
                     const auto linePen =
                         wxPen(wxColour(0, 0, 255,
                             (GetDataset()->GetRowCount() > 10) ? 100 : wxALPHA_OPAQUE));
-                    AddObject(std::make_shared<GraphItems::Polygon>(
+                    AddObject(std::make_unique<GraphItems::Polygon>(
                         GraphItemInfo().Pen(linePen).Brush(*wxBLUE_BRUSH).
                         Scaling(GetScaling()),
                         linePts, 2));
-                    AddObject(std::make_shared<GraphItems::Polygon>(
+                    AddObject(std::make_unique<GraphItems::Polygon>(
                         GraphItemInfo().Pen(linePen).Brush(*wxBLUE_BRUSH).
                         Scaling(GetScaling()),
                         linePts+2, 2));
@@ -382,6 +382,6 @@ namespace Wisteria::Graphs
                     GetShapeScheme()->GetShape(colorIndex)), dc);
                 }
             }
-        AddObject(points);
+        AddObject(std::move(points));
         }
     }

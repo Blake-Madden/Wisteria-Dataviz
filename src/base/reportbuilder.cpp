@@ -354,12 +354,12 @@ namespace Wisteria
                                         CommonAxisBuilder::BuildYAxis(canvas, childGraphs,
                                                                       commonAxisInfo.m_axisType);
                                 LoadAxis(commonAxisInfo.m_node, *commonAxis);
-                                LoadItem(commonAxisInfo.m_node, commonAxis);
+                                LoadItem(commonAxisInfo.m_node, *commonAxis);
                                 // force the row to its height and no more
                                 commonAxis->FitCanvasRowHeightToContent(true);
                                 canvas->SetFixedObject(commonAxisInfo.m_gridPosition.first,
                                                        commonAxisInfo.m_gridPosition.second,
-                                                       commonAxis);
+                                                       std::move(commonAxis));
                                 }
                             }
                         }
@@ -759,7 +759,7 @@ namespace Wisteria
                     { label->GetHeaderInfo().LabelAlignment(headerTextAlignment.value()); }
                 }
 
-            LoadItem(labelNode, label);
+            LoadItem(labelNode, *label);
             return label;
             }
         return nullptr;
@@ -2813,7 +2813,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<GraphItems::FillableShape>
+    std::unique_ptr<GraphItems::FillableShape>
         ReportBuilder::LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode)
         {
         const auto loadedShape = ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
@@ -2856,7 +2856,7 @@ namespace Wisteria
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"text"), GraphItems::Label());
 
-        auto sh = std::make_shared<FillableShape>(
+        auto sh = std::make_unique<FillableShape>(
             GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{})).
             Anchoring(Anchoring::TopLeftCorner).
             Pen(pen).Brush(brush).
@@ -2867,7 +2867,7 @@ namespace Wisteria
         sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
         sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
-        LoadItem(shapeNode, sh);
+        LoadItem(shapeNode, *sh);
 
         // fit the column area to this shape
         sh->SetFixedWidthOnCanvas(true);
@@ -2875,7 +2875,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<GraphItems::Shape> ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode)
+    std::unique_ptr<GraphItems::Shape>
+    ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode)
         {
         const auto loadedShape = ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
         if (!loadedShape.has_value())
@@ -2901,7 +2902,7 @@ namespace Wisteria
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"text"), GraphItems::Label());
 
-        auto sh = std::make_shared<Shape>(
+        auto sh = std::make_unique<Shape>(
             GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{})).
             Anchoring(Anchoring::TopLeftCorner).
             Pen(pen).Brush(brush).
@@ -2912,7 +2913,7 @@ namespace Wisteria
         sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
         sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
 
-        LoadItem(shapeNode, sh);
+        LoadItem(shapeNode, *sh);
 
         // fit the column area to this shape
         sh->SetFixedWidthOnCanvas(true);
@@ -4797,7 +4798,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<GraphItems::Image> ReportBuilder::LoadImage(
+    std::unique_ptr<GraphItems::Image>
+    ReportBuilder::LoadImage(
         const wxSimpleJSON::Ptr_t& imageNode)
         {
         static const std::map<std::wstring_view, ResizeMethod> resizeValues =
@@ -4809,7 +4811,7 @@ namespace Wisteria
             };
 
         const auto bmp = LoadImageFile(imageNode->GetProperty(L"image-import"));
-        auto image = std::make_shared<GraphItems::Image>(bmp.ConvertToImage());
+        auto image = std::make_unique<GraphItems::Image>(bmp.ConvertToImage());
         if (image->IsOk())
             {
             // center by default, but allow LoadItems (below) to override that
@@ -4821,7 +4823,7 @@ namespace Wisteria
                 imageNode->GetProperty(L"resize-method")->GetValueString().MakeLower().wc_str()));
             if (foundPos != resizeValues.cend())
                 { image->SetResizeMethod(foundPos->second); }
-            LoadItem(imageNode, image);
+            LoadItem(imageNode, *image);
 
             image->SetFixedWidthOnCanvas(true);
             return image;
@@ -4888,9 +4890,9 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
-                                 std::shared_ptr<GraphItems::GraphItemBase> item)
+                                 GraphItems::GraphItemBase& item)
         {
-        if (!itemNode->IsOk() || item == nullptr)
+        if (!itemNode->IsOk())
             { return; }
 
         static const std::map<std::wstring_view, Anchoring> anchoringValues =
@@ -4902,23 +4904,23 @@ namespace Wisteria
             { L"top-right-corner", Anchoring::TopRightCorner },
             };
 
-        item->SetDPIScaleFactor(m_dpiScaleFactor);
+        item.SetDPIScaleFactor(m_dpiScaleFactor);
 
         // ID
-        item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
+        item.SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
 
         // anchoring
         const auto foundPos = anchoringValues.find(std::wstring_view(
             itemNode->GetProperty(L"anchoring")->GetValueString().MakeLower().wc_str()));
         if (foundPos != anchoringValues.cend())
-            { item->SetAnchoring(foundPos->second); }
+            { item.SetAnchoring(foundPos->second); }
 
         // outline
         const auto outlineFlagsNode = itemNode->GetProperty(L"outline");
         if (outlineFlagsNode->IsOk() && outlineFlagsNode->IsValueArray())
             {
             const auto outlineFlags = outlineFlagsNode->GetValueArrayBool();
-            item->GetGraphItemInfo().Outline(
+            item.GetGraphItemInfo().Outline(
                 (outlineFlags.size() > 0 ? outlineFlags[0] : false),
                 (outlineFlags.size() > 1 ? outlineFlags[1] : false),
                 (outlineFlags.size() > 2 ? outlineFlags[2] : false),
@@ -4928,66 +4930,66 @@ namespace Wisteria
         // child-alignment
         const auto childPlacement = itemNode->GetProperty(L"relative-alignment")->GetValueString();
         if (childPlacement.CmpNoCase(L"flush-left") == 0)
-            { item->SetRelativeAlignment(RelativeAlignment::FlushLeft); }
+            { item.SetRelativeAlignment(RelativeAlignment::FlushLeft); }
         else if (childPlacement.CmpNoCase(L"flush-right") == 0)
-            { item->SetRelativeAlignment(RelativeAlignment::FlushRight); }
+            { item.SetRelativeAlignment(RelativeAlignment::FlushRight); }
         else if (childPlacement.CmpNoCase(L"flush-top") == 0)
-            { item->SetRelativeAlignment(RelativeAlignment::FlushTop); }
+            { item.SetRelativeAlignment(RelativeAlignment::FlushTop); }
         else if (childPlacement.CmpNoCase(L"flush-bottom") == 0)
-            { item->SetRelativeAlignment(RelativeAlignment::FlushBottom); }
+            { item.SetRelativeAlignment(RelativeAlignment::FlushBottom); }
         else if (childPlacement.CmpNoCase(L"centered") == 0)
-            { item->SetRelativeAlignment(RelativeAlignment::Centered); }
+            { item.SetRelativeAlignment(RelativeAlignment::Centered); }
 
         // padding (going clockwise)
         const auto paddingSpec = itemNode->GetProperty(L"padding")->GetValueArrayNumber();
         if (paddingSpec.size() > 0)
-            { item->SetTopPadding(paddingSpec.at(0)); }
+            { item.SetTopPadding(paddingSpec.at(0)); }
         if (paddingSpec.size() > 1)
-            { item->SetRightPadding(paddingSpec.at(1)); }
+            { item.SetRightPadding(paddingSpec.at(1)); }
         if (paddingSpec.size() > 2)
-            { item->SetBottomPadding(paddingSpec.at(2)); }
+            { item.SetBottomPadding(paddingSpec.at(2)); }
         if (paddingSpec.size() > 3)
-            { item->SetLeftPadding(paddingSpec.at(3)); }
+            { item.SetLeftPadding(paddingSpec.at(3)); }
 
         // canvas padding (going clockwise)
         const auto canvasPaddingSpec = itemNode->GetProperty(L"canvas-margins")->GetValueArrayNumber();
         if (canvasPaddingSpec.size() > 0)
-            { item->SetTopCanvasMargin(canvasPaddingSpec.at(0)); }
+            { item.SetTopCanvasMargin(canvasPaddingSpec.at(0)); }
         if (canvasPaddingSpec.size() > 1)
-            { item->SetRightCanvasMargin(canvasPaddingSpec.at(1)); }
+            { item.SetRightCanvasMargin(canvasPaddingSpec.at(1)); }
         if (canvasPaddingSpec.size() > 2)
-            { item->SetBottomCanvasMargin(canvasPaddingSpec.at(2)); }
+            { item.SetBottomCanvasMargin(canvasPaddingSpec.at(2)); }
         if (canvasPaddingSpec.size() > 3)
-            { item->SetLeftCanvasMargin(canvasPaddingSpec.at(3)); }
+            { item.SetLeftCanvasMargin(canvasPaddingSpec.at(3)); }
 
         // horizontal page alignment
         const auto hPageAlignment = itemNode->GetProperty(L"horizontal-page-alignment")->GetValueString();
         if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
-            { item->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
+            { item.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
         else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
-            { item->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
+            { item.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
         else if (hPageAlignment.CmpNoCase(L"centered") == 0)
-            { item->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
+            { item.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
 
         // vertical page alignment
         const auto vPageAlignment = itemNode->GetProperty(L"vertical-page-alignment")->GetValueString();
         if (vPageAlignment.CmpNoCase(L"top-aligned") == 0)
-            { item->SetPageVerticalAlignment(PageVerticalAlignment::TopAligned); }
+            { item.SetPageVerticalAlignment(PageVerticalAlignment::TopAligned); }
         else if (vPageAlignment.CmpNoCase(L"bottom-aligned") == 0)
-            { item->SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned); }
+            { item.SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned); }
         else if (vPageAlignment.CmpNoCase(L"centered") == 0)
-            { item->SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
+            { item.SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
 
         // should the item be shown
-        item->Show(itemNode->GetProperty(L"show")->GetValueBool(true));
+        item.Show(itemNode->GetProperty(L"show")->GetValueBool(true));
 
-        item->SetScaling(itemNode->GetProperty(L"scaling")->GetValueNumber(1));
+        item.SetScaling(itemNode->GetProperty(L"scaling")->GetValueNumber(1));
 
-        LoadPen(itemNode->GetProperty(L"pen"), item->GetPen());
+        LoadPen(itemNode->GetProperty(L"pen"), item.GetPen());
 
-        item->SetFixedWidthOnCanvas(
+        item.SetFixedWidthOnCanvas(
             itemNode->GetProperty(L"fixed-width")->GetValueBool());
-        item->FitCanvasRowHeightToContent(
+        item.FitCanvasRowHeightToContent(
             itemNode->GetProperty(L"fit-row-to-content")->GetValueBool());
         }
 
@@ -5028,7 +5030,7 @@ namespace Wisteria
                                   Canvas* canvas, size_t& currentRow, size_t& currentColumn,
                                   std::shared_ptr<Graphs::Graph2D> graph)
         {
-        LoadItem(graphNode, graph);
+        LoadItem(graphNode, *graph);
 
         // title information
         const auto titleProperty = graphNode->GetProperty(L"title");
@@ -5311,50 +5313,63 @@ namespace Wisteria
             const auto includeHeader = legendNode->GetProperty(L"include-header")->GetValueBool(true);
             const auto headerLabel = legendNode->GetProperty(L"title")->GetValueString();
             const auto placement = legendNode->GetProperty(L"placement")->GetValueString();
-            std::shared_ptr<Label> legend{ nullptr };
             if (placement.CmpNoCase(L"left") == 0)
                 {
-                legend = graph->CreateLegend(
+                auto legend = graph->CreateLegend(
                     LegendOptions().
                     RingPerimeter(ringPerimeter).
                     IncludeHeader(includeHeader).
                     PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
+                // update title
+                if (headerLabel.length())
+                    {
+                    legend->SetLine(0, headerLabel);
+                    }
                 canvas->SetFixedObject(currentRow, currentColumn+1, graph);
-                canvas->SetFixedObject(currentRow, currentColumn++, legend);
+                canvas->SetFixedObject(currentRow, currentColumn++, std::move(legend));
                 }
             else if (placement.CmpNoCase(L"bottom") == 0)
                 {
-                legend = graph->CreateLegend(
+                auto legend = graph->CreateLegend(
                     LegendOptions().
                     RingPerimeter(ringPerimeter).
                     IncludeHeader(includeHeader).
                     PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+                if (headerLabel.length())
+                    {
+                    legend->SetLine(0, headerLabel);
+                    }
                 canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(++currentRow, currentColumn, legend);
+                canvas->SetFixedObject(++currentRow, currentColumn, std::move(legend));
                 }
             else if (placement.CmpNoCase(L"top") == 0)
                 {
-                legend = graph->CreateLegend(
+                auto legend = graph->CreateLegend(
                     LegendOptions().
                     RingPerimeter(ringPerimeter).
                     IncludeHeader(includeHeader).
                     PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+                if (headerLabel.length())
+                    {
+                    legend->SetLine(0, headerLabel);
+                    }
                 canvas->SetFixedObject(currentRow+1, currentColumn, graph);
-                canvas->SetFixedObject(currentRow++, currentColumn, legend);
+                canvas->SetFixedObject(currentRow++, currentColumn, std::move(legend));
                 }
             else // right, the default
                 {
-                legend = graph->CreateLegend(
+                auto legend = graph->CreateLegend(
                     LegendOptions().
                     RingPerimeter(ringPerimeter).
                     IncludeHeader(includeHeader).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+                if (headerLabel.length())
+                    {
+                    legend->SetLine(0, headerLabel);
+                    }
                 canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(currentRow, ++currentColumn, legend);
+                canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legend));
                 }
-            // update title
-            if (legend && headerLabel.length())
-                { legend->SetLine(0, headerLabel); }
             }
         // no legend, so just add the graph
         else

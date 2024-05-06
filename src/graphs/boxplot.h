@@ -403,7 +403,7 @@ namespace Wisteria::Graphs
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @}
 
@@ -532,7 +532,7 @@ namespace Wisteria::Graphs
 
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
             {
             return CreateLegend(LegendOptions().PlacementHint(hint));
             }

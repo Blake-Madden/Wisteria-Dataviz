@@ -1044,13 +1044,13 @@ namespace Wisteria
                 if (object != nullptr && object->IsFittingCanvasRowHeightToContent())
                     {
                     rowHeightProportion = rowHeightProportion.has_value() ?
-                        std::max(rowHeightProportion.value(), CalcMinHeightProportion(object)) :
-                        CalcMinHeightProportion(object);
+                        std::max(rowHeightProportion.value(), CalcMinHeightProportion(*object)) :
+                        CalcMinHeightProportion(*object);
                     }
                 // also re-adjust the width if being fit with its content width-wise
                 if (object != nullptr && object->IsFixedWidthOnCanvas())
                     {
-                    object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
+                    object->SetCanvasWidthProportion(CalcMinWidthProportion(*object));
                     CalcColumnWidths(currentRow);
                     }
                 validObjectsInRow += ((object != nullptr) ? 1 : 0);
@@ -1264,7 +1264,7 @@ namespace Wisteria
         // re-adjust the proportional width
         if (object != nullptr)
             {
-            object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
+            object->SetCanvasWidthProportion(CalcMinWidthProportion(*object));
             }
         // recalc layout of column widths, unless the row is currently just
         // filled with null placeholders

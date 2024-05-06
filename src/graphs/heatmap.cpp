@@ -446,7 +446,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
+    std::unique_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
         {
         if (GetDataset() == nullptr || m_continuousColumn->GetRowCount() == 0)
             {
@@ -457,7 +457,7 @@ namespace Wisteria::Graphs
                                                 m_continuousColumn->GetValues().cend());
         const auto maxValue = *std::max_element(m_continuousColumn->GetValues().cbegin(),
                                                 m_continuousColumn->GetValues().cend());
-        auto legend = std::make_shared<GraphItems::Label>(
+        auto legend = std::make_unique<GraphItems::Label>(
             GraphItemInfo(
                 // add spaces on the empty lines to work around SVG exporting
                 // stripping out the blank lines
@@ -477,8 +477,8 @@ namespace Wisteria::Graphs
             }
         legend->GetLegendIcons().push_back(LegendIcon(m_reversedColorSpectrum));
 
-        AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, options.GetPlacementHint());
+        AddReferenceLinesAndAreasToLegend(*legend);
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
     } // namespace Wisteria::Graphs

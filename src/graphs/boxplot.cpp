@@ -767,18 +767,18 @@ namespace Wisteria::Graphs
                                            GetPlotAreaBoundingBox().GetHeight()));
             legend->SetAnchoring(Anchoring::BottomRightCorner);
             legend->SetScaling(GetScaling());
-            AddObject(legend);
+            AddObject(std::move(legend));
             }
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
+    std::unique_ptr<GraphItems::Label> BoxPlot::CreateLegend(
             const LegendOptions& options)
         {
         if (GetDataset() == nullptr || GetBoxCount() != 1)
             { return nullptr; }
 
-        auto legend = std::make_shared<GraphItems::Label>(
+        auto legend = std::make_unique<GraphItems::Label>(
             GraphItemInfo().Pen(wxNullPen).
             DPIScaling(GetDPIScaleFactor()));
         legend->GetGraphItemInfo().Text(
@@ -797,8 +797,8 @@ namespace Wisteria::Graphs
                     wxNumberFormatter::ToString(GetBox(0).GetUpperWhisker(),
                                                 3, Settings::GetDefaultNumberFormat())));
 
-        AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, options.GetPlacementHint());
+        AddReferenceLinesAndAreasToLegend(*legend);
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
     }

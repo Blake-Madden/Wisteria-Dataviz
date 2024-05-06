@@ -86,7 +86,7 @@ namespace Wisteria::Graphs
          WCurve->GetTopXAxis().GetTitle().SetBottomPadding(5);
 
          // add a story-telling note at the bottom corner
-         auto storyNote = std::make_shared<Label>(
+         auto storyNote = std::make_unique<Label>(
              GraphItemInfo(_(L"Frank reported that he experienced a"
                 " \u201Cdownward spiral\u201D during his first year on campus.")).
              Anchoring(Anchoring::BottomLeftCorner).

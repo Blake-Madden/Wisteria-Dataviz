@@ -420,9 +420,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendOptions& options)
+    std::unique_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendOptions& options)
         {
-        auto legend = std::make_shared<GraphItems::Label>(GraphItemInfo().
+        auto legend = std::make_unique<GraphItems::Label>(GraphItemInfo().
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs()).
             LabelAlignment(TextAlignment::FlushLeft).
             DPIScaling(GetDPIScaleFactor()));
@@ -544,8 +544,8 @@ namespace Wisteria::Graphs
                 }
             }
 
-        AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, options.GetPlacementHint());
+        AddReferenceLinesAndAreasToLegend(*legend);
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
         return legend;
         }
 
@@ -2228,7 +2228,7 @@ namespace Wisteria::Graphs
         BarChart::RecalcSizes(dc);
 
         // overlay dashed dividing lines between sections
-        auto sectionDividerLines = std::make_shared<GraphItems::Lines>(
+        auto sectionDividerLines = std::make_unique<GraphItems::Lines>(
                                                     wxPen(*wxBLACK, 1, wxPENSTYLE_LONG_DASH), GetScaling());
         wxCoord bottomPosAndNegX{ 0 }, bottomNeutralX{ 0 }, bottomNAX{ 0 };
         if (GetBottomXAxis().GetPhysicalCoordinate(m_questionBlockSize + m_categoryBlockSize +
@@ -2250,12 +2250,14 @@ namespace Wisteria::Graphs
             sectionDividerLines->AddLine(wxPoint(bottomNAX, GetLeftYAxis().GetBottomPoint().y),
                 wxPoint(bottomNAX, GetLeftYAxis().GetTopPoint().y));
             }
-        AddObject(sectionDividerLines);
+        AddObject(std::move(sectionDividerLines));
 
         AddQuestionBrackets();
         // make a little smaller as these could be rather lengthy
         // and consume a lot of real estate
         for (auto& bracket : GetLeftYAxis().GetBrackets())
-            { bracket.GetLabel().GetFont().MakeSmaller(); }
+            {
+            bracket.GetLabel().GetFont().MakeSmaller();
+            }
         }
     }

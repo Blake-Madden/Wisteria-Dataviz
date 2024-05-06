@@ -56,7 +56,7 @@ namespace Wisteria::GraphItems
                 set to BinLabelDisplay::BinName.
             @returns The label, which will already be anchored to the middle of the slice.*/
         [[nodiscard]]
-        std::shared_ptr<Wisteria::GraphItems::Label> CreateMiddleLabel(
+        std::unique_ptr<Wisteria::GraphItems::Label> CreateMiddleLabel(
                           wxDC& dc, const double pieProportion, const BinLabelDisplay labelDisplay,
                           const std::shared_ptr<const TextReplace> abbreviate = nullptr);
         /** @brief Creates a label to display at the outer ring of the pie.
@@ -65,7 +65,8 @@ namespace Wisteria::GraphItems
             @returns The label, which will already be anchored to the middle of the slices'
                 outer ring.*/
         [[nodiscard]]
-        std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
+        std::unique_ptr<Wisteria::GraphItems::Label>
+        CreateOuterLabel(
             const BinLabelDisplay labelDisplay);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
@@ -76,7 +77,8 @@ namespace Wisteria::GraphItems
             @returns The label, which will already be anchored to the middle of the slices'
                 outer ring.*/
         [[nodiscard]]
-        std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
+        std::unique_ptr<Wisteria::GraphItems::Label>
+        CreateOuterLabel(
                           const wxRect& pieArea, const BinLabelDisplay labelDisplay);
         /// @returns The custom midpoint display, specific to this slice.
         [[nodiscard]]
@@ -889,7 +891,7 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateLegend(
+        std::unique_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) final
             {
             if (options.GetRingPerimeter() == Perimeter::Inner)
@@ -910,7 +912,8 @@ namespace Wisteria::Graphs
             @returns The legend for the chart.
             @note Prefer using CreateLegend().*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateOuterPieLegend(
+        std::unique_ptr<GraphItems::Label>
+        CreateOuterPieLegend(
             const LegendCanvasPlacementHint hint);
 
         /** @brief Builds and returns a legend for the inner pie (if a dual data series).
@@ -920,7 +923,8 @@ namespace Wisteria::Graphs
             @returns The legend for the chart.
             @note Prefer using CreateLegend().*/
         [[nodiscard]]
-        std::shared_ptr<GraphItems::Label> CreateInnerPieLegend(
+        std::unique_ptr<GraphItems::Label>
+        CreateInnerPieLegend(
             const LegendCanvasPlacementHint hint);
         /// @}
 
