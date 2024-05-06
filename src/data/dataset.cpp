@@ -1561,7 +1561,7 @@ namespace Wisteria::Data
         // set the names for the columns
         SetColumnNames(info);
         }
-        
+
     //----------------------------------------------
     void Dataset::Import(const wxString& filePath, const ImportInfo& info)
         {
