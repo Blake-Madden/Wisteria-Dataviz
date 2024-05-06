@@ -18,18 +18,18 @@ using namespace Wisteria::Icons::Schemes;
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    WCurvePlot::WCurvePlot(Canvas* canvas,
-            std::shared_ptr<ColorScheme> colors /*= nullptr*/,
-            std::shared_ptr<IconScheme> shapes /*= nullptr*/,
-            std::shared_ptr<LineStyleScheme> linePenStyles /*= nullptr*/) :
-            LinePlot(canvas, colors,
-                shapes != nullptr ? shapes : std::make_unique<IconScheme>(IconScheme{ IconShape::Blank }),
-                linePenStyles != nullptr ? linePenStyles :
-                    std::make_unique<LineStyleScheme>(LineStyleScheme{
-                        { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Arrows },
-                        { wxPenStyle::wxPENSTYLE_LONG_DASH, LineStyle::Arrows },
-                        { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Arrows }
-                        }))
+    WCurvePlot::WCurvePlot(Canvas* canvas, std::shared_ptr<ColorScheme> colors /*= nullptr*/,
+                           std::shared_ptr<IconScheme> shapes /*= nullptr*/,
+                           std::shared_ptr<LineStyleScheme> linePenStyles /*= nullptr*/)
+        : LinePlot(canvas, colors,
+                   shapes != nullptr ? shapes :
+                                       std::make_unique<IconScheme>(IconScheme{ IconShape::Blank }),
+                   linePenStyles != nullptr ?
+                       linePenStyles :
+                       std::make_unique<LineStyleScheme>(
+                           LineStyleScheme{ { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Arrows },
+                                            { wxPenStyle::wxPENSTYLE_LONG_DASH, LineStyle::Arrows },
+                                            { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Arrows } }))
         {
         GetBottomXAxis().SetCapStyle(AxisCapStyle::Arrow);
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
@@ -42,13 +42,14 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void WCurvePlot::SetData(std::shared_ptr<const Data::Dataset> data,
-        const wxString& yColumnName,
-        const wxString& xColumnName,
-        std::optional<const wxString> groupColumnName)
+    void WCurvePlot::SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
+                             const wxString& xColumnName,
+                             std::optional<const wxString> groupColumnName)
         {
-         if (data == nullptr)
-            { return; }
+        if (data == nullptr)
+            {
+            return;
+            }
         if (!groupColumnName.has_value())
             {
             throw std::runtime_error(_(L"Group column required for W-curve plot.").ToUTF8());
@@ -57,7 +58,8 @@ namespace Wisteria::Graphs
 
         // force the X axes to use neat integers
         const auto [axisMin, axisMax] = GetBottomXAxis().GetRange();
-        GetBottomXAxis().SetRange(previous_interval(axisMin, 1), next_interval(axisMax, 1), 0, 1, 1);
+        GetBottomXAxis().SetRange(previous_interval(axisMin, 1), next_interval(axisMax, 1), 0, 1,
+                                  1);
 
         GetTopXAxis().CopySettings(GetBottomXAxis());
         GetTopXAxis().SetFontBackgroundColor(ColorBrewer::GetColor(Color::Black));
@@ -78,15 +80,21 @@ namespace Wisteria::Graphs
         {
         GetTopXAxis().ClearCustomLabels();
         if (GetDataset()->GetRowCount() == 0)
-            { return; }
+            {
+            return;
+            }
 
         auto [topRangeStart, topRangeEnd] = GetTopXAxis().GetRange();
         const auto maxXValue = GetXMinMax().second;
         // if last datum collected is at the edge of the range, then add an extra label
         if (maxXValue == topRangeEnd)
-            { ++topRangeEnd; }
+            {
+            ++topRangeEnd;
+            }
         for (size_t i = topRangeStart; i < topRangeEnd; i += GetTopXAxis().GetInterval())
-            { GetTopXAxis().SetCustomLabel(i, Label(FormatTimeLabel(i))); }
+            {
+            GetTopXAxis().SetCustomLabel(i, Label(FormatTimeLabel(i)));
+            }
         }
 
     //----------------------------------------------------------------
@@ -128,4 +136,4 @@ namespace Wisteria::Graphs
             return wxString{};
             }
         }
-    }
+    } // namespace Wisteria::Graphs

@@ -146,7 +146,9 @@ namespace Wisteria::GraphItems
 
     //----------------------------------------------------------------
     std::unique_ptr<Label> PieSlice::CreateOuterLabel(const BinLabelDisplay labelDisplay)
-        { return CreateOuterLabel(m_pieArea, labelDisplay); }
+        {
+        return CreateOuterLabel(m_pieArea, labelDisplay);
+        }
 
     //----------------------------------------------------------------
     std::unique_ptr<Label> PieSlice::CreateOuterLabel(const wxRect& pieArea,

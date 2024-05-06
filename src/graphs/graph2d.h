@@ -32,7 +32,7 @@ namespace Wisteria::Graphs
     /// @brief Options for building a legend.
     class LegendOptions
         {
-    public:
+      public:
         /// @brief Sets whether to show a header on top of the legend
         ///     (which is usually the grouping variable name).
         /// @param includeHeader @c true to include headers.
@@ -42,10 +42,14 @@ namespace Wisteria::Graphs
             m_includeHeader = includeHeader;
             return *this;
             }
+
         /// @returns @c true if including a header on the legend.
         [[nodiscard]]
         bool IsIncludingHeader() const noexcept
-            { return m_includeHeader; }
+            {
+            return m_includeHeader;
+            }
+
         /// @brief Provides a hint about where the legend will be placed
         ///     relative to its parent graph.
         /// @param hint A hint about where the legend will be placed
@@ -58,9 +62,10 @@ namespace Wisteria::Graphs
             m_hint = hint;
             return *this;
             }
+
         /// @returns How the legend is being placed relative to its graph.
-        LegendCanvasPlacementHint GetPlacementHint() const noexcept
-            { return m_hint; }
+        LegendCanvasPlacementHint GetPlacementHint() const noexcept { return m_hint; }
+
         /// @brief Which ring of a pie-like chart is the legend referring to.
         /// @param peri Whether the legend is the outer or inner ring of the chart.
         /// @returns A self reference.
@@ -69,10 +74,11 @@ namespace Wisteria::Graphs
             m_perimeter = peri;
             return *this;
             }
+
         /// @returns Which ring of a pie-like chart is the legend referring to.
-        Perimeter GetRingPerimeter() const noexcept
-            { return m_perimeter; }
-    private:
+        Perimeter GetRingPerimeter() const noexcept { return m_perimeter; }
+
+      private:
         bool m_includeHeader{ false };
         LegendCanvasPlacementHint m_hint{ LegendCanvasPlacementHint::RightOfGraph };
         Perimeter m_perimeter{ Perimeter::Outer };

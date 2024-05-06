@@ -24,7 +24,9 @@ namespace Wisteria::Graphs
                                          const size_t schemeIndex)
         {
         if (data == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         m_data = data;
         m_schemeIndex = schemeIndex;

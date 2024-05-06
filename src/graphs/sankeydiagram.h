@@ -12,11 +12,12 @@
 #ifndef __SANKEY_DIAGRAM_H__
 #define __SANKEY_DIAGRAM_H__
 
-#include "graph2d.h"
 #include "../util/frequencymap.h"
+#include "graph2d.h"
 
 namespace Wisteria::Graphs
     {
+    // clang-format off
     /** @brief Flow diagram, showing the flow of one series of groups into another series of groups.
         @details This implementation supports a two-level flow (one column of groups flowing into another column).
 
@@ -98,19 +99,20 @@ namespace Wisteria::Graphs
 
         @endcode
     */
+    // clang-format on
     class SankeyDiagram : public Graph2D
         {
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The canvas to draw the diagram on.
             @param brushes The brush scheme to draw with.*/
         explicit SankeyDiagram(Canvas* canvas,
-            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr) :
-            Graph2D(canvas)
+                               std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr)
+            : Graph2D(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
-                std::make_shared<Brushes::Schemes::BrushScheme>
-                    (Wisteria::Colors::Schemes::IceCream{}));
+                                                std::make_shared<Brushes::Schemes::BrushScheme>(
+                                                    Wisteria::Colors::Schemes::IceCream{}));
 
             GetLeftYAxis().SetRange(0, 100, 0, 1, 10);
             GetLeftYAxis().GetGridlinePen() = wxNullPen;
@@ -148,8 +150,8 @@ namespace Wisteria::Graphs
                 @c toWeightColumnName was not (or vice versa).\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
-                     const wxString& fromColumnName, const wxString& toColumnName,
+        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& fromColumnName,
+                     const wxString& toColumnName,
                      const std::optional<wxString>& fromWeightColumnName,
                      const std::optional<wxString>& toWeightColumnName,
                      const std::optional<wxString>& fromSortColumnName);
@@ -161,32 +163,44 @@ namespace Wisteria::Graphs
         /// @returns The shape of the streams going between the groups.
         [[nodiscard]]
         FlowShape GetFlowShape() const noexcept
-            { return m_flowShape; }
+            {
+            return m_flowShape;
+            }
+
         /// @brief Sets the shape of the streams going between the groups.
         /// @param shape The shape to use.
-        void SetFlowShape(FlowShape shape) noexcept
-            { m_flowShape = shape; }
+        void SetFlowShape(FlowShape shape) noexcept { m_flowShape = shape; }
 
         /// @returns The format of the labels shown on the group boxes.
         [[nodiscard]]
         BinLabelDisplay GetGroupLabelDisplay() const noexcept
-            { return m_groupLabelDisplay; }
+            {
+            return m_groupLabelDisplay;
+            }
+
         /// @brief Sets the format of the labels shown on the group boxes.
         /// @param labelDisplay The format to use.
         void SetGroupLabelDisplay(const BinLabelDisplay labelDisplay) noexcept
-            { m_groupLabelDisplay = labelDisplay; }
+            {
+            m_groupLabelDisplay = labelDisplay;
+            }
 
         /// @returns How the columns (i.e., groups from each variable) display
         ///     their variable's name.
         [[nodiscard]]
         GraphColumnHeader GetColumnHeaderDisplay() const noexcept
-            { return m_columnDisplay; }
+            {
+            return m_columnDisplay;
+            }
+
         /// @brief Sets how the columns (i.e., groups from each variable) display
         ///     their variable's name.
         /// @param columnDisplay The display method to use.
         /// @sa SetColumnHeaders().
         void SetColumnHeaderDisplay(const GraphColumnHeader columnDisplay) noexcept
-            { m_columnDisplay = columnDisplay; }
+            {
+            m_columnDisplay = columnDisplay;
+            }
 
         /// @brief Sets the column headers to display above or below the columns.
         /// @details Syntax such as `@COLUMNNAME@` and `@COUNT@` can be
@@ -195,33 +209,34 @@ namespace Wisteria::Graphs
         /// @param colHeaders The strings to use as the columns' headers.
         /// @sa SetColumnHeaderDisplay().
         void SetColumnHeaders(const std::vector<wxString>& colHeaders)
-            { m_columnHeaders = colHeaders; }
+            {
+            m_columnHeaders = colHeaders;
+            }
 
         /// @}
 
         /// @private
-        [[deprecated("Sankey diagram does not support legends.")]]
-        [[nodiscard]]
+        [[deprecated("Sankey diagram does not support legends.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label>
-        CreateLegend(
-            [[maybe_unused]] const LegendOptions& options) final
+        CreateLegend([[maybe_unused]] const LegendOptions& options) final
             {
             wxFAIL_MSG(L"Sankey diagram does not support legends.");
             return nullptr;
             }
-    private:
+
+      private:
         class SankeyGroup
             {
-        public:
+          public:
             using DownStreamGroups = aggregate_frequency_set<wxString, Data::wxStringLessNoCase>;
 
-            explicit SankeyGroup(wxString label) :
-                m_label(std::move(label))
-                {}
-            SankeyGroup(wxString label, const double freq,
-                        const DownStreamGroups& downStreamGroups) :
-                m_label(std::move(label)), m_frequency(freq), m_downStreamGroups(downStreamGroups)
-                {}
+            explicit SankeyGroup(wxString label) : m_label(std::move(label)) {}
+
+            SankeyGroup(wxString label, const double freq, const DownStreamGroups& downStreamGroups)
+                : m_label(std::move(label)), m_frequency(freq), m_downStreamGroups(downStreamGroups)
+                {
+                }
+
             wxString m_label;
             double m_frequency{ 0 };
             double m_percentOfColumn{ 0 };
@@ -233,35 +248,47 @@ namespace Wisteria::Graphs
             double m_xAxisRight{ 0 };
             bool m_isShown{ true };
             DownStreamGroups m_downStreamGroups;
+
             void OffsetY(const double offset) noexcept
                 {
                 m_yAxisTopPosition += offset;
                 m_yAxisBottomPosition += offset;
                 m_currentYAxisPosition += offset;
                 }
+
             [[nodiscard]]
-            bool operator<(const SankeyGroup& that) const
-                { return m_label.CmpNoCase(that.m_label) < 0; }
+            bool
+            operator<(const SankeyGroup& that) const
+                {
+                return m_label.CmpNoCase(that.m_label) < 0;
+                }
+
             [[nodiscard]]
-            bool operator==(const SankeyGroup& that) const
-                { return m_label.CmpNoCase(that.m_label) == 0; }
+            bool
+            operator==(const SankeyGroup& that) const
+                {
+                return m_label.CmpNoCase(that.m_label) == 0;
+                }
             };
+
         struct SankeyAxisGroup
             {
             wxString m_label;
             size_t m_startGroup{ 0 };
             size_t m_endGroup{ 0 };
             };
+
         using SankeyColumn = std::vector<SankeyGroup>;
 
         [[nodiscard]]
         wxString ExpandColumnHeader(const size_t index)
             {
-            wxString expandedStr{ m_columnHeaders[index]};
+            wxString expandedStr{ m_columnHeaders[index] };
             expandedStr.Replace(L"@COLUMNNAME@", m_columnsNames[index]);
-            expandedStr.Replace(L"@COUNT@",
-                wxNumberFormatter::ToString(m_columnTotals[index], 0,
-                    wxNumberFormatter::Style_WithThousandsSep | wxNumberFormatter::Style_NoTrailingZeroes));
+            expandedStr.Replace(L"@COUNT@", wxNumberFormatter::ToString(
+                                                m_columnTotals[index], 0,
+                                                wxNumberFormatter::Style_WithThousandsSep |
+                                                    wxNumberFormatter::Style_NoTrailingZeroes));
             return expandedStr;
             }
 
@@ -280,7 +307,7 @@ namespace Wisteria::Graphs
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

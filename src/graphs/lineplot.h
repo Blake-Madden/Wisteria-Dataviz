@@ -131,12 +131,13 @@ namespace Wisteria::Graphs
     */
     class LinePlot : public GroupGraph2D
         {
-    public:
+      public:
         /// @brief A data series drawn on a line plot.
         class Line
             {
             friend class LinePlot;
-        public:
+
+          public:
             /// @name Line Display Functions
             /// @brief Functions relating to the visual display of the line
             ///     connecting the points.
@@ -148,29 +149,39 @@ namespace Wisteria::Graphs
             ///     (e.g., if you only want to show the points).
             [[nodiscard]]
             wxPen& GetPen() noexcept
-                { return m_linePen; }
+                {
+                return m_linePen;
+                }
 
             /// @returns How the segments between the points on a line are connected.
             [[nodiscard]]
             LineStyle GetStyle() const noexcept
-                { return m_lineStyle; }
+                {
+                return m_lineStyle;
+                }
+
             /// @brief How the segments between the points on a line are connected.
             /// @param lineStyle The line style.
-            void SetStyle(const LineStyle lineStyle) noexcept
-                { m_lineStyle = lineStyle; }
+            void SetStyle(const LineStyle lineStyle) noexcept { m_lineStyle = lineStyle; }
+
             /// @}
 
             /// @returns The label for the line.
             /// @note This is only applicable if grouping is being used.
             [[nodiscard]]
             const wxString& GetText() const noexcept
-                { return m_label; }
+                {
+                return m_label;
+                }
 
             /// @private
             [[nodiscard]]
             const wxPen& GetPen() const noexcept
-                { return m_linePen; }
-        private:
+                {
+                return m_linePen;
+                }
+
+          private:
             /// @brief Sets the grouping information connected to this line.
             /// @param groupColumnName The grouping column to use. This is used for
             ///     data validation later.
@@ -179,8 +190,7 @@ namespace Wisteria::Graphs
             /// @param groupName The display name of the group.\n
             ///     This is useful for a client to find a line by name and then customize it.
             void SetGroupInfo(const std::optional<const wxString>& groupColumnName,
-                              const Data::GroupIdType groupId,
-                              const wxString& groupName)
+                              const Data::GroupIdType groupId, const wxString& groupName)
                 {
                 m_groupColumnName = groupColumnName;
                 m_groupId = groupId;
@@ -226,20 +236,20 @@ namespace Wisteria::Graphs
                 Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`
                 to not show any lines.*/
         explicit LinePlot(Canvas* canvas,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr,
-            std::shared_ptr<LineStyleScheme> linePenStyles = nullptr) :
-            GroupGraph2D(canvas),
-            m_linePenStyles(linePenStyles != nullptr ?
-                linePenStyles :
-                std::make_shared<LineStyleScheme>(
-                    LineStyleScheme{ { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
+                          std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
+                          std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr,
+                          std::shared_ptr<LineStyleScheme> linePenStyles = nullptr)
+            : GroupGraph2D(canvas),
+              m_linePenStyles(linePenStyles != nullptr ?
+                                  linePenStyles :
+                                  std::make_shared<LineStyleScheme>(LineStyleScheme{
+                                      { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
             {
-            SetColorScheme(colors != nullptr ? colors :
-                Settings::GetDefaultColorScheme());
-            SetShapeScheme(shapes != nullptr ? shapes :
-                std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
-                    Wisteria::Icons::Schemes::StandardShapes()));
+            SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+            SetShapeScheme(shapes != nullptr ?
+                               shapes :
+                               std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                                   Wisteria::Icons::Schemes::StandardShapes()));
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
             GetLeftYAxis().StartAtZero(true);
             }
@@ -268,8 +278,7 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        virtual void SetData(std::shared_ptr<const Data::Dataset> data,
-                             const wxString& yColumnName,
+        virtual void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
                              const wxString& xColumnName,
                              std::optional<const wxString> groupColumnName = std::nullopt);
 
@@ -292,8 +301,7 @@ namespace Wisteria::Graphs
                         wxNullColour;
                     });
             @endcode*/
-        void SetPointColorCriteria(PointColorCriteria criteria)
-            { m_colorIf = criteria; }
+        void SetPointColorCriteria(PointColorCriteria criteria) { m_colorIf = criteria; }
 
         /// @name Line Functions
         /// @brief Functions relating to accessing and customizing the lines.
@@ -310,31 +318,40 @@ namespace Wisteria::Graphs
             assert(index < m_lines.size() && L"Invalid index in GetLine()!");
             return m_lines.at(index);
             }
+
         /// @brief Gets the lines so that you can iterate through them and make edits
         ///     (e.g., changing the line color based on the label).
         /// @returns Direct access to the lines.
         /// @note This should be called after SetData().
         [[nodiscard]]
         std::vector<Line>& GetLines() noexcept
-            { return m_lines; }
+            {
+            return m_lines;
+            }
+
         /** @brief Gets the number of lines on the plot.
             @returns The number of lines.
             @note This should be called after SetData().*/
         [[nodiscard]]
         size_t GetLineCount() const noexcept
-            { return m_lines.size(); }
+            {
+            return m_lines.size();
+            }
 
         /// @returns @c true if auto splining is enabled.
         [[nodiscard]]
         bool IsAutoSplining() const noexcept
-            { return m_autoSpline; }
+            {
+            return m_autoSpline;
+            }
+
         /** @brief When lines zigzag (i.e., go back-and-forth along the X axis),
                 setting this to @c true will change the line to be drawn as a spline.\n
                 This is useful when plotting a line that shows a downward spiral
                 (refer to WCurvePlot as an example).
             @param autoSpline @c true to enable auto splining.*/
-        void AutoSpline(const bool autoSpline) noexcept
-            { m_autoSpline = autoSpline; }
+        void AutoSpline(const bool autoSpline) noexcept { m_autoSpline = autoSpline; }
+
         /// @}
 
         /** @brief Builds and returns a legend using the current colors and labels.
@@ -342,20 +359,17 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.\n
             @returns The legend for the plot.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader)
+        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint,
+                                                        const bool includeHeader)
             {
-            return CreateLegend(LegendOptions().
-                IncludeHeader(includeHeader).PlacementHint(hint));
+            return CreateLegend(LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
             }
-    protected:
+
+      protected:
         /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
         /// @param index The row in the X column to review.
         /// @returns @c true if the given row in the X column is valid.
@@ -363,21 +377,31 @@ namespace Wisteria::Graphs
         bool IsXValid(const size_t index) const
             {
             if (index >= GetDataset()->GetRowCount())
-                { return std::numeric_limits<double>::quiet_NaN(); }
+                {
+                return std::numeric_limits<double>::quiet_NaN();
+                }
             // continuous X
             if (IsXContinuous())
-                { return !std::isnan(m_xColumnContinuous->GetValue(index)); }
+                {
+                return !std::isnan(m_xColumnContinuous->GetValue(index));
+                }
             // categorical X, which in this case anything would be OK (even empty string)
             else if (IsXCategorical())
-                { return true; }
+                {
+                return true;
+                }
             else if (IsXDates())
                 {
-                return GetBottomXAxis().FindDatePosition(
-                    m_xColumnDate->GetValue(index)).has_value();
+                return GetBottomXAxis()
+                    .FindDatePosition(m_xColumnDate->GetValue(index))
+                    .has_value();
                 }
             else
-                { return false; }
+                {
+                return false;
+                }
             }
+
         /// @brief Returns the value at @c index of the X column.
         /// @param index The row in the X column to retrieve.
         /// @returns The value of the given row in the X column.\n
@@ -386,36 +410,46 @@ namespace Wisteria::Graphs
         double GetXValue(const size_t index) const
             {
             if (index >= GetDataset()->GetRowCount())
-                { return std::numeric_limits<double>::quiet_NaN(); }
+                {
+                return std::numeric_limits<double>::quiet_NaN();
+                }
             // continuous X
             if (IsXContinuous())
-                { return m_xColumnContinuous->GetValue(index); }
+                {
+                return m_xColumnContinuous->GetValue(index);
+                }
             // categorical X, just want the underlying number code as that is what
             // goes along the X axis
             else if (IsXCategorical())
-                { return static_cast<double>(m_xColumnCategorical->GetValue(index)); }
+                {
+                return static_cast<double>(m_xColumnCategorical->GetValue(index));
+                }
             else if (IsXDates())
                 {
                 const auto foundDate =
                     GetBottomXAxis().FindDatePosition(m_xColumnDate->GetValue(index));
                 return (foundDate.has_value() ? foundDate.value() :
-                        std::numeric_limits<double>::quiet_NaN());
+                                                std::numeric_limits<double>::quiet_NaN());
                 }
             else
-                { return std::numeric_limits<double>::quiet_NaN(); }
+                {
+                return std::numeric_limits<double>::quiet_NaN();
+                }
             }
+
         /** @brief Gets the min and max values of the X column (if a date axis).
-            @returns The X column's min and max dates, which can be @c wxInvalidDateTime if invalid.*/
+            @returns The X column's min and max dates, which can be
+                @c wxInvalidDateTime if invalid.*/
         [[nodiscard]]
         std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
             {
             assert(IsXDates() &&
                    L"GetXMinMaxDates() should only be called if X axis is date based!");
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
-                    m_xColumnDate->GetValues().cbegin(),
-                    m_xColumnDate->GetValues().cend());
+                m_xColumnDate->GetValues().cbegin(), m_xColumnDate->GetValues().cend());
             return std::make_pair(*fullXDataMin, *fullXDataMax);
             }
+
         /** @brief Gets the min and max values of the X column.
             @returns The X column's min and max values, which can be NaN if invalid.*/
         [[nodiscard]]
@@ -430,18 +464,18 @@ namespace Wisteria::Graphs
             // continuous X
             if (IsXContinuous())
                 {
-                const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
-                    m_xColumnContinuous->GetValues().cbegin(),
-                    m_xColumnContinuous->GetValues().cend());
+                const auto [fullXDataMin, fullXDataMax] =
+                    std::minmax_element(m_xColumnContinuous->GetValues().cbegin(),
+                                        m_xColumnContinuous->GetValues().cend());
                 return std::make_pair(*fullXDataMin, *fullXDataMax);
                 }
             // categorical X, just want the underlying numeric code as that is what
             // goes along the X axis
             else if (IsXCategorical())
                 {
-                const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
-                    m_xColumnCategorical->GetValues().cbegin(),
-                    m_xColumnCategorical->GetValues().cend());
+                const auto [fullXDataMin, fullXDataMax] =
+                    std::minmax_element(m_xColumnCategorical->GetValues().cbegin(),
+                                        m_xColumnCategorical->GetValues().cend());
                 return std::make_pair(static_cast<double>(*fullXDataMin),
                                       static_cast<double>(*fullXDataMax));
                 }
@@ -451,19 +485,29 @@ namespace Wisteria::Graphs
                                       std::numeric_limits<double>::quiet_NaN());
                 }
             }
-    private:
+
+      private:
         /// @returns Whether X was loaded from a continuous column.
         [[nodiscard]]
         bool IsXContinuous() const noexcept
-            { return (m_xColumnContinuous != GetDataset()->GetContinuousColumns().cend()); }
+            {
+            return (m_xColumnContinuous != GetDataset()->GetContinuousColumns().cend());
+            }
+
         /// @returns Whether X was loaded from a categorical column.
         [[nodiscard]]
         bool IsXCategorical() const noexcept
-            { return (m_xColumnCategorical != GetDataset()->GetCategoricalColumns().cend()); }
+            {
+            return (m_xColumnCategorical != GetDataset()->GetCategoricalColumns().cend());
+            }
+
         /// @returns Whether X was loaded from a date column.
         [[nodiscard]]
         bool IsXDates() const noexcept
-            { return (m_xColumnDate != GetDataset()->GetDateColumns().cend()); }
+            {
+            return (m_xColumnDate != GetDataset()->GetDateColumns().cend());
+            }
+
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
         void AddLine(const Line& line);
@@ -472,12 +516,14 @@ namespace Wisteria::Graphs
 
         [[nodiscard]]
         const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
-            { return m_linePenStyles; }
+            {
+            return m_linePenStyles;
+            }
 
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]]
         bool IsDataSingleDirection(std::shared_ptr<const Data::Dataset>& data,
-                                                 const Data::GroupIdType group) const noexcept;
+                                   const Data::GroupIdType group) const noexcept;
 
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
@@ -492,7 +538,7 @@ namespace Wisteria::Graphs
 
         PointColorCriteria m_colorIf;
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
