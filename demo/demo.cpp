@@ -238,19 +238,34 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
+    wxString worksheetName;
+    if (wxFileName{ classiferFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
+        {
+        ExcelReader xlReader{ classiferFileDlg.GetPath() };
+        wxArrayString choices;
+        for (const auto& worksheet : xlReader.GetWorksheetNames())
+            {
+            choices.push_back(worksheet);
+            }
+        wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
+                                    _(L"Select the worksheet to use:"), choices);
+        if (selDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        worksheetName = selDlg.GetStringSelection();
+        }
 
     VariableSelectDlg classiferVarDlg(
-        this, Dataset::ReadColumnInfo(classiferFileDlg.GetPath()),
-        { VariableSelectDlg::VariableListInfo()
-              .Label(_(L"Categories"))
-              .SingleSelection(true),
+        this,
+        Dataset::ReadColumnInfo(classiferFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+                                worksheetName),
+        { VariableSelectDlg::VariableListInfo().Label(_(L"Categories")).SingleSelection(true),
           VariableSelectDlg::VariableListInfo()
               .Label(_(L"Subcategories"))
               .SingleSelection(true)
               .Required(false),
-          VariableSelectDlg::VariableListInfo()
-              .Label(_(L"Patterns"))
-              .SingleSelection(true),
+          VariableSelectDlg::VariableListInfo().Label(_(L"Patterns")).SingleSelection(true),
           VariableSelectDlg::VariableListInfo()
               .Label(_(L"Negation Patterns"))
               .SingleSelection(true)
@@ -267,11 +282,29 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
+    worksheetName.clear();
+    if (wxFileName{ surveyFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
+        {
+        ExcelReader xlReader{ surveyFileDlg.GetPath() };
+        wxArrayString choices;
+        for (const auto& worksheet : xlReader.GetWorksheetNames())
+            {
+            choices.push_back(worksheet);
+            }
+        wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
+                                    _(L"Select the worksheet to use:"), choices);
+        if (selDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        worksheetName = selDlg.GetStringSelection();
+        }
 
-    VariableSelectDlg surveyVarDlg(this, Dataset::ReadColumnInfo(surveyFileDlg.GetPath()),
-                                   { VariableSelectDlg::VariableListInfo()
-                                         .Label(_(L"Comments"))
-                                         .SingleSelection(true) });
+    VariableSelectDlg surveyVarDlg(
+        this,
+        Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+                                worksheetName),
+        { VariableSelectDlg::VariableListInfo().Label(_(L"Comments")).SingleSelection(true) });
     if (surveyVarDlg.ShowModal() != wxID_OK)
         {
         return;

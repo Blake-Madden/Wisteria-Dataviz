@@ -38,6 +38,7 @@
 #include "../src/util/logfile.h"
 #include <wx/aboutdlg.h>
 #include <wx/artprov.h>
+#include <wx/choicdlg.h>
 #include <wx/filename.h>
 #include <wx/mdi.h>
 #include <wx/stdpaths.h>
