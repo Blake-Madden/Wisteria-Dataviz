@@ -230,10 +230,9 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 
 void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     {
-    wxFileDialog classiferFileDlg(
-        this, _(L"Select Classifier Data"), wxString{}, wxString{},
-        _(L"Tab Delimited Files (*.txt;*.txt)|*.txt;*.txt|CSV Files (*.csv;*.csv)|*.csv;*.csv"),
-        wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+    wxFileDialog classiferFileDlg(this, _(L"Select Classifier Data"), wxString{}, wxString{},
+                                  Dataset::GetDataFileFilter(),
+                                  wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
     if (classiferFileDlg.ShowModal() != wxID_OK)
         {
@@ -262,8 +261,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         }
 
     wxFileDialog surveyFileDlg(this, _(L"Select Survey Data"), wxString{}, wxString{},
-                               _(L"Tab Delimited Files (*.txt;*.txt)|*.txt;*.txt|CSV Files "
-                                 "(*.csv;*.csv)|*.csv;*.csv"),
+                               Dataset::GetDataFileFilter(),
                                wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
     if (surveyFileDlg.ShowModal() != wxID_OK)
         {
@@ -283,15 +281,13 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     auto surveyData = std::make_shared<Data::Dataset>();
     try
         {
-        classifierData->ImportText(
+        classifierData->Import(
             classiferFileDlg.GetPath(),
-            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath())),
-            Dataset::GetDelimiterFromExtension(classiferFileDlg.GetPath()));
+            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath())));
 
-        surveyData->ImportText(
+        surveyData->Import(
             surveyFileDlg.GetPath(),
-            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath())),
-            Dataset::GetDelimiterFromExtension(surveyFileDlg.GetPath()));
+            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath())));
 
         Wisteria::Data::TextClassifier textClassifier;
         textClassifier.SetClassifierData(
