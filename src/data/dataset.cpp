@@ -1022,7 +1022,7 @@ namespace Wisteria::Data
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
         const ImportInfo& importInfo /*= ImportInfo{}*/,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        const std::variant<wxString, size_t>& worksheet /*= wxString{}*/)
+        const std::variant<wxString, size_t>& worksheet /*= 1*/)
         {
         const wxString fileExt{ wxFileName(filePath).GetExt() };
         const wchar_t delim = GetDelimiterFromExtension(filePath);

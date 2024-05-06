@@ -1542,7 +1542,7 @@ namespace Wisteria::Data
         static ColumnPreviewInfo
         ReadColumnInfo(const wxString& filePath, const ImportInfo& importInfo = ImportInfo{},
                        std::optional<size_t> rowPreviewCount = std::nullopt,
-                       const std::variant<wxString, size_t>& worksheet = wxString{});
+                       const std::variant<wxString, size_t>& worksheet = static_cast<size_t>(1));
         /** @brief Reads the column names from a text buffer and deduces their data types.
             @param delimiter The delimiter to parse the columns with.
             @param fileText The text to analyze.
