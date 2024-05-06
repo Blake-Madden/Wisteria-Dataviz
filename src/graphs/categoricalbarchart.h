@@ -88,7 +88,7 @@ namespace Wisteria::Graphs
             Wisteria::Graphs::BarChart(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
-                std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()) );
+                std::make_unique<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()) );
             SetColorScheme(colors);
             // categorical axis labels (especially longer ones) usually look
             // better with horizontal bars
