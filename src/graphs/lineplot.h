@@ -248,7 +248,7 @@ namespace Wisteria::Graphs
             SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
             SetShapeScheme(shapes != nullptr ?
                                shapes :
-                               std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                               std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                    Wisteria::Icons::Schemes::StandardShapes()));
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
             GetLeftYAxis().StartAtZero(true);
