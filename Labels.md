@@ -162,7 +162,7 @@ point is used). In the following example, a note will be added at the
 intersection of 3 (the X axis value) and 59 (the Y axis values):
 
 ```cpp
-auto note = std::make_shared<Label>(
+auto note = std::make_unique<Label>(
     GraphItemInfo(L"What happened this week?\nAre we sure this is correct???").
     Pen(*wxLIGHT_GREY).
     FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite)).
@@ -188,7 +188,7 @@ Building a Legend
 Labels can also be used to construct a legend.
 
 ```cpp
-auto legend = std::make_shared<GraphItems::Label>(
+auto legend = std::make_unique<GraphItems::Label>(
     // set the legend's text (newlines start a new legend item)
     GraphItemInfo(_(L"Items:\nFirst item\nSecond Item")).
     // don't show an outline around the legend
@@ -262,7 +262,7 @@ heights. However, if your rows are simply fitting their content or using equally
 
 ```cpp
 auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
-canvas->SetFixedObject(2, 0, legend);
+canvas->SetFixedObject(2, 0, std::move(legend)); // move the legend unique_ptr into a shared_ptr
 
 // This will fit the legend row to its content and then lock its height proportion of the canvas.
 // This way, if the canvas' aspect ratio is altered, the legend will be properly adjusted and not
