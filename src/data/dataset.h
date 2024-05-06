@@ -1597,7 +1597,7 @@ namespace Wisteria::Data
                 L',');
             @endcode*/
         void ImportText(const wxString& filePath, const ImportInfo& info, const wchar_t delimiter);
-        /** @brief Imports a file based on its extention.
+        /** @brief Imports a file based on its extension.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.\n
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
