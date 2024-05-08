@@ -468,7 +468,7 @@ namespace Wisteria::Data
                 continue;
                 }
             reMap.push_back(
-                std::make_pair(std::make_unique<wxRegEx>(currentRegex),
+                std::make_pair(std::move(std::make_unique<wxRegEx>(currentRegex)),
                                replaceColumn->GetLabelFromID(replaceColumn->GetValue(i))));
             }
 
