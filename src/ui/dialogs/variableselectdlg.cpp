@@ -83,7 +83,7 @@ void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list, wxLi
     const auto selStrings = GetSelectedVariablesInList(list);
     wxWindowUpdateLocker noUpdates(otherList);
     // de-select items in the target list, and then select the item(s) being moved into it
-    for (size_t i = 0; i < otherList->GetItemCount(); ++i)
+    for (int i = 0; i < otherList->GetItemCount(); ++i)
         {
         otherList->Select(i, false);
         }
