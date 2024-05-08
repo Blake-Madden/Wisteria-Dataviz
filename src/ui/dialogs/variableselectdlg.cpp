@@ -82,9 +82,14 @@ void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list, wxLi
         }
     const auto selStrings = GetSelectedVariablesInList(list);
     wxWindowUpdateLocker noUpdates(otherList);
+    // de-select items in the target list, and then select the item(s) being moved into it
+    for (size_t i = 0; i < otherList->GetItemCount(); ++i)
+        {
+        otherList->Select(i, false);
+        }
     for (const auto& str : selStrings)
         {
-        otherList->InsertItem(otherList->GetItemCount(), str);
+        otherList->Select(otherList->InsertItem(otherList->GetItemCount(), str));
         }
 
     RemoveSelectedVariablesFromList(list);
@@ -120,6 +125,11 @@ void VariableSelectDlg::RemoveSelectedVariablesFromList(wxListView* list)
             break;
             }
         list->DeleteItem(item--);
+        }
+    // select top remaining item
+    if (list->GetItemCount() > 0)
+        {
+        list->Select(0);
         }
     }
 
@@ -266,20 +276,29 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
                              });
         }
 
-    // double clicking var in the main list will move it to the list on
-    // the right (if there is only one)
-    if (m_varLists.size() == 1)
-        {
-        m_mainVarlist->Bind(wxEVT_LEFT_DCLICK,
-                            [&, this]([[maybe_unused]] wxMouseEvent&)
-                            {
-                                MoveSelectedVariablesBetweenLists(m_mainVarlist,
-                                                                  m_varLists[0].m_list);
-                                UpdateButtonStates();
-                            });
-        }
+    // double clicking var in the main list will move it to the first list on
+    // the right that doesn't have anything in it (will do nothing if all have something already)
+    m_mainVarlist->Bind(wxEVT_LEFT_DCLICK,
+                        [&, this]([[maybe_unused]] wxMouseEvent&)
+                        {
+                            for (const auto& varList : m_varLists)
+                                {
+                                if (varList.m_list->GetItemCount() == 0)
+                                    {
+                                    MoveSelectedVariablesBetweenLists(m_mainVarlist,
+                                                                      varList.m_list);
+                                    UpdateButtonStates();
+                                    break;
+                                    }
+                                }
+                        });
 
     UpdateButtonStates();
+
+    if (m_mainVarlist->GetItemCount() > 0)
+        {
+        m_mainVarlist->Select(0);
+        }
     }
 
 //-------------------------------------------------------------
