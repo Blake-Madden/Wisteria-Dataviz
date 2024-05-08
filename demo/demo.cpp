@@ -248,19 +248,19 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             }
         else
             {
-        wxArrayString choices;
-        for (const auto& worksheet : xlReader.GetWorksheetNames())
-            {
-            choices.push_back(worksheet);
-            }
-        wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
-                                    _(L"Select the worksheet to use:"), choices);
-        if (selDlg.ShowModal() != wxID_OK)
-            {
-            return;
-            }
+            wxArrayString choices;
+            for (const auto& worksheet : xlReader.GetWorksheetNames())
+                {
+                choices.push_back(worksheet);
+                }
+            wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
+                                        _(L"Select the worksheet to use:"), choices);
+            if (selDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
             classifierWorksheetName = selDlg.GetStringSelection();
-        }
+            }
         }
 
     VariableSelectDlg classiferVarDlg(
@@ -299,19 +299,19 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             }
         else
             {
-        wxArrayString choices;
-        for (const auto& worksheet : xlReader.GetWorksheetNames())
-            {
-            choices.push_back(worksheet);
-            }
-        wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
-                                    _(L"Select the worksheet to use:"), choices);
-        if (selDlg.ShowModal() != wxID_OK)
-            {
-            return;
-            }
+            wxArrayString choices;
+            for (const auto& worksheet : xlReader.GetWorksheetNames())
+                {
+                choices.push_back(worksheet);
+                }
+            wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
+                                        _(L"Select the worksheet to use:"), choices);
+            if (selDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
             surveyWorksheetName = selDlg.GetStringSelection();
-        }
+            }
         }
 
     VariableSelectDlg surveyVarDlg(
@@ -335,9 +335,12 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
                 classifierWorksheetName)),
             classifierWorksheetName);
 
-        surveyData->Import(
-            surveyFileDlg.GetPath(),
-            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath())));
+		surveyData->Import(
+			surveyFileDlg.GetPath(),
+			Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath(),
+                Data::ImportInfo{}, std::nullopt,
+				surveyWorksheetName)).MDCodes(std::vector<std::wstring>{ L"NA", L"N/A" }),
+			surveyWorksheetName);
 
         Wisteria::Data::TextClassifier textClassifier;
         textClassifier.SetClassifierData(
