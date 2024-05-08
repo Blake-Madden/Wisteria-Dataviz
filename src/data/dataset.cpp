@@ -1118,6 +1118,7 @@ namespace Wisteria::Data
         wxString::const_iterator end;
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
             {
+            size_t mdCount{ 0 };
             // assume column's data is integral unless something in the first
             // few rows looks like a string
             ColumnImportType currentColumnType{ ColumnImportType::Discrete };
@@ -1139,7 +1140,10 @@ namespace Wisteria::Data
                     }
                 // can't deduce anything from MD
                 if (currentCell.empty() || mdRegex.Matches(currentCell))
-                    { continue; }
+                    {
+                    ++mdCount;
+                    continue;
+                    }
                 /* "23.06" can be converted to a date, so for that pattern mark it as a
                     float before the date conversion check.*/
                 if (fpRegex.Matches(currentCell))
@@ -1179,6 +1183,11 @@ namespace Wisteria::Data
                 minCellLength && maxCellLength &&
                 minCellLength.value() == 4 && maxCellLength.value() == 4)
                 { currentColumnType = ColumnImportType::String; }
+            // Entirely missing data? Best to treat it as a text column then.
+            else if (mdCount == rowCount)
+                {
+                currentColumnType = ColumnImportType::String;
+                }
             // silently ignore columns with no name (missing header)
             if (preview.get_header_names().at(colIndex).length())
                 {
