@@ -1610,8 +1610,10 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.\n
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
                 gather this information.
-            @note If an *Excel* file, will default to the first worksheet.*/
-        void Import(const wxString& filePath, const ImportInfo& info);
+            @param worksheet If loading an *Excel* workbook, the name or
+                1-based index of the worksheet.*/
+        void Import(const wxString& filePath, const ImportInfo& info,
+            const std::variant<wxString, size_t>& worksheet = static_cast<size_t>(1));
         /** @brief Imports raw text into the dataset.
             @param fileText The text buffer to parse and load into the dataset.
             @param info The definition for which columns to import and how to map them.\n
