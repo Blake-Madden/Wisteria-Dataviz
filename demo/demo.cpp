@@ -230,6 +230,52 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 
 void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     {
+    wxFileDialog recodingFileDlg(this, _(L"Select Recoding Data"), wxString{}, wxString{},
+                                  Dataset::GetDataFileFilter(),
+                                  wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+
+    if (recodingFileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+    wxString recodingWorksheetName;
+    if (wxFileName{ recodingFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
+        {
+        ExcelReader xlReader{ recodingFileDlg.GetPath() };
+        if (xlReader.GetWorksheetNames().size() == 1)
+            {
+            recodingWorksheetName = xlReader.GetWorksheetNames()[0];
+            }
+        else
+            {
+            wxArrayString choices;
+            for (const auto& worksheet : xlReader.GetWorksheetNames())
+                {
+                choices.push_back(worksheet);
+                }
+            wxSingleChoiceDialog selDlg(this, _(L"Select Worksheet"),
+                                        _(L"Select the worksheet to use:"), choices);
+            if (selDlg.ShowModal() != wxID_OK)
+                {
+                return;
+                }
+            recodingWorksheetName = selDlg.GetStringSelection();
+            }
+        }
+
+    VariableSelectDlg recodingVarDlg(
+        this,
+        Dataset::ReadColumnInfo(recodingFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+                                recodingWorksheetName),
+        { VariableSelectDlg::VariableListInfo().Label(_(L"Matching Regular Expressions")).SingleSelection(true),
+          VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Replacements"))
+              .SingleSelection(true) });
+    if (recodingVarDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
     wxFileDialog classiferFileDlg(this, _(L"Select Classifier Data"), wxString{}, wxString{},
                                   Dataset::GetDataFileFilter(),
                                   wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
@@ -324,10 +370,17 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    auto recodingData = std::make_shared<Data::Dataset>();
     auto classifierData = std::make_shared<Data::Dataset>();
     auto surveyData = std::make_shared<Data::Dataset>();
     try
         {
+        recodingData->Import(recodingFileDlg.GetPath(),
+                               Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
+                                 recodingFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+                                   recodingWorksheetName)),
+                             recodingWorksheetName);
+
         classifierData->Import(
             classiferFileDlg.GetPath(),
             Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath(),
@@ -335,12 +388,15 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
                 classifierWorksheetName)),
             classifierWorksheetName);
 
-		surveyData->Import(
-			surveyFileDlg.GetPath(),
-			Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath(),
-                Data::ImportInfo{}, std::nullopt, surveyWorksheetName))
-                               .MDCodes(Dataset::GetCommonMDCodes()),
-			surveyWorksheetName);
+		surveyData->Import(surveyFileDlg.GetPath(),
+                           Dataset::ImportInfoFromPreview(
+                               Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{},
+                                                       std::nullopt, surveyWorksheetName))
+                               .MDCodes(ImportInfo::GetCommonMDCodes())
+                               .ReplacementStrings(Data::ImportInfo::DatasetToRegExMap(
+                                   recodingData, recodingVarDlg.GetSelectedVariables(0)[0],
+                                   recodingVarDlg.GetSelectedVariables(1)[0])),
+                           surveyWorksheetName);
 
         Wisteria::Data::TextClassifier textClassifier;
         textClassifier.SetClassifierData(
