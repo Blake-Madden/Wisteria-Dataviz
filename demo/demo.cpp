@@ -238,10 +238,16 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
-    wxString worksheetName;
+    wxString classifierWorksheetName;
     if (wxFileName{ classiferFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
         ExcelReader xlReader{ classiferFileDlg.GetPath() };
+        if (xlReader.GetWorksheetNames().size() == 1)
+            {
+            classifierWorksheetName = xlReader.GetWorksheetNames()[0];
+            }
+        else
+            {
         wxArrayString choices;
         for (const auto& worksheet : xlReader.GetWorksheetNames())
             {
@@ -253,13 +259,14 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             {
             return;
             }
-        worksheetName = selDlg.GetStringSelection();
+            classifierWorksheetName = selDlg.GetStringSelection();
+        }
         }
 
     VariableSelectDlg classiferVarDlg(
         this,
         Dataset::ReadColumnInfo(classiferFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                worksheetName),
+            classifierWorksheetName),
         { VariableSelectDlg::VariableListInfo().Label(_(L"Categories")).SingleSelection(true),
           VariableSelectDlg::VariableListInfo()
               .Label(_(L"Subcategories"))
@@ -282,10 +289,16 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
-    worksheetName.clear();
+    wxString surveyWorksheetName;
     if (wxFileName{ surveyFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
         ExcelReader xlReader{ surveyFileDlg.GetPath() };
+        if (xlReader.GetWorksheetNames().size() == 1)
+            {
+            surveyWorksheetName = xlReader.GetWorksheetNames()[0];
+            }
+        else
+            {
         wxArrayString choices;
         for (const auto& worksheet : xlReader.GetWorksheetNames())
             {
@@ -297,13 +310,14 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             {
             return;
             }
-        worksheetName = selDlg.GetStringSelection();
+            surveyWorksheetName = selDlg.GetStringSelection();
+        }
         }
 
     VariableSelectDlg surveyVarDlg(
         this,
         Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                worksheetName),
+            surveyWorksheetName),
         { VariableSelectDlg::VariableListInfo().Label(_(L"Comments")).SingleSelection(true) });
     if (surveyVarDlg.ShowModal() != wxID_OK)
         {
@@ -316,7 +330,10 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         {
         classifierData->Import(
             classiferFileDlg.GetPath(),
-            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath())));
+            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath(),
+                Data::ImportInfo{}, std::nullopt,
+                classifierWorksheetName)),
+            classifierWorksheetName);
 
         surveyData->Import(
             surveyFileDlg.GetPath(),
