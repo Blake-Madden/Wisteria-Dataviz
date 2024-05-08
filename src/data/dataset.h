@@ -1713,6 +1713,17 @@ namespace Wisteria::Data
                 LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|Excel Files (*.xlsx)|*.xlsx)");
             }
 
+        /// @brief Returns a list of string values that commonly should be treated as missing data.
+        /// @details This can be passed as the MD codes for the ImportInfo object used when calling
+        ///     the various import functions.
+        /// @note The default for import functions is to only treat empty strings as missing data.
+        /// @returns A list of common missing data codes.
+        [[nodiscard]]
+        static std::vector<std::wstring> GetCommonMDCodes()
+            {
+            return std::vector<std::wstring>{ L"NA", L"N/A", L"NULL" };
+            }
+
         /// @}
 
         /// @private
