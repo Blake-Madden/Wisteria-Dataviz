@@ -917,13 +917,6 @@ namespace Wisteria::Data
             return *this;
             }
 
-        /// @private
-        ImportInfo& ReplacementStrings(RegExMap&& replaceStrings)
-            {
-            m_textImportReplacements = std::move(replaceStrings);
-            return *this;
-            }
-
         /** @brief Builds a regex map from a dataset.
             @details This can be useful for loading a file containing a list of regexes
                 and their replacement values from a file and passing that to ReplacementStrings().
