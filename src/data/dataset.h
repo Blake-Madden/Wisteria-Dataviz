@@ -531,11 +531,11 @@ namespace Wisteria::Data
         /** @brief Sets the codes for the categorical columns.
             @details The order of the values is important.
 
-             As an example:
+            @par Example:
 
              `info().Categoricals({ 0, 1 })`
 
-             Will result in 0 being used for the first categorical column and 1
+             This will result in `0` being used for the first categorical column and `1`
              for the second categorical column.
             @param categoricalValues The values (i.e., codes) to fill the categorical columns with.
             @returns A self reference.*/
@@ -737,7 +737,7 @@ namespace Wisteria::Data
 
         /** @brief Sets the names of the input columns to import for the categorical columns.
 
-             As an example:
+            @par Example:
 
             @code
              info().CategoricalColumns({
@@ -746,9 +746,9 @@ namespace Wisteria::Data
                  })
             @endcode
 
-             Will result in `AGE RANGE` being imported as the first categorical column and `GENDER`
-             as the second categorical column. Also, note that `GENDER` will be read as discrete
-             numbers, while `AGE RANGE` will use the default of being imported as strings.
+             This will result in `AGE RANGE` being imported as the first categorical column and
+             `GENDER` as the second categorical column. Also, note that `GENDER` will be read as
+             discrete numbers, while `AGE RANGE` will use the default of being imported as strings.
             @param categoricalColumns The column names and their respective important methods.\n
              For the import methods, you can either import the column as strings
              and have integer codes automatically (and arbitrarily) assigned to them, or import
@@ -769,13 +769,13 @@ namespace Wisteria::Data
             }
 
         /** @brief Sets the names of the input columns to import for the continuous columns.
-
+            @par Example:
             @code
              info().ContinuousColumns({ L"COMPASS SCORES", L"GPA" })
             @endcode
 
-                This will result in `COMPASS SCORES` being imported as the first continuous column
-                and `GPA` as the second continuous column.
+             This will result in `COMPASS SCORES` being imported as the first continuous column
+             and `GPA` as the second continuous column.
             @param colNames The column names.
             @returns A self reference.*/
         ImportInfo& ContinuousColumns(const std::vector<wxString>& colNames)
@@ -811,7 +811,7 @@ namespace Wisteria::Data
                 during import. (The default value is NaN.)
             @details Missing data can be either empty cells or text values in a
                 numeric column that can't be converted to a number.\n
-                This can be useful for replacing MD with zero or even an extreme value
+                This can be useful for replacing missing data with zero or even an extreme value
                 (e.g., `-9999`) to draw attention to missing data.
             @param recodeVal The value to replace missing data with.
             @sa ReplacementStrings() for recoding missing data in categorical columns.
@@ -831,13 +831,27 @@ namespace Wisteria::Data
             return *this;
             }
 
-        /** @brief Sets the values to treat as missing data (e.g., "NULL," "NA," etc.).
+        /** @brief Sets the values to treat as missing data (e.g., `"NULL"`, `"NA"`, etc.).
             @param mdCodes The values to treat as missing data.
-            @returns A self reference.*/
+            @returns A self reference.
+            @sa GetCommonMDCodes().*/
         ImportInfo& MDCodes(const std::optional<std::vector<std::wstring>>& mdCodes)
             {
             m_mdCodes = mdCodes;
             return *this;
+            }
+
+        /// @brief Returns a list of string values that commonly should be treated as missing data.
+        /// @details This can be passed as the missing data codes for this object when calling
+        ///     the various import functions.\n
+        ///     These codes include: `"NULL"`, `"NA"`, and `"NULL"`.
+        /// @note The default for import functions is to only treat empty strings as missing data.
+        /// @returns A list of common missing data codes.
+        /// @sa MDCodes().
+        [[nodiscard]]
+        static std::vector<std::wstring> GetCommonMDCodes()
+            {
+            return std::vector<std::wstring>{ L"NA", L"N/A", L"NULL" };
             }
 
         /** @brief Set whether to import numeric columns with leading zeros as text.
@@ -852,7 +866,7 @@ namespace Wisteria::Data
             }
 
         /** @brief Set whether to import numeric columns that are four-digits as text
-                (going under the assumption that they are years).
+                (assuming that they are years).
             @param yearsAsText @c true to import four-digit numbers (i.e., years) as text.
             @returns A self reference.*/
         ImportInfo& TreatYearsAsText(const bool yearsAsText)
@@ -861,11 +875,12 @@ namespace Wisteria::Data
             return *this;
             }
 
-        /** @brief Set the max value that can be seen as discrete when deducing between
+        /** @brief Set the maximum value that can be seen as discrete when deducing between
                 continuous and categorical data. If an integer is larger then this value
                 in a column, then it will classify the column as continuous.
             @param maxDiscreteValue The maximum value to allow in a column to still consider
                 it discrete (i.e., categorical).
+            @note The default maximum value is `7`.
             @returns A self reference.*/
         ImportInfo& MaxDiscreteValue(const uint16_t maxDiscreteValue)
             {
@@ -904,13 +919,16 @@ namespace Wisteria::Data
                 Data::ImportInfo().CategoricalColumns({
                     { L"Comments", CategoricalImportMethod::ReadAsStrings }
                     }).
-                ReplacementStrings(DatasetToRegExMap(replaceDataset, L"Patterns",
+                ReplacementStrings(
+                    Data::ImportInfo::DatasetToRegExMap(replaceDataset, L"Patterns",
                     L"Replacements")));
             @endcode
             @param replaceStrings The map of regular expressions to match against
                 and what to replace them with.
             @returns A self reference.
-            @sa ContinuousMDRecodeValue() for recoding missing data in continuous columns.*/
+            @sa ContinuousMDRecodeValue() for recoding missing data in continuous columns.\n
+                DatasetToRegExMap() to read regular expressions and their replacements
+                    from a dataset.*/
         ImportInfo& ReplacementStrings(const RegExMap& replaceStrings)
             {
             m_textImportReplacements = replaceStrings;
@@ -1711,17 +1729,6 @@ namespace Wisteria::Data
             {
             return _(
                 LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|Excel Files (*.xlsx)|*.xlsx)");
-            }
-
-        /// @brief Returns a list of string values that commonly should be treated as missing data.
-        /// @details This can be passed as the MD codes for the ImportInfo object used when calling
-        ///     the various import functions.
-        /// @note The default for import functions is to only treat empty strings as missing data.
-        /// @returns A list of common missing data codes.
-        [[nodiscard]]
-        static std::vector<std::wstring> GetCommonMDCodes()
-            {
-            return std::vector<std::wstring>{ L"NA", L"N/A", L"NULL" };
             }
 
         /// @}
