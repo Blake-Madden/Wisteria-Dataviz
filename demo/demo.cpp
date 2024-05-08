@@ -338,8 +338,8 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
 		surveyData->Import(
 			surveyFileDlg.GetPath(),
 			Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(surveyFileDlg.GetPath(),
-                Data::ImportInfo{}, std::nullopt,
-				surveyWorksheetName)).MDCodes(std::vector<std::wstring>{ L"NA", L"N/A" }),
+                Data::ImportInfo{}, std::nullopt, surveyWorksheetName))
+                               .MDCodes(Dataset::GetCommonMDCodes()),
 			surveyWorksheetName);
 
         Wisteria::Data::TextClassifier textClassifier;
