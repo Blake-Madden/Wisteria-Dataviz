@@ -32,76 +32,34 @@
 
 namespace Wisteria::UI
     {
-    /** @brief A function/object model browsing dialog.
-    @par Example:
-    @code
-        FunctionBrowserDlg::NameList ApplicationObjectFunctions, StandardProjectFunctions,
-                              BatchProjectFunctions, ListTypeEnum;
-        StandardProjectFunctions.insert(L"Open()\tOpens a project.\tStandardProject");
-        functionBrowser = new FunctionBrowserDlg(this, scriptCtrl, wxID_ANY,
-                _(L"Library Browser"), _(L"Libraries/Classes"), _(L"Functions"), *wxBLUE);
-        functionBrowser->AddCategory(L"Libraries", 1000);
-        functionBrowser->AddCategory(L"Classes", 1001);
-        functionBrowser->AddCategory(L"Enumerations", 1002);
-        functionBrowser->AddCategory(L"Application", ApplicationObjectFunctions, 1000);
-        functionBrowser->AddCategory(L"StandardProject", StandardProjectFunctions, 1001);
-        functionBrowser->AddCategory(L"BatchProject", BatchProjectFunctions, 1001);
-        functionBrowser->AddCategory(L"ListType", ListTypeEnum, 1002);
-        functionBrowser->FinalizeCategories();
-    @endcode
-*/
-    class FunctionBrowserDlg final : public Wisteria::UI::DialogWithHelp
+    /** @brief Control containing a library/class list, respective function list,
+            and dynamic description window.*/
+    class FunctionBrowserCtrl : public wxControl
         {
       public:
-        /// @brief Container type for function, class, and category names.
-        using NameList = std::set<std::wstring, string_util::string_no_case_less>;
-
         /** @brief Constructor.
             @param parent The parent window.
             @param editor The editor (i.e., text editor) that this dialog can insert text into.
             @param id The dialog's ID.
-            @param caption The dialog's caption.
             @param firstWindowCaption The caption above the categories list.
-            @param secondWindowCaption The caption above the list of functions.
-            @param pos The dialog's position.
-            @param size The dialog's size.
-            @param style The dialog's window style.
-            @note @c editor must be a `wxStyledTextCtrl`-derived window.*/
-        FunctionBrowserDlg(wxWindow* parent, wxWindow* editor, wxWindowID id = wxID_ANY,
-                           const wxString& caption = _(L"Function Browser"),
-                           const wxString& firstWindowCaption = _(L"Categories:"),
-                           const wxString& secondWindowCaption = _(L"Functions/Operators:"),
-                           const wxPoint& pos = wxDefaultPosition,
-                           const wxSize& size = wxDefaultSize,
-                           long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
-            : m_editWindow(editor)
+            @param secondWindowCaption The caption above the list of functions.*/
+        FunctionBrowserCtrl(wxWindow* parent, wxWindow* editor, wxWindowID id = wxID_ANY,
+                            const wxString& firstWindowCaption = _(L"Categories:"),
+                            const wxString& secondWindowCaption = _(L"Functions/Operators:"))
+            : wxControl(parent, id), m_editWindow(editor)
             {
-            Create(parent, id, caption, firstWindowCaption, secondWindowCaption, pos, size, style);
+            CreateControls(firstWindowCaption, secondWindowCaption);
             }
 
         /// @private
-        FunctionBrowserDlg() = default;
+        FunctionBrowserCtrl() = delete;
         /// @private
-        FunctionBrowserDlg(const FunctionBrowserDlg& that) = delete;
+        FunctionBrowserCtrl(const FunctionBrowserCtrl&) = delete;
         /// @private
-        FunctionBrowserDlg& operator=(const FunctionBrowserDlg& that) = delete;
-        /** @brief Create function (use if constructed with an empty constructor).
-            @param parent The parent window.
-            @param id The dialog's ID.
-            @param caption The dialog's caption.
-            @param firstWindowCaption The caption above the categories list.
-            @param secondWindowCaption The caption above the list of functions.
-            @param pos The dialog's position.
-            @param size The dialog's size.
-            @param style The dialog's window style.
-            @note Using this will not connect this browser to an editor.
-            @returns @c true if successfully created.*/
-        bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
-                    const wxString& caption = _(L"Function Browser"),
-                    const wxString& firstWindowCaption = _(L"Categories:"),
-                    const wxString& secondWindowCaption = _(L"Functions/Operators:"),
-                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+        FunctionBrowserCtrl& operator=(const FunctionBrowserCtrl&) = delete;
+
+        /// @brief Container type for function, class, and category names.
+        using NameList = std::set<std::wstring, string_util::string_no_case_less>;
 
         /** @brief Adds a category that doesn't contain functions, but rather other categories
             @param category The category label.
@@ -152,10 +110,17 @@ namespace Wisteria::UI
             @param sep The parameter separator.*/
         void SetParameterSeparator(const wchar_t sep) noexcept { m_paramSeparator = sep; }
 
+        /// @brief Inserts the selected item in the function list into the buddy editor window.
+        void InsertFunction();
+
       private:
         constexpr static int ID_CATEGORY_LIST = wxID_HIGHEST;
         constexpr static int ID_FUNCTION_LIST = wxID_HIGHEST + 1;
-        constexpr static int ID_INSERT_BUTTON = wxID_HIGHEST + 2;
+
+        /** @brief Creates the class/function lists and description window controls.*/
+        [[nodiscard]]
+        void CreateControls(const wxString& firstWindowCaption,
+                            const wxString& secondWindowCaption);
 
         [[nodiscard]]
         wxString FormatFunctionSignature(wxString signature);
@@ -187,12 +152,8 @@ namespace Wisteria::UI
             return false;
             }
 
-        void CreateControls(const wxString& firstWindowCaption,
-                            const wxString& secondWindowCaption);
         void OnListSelected(wxCommandEvent& event);
-        void OnInsertButtonClick([[maybe_unused]] wxCommandEvent& event);
         void OnHyperlinkClicked(wxHtmlLinkEvent& event);
-        void InsertFunction();
 
         struct CategoryInfo
             {
@@ -231,8 +192,95 @@ namespace Wisteria::UI
         wxListBox* m_functionList{ nullptr };
         wxHtmlWindow* m_functionDescriptionWindow{ nullptr };
         };
+
+    /** @brief A function/object model browsing dialog.
+        @details This is a dialog that wraps a FunctionBrowserCtrl and adds a set of
+            "Insert," "Close," and "Help" buttons.
+    @par Example:
+    @code
+        FunctionBrowserCtrl::NameList ApplicationObjectFunctions, StandardProjectFunctions,
+                              BatchProjectFunctions, ListTypeEnum;
+        StandardProjectFunctions.insert(L"Open()\tOpens a project.\tStandardProject");
+        functionBrowser = new FunctionBrowserDlg(this, scriptCtrl, wxID_ANY,
+                _(L"Library Browser"), _(L"Libraries/Classes"), _(L"Functions"), *wxBLUE);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(L"Libraries", 1000);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(L"Classes", 1001);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(L"Enumerations", 1002);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(
+            L"Application", ApplicationObjectFunctions, 1000);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(
+            L"StandardProject", StandardProjectFunctions, 1001);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(
+            L"BatchProject", BatchProjectFunctions, 1001);
+        functionBrowser->GetFunctionBrowserCtrl()->AddCategory(
+            L"ListType", ListTypeEnum, 1002);
+        functionBrowser->GetFunctionBrowserCtrl()->FinalizeCategories();
+    @endcode*/
+    class FunctionBrowserDlg final : public Wisteria::UI::DialogWithHelp
+        {
+      public:
+        /** @brief Constructor.
+            @param parent The parent window.
+            @param editor The editor (i.e., text editor) that this dialog can insert text into.
+            @param id The dialog's ID.
+            @param caption The dialog's caption.
+            @param firstWindowCaption The caption above the categories list.
+            @param secondWindowCaption The caption above the list of functions.
+            @param pos The dialog's position.
+            @param size The dialog's size.
+            @param style The dialog's window style.
+            @note @c editor must be a `wxStyledTextCtrl`-derived window.*/
+        FunctionBrowserDlg(wxWindow* parent, wxWindow* editor, wxWindowID id = wxID_ANY,
+                           const wxString& caption = _(L"Function Browser"),
+                           const wxString& firstWindowCaption = _(L"Categories:"),
+                           const wxString& secondWindowCaption = _(L"Functions/Operators:"),
+                           const wxPoint& pos = wxDefaultPosition,
+                           const wxSize& size = wxDefaultSize,
+                           long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
+            {
+            Create(parent, editor, id, caption, firstWindowCaption, secondWindowCaption, pos, size,
+                   style);
+            }
+
+        /// @private
+        FunctionBrowserDlg() = default;
+        /// @private
+        FunctionBrowserDlg(const FunctionBrowserDlg& that) = delete;
+        /// @private
+        FunctionBrowserDlg& operator=(const FunctionBrowserDlg& that) = delete;
+        /** @brief Create function (use if constructed with an empty constructor).
+            @param parent The parent window.
+            @param editor The editor (i.e., text editor) that this dialog can insert text into.
+            @param id The dialog's ID.
+            @param caption The dialog's caption.
+            @param firstWindowCaption The caption above the categories list.
+            @param secondWindowCaption The caption above the list of functions.
+            @param pos The dialog's position.
+            @param size The dialog's size.
+            @param style The dialog's window style.
+            @note Using this will not connect this browser to an editor.
+            @returns @c true if successfully created.*/
+        bool Create(wxWindow* parent, wxWindow* editor, wxWindowID id = wxID_ANY,
+                    const wxString& caption = _(L"Function Browser"),
+                    const wxString& firstWindowCaption = _(L"Categories:"),
+                    const wxString& secondWindowCaption = _(L"Functions/Operators:"),
+                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
+
+        /// @returns The function browser control.
+        [[nodiscard]]
+        FunctionBrowserCtrl* GetFunctionBrowserCtrl() noexcept
+            {
+            return m_funcBrowserControl;
+            }
+
+      private:
+        constexpr static int ID_INSERT_BUTTON = wxID_HIGHEST + 2;
+
+        FunctionBrowserCtrl* m_funcBrowserControl{ nullptr };
+        };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif //__FUNCTION_BROWSER_DLG_H__

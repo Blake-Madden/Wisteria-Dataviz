@@ -11,7 +11,7 @@
 namespace Wisteria::UI
     {
     //------------------------------------------------
-    void FunctionBrowserDlg::OnHyperlinkClicked(wxHtmlLinkEvent& event)
+    void FunctionBrowserCtrl::OnHyperlinkClicked(wxHtmlLinkEvent& event)
         {
         const auto [parentPos, childPos] =
             m_categoryList->FindSubItem(event.GetLinkInfo().GetHref());
@@ -34,7 +34,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------
-    void FunctionBrowserDlg::FinalizeCategories()
+    void FunctionBrowserCtrl::FinalizeCategories()
         {
         // this is used for quick searching when we format function signatures
         m_categoryNames.clear();
@@ -66,7 +66,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------
-    void FunctionBrowserDlg::OnListSelected(wxCommandEvent& event)
+    void FunctionBrowserCtrl::OnListSelected(wxCommandEvent& event)
         {
         wxWindowUpdateLocker noUpdates(this);
         if (event.GetId() == ID_CATEGORY_LIST)
@@ -152,7 +152,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------
-    wxString FunctionBrowserDlg::FormatFunctionSignature(wxString signature)
+    wxString FunctionBrowserCtrl::FormatFunctionSignature(wxString signature)
         {
         lily_of_the_valley::html_encode_text encode;
         signature = encode({ signature.wc_str(), signature.length() }, true);
@@ -198,13 +198,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------
-    void FunctionBrowserDlg::OnInsertButtonClick([[maybe_unused]] wxCommandEvent& event)
-        {
-        InsertFunction();
-        }
-
-    //------------------------------------------------
-    void FunctionBrowserDlg::InsertFunction()
+    void FunctionBrowserCtrl::InsertFunction()
         {
         if (m_functionList->GetSelection() == wxNOT_FOUND ||
             m_functionList->GetSelection() >=
@@ -242,42 +236,8 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------
-    bool FunctionBrowserDlg::Create(
-        wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
-        const wxString& caption /*= _(L"Function Browser")*/,
-        const wxString& firstWindowCaption /*= _(L"Categories:")*/,
-        const wxString& secondWindowCaption /*= _(L"Functions/Operators:")*/,
-        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
-        long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
-        {
-        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
-        DialogWithHelp::Create(parent, id, caption, pos, size, style);
-
-        CreateControls(firstWindowCaption, secondWindowCaption);
-        Centre();
-
-        // move this window over a bit so that you can see the parent formula editor behind it.
-        Move(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) -
-                 (GetSize().GetWidth() + wxSizerFlags::GetDefaultBorder()),
-             GetScreenPosition().y);
-
-        // connect events
-        Bind(wxEVT_BUTTON, &FunctionBrowserDlg::OnInsertButtonClick, this,
-             FunctionBrowserDlg::ID_INSERT_BUTTON);
-        Bind(wxEVT_BUTTON, &FunctionBrowserDlg::OnInsertButtonClick, this,
-             FunctionBrowserDlg::ID_FUNCTION_LIST);
-        Bind(wxEVT_SIDEBAR_CLICK, &FunctionBrowserDlg::OnListSelected, this,
-             FunctionBrowserDlg::ID_CATEGORY_LIST);
-        Bind(wxEVT_LISTBOX, &FunctionBrowserDlg::OnListSelected, this);
-        Bind(wxEVT_LISTBOX_DCLICK, [this]([[maybe_unused]] wxCommandEvent&) { InsertFunction(); });
-        Bind(wxEVT_HTML_LINK_CLICKED, &FunctionBrowserDlg::OnHyperlinkClicked, this);
-
-        return true;
-        }
-
-    //------------------------------------------------
-    void FunctionBrowserDlg::CreateControls(const wxString& firstWindowCaption,
-                                            const wxString& secondWindowCaption)
+    void FunctionBrowserCtrl::CreateControls(const wxString& firstWindowCaption,
+                                             const wxString& secondWindowCaption)
         {
         wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
         wxBoxSizer* listsSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -309,10 +269,40 @@ namespace Wisteria::UI
         mainSizer->Add(m_functionDescriptionWindow, 0, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
 
+        SetSizer(mainSizer);
+
+        Bind(wxEVT_SIDEBAR_CLICK, &FunctionBrowserCtrl::OnListSelected, this);
+        Bind(wxEVT_LISTBOX, &FunctionBrowserCtrl::OnListSelected, this);
+        Bind(wxEVT_HTML_LINK_CLICKED, &FunctionBrowserCtrl::OnHyperlinkClicked, this);
+        Bind(
+            wxEVT_LISTBOX_DCLICK, [this]([[maybe_unused]] wxCommandEvent&) { InsertFunction(); },
+            FunctionBrowserCtrl::ID_FUNCTION_LIST);
+        }
+
+    //------------------------------------------------
+    bool FunctionBrowserDlg::Create(
+        wxWindow* parent, wxWindow* editor, wxWindowID id /*= wxID_ANY*/,
+        const wxString& caption /*= _(L"Function Browser")*/,
+        const wxString& firstWindowCaption /*= _(L"Categories:")*/,
+        const wxString& secondWindowCaption /*= _(L"Functions/Operators:")*/,
+        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+        long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
+        {
+        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+        DialogWithHelp::Create(parent, id, caption, pos, size, style);
+
+        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+        m_funcBrowserControl =
+            new FunctionBrowserCtrl(this, editor, wxID_ANY, firstWindowCaption, secondWindowCaption);
+        mainSizer->Add(m_funcBrowserControl, wxSizerFlags(1).Expand());
+
         // Close and Insert buttons
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
                        wxSizerFlags::GetDefaultBorder());
+
         SetSizerAndFit(mainSizer);
+
         wxWindow* insertButton = FindWindow(wxID_OK);
         if (insertButton)
             {
@@ -324,5 +314,20 @@ namespace Wisteria::UI
             {
             closeButton->SetLabel(_(L"&Close"));
             }
+        Centre();
+
+        // move this window over a bit so that you can see the parent formula editor behind it.
+        Move(wxSystemSettings::GetMetric(wxSYS_SCREEN_X) -
+                 (GetSize().GetWidth() + wxSizerFlags::GetDefaultBorder()),
+             GetScreenPosition().y);
+
+        // connect events
+        Bind(
+            wxEVT_BUTTON,
+            [this]([[maybe_unused]] wxCommandEvent& event)
+            { m_funcBrowserControl->InsertFunction(); },
+            FunctionBrowserDlg::ID_INSERT_BUTTON);
+
+        return true;
         }
     } // namespace Wisteria::UI
