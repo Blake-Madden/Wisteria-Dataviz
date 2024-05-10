@@ -612,7 +612,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     }
                 else
                     {
-                    ++ ++start;
+                    std::advance(start, 1);
                     auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
                         start, L'{', L'}', std::distance(start, endSentinel));
                     if (endOfTag == nullptr || (endOfTag >= endSentinel))
