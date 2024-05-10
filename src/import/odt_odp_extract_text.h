@@ -36,15 +36,19 @@ namespace lily_of_the_valley
         @endcode*/
     class odt_odp_extract_text final : public html_extract_text
         {
-    public:
+      public:
         odt_odp_extract_text() noexcept : m_preserve_text_table_layout(false) {}
+
         /** @brief Specifies how to import tables.
             @param preserve Set to @c true to not import text cells as separate paragraphs,
                 but instead as cells of text with tabs between them.
                 Set to @c false to simply import each cell as a separate paragraph,
                 the tabbed structure of the rows will be lost.*/
         void preserve_text_table_layout(const bool preserve) noexcept
-            { m_preserve_text_table_layout = preserve; }
+            {
+            m_preserve_text_table_layout = preserve;
+            }
+
         /** @brief Main interface for extracting plain text from a "content.xml" buffer.
             @param html_text The "content.xml" text to extract text from.\n
                 "content.xml" is extracted from an ODT file.\n
@@ -52,8 +56,8 @@ namespace lily_of_the_valley
             @param text_length The length of the "content.xml" stream.
             @returns The plain text from the ODT stream.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* html_text,
-                                  const size_t text_length);
+        const wchar_t*
+        operator()(const wchar_t* html_text, const size_t text_length);
         /** @brief Reads the "meta.xml" file and extracts meta data from
                 the file (e.g., subject, title).
             @param html_text The "meta.xml" text to extract text from.\n
@@ -62,7 +66,8 @@ namespace lily_of_the_valley
             @param text_length The length of the "meta.xml" stream.
             @sa get_title(), get_subject(), etc.*/
         void read_meta_data(const wchar_t* html_text, const size_t text_length);
-    private:
+
+      private:
         /// Reads in all of the paragraph styles, looking for any styles
         /// that involve text alignment.
         void read_paragraph_styles(const wchar_t* text, const wchar_t* textEnd);
@@ -71,7 +76,7 @@ namespace lily_of_the_valley
 
         bool m_preserve_text_table_layout{ false };
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 

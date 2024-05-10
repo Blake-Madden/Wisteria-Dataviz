@@ -8,8 +8,8 @@
 
 #include "postscript_extract_text.h"
 
-const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
-    (const char* ps_buffer, const size_t text_length)
+const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const char* ps_buffer,
+                                                                       const size_t text_length)
     {
     clear_log();
     m_title.clear();
@@ -27,15 +27,19 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
 
     size_t i = 0;
 
-    const char* const endSentinel = ps_buffer+text_length;
+    const char* const endSentinel = ps_buffer + text_length;
 
     // see if it's a valid postscript file and whether we can support parsing it
     const char* const header = std::strstr(ps_buffer, "%!PS-Adobe-");
     if (!header || header > endSentinel)
-        { throw postscript_header_not_found(); }
-    const double version = std::strtod(header+11, nullptr);
+        {
+        throw postscript_header_not_found();
+        }
+    const double version = std::strtod(header + 11, nullptr);
     if (version >= 3)
-        { throw postscript_version_not_supported(); }
+        {
+        throw postscript_version_not_supported();
+        }
 
     // find the software that created this file, there may be quirks that we have to workaround
     bool createdByDVIPS = false;
@@ -43,26 +47,29 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
         const char* const creator = std::strstr(ps_buffer, "%%Creator:");
         if (creator && creator < endSentinel)
             {
-            const char* const endOfCreator = string_util::strcspn_pointer(creator+10, "\r\n", 2);
+            const char* const endOfCreator = string_util::strcspn_pointer(creator + 10, "\r\n", 2);
             if (endOfCreator && endOfCreator < endSentinel)
                 {
-                if (string_util::strnistr(creator, "dvips", (endOfCreator-creator)) ||
-                    string_util::strnistr(creator, "Radical Eye Software", (endOfCreator-creator)) )
-                    { createdByDVIPS = true; }
+                if (string_util::strnistr(creator, "dvips", (endOfCreator - creator)) ||
+                    string_util::strnistr(creator, "Radical Eye Software",
+                                          (endOfCreator - creator)))
+                    {
+                    createdByDVIPS = true;
+                    }
                 }
             }
         }
 
-    // get the title
+        // get the title
         {
         const char* title = std::strstr(ps_buffer, "%%Title:");
-        if (title && title+8 < endSentinel)
+        if (title && title + 8 < endSentinel)
             {
             title += 8;
             const char* const endOfTitle = string_util::strcspn_pointer(title, "\r\n", 2);
             if (endOfTitle && endOfTitle < endSentinel)
                 {
-                m_title.assign(title, endOfTitle-title);
+                m_title.assign(title, endOfTitle - title);
                 string_util::trim(m_title);
                 }
             }
@@ -71,7 +78,9 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
     // skip past the header block if possible
     const char* const begin = std::strstr(header, "%%Page:");
     if (begin)
-        { i = begin-ps_buffer; }
+        {
+        i = begin - ps_buffer;
+        }
 
     size_t open_paran_count = 0, close_paran_count = 0;
 
@@ -85,40 +94,50 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
             {
         case '%':
             if (open_paran_count > close_paran_count)
-                { add_character(ps_buffer[i]); }
+                {
+                add_character(ps_buffer[i]);
+                }
             else
                 {
-                //skip document definition section
+                // skip document definition section
                 if (std::strncmp(ps_buffer, "%BeginDocument", 14) == 0)
                     {
-                    const char* end = std::strstr(ps_buffer+i, "%%EndDocument");
+                    const char* end = std::strstr(ps_buffer + i, "%%EndDocument");
                     if (!end)
                         {
-                        //file is messed up--just return what we got
+                        // file is messed up--just return what we got
                         log_message(L"\"%%EndDocument\" element missing in Postscript file.");
                         return get_filtered_text();
                         }
                     else
-                        { ps_buffer = end+13/*the length of "%%EndDocument"*/; }
+                        {
+                        ps_buffer = end + 13 /*the length of "%%EndDocument"*/;
+                        }
                     }
                 // it's a comment--move to the end of the line
                 else
                     {
                     while (++i < text_length)
                         {
-                        if (std::iswspace(static_cast<wchar_t>(ps_buffer[i])) )
-                            { break; }
+                        if (std::iswspace(static_cast<wchar_t>(ps_buffer[i])))
+                            {
+                            break;
+                            }
                         }
                     }
                 }
             break;
         case '(':
             if (open_paran_count++ > close_paran_count)
-                { add_character(ps_buffer[i]); }
+                {
+                add_character(ps_buffer[i]);
+                }
             break;
         case ')':
             if (open_paran_count > ++close_paran_count)
-                { add_character(ps_buffer[i]); }
+                {
+                add_character(ps_buffer[i]);
+                }
             /*() are now closed, so move to the character in front
               of the next () set and see the command*/
             else
@@ -126,149 +145,201 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
                 char command_char = L' ';
                 bool inHyphenJoinMode = false;
                 bool newLineCommandFound(false), newPageFound(false);
-                inHyphenJoinMode = (ps_buffer[i-1] == '-');
+                inHyphenJoinMode = (ps_buffer[i - 1] == '-');
                 // skip any newlines in the file between the ')'
                 // and the first command of the next text section
-                while (i < (text_length-1) &&
-                       std::iswspace(static_cast<wchar_t>(ps_buffer[i+1])))
-                    { ++i; }
+                while (i < (text_length - 1) &&
+                       std::iswspace(static_cast<wchar_t>(ps_buffer[i + 1])))
+                    {
+                    ++i;
+                    }
                 long horizontalPosition = 10;
-                if (ps_buffer[i+1] == '-' || std::iswdigit(static_cast<wchar_t>(ps_buffer[i+1])))
-                    { horizontalPosition = std::strtol(ps_buffer+i+1, nullptr, 10); }
-                while (i < (text_length-1) && ps_buffer[i+1] != '(')
+                if (ps_buffer[i + 1] == '-' ||
+                    std::iswdigit(static_cast<wchar_t>(ps_buffer[i + 1])))
+                    {
+                    horizontalPosition = std::strtol(ps_buffer + i + 1, nullptr, 10);
+                    }
+                while (i < (text_length - 1) && ps_buffer[i + 1] != '(')
                     {
                     ++i;
                     if (ps_buffer[i] == '%')
                         {
-                        if (std::strncmp(ps_buffer+i, "%%BeginDocument", 15) == 0)
+                        if (std::strncmp(ps_buffer + i, "%%BeginDocument", 15) == 0)
                             {
-                            const char* end = std::strstr(ps_buffer+i, "%%EndDocument");
+                            const char* end = std::strstr(ps_buffer + i, "%%EndDocument");
                             if (!end)
                                 {
                                 // file is messed up--just return what we got
-                                log_message(L"\"%%EndDocument\" element missing in Postscript file.");
+                                log_message(
+                                    L"\"%%EndDocument\" element missing in Postscript file.");
                                 return get_filtered_text();
                                 }
                             else
-                                { i = (end + 13/*the length of "%%EndDocument"*/) - ps_buffer; }
+                                {
+                                i = (end + 13 /*the length of "%%EndDocument"*/) - ps_buffer;
+                                }
                             }
-                        else if (std::strncmp(ps_buffer+i, "%%Page:", 7) == 0)
-                            { newPageFound = true; }
+                        else if (std::strncmp(ps_buffer + i, "%%Page:", 7) == 0)
+                            {
+                            newPageFound = true;
+                            }
                         }
-                    else if (ps_buffer[i] == 'y' && ps_buffer[i-1] != 'F')
-                        { newLineCommandFound = true; }
+                    else if (ps_buffer[i] == 'y' && ps_buffer[i - 1] != 'F')
+                        {
+                        newLineCommandFound = true;
+                        }
 
-                    if (!std::iswspace(static_cast<wchar_t>(ps_buffer[i])) )
-                        { command_char = ps_buffer[i]; }
+                    if (!std::iswspace(static_cast<wchar_t>(ps_buffer[i])))
+                        {
+                        command_char = ps_buffer[i];
+                        }
                     }
 
                 if (newPageFound)
-                    { add_character(L'\f'); }
+                    {
+                    add_character(L'\f');
+                    }
                 if (newLineCommandFound)
-                    { add_character(L'\n'); }
-                else if ((inHyphenJoinMode ||
-                        command_char == 'q' ||                        
-                        command_char == 'o' ||
-                        command_char == 'l' ||
-                        command_char == 'm' ||
-                        command_char == 'n' ||
-                        command_char == 'r' ||
-                        command_char == 's' ||
-                        (command_char == 'b' && (horizontalPosition <= 7)) ||
-                        (inNegativeBMode && command_char == 'g') ||
-                        command_char == 't') &&
-                        (i > 0 && ps_buffer[i-1] != 'F') )
+                    {
+                    add_character(L'\n');
+                    }
+                else if ((inHyphenJoinMode || command_char == 'q' || command_char == 'o' ||
+                          command_char == 'l' || command_char == 'm' || command_char == 'n' ||
+                          command_char == 'r' || command_char == 's' ||
+                          (command_char == 'b' && (horizontalPosition <= 7)) ||
+                          (inNegativeBMode && command_char == 'g') || command_char == 't') &&
+                         (i > 0 && ps_buffer[i - 1] != 'F'))
                     {
                     // NOOP (just leave the characters together)
                     }
                 else
-                    { add_character(L' '); }
+                    {
+                    add_character(L' ');
+                    }
                 inNegativeBMode = (command_char == 'b' && horizontalPosition < 0) ||
                                   (inNegativeBMode && command_char == 'g');
                 }
             break;
         case '\\':
-                if (open_paran_count > close_paran_count)
+            if (open_paran_count > close_paran_count)
+                {
+                ++i;
+                char* stopPoint = nullptr;
+                const wchar_t octalVal =
+                    static_cast<wchar_t>(std::strtol(ps_buffer + i, &stopPoint, 8));
+                switch (ps_buffer[i])
                     {
-                    ++i;
-                    char* stopPoint = nullptr;
-                    const wchar_t octalVal =
-                        static_cast<wchar_t>(std::strtol(ps_buffer+i, &stopPoint, 8));
-                    switch (ps_buffer[i])
+                case '(':
+                case ')':
+                    add_character(ps_buffer[i]);
+                    break;
+                case '\\':
+                    if (createdByDVIPS)
                         {
-                        case '(':
-                        case ')':
-                            add_character(ps_buffer[i]);
-                            break;
-                        case '\\':
-                            if (createdByDVIPS)
-                                { add_character(L'\"'); }
-                            else
-                                { add_character(ps_buffer[i]); }
-                            break;
-                        case 't':
-                            add_character(L'\t');
-                            break;
-                        case 'n':
-                            add_character(L'\n');
-                            break;
-                        case 'r':
-                            add_character(L'\r');
-                            break;
-                        // escaped newline\carriage return characters should be ignored
-                        case '\n':
-                        case '\r':
-                            break;
-                        default:
-                            if ((stopPoint-(ps_buffer+i)) > 1)
-                                {
-                                // some sort of DVIPS quirk
-                                if (octalVal == 0)
-                                    { add_character(L'-'); }
-                                else if (octalVal == 3)
-                                    { add_character(L'*'); }
-                                else if (octalVal == 11)
-                                    { add_characters(L"ff", 2); }
-                                else if (octalVal == 12)
-                                    { add_characters(L"fi", 2); }
-                                else if (octalVal == 13)
-                                    { add_characters(L"fl", 2); }
-                                else if (octalVal == 14)
-                                    { add_characters(L"ffi", 3); }
-                                else if (octalVal == 15)
-                                    { add_characters(L"ffl", 3); }
-                                else if (octalVal == 18)
-                                    { graveMode = true; }
-                                else if (octalVal == 19)
-                                    { acuteMode = true; }
-                                else if (octalVal == 21)
-                                    { add_character(L'*'); }
-                                else if (octalVal == 23)
-                                    { add_character(L'v'); }
-                                else if (octalVal == 24)
-                                    { add_character(0x3A3); }
-                                else if (octalVal == 26)
-                                    { add_characters(L"nae", 3); }
-                                else if (octalVal == 27)
-                                    { add_characters(L"oe", 2); }
-                                else if (octalVal == 28)
-                                    { add_characters(L"fi", 2); }
-                                else if (octalVal == 127)
-                                    { umlautMode = true; }
-                                else
-                                    { add_character(octalVal); }
-                                // skip to one before the end of the number because
-                                // when the loop starts again it will step one more
-                                i += (stopPoint-(ps_buffer+i))-1;
-                                }
-                            else
-                                {
-                                add_character(ps_buffer[i]);
-                                }
-                            break;
+                        add_character(L'\"');
                         }
+                    else
+                        {
+                        add_character(ps_buffer[i]);
+                        }
+                    break;
+                case 't':
+                    add_character(L'\t');
+                    break;
+                case 'n':
+                    add_character(L'\n');
+                    break;
+                case 'r':
+                    add_character(L'\r');
+                    break;
+                // escaped newline\carriage return characters should be ignored
+                case '\n':
+                case '\r':
+                    break;
+                default:
+                    if ((stopPoint - (ps_buffer + i)) > 1)
+                        {
+                        // some sort of DVIPS quirk
+                        if (octalVal == 0)
+                            {
+                            add_character(L'-');
+                            }
+                        else if (octalVal == 3)
+                            {
+                            add_character(L'*');
+                            }
+                        else if (octalVal == 11)
+                            {
+                            add_characters(L"ff", 2);
+                            }
+                        else if (octalVal == 12)
+                            {
+                            add_characters(L"fi", 2);
+                            }
+                        else if (octalVal == 13)
+                            {
+                            add_characters(L"fl", 2);
+                            }
+                        else if (octalVal == 14)
+                            {
+                            add_characters(L"ffi", 3);
+                            }
+                        else if (octalVal == 15)
+                            {
+                            add_characters(L"ffl", 3);
+                            }
+                        else if (octalVal == 18)
+                            {
+                            graveMode = true;
+                            }
+                        else if (octalVal == 19)
+                            {
+                            acuteMode = true;
+                            }
+                        else if (octalVal == 21)
+                            {
+                            add_character(L'*');
+                            }
+                        else if (octalVal == 23)
+                            {
+                            add_character(L'v');
+                            }
+                        else if (octalVal == 24)
+                            {
+                            add_character(0x3A3);
+                            }
+                        else if (octalVal == 26)
+                            {
+                            add_characters(L"nae", 3);
+                            }
+                        else if (octalVal == 27)
+                            {
+                            add_characters(L"oe", 2);
+                            }
+                        else if (octalVal == 28)
+                            {
+                            add_characters(L"fi", 2);
+                            }
+                        else if (octalVal == 127)
+                            {
+                            umlautMode = true;
+                            }
+                        else
+                            {
+                            add_character(octalVal);
+                            }
+                        // skip to one before the end of the number because
+                        // when the loop starts again it will step one more
+                        i += (stopPoint - (ps_buffer + i)) - 1;
+                        }
+                    else
+                        {
+                        add_character(ps_buffer[i]);
+                        }
+                    break;
                     }
-                break;
+                }
+            break;
         default:
             if (open_paran_count > close_paran_count)
                 {
@@ -388,7 +459,9 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()
                         };
                     }
                 else
-                    { add_character(ps_buffer[i]); }
+                    {
+                    add_character(ps_buffer[i]);
+                    }
                 umlautMode = false;
                 graveMode = false;
                 acuteMode = false;

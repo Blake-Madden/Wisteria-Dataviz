@@ -95,39 +95,41 @@ namespace Wisteria::Graphs
          canvas->GetRowInfo(0).HeightProportion(1-canvas->CalcMinHeightProportion(legend));
          canvas->GetRowInfo(1).HeightProportion(canvas->CalcMinHeightProportion(legend));
          canvas->SetFixedObject(1, 0, legend);
-         
+
         @endcode
         @par Citation:
-            Kulp, A., &amp; Grandstaff, M. (2019, April 17). <i>Visualizing regression results for non-statistics audiences.</i>
-            Retrieved May 14, 2022, from https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences 
+            Kulp, A., &amp; Grandstaff, M. (2019, April 17). <i>Visualizing regression results for
+            non-statistics audiences.</i> Retrieved May 14, 2022, from
+            https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences
     */
     class LRRoadmap final : public Roadmap
         {
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/
-        explicit LRRoadmap(Canvas* canvas) : Roadmap(canvas)
-            {}
+        explicit LRRoadmap(Canvas* canvas) : Roadmap(canvas) {}
+
         /** @brief Sets the data.
             @param data The data to use for the graph.
             @param predictorColumnName The column containing the independent variables'
                 (i.e., predictors) names.
-            @param coefficentColumnName The column containing the predictors' correlation coefficients.
+            @param coefficentColumnName The column containing the predictors'
+                correlation coefficients.
             @param pValueColumnName The (optional) column containing the predictors' p-values.
             @param pLevel If a p-value column is supplied, only predictors with p-values lower than
                 this will be included. (Predictors with missing p-values will be excluded.)\n
                 The recommendations are usually @c 0.05 or @c 0.01 (most strict).
             @param preditorsToIncludes Which types of IVs (e.g., negative influencers) to include.\n
-                This is a bitmask that can include multiple flags. The default is to include all IVs.
+                This is a bitmask that can include multiple flags.
+                    The default is to include all IVs.
             @param dvName The name of the dependent variable from the original analysis.\n
                 This will be used on the legend and default caption.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-                The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-                when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
-                     const wxString& predictorColumnName,
+                The exception's @c what() message is UTF-8 encoded, so pass it to @c
+                wxString::FromUTF8() when formatting it for an error message.*/
+        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& predictorColumnName,
                      const wxString& coefficentColumnName,
                      const std::optional<wxString>& pValueColumnName = std::nullopt,
                      const std::optional<double> pLevel = std::nullopt,
@@ -136,17 +138,23 @@ namespace Wisteria::Graphs
 
         /// @brief Adds a caption explaining how to interpret the graph.
         void AddDefaultCaption() final;
-    private:
+
+      private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
         wxString GetPositiveLegendLabel() const final
-            { return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel()); }
+            {
+            return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel());
+            }
+
         /// @returns The negative label used for the legend.
         [[nodiscard]]
         wxString GetNegativeLegendLabel() const final
-            { return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel()); }
+            {
+            return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel());
+            }
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

@@ -23,11 +23,14 @@ namespace Wisteria::Data
             }
         assert(mdCode && L"Error creating MD code for categorical column!");
         if (mdCode.has_value())
-            { Fill(mdCode.value()); }
+            {
+            Fill(mdCode.value());
+            }
         else
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': unable to fill column with missing data."), GetName()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': unable to fill column with missing data."), GetName())
+                    .ToUTF8());
             }
         }
 
@@ -36,11 +39,15 @@ namespace Wisteria::Data
         {
         auto mdCode = FindMissingDataCode();
         if (!mdCode.has_value())
-            { return false; }
+            {
+            return false;
+            }
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (GetValue(i) == mdCode.value())
-                { return true; }
+                {
+                return true;
+                }
             }
         return false;
         }
@@ -50,10 +57,14 @@ namespace Wisteria::Data
         {
         assert(index < GetRowCount() && L"Invalid index in call to Column::IsMissingData()");
         if (index >= GetRowCount())
-            { return false; }
+            {
+            return false;
+            }
         auto mdCode = FindMissingDataCode();
         if (!mdCode.has_value())
-            { return false; }
+            {
+            return false;
+            }
         return GetValue(index) == mdCode.value();
         }
 
@@ -64,8 +75,7 @@ namespace Wisteria::Data
         {
         if (replacementMap.empty())
             {
-            throw std::runtime_error(
-                _(L"Replacement map empty for category mutation.").ToUTF8());
+            throw std::runtime_error(_(L"Replacement map empty for category mutation.").ToUTF8());
             }
 
         // get target iterator first as this may need to add a new column and invalid
@@ -77,16 +87,19 @@ namespace Wisteria::Data
             targetVar = GetCategoricalColumn(targetColumnName);
             if (targetVar == GetCategoricalColumns().end())
                 {
-                throw std::runtime_error(wxString::Format(
-                    _(L"'%s': column not found for category mutation."), srcColumnName).ToUTF8());
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': column not found for category mutation."),
+                                     srcColumnName)
+                        .ToUTF8());
                 }
             }
 
         const auto srcVar = GetCategoricalColumn(srcColumnName);
         if (srcVar == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found for category mutation."), srcColumnName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for category mutation."), srcColumnName)
+                    .ToUTF8());
             }
 
         // prep target string table
@@ -101,9 +114,11 @@ namespace Wisteria::Data
             const auto [insertPos, inserted] = idMap.insert(std::make_pair(re.second, nextId));
             if (!inserted)
                 {
-                throw std::runtime_error(wxString::Format(
-                    _(L"'%s': duplicate string replacement encountered for category mutation."),
-                    re.second).ToUTF8());
+                throw std::runtime_error(
+                    wxString::Format(
+                        _(L"'%s': duplicate string replacement encountered for category mutation."),
+                        re.second)
+                        .ToUTF8());
                 }
             }
 
@@ -127,15 +142,19 @@ namespace Wisteria::Data
                         wxFAIL_MSG(wxString::Format(
                             L"'%s': internal error finding mapped value for category mutation.",
                             re.second));
-                        throw std::runtime_error(wxString::Format(
-                            _(L"'%s': internal error finding mapped value for category mutation."),
-                            re.second).ToUTF8());
+                        throw std::runtime_error(
+                            wxString::Format(_(L"'%s': internal error finding mapped value for "
+                                               "category mutation."),
+                                             re.second)
+                                .ToUTF8());
                         }
                     foundMatch = true;
                     }
                 }
             if (!foundMatch)
-                { targetVar->SetValue(i, mdCode); }
+                {
+                targetVar->SetValue(i, mdCode);
+                }
             }
         }
 
@@ -144,7 +163,9 @@ namespace Wisteria::Data
         {
         multi_value_aggregate_map<wxString, GroupIdType> dupMap;
         for (const auto& [id, strValue] : GetStringTable())
-            { dupMap.insert(strValue, id); }
+            {
+            dupMap.insert(strValue, id);
+            }
 
         // cppcheck-suppress unusedVariable
         for (const auto& [str, idsAndFreq] : dupMap.get_data())
@@ -177,9 +198,10 @@ namespace Wisteria::Data
 
         for (auto& strEntry : GetStringTable())
             {
-            if (const auto foundPos = std::find_if(labelsToKeep.cbegin(), labelsToKeep.cend(),
-                [&strEntry](const auto& labelToKeep)
-                { return strEntry.second.CmpNoCase(labelToKeep) == 0; });
+            if (const auto foundPos =
+                    std::find_if(labelsToKeep.cbegin(), labelsToKeep.cend(),
+                                 [&strEntry](const auto& labelToKeep)
+                                 { return strEntry.second.CmpNoCase(labelToKeep) == 0; });
                 foundPos == labelsToKeep.cend())
                 {
                 strEntry.second = otherLabel;
@@ -187,19 +209,21 @@ namespace Wisteria::Data
                 }
             }
         if (recodingNeeded)
-            { CollapseStringTable(); }
+            {
+            CollapseStringTable();
+            }
         }
 
     //----------------------------------------------
-    void Dataset::CollapseExcept(const wxString& colName,
-                                 const std::vector<wxString>& labelsToKeep,
+    void Dataset::CollapseExcept(const wxString& colName, const std::vector<wxString>& labelsToKeep,
                                  const wxString& otherLabel /*= _(L"Other")*/)
         {
         auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found for category collapsing."), colName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for category collapsing."), colName)
+                    .ToUTF8());
             }
         catColumn->CollapseExcept(labelsToKeep, otherLabel);
         }
@@ -210,8 +234,7 @@ namespace Wisteria::Data
         {
         frequency_set<GroupIdType> vals;
         std::for_each(GetValues().cbegin(), GetValues().cend(),
-            [&vals](const auto& datum)
-            { vals.insert(datum); });
+                      [&vals](const auto& datum) { vals.insert(datum); });
         bool recodingNeeded{ false };
         for (const auto& [id, count] : vals.get_data())
             {
@@ -222,12 +245,16 @@ namespace Wisteria::Data
                 assert(foundPos != GetStringTable().cend() &&
                        L"Unable to find key in string table!");
                 if (foundPos != GetStringTable().cend())
-                    { foundPos->second = otherLabel; }
+                    {
+                    foundPos->second = otherLabel;
+                    }
                 recodingNeeded = true;
                 }
             }
         if (recodingNeeded)
-            { CollapseStringTable(); }
+            {
+            CollapseStringTable();
+            }
         }
 
     //----------------------------------------------
@@ -237,8 +264,9 @@ namespace Wisteria::Data
         auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found for category collapsing."), colName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for category collapsing."), colName)
+                    .ToUTF8());
             }
         catColumn->CollapseMin(minVal, otherLabel);
         }
@@ -247,33 +275,32 @@ namespace Wisteria::Data
     void Dataset::SortColumnNames()
         {
         std::sort(GetCategoricalColumns().begin(), GetCategoricalColumns().end(),
-            [](const auto& lhv, const auto& rhv)
-            { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0;  }
-            );
+                  [](const auto& lhv, const auto& rhv)
+                  { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0; });
         std::sort(GetContinuousColumns().begin(), GetContinuousColumns().end(),
-            [](const auto& lhv, const auto& rhv)
-            { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0;  }
-            );
+                  [](const auto& lhv, const auto& rhv)
+                  { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0; });
         std::sort(GetDateColumns().begin(), GetDateColumns().end(),
-            [](const auto& lhv, const auto& rhv)
-            { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0;  }
-            );
+                  [](const auto& lhv, const auto& rhv)
+                  { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0; });
         }
 
     //----------------------------------------------
-    void ColumnWithStringTable::RecodeRE(const wxString& pattern,
-                                         const wxString& replace)
+    void ColumnWithStringTable::RecodeRE(const wxString& pattern, const wxString& replace)
         {
         wxRegEx re(pattern);
         if (re.IsValid())
             {
             for (auto& str : m_stringTable)
-                { re.ReplaceAll(&str.second, replace); }
+                {
+                re.ReplaceAll(&str.second, replace);
+                }
             }
         else
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': invalid regex used for recoding column."), pattern).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': invalid regex used for recoding column."), pattern)
+                    .ToUTF8());
             }
         CollapseStringTable();
         }
@@ -285,8 +312,9 @@ namespace Wisteria::Data
         auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found for regex recoding."), colName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for regex recoding."), colName)
+                    .ToUTF8());
             }
         catColumn->RecodeRE(pattern, replace);
         }
@@ -296,17 +324,14 @@ namespace Wisteria::Data
         {
         if (newColName.empty())
             {
-            throw std::runtime_error(
-                _(L"New column name cannot be empty.").ToUTF8());
+            throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
             }
 
         // make sure new name isn't in dataset already (unless old name and new name
         // are the same). New and old might be different if they are changing the casing.
-        if (colName.CmpNoCase(newColName) != 0 &&
-            ContainsColumn(newColName))
+        if (colName.CmpNoCase(newColName) != 0 && ContainsColumn(newColName))
             {
-            throw std::runtime_error(
-                _(L"New column name already exists in the dataset.").ToUTF8());
+            throw std::runtime_error(_(L"New column name already exists in the dataset.").ToUTF8());
             }
 
         auto continuousCol = GetContinuousColumn(colName);
@@ -314,17 +339,25 @@ namespace Wisteria::Data
         auto dateCol = GetDateColumn(colName);
 
         if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
-            { GetIdColumn().SetName(newColName); }
+            {
+            GetIdColumn().SetName(newColName);
+            }
         else if (continuousCol != GetContinuousColumns().end())
-            { continuousCol->SetName(newColName); }
+            {
+            continuousCol->SetName(newColName);
+            }
         else if (catCol != GetCategoricalColumns().end())
-            { catCol->SetName(newColName); }
+            {
+            catCol->SetName(newColName);
+            }
         else if (dateCol != GetDateColumns().end())
-            { dateCol->SetName(newColName); }
+            {
+            dateCol->SetName(newColName);
+            }
         else
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found for renaming."), newColName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for renaming."), newColName).ToUTF8());
             }
         }
 
@@ -333,14 +366,15 @@ namespace Wisteria::Data
         {
         if (colNamePattern.empty())
             {
-            throw std::runtime_error(
-                _(L"New column name cannot be empty.").ToUTF8());
+            throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
             }
         wxRegEx columnRE(colNamePattern);
         if (!columnRE.IsValid())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': invalid regex used for selecting columns."), colNamePattern).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': invalid regex used for selecting columns."),
+                                 colNamePattern)
+                    .ToUTF8());
             }
 
         if (HasValidIdData() && !columnRE.Matches(GetIdColumn().GetName()))
@@ -349,31 +383,41 @@ namespace Wisteria::Data
             GetIdColumn().SetName(wxString{});
             }
         for (auto colIter = GetCategoricalColumns().begin();
-            colIter != GetCategoricalColumns().end();
-            /*in loop*/)
+             colIter != GetCategoricalColumns().end();
+             /*in loop*/)
             {
             if (!columnRE.Matches(colIter->GetName()))
-                { colIter = GetCategoricalColumns().erase(colIter); }
+                {
+                colIter = GetCategoricalColumns().erase(colIter);
+                }
             else
-                { ++colIter; }
+                {
+                ++colIter;
+                }
             }
-        for (auto colIter = GetContinuousColumns().begin();
-            colIter != GetContinuousColumns().end();
-            /*in loop*/)
+        for (auto colIter = GetContinuousColumns().begin(); colIter != GetContinuousColumns().end();
+             /*in loop*/)
             {
             if (!columnRE.Matches(colIter->GetName()))
-                { colIter = GetContinuousColumns().erase(colIter); }
+                {
+                colIter = GetContinuousColumns().erase(colIter);
+                }
             else
-                { ++colIter; }
+                {
+                ++colIter;
+                }
             }
-        for (auto colIter = GetDateColumns().begin();
-            colIter != GetDateColumns().end();
-            /*in loop*/)
+        for (auto colIter = GetDateColumns().begin(); colIter != GetDateColumns().end();
+             /*in loop*/)
             {
             if (!columnRE.Matches(colIter->GetName()))
-                { colIter = GetDateColumns().erase(colIter); }
+                {
+                colIter = GetDateColumns().erase(colIter);
+                }
             else
-                { ++colIter; }
+                {
+                ++colIter;
+                }
             }
         }
 
@@ -382,41 +426,48 @@ namespace Wisteria::Data
         {
         if (colNamePattern.empty())
             {
-            throw std::runtime_error(
-                _(L"New column name cannot be empty.").ToUTF8());
+            throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
             }
         wxRegEx columnRE(colNamePattern);
         if (!columnRE.IsValid())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': invalid regex used for renaming column."), colNamePattern).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': invalid regex used for renaming column."),
+                                 colNamePattern)
+                    .ToUTF8());
             }
 
-        auto continuousCol = std::find_if(GetContinuousColumns().begin(),
-                GetContinuousColumns().end(),
-                [&columnRE](const auto& item)
-                { return columnRE.Matches(item.GetName()); });
-        auto catCol = std::find_if(GetCategoricalColumns().begin(),
-            GetCategoricalColumns().end(),
-            [&columnRE](const auto& item)
-            { return columnRE.Matches(item.GetName()); });
-        auto dateCol = std::find_if(GetDateColumns().begin(),
-            GetDateColumns().end(),
-            [&columnRE](const auto& item)
-            { return columnRE.Matches(item.GetName()); });
+        auto continuousCol = std::find_if(
+            GetContinuousColumns().begin(), GetContinuousColumns().end(),
+            [&columnRE](const auto& item) { return columnRE.Matches(item.GetName()); });
+        auto catCol = std::find_if(GetCategoricalColumns().begin(), GetCategoricalColumns().end(),
+                                   [&columnRE](const auto& item)
+                                   { return columnRE.Matches(item.GetName()); });
+        auto dateCol = std::find_if(GetDateColumns().begin(), GetDateColumns().end(),
+                                    [&columnRE](const auto& item)
+                                    { return columnRE.Matches(item.GetName()); });
 
         if (columnRE.Matches(GetIdColumn().GetName()))
-            { columnRE.ReplaceAll(&GetIdColumn().m_name, newColNamePattern); }
+            {
+            columnRE.ReplaceAll(&GetIdColumn().m_name, newColNamePattern);
+            }
         else if (continuousCol != GetContinuousColumns().end())
-            { columnRE.ReplaceAll(&continuousCol->m_name, newColNamePattern); }
+            {
+            columnRE.ReplaceAll(&continuousCol->m_name, newColNamePattern);
+            }
         else if (catCol != GetCategoricalColumns().end())
-            { columnRE.ReplaceAll(&catCol->m_name, newColNamePattern); }
+            {
+            columnRE.ReplaceAll(&catCol->m_name, newColNamePattern);
+            }
         else if (dateCol != GetDateColumns().end())
-            { columnRE.ReplaceAll(&dateCol->m_name, newColNamePattern); }
+            {
+            columnRE.ReplaceAll(&dateCol->m_name, newColNamePattern);
+            }
         else
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found for renaming."), colNamePattern).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for renaming."), colNamePattern)
+                    .ToUTF8());
             }
         }
 
@@ -428,32 +479,41 @@ namespace Wisteria::Data
         auto dateCol = GetDateColumn(colName);
 
         if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
-            { return true; }
+            {
+            return true;
+            }
         else if (continuousCol != GetContinuousColumns().end())
-            { return true; }
+            {
+            return true;
+            }
         else if (catCol != GetCategoricalColumns().end())
-            { return true; }
+            {
+            return true;
+            }
         else if (dateCol != GetDateColumns().end())
-            { return true; }
+            {
+            return true;
+            }
         return false;
         }
 
     //----------------------------------------------
     RegExMap ImportInfo::DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
-        const wxString& regexColumnName,
-        const wxString& replacementColumnName)
+                                           const wxString& regexColumnName,
+                                           const wxString& replacementColumnName)
         {
         const auto regexColumn = dataset->GetCategoricalColumn(regexColumnName);
         if (regexColumn == dataset->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': regex column not found."), regexColumnName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': regex column not found."), regexColumnName).ToUTF8());
             }
         const auto replaceColumn = dataset->GetCategoricalColumn(replacementColumnName);
         if (replaceColumn == dataset->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': regex column not found."), replacementColumnName).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': regex column not found."), replacementColumnName)
+                    .ToUTF8());
             }
 
         RegExMap reMap;
@@ -479,7 +539,9 @@ namespace Wisteria::Data
     double Dataset::ConvertToDouble(const std::wstring& input, double MDRecodeValue)
         {
         if (input.empty())
-            { return MDRecodeValue; }
+            {
+            return MDRecodeValue;
+            }
         else
             {
             const wchar_t* const start = input.c_str();
@@ -487,10 +549,14 @@ namespace Wisteria::Data
             double val = wxStrtod_l(start, &end, wxCLocale);
             // failed to even begin with a number
             if (end == start)
-                { return MDRecodeValue; }
+                {
+                return MDRecodeValue;
+                }
             // if we read all the way to the null terminator, then conversion worked
             else if (*end == 0)
-                { return val; }
+                {
+                return val;
+                }
             // at least started with a number
             else
                 {
@@ -505,7 +571,9 @@ namespace Wisteria::Data
                     }
                 // a mix of numbers and text, give up
                 else
-                    { return MDRecodeValue; }
+                    {
+                    return MDRecodeValue;
+                    }
                 }
             }
         }
@@ -514,7 +582,9 @@ namespace Wisteria::Data
     GroupIdType Dataset::ConvertToGroupId(const std::wstring& input, const GroupIdType mdCode)
         {
         if (input.empty())
-            { return mdCode; }
+            {
+            return mdCode;
+            }
         else
             {
             const wchar_t* const start = input.c_str();
@@ -525,12 +595,13 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    wxDateTime Dataset::ConvertToDate(const wxString& input,
-                                      const DateImportMethod method,
+    wxDateTime Dataset::ConvertToDate(const wxString& input, const DateImportMethod method,
                                       const wxString& formatStr)
         {
         if (input.empty())
-            { return wxInvalidDateTime; }
+            {
+            return wxInvalidDateTime;
+            }
 
         wxDateTime dt;
         wxString::const_iterator end;
@@ -542,7 +613,9 @@ namespace Wisteria::Data
             if (!dt.ParseDateTime(input, &end))
                 {
                 if (!dt.ParseDate(input, &end))
-                    { dt.ParseTime(input, &end); }
+                    {
+                    dt.ParseTime(input, &end);
+                    }
                 }
             break;
         case DateImportMethod::IsoDate:
@@ -562,7 +635,9 @@ namespace Wisteria::Data
             break;
             }
         if (!dt.IsValid())
-            { wxLogWarning(L"'%s': error parsing date.", input); }
+            {
+            wxLogWarning(L"'%s': error parsing date.", input);
+            }
         return dt;
         }
 
@@ -577,21 +652,29 @@ namespace Wisteria::Data
             const auto columnsToAdd = dataInfo.m_dateColumns.size() - m_dateColumns.size();
             // try to add a descriptive and unique name as best as we can
             for (size_t i = 0; i < columnsToAdd; ++i)
-                { AddDateColumn(wxString::Format(L"[DATE%zu]", i+1)); }
+                {
+                AddDateColumn(wxString::Format(L"[DATE%zu]", i + 1));
+                }
             }
         // continuous
         if (m_continuousColumns.size() < dataInfo.m_continuousValues.size())
             {
-            const auto columnsToAdd = dataInfo.m_continuousValues.size() - m_continuousColumns.size();
+            const auto columnsToAdd =
+                dataInfo.m_continuousValues.size() - m_continuousColumns.size();
             for (size_t i = 0; i < columnsToAdd; ++i)
-                { AddContinuousColumn(wxString::Format(L"[CONTINUOUS%zu]", i+1)); }
+                {
+                AddContinuousColumn(wxString::Format(L"[CONTINUOUS%zu]", i + 1));
+                }
             }
         // categoricals
         if (m_categoricalColumns.size() < dataInfo.m_categoryValues.size())
             {
-            const auto columnsToAdd = dataInfo.m_categoryValues.size() - m_categoricalColumns.size();
+            const auto columnsToAdd =
+                dataInfo.m_categoryValues.size() - m_categoricalColumns.size();
             for (size_t i = 0; i < columnsToAdd; ++i)
-                { AddCategoricalColumn(wxString::Format(L"[CATEGORICAL%zu]", i+1)); }
+                {
+                AddCategoricalColumn(wxString::Format(L"[CATEGORICAL%zu]", i + 1));
+                }
             }
 
         // fill the values
@@ -600,66 +683,80 @@ namespace Wisteria::Data
         m_idColumn.AddValue(dataInfo.m_id);
         // dates
         for (size_t i = 0; i < dataInfo.m_dateColumns.size(); ++i)
-            { m_dateColumns.at(i).AddValue(dataInfo.m_dateColumns.at(i)); }
+            {
+            m_dateColumns.at(i).AddValue(dataInfo.m_dateColumns.at(i));
+            }
         // categoricals
         for (size_t i = 0; i < dataInfo.m_categoryValues.size(); ++i)
-            { m_categoricalColumns.at(i).AddValue(dataInfo.m_categoryValues.at(i)); }
+            {
+            m_categoricalColumns.at(i).AddValue(dataInfo.m_categoryValues.at(i));
+            }
         // continuous columns
         for (size_t i = 0; i < dataInfo.m_continuousValues.size(); ++i)
-            { m_continuousColumns.at(i).AddValue(dataInfo.m_continuousValues.at(i)); }
+            {
+            m_continuousColumns.at(i).AddValue(dataInfo.m_continuousValues.at(i));
+            }
         }
 
     //----------------------------------------------
-    std::pair<wxString, wxString> Dataset::GetCategoricalMinMax(const wxString& column,
-        const std::optional<wxString>& groupColumn,
-        const std::optional<GroupIdType> groupId) const
+    std::pair<wxString, wxString>
+    Dataset::GetCategoricalMinMax(const wxString& column,
+                                  const std::optional<wxString>& groupColumn,
+                                  const std::optional<GroupIdType> groupId) const
         {
         // check column being analyzed
         const auto catColumnIterator = GetCategoricalColumn(column);
         if (catColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found when calculating valid N."), column).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found when calculating valid N."), column)
+                    .ToUTF8());
             }
 
         // check grouping parameters
-        const auto groupColumnIterator = (groupColumn.has_value() ?
-            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        const auto groupColumnIterator =
+            (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
+                                       GetCategoricalColumns().cend());
         assert((!groupColumn || groupId) &&
-                 L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column not found when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                                 groupColumn.value())
+                    .ToUTF8());
             }
         if (groupColumn && !groupId)
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping ID not specified for column when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    groupColumn.value())
+                    .ToUTF8());
             }
 
         // No rows or all empty? Then return a range of empties
         if (GetCategoricalColumnValidN(column, groupColumn, groupId) == 0)
-            { return std::make_pair(wxEmptyString, wxEmptyString); }
+            {
+            return std::make_pair(wxEmptyString, wxEmptyString);
+            }
 
-        const auto MDCode = ColumnWithStringTable::FindMissingDataCode(
-            catColumnIterator->GetStringTable());
+        const auto MDCode =
+            ColumnWithStringTable::FindMissingDataCode(catColumnIterator->GetStringTable());
         std::set<wxString, wxStringLessNoCase> strings;
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
-            if ((!MDCode.has_value() ||
-                 catColumnIterator->GetValue(i) != MDCode.value()) &&
+            if ((!MDCode.has_value() || catColumnIterator->GetValue(i) != MDCode.value()) &&
                 ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                  groupColumnIterator->GetValue(i) == groupId.value()))
+                 groupColumnIterator->GetValue(i) == groupId.value()))
                 {
-                strings.insert(
-                    catColumnIterator->GetLabelFromID(catColumnIterator->GetValue(i)));
+                strings.insert(catColumnIterator->GetLabelFromID(catColumnIterator->GetValue(i)));
                 }
             }
         if (strings.empty())
-            { return std::make_pair(wxEmptyString, wxEmptyString); }
+            {
+            return std::make_pair(wxEmptyString, wxEmptyString);
+            }
 
         // if there are strings, then return their min and max
         // (the first and last elements in the already sorted set)
@@ -668,86 +765,96 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     size_t Dataset::GetCategoricalColumnValidN(const wxString& column,
-        const std::optional<wxString>& groupColumn,
-        const std::optional<GroupIdType> groupId) const
+                                               const std::optional<wxString>& groupColumn,
+                                               const std::optional<GroupIdType> groupId) const
         {
         // check column being analyzed
         const auto catColumnIterator = GetCategoricalColumn(column);
         if (catColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found when calculating valid N."), column).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found when calculating valid N."), column)
+                    .ToUTF8());
             }
 
         // check grouping parameters
-        const auto groupColumnIterator = (groupColumn.has_value() ?
-            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        const auto groupColumnIterator =
+            (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
+                                       GetCategoricalColumns().cend());
         assert((!groupColumn || groupId) &&
-                 L"Group ID must be provided if using grouping for GetCategoricalColumnValidN()!");
+               L"Group ID must be provided if using grouping for GetCategoricalColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column not found when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                                 groupColumn.value())
+                    .ToUTF8());
             }
         if (groupColumn && !groupId)
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping ID not specified for column when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    groupColumn.value())
+                    .ToUTF8());
             }
 
         size_t validN{ 0 };
-        const auto MDCode = ColumnWithStringTable::FindMissingDataCode(
-            catColumnIterator->GetStringTable());
+        const auto MDCode =
+            ColumnWithStringTable::FindMissingDataCode(catColumnIterator->GetStringTable());
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (groupColumnIterator != GetCategoricalColumns().cend())
                 {
                 if (groupColumnIterator->GetValue(i) == groupId.value() &&
-                    (!MDCode.has_value() ||
-                     catColumnIterator->GetValue(i) != MDCode.value()) )
-                    { ++validN; }
+                    (!MDCode.has_value() || catColumnIterator->GetValue(i) != MDCode.value()))
+                    {
+                    ++validN;
+                    }
                 }
             else
                 {
-                if (!MDCode.has_value() ||
-                    catColumnIterator->GetValue(i) != MDCode.value())
-                    { ++validN; }
+                if (!MDCode.has_value() || catColumnIterator->GetValue(i) != MDCode.value())
+                    {
+                    ++validN;
+                    }
                 }
             }
         return validN;
         }
 
     //----------------------------------------------
-    std::pair<double, double> Dataset::GetContinuousMinMax(const std::variant<wxString,
-        size_t>& column,
-        const std::optional<wxString>& groupColumn,
-        const std::optional<GroupIdType> groupId) const
+    std::pair<double, double>
+    Dataset::GetContinuousMinMax(const std::variant<wxString, size_t>& column,
+                                 const std::optional<wxString>& groupColumn,
+                                 const std::optional<GroupIdType> groupId) const
         {
         const auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend())
             {
-            throw std::runtime_error(
-                _(L"Column not found when calculating min/max.").ToUTF8());
+            throw std::runtime_error(_(L"Column not found when calculating min/max.").ToUTF8());
             }
 
         // check grouping parameters
-        const auto groupColumnIterator = (groupColumn.has_value() ?
-            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        const auto groupColumnIterator =
+            (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
+                                       GetCategoricalColumns().cend());
         assert((!groupColumn || groupId) &&
-                 L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column not found when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                                 groupColumn.value())
+                    .ToUTF8());
             }
         if (groupColumn && !groupId)
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping ID not specified for column when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    groupColumn.value())
+                    .ToUTF8());
             }
 
         // No rows or all NaN? Then return a range of NaNs.
@@ -763,7 +870,7 @@ namespace Wisteria::Data
             {
             if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
                 ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                groupColumnIterator->GetValue(i) == groupId.value()))
+                 groupColumnIterator->GetValue(i) == groupId.value()))
                 {
                 minValue = std::min(minValue, continuousColumnIterator->GetValue(i));
                 maxValue = std::max(maxValue, continuousColumnIterator->GetValue(i));
@@ -774,77 +881,87 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     double Dataset::GetContinuousTotal(const std::variant<wxString, size_t>& column,
-        const std::optional<wxString>& groupColumn,
-        const std::optional<GroupIdType> groupId) const
+                                       const std::optional<wxString>& groupColumn,
+                                       const std::optional<GroupIdType> groupId) const
         {
         const auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend())
             {
-            throw std::runtime_error(
-                _(L"Column not found when calculating total.").ToUTF8());
+            throw std::runtime_error(_(L"Column not found when calculating total.").ToUTF8());
             }
 
         // check grouping parameters
-        const auto groupColumnIterator = (groupColumn.has_value() ?
-            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        const auto groupColumnIterator =
+            (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
+                                       GetCategoricalColumns().cend());
         assert((!groupColumn || groupId) &&
-                 L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column not found when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                                 groupColumn.value())
+                    .ToUTF8());
             }
         if (groupColumn && !groupId)
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping ID not specified for column when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    groupColumn.value())
+                    .ToUTF8());
             }
 
         // No rows or all NaN? Then return NaN.
         if (GetContinuousColumnValidN(column, groupColumn, groupId) == 0)
-            { return std::numeric_limits<double>::quiet_NaN(); }
+            {
+            return std::numeric_limits<double>::quiet_NaN();
+            }
 
         double totalVal{ 0 };
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
                 ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                groupColumnIterator->GetValue(i) == groupId.value()))
-                { totalVal += continuousColumnIterator->GetValue(i); }
+                 groupColumnIterator->GetValue(i) == groupId.value()))
+                {
+                totalVal += continuousColumnIterator->GetValue(i);
+                }
             }
         return totalVal;
         }
 
     //----------------------------------------------
     size_t Dataset::GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
-        const std::optional<wxString>& groupColumn,
-        const std::optional<GroupIdType> groupId) const
+                                              const std::optional<wxString>& groupColumn,
+                                              const std::optional<GroupIdType> groupId) const
         {
         const auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend())
             {
-            throw std::runtime_error(
-                _(L"Column not found when calculating valid N.").ToUTF8());
+            throw std::runtime_error(_(L"Column not found when calculating valid N.").ToUTF8());
             }
 
         // check grouping parameters
-        const auto groupColumnIterator = (groupColumn.has_value() ?
-            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        const auto groupColumnIterator =
+            (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
+                                       GetCategoricalColumns().cend());
         assert((!groupColumn || groupId) &&
-                 L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column not found when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                                 groupColumn.value())
+                    .ToUTF8());
             }
         if (groupColumn && !groupId)
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping ID not specified for column when calculating valid N."),
-                groupColumn.value()).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    groupColumn.value())
+                    .ToUTF8());
             }
 
         size_t validN{ 0 };
@@ -854,12 +971,16 @@ namespace Wisteria::Data
                 {
                 if (groupColumnIterator->GetValue(i) == groupId.value() &&
                     !std::isnan(continuousColumnIterator->GetValue(i)))
-                    { ++validN; }
+                    {
+                    ++validN;
+                    }
                 }
             else
                 {
                 if (!std::isnan(continuousColumnIterator->GetValue(i)))
-                    { ++validN; }
+                    {
+                    ++validN;
+                    }
                 }
             }
         return validN;
@@ -871,7 +992,9 @@ namespace Wisteria::Data
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (GetIdColumn().GetValue(i).length())
-                { return true; }
+                {
+                return true;
+                }
             }
         return false;
         }
@@ -887,64 +1010,78 @@ namespace Wisteria::Data
             const auto columnsToAdd = info.m_dateColumns.size() - m_dateColumns.size();
             // temporary placeholder name
             for (size_t i = 0; i < columnsToAdd; ++i)
-                { AddDateColumn(wxString::Format(L"[DATE%zu]", i+1)); }
+                {
+                AddDateColumn(wxString::Format(L"[DATE%zu]", i + 1));
+                }
             }
         // continuous
         if (m_continuousColumns.size() < info.m_continuousColumns.size())
             {
             const auto columnsToAdd = info.m_continuousColumns.size() - m_continuousColumns.size();
             for (size_t i = 0; i < columnsToAdd; ++i)
-                { AddContinuousColumn(wxString::Format(L"[CONTINUOUS%zu]", i+1)); }
+                {
+                AddContinuousColumn(wxString::Format(L"[CONTINUOUS%zu]", i + 1));
+                }
             }
         // categoricals
         if (m_categoricalColumns.size() < info.m_categoricalColumns.size())
             {
-            const auto columnsToAdd = info.m_categoricalColumns.size() - m_categoricalColumns.size();
+            const auto columnsToAdd =
+                info.m_categoricalColumns.size() - m_categoricalColumns.size();
             for (size_t i = 0; i < columnsToAdd; ++i)
-                { AddCategoricalColumn(wxString::Format(L"[CATEGORICAL%zu]", i+1)); }
+                {
+                AddCategoricalColumn(wxString::Format(L"[CATEGORICAL%zu]", i + 1));
+                }
             }
 
         if (info.m_idColumn.length())
-            { GetIdColumn().SetName(info.m_idColumn); }
+            {
+            GetIdColumn().SetName(info.m_idColumn);
+            }
         // date columns
         for (size_t i = 0; i < info.m_dateColumns.size(); ++i)
-            { GetDateColumn(i).SetName(info.m_dateColumns.at(i).m_columnName); }
+            {
+            GetDateColumn(i).SetName(info.m_dateColumns.at(i).m_columnName);
+            }
         // categorical columns
         for (size_t i = 0; i < info.m_categoricalColumns.size(); ++i)
-            { GetCategoricalColumn(i).SetName(info.m_categoricalColumns.at(i).m_columnName); }
+            {
+            GetCategoricalColumn(i).SetName(info.m_categoricalColumns.at(i).m_columnName);
+            }
         // continuous
         for (size_t i = 0; i < info.m_continuousColumns.size(); ++i)
-            { GetContinuousColumn(i).SetName(info.m_continuousColumns.at(i)); }
+            {
+            GetContinuousColumn(i).SetName(info.m_continuousColumns.at(i));
+            }
         }
 
     //----------------------------------------------
     void Dataset::AddCategoricalColumn(const wxString& columnName)
         {
-        assert(columnName.length() &&
-            L"Column name is empty in call to AddCategoricalColumn()!");
+        assert(columnName.length() && L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);
         if (foundColumn != GetCategoricalColumns().end())
-            { return; }
+            {
+            return;
+            }
 
-        m_categoricalColumns.resize(m_categoricalColumns.size()+1);
+        m_categoricalColumns.resize(m_categoricalColumns.size() + 1);
         m_categoricalColumns.back().SetName(columnName);
         // add a string table with an empty value and fill the data with that
         // if there are existing rows in the data
         if (GetRowCount())
             {
-            m_categoricalColumns.back().GetStringTable().
-                insert(std::make_pair(0, wxString{}));
+            m_categoricalColumns.back().GetStringTable().insert(std::make_pair(0, wxString{}));
             m_categoricalColumns.back().Resize(GetRowCount(), 0);
             }
         }
 
     //----------------------------------------------
     void Dataset::AddCategoricalColumn(const wxString& columnName,
-        const ColumnWithStringTable::StringTableType& stringTable)
+                                       const ColumnWithStringTable::StringTableType& stringTable)
         {
-        assert(columnName.length() &&
-            L"Column name is empty in call to AddCategoricalColumn()!");
+        assert(columnName.length() && L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);
         if (foundColumn != GetCategoricalColumns().end())
@@ -953,7 +1090,7 @@ namespace Wisteria::Data
             return;
             }
 
-        m_categoricalColumns.resize(m_categoricalColumns.size()+1);
+        m_categoricalColumns.resize(m_categoricalColumns.size() + 1);
         m_categoricalColumns.back().SetName(columnName);
         m_categoricalColumns.back().GetStringTable() = stringTable;
         // if we have existing rows and need to fill this column
@@ -961,8 +1098,7 @@ namespace Wisteria::Data
             {
             if (stringTable.size() == 0)
                 {
-                m_categoricalColumns.back().GetStringTable().
-                    insert(std::make_pair(0, wxString{}));
+                m_categoricalColumns.back().GetStringTable().insert(std::make_pair(0, wxString{}));
                 m_categoricalColumns.back().Resize(GetRowCount(), 0);
                 }
             else
@@ -980,9 +1116,9 @@ namespace Wisteria::Data
                 // no empty string in string table, so add one (with an ID one
                 // higher than the last one) and fill the existing rows with that
                 const auto& [lastKey, lastValue] = *stringTable.crbegin();
-                m_categoricalColumns.back().GetStringTable().
-                    insert(std::make_pair(lastKey+1, wxString{}));
-                m_categoricalColumns.back().Resize(GetRowCount(), lastKey+1);
+                m_categoricalColumns.back().GetStringTable().insert(
+                    std::make_pair(lastKey + 1, wxString{}));
+                m_categoricalColumns.back().Resize(GetRowCount(), lastKey + 1);
                 }
             }
         }
@@ -997,13 +1133,11 @@ namespace Wisteria::Data
             {
             if (colInfo.second == Data::Dataset::ColumnImportType::Discrete)
                 {
-                catInfo.push_back(
-                    { colInfo.first, CategoricalImportMethod::ReadAsIntegers });
+                catInfo.push_back({ colInfo.first, CategoricalImportMethod::ReadAsIntegers });
                 }
             else if (colInfo.second == Data::Dataset::ColumnImportType::String)
                 {
-                catInfo.push_back(
-                    { colInfo.first, CategoricalImportMethod::ReadAsStrings });
+                catInfo.push_back({ colInfo.first, CategoricalImportMethod::ReadAsStrings });
                 }
             else if (colInfo.second == Data::Dataset::ColumnImportType::Date)
                 {
@@ -1014,15 +1148,18 @@ namespace Wisteria::Data
                 continuousVars.push_back(colInfo.first);
                 }
             }
-        return ImportInfo().DateColumns(dateInfo).ContinuousColumns(continuousVars).
-            CategoricalColumns(catInfo);
+        return ImportInfo()
+            .DateColumns(dateInfo)
+            .ContinuousColumns(continuousVars)
+            .CategoricalColumns(catInfo);
         }
 
     //----------------------------------------------
-    Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
-        const ImportInfo& importInfo /*= ImportInfo{}*/,
-        std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        const std::variant<wxString, size_t>& worksheet /*= 1*/)
+    Dataset::ColumnPreviewInfo
+    Dataset::ReadColumnInfo(const wxString& filePath,
+                            const ImportInfo& importInfo /*= ImportInfo{}*/,
+                            std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
+                            const std::variant<wxString, size_t>& worksheet /*= 1*/)
         {
         const wxString fileExt{ wxFileName(filePath).GetExt() };
         const wchar_t delim = GetDelimiterFromExtension(filePath);
@@ -1038,8 +1175,9 @@ namespace Wisteria::Data
             wxFile fl(filePath);
             if (!fl.IsOpened() || !fl.ReadAll(&fileText))
                 {
-                throw std::runtime_error(wxString::Format(L"'%s':\n%s", filePath,
-                                         wxSysErrorMsg(fl.GetLastError())).ToUTF8());
+                throw std::runtime_error(
+                    wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(fl.GetLastError()))
+                        .ToUTF8());
                 }
             }
 
@@ -1047,18 +1185,18 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    Dataset::ColumnPreviewInfo Dataset::ReadColumnInfoRaw(const wxString& fileText,
-        const wchar_t delimiter,
-        const ImportInfo& importInfo /*= ImportInfo{}*/,
-        std::optional<size_t> rowPreviewCount /*= std::nullopt*/)
+    Dataset::ColumnPreviewInfo
+    Dataset::ReadColumnInfoRaw(const wxString& fileText, const wchar_t delimiter,
+                               const ImportInfo& importInfo /*= ImportInfo{}*/,
+                               std::optional<size_t> rowPreviewCount /*= std::nullopt*/)
         {
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
         importer.set_missing_data_codes(importInfo.m_mdCodes);
 
-        lily_of_the_valley::text_column<text_column_to_eol_parser>
-            noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
+        lily_of_the_valley::text_column<text_column_to_eol_parser> noReadColumn(
+            lily_of_the_valley::text_column_to_eol_parser{ false });
         if (importInfo.m_skipRows > 0)
             {
             // skip initial lines of text that the caller asked to skip
@@ -1072,8 +1210,8 @@ namespace Wisteria::Data
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
 
-        lily_of_the_valley::standard_delimited_character_column
-            deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
+        lily_of_the_valley::standard_delimited_character_column deliminatedColumn(
+            lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
         lily_of_the_valley::text_row<std::wstring> row{};
         row.add_column(deliminatedColumn);
         importer.add_row_definition(row);
@@ -1083,8 +1221,7 @@ namespace Wisteria::Data
         // read either first few rows or entire file, whichever is less
         size_t rowCount = std::min<size_t>(
             preview(fileText.wc_str(), delimiter, false, false, importInfo.m_skipRows),
-                    rowPreviewCount.has_value() ?
-                        (rowPreviewCount.value() + 1/*header*/) : 100);
+            rowPreviewCount.has_value() ? (rowPreviewCount.value() + 1 /*header*/) : 100);
 
         // see if there are any duplicate column names
         std::set<wxString, wxStringLessNoCase> colNames;
@@ -1092,24 +1229,29 @@ namespace Wisteria::Data
             {
             // skip blank names, we will throw those out later
             if (headerName.empty())
-                { continue; }
+                {
+                continue;
+                }
             const auto [iter, inserted] = colNames.insert(headerName);
             if (!inserted)
                 {
                 throw std::runtime_error(
                     wxString::Format(_(L"'%s': column name appears more than once in dataset."),
-                    *iter).ToUTF8());
+                                     *iter)
+                        .ToUTF8());
                 }
             }
 
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            rowCount = importer.read(fileText.wc_str(), rowCount,
-                                     preview.get_header_names().size(), false);
+            rowCount = importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(),
+                                     false);
             }
         else
-            { return columnInfo; }
+            {
+            return columnInfo;
+            }
 
         wxLogNull nl;
         wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
@@ -1126,13 +1268,14 @@ namespace Wisteria::Data
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
-                minCellLength = std::min(minCellLength.value_or(currentCell.length()), currentCell.length());
-                maxCellLength = std::max(maxCellLength.value_or(currentCell.length()), currentCell.length());
+                minCellLength =
+                    std::min(minCellLength.value_or(currentCell.length()), currentCell.length());
+                maxCellLength =
+                    std::max(maxCellLength.value_or(currentCell.length()), currentCell.length());
                 // "0002789" can trigger the column to be imported as text,
                 // preserving the leading zeros and seeing these "numbers" as
                 // identifying labels instead.
-                if (importInfo.m_treatLeadingZerosAsText &&
-                    currentCell.length() > 1 &&
+                if (importInfo.m_treatLeadingZerosAsText && currentCell.length() > 1 &&
                     currentCell.front() == L'0')
                     {
                     currentColumnType = ColumnImportType::String;
@@ -1154,8 +1297,7 @@ namespace Wisteria::Data
                     }
                 // ConvertToDate() will also attempt to parse as time, so use
                 // strictly review as dates
-                else if (dt.ParseDateTime(currentCell, &end) ||
-                    dt.ParseDate(currentCell, &end))
+                else if (dt.ParseDateTime(currentCell, &end) || dt.ParseDate(currentCell, &end))
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
@@ -1172,17 +1314,21 @@ namespace Wisteria::Data
                     break;
                     }
                 else if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
-                    // numbers outside of 0-7 probably aren't a discrete code
-                    !is_within(std::make_pair(0.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
-                               parsedNumber))
-                    { currentColumnType = ColumnImportType::Numeric; }
+                         // numbers outside of 0-7 probably aren't a discrete code
+                         !is_within(std::make_pair(
+                                        0.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
+                                    parsedNumber))
+                    {
+                    currentColumnType = ColumnImportType::Numeric;
+                    }
                 }
 
-            if (importInfo.m_treatYearsAsText &&
-                currentColumnType == ColumnImportType::Numeric &&
-                minCellLength && maxCellLength &&
-                minCellLength.value() == 4 && maxCellLength.value() == 4)
-                { currentColumnType = ColumnImportType::String; }
+            if (importInfo.m_treatYearsAsText && currentColumnType == ColumnImportType::Numeric &&
+                minCellLength && maxCellLength && minCellLength.value() == 4 &&
+                maxCellLength.value() == 4)
+                {
+                currentColumnType = ColumnImportType::String;
+                }
             // Entirely missing data? Best to treat it as a text column then.
             else if (mdCount == rowCount)
                 {
@@ -1191,20 +1337,19 @@ namespace Wisteria::Data
             // silently ignore columns with no name (missing header)
             if (preview.get_header_names().at(colIndex).length())
                 {
-                columnInfo.push_back(std::make_pair(
-                    preview.get_header_names().at(colIndex).c_str(),
-                    currentColumnType));
+                columnInfo.push_back(std::make_pair(preview.get_header_names().at(colIndex).c_str(),
+                                                    currentColumnType));
                 }
             }
         return columnInfo;
         }
 
     //----------------------------------------------
-    void Dataset::ExportText(const wxString& filePath,
-                             const wchar_t delimiter, const bool quoteColumns) const
+    void Dataset::ExportText(const wxString& filePath, const wchar_t delimiter,
+                             const bool quoteColumns) const
         {
         const auto wrapText = [&](const wxString& val)
-            {
+        {
             wxString escapedText = val;
             // strip tabs and newlines
             escapedText.Replace(L'\n', L' ', true);
@@ -1219,30 +1364,32 @@ namespace Wisteria::Data
                 return wxString(L"\"" + escapedText + L"\"");
                 }
             return escapedText;
-            };
+        };
         // combines column names as a delimited string
         const auto concatColNames = [&](const auto& cols)
-            {
+        {
             wxString colNames;
             for (const auto& catCol : cols)
                 {
-                colNames.append(wrapText(catCol.GetName())).
-                    append(1, delimiter);
+                colNames.append(wrapText(catCol.GetName())).append(1, delimiter);
                 }
             colNames.RemoveLast();
             return colNames;
-            };
+        };
         const wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString{};
         const wxString catColumnNames = concatColNames(GetCategoricalColumns());
         const wxString dateColumnNames = concatColNames(GetDateColumns());
         const wxString continuousColumnNames = concatColNames(GetContinuousColumns());
 
-        wxString colNames = (idName.length() ? idName + delimiter : wxString{}) +
+        wxString colNames =
+            (idName.length() ? idName + delimiter : wxString{}) +
             (catColumnNames.length() ? catColumnNames + delimiter : wxString{}) +
             (dateColumnNames.length() ? dateColumnNames + delimiter : wxString{}) +
             (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString{});
-        if (colNames.length() && colNames[colNames.length()-1] == delimiter)
-            { colNames.RemoveLast(); }
+        if (colNames.length() && colNames[colNames.length() - 1] == delimiter)
+            {
+            colNames.RemoveLast();
+            }
 
         wxString fileContent = colNames + L'\n';
 
@@ -1253,47 +1400,55 @@ namespace Wisteria::Data
             currentRow.clear();
             // ID
             if (HasValidIdData())
-                { currentRow.append(wrapText(GetIdColumn().GetValue(i))).append(1, delimiter); }
+                {
+                currentRow.append(wrapText(GetIdColumn().GetValue(i))).append(1, delimiter);
+                }
             // categoricals
             for (const auto& col : GetCategoricalColumns())
                 {
-                currentRow.append(wrapText(col.GetLabelFromID(col.GetValue(i)))).
-                           append(1, delimiter);
+                currentRow.append(wrapText(col.GetLabelFromID(col.GetValue(i))))
+                    .append(1, delimiter);
                 }
             // dates
             for (const auto& col : GetDateColumns())
                 {
-                currentRow.append(
-                           wrapText(col.GetValue(i).IsValid() ?
-                               col.GetValue(i).FormatISOCombined() :
-                               wxString{})).
-                           append(1, delimiter);
+                currentRow
+                    .append(wrapText(col.GetValue(i).IsValid() ?
+                                         col.GetValue(i).FormatISOCombined() :
+                                         wxString{}))
+                    .append(1, delimiter);
                 }
             // continuous
             for (const auto& col : GetContinuousColumns())
                 {
-                currentRow.append(wrapText(std::isnan(col.GetValue(i)) ? wxString{} :
-                                  wxNumberFormatter::ToString(col.GetValue(i), 6,
-                                      wxNumberFormatter::Style::Style_NoTrailingZeroes))).
-                           append(1, delimiter);
+                currentRow
+                    .append(wrapText(std::isnan(col.GetValue(i)) ?
+                                         wxString{} :
+                                         wxNumberFormatter::ToString(
+                                             col.GetValue(i), 6,
+                                             wxNumberFormatter::Style::Style_NoTrailingZeroes)))
+                    .append(1, delimiter);
                 }
-            if (currentRow.length() && currentRow[currentRow.length()-1] == delimiter)
-                { currentRow.RemoveLast(); }
+            if (currentRow.length() && currentRow[currentRow.length() - 1] == delimiter)
+                {
+                currentRow.RemoveLast();
+                }
             fileContent.append(currentRow).append(1, L'\n');
             }
 
         wxFile fl(filePath, wxFile::write);
         if (!fl.IsOpened() || !fl.Write(fileContent))
             {
-            throw std::runtime_error(wxString::Format(L"'%s':\n%s", filePath,
-                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(fl.GetLastError()))
+                    .ToUTF8());
             }
         }
 
     //----------------------------------------------
     void Dataset::ImportExcel(const wxString& filePath,
-        const std::variant<wxString, size_t>& worksheet,
-        const ImportInfo& info)
+                              const std::variant<wxString, size_t>& worksheet,
+                              const ImportInfo& info)
         {
         Data::ExcelReader xlReader(filePath);
         ImportTextRaw(xlReader.ReadWorksheet(worksheet), info, L'\t');
@@ -1315,8 +1470,8 @@ namespace Wisteria::Data
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
         importer.set_missing_data_codes(info.m_mdCodes);
 
-        lily_of_the_valley::text_column<text_column_to_eol_parser>
-            noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
+        lily_of_the_valley::text_column<text_column_to_eol_parser> noReadColumn(
+            lily_of_the_valley::text_column_to_eol_parser{ false });
         if (info.m_skipRows > 0)
             {
             // skip initial lines of text that the caller asked to skip
@@ -1330,8 +1485,8 @@ namespace Wisteria::Data
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
 
-        lily_of_the_valley::standard_delimited_character_column
-            deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
+        lily_of_the_valley::standard_delimited_character_column deliminatedColumn(
+            lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
         lily_of_the_valley::text_row<std::wstring> row{};
         row.add_column(deliminatedColumn);
         importer.add_row_definition(row);
@@ -1342,28 +1497,34 @@ namespace Wisteria::Data
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            rowCount = importer.read(fileText.wc_str(), rowCount,
-                                     preview.get_header_names().size(), false);
+            rowCount = importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(),
+                                     false);
             if (rowCount == 0)
-                { return; }
+                {
+                return;
+                }
             Reserve(rowCount);
             }
         else
-            { return; }
+            {
+            return;
+            }
 
         // checks for columns client requested that aren't in the file
         const auto throwIfColumnNotFound = [&preview](const auto& columnName,
                                                       const auto& foundIterator,
                                                       const bool allowEmptyColumnName)
-            {
+        {
             if (allowEmptyColumnName && columnName.empty())
-                { return; }
+                {
+                return;
+                }
             if (foundIterator == preview.get_header_names().cend())
                 {
                 throw std::runtime_error(
                     wxString::Format(_(L"'%s': column not found!"), columnName.c_str()).ToUTF8());
                 }
-            };
+        };
 
         // column index with specialized import method
         struct catIndexInfo
@@ -1386,104 +1547,113 @@ namespace Wisteria::Data
 
         // find the column indices into the data that match the column names
         // from the client and map them as they requested
-        const auto idColumnIter = info.m_idColumn.empty() ?
-            preview.get_header_names().cend() :
-            std::find_if(preview.get_header_names().cbegin(),
-                preview.get_header_names().cend(),
-                [&info](const auto& item)
-                    { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
+        const auto idColumnIter =
+            info.m_idColumn.empty() ?
+                preview.get_header_names().cend() :
+                std::find_if(preview.get_header_names().cbegin(), preview.get_header_names().cend(),
+                             [&info](const auto& item)
+                             { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
         throwIfColumnNotFound(info.m_idColumn, idColumnIter, true);
         const std::optional<size_t> idColumnIndex =
             (idColumnIter != preview.get_header_names().cend()) ?
-            std::optional<size_t>(idColumnIter - preview.get_header_names().cbegin()) :
-            std::nullopt;
+                std::optional<size_t>(idColumnIter - preview.get_header_names().cbegin()) :
+                std::nullopt;
 
         // find the supplied date columns
         std::vector<std::optional<dateIndexInfo>> dateColumnIndices;
         for (const auto& dateColumn : info.m_dateColumns)
             {
-            const auto dateColumnIter = dateColumn.m_columnName.empty() ?
-            preview.get_header_names().cend() :
-                std::find_if(preview.get_header_names().cbegin(),
-                    preview.get_header_names().cend(),
-                    [&dateColumn](const auto& item)
-                        { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
+            const auto dateColumnIter =
+                dateColumn.m_columnName.empty() ?
+                    preview.get_header_names().cend() :
+                    std::find_if(preview.get_header_names().cbegin(),
+                                 preview.get_header_names().cend(),
+                                 [&dateColumn](const auto& item)
+                                 { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter, false);
             dateColumnIndices.push_back(
                 (dateColumnIter != preview.get_header_names().cend()) ?
-                std::optional<dateIndexInfo>(dateIndexInfo{
-                    static_cast<size_t>(dateColumnIter - preview.get_header_names().cbegin()),
-                    dateColumn.m_importMethod, dateColumn.m_strptimeFormatString }) :
-                std::nullopt);
+                    std::optional<dateIndexInfo>(dateIndexInfo{
+                        static_cast<size_t>(dateColumnIter - preview.get_header_names().cbegin()),
+                        dateColumn.m_importMethod, dateColumn.m_strptimeFormatString }) :
+                    std::nullopt);
             }
 
         // find the supplied categorical columns
         std::vector<std::optional<catIndexInfo>> catColumnIndices;
         for (const auto& catColumn : info.m_categoricalColumns)
             {
-            const auto catColumnIter = catColumn.m_columnName.empty() ?
-            preview.get_header_names().cend() :
-                std::find_if(preview.get_header_names().cbegin(),
-                    preview.get_header_names().cend(),
-                    [&catColumn](const auto& item)
-                        { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
+            const auto catColumnIter =
+                catColumn.m_columnName.empty() ?
+                    preview.get_header_names().cend() :
+                    std::find_if(preview.get_header_names().cbegin(),
+                                 preview.get_header_names().cend(),
+                                 [&catColumn](const auto& item)
+                                 { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(catColumn.m_columnName, catColumnIter, false);
             catColumnIndices.push_back(
                 (catColumnIter != preview.get_header_names().cend()) ?
-                std::optional<catIndexInfo>(catIndexInfo{
-                    static_cast<size_t>(catColumnIter - preview.get_header_names().cbegin()),
-                                        catColumn.m_importMethod, catColumn.m_mdCode }) :
-                std::nullopt);
+                    std::optional<catIndexInfo>(catIndexInfo{
+                        static_cast<size_t>(catColumnIter - preview.get_header_names().cbegin()),
+                        catColumn.m_importMethod, catColumn.m_mdCode }) :
+                    std::nullopt);
             }
 
         // find the supplied continuous columns
         std::vector<std::optional<size_t>> continuousColumnIndices;
         for (const auto& continuousColumn : info.m_continuousColumns)
             {
-            const auto continuousColumnIter = continuousColumn.empty() ?
-            preview.get_header_names().cend() :
-                std::find_if(preview.get_header_names().cbegin(),
-                    preview.get_header_names().cend(),
-                    [&continuousColumn](const auto& item)
-                        { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
+            const auto continuousColumnIter =
+                continuousColumn.empty() ?
+                    preview.get_header_names().cend() :
+                    std::find_if(preview.get_header_names().cbegin(),
+                                 preview.get_header_names().cend(),
+                                 [&continuousColumn](const auto& item)
+                                 { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(continuousColumn, continuousColumnIter, false);
             continuousColumnIndices.push_back(
                 (continuousColumnIter != preview.get_header_names().cend()) ?
-                std::optional<size_t>(continuousColumnIter - preview.get_header_names().cbegin()) :
-                std::nullopt);
+                    std::optional<size_t>(continuousColumnIter -
+                                          preview.get_header_names().cbegin()) :
+                    std::nullopt);
             }
 
         // performs user-provided text replacement commands
         const auto replaceStrings = [&](const wxString& str)
-            {
+        {
             wxString alteredStr{ str };
             for (const auto& [re, replacement] : info.m_textImportReplacements)
                 {
                 if (re && re->IsValid())
-                    { re->ReplaceAll(&alteredStr, replacement); }
+                    {
+                    re->ReplaceAll(&alteredStr, replacement);
+                    }
                 }
             return alteredStr;
-            };
+        };
 
         // setup the string tables
         struct StringTableBuilder
             {
-        public:
+          public:
             [[nodiscard]]
             GroupIdType LoadCode(const wxString& code)
                 {
                 auto foundGroup = m_strings.find(code);
                 if (foundGroup == m_strings.end())
                     {
-                    foundGroup = m_strings.insert(
-                        std::make_pair(code, currentId++)).first;
+                    foundGroup = m_strings.insert(std::make_pair(code, currentId++)).first;
                     }
                 return foundGroup->second;
                 }
+
             [[nodiscard]]
             const auto& GetStrings() const noexcept
-                { return m_strings; }
-        private:
+                {
+                return m_strings;
+                }
+
+          private:
             GroupIdType currentId{ 0 };
             std::map<wxString, GroupIdType, wxStringLessNoCase> m_strings;
             };
@@ -1506,9 +1676,9 @@ namespace Wisteria::Data
                 if (dateColumnIndices.at(i))
                     {
                     const auto& currentDateInfo{ dateColumnIndices.at(i).value() };
-                    dateValues.push_back(
-                        ConvertToDate(currentRow.at(currentDateInfo.m_index),
-                            currentDateInfo.m_importMethod, currentDateInfo.m_formatStr));
+                    dateValues.push_back(ConvertToDate(currentRow.at(currentDateInfo.m_index),
+                                                       currentDateInfo.m_importMethod,
+                                                       currentDateInfo.m_formatStr));
                     }
                 }
             currentItem.Dates(dateValues);
@@ -1519,18 +1689,17 @@ namespace Wisteria::Data
                 {
                 if (catColumnIndices.at(i))
                     {
-                    if (catColumnIndices.at(i).value().m_importMethod == CategoricalImportMethod::ReadAsStrings)
+                    if (catColumnIndices.at(i).value().m_importMethod ==
+                        CategoricalImportMethod::ReadAsStrings)
                         {
-                        catCodes.push_back(
-                            categoricalVars.at(i).LoadCode(
-                                replaceStrings(currentRow.at(catColumnIndices.at(i).value().m_index))) );
+                        catCodes.push_back(categoricalVars.at(i).LoadCode(
+                            replaceStrings(currentRow.at(catColumnIndices.at(i).value().m_index))));
                         }
                     else
                         {
                         catCodes.push_back(
-                            ConvertToGroupId(
-                                currentRow.at(catColumnIndices.at(i).value().m_index),
-                                catColumnIndices.at(i).value().m_mdCode));
+                            ConvertToGroupId(currentRow.at(catColumnIndices.at(i).value().m_index),
+                                             catColumnIndices.at(i).value().m_mdCode));
                         }
                     }
                 }
@@ -1543,16 +1712,17 @@ namespace Wisteria::Data
                 if (continuousColumnIndices.at(i))
                     {
                     continuousValues.push_back(
-                        ConvertToDouble(
-                            currentRow.at(continuousColumnIndices.at(i).value()),
-                            info.m_continuousMDRecodeValue));
+                        ConvertToDouble(currentRow.at(continuousColumnIndices.at(i).value()),
+                                        info.m_continuousMDRecodeValue));
                     }
                 }
             currentItem.Continuous(continuousValues);
 
             // ID column
             if (idColumnIndex.has_value())
-                { currentItem.Id(currentRow.at(idColumnIndex.value())); }
+                {
+                currentItem.Id(currentRow.at(idColumnIndex.value()));
+                }
             AddRow(currentItem);
             }
         // set string tables for categoricals
@@ -1572,8 +1742,9 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    void Dataset::Import(const wxString& filePath, const ImportInfo& info,
-        const std::variant<wxString, size_t>& worksheet /*= static_cast<size_t>(1)*/)
+    void
+    Dataset::Import(const wxString& filePath, const ImportInfo& info,
+                    const std::variant<wxString, size_t>& worksheet /*= static_cast<size_t>(1)*/)
         {
         if (wxFileName{ filePath }.GetExt().CmpNoCase(L"xlsx") == 0)
             {
@@ -1594,8 +1765,9 @@ namespace Wisteria::Data
         wxFile fl(filePath);
         if (!fl.IsOpened() || !fl.ReadAll(&fileText))
             {
-            throw std::runtime_error(wxString::Format(L"'%s':\n%s", filePath,
-                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(fl.GetLastError()))
+                    .ToUTF8());
             }
         fileText.Trim(true).Trim(false);
 
@@ -1608,17 +1780,26 @@ namespace Wisteria::Data
     std::optional<ColumnIterator> Dataset::FindColumn(const wxString& colName)
         {
         if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
-            { return &GetIdColumn(); }
+            {
+            return &GetIdColumn();
+            }
         else if (auto foundCatVar = GetCategoricalColumn(colName);
-            foundCatVar != GetCategoricalColumns().end())
-            { return foundCatVar; }
+                 foundCatVar != GetCategoricalColumns().end())
+            {
+            return foundCatVar;
+            }
         else if (auto foundContinuousVar = GetContinuousColumn(colName);
-            foundContinuousVar != GetContinuousColumns().end())
-            { return foundContinuousVar; }
-        else if (auto foundDateVar = GetDateColumn(colName);
-            foundDateVar != GetDateColumns().end())
-            { return foundDateVar; }
+                 foundContinuousVar != GetContinuousColumns().end())
+            {
+            return foundContinuousVar;
+            }
+        else if (auto foundDateVar = GetDateColumn(colName); foundDateVar != GetDateColumns().end())
+            {
+            return foundDateVar;
+            }
         else
-            { return std::nullopt; }
+            {
+            return std::nullopt;
+            }
         }
-    }
+    } // namespace Wisteria::Data

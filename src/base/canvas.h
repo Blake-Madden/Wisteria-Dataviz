@@ -51,7 +51,6 @@ wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 #define EVT_WISTERIA_CANVAS_DCLICK(winid, fn)                                                      \
     wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winid, wxCommandEventHandler(fn))
-
 /// @endcond
 
 namespace Wisteria

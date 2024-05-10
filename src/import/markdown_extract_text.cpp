@@ -1,6 +1,7 @@
 #include "markdown_extract_text.h"
 
-const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md_text)
+const wchar_t*
+lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md_text)
     {
     clear_log();
     if (md_text.empty())
@@ -10,7 +11,9 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         }
 
     if (m_subParser == nullptr)
-        { m_subParser = std::make_unique<markdown_extract_text>(); }
+        {
+        m_subParser = std::make_unique<markdown_extract_text>();
+        }
 
     if (!allocate_text_buffer(md_text.length() * 2))
         {
@@ -23,13 +26,19 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     const wchar_t* start = md_text.data();
     const wchar_t* metaEnd{ nullptr };
     if (has_metadata_section(start))
-        { metaEnd = find_metadata_section_end(start); }
+        {
+        metaEnd = find_metadata_section_end(start);
+        }
     if (metaEnd != nullptr)
-        { start = metaEnd; }
+        {
+        start = metaEnd;
+        }
     // in case metadata section ate up the whole file
     // (or at least the part of the file requested to be reviewed)
     if (start >= endSentinel)
-        { return endSentinel; }
+        {
+        return endSentinel;
+        }
 
     const std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
     const std::wstring_view BEGIN_FIGURE{ L"\\begin{figure}" };
@@ -40,14 +49,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
     wchar_t previousChar{ L'\n' };
 
     const auto parseStyledText = [&](const wchar_t tag)
-        {
+    {
         // not styling text, just an orphan character that should be processed as-is
-        if (*start == tag &&
-            start + 1 < endSentinel)
+        if (*start == tag && start + 1 < endSentinel)
             {
-            if (start[1] != tag &&
-                !std::iswalnum(start[1]) &&
-                start[1] != L'`')
+            if (start[1] != tag && !std::iswalnum(start[1]) && start[1] != L'`')
                 {
                 add_character(*start);
                 previousChar = *start;
@@ -55,28 +61,27 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 return true;
                 }
             }
-        while (*start == tag &&
-            start < endSentinel)
-            { ++start; }
-        auto endOfTag =
-            string_util::find_unescaped_char_same_line_n(start, tag, std::distance(start, endSentinel));
+        while (*start == tag && start < endSentinel)
+            {
+            ++start;
+            }
+        auto endOfTag = string_util::find_unescaped_char_same_line_n(
+            start, tag, std::distance(start, endSentinel));
         if (endOfTag == nullptr || (endOfTag >= endSentinel))
             {
             log_message(L"Missing matching styling tag in markdown file.");
             return false;
             }
-        while (*endOfTag == tag &&
-            (endOfTag < endSentinel))
-            { ++endOfTag; }
-        while (endOfTag < endSentinel &&
-            (std::iswalnum(*endOfTag) || *endOfTag == L'`'))
+        while (*endOfTag == tag && (endOfTag < endSentinel))
             {
             ++endOfTag;
-            endOfTag =
-                string_util::find_unescaped_char_same_line_n(endOfTag, tag,
-                                                   std::distance(endOfTag, endSentinel));
-            if (endOfTag == nullptr ||
-                endOfTag + 1 >= endSentinel)
+            }
+        while (endOfTag < endSentinel && (std::iswalnum(*endOfTag) || *endOfTag == L'`'))
+            {
+            ++endOfTag;
+            endOfTag = string_util::find_unescaped_char_same_line_n(
+                endOfTag, tag, std::distance(endOfTag, endSentinel));
+            if (endOfTag == nullptr || endOfTag + 1 >= endSentinel)
                 {
                 log_message(L"Missing matching styling tag in markdown file.");
                 return false;
@@ -98,16 +103,17 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             ++endOfTag;
             }
 
-        [[maybe_unused]] auto retval = m_subParser->operator()(
-            { start, static_cast<size_t>(std::distance(start, endOfTag)) });
+        [[maybe_unused]] auto retval =
+            m_subParser->operator()({ start, static_cast<size_t>(std::distance(start, endOfTag)) });
         add_characters(
             { m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
         start = endOfTag;
-        while (*start == tag &&
-            (start < endSentinel))
-            { ++start; }
+        while (*start == tag && (start < endSentinel))
+            {
+            ++start;
+            }
         return true;
-        };
+    };
 
     while (start != nullptr && *start != 0 && (start < endSentinel))
         {
@@ -121,7 +127,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 if (std::wcsncmp(start, L"\\index{", 7) == 0)
                     {
                     start += 7;
-                    auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'{', L'}');
+                    auto endOfTag =
+                        string_util::find_unescaped_matching_close_tag_same_line(start, L'{', L'}');
                     if (endOfTag == nullptr)
                         {
                         log_message(L"Bad index{} command in markdown file.");
@@ -143,7 +150,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 else if (std::wcsncmp(start, L"\\@ref(", 6) == 0)
                     {
                     start += 6;
-                    auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line(start, L'(', L')');
+                    auto endOfTag =
+                        string_util::find_unescaped_matching_close_tag_same_line(start, L'(', L')');
                     if (endOfTag == nullptr)
                         {
                         log_message(L"Bad cross reference command in markdown file.");
@@ -158,8 +166,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     add_characters(L"\n\n");
                     continue;
                     }
-                else if (start < endSentinel &&
-                    (start[1] == L'\n' || start[1] == L'\r'))
+                else if (start < endSentinel && (start[1] == L'\n' || start[1] == L'\r'))
                     {
                     headerMode = true;
                     ++start;
@@ -175,16 +182,17 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         // skip over header tags
         else if (*start == L'#')
             {
-            if (!isEscaping &&
-                (previousChar == L'\n' || previousChar == L'\r'))
+            if (!isEscaping && (previousChar == L'\n' || previousChar == L'\r'))
                 {
-                while (*start == L'#' &&
-                       (start < endSentinel))
-                    { ++start; }
+                while (*start == L'#' && (start < endSentinel))
+                    {
+                    ++start;
+                    }
                 // space between # and header text
-                while ((*start == L' ' || *start == L'\t') &&
-                       (start < endSentinel))
-                    { ++start; }
+                while ((*start == L' ' || *start == L'\t') && (start < endSentinel))
+                    {
+                    ++start;
+                    }
                 previousChar = *start;
                 headerMode = true;
                 continue;
@@ -193,33 +201,32 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         // RMarkdown div fences
         else if (*start == L':')
             {
-            if (!isEscaping &&
-                (previousChar == L'\n' || previousChar == L'\r'))
+            if (!isEscaping && (previousChar == L'\n' || previousChar == L'\r'))
                 {
                 // space between > and quote text
-                while ((*start == L':') &&
-                       (start < endSentinel))
-                    { ++start; }
+                while ((*start == L':') && (start < endSentinel))
+                    {
+                    ++start;
+                    }
                 continue;
                 }
             }
         // block quotes
         else if (*start == L'>')
             {
-            if (!isEscaping &&
-                (previousChar == L'\n' || previousChar == L'\r'))
+            if (!isEscaping && (previousChar == L'\n' || previousChar == L'\r'))
                 {
                 size_t tabCount{ 0 };
-                while (*start == L'>' &&
-                       (start < endSentinel))
+                while (*start == L'>' && (start < endSentinel))
                     {
                     ++tabCount;
                     ++start;
                     }
                 // space between > and quote text
-                while ((*start == L' ' || *start == L'\t') &&
-                       (start < endSentinel))
-                    { ++start; }
+                while ((*start == L' ' || *start == L'\t') && (start < endSentinel))
+                    {
+                    ++start;
+                    }
                 add_character(L'\t', tabCount);
                 // Flags that we are still at the start of the line,
                 // so that headers and list items can still be parsed correctly.
@@ -233,19 +240,18 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             if (!isEscaping)
                 {
                 auto endOfTag = std::wcsstr(start, L";");
-                if (endOfTag != nullptr &&
-                    (endOfTag < endSentinel) &&
+                if (endOfTag != nullptr && (endOfTag < endSentinel) &&
                     std::distance(start, endOfTag) <= 6)
                     {
-                    if (start + 3 < endOfTag &&
-                        start[1] == L'#')
+                    if (start + 3 < endOfTag && start[1] == L'#')
                         {
                         wchar_t* dummy{ nullptr };
-                        const wchar_t decodedChar = string_util::is_either(start[2], L'x', L'X') ?
-                            // if it is hex encoded (e.g., '&#xFF')
-                            static_cast<wchar_t>(std::wcstol(start + 3, &dummy, 16)) :
-                            // else it is a plain numeric value (e.g., '&#79')
-                            static_cast<wchar_t>(std::wcstol(start + 2, &dummy, 10));
+                        const wchar_t decodedChar =
+                            string_util::is_either(start[2], L'x', L'X') ?
+                                // if it is hex encoded (e.g., '&#xFF')
+                                static_cast<wchar_t>(std::wcstol(start + 3, &dummy, 16)) :
+                                // else it is a plain numeric value (e.g., '&#79')
+                                static_cast<wchar_t>(std::wcstol(start + 2, &dummy, 10));
                         if (decodedChar != 0)
                             {
                             add_character(decodedChar);
@@ -254,9 +260,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         }
                     else
                         {
-                        const auto decodedChar =
-                            html_extract_text::HTML_TABLE_LOOKUP.find(
-                                { start + 1, static_cast<size_t>(std::distance(start, endOfTag) - 1) });
+                        const auto decodedChar = html_extract_text::HTML_TABLE_LOOKUP.find(
+                            { start + 1, static_cast<size_t>(std::distance(start, endOfTag) - 1) });
                         add_character(decodedChar);
                         previousChar = decodedChar;
                         }
@@ -283,8 +288,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 auto scanAhead{ start };
                 while (scanAhead < endOfTag)
                     {
-                    if (*scanAhead == L'\r' ||
-                        *scanAhead == L'\n')
+                    if (*scanAhead == L'\r' || *scanAhead == L'\n')
                         {
                         isMultiline = true;
                         break;
@@ -295,12 +299,9 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 // tab over each line inside of the code block
                 while (start < endOfTag)
                     {
-                    if (*start == L'\r' ||
-                        *start == L'\n')
+                    if (*start == L'\r' || *start == L'\n')
                         {
-                        while (start < endOfTag &&
-                            (*start == L'\r' ||
-                             *start == L'\n'))
+                        while (start < endOfTag && (*start == L'\r' || *start == L'\n'))
                             {
                             add_character(*start);
                             ++start;
@@ -317,9 +318,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     }
                 start = endOfTag + 3;
                 // if code block is not inline, then force a line break later after it
-                if (start < endSentinel &&
-                    ((*start == L'\r' ||
-                     *start == L'\n')))
+                if (start < endSentinel && ((*start == L'\r' || *start == L'\n')))
                     {
                     headerMode = true;
                     }
@@ -333,15 +332,16 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 if (std::wcsncmp(start, L"`r keys(", 8) == 0)
                     {
                     start += 8;
-                    if (start + 1 < endSentinel &&
-                        (start[1] == L'\'' || start[1] == L'"'))
-                        { ++start; }
+                    if (start + 1 < endSentinel && (start[1] == L'\'' || start[1] == L'"'))
+                        {
+                        ++start;
+                        }
                     if (*start == L'\'' || *start == L'"')
                         {
                         const auto quoteChar{ *start };
                         ++start;
-                        auto endOfTag =
-                            string_util::find_unescaped_char_same_line_n(start, quoteChar, std::distance(start, endSentinel));
+                        auto endOfTag = string_util::find_unescaped_char_same_line_n(
+                            start, quoteChar, std::distance(start, endSentinel));
                         if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r keys' code block in markdown file.");
@@ -350,15 +350,18 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         [[maybe_unused]] auto retval = m_subParser->operator()(
                             { start, static_cast<size_t>(std::distance(start, endOfTag)) });
                         add_character(L'"');
-                        add_characters(
-                            { m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
+                        add_characters({ m_subParser->get_filtered_text(),
+                                         m_subParser->get_filtered_text_length() });
                         add_character(L'"');
                         if (m_subParser->get_filtered_text_length())
                             {
                             previousChar =
-                                m_subParser->get_filtered_text()[m_subParser->get_filtered_text_length() - 1];
+                                m_subParser
+                                    ->get_filtered_text()[m_subParser->get_filtered_text_length() -
+                                                          1];
                             }
-                        endOfTag = string_util::find_unescaped_char_same_line_n(start, L'`', std::distance(start, endSentinel));
+                        endOfTag = string_util::find_unescaped_char_same_line_n(
+                            start, L'`', std::distance(start, endSentinel));
                         if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r keys' code block in markdown file.");
@@ -371,15 +374,16 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 else if (std::wcsncmp(start, L"`r drop_cap(", 11) == 0)
                     {
                     start += 11;
-                    if (start + 1 < endSentinel &&
-                        (start[1] == L'\'' || start[1] == L'"'))
-                        { ++start; }
+                    if (start + 1 < endSentinel && (start[1] == L'\'' || start[1] == L'"'))
+                        {
+                        ++start;
+                        }
                     if (*start == L'\'' || *start == L'"')
                         {
                         const auto quoteChar{ *start };
                         ++start;
-                        auto endOfTag =
-                            string_util::find_unescaped_char_same_line_n(start, quoteChar, std::distance(start, endSentinel));
+                        auto endOfTag = string_util::find_unescaped_char_same_line_n(
+                            start, quoteChar, std::distance(start, endSentinel));
                         if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r dropcap' code block in markdown file.");
@@ -388,15 +392,18 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                         [[maybe_unused]] auto retval = m_subParser->operator()(
                             { start, static_cast<size_t>(std::distance(start, endOfTag)) });
                         add_character(L'"');
-                        add_characters(
-                            { m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
+                        add_characters({ m_subParser->get_filtered_text(),
+                                         m_subParser->get_filtered_text_length() });
                         add_character(L'"');
                         if (m_subParser->get_filtered_text_length())
                             {
                             previousChar =
-                                m_subParser->get_filtered_text()[m_subParser->get_filtered_text_length() - 1];
+                                m_subParser
+                                    ->get_filtered_text()[m_subParser->get_filtered_text_length() -
+                                                          1];
                             }
-                        endOfTag = string_util::find_unescaped_char_same_line_n(start, L'`', std::distance(start, endSentinel));
+                        endOfTag = string_util::find_unescaped_char_same_line_n(
+                            start, L'`', std::distance(start, endSentinel));
                         if (endOfTag == nullptr || (endOfTag >= endSentinel))
                             {
                             log_message(L"Bad 'r dropcap' code block in markdown file.");
@@ -409,10 +416,10 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 else if (std::wcsncmp(start, L"`r menu(", 8) == 0)
                     {
                     start += 8;
-                    if (start + 1 < endSentinel &&
-                        (start[0] == L'c') &&
-                        (start[1] == L'('))
-                        { start += 2; }
+                    if (start + 1 < endSentinel && (start[0] == L'c') && (start[1] == L'('))
+                        {
+                        start += 2;
+                        }
                     if (*start == L'\'' || *start == L'"')
                         {
                         auto endOfTag = std::wcsstr(start, L")`");
@@ -422,13 +429,15 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                             break;
                             }
                         [[maybe_unused]] auto retval = m_subParser->operator()(
-                            { start, static_cast<size_t>(std::distance(start, endOfTag-1)) });
-                        add_characters(
-                            { m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
+                            { start, static_cast<size_t>(std::distance(start, endOfTag - 1)) });
+                        add_characters({ m_subParser->get_filtered_text(),
+                                         m_subParser->get_filtered_text_length() });
                         if (m_subParser->get_filtered_text_length())
                             {
                             previousChar =
-                                m_subParser->get_filtered_text()[m_subParser->get_filtered_text_length() - 1];
+                                m_subParser
+                                    ->get_filtered_text()[m_subParser->get_filtered_text_length() -
+                                                          1];
                             }
                         start = endOfTag + 2;
                         }
@@ -438,9 +447,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 else
                     {
                     if (std::wcsncmp(start, L"`r ", 3) == 0)
-                        { start += 3; }
+                        {
+                        start += 3;
+                        }
                     else if (std::wcsncmp(start, L"`python ", 8) == 0)
-                        { start += 8; }
+                        {
+                        start += 8;
+                        }
                     else
                         {
                         ++start;
@@ -449,8 +462,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     if (*start == '`')
                         {
                         auto endOfTag = std::wcsstr(++start, L"``");
-                        if (endOfTag == nullptr ||
-                            endOfTag > endSentinel)
+                        if (endOfTag == nullptr || endOfTag > endSentinel)
                             {
                             log_message(L"Bad inline `` code block in markdown file.");
                             break;
@@ -495,14 +507,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
         // images (we don't read in the alt text inside of the [], just skip everything)
         else if (*start == L'!')
             {
-            if (!isEscaping &&
-                (start +1 < endSentinel) &&
-                start[1] == L'[')
+            if (!isEscaping && (start + 1 < endSentinel) && start[1] == L'[')
                 {
                 start += 2;
-                auto endOfTag =
-                    string_util::find_unescaped_matching_close_tag_same_line_n(start, L'[', L']',
-                        std::distance(start, endSentinel));
+                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                    start, L'[', L']', std::distance(start, endSentinel));
                 if (endOfTag == nullptr || (endOfTag >= endSentinel))
                     {
                     log_message(L"Bad image command in markdown file.");
@@ -514,9 +523,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 if (*start == L'(')
                     {
                     ++start;
-                    endOfTag =
-                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'(', L')',
-                            std::distance(start, endSentinel));
+                    endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                        start, L'(', L')', std::distance(start, endSentinel));
                     if (endOfTag == nullptr || (endOfTag >= endSentinel))
                         {
                         log_message(L"Bad image command in markdown file.");
@@ -535,9 +543,8 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             if (!isEscaping)
                 {
                 auto labelStart{ ++start };
-                auto endOfTag =
-                    string_util::find_unescaped_matching_close_tag_same_line_n(start, L'[', L']',
-                        std::distance(start, endSentinel));
+                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                    start, L'[', L']', std::distance(start, endSentinel));
                 if (endOfTag == nullptr || (endOfTag >= endSentinel))
                     {
                     log_message(L"Bad link command in markdown file. Missing closing ']'.");
@@ -549,15 +556,15 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 start = ++endOfTag;
                 if (*start == L'(')
                     {
-                    auto labelEnd{ start - 1};
+                    auto labelEnd{ start - 1 };
                     ++start;
-                    endOfTag =
-                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'(', L')',
-                            std::distance(start, endSentinel));
+                    endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                        start, L'(', L')', std::distance(start, endSentinel));
                     if (endOfTag == nullptr || (endOfTag >= endSentinel))
                         {
                         log_message(L"Bad link command in markdown file. Missing closing ')'.");
-                        // read in the label and '(' section after it as-is if closing ')' is missing
+                        // read in the label and '(' section after it as-is if closing ')'
+                        // is missing
                         start = labelStart;
                         previousChar = L'[';
                         add_character(L'[');
@@ -567,13 +574,16 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     if (labelStart < labelEnd)
                         {
                         [[maybe_unused]] auto retval = m_subParser->operator()(
-                            { labelStart, static_cast<size_t>(std::distance(labelStart, labelEnd)) });
-                        add_characters(
-                            { m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
+                            { labelStart,
+                              static_cast<size_t>(std::distance(labelStart, labelEnd)) });
+                        add_characters({ m_subParser->get_filtered_text(),
+                                         m_subParser->get_filtered_text_length() });
                         if (m_subParser->get_filtered_text_length())
                             {
                             previousChar =
-                                m_subParser->get_filtered_text()[m_subParser->get_filtered_text_length() - 1];
+                                m_subParser
+                                    ->get_filtered_text()[m_subParser->get_filtered_text_length() -
+                                                          1];
                             }
                         }
                     }
@@ -602,10 +612,9 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                     }
                 else
                     {
-                    ++++start;
-                    auto endOfTag =
-                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'{', L'}',
-                            std::distance(start, endSentinel));
+                    ++ ++start;
+                    auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                        start, L'{', L'}', std::distance(start, endSentinel));
                     if (endOfTag == nullptr || (endOfTag >= endSentinel))
                         {
                         log_message(L"Bad ID command in markdown file.");
@@ -617,15 +626,13 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 }
             }
         // superscript (just read as-is)
-        else if (!isEscaping &&
-                 *start == L'^')
+        else if (!isEscaping && *start == L'^')
             {
             ++start;
             continue;
             }
         // RMarkdown (Pandoc) comment
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<!--", 4) == 0)
+        else if (!isEscaping && std::wcsncmp(start, L"<!--", 4) == 0)
             {
             const auto endOfTag = std::wcsstr(start, L"-->");
             if (endOfTag == nullptr)
@@ -637,8 +644,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         // newline hacks found in tables (just replace with space to keep the table structure).
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<br>\\linebreak", 14) == 0)
+        else if (!isEscaping && std::wcsncmp(start, L"<br>\\linebreak", 14) == 0)
             {
             start += 14;
             previousChar = L' ';
@@ -646,16 +652,14 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         // HTML newline
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<br>", 4) == 0)
+        else if (!isEscaping && std::wcsncmp(start, L"<br>", 4) == 0)
             {
             start += 4;
             previousChar = L'\n';
             add_characters(L"\n\n");
             continue;
             }
-        else if (!isEscaping &&
-            std::wcsncmp(start, L"<br/>", 5) == 0)
+        else if (!isEscaping && std::wcsncmp(start, L"<br/>", 5) == 0)
             {
             start += 5;
             previousChar = L'\n';
@@ -663,8 +667,7 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         else if (!isEscaping &&
-            (std::wcsncmp(start, L"< br/>", 6) == 0 ||
-             std::wcsncmp(start, L"<br />", 6) == 0))
+                 (std::wcsncmp(start, L"< br/>", 6) == 0 || std::wcsncmp(start, L"<br />", 6) == 0))
             {
             start += 6;
             previousChar = L'\n';
@@ -673,13 +676,9 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             }
         else if (*start == L'<')
             {
-            if (!isEscaping &&
-                start + 1 < endSentinel &&
-                (start[1] == L'/' ||
-                 start[1] == L'p' ||
-                 std::wcsncmp(start + 1, L"a ", 2) == 0 ||
-                 std::wcsncmp(start + 1, L"b>", 2) == 0 ||
-                 std::wcsncmp(start + 1, L"i>", 2) == 0 ||
+            if (!isEscaping && start + 1 < endSentinel &&
+                (start[1] == L'/' || start[1] == L'p' || std::wcsncmp(start + 1, L"a ", 2) == 0 ||
+                 std::wcsncmp(start + 1, L"b>", 2) == 0 || std::wcsncmp(start + 1, L"i>", 2) == 0 ||
                  std::wcsncmp(start + 1, L"u>", 2) == 0 ||
                  std::wcsncmp(start + 1, L"div", 3) == 0 ||
                  std::wcsncmp(start + 1, L"dl>", 3) == 0 ||
@@ -689,12 +688,11 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                  std::wcsncmp(start + 1, L"tt>", 3) == 0 ||
                  std::wcsncmp(start + 1, L"ul>", 3) == 0 ||
                  std::wcsncmp(start + 1, L"ol>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"li>", 3) == 0) )
+                 std::wcsncmp(start + 1, L"li>", 3) == 0))
                 {
                 ++start;
-                auto endOfTag =
-                        string_util::find_unescaped_matching_close_tag_same_line_n(start, L'<', L'>',
-                            std::distance(start, endSentinel));
+                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                    start, L'<', L'>', std::distance(start, endSentinel));
                 if (endOfTag == nullptr)
                     {
                     log_message(L"Bad <> pair in markdown file.");
@@ -709,17 +707,15 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             {
             // two (or more) spaces at the end of a line indicates a paragraph break
             size_t newlineCount{ 0 };
-            if (previousChar == L' ' &&
-                std::distance(md_text.data(), start) > 2 &&
-                *(start-2) == L' ')
-                { ++newlineCount; }
-            // count the newlines (taking CRLF combos into account)
-            while ((*start == L'\n' || *start == L'\r') &&
-                    (start < endSentinel))
+            if (previousChar == L' ' && std::distance(md_text.data(), start) > 2 &&
+                *(start - 2) == L' ')
                 {
-                if (*start == L'\r' &&
-                    (start + 1 < endSentinel) &&
-                    start[1] == L'\n')
+                ++newlineCount;
+                }
+            // count the newlines (taking CRLF combos into account)
+            while ((*start == L'\n' || *start == L'\r') && (start < endSentinel))
+                {
+                if (*start == L'\r' && (start + 1 < endSentinel) && start[1] == L'\n')
                     {
                     ++start;
                     continue;
@@ -729,21 +725,20 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 // If the next line is a header line divider, then
                 // skip that, switch to header mode, and keep reading
                 // any more newlines
-                if (start + 1 < endSentinel &&
-                    ((start[0] == L'=' && start[1] == L'=') ||
-                    (start[0] == L'-' && start[1] == L'-')) )
+                if (start + 1 < endSentinel && ((start[0] == L'=' && start[1] == L'=') ||
+                                                (start[0] == L'-' && start[1] == L'-')))
                     {
-                    while ((*start == L'=' || *start == L'-') &&
-                        (start < endSentinel))
-                        { ++start; }
+                    while ((*start == L'=' || *start == L'-') && (start < endSentinel))
+                        {
+                        ++start;
+                        }
                     headerMode = true;
                     }
                 }
 
             auto scanAhead{ start };
             size_t leadingScaces{ 0 };
-            while ((scanAhead < endSentinel) &&
-                (*scanAhead == L' ' || *scanAhead == L'\t'))
+            while ((scanAhead < endSentinel) && (*scanAhead == L' ' || *scanAhead == L'\t'))
                 {
                 ++scanAhead;
                 ++leadingScaces;
@@ -755,20 +750,19 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
                 }
             // next line starts a list item, quoteblock, table, etc., so keep the newline as-is
             else if (newlineCount == 1 &&
-                (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingScaces >= 4))
+                     (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingScaces >= 4))
                 {
                 add_character(L'\n', newlineCount);
                 previousChar = L'\n';
                 }
             // same for an ordered list
-            else if (newlineCount == 1 &&
-                (start < endSentinel) &&
-                std::iswdigit(*start))
+            else if (newlineCount == 1 && (start < endSentinel) && std::iswdigit(*start))
                 {
                 auto scanAheadDigit{ start };
-                while ((scanAheadDigit < endSentinel) &&
-                    std::iswdigit(*scanAheadDigit))
-                    { ++scanAheadDigit; }
+                while ((scanAheadDigit < endSentinel) && std::iswdigit(*scanAheadDigit))
+                    {
+                    ++scanAheadDigit;
+                    }
                 if (*scanAheadDigit == L'.')
                     {
                     add_character(L'\n', newlineCount);
@@ -798,30 +792,23 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             continue;
             }
         // styling tags that just get removed from raw text
-        else if (!isEscaping &&
-                 std::iswspace(previousChar) &&
-                 *start == L'*')
+        else if (!isEscaping && std::iswspace(previousChar) && *start == L'*')
             {
             parseStyledText(L'*');
             continue;
-             }
-        else if (!isEscaping &&
-                 std::iswspace(previousChar) &&
-                 *start == L'_')
+            }
+        else if (!isEscaping && std::iswspace(previousChar) && *start == L'_')
             {
             parseStyledText(L'_');
             continue;
             }
-        else if (!isEscaping &&
-                 std::iswspace(previousChar) &&
-                 *start == L'~')
+        else if (!isEscaping && std::iswspace(previousChar) && *start == L'~')
             {
             parseStyledText(L'~');
             continue;
             }
         // table
-        else if (!isEscaping &&
-                 (*start == L'|') )
+        else if (!isEscaping && (*start == L'|'))
             {
             previousChar = L'|';
             add_characters(L"\t|");
@@ -837,7 +824,9 @@ const wchar_t* lily_of_the_valley::markdown_extract_text::operator()(const std::
             ++start;
             }
         else
-            { break; }
+            {
+            break;
+            }
         }
 
     return get_filtered_text();

@@ -20,7 +20,7 @@ namespace lily_of_the_valley
     /// @brief Class to encode a string into HTML.
     class html_encode_text
         {
-    public:
+      public:
         /** @brief Encodes a regular string into HTML.
             @details This includes escaping quotes and angle symbols,
                 and encoding tabs, newlines, and Unicode values.
@@ -28,39 +28,48 @@ namespace lily_of_the_valley
             @param encodeSpaces @c true to preserve consecutive spaces with `&#nbsp;`.
             @returns A string encoded to HTML.*/
         [[nodiscard]]
-        std::wstring operator()(const std::wstring_view text,
-                                const bool encodeSpaces) const
+        std::wstring
+        operator()(const std::wstring_view text, const bool encodeSpaces) const
             {
             std::wstring encoded_text;
             if (text.empty())
-                { return encoded_text; }
+                {
+                return encoded_text;
+                }
             encoded_text.reserve(text.length() * 2);
             for (size_t i = 0; i < text.length(); ++i)
                 {
                 if (text[i] >= 127)
                     {
-                    encoded_text.append(L"&#").
-                        append(std::to_wstring(static_cast<uint32_t>(text[i]))).
-                        append(L";");
+                    encoded_text.append(L"&#")
+                        .append(std::to_wstring(static_cast<uint32_t>(text[i])))
+                        .append(L";");
                     }
                 else if (text[i] == L'<')
-                    { encoded_text += L"&#60;"; }
+                    {
+                    encoded_text += L"&#60;";
+                    }
                 else if (text[i] == L'>')
-                    { encoded_text += L"&#62;"; }
+                    {
+                    encoded_text += L"&#62;";
+                    }
                 else if (text[i] == L'\"')
-                    { encoded_text += L"&#34;"; }
+                    {
+                    encoded_text += L"&#34;";
+                    }
                 else if (text[i] == L'&')
-                    { encoded_text += L"&#38;"; }
+                    {
+                    encoded_text += L"&#38;";
+                    }
                 else if (text[i] == L'\'')
-                    { encoded_text += L"&#39;"; }
+                    {
+                    encoded_text += L"&#39;";
+                    }
                 // turn carriage return/line feeds into HTML breaks
-                else if (text[i] == 10 ||
-                         text[i] == 13)
+                else if (text[i] == 10 || text[i] == 13)
                     {
                     // treats CRLF combo as one break
-                    if (i < text.length() - 1 &&
-                        (text[i+1] == 10 ||
-                        text[i+1] == 13) )
+                    if (i < text.length() - 1 && (text[i + 1] == 10 || text[i + 1] == 13))
                         {
                         encoded_text += L"<p></p>";
                         // make one extra step for CRLF combination so
@@ -68,31 +77,41 @@ namespace lily_of_the_valley
                         ++i;
                         }
                     else
-                        { encoded_text += L"<p></p>"; }
+                        {
+                        encoded_text += L"<p></p>";
+                        }
                     }
                 else if (encodeSpaces && text[i] == L'\t')
-                    { encoded_text += L"&nbsp;&nbsp;&nbsp;"; }
+                    {
+                    encoded_text += L"&nbsp;&nbsp;&nbsp;";
+                    }
                 else if (encodeSpaces && text[i] == L' ')
                     {
-                    if (i > 0 && text[i-1] == L' ')
+                    if (i > 0 && text[i - 1] == L' ')
                         {
                         encoded_text += L"&nbsp;";
-                        while (i+1 < text.length())
+                        while (i + 1 < text.length())
                             {
-                            if (text[i+1] == L' ')
+                            if (text[i + 1] == L' ')
                                 {
                                 encoded_text += L"&nbsp;";
                                 ++i;
                                 }
                             else
-                                { break; }
+                                {
+                                break;
+                                }
                             }
                         }
                     else
-                        { encoded_text += text[i]; }
+                        {
+                        encoded_text += text[i];
+                        }
                     }
                 else
-                    { encoded_text += text[i]; }
+                    {
+                    encoded_text += text[i];
+                    }
                 }
             return encoded_text;
             }
@@ -106,18 +125,28 @@ namespace lily_of_the_valley
             {
             std::wstring encoded_text;
             if (text.empty())
-                { return encoded_text; }
+                {
+                return encoded_text;
+                }
             encoded_text.reserve(text.length() * 2);
             for (const auto character : text)
                 {
                 if (character == L'<')
-                    { encoded_text += L"&#60;"; }
+                    {
+                    encoded_text += L"&#60;";
+                    }
                 else if (character == L'>')
-                    { encoded_text += L"&#62;"; }
+                    {
+                    encoded_text += L"&#62;";
+                    }
                 else if (character == L'&')
-                    { encoded_text += L"&#38;"; }
+                    {
+                    encoded_text += L"&#38;";
+                    }
                 else
-                    { encoded_text += character; }
+                    {
+                    encoded_text += character;
+                    }
                 }
             return encoded_text;
             }
@@ -130,14 +159,18 @@ namespace lily_of_the_valley
         static bool needs_to_be_encoded(const std::wstring_view text)
             {
             if (text.empty())
-                { return false; }
+                {
+                return false;
+                }
             for (size_t scanCounter = 0; scanCounter < text.length(); ++scanCounter)
                 {
                 if (text[scanCounter] >= 127 ||
                     string_util::is_one_of(text[scanCounter], L"&\"\'<>\n\r\t") ||
                     // consecutive spaces
-                    (scanCounter > 0 && text[scanCounter] == L' ' && text[scanCounter-1] == L' '))
-                    { return true; }
+                    (scanCounter > 0 && text[scanCounter] == L' ' && text[scanCounter - 1] == L' '))
+                    {
+                    return true;
+                    }
                 }
             return false;
             }
@@ -146,7 +179,7 @@ namespace lily_of_the_valley
     /// @brief HTML formatting helper.
     class html_format
         {
-    public:
+      public:
         /// @brief Adds a title to an HTML buffer.
         /// @param[in,out] HtmlText The HTML to set the title within.
         /// @param Title The title to use.
@@ -162,12 +195,16 @@ namespace lily_of_the_valley
                     {
                     auto htmlStart = HtmlText.find(L"<html");
                     if (htmlStart == std::wstring::npos)
-                        { return; }//give up if this is bogus HTML
+                        {
+                        return;
+                        } // give up if this is bogus HTML
                     // find the end of the <html> tag
                     htmlStart = HtmlText.find(L">", htmlStart);
                     // give up if this is bogus HTML
                     if (htmlStart == std::wstring::npos)
-                        { return; }
+                        {
+                        return;
+                        }
                     headStart = htmlStart + 1;
                     HtmlText.insert(headStart, L"\n<head></head>\n");
                     // skip newline in front of <head>
@@ -181,9 +218,12 @@ namespace lily_of_the_valley
             titleStart += 7;
             const auto titleEnd = HtmlText.find(L"</", titleStart);
             if (titleEnd == std::wstring::npos)
-                { return; }
-            HtmlText.replace(titleStart, (titleEnd-titleStart), Title);
+                {
+                return;
+                }
+            HtmlText.replace(titleStart, (titleEnd - titleStart), Title);
             }
+
         /// @brief Specifies the encoding of an HTML buffer.
         /// @param[in,out] HtmlText The HTML to set edit.
         /// @param encoding The encoding to use.
@@ -197,13 +237,17 @@ namespace lily_of_the_valley
                 auto htmlStart = HtmlText.find(L"<html");
                 // give up if this is bogus HTML
                 if (htmlStart == std::wstring::npos)
-                    { return; }
+                    {
+                    return;
+                    }
                 // find the end of the <html> tag
                 htmlStart = HtmlText.find(L">", htmlStart);
                 // give up if this is bogus HTML
                 if (htmlStart == std::wstring::npos)
-                    { return; }
-                headStart = htmlStart+1;
+                    {
+                    return;
+                    }
+                headStart = htmlStart + 1;
                 HtmlText.insert(headStart, L"\n<head></head>\n");
                 // skip newline in front of <head>
                 ++headStart;
@@ -211,19 +255,22 @@ namespace lily_of_the_valley
             headStart += 5;
             headStart = HtmlText.find(L">", headStart);
             if (headStart == std::wstring::npos)
-                { return; }
+                {
+                return;
+                }
             ++headStart;
 
             const size_t metaStart = HtmlText.find(L"<meta", headStart);
             if (metaStart == std::wstring::npos)
                 {
                 const std::wstring encodingDef =
-                    L"<meta http-equiv=\"content-type\" content=\"text/html; charset=" +
-                    encoding + L"\" />";
+                    L"<meta http-equiv=\"content-type\" content=\"text/html; charset=" + encoding +
+                    L"\" />";
                 HtmlText.insert(headStart, encodingDef);
                 }
             /// @todo if meta section is actually found then update it
             }
+
         /** @brief Removes any hyperlinks in a file, and optionally preserve bookmarks
                 that are in the same file.
             @details This is mostly used for HTML windows that have application-related
@@ -236,10 +283,13 @@ namespace lily_of_the_valley
                                      const bool preserveInPageBookmarks = true)
             {
             std::set<std::wstring> BookmarksInCurrentPage;
-            std::pair<const wchar_t*, std::wstring> foundBookMark{ HtmlText.c_str(), std::wstring() };
+            std::pair<const wchar_t*, std::wstring> foundBookMark{ HtmlText.c_str(),
+                                                                   std::wstring() };
             assert(foundBookMark.first);
             if (!foundBookMark.first)
-                { return; }
+                {
+                return;
+                }
             const wchar_t* const htmlEnd = foundBookMark.first + HtmlText.length();
             while (preserveInPageBookmarks && foundBookMark.first)
                 {
@@ -250,7 +300,9 @@ namespace lily_of_the_valley
                     foundBookMark.first += foundBookMark.second.length();
                     }
                 else
-                    { break; }
+                    {
+                    break;
+                    }
                 }
 
             size_t start = 0;
@@ -258,16 +310,24 @@ namespace lily_of_the_valley
                 {
                 start = HtmlText.find(L"<a href=", start);
                 if (start == std::wstring::npos)
-                    { break; }
+                    {
+                    break;
+                    }
                 const auto endOfTag = HtmlText.find(L">", start);
                 if (endOfTag == std::wstring::npos)
-                    { break; }
+                    {
+                    break;
+                    }
                 const auto startOfLink = start + 8;
-                std::wstring link = HtmlText.substr(startOfLink, (endOfTag-startOfLink));
+                std::wstring link = HtmlText.substr(startOfLink, (endOfTag - startOfLink));
                 if (link.length() && link[0] == '\"')
-                    { link.erase(0, 1); }
-                if (link.length() && link[link.length()-1] == '\"')
-                    { link.erase(link.length()-1, 1); }
+                    {
+                    link.erase(0, 1);
+                    }
+                if (link.length() && link[link.length() - 1] == '\"')
+                    {
+                    link.erase(link.length() - 1, 1);
+                    }
                 // see if it's a bookmark into the current page
                 if (link.length() && link[0] == '#')
                     {
@@ -275,27 +335,34 @@ namespace lily_of_the_valley
                     // if the bookmark isn't found in this file then remove the link to it
                     if (BookmarksInCurrentPage.find(link) == BookmarksInCurrentPage.cend())
                         {
-                        HtmlText.erase(start, (endOfTag-start)+1);
+                        HtmlText.erase(start, (endOfTag - start) + 1);
                         const size_t endOfAnchor = HtmlText.find(L"</a>", start);
                         if (endOfAnchor == std::wstring::npos)
-                            { continue; }
+                            {
+                            continue;
+                            }
                         HtmlText.erase(endOfAnchor, 4);
                         }
-                    // bookmark was found and we didn't delete this link, so move over it instead 
+                    // bookmark was found and we didn't delete this link, so move over it instead
                     else
-                        { start = endOfTag; }
+                        {
+                        start = endOfTag;
+                        }
                     }
                 // not an internal bookmark, so just remove it
                 else
                     {
-                    HtmlText.erase(start, (endOfTag-start)+1);
+                    HtmlText.erase(start, (endOfTag - start) + 1);
                     const auto endOfAnchor = HtmlText.find(L"</a>", start);
                     if (endOfAnchor == std::wstring::npos)
-                        { continue; }
+                        {
+                        continue;
+                        }
                     HtmlText.erase(endOfAnchor, 4);
                     }
                 }
             }
+
         /// @brief Removes any image tags from an HTML block
         /// @param[in,out] HtmlText The HTML to strip.
         /// @param removePadding @c true to remove padding (i.e., `&nbsp;`) around the images.
@@ -308,23 +375,29 @@ namespace lily_of_the_valley
                 {
                 start = HtmlText.find(L"<img ", start);
                 if (start == std::wstring::npos)
-                    { break; }
+                    {
+                    break;
+                    }
                 const size_t endOfTag = HtmlText.find(L">", start);
                 if (endOfTag == std::wstring::npos)
-                    { break; }
+                    {
+                    break;
+                    }
                 // remove padding that was around the image
-                if (removePadding &&
-                    start > 6 &&
-                    HtmlText.substr(start-6, 6) == L"&nbsp;")
-                    { start -= 6; }
-                HtmlText.erase(start, (endOfTag-start)+1);
+                if (removePadding && start > 6 && HtmlText.substr(start - 6, 6) == L"&nbsp;")
+                    {
+                    start -= 6;
+                    }
+                HtmlText.erase(start, (endOfTag - start) + 1);
                 // remove padding that was around the image
-                if (removePadding &&
-                    (HtmlText.length()-start) >= 6 &&
+                if (removePadding && (HtmlText.length() - start) >= 6 &&
                     HtmlText.substr(start, 6) == L"&nbsp;")
-                    {HtmlText.erase(start, 6); }
+                    {
+                    HtmlText.erase(start, 6);
+                    }
                 }
             }
+
         /// @brief Removes any attributes in the `<body>` element.
         /// @param[in,out] HtmlText The HTML to strip.
         /// @todo needs unit test.
@@ -335,13 +408,15 @@ namespace lily_of_the_valley
                 {
                 const auto endOfTag = HtmlText.find(L">", start);
                 if (endOfTag == std::wstring::npos)
-                    { return; }
+                    {
+                    return;
+                    }
                 start += 5;
-                HtmlText.erase(start, endOfTag-start);
+                HtmlText.erase(start, endOfTag - start);
                 }
             }
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @} */
 

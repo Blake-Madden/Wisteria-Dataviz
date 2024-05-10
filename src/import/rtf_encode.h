@@ -20,7 +20,7 @@ namespace lily_of_the_valley
     /// @date 2010
     class rtf_encode_text
         {
-    public:
+      public:
         /** @brief Encodes a regular string into RTF.
             @details This includes escaping '\', '{', and '}' symbols,
                 and encoding tabs, newlines, and Unicode values.
@@ -28,17 +28,20 @@ namespace lily_of_the_valley
             @returns A string encoded to RTF.
             @todo Replace @c swprintf() code with `std::format()` when upgrading to C++20.*/
         [[nodiscard]]
-        std::wstring operator()(const std::wstring_view text) const
+        std::wstring
+        operator()(const std::wstring_view text) const
             {
             std::wstring encoded_text;
             if (text.empty())
-                { return encoded_text; }
+                {
+                return encoded_text;
+                }
             encoded_text.reserve(text.length() * 2);
             std::array<wchar_t, 256> formatBuffer{ 0 };
             for (size_t i = 0; i < text.length(); ++i)
                 {
                 // insert a '\' in front of RTF escape characters
-                if (string_util::is_one_of(text[i], L"\\{}") )
+                if (string_util::is_one_of(text[i], L"\\{}"))
                     {
                     encoded_text += L'\\';
                     encoded_text += text[i];
@@ -46,29 +49,34 @@ namespace lily_of_the_valley
                 // extended ASCII and Unicode have to be encoded differently due to RTF quirkiness
                 else if (text[i] >= 127 && text[i] <= 255)
                     {
-                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(), L"\\\'%02X", text[i]);
+                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(),
+                                                     L"\\\'%02X", text[i]);
                     assert(retVal != -1);
                     if (retVal != -1)
-                        { encoded_text.append(formatBuffer.data(), retVal); }
+                        {
+                        encoded_text.append(formatBuffer.data(), retVal);
+                        }
                     }
                 else if (text[i] > 255)
                     {
-                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(), L"\\u%04d?", static_cast<int>(text[i]));
+                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(),
+                                                     L"\\u%04d?", static_cast<int>(text[i]));
                     assert(retVal != -1);
                     if (retVal != -1)
-                        { encoded_text.append(formatBuffer.data(), retVal); }
+                        {
+                        encoded_text.append(formatBuffer.data(), retVal);
+                        }
                     }
                 // encode tabs
                 else if (text[i] == 9)
-                    { encoded_text += L"\\tab "; }
+                    {
+                    encoded_text += L"\\tab ";
+                    }
                 // turn carriage return/line feeds into RTF breaks
-                else if (text[i] == 10 ||
-                        text[i] == 13)
+                else if (text[i] == 10 || text[i] == 13)
                     {
                     // treats CRLF combo as one break
-                    if (i < text.length() - 1 &&
-                        (text[i+1] == 10 ||
-                        text[i+1] == 13) )
+                    if (i < text.length() - 1 && (text[i + 1] == 10 || text[i + 1] == 13))
                         {
                         encoded_text += L"\\par\n";
                         // make one extra step for CRLF combination
@@ -76,10 +84,14 @@ namespace lily_of_the_valley
                         ++i;
                         }
                     else
-                        { encoded_text += L"\\par\n"; }
+                        {
+                        encoded_text += L"\\par\n";
+                        }
                     }
                 else
-                    { encoded_text += text[i]; }
+                    {
+                    encoded_text += text[i];
+                    }
                 }
             return encoded_text;
             }
@@ -92,16 +104,17 @@ namespace lily_of_the_valley
         bool needs_to_be_encoded(const std::wstring_view text) const
             {
             if (text.empty())
-                { return false; }
-            const auto foundPos = std::find_if(text.cbegin(), text.cend(),
-                [](const auto& ch) noexcept
                 {
-                return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t"));
-                });
+                return false;
+                }
+            const auto foundPos =
+                std::find_if(text.cbegin(), text.cend(),
+                             [](const auto& ch) noexcept
+                             { return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t")); });
             return (foundPos != text.cend());
             }
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @} */
 

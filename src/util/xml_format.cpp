@@ -14,26 +14,43 @@ using namespace lily_of_the_valley;
 wxString XmlFormat::FormatColorAttributes(const wxColour& color)
     {
     wxString attributeText;
-    attributeText.append(L" ").append(GetRed()).append(L"=\"").
-        append(std::to_wstring(color.Red() )).append(L"\"");
-    attributeText.append(L" ").append(GetGreen()).append(L"=\"").
-        append(std::to_wstring(color.Green() )).append(L"\"");
-    attributeText.append(L" ").append(GetBlue()).append(L"=\"").
-        append(std::to_wstring(color.Blue() )).append(L"\"");
+    attributeText.append(L" ")
+        .append(GetRed())
+        .append(L"=\"")
+        .append(std::to_wstring(color.Red()))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetGreen())
+        .append(L"=\"")
+        .append(std::to_wstring(color.Green()))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetBlue())
+        .append(L"=\"")
+        .append(std::to_wstring(color.Blue()))
+        .append(L"\"");
     return attributeText;
     }
 
 //------------------------------------------------
-wxString XmlFormat::FormatColorAttributeWithInclusionTag(const wxColour& color,
-                                                         const bool include)
+wxString XmlFormat::FormatColorAttributeWithInclusionTag(const wxColour& color, const bool include)
     {
     wxString attributeText;
-    attributeText.append(L" ").append(GetRed()).append(L"=\"").
-        append(std::to_wstring(color.Red() )).append(L"\"");
-    attributeText.append(L" ").append(GetGreen()).append(L"=\"").
-        append(std::to_wstring(color.Green() )).append(L"\"");
-    attributeText.append(L" ").append(GetBlue()).append(L"=\"").
-        append(std::to_wstring(color.Blue() )).append(L"\"");
+    attributeText.append(L" ")
+        .append(GetRed())
+        .append(L"=\"")
+        .append(std::to_wstring(color.Red()))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetGreen())
+        .append(L"=\"")
+        .append(std::to_wstring(color.Green()))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetBlue())
+        .append(L"=\"")
+        .append(std::to_wstring(color.Blue()))
+        .append(L"\"");
     attributeText.append(L" ").append(GetInclude()).append(L"=\"");
     attributeText += include ? GetTrue() : GetFalse();
     attributeText += (L"\"");
@@ -45,61 +62,76 @@ wxString XmlFormat::FormatColorAttributeWithInclusionTag(const wxColour& color,
 wxString XmlFormat::FormatFontAttributes(const wxFont& font)
     {
     wxString attributeText;
-    attributeText.append(L" ").append(GetFontPointSize()).
-        append(L"=\"").append(std::to_wstring(
-            static_cast<int>(font.GetPointSize()) )).append(L"\"");
-    attributeText.append(L" ").append(GetFontStyle()).
-        append(L"=\"").append(std::to_wstring(
-            static_cast<int>(font.GetStyle()) )).append(L"\"");
-    attributeText.append(L" ").append(GetFontWeight()).
-        append(L"=\"").append(std::to_wstring(
-            static_cast<int>(font.GetWeight()) )).append(L"\"");
-    attributeText.append(L" ").append(GetFontUnderline()).
-        append(L"=\"").append(std::to_wstring(
-            static_cast<int>(font.GetUnderlined()) )).append(L"\"");
-    attributeText.append(L" ").append(GetFontFaceName()).
-        append(L"=\"").append(font.GetFaceName()).append(L"\"");
+    attributeText.append(L" ")
+        .append(GetFontPointSize())
+        .append(L"=\"")
+        .append(std::to_wstring(static_cast<int>(font.GetPointSize())))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetFontStyle())
+        .append(L"=\"")
+        .append(std::to_wstring(static_cast<int>(font.GetStyle())))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetFontWeight())
+        .append(L"=\"")
+        .append(std::to_wstring(static_cast<int>(font.GetWeight())))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetFontUnderline())
+        .append(L"=\"")
+        .append(std::to_wstring(static_cast<int>(font.GetUnderlined())))
+        .append(L"\"");
+    attributeText.append(L" ")
+        .append(GetFontFaceName())
+        .append(L"=\"")
+        .append(font.GetFaceName())
+        .append(L"\"");
     return attributeText;
     }
 
 //------------------------------------------------
-long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart,
-                                      const wchar_t* sectionEnd,
+long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                       const wchar_t* attributeTag)
     {
     assert(sectionStart && sectionEnd && attributeTag &&
            L"Invalid pointer passed to GetAttributeLongValue()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag == nullptr)
-        { return 0; }
+        {
+        return 0;
+        }
 
     const wchar_t* currentPos = std::wcsstr(sectionStart, attributeTag);
-    if (currentPos && (currentPos < sectionEnd) )
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos = std::wcschr(currentPos, L'\"');
         if (currentPos)
-            { return string_util::atol(++currentPos); }
+            {
+            return string_util::atol(++currentPos);
+            }
         else
-            { return 0; }
+            {
+            return 0;
+            }
         }
     return 0;
     }
 
 //------------------------------------------------
-double XmlFormat::GetAttributeDoubleValue(const wchar_t* sectionStart,
-                                          const wchar_t* sectionEnd,
-                                          const wxString& entityTag,
-                                          const wxString& attributeTag,
+double XmlFormat::GetAttributeDoubleValue(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                                          const wxString& entityTag, const wxString& attributeTag,
                                           const double defaultValue)
     {
     assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length() &&
            L"Invalid pointer passed to GetAttributeDoubleValue()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty() || attributeTag.empty())
-        { return 0.0; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty() ||
+        attributeTag.empty())
+        {
+        return 0.0;
+        }
 
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(sectionStart, sectionEnd,
-            { entityTag.data(), entityTag.length() }, true);
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.data(), entityTag.length() }, true);
     if (currentPos)
         {
         const auto dValueStr =
@@ -109,57 +141,68 @@ double XmlFormat::GetAttributeDoubleValue(const wchar_t* sectionStart,
             {
             double dValue{ 0 };
             if (dValueStr.ToCDouble(&dValue))
-                { return dValue; }
+                {
+                return dValue;
+                }
             else
-                { return defaultValue; }
+                {
+                return defaultValue;
+                }
             }
         }
     return defaultValue;
     }
 
 //------------------------------------------------
-long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart,
-                                      const wchar_t* sectionEnd,
-                                      const wxString& entityTag,
-                                      const wxString& attributeTag,
+long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                                      const wxString& entityTag, const wxString& attributeTag,
                                       const long defaultValue)
     {
     assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length() &&
            L"Invalid pointer passed to GetAttributeLongValue()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty() || attributeTag.empty())
-        { return 0; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty() ||
+        attributeTag.empty())
+        {
+        return 0;
+        }
 
     const wchar_t* currentPos = std::wcsstr(sectionStart, entityTag);
-    if (currentPos && (currentPos < sectionEnd) )
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos = std::wcsstr(currentPos, attributeTag);
-        if (currentPos && (currentPos < sectionEnd) )
+        if (currentPos && (currentPos < sectionEnd))
             {
             currentPos = std::wcschr(currentPos, L'\"');
             if (currentPos)
-                { return string_util::atol(++currentPos); }
+                {
+                return string_util::atol(++currentPos);
+                }
             else
-                { return defaultValue; }
+                {
+                return defaultValue;
+                }
             }
         else
-            { return defaultValue; }
+            {
+            return defaultValue;
+            }
         }
     return defaultValue;
     }
 
 //------------------------------------------------
-wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart,
-                                       const wchar_t* sectionEnd,
+wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                        const wxString& attributeTag)
     {
     assert(sectionStart && sectionEnd && attributeTag.length() &&
            L"Invalid pointer passed to GetAttributeString()!");
     if (sectionStart == nullptr || sectionEnd == nullptr || attributeTag.empty())
-        { return wxString{}; }
+        {
+        return wxString{};
+        }
 
     const wchar_t* currentPos = std::wcsstr(sectionStart, attributeTag);
-    if (currentPos && (currentPos < sectionEnd) )
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos = std::wcschr(currentPos, L'\"');
         if (currentPos && (currentPos < sectionEnd))
@@ -167,36 +210,38 @@ wxString XmlFormat::GetAttributeString(const wchar_t* sectionStart,
             ++currentPos;
             const wchar_t* endPos = std::wcschr(currentPos, L'\"');
             if (!endPos || (endPos > sectionEnd))
-                { return wxString{}; }
-            return wxString(currentPos, (endPos-currentPos));
+                {
+                return wxString{};
+                }
+            return wxString(currentPos, (endPos - currentPos));
             }
         else
-            { return wxString{}; }
+            {
+            return wxString{};
+            }
         }
     return wxString{};
     }
 
 //------------------------------------------------
-wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
-                          const wchar_t* sectionEnd,
-                          const wxString& entityTag,
-                          const wxFont& defaultFont /*= wxNullFont*/)
+wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                          const wxString& entityTag, const wxFont& defaultFont /*= wxNullFont*/)
     {
-    wxFont font = defaultFont.IsOk() ?
-        defaultFont : wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+    wxFont font =
+        defaultFont.IsOk() ? defaultFont : wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
 
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetFont()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return font; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return font;
+        }
 
     // get the font
-    const wchar_t* currentPos =
-        html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.data(), entityTag.length() }, true);
+    const wchar_t* currentPos = html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.data(), entityTag.length() }, true);
     wchar_t* dummy{ nullptr };
-    if (currentPos && (currentPos < sectionEnd) )
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos += entityTag.length() + 1;
         // point size
@@ -208,8 +253,8 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
             pos += attribute.length();
             const int pointSize = static_cast<int>(std::wcstol(pos, &dummy, 10));
             font.SetPointSize((pointSize > 0) ?
-                pointSize :
-                wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
+                                  pointSize :
+                                  wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
             }
         // style
         attribute = GetFontStyle();
@@ -218,8 +263,7 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
         if (pos)
             {
             pos += attribute.length();
-            font.SetStyle(
-                static_cast<wxFontStyle>(static_cast<int>(std::wcstol(pos, &dummy, 10))));
+            font.SetStyle(static_cast<wxFontStyle>(static_cast<int>(std::wcstol(pos, &dummy, 10))));
             }
         // weight
         attribute = GetFontWeight();
@@ -238,8 +282,7 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
         if (pos)
             {
             pos += attribute.length();
-            font.SetUnderlined(
-                int_to_bool(static_cast<int>(std::wcstol(pos, &dummy, 10))));
+            font.SetUnderlined(int_to_bool(static_cast<int>(std::wcstol(pos, &dummy, 10))));
             }
         // face name
         attribute = GetFontFaceName();
@@ -251,10 +294,12 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
             const wchar_t* posEnd = std::wcsstr(pos, L"\"");
             if (posEnd && (pos < posEnd))
                 {
-                wxString faceName(pos, posEnd-pos);
+                wxString faceName(pos, posEnd - pos);
                 // fall back to system font if unknown font name
-                if (!wxFontEnumerator::IsValidFacename(faceName) )
-                    { faceName = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(); }
+                if (!wxFontEnumerator::IsValidFacename(faceName))
+                    {
+                    faceName = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName();
+                    }
                 font.SetFaceName(faceName);
                 }
             }
@@ -263,29 +308,29 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-wxColour XmlFormat::GetColor(const wchar_t* sectionStart,
-                             const wchar_t* sectionEnd,
-                             const wxString& entityTag,
-                             const wxColour& defaultValue)
+wxColour XmlFormat::GetColor(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                             const wxString& entityTag, const wxColour& defaultValue)
     {
     wxColour color = defaultValue;
 
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetColor()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return color; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return color;
+        }
 
     // get the color
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
     int red = defaultValue.Red(), green = defaultValue.Green(), blue = defaultValue.Blue();
-    if (currentPos && (currentPos < sectionEnd) )
+    if (currentPos && (currentPos < sectionEnd))
         {
         const wchar_t* entityEnd = std::wcschr(currentPos, L'>');
         if (!entityEnd || (entityEnd > sectionEnd))
-            { return defaultValue; }
+            {
+            return defaultValue;
+            }
         currentPos += entityTag.length() + 1;
         wchar_t* dummy{ nullptr };
         // red
@@ -318,32 +363,32 @@ wxColour XmlFormat::GetColor(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart,
-                       const wchar_t* sectionEnd,
-                       const wxString& entityTag,
-                       bool& include,
-                       const wxColour& defaultValue,
-                       const bool includeDefaultValue)
+wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                                             const wxString& entityTag, bool& include,
+                                             const wxColour& defaultValue,
+                                             const bool includeDefaultValue)
     {
     wxColour color = defaultValue;
     include = includeDefaultValue;
 
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetColorWithInclusionTag()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return color; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return color;
+        }
 
     // get the color
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.data(), entityTag .length() }, true);
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.data(), entityTag.length() }, true);
     int red = defaultValue.Red(), green = defaultValue.Green(), blue = defaultValue.Blue();
-    if (currentPos && (currentPos < sectionEnd) )
+    if (currentPos && (currentPos < sectionEnd))
         {
         const wchar_t* entityEnd = std::wcschr(currentPos, L'>');
         if (!entityEnd || (entityEnd > sectionEnd))
-            { return defaultValue; }
+            {
+            return defaultValue;
+            }
         currentPos += entityTag.length() + 1;
         // red
         wxString colorAttribute = wxString::Format(L"%s=\"", GetRed());
@@ -384,41 +429,40 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-bool XmlFormat::GetBoolean(const wchar_t* sectionStart,
-                           const wchar_t* sectionEnd,
-                           const wxString& entityTag,
-                           const bool defaultValue)
+bool XmlFormat::GetBoolean(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                           const wxString& entityTag, const bool defaultValue)
     {
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetBoolean()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return defaultValue; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return defaultValue;
+        }
 
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
-    if (currentPos && (currentPos < sectionEnd) )
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos += entityTag.length() + 1;
-        const wchar_t* endPos =
-            lily_of_the_valley::html_extract_text::find_closing_element(
-                currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
+        const wchar_t* endPos = lily_of_the_valley::html_extract_text::find_closing_element(
+            currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
         currentPos = std::wcschr(currentPos, '>');
-        if (currentPos && endPos && (currentPos < endPos) )
+        if (currentPos && endPos && (currentPos < endPos))
             {
             ++currentPos;
             // if an empty tag
             if (currentPos == endPos)
-                { return defaultValue; }
-            return (std::wcsncmp(currentPos, GetTrue().c_str(), GetTrue().length()) == 0) ?
-                true : false;
+                {
+                return defaultValue;
+                }
+            return (std::wcsncmp(currentPos, GetTrue().c_str(), GetTrue().length()) == 0) ? true :
+                                                                                            false;
             }
         else
             {
             wxMessageBox(
                 wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                _(L"Warning"), wxOK|wxICON_INFORMATION);
+                _(L"Warning"), wxOK | wxICON_INFORMATION);
             return defaultValue;
             }
         }
@@ -426,101 +470,52 @@ bool XmlFormat::GetBoolean(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-void XmlFormat::GetStringsWithExtraInfo(const wchar_t* sectionStart,
-                                        const wchar_t* sectionEnd,
-                                        const wxString& entityTag,
-                                        const wxString& attributeTag,
-                                        std::vector<comparable_first_pair<wxString, wxString>>& strings)
+void XmlFormat::GetStringsWithExtraInfo(
+    const wchar_t* sectionStart, const wchar_t* sectionEnd, const wxString& entityTag,
+    const wxString& attributeTag, std::vector<comparable_first_pair<wxString, wxString>>& strings)
     {
     strings.clear();
 
     assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length());
     if (!sectionStart || !sectionEnd || entityTag.length() == 0 || attributeTag.length() == 0)
-        { return; }
+        {
+        return;
+        }
 
     wxString value;
 
     const wchar_t* start{ sectionStart };
-    while (start && (start < sectionEnd) )
+    while (start && (start < sectionEnd))
         {
         start = lily_of_the_valley::html_extract_text::find_element(
             start, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
-        if (start && (start < sectionEnd) )
+        if (start && (start < sectionEnd))
             {
-            const auto attributeStart =
-                lily_of_the_valley::html_extract_text::read_attribute(
-                    start, { attributeTag.wc_str(), attributeTag.length() }, false, true);
+            const auto attributeStart = lily_of_the_valley::html_extract_text::read_attribute(
+                start, { attributeTag.wc_str(), attributeTag.length() }, false, true);
             // move into the actual element data now
             start += entityTag.length() + 1;
-            const wchar_t* endPos =
-                lily_of_the_valley::html_extract_text::find_closing_element(
-                    start, sectionEnd, { entityTag.wc_str(), entityTag.length() });
+            const wchar_t* endPos = lily_of_the_valley::html_extract_text::find_closing_element(
+                start, sectionEnd, { entityTag.wc_str(), entityTag.length() });
             start = std::wcschr(start, L'>');
-            if (start && endPos && (start < endPos) )
+            if (start && endPos && (start < endPos))
                 {
                 ++start;
-                value.assign(start, (endPos-start));
+                value.assign(start, (endPos - start));
                 lily_of_the_valley::html_extract_text filter_html;
                 value = filter_html(value.wc_str(), value.length(), true, false);
-                const wxString attributeValue = attributeStart.first ?
-                    wxString(filter_html(attributeStart.first, attributeStart.second, true, false)) :
-                    wxString{};
-                strings.push_back(comparable_first_pair<wxString,wxString>(value, attributeValue));
+                const wxString attributeValue =
+                    attributeStart.first ?
+                        wxString(
+                            filter_html(attributeStart.first, attributeStart.second, true, false)) :
+                        wxString{};
+                strings.push_back(comparable_first_pair<wxString, wxString>(value, attributeValue));
                 }
             else
                 {
-                wxMessageBox(
-                    wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                    _(L"Warning"), wxOK|wxICON_INFORMATION);
-                return;
-                }
-            }
-        else
-            { return; }
-        }
-    }
-
-//------------------------------------------------
-void XmlFormat::GetStrings(const wchar_t* sectionStart,
-                           const wchar_t* sectionEnd,
-                           const wxString& entityTag,
-                           std::vector<wxString>& strings)
-    {
-    strings.clear();
-
-    assert(sectionStart && sectionEnd && entityTag.length() &&
-           L"Invalid pointer passed to GetStrings()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return; }
-
-    wxString value;
-
-    const wchar_t* start = sectionStart;
-    while (start && (start < sectionEnd) )
-        {
-        start = lily_of_the_valley::html_extract_text::find_element(
-            start, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
-        if (start && (start < sectionEnd) )
-            {
-            start += entityTag.length() + 1;
-            const wchar_t* endPos =
-                lily_of_the_valley::html_extract_text::find_closing_element(
-                    start, sectionEnd, { entityTag.wc_str(), entityTag.length() });
-            start = std::wcschr(start, L'>');
-            if (start && endPos && (start < endPos) )
-                {
-                ++start;
-                value.assign(start, (endPos-start));
-                lily_of_the_valley::html_extract_text filter_html;
-                value = filter_html(value.wc_str(), value.length(), true, false);
-                strings.push_back(value);
-                }
-            else
-                {
-                wxMessageBox(
-                    wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                    _(L"Warning"), wxOK|wxICON_INFORMATION);
+                wxMessageBox(wxString::Format(_(L"Warning: %s section of file is ill-formatted."),
+                                              entityTag),
+                             _(L"Warning"), wxOK | wxICON_INFORMATION);
                 return;
                 }
             }
@@ -532,33 +527,80 @@ void XmlFormat::GetStrings(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-wxString XmlFormat::GetString(const wchar_t* sectionStart,
-                              const wchar_t* sectionEnd,
+void XmlFormat::GetStrings(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                           const wxString& entityTag, std::vector<wxString>& strings)
+    {
+    strings.clear();
+
+    assert(sectionStart && sectionEnd && entityTag.length() &&
+           L"Invalid pointer passed to GetStrings()!");
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return;
+        }
+
+    wxString value;
+
+    const wchar_t* start = sectionStart;
+    while (start && (start < sectionEnd))
+        {
+        start = lily_of_the_valley::html_extract_text::find_element(
+            start, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
+        if (start && (start < sectionEnd))
+            {
+            start += entityTag.length() + 1;
+            const wchar_t* endPos = lily_of_the_valley::html_extract_text::find_closing_element(
+                start, sectionEnd, { entityTag.wc_str(), entityTag.length() });
+            start = std::wcschr(start, L'>');
+            if (start && endPos && (start < endPos))
+                {
+                ++start;
+                value.assign(start, (endPos - start));
+                lily_of_the_valley::html_extract_text filter_html;
+                value = filter_html(value.wc_str(), value.length(), true, false);
+                strings.push_back(value);
+                }
+            else
+                {
+                wxMessageBox(wxString::Format(_(L"Warning: %s section of file is ill-formatted."),
+                                              entityTag),
+                             _(L"Warning"), wxOK | wxICON_INFORMATION);
+                return;
+                }
+            }
+        else
+            {
+            return;
+            }
+        }
+    }
+
+//------------------------------------------------
+wxString XmlFormat::GetString(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                               const wxString& entityTag,
                               const wxString& defaultValue /*= wxString{}*/)
     {
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetString()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return defaultValue; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return defaultValue;
+        }
 
     wxString value;
 
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
-    if (currentPos && (currentPos < sectionEnd) )
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos += entityTag.length() + 1;
-        const wchar_t* endPos =
-            lily_of_the_valley::html_extract_text::find_closing_element(
-                currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
+        const wchar_t* endPos = lily_of_the_valley::html_extract_text::find_closing_element(
+            currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
         currentPos = std::wcschr(currentPos, L'>');
-        if (currentPos && endPos && (currentPos < endPos) )
+        if (currentPos && endPos && (currentPos < endPos))
             {
             ++currentPos;
-            value.assign(currentPos, (endPos-currentPos));
+            value.assign(currentPos, (endPos - currentPos));
             lily_of_the_valley::html_extract_text filter_html;
             value = filter_html(value.wc_str(), value.length(), true, true);
             return value;
@@ -567,7 +609,7 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart,
             {
             wxMessageBox(
                 wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                _(L"Warning"), wxOK|wxICON_INFORMATION);
+                _(L"Warning"), wxOK | wxICON_INFORMATION);
             return defaultValue;
             }
         }
@@ -575,33 +617,32 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-long XmlFormat::GetLong(const wchar_t* sectionStart,
-                        const wchar_t* sectionEnd,
-                        const wxString& entityTag,
-                        const long defaultValue)
+long XmlFormat::GetLong(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                        const wxString& entityTag, const long defaultValue)
     {
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetLong()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return defaultValue; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return defaultValue;
+        }
 
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
-    if (currentPos && (currentPos < sectionEnd) )
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos += entityTag.length() + 1;
-        const wchar_t* endPos =
-            lily_of_the_valley::html_extract_text::find_closing_element(
-                currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
+        const wchar_t* endPos = lily_of_the_valley::html_extract_text::find_closing_element(
+            currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
         currentPos = std::wcschr(currentPos, L'>');
-        if (currentPos && endPos && (currentPos < endPos) )
+        if (currentPos && endPos && (currentPos < endPos))
             {
             ++currentPos;
             // if an empty tag
             if (currentPos == endPos)
-                { return defaultValue; }
+                {
+                return defaultValue;
+                }
 
             return string_util::atol(currentPos);
             }
@@ -609,7 +650,7 @@ long XmlFormat::GetLong(const wchar_t* sectionStart,
             {
             wxMessageBox(
                 wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                _(L"Warning"), wxOK|wxICON_INFORMATION);
+                _(L"Warning"), wxOK | wxICON_INFORMATION);
             return defaultValue;
             }
         }
@@ -617,33 +658,32 @@ long XmlFormat::GetLong(const wchar_t* sectionStart,
     }
 
 //------------------------------------------------
-double XmlFormat::GetDouble(const wchar_t* sectionStart,
-                            const wchar_t* sectionEnd,
-                            const wxString& entityTag,
-                            const double defaultValue)
+double XmlFormat::GetDouble(const wchar_t* sectionStart, const wchar_t* sectionEnd,
+                            const wxString& entityTag, const double defaultValue)
     {
     assert(sectionStart && sectionEnd && entityTag.length() &&
            L"Invalid pointer passed to GetDouble()!");
-    if (sectionStart == nullptr || sectionEnd == nullptr ||
-        entityTag.empty())
-        { return defaultValue; }
+    if (sectionStart == nullptr || sectionEnd == nullptr || entityTag.empty())
+        {
+        return defaultValue;
+        }
 
-    const wchar_t* currentPos =
-        lily_of_the_valley::html_extract_text::find_element(
-            sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
-    if (currentPos && (currentPos < sectionEnd) )
+    const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
+        sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
+    if (currentPos && (currentPos < sectionEnd))
         {
         currentPos += entityTag.length() + 1;
-        const wchar_t* endPos =
-            lily_of_the_valley::html_extract_text::find_closing_element(
-                currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
+        const wchar_t* endPos = lily_of_the_valley::html_extract_text::find_closing_element(
+            currentPos, sectionEnd, { entityTag.wc_str(), entityTag.length() });
         currentPos = std::wcschr(currentPos, L'>');
-        if (currentPos && endPos && (currentPos < endPos) )
+        if (currentPos && endPos && (currentPos < endPos))
             {
             ++currentPos;
             // if an empty tag
             if (currentPos == endPos)
-                { return defaultValue; }
+                {
+                return defaultValue;
+                }
             wchar_t* dummy = nullptr;
             return std::wcstod(currentPos, &dummy);
             }
@@ -651,11 +691,9 @@ double XmlFormat::GetDouble(const wchar_t* sectionStart,
             {
             wxMessageBox(
                 wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                _(L"Warning"), wxOK|wxICON_INFORMATION);
+                _(L"Warning"), wxOK | wxICON_INFORMATION);
             return defaultValue;
             }
         }
     return defaultValue;
     }
-
-

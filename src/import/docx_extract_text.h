@@ -37,15 +37,19 @@ namespace lily_of_the_valley
         @date 2010*/
     class word2007_extract_text final : public html_extract_text
         {
-    public:
+      public:
         word2007_extract_text() noexcept : m_preserve_text_table_layout(false) {}
+
         /** @brief Specifies how to import tables.
             @param preserve Set to true to import tables as tab-delimited cells of text.\n
                 Set to @c false to simply import each cell as a separate paragraph,
                 the tabbed structure of the rows may be lost.\n
                 The default is to import cells as separate paragraphs.*/
         void preserve_text_table_layout(const bool preserve) noexcept
-            { m_preserve_text_table_layout = preserve; }
+            {
+            m_preserve_text_table_layout = preserve;
+            }
+
         /** @brief Main interface for extracting plain text from a DOCX stream.
             @param html_text The "document.xml" text to extract text from.\n
                 Note that "document.xml" should be extracted from a DOCX file
@@ -55,8 +59,8 @@ namespace lily_of_the_valley
             @returns A pointer to the parsed text, or null upon failure.\n
                 Call get_filtered_text_length() to get the length of the parsed text.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* html_text,
-                                  const size_t text_length);
+        const wchar_t*
+        operator()(const wchar_t* html_text, const size_t text_length);
         /** @brief Reads the "docProps/core.xml" file and extracts meta data from the file
                 (e.g., subject, title).
             @param html_text The "docProps/core.xml" text to extract text from.\n
@@ -65,10 +69,11 @@ namespace lily_of_the_valley
             @param text_length The length of the "docProps/core.xml" stream.
             @sa get_title(), get_subject(), etc.*/
         void read_meta_data(const wchar_t* html_text, const size_t text_length);
-    private:
+
+      private:
         bool m_preserve_text_table_layout{ false };
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 
