@@ -118,7 +118,6 @@ namespace Wisteria::UI
         constexpr static int ID_FUNCTION_LIST = wxID_HIGHEST + 1;
 
         /** @brief Creates the class/function lists and description window controls.*/
-        [[nodiscard]]
         void CreateControls(const wxString& firstWindowCaption,
                             const wxString& secondWindowCaption);
 
