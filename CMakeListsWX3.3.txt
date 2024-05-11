@@ -96,19 +96,20 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 ########################
 # (run "tools/Build CMake Files List.R" to update this)
 include(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
-add_library(WisteriaLib STATIC ${WISTERIA_SRC})
+set(WISTIER_LIB wisteria)
+add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
 if(WIN32)
-    target_link_libraries(WisteriaLib PUBLIC ${wxWidgets_LIBRARIES})
+    target_link_libraries(${WISTIER_LIB} PUBLIC ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     # Add OpenMP for mutlithreading
     find_package(OpenMP)
     find_library(TBB_LIB tbb)
-    target_link_libraries(WisteriaLib PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
+    target_link_libraries(${WISTIER_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
 endif()
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 if(MSVC)
-    target_compile_definitions(WisteriaLib PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
@@ -124,23 +125,23 @@ if(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    target_compile_options(WisteriaLib PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
+    target_compile_options(${WISTIER_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 elseif(MINGW OR MSYS)
-    target_compile_definitions(WisteriaLib PUBLIC __WXMSW__
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__
             $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 # TODO: Experimental code for macOS (undergoing testing currently)
 elseif(APPLE)
-    target_compile_definitions(WisteriaLib PUBLIC __WXOSX__
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXOSX__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(UNIX)
-    target_compile_definitions(WisteriaLib PUBLIC __WXGTK__
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 endif()
 
@@ -160,13 +161,13 @@ endif()
 
 # Define the build target for the executable and copy it into the "demo" subfolder
 message(STATUS "Configuring demonstration program...")
-set(DEMO_APP WisteriaDemo)
+set(DEMO_APP demo)
 add_executable(${DEMO_APP} WIN32 MACOSX_BUNDLE ${DEMO_SRC_FILES})
 set_target_properties(${DEMO_APP} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/demo")
 
 # Link required libraries to the executable
-target_link_libraries(${DEMO_APP} WisteriaLib ${wxWidgets_LIBRARIES})
+target_link_libraries(${DEMO_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
 
 # Copy resources and datasets into build folder
 message(STATUS "Copying demo resources...")
@@ -213,10 +214,10 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteria
 
     # Link required libraries to the executable
     IF(WIN32)
-        TARGET_LINK_LIBRARIES(${WISTERIA_APP} WisteriaLib ${wxWidgets_LIBRARIES})
+        TARGET_LINK_LIBRARIES(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
     ELSEIF(UNIX)
         FIND_LIBRARY(TBB_LIB tbb)
-        TARGET_LINK_LIBRARIES(${WISTERIA_APP} WisteriaLib ${wxWidgets_LIBRARIES} ${TBB_LIB})
+        TARGET_LINK_LIBRARIES(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES} ${TBB_LIB})
     ENDIF()
 
     # Copy resources and datasets into build folder
