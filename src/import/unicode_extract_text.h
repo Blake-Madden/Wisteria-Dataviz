@@ -174,7 +174,7 @@ namespace lily_of_the_valley
                                                 size_t length) noexcept
             {
             const uint16_t* doubleByteBuffer = reinterpret_cast<const uint16_t*>(unicodeText);
-            if (sizeof(wchar_t) == 2)
+            if constexpr (sizeof(wchar_t) == 2)
                 {
                 std::memcpy(destination, unicodeText,
                             length /* in this case, length is the number of bytes
