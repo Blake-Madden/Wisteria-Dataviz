@@ -2776,6 +2776,18 @@ namespace html_utilities
             path.remove_prefix(SMS_BODY.length());
             }
 
+#if __cplusplus >= 202002L
+        const std::wstring_view QUOT_TAG{ L"&quot;" };
+        if (path.starts_with(QUOT_TAG))
+            {
+            path.remove_prefix(QUOT_TAG.length());
+            }
+        if (path.ends_with(QUOT_TAG))
+            {
+            path.remove_suffix(QUOT_TAG.length());
+            }
+#endif
+
         // see if it's a valid URL already
         if (is_absolute_url(path.data()))
             {
