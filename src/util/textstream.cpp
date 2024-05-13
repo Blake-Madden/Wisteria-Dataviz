@@ -111,8 +111,9 @@ namespace Wisteria
         // if 16-bit Unicode
         if (convertUnicodeText.is_unicode(text))
             {
-            convertUnicodeText.set_writable_buffer(dest, destLength);
             convertUnicodeText(text, length, wxIsPlatformLittleEndian());
+            wcsncpy_s(dest, destLength, convertUnicodeText.get_filtered_text(),
+                      convertUnicodeText.get_filtered_text_length());
             return true; // already null terminated, so we're done, return from here.
             }
         // if UTF-8 (or simply 7-bit ANSI)
