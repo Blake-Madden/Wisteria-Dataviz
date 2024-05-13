@@ -111,13 +111,6 @@ namespace Wisteria
                 (which will be invalid if the path was not found).*/
         [[nodiscard]]
         wxBitmap ReadSVG(const wxString& path, const wxSize size) const;
-        /**@brief Reads a text file in the archive, converts its contents to Unicode text,
-                and copies it to a temp file.
-           @param path The path to the file (relative to its location in the ZIP folder structure).
-           @returns The path to the temp file holding the file's contents. Note that the caller is
-               responsible for deleting this file when finished with it.*/
-        [[nodiscard]]
-        wxString ExtractTextFileToTempFile(const wxString& path) const;
 
         /// @brief Writes a string to an output buffer as UTF-8, simplifying all conversions.
         /// @param zip The zip buffer to write to.
