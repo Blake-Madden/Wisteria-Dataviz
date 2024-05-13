@@ -107,7 +107,7 @@ long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t
         currentPos = std::wcschr(currentPos, L'\"');
         if (currentPos)
             {
-            return string_util::atol(++currentPos);
+            return std::wcstol(++currentPos, nullptr, 10);
             }
         else
             {
@@ -175,7 +175,7 @@ long XmlFormat::GetAttributeLongValue(const wchar_t* sectionStart, const wchar_t
             currentPos = std::wcschr(currentPos, L'\"');
             if (currentPos)
                 {
-                return string_util::atol(++currentPos);
+                return std::wcstol(++currentPos, nullptr, 10);
                 }
             else
                 {
@@ -644,7 +644,7 @@ long XmlFormat::GetLong(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                 return defaultValue;
                 }
 
-            return string_util::atol(currentPos);
+            return std::wcstol(currentPos, nullptr, 10);
             }
         else
             {
