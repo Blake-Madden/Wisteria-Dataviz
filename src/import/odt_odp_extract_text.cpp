@@ -168,7 +168,7 @@ namespace lily_of_the_valley
                     spacesCount = 10;
                     }
                 // if no space count specified, then default to one space
-                add_character(L' ', static_cast<size_t>(std::max(spacesCount, 1l)));
+                fill_with_character(static_cast<size_t>(std::max(spacesCount, 1l)), L' ');
                 end = find_close_tag(start + 1);
                 if (!end)
                     {

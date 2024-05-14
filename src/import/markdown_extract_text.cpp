@@ -223,7 +223,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     {
                     ++start;
                     }
-                add_character(L'\t', tabCount);
+                fill_with_character(tabCount, L'\t');
                 // Flags that we are still at the start of the line,
                 // so that headers and list items can still be parsed correctly.
                 previousChar = L'\n';
@@ -748,7 +748,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             else if (newlineCount == 1 &&
                      (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingScaces >= 4))
                 {
-                add_character(L'\n', newlineCount);
+                fill_with_character(newlineCount, L'\n');
                 previousChar = L'\n';
                 }
             // same for an ordered list
@@ -761,7 +761,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     }
                 if (*scanAheadDigit == L'.')
                     {
-                    add_character(L'\n', newlineCount);
+                    fill_with_character(newlineCount, L'\n');
                     previousChar = L'\n';
                     }
                 // not an ordered list, default behavior to read as space
@@ -780,7 +780,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                 }
             else
                 {
-                add_character(L'\n', newlineCount);
+                fill_with_character(newlineCount, L'\n');
                 previousChar = L'\n';
                 }
             headerMode = false;

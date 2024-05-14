@@ -39,10 +39,10 @@ TEST_CASE("Text Extract Base", "[textextract]")
         lily_of_the_valley::extract_text ext;
         ext.allocate_text_buffer(10);
         ext.add_character(L'a');
-        ext.add_character(L'b', 3);
+        ext.fill_with_character(3, L'b');
         CHECK(std::wcscmp(ext.get_filtered_text(), L"abbb") == 0);
         CHECK(ext.get_filtered_text_length() == 4);
-        ext.add_character(L'c', 2);
+        ext.fill_with_character(2, L'c');
         CHECK(std::wcscmp(ext.get_filtered_text(), L"abbbcc") == 0);
         CHECK(ext.get_filtered_text_length() == 6);
         }
