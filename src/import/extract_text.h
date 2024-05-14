@@ -37,14 +37,14 @@ namespace lily_of_the_valley
 
         /// @returns The text that has been extracted from the formatted stream.
         [[nodiscard]]
-        const wchar_t* get_filtered_text() const noexcept
+        const wchar_t* get_filtered_text() const
             {
             return m_text_buffer.c_str();
             }
 
         /// @returns The length of the parsed text.
         [[nodiscard]]
-        size_t get_filtered_text_length() const noexcept
+        size_t get_filtered_text_length() const
             {
             return m_text_buffer.length();
             }
@@ -80,37 +80,37 @@ namespace lily_of_the_valley
 
         /** @brief Adds a character to the parsed buffer.
             @param character The character to add.*/
-        void add_character(const wchar_t character) noexcept { m_text_buffer.append(1, character); }
+        void add_character(const wchar_t character) { m_text_buffer.append(1, character); }
 
         /** @brief Adds a character to the parsed buffer a specified number of times.
             @param character The character to add.
             @param repeatCount The number of times to add the character.*/
-        void add_character(const wchar_t character, const size_t repeatCount) noexcept
+        void add_character(const wchar_t character, const size_t repeatCount)
             {
             m_text_buffer.append(repeatCount, character);
             }
 
         /** @brief Adds a string to the parsed buffer.
             @param characters The string to add.*/
-        void add_characters(const std::wstring_view characters) noexcept
+        void add_characters(const std::wstring_view characters)
             {
             m_text_buffer.append(characters);
             }
 
         /** @brief Trims any trailing whitespace from the end of the parsed text.*/
-        void trim() noexcept { string_util::rtrim(m_text_buffer); }
+        void trim() { string_util::rtrim(m_text_buffer); }
 
         /** @brief Clears any text.*/
-        void clear() noexcept
+        void clear()
             {
             m_text_buffer.clear();
             }
 
         /** @brief Resizes the buffer.*/
-        void resize_buffer(const size_t newSize) noexcept { m_text_buffer.resize(newSize); }
+        void resize_buffer(const size_t newSize) { m_text_buffer.resize(newSize); }
 
         /// @brief Empties the log of any previous parsing issues.
-        void clear_log() noexcept { m_log.clear(); }
+        void clear_log() { m_log.clear(); }
 
         /** @brief Adds a message to the report logging system.
             @param message The message to log.*/
