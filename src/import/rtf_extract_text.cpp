@@ -292,7 +292,7 @@ namespace lily_of_the_valley
         m_in_bullet_state = false;
         if (text == nullptr || text_length == 0)
             {
-            set_filtered_text_length(0);
+            clear();
             return nullptr;
             }
         const char* const endSentinel = text + text_length;
@@ -520,12 +520,8 @@ namespace lily_of_the_valley
             }
 
         // need extra space if converting to HTML, largest tag is 44 chars long
-        if (!allocate_text_buffer(m_extraction_type == rtf_extraction_type::rtf_to_text ?
-                                  text_length : text_length*50))
-            {
-            set_filtered_text_length(0);
-            return nullptr;
-            }
+        allocate_text_buffer(
+            m_extraction_type == rtf_extraction_type::rtf_to_text ? text_length : text_length * 50);
 
         m_rtf_text = text;
         // read the contents from the temporary buffer created

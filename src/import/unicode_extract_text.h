@@ -108,7 +108,7 @@ namespace lily_of_the_valley
             clear_log();
             if (!unicodeText || length == 0)
                 {
-                set_filtered_text_length(0);
+                clear();
                 return nullptr;
                 }
             // first see if the file is an even number of bytes (a unicode file would have to be)
@@ -118,30 +118,31 @@ namespace lily_of_the_valley
                 return nullptr;
                 }
             // prepare the wide buffer
-            if (!allocate_text_buffer((length / 2) + 1 /*Null terminator*/))
-                {
-                set_filtered_text_length(0);
-                return nullptr;
-                }
+            const size_t outSize{ (length / 2) + 1 /*Null terminator*/ };
+            auto outBuffer = std::make_unique<wchar_t[]>(outSize);
+            std::wmemset(outBuffer.get(), 0, outSize);
+            allocate_text_buffer(outSize);
+
             /* If unicode stream is the native endian format,
                then just copy it over into the wide buffer.*/
             if (std::strncmp(systemIsLittleEndian ? get_bom_utf16le() : get_bom_utf16be(),
                              unicodeText, 2) == 0)
                 {
                 // note that we skip the BoM
-                convert_unicode_char_stream(get_writable_buffer(), unicodeText + 2, length - 2);
+                convert_unicode_char_stream(outBuffer.get(), unicodeText + 2, length - 2);
                 }
             // ...otherwise, start flipping the bytes around to make it the native endian type
             else if (std::strncmp(systemIsLittleEndian ? get_bom_utf16be() : get_bom_utf16le(),
                                   unicodeText, 2) == 0)
                 {
-                get_flipped_buffer(get_writable_buffer(), unicodeText + 2, length - 2);
+                get_flipped_buffer(outBuffer.get(), unicodeText + 2, length - 2);
                 }
             else
                 {
                 return nullptr;
                 }
-            set_filtered_text_length(std::wcslen(get_filtered_text()));
+
+            add_characters(outBuffer.get());
 
             return get_filtered_text();
             }

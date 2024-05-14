@@ -231,7 +231,7 @@ TEST_CASE("Check CPP", "[cpp]")
         // boundary test (trailing newline is trimmed by design)
         text = LR"(string blah = _(L"\nMy text\nSecond Line\rThird\tLine\n");)";
         output = ext(text, std::wcslen(text));
-        CHECK(std::wcscmp(output, L"\nMy text\nSecond Line\nThird\tLine") == 0);
+        CHECK(std::wstring(output) ==  std::wstring(L"\nMy text\nSecond Line\nThird\tLine"));
         CHECK(ext.get_filtered_text_length() == 31);
         }
     }

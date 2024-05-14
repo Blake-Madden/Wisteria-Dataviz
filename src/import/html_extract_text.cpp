@@ -173,7 +173,7 @@ namespace lily_of_the_valley
                             // copy over the proceeding text (up to the ampersand)
                             if (index > 0)
                                 {
-                                add_characters(text, index);
+                                add_characters({ text, index });
                                 add_character(L'&');
                                 }
                             // update indices into the raw HTML text
@@ -194,7 +194,7 @@ namespace lily_of_the_valley
                             // copy over the proceeding text
                             if (index > 0)
                                 {
-                                add_characters(text, index);
+                                add_characters({ text, index });
                                 }
                             // in case this is an unencoded ampersand then treat it as such
                             if (std::iswspace(text[index + 1]))
@@ -222,25 +222,25 @@ namespace lily_of_the_valley
                                         switch (value)
                                             {
                                         case 0xFB00:
-                                            add_characters(L"ff", 2);
+                                            add_characters({ L"ff", 2 });
                                             break;
                                         case 0xFB01:
-                                            add_characters(L"fi", 2);
+                                            add_characters({ L"fi", 2 });
                                             break;
                                         case 0xFB02:
-                                            add_characters(L"fl", 2);
+                                            add_characters({ L"fl", 2 });
                                             break;
                                         case 0xFB03:
-                                            add_characters(L"ffi", 3);
+                                            add_characters({ L"ffi", 3 });
                                             break;
                                         case 0xFB04:
-                                            add_characters(L"ffl", 3);
+                                            add_characters({ L"ffl", 3 });
                                             break;
                                         case 0xFB05:
-                                            add_characters(L"ft", 2);
+                                            add_characters({ L"ft", 2 });
                                             break;
                                         case 0xFB06:
-                                            add_characters(L"st", 2);
+                                            add_characters({ L"st", 2 });
                                             break;
                                             };
                                         }
@@ -255,8 +255,9 @@ namespace lily_of_the_valley
                                         log_message(L"Invalid numeric HTML entity: " +
                                                     std::wstring(text + index,
                                                                  (semicolon + 1) - (text + index)));
-                                        add_characters(text + index,
-                                                       (semicolon + 1) - (text + index));
+                                        add_characters(
+                                            { text + index, static_cast<size_t>((semicolon + 1) -
+                                                                                (text + index)) });
                                         }
                                     }
                                 }
@@ -276,8 +277,9 @@ namespace lily_of_the_valley
                                         log_message(
                                             L"Unencoded ampersand or unknown HTML entity: " +
                                             std::wstring(text + index, semicolon - (text + index)));
-                                        add_characters(text + index,
-                                                       (semicolon - (text + index) + 1));
+                                        add_characters({ text + index,
+                                                         static_cast<size_t>(semicolon -
+                                                                             (text + index) + 1) });
                                         }
                                     else
                                         {
@@ -369,7 +371,7 @@ namespace lily_of_the_valley
                             // copy over the proceeding text (up to the $)
                             if (index > 0)
                                 {
-                                add_characters(text, index);
+                                add_characters({ text, index });
                                 }
                             // add the $
                             add_character(L'$');
@@ -391,7 +393,7 @@ namespace lily_of_the_valley
                             // copy over the proceeding text (before the placeholder)
                             if (index > 0)
                                 {
-                                add_characters(text, index);
+                                add_characters({ text, index });
                                 }
                             // step over the placeholder
                             if (static_cast<size_t>((closingBrace + 1) - (text)) > textSize)
@@ -443,7 +445,7 @@ namespace lily_of_the_valley
                             }
                         else
                             {
-                            add_characters(text, index);
+                            add_characters({ text, index });
                             }
 
                         add_character(L' ');
@@ -502,7 +504,7 @@ namespace lily_of_the_valley
                     }
                 else
                     {
-                    add_characters(text, textSize);
+                    add_characters({ text, textSize });
                     }
                 }
             }
@@ -875,19 +877,15 @@ namespace lily_of_the_valley
         // verify the inputs
         if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
             {
-            set_filtered_text_length(0);
+            clear();
             return nullptr;
             }
 
-        if (!allocate_text_buffer(text_length))
-            {
-            set_filtered_text_length(0);
-            return nullptr;
-            }
+        allocate_text_buffer(text_length);
 
         // find the first <. If not found then just parse this as encoded HTML text
         const wchar_t* start = std::wcschr(html_text, L'<');
-        if (!start)
+        if (start == nullptr)
             {
             if (include_outer_text)
                 {
@@ -1196,7 +1194,7 @@ namespace lily_of_the_valley
                     --m_is_in_preformatted_text_block_stack;
                     break;
                     }
-                add_characters(start, end - start);
+                add_characters({ start, static_cast<size_t>(end - start) });
                 start = end;
                 end += 2;
                 continue;
@@ -1412,8 +1410,8 @@ namespace lily_of_the_valley
                     std::wstring_view(get_filtered_text() + previousLength,
                                       // cppcheck-suppress duplicateExpression
                                       get_filtered_text_length() - previousLength));
-                set_filtered_text_length(previousLength);
-                add_characters(copiedOverText.c_str(), copiedOverText.length());
+                resize_buffer(previousLength);
+                add_characters({ copiedOverText.c_str(), copiedOverText.length() });
                 if (copiedOverText.length())
                     {
                     log_message(L"Symbol font used for the following: \"" + copiedOverText + L"\"");
@@ -1816,10 +1814,7 @@ namespace html_utilities
             }
         assert(text_length <= std::wcslen(html_text));
 
-        if (!allocate_text_buffer(text_length))
-            {
-            return nullptr;
-            }
+        allocate_text_buffer(text_length);
 
         const wchar_t* const endSentinel = html_text + text_length;
         const wchar_t *currentPos = html_text, *lastEnd = html_text;
@@ -1829,7 +1824,7 @@ namespace html_utilities
             // no more anchors, so just copy over the rest of the text and quit.
             if (!currentPos || currentPos >= endSentinel)
                 {
-                add_characters(lastEnd, endSentinel - lastEnd);
+                add_characters({ lastEnd, static_cast<size_t>(endSentinel - lastEnd) });
                 break;
                 }
             // if this is actually a bookmark, then we need to start over
@@ -1841,7 +1836,7 @@ namespace html_utilities
                 }
             // next <a> found, so copy over all of the text before it,
             // then move over to the end of this element.
-            add_characters(lastEnd, currentPos - lastEnd);
+            add_characters({ lastEnd, static_cast<size_t>(currentPos - lastEnd) });
             currentPos = html_extract_text::find_close_tag(currentPos);
             if (!currentPos || currentPos >= endSentinel)
                 {
@@ -1856,7 +1851,7 @@ namespace html_utilities
                 {
                 break;
                 }
-            add_characters(lastEnd, currentPos - lastEnd);
+            add_characters({ lastEnd, static_cast<size_t>(currentPos - lastEnd) });
             // ...finally, find the close of this </a>, move to that, and start over again looking
             // for the next <a>
             currentPos = html_extract_text::find_close_tag(currentPos);

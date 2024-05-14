@@ -90,14 +90,10 @@ namespace lily_of_the_valley
             {
             if (text == nullptr || length == 0)
                 {
-                set_filtered_text_length(0);
+                clear();
                 return nullptr;
                 }
-            if (!allocate_text_buffer(length))
-                {
-                set_filtered_text_length(0);
-                return nullptr;
-                }
+            allocate_text_buffer(length);
 
             // marks the beginning and size of the sections to copy over
             std::map<size_t, size_t> sectionsToIncludeMarkers;
@@ -148,7 +144,7 @@ namespace lily_of_the_valley
             for (auto inclusionsPos = sectionsToIncludeMarkers.cbegin();
                  inclusionsPos != sectionsToIncludeMarkers.cend(); ++inclusionsPos)
                 {
-                add_characters(text + inclusionsPos->first, inclusionsPos->second);
+                add_characters({ text + inclusionsPos->first, inclusionsPos->second });
                 }
 
             return get_filtered_text();

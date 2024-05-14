@@ -31,15 +31,11 @@ namespace lily_of_the_valley
             clear_log();
             if (idl_buffer.empty())
                 {
-                set_filtered_text_length(0);
+                clear();
                 return nullptr;
                 }
 
-            if (!allocate_text_buffer(idl_buffer.length()))
-                {
-                set_filtered_text_length(0);
-                return nullptr;
-                }
+            allocate_text_buffer(idl_buffer.length());
 
             auto nextHelpStr = idl_buffer.find(HELP_STRING.c_str());
             while (nextHelpStr != std::wstring_view::npos)

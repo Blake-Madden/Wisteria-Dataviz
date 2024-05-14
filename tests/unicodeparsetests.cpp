@@ -12,7 +12,7 @@ TEST_CASE("Unicode Parser", "[unicode import]")
         char buffer[] = { -1, -2, 0x54, 0, -23, 0, 0x6c, 0, -23, 0, 0x63, 0, 0x68, 0, 0x61, 0, 0x72, 0, 0x67, 0, 0x65, 0, 0x72, 0, 0x20, 0, 0x6c, 0, 0x61, 0, 0x20, 0, 0x56, 0, 0x65, 0, 0x72, 0, 0x73, 0, 0x69, 0, 0x6f, 0, 0x6e, 0, 0x20, 0, 0x64, 0, 0x27, 0, -55, 0, 0x76, 0, 0x61, 0, 0x6c, 0, 0x75, 0, 0x61, 0, 0x74, 0, 0x69, 0, 0x6f, 0, 0x6e, 0, 0, 0 };
         unicode_extract_text ext;
         const wchar_t* out = ext(buffer, 72);
-        CHECK(std::wcscmp(out, L"Télécharger la Version d'Évaluation") == 0);
+        CHECK(std::wstring(out) == std::wstring(L"Télécharger la Version d'Évaluation"));
         CHECK(ext.get_filtered_text_length() == 35);
         }
     SECTION("Big Endian")
@@ -20,7 +20,7 @@ TEST_CASE("Unicode Parser", "[unicode import]")
         char buffer[] = { -2, -1, 0, 0x54, 0, -23, 0, 0x6c, 0, -23, 0, 0x63, 0, 0x68, 0, 0x61, 0, 0x72, 0, 0x67, 0, 0x65, 0, 0x72, 0, 0x20, 0, 0x6c, 0, 0x61, 0, 0x20, 0, 0x56, 0, 0x65, 0, 0x72, 0, 0x73, 0, 0x69, 0, 0x6f, 0, 0x6e, 0, 0x20, 0, 0x64, 0, 0x27, 0, -55, 0, 0x76, 0, 0x61, 0, 0x6c, 0, 0x75, 0, 0x61, 0, 0x74, 0, 0x69, 0, 0x6f, 0, 0x6e, 0, 0 };
         unicode_extract_text ext;
         const wchar_t* out = ext(buffer, 72);
-        CHECK(std::wcscmp(out, L"Télécharger la Version d'Évaluation") == 0);
+        CHECK(std::wstring(out) == std::wstring(L"Télécharger la Version d'Évaluation"));
         CHECK(ext.get_filtered_text_length() == 35);
         }
     SECTION("Not Unicode")

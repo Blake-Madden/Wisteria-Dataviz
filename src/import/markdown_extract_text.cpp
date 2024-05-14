@@ -6,7 +6,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     clear_log();
     if (md_text.empty())
         {
-        set_filtered_text_length(0);
+        clear();
         return nullptr;
         }
 
@@ -15,11 +15,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
         m_subParser = std::make_unique<markdown_extract_text>();
         }
 
-    if (!allocate_text_buffer(md_text.length() * 2))
-        {
-        set_filtered_text_length(0);
-        return nullptr;
-        }
+    allocate_text_buffer(md_text.length() * 2);
 
     // find the start of the text body and set up where we halt our searching
     const wchar_t* const endSentinel = md_text.data() + md_text.length();

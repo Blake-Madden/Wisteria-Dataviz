@@ -15,15 +15,11 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
     m_title.clear();
     if (ps_buffer == nullptr || ps_buffer[0] == 0 || text_length == 0)
         {
-        set_filtered_text_length(0);
+        clear();
         return nullptr;
         }
     // resize the internal buffer if new postscript stream is bigger
-    if (!allocate_text_buffer(text_length))
-        {
-        set_filtered_text_length(0);
-        return nullptr;
-        }
+    allocate_text_buffer(text_length);
 
     size_t i = 0;
 
@@ -270,23 +266,23 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                             }
                         else if (octalVal == 11)
                             {
-                            add_characters(L"ff", 2);
+                            add_characters({ L"ff", 2 });
                             }
                         else if (octalVal == 12)
                             {
-                            add_characters(L"fi", 2);
+                            add_characters({ L"fi", 2 });
                             }
                         else if (octalVal == 13)
                             {
-                            add_characters(L"fl", 2);
+                            add_characters({ L"fl", 2 });
                             }
                         else if (octalVal == 14)
                             {
-                            add_characters(L"ffi", 3);
+                            add_characters({ L"ffi", 3 });
                             }
                         else if (octalVal == 15)
                             {
-                            add_characters(L"ffl", 3);
+                            add_characters({ L"ffl", 3 });
                             }
                         else if (octalVal == 18)
                             {
@@ -310,15 +306,15 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                             }
                         else if (octalVal == 26)
                             {
-                            add_characters(L"nae", 3);
+                            add_characters({ L"nae", 3 });
                             }
                         else if (octalVal == 27)
                             {
-                            add_characters(L"oe", 2);
+                            add_characters({ L"oe", 2 });
                             }
                         else if (octalVal == 28)
                             {
-                            add_characters(L"fi", 2);
+                            add_characters({ L"fi", 2 });
                             }
                         else if (octalVal == 127)
                             {

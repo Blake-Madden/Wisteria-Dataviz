@@ -51,16 +51,12 @@ namespace lily_of_the_valley
             clear_log();
             if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
                 {
-                set_filtered_text_length(0);
+                clear();
                 return nullptr;
                 }
             assert(text_length == std::wcslen(html_text));
 
-            if (!allocate_text_buffer(text_length))
-                {
-                set_filtered_text_length(0);
-                return nullptr;
-                }
+            allocate_text_buffer(text_length);
 
             // use "preserve spaces" logic in this XML
             m_is_in_preformatted_text_block_stack = 1;

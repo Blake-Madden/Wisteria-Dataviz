@@ -534,7 +534,7 @@ namespace lily_of_the_valley
         // Send a string to the output.
         inline void ecPrintString(const wchar_t* text, const size_t length) noexcept
             {
-            add_characters(text, length);
+            add_characters({ text, length });
             }
 
         // Set the property identified by _iprop_ to the value _val_.

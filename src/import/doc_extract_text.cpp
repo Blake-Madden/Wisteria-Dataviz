@@ -27,7 +27,7 @@ namespace lily_of_the_valley
         reset();
         if (doc_buffer == nullptr || text_length == 0)
             {
-            set_filtered_text_length(0);
+            clear();
             log_message(L"Empty buffer sent to DOC parser.");
             return nullptr;
             }
@@ -36,12 +36,7 @@ namespace lily_of_the_valley
 
         auto input = cfb_iostream(doc_buffer, text_length+1);
 
-        if (!allocate_text_buffer(text_length))
-            {
-            set_filtered_text_length(0);
-            log_message(L"Memory allocation error in DOC parser.");
-            return nullptr;
-            }
+        allocate_text_buffer(text_length);
 
         std::vector<char> buffer(128, 0);
         if (input.read(buffer.data(), 8) < 8)
@@ -90,7 +85,7 @@ namespace lily_of_the_valley
             log_message(L"DOC file appears to be RTF. Parsing file as RTF.");
             rtf_extract_text filter_rtf;
             const wchar_t* const rtfText = filter_rtf(doc_buffer, text_length);
-            add_characters(rtfText, filter_rtf.get_filtered_text_length());
+            add_characters({ rtfText, filter_rtf.get_filtered_text_length() });
             return get_filtered_text();
             }
         // ... or HTML? It happens.
@@ -127,7 +122,7 @@ namespace lily_of_the_valley
                         { convertedBuffer += static_cast<wchar_t>(ch); }
                     const wchar_t* const htmText =
                         filter_html(convertedBuffer.c_str(), convertedBuffer.length(), true, false);
-                    add_characters(htmText, filter_html.get_filtered_text_length());
+                    add_characters({ htmText, filter_html.get_filtered_text_length() });
                     }
                 else
                     {
@@ -135,7 +130,7 @@ namespace lily_of_the_valley
                     const auto convertedBuffer = std::make_unique<wchar_t[]>(cvtBufferSize);
                     const size_t cvtSize = std::mbstowcs(convertedBuffer.get(), doc_buffer, cvtBufferSize);
                     const wchar_t* const htmText = filter_html(convertedBuffer.get(), cvtSize, true, false);
-                    add_characters(htmText, filter_html.get_filtered_text_length());
+                    add_characters({ htmText, filter_html.get_filtered_text_length() });
                     }
                 return get_filtered_text();
                 }
@@ -541,7 +536,9 @@ namespace lily_of_the_valley
                 }
 
             if (!currentState.m_non_printable_char_detected || currentState.m_at_start_of_new_block)
-                { add_characters(paragraphBuffer.c_str(), paragraphBuffer.length()); }
+                {
+                add_characters({ paragraphBuffer.c_str(), paragraphBuffer.length() });
+                }
             }
         }
 
