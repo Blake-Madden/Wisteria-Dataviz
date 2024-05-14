@@ -221,9 +221,8 @@ namespace lily_of_the_valley
                             std::wstring valueIndex(value, valueEnd - value);
                             if (valueIndex.length())
                                 {
-                                wchar_t* dummy{ nullptr };
                                 const int stringTableIndex =
-                                    static_cast<int>(std::wcstol(valueIndex.c_str(), &dummy, 10));
+                                    static_cast<int>(std::wcstol(valueIndex.c_str(), nullptr, 10));
                                 return get_shared_string(stringTableIndex, shared_strings,
                                                          shared_strings_length);
                                 }
@@ -363,10 +362,9 @@ namespace lily_of_the_valley
                                                             true)) != nullptr)
             {
             cRow.clear();
-            wchar_t* dummy{ nullptr };
             const size_t rowNum = static_cast<size_t>(std::wcstol(
                 html_extract_text::read_attribute_as_string(html_text, L"r", 1, false).c_str(),
-                &dummy, 10));
+                nullptr, 10));
             worksheet_row& currentRow =
                 (rowNum != 0 && rowNum <= data.size()) ? data[rowNum - 1] : cRow;
             worksheet_row::iterator cellPos = currentRow.begin();
@@ -455,7 +453,7 @@ namespace lily_of_the_valley
                                         *typeTag.first == L's')
                                         {
                                         const int stringTableIndex = static_cast<int>(
-                                            std::wcstol(valueStr.c_str(), &dummy, 10));
+                                            std::wcstol(valueStr.c_str(), nullptr, 10));
                                         if (stringTableIndex >= 0 &&
                                             static_cast<size_t>(stringTableIndex) <
                                                 get_shared_strings().size())
@@ -470,7 +468,7 @@ namespace lily_of_the_valley
                                              *typeTag.first == L'b')
                                         {
                                         const bool bVal = static_cast<bool>(
-                                            std::wcstol(valueStr.c_str(), &dummy, 10));
+                                            std::wcstol(valueStr.c_str(), nullptr, 10));
                                         if (bVal)
                                             {
                                             currentCell.set_value(bVal ? _DT(L"TRUE") :
@@ -493,13 +491,12 @@ namespace lily_of_the_valley
                                     // ...then on style
                                     else if (styleTag.first != nullptr)
                                         {
-                                        const auto styleIndex = string_util::atol(styleTag.first);
+                                        const auto styleIndex = std::wcstol(styleTag.first, nullptr, 10);
                                         // a date?
                                         if (m_date_format_indices.find(styleIndex) !=
                                             m_date_format_indices.cend())
                                             {
-                                            const auto serialDate =
-                                                string_util::atol(valueStr.c_str());
+                                            const auto serialDate = std::wcstol(valueStr.c_str(), nullptr, 10);
                                             int day{ 0 }, month{ 0 }, year{ 0 };
                                             excel_serial_date_to_dmy(serialDate, day, month, year);
 
@@ -517,7 +514,7 @@ namespace lily_of_the_valley
                                                 const auto percentStrLength =
                                                     (valueStr.length() - dateTimeSepPos - 1);
                                                 auto timeOfDay = std::wcstoll(
-                                                    valueStr.c_str() + dateTimeSepPos + 1, &dummy,
+                                                    valueStr.c_str() + dateTimeSepPos + 1, nullptr,
                                                     10);
                                                 long double timeOfDayPercent =
                                                     timeOfDay / std::pow(10, percentStrLength);
@@ -619,11 +616,10 @@ namespace lily_of_the_valley
             html_extract_text::find_element(text, (text + text_length), L"sst", true);
         if (countInfo)
             {
-            wchar_t* dummy{ nullptr };
             const size_t stringCount = static_cast<size_t>(std::wcstol(
                 html_extract_text::read_attribute_as_string(countInfo, L"uniqueCount", false, false)
                     .c_str(),
-                &dummy, 10));
+                nullptr, 10));
             if (stringCount == 0)
                 {
                 m_shared_strings.reserve(1'000);
@@ -708,10 +704,9 @@ namespace lily_of_the_valley
                         break;
                         }
 
-                    const auto fmtId =
-                        string_util::atol(html_extract_text::read_attribute_as_string(
+                    const auto fmtId = std::wcstol(html_extract_text::read_attribute_as_string(
                                               stringTag, L"numFmtId", false, false)
-                                              .c_str());
+                                              .c_str(), nullptr, 10);
                     formatStr = html_extract_text::read_attribute_as_string(
                         stringTag, L"formatCode", false, false);
                     stripFormatString(formatStr);
@@ -748,10 +743,9 @@ namespace lily_of_the_valley
                         break;
                         }
 
-                    const auto fmtId =
-                        string_util::atol(html_extract_text::read_attribute_as_string(
+                    const auto fmtId = std::wcstol(html_extract_text::read_attribute_as_string(
                                               stringTag, L"numFmtId", false, false)
-                                              .c_str());
+                                              .c_str(), nullptr, 10);
                     // built-in formats known to be date formats, or a custom date format
                     if ((fmtId >= 14 && fmtId <= 17) || fmtId == 22 ||
                         dateFormatIds.find(fmtId) != dateFormatIds.cend())
@@ -963,8 +957,7 @@ namespace lily_of_the_valley
             return std::make_pair(std::wstring::npos, 0);
             }
         cell_name.remove_prefix(++numStart);
-        wchar_t* dummy{ nullptr };
-        const size_t row = static_cast<size_t>(std::wcstol(cell_name.data(), &dummy, 10));
+        const size_t row = static_cast<size_t>(std::wcstol(cell_name.data(), nullptr, 10));
         if (row == 0)
             {
             return std::make_pair(std::wstring::npos, 0);
