@@ -61,8 +61,7 @@ namespace lily_of_the_valley
         {
         const std::wstring tagStr =
             read_attribute_as_string(text, attribute, allowQuotedTags, false);
-        wchar_t* dummy{ nullptr };
-        return tagStr.length() ? std::wcstol(tagStr.c_str(), &dummy, 10) : 0;
+        return tagStr.length() ? std::wcstol(tagStr.c_str(), nullptr, 10) : 0;
         }
 
     //------------------------------------------------------------------
@@ -205,15 +204,14 @@ namespace lily_of_the_valley
                             // convert an encoded number to character
                             else if (text[index + 1] == L'#')
                                 {
-                                wchar_t* dummy{ nullptr };
                                 const wchar_t value =
                                     string_util::is_either(text[index + 2], L'x', L'X') ?
                                         // if it is hex encoded (e.g., '&#xFF')
                                         static_cast<wchar_t>(
-                                            std::wcstol((text + index + 3), &dummy, 16)) :
+                                            std::wcstol((text + index + 3), nullptr, 16)) :
                                         // else it is a plain numeric value (e.g., '&#79')
                                         static_cast<wchar_t>(
-                                            std::wcstol((text + index + 2), &dummy, 10));
+                                            std::wcstol((text + index + 2), nullptr, 10));
                                 if (value != 173) // soft hyphens should just be stripped out
                                     {
                                     // ligatures
