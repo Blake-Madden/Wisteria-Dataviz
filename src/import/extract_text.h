@@ -96,7 +96,6 @@ namespace lily_of_the_valley
         /** @brief Adds a character to the parsed buffer a specified number of times.
             @param repeatCount The number of times to add the character.
             @param character The character to add.*/
-        [[nodiscard]]
         void fill_with_character(const size_t repeatCount, const wchar_t character)
             {
             m_text_buffer.append(repeatCount, character);
