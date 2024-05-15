@@ -197,21 +197,6 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [this]([[maybe_unused]] wxCommandEvent&)
             {
-                if (m_promptOnDelete)
-                    {
-                    wxRichMessageDialog msg(this, _(L"Do you wish to delete the selected file(s)?"),
-                                            _(L"Delete File"), wxYES_NO | wxICON_WARNING);
-                    msg.ShowCheckBox(_(L"Do not show this again"));
-                    if (msg.ShowModal() == wxID_NO)
-                        {
-                        return;
-                        }
-                    // 'Yes' to delete, see if they don't want to see this prompt again
-                    else if (msg.IsCheckBoxChecked())
-                        {
-                        m_promptOnDelete = false;
-                        }
-                    }
                 m_listCtrl->DeleteSelectedItems();
             },
             wxID_DELETE);

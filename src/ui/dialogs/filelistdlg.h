@@ -91,7 +91,6 @@ namespace Wisteria::UI
         Wisteria::UI::Thumbnail* m_thumbnail{ nullptr };
         wxStaticText* m_label{ nullptr };
         wxInfoBar* m_infoBar{ nullptr };
-        bool m_promptOnDelete{ true };
         };
     } // namespace Wisteria::UI
 
