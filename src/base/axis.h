@@ -97,7 +97,7 @@ namespace Wisteria::GraphItems
         ReferenceLine(const AxisType axisType, const double axisPosition, wxString label,
                       const wxPen pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH))
             : m_axisType(axisType), m_axisPosition(axisPosition), m_label(std::move(label)),
-              m_pen(pen), m_compKey(label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
+              m_pen(pen), m_compKey(m_label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
             {
             }
 
