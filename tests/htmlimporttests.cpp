@@ -1490,6 +1490,13 @@ TEST_CASE("Html Url Format", "[html import]")
         const wchar_t* p = formatHtml(L"sms:?&body=http://yahoo.com/page1.html", false);
         CHECK(std::wstring{ p } == std::wstring{ L"http://yahoo.com/page1.html" });
         }
+    SECTION("Trailing Quote Link")
+        {
+        html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
+        CHECK(std::wstring{ formatHtml(L"http://yahoo.com/pic.jpg&quot;alt='page'&quot;", true) } ==
+              std::wstring{ L"http://yahoo.com/pic.jpg" });
+        CHECK(formatHtml(L"&quot;&quot;&quot;", true) == nullptr);
+        }
     SECTION("Base Domain Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");

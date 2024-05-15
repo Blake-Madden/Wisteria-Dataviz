@@ -2765,13 +2765,13 @@ namespace html_utilities
             {
             return nullptr;
             }
+#if __cplusplus >= 202002L
         const std::wstring_view SMS_BODY{ L"sms:?&body=" };
-        if (path.length() >= SMS_BODY.length() && path.compare(0, SMS_BODY.length(), SMS_BODY) == 0)
+        if (path.starts_with(SMS_BODY))
             {
             path.remove_prefix(SMS_BODY.length());
             }
 
-#if __cplusplus >= 202002L
         const std::wstring_view QUOT_TAG{ L"&quot;" };
         if (path.starts_with(QUOT_TAG))
             {
@@ -2780,6 +2780,16 @@ namespace html_utilities
         if (path.ends_with(QUOT_TAG))
             {
             path.remove_suffix(QUOT_TAG.length());
+            }
+
+        if (const size_t quotPos = path.find(QUOT_TAG);
+            quotPos != std::wstring_view::npos)
+            {
+            path = path.substr(0, quotPos);
+            }
+        if (path.empty())
+            {
+            return nullptr;
             }
 #endif
 
