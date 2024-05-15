@@ -56,6 +56,17 @@ namespace lily_of_the_valley
             return m_log;
             }
 
+        /// @returns The internal buffer that stores the parsed text.
+        /// @warning This grants direct access to the buffer and should generally be used
+        ///     for operating with the results after a parse is complete.\n
+        ///     For example, this can be useful for performing a `std::move` to copy the results
+        ///     to another string efficiently.
+        [[nodiscard]]
+        std::wstring& get_filtered_buffer() noexcept
+            {
+            return m_text_buffer;
+            }
+
         /** @brief Sets the string used to separate the messages in the log report.
             @details By default, messages are separated by newlines, so call this to separate them
                 by something like commas (if you are needing a single-line report).
