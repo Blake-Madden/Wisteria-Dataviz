@@ -6,7 +6,7 @@
 using namespace lily_of_the_valley;
 using namespace Catch::Matchers;
 
-TEST_CASE("Check CPP", "[cpp]")
+TEST_CASE("CPP", "[cpp]")
 	{
     SECTION("NULL")
         {
@@ -138,6 +138,10 @@ TEST_CASE("Check CPP", "[cpp]")
         CHECK(std::wcscmp(output, L"Some \ncomment\n\nA doxygen comment.") == 0);
         CHECK(ext.get_filtered_text_length() == 33);
         }
+    }
+
+TEST_CASE("CPP 2", "[cpp]")
+    {
     SECTION("Regular Block Comment")
         {
         const wchar_t* text = L"/*Some \ncomment*/\n\nSome code\n/**A doxygen comment.*/";
@@ -164,7 +168,8 @@ TEST_CASE("Check CPP", "[cpp]")
         }
     SECTION("Line Comment")
         {
-        const wchar_t* text = L"/// \tSome comment\n//!Another comment\nSome code\n///A doxygen comment.";
+        const wchar_t* text =
+            L"/// \tSome comment\n//!Another comment\nSome code\n///A doxygen comment.";
         cpp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"Some comment\nAnother comment\n\nA doxygen comment.") == 0);
@@ -172,7 +177,8 @@ TEST_CASE("Check CPP", "[cpp]")
         }
     SECTION("Regular Line Comment")
         {
-        const wchar_t* text = L"//Some comment\n//Another comment\nSome code\n///A doxygen comment.";
+        const wchar_t* text =
+            L"//Some comment\n//Another comment\nSome code\n///A doxygen comment.";
         cpp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"A doxygen comment.") == 0);
@@ -231,7 +237,7 @@ TEST_CASE("Check CPP", "[cpp]")
         // boundary test (trailing newline is trimmed by design)
         text = LR"(string blah = _(L"\nMy text\nSecond Line\rThird\tLine\n");)";
         output = ext(text, std::wcslen(text));
-        CHECK(std::wstring(output) ==  std::wstring(L"\nMy text\nSecond Line\nThird\tLine"));
+        CHECK(std::wstring(output) == std::wstring(L"\nMy text\nSecond Line\nThird\tLine"));
         CHECK(ext.get_filtered_text_length() == 31);
         }
     }
