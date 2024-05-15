@@ -523,10 +523,14 @@ namespace Wisteria::UI
                                      wxYES_NO | wxICON_WARNING) == wxYES)
                         {
                         SendToRecycleBinOrDelete(filePath);
+                        DeleteItem(item--);
                         }
                     }
                 }
-            DeleteItem(item--);
+            else
+                {
+                DeleteItem(item--);
+                }
             }
 
         // select item after the one that was deleted
