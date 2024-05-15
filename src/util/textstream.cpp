@@ -115,13 +115,13 @@ namespace Wisteria
                    L"Out buffer not large enough in CharStreamToUnicode()!");
             if (destLength > convertUnicodeText.get_filtered_text_length())
                 {
-            convertUnicodeText(text, length, wxIsPlatformLittleEndian());
+                convertUnicodeText(text, length, wxIsPlatformLittleEndian());
                 std::copy(convertUnicodeText.get_filtered_text(),
                           convertUnicodeText.get_filtered_text() +
                               convertUnicodeText.get_filtered_text_length(),
                           dest);
-            return true; // already null terminated, so we're done, return from here.
-            }
+                return true; // already null terminated, so we're done, return from here.
+                }
             else
                 {
                 wxLogError(L"Internal buffer not large enough for Unicode conversion.");

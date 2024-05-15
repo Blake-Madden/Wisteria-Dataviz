@@ -437,7 +437,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static bool paragraph_ends_with_crlf(const std::wstring& paragraph)
             {
-            if (paragraph.length() == 0)
+            if (paragraph.empty())
                 {
                 return false;
                 }

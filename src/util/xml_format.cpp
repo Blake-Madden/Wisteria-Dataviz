@@ -477,7 +477,7 @@ void XmlFormat::GetStringsWithExtraInfo(
     strings.clear();
 
     assert(sectionStart && sectionEnd && entityTag.length() && attributeTag.length());
-    if (!sectionStart || !sectionEnd || entityTag.length() == 0 || attributeTag.length() == 0)
+    if (!sectionStart || !sectionEnd || entityTag.empty() || attributeTag.empty())
         {
         return;
         }
