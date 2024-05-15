@@ -111,12 +111,22 @@ namespace Wisteria
         // if 16-bit Unicode
         if (convertUnicodeText.is_unicode(text))
             {
+            assert(destLength > convertUnicodeText.get_filtered_text_length() &&
+                   L"Out buffer not large enough in CharStreamToUnicode()!");
+            if (destLength > convertUnicodeText.get_filtered_text_length())
+                {
             convertUnicodeText(text, length, wxIsPlatformLittleEndian());
                 std::copy(convertUnicodeText.get_filtered_text(),
                           convertUnicodeText.get_filtered_text() +
                               convertUnicodeText.get_filtered_text_length(),
                           dest);
             return true; // already null terminated, so we're done, return from here.
+            }
+            else
+                {
+                wxLogError(L"Internal buffer not large enough for Unicode conversion.");
+                return false;
+                }
             }
         // if UTF-8 (or simply 7-bit ANSI)
         else if (utf8::is_valid(text, text + length))
