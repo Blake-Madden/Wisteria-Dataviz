@@ -127,8 +127,15 @@ namespace lily_of_the_valley
                 else
                     {
                     const size_t cvtBufferSize = text_length * 2;
-                    const auto convertedBuffer = std::make_unique<wchar_t[]>(cvtBufferSize);
-                    const size_t cvtSize = std::mbstowcs(convertedBuffer.get(), doc_buffer, cvtBufferSize);
+                    const auto convertedBuffer = std::make_unique<wchar_t[]>(cvtBufferSize + 1);
+#ifdef _MSC_VER
+                    size_t cvtSize{ 0 };
+                    mbstowcs_s(&cvtSize, convertedBuffer.get(),
+                               static_cast<size_t>(cvtBufferSize) + 1, doc_buffer, cvtBufferSize);
+#else
+                    const size_t cvtSize =
+                        std::mbstowcs(convertedBuffer.get(), doc_buffer, cvtBufferSize);
+#endif
                     const wchar_t* const htmText = filter_html(convertedBuffer.get(), cvtSize, true, false);
                     add_characters({ htmText, filter_html.get_filtered_text_length() });
                     }
@@ -657,7 +664,16 @@ namespace lily_of_the_valley
                     else
                         {
                         auto wideBuff = std::make_unique<wchar_t[]>(static_cast<size_t>(strBtyeCount) + 1);
-                        std::mbstowcs(wideBuff.get(), propBuffer.data()+property.first + 8, strBtyeCount);
+#ifdef _MSC_VER
+                        size_t convertedAmt{ 0 };
+                        mbstowcs_s(&convertedAmt, wideBuff.get(),
+                                   static_cast<size_t>(strBtyeCount) + 1,
+                                        propBuffer.data() + property.first + 8,
+                                      strBtyeCount);
+#else
+                        std::mbstowcs(wideBuff.get(), propBuffer.data() + property.first + 8,
+                                      strBtyeCount);
+#endif
                         propertyValue = wideBuff.get();
                         }
                     }

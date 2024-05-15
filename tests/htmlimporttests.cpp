@@ -1029,7 +1029,8 @@ TEST_CASE("HTML Parser", "[html import]")
         html_extract_text filter_html;
         wchar_t* text = new wchar_t[101];
         std::wmemset(text, 0, 101); // 101 place is the last null terminator
-        std::wcscpy(text, L"<span>List.</span> \r\n (pane)");
+        std::wstring_view SPAN_V{ L"<span>List.</span> \r\n (pane)" };
+        std::copy(SPAN_V.cbegin(), SPAN_V.cend(), text);
         const wchar_t* p = filter_html(text, 100, true, false);
         CHECK(std::wcscmp(p, L"List.    (pane)") == 0);
         delete[] text;

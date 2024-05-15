@@ -478,7 +478,7 @@ bool SendToRecycleBinOrDelete(const wxString& fileToDelete)
        so we need to use a different filepath buffer with two NULLs at the end.*/
     const size_t fileBufferLength = fileToDelete.length() + 2;
     auto filePath = std::make_unique<wchar_t[]>(fileBufferLength);
-    std::wcsncpy(filePath.get(), fileToDelete.c_str(), fileToDelete.length());
+    std::copy(fileToDelete.cbegin(), fileToDelete.cend(), filePath.get());
 
     SHFILEOPSTRUCT SHFileOp;
     std::memset(&SHFileOp, 0, sizeof(SHFILEOPSTRUCT));

@@ -702,10 +702,15 @@ namespace lily_of_the_valley
         if (m_extraction_type == rtf_extraction_type::rtf_to_html &&
             (std::strcmp(szKeyword, "par") == 0 || std::strcmp(szKeyword, "pard") == 0))
             {
+            const std::string_view PAR_TAG{ "par" };
+            const std::string_view PARD_TAG{ "pard" };
+            const std::string_view LINE_TAG{ "line" };
             ++m_paragraphCount;
             // if even, then this is a terminating paragraph command
             if ((m_paragraphCount % 2) == 0)
-                { std::strcpy(szKeyword, "par"); }
+                {
+                std::copy(PAR_TAG.cbegin(), PAR_TAG.cend(), szKeyword);
+                }
             // else, it is either the start of a new paragraph or an empty paragraph
             else
                 {
@@ -722,10 +727,12 @@ namespace lily_of_the_valley
                 if (std::strncmp(nextKeyword, "\\par", 4) == 0)
                     {
                     --m_paragraphCount; // it's also not a paragraph anymore
-                    std::strcpy(szKeyword, "line");
+                    std::copy(LINE_TAG.cbegin(), LINE_TAG.cend(), szKeyword);
                     }
                 else
-                    { std::strcpy(szKeyword, "pard"); }
+                    {
+                    std::copy(PARD_TAG.cbegin(), PARD_TAG.cend(), szKeyword);
+                    }
                 }
             }
 
