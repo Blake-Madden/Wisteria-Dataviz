@@ -317,6 +317,10 @@ namespace Wisteria
     //--------------------------------------------------
     bool Canvas::Save(const wxFileName& filePath, const ImageExportOptions& options)
         {
+        // immediately recalc everything when we change the canvas size
+        CanvasResizeDelayChanger resizeDelay{ *this };
+        DelayResizing(false);
+
         // create the folder to the filepath, if necessary
         wxFileName::Mkdir(filePath.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
@@ -460,6 +464,8 @@ namespace Wisteria
         m_menu.Append(wxID_PRINT, _(L"Print"));
         m_menu.Append(XRCID("ID_SAVE_ITEM"), _(L"Save"));
 
+        m_resizeTimer.SetOwner(this);
+
         Bind(
             wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomIn(); }, wxID_ZOOM_IN);
 
@@ -468,6 +474,16 @@ namespace Wisteria
 
         Bind(
             wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomReset(); }, wxID_ZOOM_FIT);
+
+        Bind(wxEVT_TIMER,
+             [this]([[maybe_unused]] wxTimerEvent&)
+             {
+                 m_blockResize = false;
+                 wxSizeEvent event(GetSize());
+                 OnResize(event);
+                 Refresh();
+                 Update();
+            });
 
         Bind(wxEVT_KEY_DOWN, &Canvas::OnKeyDown, this);
         Bind(wxEVT_PAINT, &Canvas::OnPaint, this);
@@ -605,6 +621,19 @@ namespace Wisteria
     //---------------------------------------------------
     void Canvas::OnResize(wxSizeEvent& event)
         {
+        if (m_delayResize && m_blockResize)
+            {
+            if (m_resizeTimer.IsRunning())
+                {
+                m_resizeTimer.Stop();
+                }
+            m_resizeTimer.StartOnce(500); // half a second
+            event.Skip();
+            return;
+            }
+
+        m_blockResize = true;
+
         wxGCDC gdc(this);
         // if the new size is larger than the canvas itself, then turn off zooming
         if (GetClientRect().GetWidth() > GetCanvasRect(gdc).GetWidth() &&

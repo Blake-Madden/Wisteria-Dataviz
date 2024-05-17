@@ -12,6 +12,9 @@ bool ReportPrintout::OnPrintPage(int page)
     if (dc != nullptr && canvas != nullptr)
         {
         wxWindowUpdateLocker wl(canvas);
+        // immediately recalc everything when we change the canvas size
+        CanvasResizeDelayChanger resizeDelay{ *canvas };
+        canvas->DelayResizing(false);
         PrintFitToPageChanger fpc(canvas, this);
 
         dc->SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));

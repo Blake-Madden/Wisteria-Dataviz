@@ -42,6 +42,7 @@
 #include <wx/print.h>
 #include <wx/printdlg.h>
 #include <wx/quantize.h>
+#include <wx/timer.h>
 #include <wx/tokenzr.h>
 #include <wx/wupdlock.h>
 #include <wx/wx.h>
@@ -51,6 +52,7 @@ wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 #define EVT_WISTERIA_CANVAS_DCLICK(winid, fn)                                                      \
     wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winid, wxCommandEventHandler(fn))
+
 /// @endcond
 
 namespace Wisteria
@@ -80,7 +82,7 @@ namespace Wisteria
         double m_originalScaling{ 1.0 };
         };
 
-    /// @brief %Canvas for drawing, movable objects.
+    /// @brief %Canvas for drawing fixed and movable objects.
     class Canvas final : public wxScrolledWindow
         {
         wxDECLARE_DYNAMIC_CLASS(Canvas);
@@ -701,6 +703,31 @@ namespace Wisteria
             m_exportHelpTopic = topicPath;
             }
 
+        /// @returns @c true if size events will wait half a second to recalculate and
+        ///     render the canvas.
+        [[nodiscard]]
+        bool IsResizingDelayed() const noexcept
+            {
+            return m_delayResize;
+            }
+
+        /** @brief Delays resize operations by half a second to ensure that numerous,
+                successive size events aren't being called constantly.
+            @details This is useful for when a client is resizing a canvas with their mouse;
+                This will ensure that the resize event won't resize until they start dragging
+                the window for at least half a second.\n
+                The default is for this to be enabled.
+            @param delay @c true to delay resize events. @c false will cause every size event to
+                recalculate and render the canvas.*/
+        void DelayResizing(const bool delay) { m_delayResize = delay; }
+
+        /// @private
+        /// @brief If delaying resizing, this turns that off for the next (and only the next)
+        ///     size event.
+        /// @details This is useful for preventing a delayed resizing when the canvas is being
+        ///     inserted into a parent (e.g., splitter window).
+        void ResetResizeDelay() { m_blockResize = false; }
+
         /// @brief Direction of label drawn across a canvas.
         enum class WatermarkDirection
             {
@@ -960,7 +987,32 @@ namespace Wisteria
         bool m_bgColorUseLinearGradient{ false };
         wxBitmapBundle m_bgImage;
 
+        // resize state variables
+        bool m_delayResize{ true }; // whether a timer should delay resizing during mouse dragging
+        bool m_blockResize{ true }; // prevents resizing until timer allows it (this is state based)
+        wxTimer m_resizeTimer;
+
         wxString m_debugInfo;
+        };
+
+    /// @private
+    /// @brief Remembers a canvas's delay resizing option and resets it on destruction.
+    class CanvasResizeDelayChanger
+        {
+      public:
+        /// @brief Constructor
+        /// @param canvas The canvas to change.
+        explicit CanvasResizeDelayChanger(Canvas& canvas)
+            : canvas(canvas), isDelaying(canvas.IsResizingDelayed())
+            {
+            }
+
+        /// @brief Destructor; resets the canvas back to its delaying option.
+        ~CanvasResizeDelayChanger() { canvas.DelayResizing(isDelaying); }
+
+      private:
+        Canvas& canvas;
+        bool isDelaying{ true };
         };
     } // namespace Wisteria
 
