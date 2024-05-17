@@ -672,13 +672,13 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             }
         else if (*start == L'<')
             {
-            const auto* originalStart{ start };
             const std::wstring_view TABLE{ L"table" };
             const std::wstring_view TABLE_END{ L"</table>" };
             if (!isEscaping &&
                 static_cast<size_t>(std::distance(start, endSentinel)) >= TABLE.length() + 1 &&
                 std::wcsncmp(std::next(start), TABLE.data(), TABLE.length()) == 0)
                 {
+                const auto* originalStart{ start };
                 std::advance(start, TABLE.length() + 1); // step over '<' also
                 auto* endOfTag = string_util::find_matching_close_tag(
                     { start, static_cast<size_t>(std::distance(start, endSentinel)) },
