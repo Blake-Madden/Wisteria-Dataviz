@@ -371,6 +371,19 @@ class FileDownload
     /// @sa GetLastRead().
     bool Read(const wxString& url);
 
+    /** @brief If @c true, will use the filename sent from the server as the filename
+            when downloading a file.
+        @details This will override the filename (but not the folder path) sent
+            to Download().\n
+            The default is @c false, which will explicitly use the path sent
+            by the client to Download().
+        @param useSuggested Whether to use the suggested filename from the server.
+        @sa GetDownloadPath() for retrieving the resolved download path after downloading.*/
+    void UseSuggestedFileNames(const bool useSuggested) noexcept
+        {
+        m_useSuggestedFileName = useSuggested;
+        }
+
     /// @brief Bind this to the parent `wxEvtHandler`'s close event
     ///     (or call from an existing close handler) to cancel
     ///     any download that still pending.
@@ -419,6 +432,15 @@ class FileDownload
         return m_lastUrl;
         }
 
+    /// @returns The path to the last downloaded file.\n
+    ///     This is useful if using the suggested filename from the server, which will override
+    ///     the path sent do Download().
+    [[nodiscard]]
+    const wxString& GetDownloadPath() const noexcept
+        {
+        return m_downloadPath;
+        }
+
     /// @returns The last @c Content-Type from a read, download, or response request.
     [[nodiscard]]
     const wxString& GetLastContentType() const noexcept
@@ -443,12 +465,13 @@ class FileDownload
     void LoadResponseInfo(const wxWebRequestEvent& evt);
 
     /// @param restartTimer @true to restart the timer used to determine if
-    ///     when response times out.
+    ///     the response times out.
     void Reset(bool restartTimer)
         {
         m_lastStatusText.clear();
         m_downloadPath.clear();
         m_lastUrl.clear();
+        m_lastSuggestedFileName.clear();
         m_buffer.clear();
         m_lastContentType.clear();
         m_lastStatusInfo.clear();
@@ -477,6 +500,7 @@ class FileDownload
     int m_timeoutSeconds{ 30 };
     int m_lastStatus{ 404 };
     bool m_disablePeerVerify{ false };
+    bool m_useSuggestedFileName{ false };
 
     // state-based fields
     bool m_downloadSuccessful{ false };
@@ -487,6 +511,7 @@ class FileDownload
     wxString m_downloadPath;
     wxString m_lastStatusText;
     wxString m_lastUrl;
+    wxString m_lastSuggestedFileName;
     wxString m_lastContentType;
     wxString m_lastStatusInfo;
     wxString m_server;

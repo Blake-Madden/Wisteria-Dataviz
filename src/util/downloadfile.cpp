@@ -390,6 +390,9 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     m_lastUrl =
         ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetURL() :
                                                                  wxString{});
+    m_lastSuggestedFileName =
+        ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetSuggestedFileName() :
+                                                                 wxString{});
     m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
                              evt.GetResponse().GetHeader(_DT(L"Content-Type")) :
                              wxString{});
@@ -430,6 +433,10 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
         {
         m_bytesReceived = evt.GetRequest().GetBytesReceived();
         m_lastState = evt.GetRequest().GetState();
+        if (evt.GetRequest().GetResponse().IsOk())
+            {
+            m_lastSuggestedFileName = evt.GetRequest().GetResponse().GetSuggestedFileName();
+            }
         }
 
     switch (evt.GetState())
@@ -441,6 +448,18 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
         // copy it to the requested location
         if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_File)
             {
+            if (m_useSuggestedFileName && !m_lastSuggestedFileName.empty())
+                {
+                wxFileName fn{ m_downloadPath };
+                wxString originalExt{ fn.GetExt() };
+                fn.SetFullName(m_lastSuggestedFileName);
+                if (!fn.HasExt())
+                    {
+                    fn.SetExt(originalExt);
+                    }
+                m_downloadPath = fn.GetFullPath();
+                }
+            
             if (wxFileName::FileExists(m_downloadPath))
                 {
                 wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT);
