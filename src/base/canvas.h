@@ -1003,16 +1003,16 @@ namespace Wisteria
         /// @brief Constructor
         /// @param canvas The canvas to change.
         explicit CanvasResizeDelayChanger(Canvas& canvas)
-            : canvas(canvas), isDelaying(canvas.IsResizingDelayed())
+            : m_canvas(canvas), m_isDelaying(canvas.IsResizingDelayed())
             {
             }
 
         /// @brief Destructor; resets the canvas back to its delaying option.
-        ~CanvasResizeDelayChanger() { canvas.DelayResizing(isDelaying); }
+        ~CanvasResizeDelayChanger() { m_canvas.DelayResizing(m_isDelaying); }
 
       private:
-        Canvas& canvas;
-        bool isDelaying{ true };
+        Canvas& m_canvas;
+        bool m_isDelaying{ true };
         };
     } // namespace Wisteria
 
