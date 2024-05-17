@@ -505,7 +505,6 @@ namespace lily_of_the_valley
                 in the output. If @c false, then they will be replaced with spaces,
                 which is the default for HTML renderers. Recommended @c false.
             @returns The plain text from the HTML stream.*/
-        [[nodiscard]]
         const wchar_t* operator()(const wchar_t* html_text,
                                   const size_t text_length,
                                   const bool include_outer_text,
