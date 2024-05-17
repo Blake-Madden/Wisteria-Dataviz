@@ -672,22 +672,53 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             }
         else if (*start == L'<')
             {
-            if (!isEscaping && start + 1 < endSentinel &&
-                (start[1] == L'/' || start[1] == L'p' || std::wcsncmp(start + 1, L"a ", 2) == 0 ||
-                 std::wcsncmp(start + 1, L"b>", 2) == 0 || std::wcsncmp(start + 1, L"i>", 2) == 0 ||
-                 std::wcsncmp(start + 1, L"u>", 2) == 0 ||
-                 std::wcsncmp(start + 1, L"div", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"dl>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"dt>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"dd>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"em>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"tt>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"ul>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"ol>", 3) == 0 ||
-                 std::wcsncmp(start + 1, L"li>", 3) == 0))
+            const auto* originalStart{ start };
+            const std::wstring_view TABLE{ L"table" };
+            const std::wstring_view TABLE_END{ L"</table>" };
+            if (!isEscaping &&
+                static_cast<size_t>(std::distance(start, endSentinel)) >= TABLE.length() + 1 &&
+                std::wcsncmp(std::next(start), TABLE.data(), TABLE.length()) == 0)
+                {
+                std::advance(start, TABLE.length() + 1); // step over '<' also
+                auto* endOfTag = string_util::find_matching_close_tag(
+                    { start, static_cast<size_t>(std::distance(start, endSentinel)) },
+                    { TABLE.data() }, { TABLE_END.data() });
+                if (endOfTag == nullptr)
+                    {
+                    log_message(L"Bad HTML <table> in markdown file.");
+                    break;
+                    }
+                std::advance(endOfTag, TABLE_END.length());
+                if (endOfTag >= endSentinel)
+                    {
+                    log_message(L"Bad HTML </table> in markdown file.");
+                    break;
+                    }
+                html_extract_text hext;
+                hext(originalStart, std::distance(originalStart, endOfTag), false, false);
+                add_characters({ hext.get_filtered_text(), hext.get_filtered_text_length() });
+                std::advance(start, std::distance(start, endOfTag));
+                }
+            else if (!isEscaping && std::next(start) < endSentinel &&
+                     (start[1] == L'/' || start[1] == L'p' ||
+                      std::wcsncmp(std::next(start), L"a ", 2) == 0 ||
+                      std::wcsncmp(std::next(start), L"b>", 2) == 0 ||
+                      std::wcsncmp(std::next(start), L"i>", 2) == 0 ||
+                      std::wcsncmp(std::next(start), L"u>", 2) == 0 ||
+                      std::wcsncmp(std::next(start), L"code", 4) == 0 ||
+                      std::wcsncmp(std::next(start), L"strong", 6) == 0 ||
+                      std::wcsncmp(std::next(start), L"div", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"dl>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"dt>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"dd>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"em>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"tt>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"ul>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"ol>", 3) == 0 ||
+                      std::wcsncmp(std::next(start), L"li>", 3) == 0))
                 {
                 ++start;
-                auto endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
+                auto* endOfTag = string_util::find_unescaped_matching_close_tag_same_line_n(
                     start, L'<', L'>', std::distance(start, endSentinel));
                 if (endOfTag == nullptr)
                     {

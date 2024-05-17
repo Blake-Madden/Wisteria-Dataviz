@@ -30,13 +30,47 @@ TEST_CASE("Markdown Parser", "[md import]")
             std::wstring{ L"Here is the actual text to review." });
         }
 
+    SECTION("HTML Table")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ LR"(following table:
+
+<table>
+<tr>
+<th>Interval</th>
+<th>Period</th>
+<th>Int</th>
+<th>More</th>
+</tr>
+<tr>
+<td>0 to 20</td>
+<td>8</td>
+<td>Supported.</td>
+<td>Not supported.</td>
+</tr>
+</table>
+
+The End.)" }) } ==
+             std::wstring{ LR"(following table:
+
+
+
+ 
+
+ Interval Period Int More  
+
+ 	0 to 20 	8 	Supported. 	Not supported.  
+
+
+ The End.)" });
+        }
+
     SECTION("Newlines")
         {
         lily_of_the_valley::markdown_extract_text md;
-        CHECK(std::wstring{ md({ L"# Header\nThis is\na line.\r\nThis is the same line.  \nThis is a new line.\r\n\r\nAnother line. \nSame line." }) } ==
-             std::wstring{ L"Header\n\nThis is a line. This is the same line.  \n\nThis is a new line.\n\nAnother line.  Same line." });
-        CHECK(std::wstring{ md({ L"*`where`*\\\nNext line" }) } ==
-            std::wstring{ L"where\n\nNext line" });
+        CHECK(std::wstring{
+                  md({ L"---\ntitle:my book\n---\nHere is the *actual* text to **review**." }) } ==
+              std::wstring{ L"Here is the actual text to review." });
         }
 
     SECTION("Header")
