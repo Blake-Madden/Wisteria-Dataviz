@@ -459,7 +459,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     }
                 m_downloadPath = fn.GetFullPath();
                 }
-            
+
             if (wxFileName::FileExists(m_downloadPath))
                 {
                 wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT);
