@@ -868,6 +868,7 @@ namespace lily_of_the_valley
 
         // reset any state variables
         clear_log();
+        clear();
         m_is_in_preformatted_text_block_stack = preserve_newlines ? 1 : 0;
         m_superscript_stack = m_subscript_stack = 0;
         reset_meta_data();
@@ -875,7 +876,6 @@ namespace lily_of_the_valley
         // verify the inputs
         if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
             {
-            clear();
             return nullptr;
             }
 

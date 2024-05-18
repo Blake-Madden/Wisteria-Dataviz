@@ -41,7 +41,7 @@ namespace lily_of_the_valley
         word2007_extract_text() noexcept : m_preserve_text_table_layout(false) {}
 
         /** @brief Specifies how to import tables.
-            @param preserve Set to true to import tables as tab-delimited cells of text.\n
+            @param preserve Set to @c true to import tables as tab-delimited cells of text.\n
                 Set to @c false to simply import each cell as a separate paragraph,
                 the tabbed structure of the rows may be lost.\n
                 The default is to import cells as separate paragraphs.*/

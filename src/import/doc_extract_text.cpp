@@ -24,10 +24,10 @@ namespace lily_of_the_valley
                                                      const size_t text_length)
         {
         clear_log();
+        clear();
         reset();
         if (doc_buffer == nullptr || text_length == 0)
             {
-            clear();
             log_message(L"Empty buffer sent to DOC parser.");
             return nullptr;
             }

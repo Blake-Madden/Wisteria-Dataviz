@@ -4,9 +4,9 @@ const wchar_t*
 lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md_text)
     {
     clear_log();
+    clear();
     if (md_text.empty())
         {
-        clear();
         return nullptr;
         }
 

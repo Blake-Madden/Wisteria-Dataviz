@@ -106,9 +106,9 @@ namespace lily_of_the_valley
                                   const bool systemIsLittleEndian = true)
             {
             clear_log();
+            clear();
             if (!unicodeText || length == 0)
                 {
-                clear();
                 return nullptr;
                 }
             // first see if the file is an even number of bytes (a unicode file would have to be)

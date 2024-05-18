@@ -12,10 +12,10 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                                                                        const size_t text_length)
     {
     clear_log();
+    clear();
     m_title.clear();
     if (ps_buffer == nullptr || ps_buffer[0] == 0 || text_length == 0)
         {
-        clear();
         return nullptr;
         }
     // resize the internal buffer if new postscript stream is bigger

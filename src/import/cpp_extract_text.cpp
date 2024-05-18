@@ -14,10 +14,10 @@ using namespace lily_of_the_valley;
 const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_t text_length)
     {
     clear_log();
+    clear();
     m_author.clear();
     if (cpp_text == nullptr || text_length == 0)
         {
-        clear();
         return nullptr;
         }
     assert(std::wcslen(cpp_text) == text_length);

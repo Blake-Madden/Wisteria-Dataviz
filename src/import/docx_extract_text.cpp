@@ -74,11 +74,11 @@ namespace lily_of_the_valley
                                                      const size_t text_length)
         {
         clear_log();
+        clear();
         reset_meta_data();
 
         if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
             {
-            clear();
             return nullptr;
             }
         assert(text_length == std::wcslen(html_text));

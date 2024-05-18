@@ -287,12 +287,12 @@ namespace lily_of_the_valley
     const wchar_t* rtf_extract_text::operator()(const char* text, const size_t text_length)
         {
         clear_log();
+        clear();
         reset_meta_data();
         m_paragraphCount = 0;
         m_in_bullet_state = false;
         if (text == nullptr || text_length == 0)
             {
-            clear();
             return nullptr;
             }
         const char* const endSentinel = text + text_length;

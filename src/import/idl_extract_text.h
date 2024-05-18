@@ -29,9 +29,9 @@ namespace lily_of_the_valley
             {
             static const std::wstring HELP_STRING{ L"helpstring(\"" };
             clear_log();
+            clear();
             if (idl_buffer.empty())
                 {
-                clear();
                 return nullptr;
                 }
 
