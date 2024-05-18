@@ -24,46 +24,45 @@ namespace lily_of_the_valley
         /** @brief Main interface for extracting plain text from an HTML Workshop index or
                 table of contents buffer.
             @details This text is the labels shown in the TOC and index.
-            @param html_text The HHK/HHC text to extract from.
-            @param text_length The length of the text.
+            @param hhcText The HHK/HHC text to extract from.
+            @param textLength The length of the text.
             @returns A pointer to the parsed text, or null upon failure.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* html_text, const size_t text_length)
+        const wchar_t* operator()(const wchar_t* hhcText, const size_t textLength)
             {
             clear_log();
-            if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
+            clear();
+            if (hhcText == nullptr || hhcText[0] == 0 || textLength == 0)
                 {
-                clear();
                 return nullptr;
                 }
-            assert(text_length <= std::wcslen(html_text));
+            assert(textLength <= std::wcslen(hhcText));
 
-            allocate_text_buffer(text_length);
+            allocate_text_buffer(textLength);
 
             // find the first < and set up where we halt our searching
-            const wchar_t* start = std::wcschr(html_text, L'<');
-            const wchar_t* endSentinel = html_text + text_length;
+            const wchar_t* start = std::wcschr(hhcText, L'<');
+            const wchar_t* const endSentinel = hhcText + textLength;
             string_util::case_insensitive_wstring currentTag;
             std::wstring attribValue;
-            while (start && (start < endSentinel))
+            while (start != nullptr && (start < endSentinel))
                 {
-                currentTag.assign(get_element_name(start + 1, true));
+                currentTag.assign(get_element_name(std::next(start), true));
 
                 if (currentTag == L"param")
                     {
-                    if (read_attribute_as_string(start + 6 /*skip "<param"*/, L"name", false,
-                                                 false) == L"Name")
+                    if (read_attribute_as_string(std::next(start, 6) /*skip "<param"*/, L"name",
+                                                 false, false) == L"Name")
                         {
-                        attribValue = read_attribute_as_string(start + 6, L"value", false, true);
+                        attribValue =
+                            read_attribute_as_string(std::next(start, 6), L"value", false, true);
                         parse_raw_text(attribValue.c_str(), attribValue.length());
                         add_character(L'\n');
                         add_character(L'\n');
                         }
                     }
                 // find the next starting tag
-                start = std::wcschr(start + 1, L'<');
-                if (!start)
+                start = std::wcschr(std::next(start), L'<');
+                if (start == nullptr)
                     {
                     break;
                     }
