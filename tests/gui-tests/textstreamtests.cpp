@@ -79,13 +79,15 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
         {
         wxLogNull ln;
         const char* text = "Hello, world! Here is some simple text.";
-        CHECK(wxString(text) == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
+        CHECK(std::wstring(text) ==
+              Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
         }
 
     SECTION("Embedded Nulls")
         {
         wxLogNull ln;
         const char* text = "Hello, world!\0\0\0 Here is\0 some simple\0 text0.";
-        CHECK(wxString(L"Hello, world! Here is some simple text0.") == Wisteria::TextStream::CharStreamWithEmbeddedNullsToUnicode(text, 45));
+        CHECK(std::wstring(L"Hello, world! Here is some simple text0.") ==
+              Wisteria::TextStream::CharStreamWithEmbeddedNullsToUnicode(text, 45));
         }
     }

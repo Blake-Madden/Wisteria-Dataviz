@@ -65,17 +65,17 @@ namespace Wisteria
         }
 
     //------------------------------------------------
-    wxString
+    std::wstring
     TextStream::CharStreamWithEmbeddedNullsToUnicode(const char* text, const size_t length,
                                                      // cppcheck-suppress passedByValue
-                                                     wxString srcCharSet /*= wxEmptyString*/)
+                                                     wxString srcCharSet /*= wxString{}*/)
         {
         if (length == 0 || text == nullptr)
             {
-            return wxEmptyString;
+            return std::wstring{};
             }
         const char* const endSentinel = text + length;
-        wxString fullString;
+        std::wstring fullString;
         while (text < endSentinel)
             {
             const size_t correctLength = string_util::strnlen(text, length);
@@ -98,7 +98,7 @@ namespace Wisteria
     //------------------------------------------------
     bool TextStream::CharStreamToUnicode(wchar_t* dest, const size_t destLength, const char* text,
                                          const size_t length,
-                                         wxString srcCharSet /*= wxEmptyString*/)
+                                         wxString srcCharSet /*= wxString{}*/)
         {
         if (length == 0 || text == nullptr || destLength == 0 || dest == nullptr)
             {
@@ -238,14 +238,14 @@ namespace Wisteria
         }
 
     //------------------------------------------------
-    wxString TextStream::CharStreamToUnicode(const char* text, size_t length,
-                                             // This is correct, it's an [in,out] parameter
-                                             // cppcheck-suppress passedByValue
-                                             wxString srcCharSet /*= wxEmptyString*/)
+    std::wstring TextStream::CharStreamToUnicode(const char* text, size_t length,
+                                                 // This is correct, it's an [in,out] parameter
+                                                 // cppcheck-suppress passedByValue
+                                                 wxString srcCharSet /*= wxString{}*/)
         {
         if (length == 0 || text == nullptr)
             {
-            return wxEmptyString;
+            return std::wstring{};
             }
 
         // length plus null terminator would be enough, but doesn't hurt have a little extra room
@@ -253,13 +253,13 @@ namespace Wisteria
         auto dest = std::make_unique<wchar_t[]>(destLength);
 
         return (CharStreamToUnicode(dest.get(), destLength, text, length, srcCharSet)) ?
-                   wxString(dest.get()) :
-                   wxString{};
+                   std::wstring(dest.get()) :
+                   std::wstring{};
         }
 
     //------------------------------------------------
     bool TextStream::ReadFile(wxString& filePath, wxString& textBuffer,
-                              const wxString& srcCharSet /*= wxEmptyString*/)
+                              const wxString& srcCharSet /*= wxString{}*/)
         {
         // can't do anything with an empty path, even prompting the user
         // won't make any sense
