@@ -97,9 +97,7 @@ namespace lily_of_the_valley
             @param doc_buffer The DOC file text to load.
             @param text_length The length of the text.
             @returns The filtered (i.e., the plain text) from the stream.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const char* const doc_buffer, const size_t text_length);
+        const wchar_t* operator()(const char* const doc_buffer, const size_t text_length);
 
         /** @returns The title from the document summary.
             @note Must be called after calling @c operator().*/

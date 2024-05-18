@@ -55,9 +55,7 @@ namespace lily_of_the_valley
                 ODT files are zip files, which can be opened by a library such as zlib.
             @param text_length The length of the "content.xml" stream.
             @returns The plain text from the ODT stream.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* html_text, const size_t text_length);
+        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length);
         /** @brief Reads the "meta.xml" file and extracts meta data from
                 the file (e.g., subject, title).
             @param html_text The "meta.xml" text to extract text from.\n

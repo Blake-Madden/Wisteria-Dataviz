@@ -23,9 +23,7 @@ namespace lily_of_the_valley
         /** @brief Main interface for extracting plain text from an IDL buffer.
             @param idl_buffer The IDL text to strip.
             @returns A pointer to the parsed text, or null upon failure.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const std::wstring_view idl_buffer)
+        const wchar_t* operator()(const std::wstring_view idl_buffer)
             {
             static const std::wstring HELP_STRING{ L"helpstring(\"" };
             clear_log();

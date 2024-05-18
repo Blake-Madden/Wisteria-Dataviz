@@ -44,9 +44,7 @@ namespace lily_of_the_valley
                 which can be opened by a library such as zlib.
             @param text_length The length of the text.
             @returns The parsed text from the slide.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* html_text, const size_t text_length)
+        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length)
             {
             clear_log();
             clear();

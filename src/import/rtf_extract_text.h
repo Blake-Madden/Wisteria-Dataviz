@@ -444,9 +444,7 @@ namespace lily_of_the_valley
             @param text The RTF text to strip.
             @param text_length The length of the text.
             @returns A pointer to the parsed text, or null upon failure.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const char* text, const size_t text_length);
+        const wchar_t* operator()(const char* text, const size_t text_length);
 
         /** @returns The title from the metadata file or stream.
             @note Must be called after calling operator().*/

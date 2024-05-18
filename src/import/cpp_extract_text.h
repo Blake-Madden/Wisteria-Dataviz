@@ -37,7 +37,7 @@ namespace lily_of_the_valley
             m_include_all_comments = includeAll;
             }
 
-        /// @returns True if all comments are being included (not just Doxygen-style comments).
+        /// @returns @c true if all comments are being included (not just Doxygen-style comments).
         /// @note The default is to only include Doxygen comments.
         [[nodiscard]]
         bool is_including_all_comments() const noexcept
