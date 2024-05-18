@@ -27,13 +27,11 @@ namespace lily_of_the_valley
             @param text_length The length of the text.
             @returns A pointer to the parsed text, or null upon failure.
             @note To include all comments (not just Doxygen content),
-                call include_all_comments(true).*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* cpp_text, const size_t text_length);
+                call `include_all_comments(true)`.*/
+        const wchar_t* operator()(const wchar_t* cpp_text, const size_t text_length);
 
         /// @brief Sets whether all comments should be included (not just Doxygen-style comments).
-        /// @param includeAll Set to true to include all comments.
+        /// @param includeAll Set to @c true to include all comments.
         void include_all_comments(const bool includeAll) noexcept
             {
             m_include_all_comments = includeAll;
@@ -65,7 +63,7 @@ namespace lily_of_the_valley
                    (ch >= L'0' && ch <= L'9') || (ch == L'_');
             }
 
-        /** @brief Replaces \\n \\t \\r characters with respective spaces while
+        /** @brief Replaces `\n \t \r` characters with spaces while
                 calling add_characters().
             @param characters The string to add.
             @param length The length of the string to add.*/

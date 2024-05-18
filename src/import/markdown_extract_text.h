@@ -24,9 +24,7 @@ namespace lily_of_the_valley
         /** @brief Main interface for extracting plain text from a Markdown file.
             @param md_text The markdown text to parse.
             @returns The parsed text from the Markdown stream.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()(const std::wstring_view md_text);
+        const wchar_t* operator()(const std::wstring_view md_text);
 #ifndef __UNITTEST
       private:
 #endif
