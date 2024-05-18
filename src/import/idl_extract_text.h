@@ -25,7 +25,7 @@ namespace lily_of_the_valley
             @returns A pointer to the parsed text, or null upon failure.*/
         const wchar_t* operator()(const std::wstring_view idl_buffer)
             {
-            static const std::wstring HELP_STRING{ L"helpstring(\"" };
+            static const std::wstring_view HELP_STRING{ L"helpstring(\"" };
             clear_log();
             clear();
             if (idl_buffer.empty())
@@ -35,11 +35,11 @@ namespace lily_of_the_valley
 
             allocate_text_buffer(idl_buffer.length());
 
-            auto nextHelpStr = idl_buffer.find(HELP_STRING.c_str());
+            size_t nextHelpStr = idl_buffer.find(HELP_STRING);
             while (nextHelpStr != std::wstring_view::npos)
                 {
                 nextHelpStr += HELP_STRING.length();
-                const auto endOfHelpStr = idl_buffer.find(L'\"', nextHelpStr);
+                const size_t endOfHelpStr = idl_buffer.find(L'\"', nextHelpStr);
                 if (endOfHelpStr == std::wstring_view::npos)
                     {
                     break;
@@ -47,7 +47,7 @@ namespace lily_of_the_valley
                 add_characters(idl_buffer.substr(nextHelpStr, (endOfHelpStr - nextHelpStr)));
                 add_character(L'\n');
                 add_character(L'\n');
-                nextHelpStr = idl_buffer.find(HELP_STRING.c_str(), nextHelpStr);
+                nextHelpStr = idl_buffer.find(HELP_STRING, nextHelpStr);
                 }
 
             // returns the text buffer

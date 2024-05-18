@@ -35,7 +35,7 @@ TEST_CASE("IDL Parser", "[idl import]")
         CHECK(std::wcscmp(output, L"function\n\ndo something\n\n") == 0);
         CHECK(ext.get_filtered_text_length() == 24);
         }
-    SECTION("Bouds check")
+    SECTION("Bounds check")
         {
         const wchar_t* text = L"helpstring(\"";
         idl_extract_text ext;
