@@ -196,7 +196,7 @@ namespace Wisteria::GraphItems
                 are `wxImage` objects that can be passed to an `Image`'s constructor.*/
         /// @{
 
-        /** @brief Skrinks an image to fit inside of a rect.
+        /** @brief Shrinks an image to fit inside of a rect.
             @details If the image is smaller than the rect, then the original image is returned.\n
                 If the height of the image is closer to the rect's than
                 the width is, then its height will be scaled to the rect's height

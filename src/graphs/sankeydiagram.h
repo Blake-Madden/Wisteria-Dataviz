@@ -205,7 +205,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the column headers to display above or below the columns.
         /// @details Syntax such as `@COLUMNNAME@` and `@COUNT@` can be
         ///     embedded in this string. (These expand to the column and
-        ///     number of oberservations, respectively).
+        ///     number of observations, respectively).
         /// @param colHeaders The strings to use as the columns' headers.
         /// @sa SetColumnHeaderDisplay().
         void SetColumnHeaders(const std::vector<wxString>& colHeaders)

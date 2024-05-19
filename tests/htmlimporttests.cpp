@@ -702,17 +702,17 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"& is an ampersand.") == 0);
 
-        //not a known entity, so read as is
+        // not a known entity, so read as is
         text = L"&amp;blah;.";
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"&blah;.") == 0);
 
-        //really screwed up, just fix as best as you can
+        // really screwed up, just fix as best you can
         text = L"&amp;amp;amp; is an ampersand.";
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"&amp; is an ampersand.") == 0);
 
-        //bounds checking
+        // bounds checking
         text = L"&amp;";
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"&") == 0);
@@ -748,8 +748,8 @@ TEST_CASE("HTML Parser", "[html import]")
         html_extract_text filter_html;
         const wchar_t* text = L"<style=\'italics' <i>hello</i> there!</body>";
         std::wstring p = filter_html(text, std::wcslen(text), true, false);
-        //missing > will cause parser to go to closed unquoted <.  It will then
-        //feed in some extra junk into the output, but at least "hello" won't be lost
+        // missing > will cause parser to go to closed unquoted <.  It will then
+        // feed in some extra junk into the output, but at least "hello" won't be lost
         CHECK(std::wstring(L"<style=\'italics' hello there!") == p);
         }
     SECTION("Extra Tags")
@@ -863,7 +863,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::parse_charset(text, strlen(text)) == "");
         text = "<meta http-equiv=\"Content-type\" /><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" />";
         CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
-        //missing "charset", which is wrong but it happens
+        // missing "charset", which is wrong but it happens
         text = "<meta http-equiv=\"Content-type\" content=\"text/html; 'utf-8'\" />";
         CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
         text = "<meta http-equiv=\"Content-type\" content=\"text/html; utf-8\" />";
@@ -918,14 +918,14 @@ TEST_CASE("HTML Parser", "[html import]")
         next = html_extract_text::find_element(next, next+wcslen(next), L"br", true);
         CHECK(next == text+24);
         ++next;
-        //note that we are stopping short of the last break in our search as part of the test
+        // note that we are stopping short of the last break in our search as part of the test
         const wchar_t* badNext = html_extract_text::find_element(next, next+(wcslen(next)-4), L"br", true);
         CHECK(badNext == nullptr);
         ++next;
         next = html_extract_text::find_element(next, next+wcslen(next), L"br", true);
         CHECK(next == text+28);
 
-        //test nulls
+        // test nulls
         CHECK(html_extract_text::find_element(nullptr, text+wcslen(text), L"br", true) == nullptr);
         CHECK(html_extract_text::find_element(text, nullptr, L"br", true) == nullptr);
         CHECK(html_extract_text::find_element(text, text+wcslen(text), L"", true) == nullptr);
@@ -942,14 +942,14 @@ TEST_CASE("HTML Parser", "[html import]")
         next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br");
         CHECK(next == text+16);
         ++next;
-        //note that we are stopping short of the last break in our search as part of the test
+        // note that we are stopping short of the last break in our search as part of the test
         const wchar_t* badNext = html_extract_text::find_closing_element(next, next+(wcslen(next)-4), L"br");
         CHECK(badNext == nullptr);
         ++next;
         next = html_extract_text::find_closing_element(next, next+wcslen(next), L"br");
         CHECK(next == text+21);
 
-        //test nulls
+        // test nulls
         CHECK(html_extract_text::find_closing_element(nullptr, text+wcslen(text), L"br") == nullptr);
         CHECK(html_extract_text::find_closing_element(text, nullptr, L"br") == nullptr);
         CHECK(html_extract_text::find_closing_element(text, text+wcslen(text), L"") == nullptr);

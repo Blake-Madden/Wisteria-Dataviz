@@ -963,7 +963,7 @@ namespace Wisteria
         std::vector<std::unique_ptr<GraphItems::Label>> m_titles;
 
         // embedded objects (e.g., graphs, legends)
-        // Note that these persist until they are explicitly swapped or cleard by the client,
+        // Note that these persist until they are explicitly swapped or cleared by the client,
         // so being shared_ptrs is fine.
         std::vector<std::vector<std::shared_ptr<GraphItems::GraphItemBase>>> m_fixedObjects;
         std::vector<CanvasRowInfo> m_rowsInfo;

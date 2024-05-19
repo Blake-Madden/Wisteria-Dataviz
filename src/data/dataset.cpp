@@ -650,7 +650,7 @@ namespace Wisteria::Data
         if (m_dateColumns.size() < dataInfo.m_dateColumns.size())
             {
             const auto columnsToAdd = dataInfo.m_dateColumns.size() - m_dateColumns.size();
-            // try to add a descriptive and unique name as best as we can
+            // try to add a descriptive and unique name as best we can
             for (size_t i = 0; i < columnsToAdd; ++i)
                 {
                 AddDateColumn(wxString::Format(L"[DATE%zu]", i + 1));

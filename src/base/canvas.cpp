@@ -814,7 +814,7 @@ namespace Wisteria
                                 fixedObjectRect.y + rowHeightOffset),
                         wxSize(fixedObjectRect.GetWidth() * objectsPos->GetCanvasWidthProportion(),
                                currentObjHeight));
-                    // if any previous items were resized to be smaller then add
+                    // if any previous items were resized to be smaller, then add
                     // this object's share of that extra space
                     boundingRect.SetWidth(boundingRect.GetWidth() +
                                           extraSpaceFromPreviousItemsForThisItem);

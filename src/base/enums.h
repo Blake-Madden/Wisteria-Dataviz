@@ -90,7 +90,7 @@ namespace Wisteria
         {
         /// @brief Positive influence (e.g., IVs with coefficients > 0).
         InfluencePositive = (1 << 0),
-        /// @brief Negative infuence (e.g., IVs with coefficients < 0).
+        /// @brief Negative influence (e.g., IVs with coefficients < 0).
         InfluenceNegative = (1 << 1),
         /// @brief No influence (e.g., IVs with coefficients = 0).
         InfluenceNeutral = (1 << 2),

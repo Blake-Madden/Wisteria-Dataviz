@@ -45,7 +45,7 @@ namespace Wisteria::Graphs
             formatted, aggregate columns and rows (e.g., subtotals) can be added via
             InsertAggregateColumn() and InsertAggregateRow().\n \n Finally, once the table is built,
             annotations (see AddCellAnnotation()) and footnotes (see AddFootnote())
-            can be added to thetable.
+            can be added to the table.
 
         @par Missing Data:
             Any missing data from the dataset will be displayed as an empty cell.

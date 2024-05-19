@@ -586,7 +586,7 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
 
     memDC.SelectObject(wxNullBitmap);
 
-    // crop vertially, if requested
+    // crop vertically, if requested
     if (cropToGridHeightAndMinSize.first && propertyGridId != wxID_ANY)
         {
         wxWindow* window = windowToCapture->FindWindow(propertyGridId);

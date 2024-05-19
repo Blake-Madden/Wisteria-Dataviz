@@ -30,7 +30,7 @@
 /** @brief Queues a list of URLs and their respective (local) download paths
         and then downloads them asynchronously.
     @par Example
-        An `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
+        A `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
         should store an initialize a @c QueueDownload object as a member
         and then initialize it as such:
     @code
@@ -65,7 +65,7 @@
         // respective local paths
         m_downloader.Start();
     @endcode
-    @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
+    @warning A `wxEvtHandler`-derived class can either be connected to a single QueueDownload
         or a single FileDownload object. This is because the class must bind its @c
    wxEVT_WEBREQUEST_STATE event to the `QueueDownload`'s or `FileDownload`'s @c ProcessRequest()
    method.
@@ -227,7 +227,7 @@ class QueueDownload
 
 /** @brief Reads or downloads a file synchronously.
     @par Example
-        An `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
+        A `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
         should store an initialize a @c FileDownload object as a member
         and then initialize it as such:
     @code
@@ -259,7 +259,7 @@ class QueueDownload
         wxString webPageContent(m_downloadFile.Read("https://www.wxwidgets.org/") ?
                                 &m_downloadFile.GetLastRead()[0] : wxString{});
     @endcode
-    @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
+    @warning A `wxEvtHandler`-derived class can either be connected to a single QueueDownload
         or a single FileDownload object. This is because the class must bind its
         @c wxEVT_WEBREQUEST_STATE event to the `QueueDownload`'s or
         `FileDownload`'s @c ProcessRequest() method.\n

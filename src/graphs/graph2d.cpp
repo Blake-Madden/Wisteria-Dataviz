@@ -1252,7 +1252,7 @@ namespace Wisteria::Graphs
                     }
                 else
                     {
-                    // update our selection info if the object (an possibly, its sub-objects)
+                    // update our selection info if the object (and possibly, its sub-objects)
                     // were deselected
                     const auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
                     if (unselectedItem != GetSelectedIds().end())

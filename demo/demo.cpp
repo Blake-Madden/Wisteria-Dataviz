@@ -165,7 +165,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 
     fileMenu->Append(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"));
-    fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Icon)"));
@@ -438,8 +438,8 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     wxArrayString devs;
     devs.Add(L"Blake Madden");
     aboutInfo.SetDevelopers(devs);
-    aboutInfo.SetName(_(L"Wistia Dataviz Library Demo"));
-    aboutInfo.SetDescription(_(L"Demostration of Wisteria Dataviz, "
+    aboutInfo.SetName(_(L"Wisteria Dataviz Library Demo"));
+    aboutInfo.SetDescription(_(L"Demonstration of Wisteria Dataviz, "
                                 "a wxWidgets-based data visualization library."));
 
     wxAboutBox(aboutInfo, this);
@@ -1192,7 +1192,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
-    // Bar Chart, using the a dataset interface to aggregate labels
+    // Bar Chart, using the dataset interface to aggregate labels
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART)
         {
         subframe->SetTitle(_(L"Bar Chart (Categorical Data)"));
@@ -1220,7 +1220,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
-    // Bar Chart, using the a dataset interface to aggregate labels,
+    // Bar Chart, using the dataset interface to aggregate labels,
     // along with a grouping column
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED)
         {
@@ -1535,7 +1535,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         sankey->SetColumnHeaderDisplay(GraphColumnHeader::AsHeader);
         sankey->SetColumnHeaders(
             {
-            _(L"Of @COUNT@ High School Gradudates"),
+            _(L"Of @COUNT@ High School Graduates"),
             _(L"@COUNT@ Enrolled at Miskatonic University")
             });
         sankey->SetCanvasMargins(5, 5, 5, 5);
@@ -1719,7 +1719,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // make the canvas tall since we are stacking two graphs on top of each other
         subframe->m_canvas->SetCanvasMinHeightDIPs(
             subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2);
-        // also, fit it to the entire page when printing (preferrably in portrait)
+        // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
     // W-Curve plot
@@ -2064,7 +2064,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 2,
             // construct a common axis connected to the line and box plots,
-            // and add it to the righ of them on the canvas
+            // and add it to the right of them on the canvas
             CommonAxisBuilder::BuildYAxis(subframe->m_canvas,
                 { linePlot, boxPlot}, AxisType::RightYAxis));
 
@@ -2153,7 +2153,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas->GetDefaultCanvasWidthDIPs());
         subframe->m_canvas->SetCanvasMinWidthDIPs(
             subframe->m_canvas->GetDefaultCanvasHeightDIPs());
-        // also, fit it to the entire page when printing (preferrably in portrait)
+        // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
 

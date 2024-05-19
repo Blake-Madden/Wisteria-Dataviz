@@ -2139,7 +2139,7 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for Gannt chart."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for Gantt chart."), dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");

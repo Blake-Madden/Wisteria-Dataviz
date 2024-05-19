@@ -211,7 +211,7 @@ class FilePathResolverBase
 
 /** @brief Renames a file, attempting to shortening the destination name.
     @details If the destination file name is more than 255 and the original isn't,
-        then this will attempted to truncate the name and combine it with the orininal name
+        then this will attempted to truncate the name and combine it with the original name
         to add randomness.\n
         If that criteria isn't met, then will attempt to call @c wxRenameFile.
         This can be called if a regular call to @c wxRenameFile fails.
@@ -221,7 +221,7 @@ class FilePathResolverBase
 bool RenameFileShortenName(const wxString& srcPath, wxString& destPath);
 /** @returns A shortened version of a filepath.
     @param filePath The filepath to shorten.
-    @param maxLength The maximumn length of the shortened name.*/
+    @param maxLength The maximum length of the shortened name.*/
 [[nodiscard]]
 wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength = 40);
 /// @brief Strips illegal characters from a file path, except for path separators.

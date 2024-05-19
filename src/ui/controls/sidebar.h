@@ -276,7 +276,7 @@ namespace Wisteria::UI
         /** @brief Selects a root-level item.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
+            @param sendEvent Whether to send an @c EVT_SIDEBAR_CLICK event.
             @param collapseIfExpanded @c true to collapse the folder if already expanded.\n
                 If collapsing the folder, then @c sendEvent will be overridden
                 (i.e., the selection event will not be fired).
@@ -478,7 +478,7 @@ namespace Wisteria::UI
         /// @}
 
         /// @name Show/Hide Functions
-        /// @brief Functions relating to minimizing an maximizing the control.
+        /// @brief Functions relating to minimizing and maximizing the control.
         /// @{
 
         /// @brief Shows the control, where the width is set to fit the content.

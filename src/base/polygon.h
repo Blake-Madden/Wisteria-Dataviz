@@ -70,7 +70,7 @@ namespace Wisteria::GraphItems
             ///     rectangle looks like it was filled in with watercolor paint (or a marker).\n
             ///     Will have a "second coat" applied.
             ThickWaterColorRectangle,
-            /// @brief A spline-like rectanlge.
+            /// @brief A spline-like rectangle.
             /// @note Requires ten points; will be draws as-is an irregular shape otherwise.
             CurvyRectangle,
             /// @brief No real shape.

@@ -601,7 +601,7 @@ namespace Wisteria::Graphs
         GetBarAxis().ClearBrackets();
 
         // verify that provided labels are in the existing bars
-        // (if not, then add a empty bar for it)
+        // (if not, then add an empty bar for it)
         for (const auto& label : labels)
             {
             const auto foundPos = std::find_if(GetBars().cbegin(), GetBars().cend(),

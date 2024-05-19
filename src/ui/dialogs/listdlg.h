@@ -38,7 +38,7 @@ namespace Wisteria::UI
         LD_SELECT_ALL_BUTTON = 1 << 3,
         /// @brief A find button.
         LD_FIND_BUTTON = 1 << 4,
-        /// @brief A OK/cancel button.
+        /// @brief An OK/cancel button.
         LD_OK_CANCEL_BUTTONS = 1 << 5,
         /// @brief A Yes/No button.
         LD_YES_NO_BUTTONS = 1 << 6,
