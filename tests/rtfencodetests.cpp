@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/rtf_encode.h"
@@ -55,3 +58,6 @@ TEST_CASE("RTF Encode", "[rtf encode]")
         CHECK(encode({ text }) == L"hello\\u1074?");
         }
     }
+
+// NOLINTEND
+// clang-format on

@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/postscript_extract_text.h"
@@ -13,19 +16,19 @@ TEST_CASE("Postscript Import", "[postscript import]")
         CHECK(ext(nullptr, 72) == nullptr);
         CHECK(ext("some text", 0) == nullptr);
         }
-    SECTION("Version2")
+    SECTION("Version 2")
         {
         const char* text = "%!PS-Adobe-2.0\n(This is a string)";
         postscript_extract_text ext;
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"This is a string") == 0);
         }
-    SECTION("Version3NotSupported")
+    SECTION("Version 3 Not Supported")
         {
         const char* text = "%!PS-Adobe-3.0\n(This is a string)";
         postscript_extract_text ext;
         CHECK_THROWS(ext(text, std::strlen(text)));
         }
-    SECTION("MissingHeader")
+    SECTION("Missing Header")
         {
         postscript_extract_text ext;
         CHECK_THROWS(ext("some text", 9));
@@ -44,13 +47,13 @@ TEST_CASE("Postscript Import", "[postscript import]")
         text = "%!PS-Adobe-2.0\n(It has 0 (zero) length.)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"It has 0 (zero) length.") == 0);
         }
-    SECTION("EscapeCommands")
+    SECTION("Escape Commands")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\n(Thi\\\\s\\ni\\(\\)s\\ra\\tstring)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Thi\\s\ni()s\ra\tstring") == 0);
         }
-    SECTION("EscapedNewLines")
+    SECTION("Escaped New Lines")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\n(These \\\ntwo strings \\\nare the same.)";
@@ -68,7 +71,7 @@ TEST_CASE("Postscript Import", "[postscript import]")
         const char* text = "%!PS-Adobe-2.0\n(These\\053.)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"These+.") == 0);
         }
-    SECTION("HypenatedWord")
+    SECTION("Hypenated Word")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\ni(Commu-)10941800 y(nity)g(News))";
@@ -78,28 +81,31 @@ TEST_CASE("Postscript Import", "[postscript import]")
         text = "%!PS-Adobe-2.0\ni(Commu-)1094\r1800 y(nity)g(News).)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Commu-\nnity News") == 0);
         }
-    SECTION("NewLineCommand")
+    SECTION("NewLine Command")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\n(This is a string)105 y Fe(New Line)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"This is a string\nNew Line") == 0);
         }
-    SECTION("NewPage")
+    SECTION("New Page")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\n %%Page: 1 11 (This is a string)105 %%Page: 2 22 Fe(New Line)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"This is a string\f New Line") == 0);
         }
-    SECTION("DVIPSQuoteWorkaround")
+    SECTION("DVIPS Quote Workaround")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\n%%Creator: dvips 5.521 Copyright 1986, 1993 Radical Eye Software%%\n(\\\\This is a string\")";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"\"This is a string\"") == 0);
         }
-    SECTION("GCommand")
+    SECTION("G Command")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\n(the)g(temp)-5 b(er)g(a)g(ture)b(is)g(low)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"the temperature is low") == 0);
         }
     }
+
+// NOLINTEND
+// clang-format on

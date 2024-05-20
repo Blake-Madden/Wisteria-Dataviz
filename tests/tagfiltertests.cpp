@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/tag_filter.h"
@@ -101,3 +104,6 @@ TEST_CASE("Tag filter", "[tag filter]")
         CHECK(std::wcscmp(result, L"Some text  is written here.") == 0);
         }
 	}
+
+// NOLINTEND
+// clang-format on

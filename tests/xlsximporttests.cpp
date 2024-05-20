@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/xlsx_extract_text.h"
@@ -1314,3 +1317,6 @@ TEST_CASE("XLSX import", "[xlsx]")
         CHECK(info.second == static_cast<size_t>(-1));
         }
 	}
+
+// NOLINTEND
+// clang-format on

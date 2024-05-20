@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/safe_math.h"
@@ -157,3 +160,6 @@ TEST_CASE("Rescale", "[geometry]")
         CHECK_THAT(100, WithinRel(result.second, 1e-4));
         }
     }
+
+// NOLINTEND
+// clang-format on

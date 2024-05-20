@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/extract_text.h"
@@ -60,3 +63,6 @@ TEST_CASE("Text Extract Base", "[textextract]")
         CHECK(std::wcscmp(ext.get_filtered_text(), L"Hi") == 0);
         }
     }
+
+// NOLINTEND
+// clang-format on

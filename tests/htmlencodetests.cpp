@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/html_encode.h"
@@ -54,3 +57,6 @@ TEST_CASE("HTML Encode", "[html encode]")
         CHECK(encode(text, true) == L"he&#226;llo&#1074;");
         }
     }
+
+// NOLINTEND
+// clang-format on

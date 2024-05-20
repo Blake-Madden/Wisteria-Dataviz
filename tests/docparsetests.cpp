@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/doc_extract_text.h"
@@ -68,3 +71,6 @@ TEST_CASE("DOC Parser", "[doc import]")
         CHECK(stream.seek(9999, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_cur) == buffSize);
         }
     }
+
+// NOLINTEND
+// clang-format on

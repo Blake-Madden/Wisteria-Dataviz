@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/rtf_extract_text.h"
@@ -510,3 +513,6 @@ TEST_CASE("RTF Parser", "[rtf import]")
         CHECK(std::wcscmp(p, L"\nHello.\n\n\n\n\fHere is page 2.\n") == 0);
         }
     }
+
+// NOLINTEND
+// clang-format on

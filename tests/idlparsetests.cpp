@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/idl_extract_text.h"
@@ -44,3 +47,6 @@ TEST_CASE("IDL Parser", "[idl import]")
         CHECK(ext.get_filtered_text_length() == 0);
         }
     }
+
+// NOLINTEND
+// clang-format on

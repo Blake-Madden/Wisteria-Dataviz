@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/util/frequencymap.h"
@@ -1856,3 +1859,6 @@ TEST_CASE("HTML Link Strip", "[html import]")
         CHECK(strip.get_filtered_text_length() == std::wcslen(expected));
         }
     }
+
+// NOLINTEND
+// clang-format on

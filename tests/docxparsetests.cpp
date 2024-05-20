@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/import/docx_extract_text.h"
@@ -65,3 +68,6 @@ TEST_CASE("Word 2007 Parser", "[docx import]")
         CHECK(ext.get_filtered_text_length() == 28);
         }
     }
+
+// NOLINTEND
+// clang-format on

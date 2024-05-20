@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/util/frequencymap.h"
@@ -328,3 +331,6 @@ TEST_CASE("Frequency sets", "[frequencymaps]")
         CHECK(waspsValues->second == 2);
         }
     }
+
+// NOLINTEND
+// clang-format on

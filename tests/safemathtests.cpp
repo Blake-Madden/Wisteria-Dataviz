@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/safe_math.h"
@@ -125,3 +128,6 @@ TEST_CASE("Comparable first pair", "[comparable]")
         CHECK(!(myOtherPair == myPair));
         }
     }
+
+// NOLINTEND
+// clang-format on

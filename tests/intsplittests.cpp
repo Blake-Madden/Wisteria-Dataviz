@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/mathematics.h"
@@ -90,3 +93,6 @@ TEST_CASE("Integer to bool", "[inttobool]")
     CHECK_FALSE(int_to_bool(false));
     CHECK(int_to_bool(true));
     }
+
+// NOLINTEND
+// clang-format on

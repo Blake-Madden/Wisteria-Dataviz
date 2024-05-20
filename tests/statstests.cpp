@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/statistics.h"
@@ -589,3 +592,6 @@ TEST_CASE("Outliers container", "[stats][outliers]")
     CHECK(values.end() == fo()); // end of the trail
     CHECK(values.end() == fo()); // end of the trail still
     }
+
+// NOLINTEND
+// clang-format on

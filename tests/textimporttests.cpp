@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/util/frequencymap.h"
@@ -263,3 +266,6 @@ TEST_CASE("Tabbed Known Column Count", "[text import]")
     CHECK(words[0][0] == L"First");
     CHECK(words[0][1] == L"Second");
     }
+
+// NOLINTEND
+// clang-format on

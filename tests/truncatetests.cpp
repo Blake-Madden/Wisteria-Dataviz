@@ -1,3 +1,6 @@
+// NOLINTBEGIN
+// clang-format off
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/mathematics.h"
@@ -53,3 +56,6 @@ TEST_CASE("Truncate decimals", "[truncate]")
         CHECK_THAT(-9895452451.4497185, WithinRel(truncate_decimal_place(-9895452451.44971854, 10000000), 10e-7));
         }
 	}
+
+// NOLINTEND
+// clang-format on
