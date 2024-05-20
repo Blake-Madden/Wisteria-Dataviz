@@ -84,11 +84,11 @@ namespace lily_of_the_valley
         // doxygen tags that are removed (but their following text is read in).
         // Note that 'param' is not included here so that 'in|out' info is handled separately.
         std::set<std::wstring> m_doxygen_tags = {
-            L"{",           L"}",          L"a",       L"b",      L"c",       L"e",
-            L"p",           L"em",         L"brief",   L"short",  L"code",    L"endcode",
-            L"note",        L"return",     L"returns", L"result", L"remark",  L"remarks",
-            L"retval",      L"warning",    L"sa",      L"see",    L"related", L"relates",
-            L"relatedalso", L"relatesalso"
+            L"{",       L"}",       L"a",           L"b",          L"c",       L"cond",
+            L"e",       L"p",       L"em",          L"brief",      L"short",   L"code",
+            L"endcode", L"endcond", L"note",        L"return",     L"returns", L"result",
+            L"remark",  L"remarks", L"retval",      L"warning",    L"sa",      L"see",
+            L"related", L"relates", L"relatedalso", L"relatesalso"
         };
         // doxygen tags that are removed (but their following text is read in)
         // and newlines are wrapped around their text because their text
