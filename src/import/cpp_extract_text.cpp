@@ -24,26 +24,26 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
     const wchar_t* const endSentinel = cpp_text + text_length;
     allocate_text_buffer(text_length);
 
-    while (cpp_text + 2 < endSentinel && cpp_text[0] != 0)
+    while (std::next(cpp_text, 2) < endSentinel && *cpp_text != 0)
         {
         // if a comment...
-        if (cpp_text[0] == L'/')
+        if (*cpp_text == L'/')
             {
             // see if a doxygen block comment (/**comment*/ or /*!comment*/)
             // (or simple comment if all are being included).
             if (cpp_text[1] == L'*' && (is_including_all_comments() ||
                                         string_util::is_either<wchar_t>(cpp_text[2], L'*', L'!')))
                 {
-                ++cpp_text;
+                std::advance(cpp_text, 1);
                 while (cpp_text < endSentinel &&
                        string_util::is_either<wchar_t>(*cpp_text, L'*', L'!'))
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     }
                 // skip over empty comments
                 if (cpp_text < endSentinel && *(cpp_text - 1) == L'*' && *cpp_text == L'/')
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     continue;
                     }
                 const wchar_t* const end = std::wcsstr(cpp_text, L"*/");
@@ -51,7 +51,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                     {
                     add_characters_strip_markup(cpp_text, end - cpp_text);
                     add_characters({ L"\n\n", 2 });
-                    cpp_text = end + 2;
+                    cpp_text = std::next(end, 2);
                     }
                 // can't find ending tag, so just read in the rest of the text
                 else
@@ -69,7 +69,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                 while (cpp_text < endSentinel &&
                        string_util::is_either<wchar_t>(*cpp_text, L'/', L'!'))
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     }
                 const size_t end = std::wcscspn(cpp_text, L"\n\r");
                 add_characters_strip_markup(cpp_text, end);
@@ -90,28 +90,28 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                 }
             else
                 {
-                ++cpp_text;
+                std::advance(cpp_text, 1);
                 }
             }
         // ...or gettext resources
-        else if (cpp_text[0] == L'_' && cpp_text[1] == L'(')
+        else if (*cpp_text == L'_' && cpp_text[1] == L'(')
             {
             if (endSentinel && cpp_text[2] == L'\"')
                 {
-                cpp_text += 3;
+                std::advance(cpp_text, 3);
                 }
             else if (cpp_text + 3 < endSentinel && cpp_text[2] == L'L' && cpp_text[3] == L'\"')
                 {
-                cpp_text += 4;
+                std::advance(cpp_text, 4);
                 }
             else if (cpp_text + 4 < endSentinel && cpp_text[2] == L'L' && cpp_text[3] == L'R' &&
                      cpp_text[4] == L'\"')
                 {
-                cpp_text += 5;
+                std::advance(cpp_text, 5);
                 }
             else
                 {
-                ++cpp_text;
+                std::advance(cpp_text, 1);
                 continue;
                 }
             const wchar_t* const end = string_util::find_unescaped_char(cpp_text, L'\"');
@@ -119,7 +119,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                 {
                 add_characters_strip_escapes(cpp_text, end - cpp_text);
                 add_characters({ L"\n\n", 2 });
-                cpp_text = end + 1;
+                cpp_text = std::next(end);
                 }
             else
                 {
@@ -127,18 +127,18 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                 }
             }
         // if a quote, then make sure we don't pick up what looks like comments later inside of it
-        else if (cpp_text[0] == L'\"')
+        else if (*cpp_text == L'\"')
             {
             cpp_text = string_util::find_unescaped_char(++cpp_text, L'\"');
             if (!cpp_text || cpp_text >= endSentinel)
                 {
                 break;
                 }
-            ++cpp_text;
+            std::advance(cpp_text, 1);
             }
         else
             {
-            ++cpp_text;
+            std::advance(cpp_text, 1);
             }
         }
     trim();
@@ -149,56 +149,53 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
 void cpp_extract_text::add_characters_strip_escapes(const wchar_t* characters, const size_t length)
     {
     assert(characters);
-    if (!characters || length == 0)
+    if (characters == nullptr || length == 0)
         {
         return;
         }
-    auto start = characters;
-    const auto end = characters + length;
+    const auto* start = characters;
+    const auto* end = std::next(characters, length);
     size_t currentBlockSize = 0;
     for (size_t i = 0; i < length - 1; /*in loop*/)
         {
-        if (characters[i] == L'\\')
+        if (*std::next(characters, i) == L'\\')
             {
-            if (characters[i + 1] == L'n' || characters[i + 1] == L'r')
+            if (*std::next(characters, i + 1) == L'n' || *std::next(characters, i + 1) == L'r')
                 {
                 add_characters({ start, currentBlockSize });
                 add_character(L'\n');
-                start += (currentBlockSize + 2); // skip '\n'
+                std::advance(start, currentBlockSize + 2); // skip '\n'
                 i += 2;
                 currentBlockSize = 0;
                 continue;
                 }
-            else if (characters[i + 1] == L't')
+            if (*std::next(characters, i + 1) == L't')
                 {
                 add_characters({ start, currentBlockSize });
                 add_character(L'\t');
-                start += (currentBlockSize + 2); // skip '\t'
+                std::advance(start, currentBlockSize + 2); // skip '\t'
                 i += 2;
                 currentBlockSize = 0;
                 continue;
                 }
             // copy over what is being escaped
+            // if escaping an escape character, then copy that over now
+            // so that it doesn't get lost in the next loop
+            if (*std::next(characters, i + 1) == L'\\')
+                {
+                add_characters({ start, currentBlockSize + 1 });
+                std::advance(start, currentBlockSize + 2); // skip escape character
+                i += 2;
+                }
+            // or just skip escape char and feed in the next char in the next loop
             else
                 {
-                // if escaping an escape character, then copy that over now
-                // so that it doesn't get lost in the next loop
-                if (characters[i + 1] == L'\\')
-                    {
-                    add_characters({ start, currentBlockSize + 1 });
-                    start += (currentBlockSize + 2); // skip escape character
-                    i += 2;
-                    }
-                // or just skip escape char and feed in the next char in the next loop
-                else
-                    {
-                    add_characters({ start, currentBlockSize });
-                    start += (currentBlockSize + 1); // skip escape character
-                    ++i;
-                    }
-                currentBlockSize = 0;
-                continue;
+                add_characters({ start, currentBlockSize });
+                std::advance(start, currentBlockSize + 1); // skip escape character
+                ++i;
                 }
+            currentBlockSize = 0;
+            continue;
             }
         ++i;
         ++currentBlockSize;
@@ -216,19 +213,19 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                                                    const size_t text_length)
     {
     assert(cpp_text);
-    if (!cpp_text || text_length == 0)
+    if (cpp_text == nullptr || text_length == 0)
         {
         return;
         }
-    const wchar_t* const endSentinel = cpp_text + text_length;
+    const wchar_t* const endSentinel = std::next(cpp_text, text_length);
     const wchar_t* const startSentinel = cpp_text;
     // step over any whitespace
     while (cpp_text < endSentinel && string_util::is_either<wchar_t>(*cpp_text, L' ', L'\t'))
         {
-        ++cpp_text;
+        std::advance(cpp_text, 1);
         }
     const wchar_t* startPos = cpp_text;
-    while (cpp_text < endSentinel && *cpp_text)
+    while (cpp_text < endSentinel && *cpp_text != 0)
         {
         if (string_util::is_either<wchar_t>(*cpp_text, L'\n', L'\r'))
             {
@@ -236,14 +233,14 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
             while (cpp_text < endSentinel &&
                    string_util::is_either<wchar_t>(*cpp_text, L'\n', L'\r'))
                 {
-                ++cpp_text;
+                std::advance(cpp_text, 1);
                 }
             add_characters({ startPos, static_cast<size_t>(cpp_text - startPos) });
             // skip any space in front of this line
             while (cpp_text < endSentinel &&
                    string_util::is_either<wchar_t>(*cpp_text, L' ', L'\t'))
                 {
-                ++cpp_text;
+                std::advance(cpp_text, 1);
                 }
             startPos = cpp_text;
             }
@@ -254,17 +251,17 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
             if (*cpp_text == L'\\' && cpp_text + 1 < endSentinel &&
                 string_util::is_either<wchar_t>(cpp_text[1], L'\'', L'\"'))
                 {
-                ++cpp_text;
+                std::advance(cpp_text, 1);
                 continue;
                 }
             // copy over any text before the current @ or \ tag
             add_characters({ startPos, static_cast<size_t>(cpp_text - startPos) });
-            ++cpp_text;
+            std::advance(cpp_text, 1);
             const wchar_t* tagEnd = cpp_text;
-            while (*tagEnd && tagEnd < endSentinel &&
+            while (*tagEnd != 0 && tagEnd < endSentinel &&
                    (is_valid_char(*tagEnd) || string_util::is_either(*tagEnd, L'{', L'}')))
                 {
-                ++tagEnd;
+                std::advance(tagEnd, 1);
                 }
             if (*tagEnd == 0 || tagEnd >= endSentinel)
                 {
@@ -276,23 +273,23 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
             if (doxygenTag == L"param" || doxygenTag == L"tparam")
                 {
                 add_character(L'\n');
-                cpp_text += doxygenTag.length();
+                std::advance(cpp_text, doxygenTag.length());
                 while (cpp_text < endSentinel &&
                        string_util::is_either<wchar_t>(*cpp_text, L' ', L'\t'))
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     }
                 // skip any "[in,out]" argument
                 if (*cpp_text == L'[')
                     {
                     const wchar_t* const endBracket = std::wcschr(cpp_text, L']');
-                    if (endBracket && endBracket < endSentinel)
+                    if (endBracket != nullptr && endBracket < endSentinel)
                         {
-                        cpp_text = endBracket + 1;
+                        cpp_text = std::next(endBracket);
                         while (cpp_text < endSentinel &&
                                string_util::is_either<wchar_t>(*cpp_text, L' ', L'\t'))
                             {
-                            ++cpp_text;
+                            std::advance(cpp_text, 1);
                             }
                         }
                     }
@@ -300,7 +297,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                 // read in the param name and add a colon after it
                 while (cpp_text < endSentinel && is_valid_char(*cpp_text))
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     }
                 add_characters({ paramLabel, static_cast<size_t>(cpp_text - paramLabel) });
                 add_character(L':');
@@ -313,12 +310,12 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                      m_doxygen_tags_single_line.cend())
                 {
                 add_character(L'\n');
-                cpp_text += doxygenTag.length();
+                std::advance(cpp_text, doxygenTag.length());
                 // scan over space(s)
                 while (cpp_text < endSentinel &&
                        string_util::is_either<wchar_t>(*cpp_text, L' ', L'\t'))
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     }
                 startPos = cpp_text;
                 const size_t end = std::wcscspn(cpp_text, L"\n\r");
@@ -334,31 +331,32 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
             // tags that we want to skip over, but preserve the text around it, just step over it
             else if (m_doxygen_tags.find(doxygenTag) != m_doxygen_tags.cend())
                 {
-                cpp_text += doxygenTag.length();
+                std::advance(cpp_text, doxygenTag.length());
                 // scan over space(s)
                 while (cpp_text < endSentinel &&
                        string_util::is_either<wchar_t>(*cpp_text, L' ', L'\t'))
                     {
-                    ++cpp_text;
+                    std::advance(cpp_text, 1);
                     }
                 startPos = cpp_text;
                 }
             else if (doxygenTag == L"htmlonly")
                 {
                 // scan until be get to a space (skipping the tag)
-                startPos = (cpp_text += doxygenTag.length());
+                std::advance(cpp_text, doxygenTag.length());
+                startPos = cpp_text;
                 // go to the end of the HTML block
                 const wchar_t* const endBlock =
                     string_util::strnistr(cpp_text, L"endhtmlonly", endSentinel - cpp_text);
-                if (endBlock && endBlock < endSentinel)
+                if (endBlock != nullptr && endBlock < endSentinel)
                     {
-                    if (html_extract(cpp_text, (endBlock - 1) - cpp_text, true, false))
+                    if (html_extract(cpp_text, (endBlock - 1) - cpp_text, true, false) != nullptr)
                         {
                         add_characters({ html_extract.get_filtered_text(),
                                          html_extract.get_filtered_text_length() });
                         }
                     add_character(L'\n');
-                    startPos = cpp_text = endBlock + 11;
+                    startPos = cpp_text = std::next(endBlock, 11);
                     }
                 }
             // ..or a tag name that we want to copy over as part of the text
@@ -371,7 +369,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
 
                 // step over command
                 startPos = cpp_text;
-                cpp_text += doxygenTag.length();
+                std::advance(cpp_text, doxygenTag.length());
                 add_characters({ startPos, static_cast<size_t>(cpp_text - startPos) });
                 // if a recognized command
                 if (singleLineCommand)
@@ -382,7 +380,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                 const size_t end = std::wcscspn(cpp_text, L"\n\r");
                 if (cpp_text + end < endSentinel)
                     {
-                    cpp_text += end;
+                    std::advance(cpp_text, end);
                     add_characters({ startPos, static_cast<size_t>(cpp_text - startPos) });
                     if (authorCommand)
                         {
@@ -400,7 +398,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
             }
         else
             {
-            ++cpp_text;
+            std::advance(cpp_text, 1);
             }
         }
     // add any remaining text
