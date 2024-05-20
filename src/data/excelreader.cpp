@@ -21,16 +21,16 @@ namespace Wisteria::Data
                            sourceFile.GetMapSize());
 
         // load the worksheet names
-        wxString zipFileText = archive.ReadTextFile(L"xl/workbook.xml");
-        m_xlsxTextExtractor.read_worksheet_names(zipFileText.wc_str(), zipFileText.length());
+        std::wstring zipFileText = archive.ReadTextFile(L"xl/workbook.xml");
+        m_xlsxTextExtractor.read_worksheet_names(zipFileText.c_str(), zipFileText.length());
 
         // load the string table
         zipFileText = archive.ReadTextFile(L"xl/sharedStrings.xml");
-        m_xlsxTextExtractor.read_shared_strings(zipFileText.wc_str(), zipFileText.length());
+        m_xlsxTextExtractor.read_shared_strings(zipFileText.c_str(), zipFileText.length());
 
         // load the styles
         zipFileText = archive.ReadTextFile(L"xl/styles.xml");
-        m_xlsxTextExtractor.read_styles(zipFileText.wc_str(), zipFileText.length());
+        m_xlsxTextExtractor.read_styles(zipFileText.c_str(), zipFileText.length());
         }
 
     //---------------------------------------------------
@@ -49,13 +49,13 @@ namespace Wisteria::Data
                                             worksheetName->wc_str());
             if (sheetPos != m_xlsxTextExtractor.get_worksheet_names().cend())
                 {
-                const wxString sheetFile = archive.ReadTextFile(wxString::Format(
+                const std::wstring sheetFile = archive.ReadTextFile(wxString::Format(
                     L"xl/worksheets/sheet%zu.xml",
                     (sheetPos - m_xlsxTextExtractor.get_worksheet_names().cbegin()) + 1));
 
                 xlsx_extract_text::worksheet wkData;
 
-                m_xlsxTextExtractor(sheetFile.wc_str(), sheetFile.length(), wkData);
+                m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
                 return xlsx_extract_text::get_worksheet_text(wkData, delimiter);
                 }
             else
@@ -73,12 +73,12 @@ namespace Wisteria::Data
             if (*worksheetIndex > 0 &&
                 *worksheetIndex <= m_xlsxTextExtractor.get_worksheet_names().size())
                 {
-                const wxString sheetFile = archive.ReadTextFile(
+                const std::wstring sheetFile = archive.ReadTextFile(
                     wxString::Format(L"xl/worksheets/sheet%zu.xml", *worksheetIndex));
 
                 xlsx_extract_text::worksheet wkData;
 
-                m_xlsxTextExtractor(sheetFile.wc_str(), sheetFile.length(), wkData);
+                m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
                 return xlsx_extract_text::get_worksheet_text(wkData, delimiter);
                 }
             else

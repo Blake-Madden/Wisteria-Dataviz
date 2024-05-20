@@ -47,28 +47,32 @@ TEST_CASE("Zip Catalog", "[zip]")
         }
 
         {
-        const auto str = zc.ReadTextFile(L"subsettests.cpp");
+        // convert to wxString so that a char* is implicitly sent to RC::Calculate()
+        const wxString str = zc.ReadTextFile(L"subsettests.cpp");
         CHECK(str.length());
-        std::uint32_t crcStr = CRC::Calculate(str.GetData(), str.size(), CRC::CRC_32());
+        std::uint32_t crcStr = CRC::Calculate(str.c_str(), str.length(), CRC::CRC_32());
 
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"subsettests.cpp", memstream);
         wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
         std::uint32_t crc = CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
-    
+
         wxFileInputStream theFile(appDir + L"/test_files/subsettests.cpp");
         wxMemoryOutputStream memstream2;
         theFile.Read(memstream2);
         wxStreamBuffer* theBuffer2 = memstream.GetOutputStreamBuffer();
         std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(), theBuffer2->GetBufferSize(), CRC::CRC_32());
+
+        CHECK(str.length() == theBuffer->GetBufferSize());
+        CHECK(theBuffer->GetBufferSize() == theBuffer2->GetBufferSize());
         CHECK(crc == crc2);
         CHECK(crc == crcStr);
         }
 
         {
-        const auto str = zc.ReadTextFile(L"listctrlextests.cpp");
+        const wxString str = zc.ReadTextFile(L"listctrlextests.cpp");
         CHECK(str.length());
-        std::uint32_t crcStr = CRC::Calculate(str.GetData(), str.size(), CRC::CRC_32());
+        std::uint32_t crcStr = CRC::Calculate(str.c_str(), str.length(), CRC::CRC_32());
         CHECK(3135223649 == crcStr); // double-byte, gets converted to UTF-8
 
         wxMemoryOutputStream memstream;
@@ -85,9 +89,9 @@ TEST_CASE("Zip Catalog", "[zip]")
         }
 
         {
-        const auto str = zc.ReadTextFile(L"fileutiltests.cpp");
+        const wxString str = zc.ReadTextFile(L"fileutiltests.cpp");
         CHECK(str.length());
-        std::uint32_t crcStr = CRC::Calculate(str.GetData(), str.size(), CRC::CRC_32());
+        std::uint32_t crcStr = CRC::Calculate(str.c_str(), str.length(), CRC::CRC_32());
 
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"fileutiltests.cpp", memstream);

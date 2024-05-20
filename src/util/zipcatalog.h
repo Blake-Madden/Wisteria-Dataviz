@@ -90,7 +90,7 @@ namespace Wisteria
             @param path The path to the file (relative to its location in the ZIP folder structure).
             @returns The text file's content.*/
         [[nodiscard]]
-        wxString ReadTextFile(const wxString& path) const;
+        std::wstring ReadTextFile(const wxString& path) const;
         /** @brief Reads a file in the ZIP file and returns its content in a `char*` memory stream.
             @param path The path to the file (relative to its location in the ZIP folder structure).
             @param memstream The memory stream (which will be a `char*` buffer) to write to.

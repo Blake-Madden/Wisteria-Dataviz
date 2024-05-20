@@ -79,7 +79,7 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
         {
         wxLogNull ln;
         const char* text = "Hello, world! Here is some simple text.";
-        CHECK(std::wstring(text) ==
+        CHECK(std::wstring(L"Hello, world! Here is some simple text.") ==
               Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
         }
 

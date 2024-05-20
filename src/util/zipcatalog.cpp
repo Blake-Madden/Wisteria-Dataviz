@@ -100,20 +100,20 @@ bool ZipCatalog::ReadFile(const wxString& path, wxOutputStream& memstream) const
     }
 
 //------------------------------------------------
-wxString ZipCatalog::ReadTextFile(const wxString& path) const
+std::wstring ZipCatalog::ReadTextFile(const wxString& path) const
     {
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
         {
-        return wxString{};
+        return std::wstring{};
         }
     const wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-    assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile!");
+    assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile()!");
     // empty file
     if (theBuffer == nullptr || theBuffer->GetBufferSize() == 0 ||
         theBuffer->GetBufferStart() == nullptr)
         {
-        return wxString{};
+        return std::wstring{};
         }
     return Wisteria::TextStream::CharStreamToUnicode(
         static_cast<const char*>(theBuffer->GetBufferStart()), theBuffer->GetBufferSize());
