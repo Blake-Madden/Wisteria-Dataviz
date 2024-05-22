@@ -75,6 +75,9 @@ bool Wisteria::UI::BaseApp::OnInit()
 #endif
     wxLogMessage(L"CPU Architecture: %s", wxGetCpuArchitectureName());
     wxLogMessage(L"CPU Count: %d", wxThread::GetCPUCount());
+#ifdef _OPENMP 
+    wxLogMessage(L"OpenMP Version: %s", std::to_wstring(_OPENMP));
+#endif
 #ifdef __WXMSW__
     MEMORYSTATUSEX status{};
     status.dwLength = sizeof(status);
