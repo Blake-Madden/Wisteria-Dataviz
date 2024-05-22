@@ -1485,7 +1485,7 @@ TEST_CASE("Html Url Format", "[html import]")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
         const wchar_t* p = formatHtml({ L"http://blah.com/page.html", 25 }, false);
-        CHECK(std::wcscmp(p, L"http://blah.com/page.html") == 0);
+        CHECK(std::wstring{ p } == std::wstring{ L"http://blah.com/page.html" });
         }
     SECTION("SMS Link")
         {
@@ -1499,6 +1499,14 @@ TEST_CASE("Html Url Format", "[html import]")
         CHECK(std::wstring{ formatHtml(L"http://yahoo.com/pic.jpg&quot;alt='page'&quot;", true) } ==
               std::wstring{ L"http://yahoo.com/pic.jpg" });
         CHECK(formatHtml(L"&quot;&quot;&quot;", true) == nullptr);
+        }
+    SECTION("Trailing Ampersand Link")
+        {
+        html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
+        CHECK(std::wstring{ formatHtml(L"http://yahoo.com/pic.jpg&amp;&quot;alt='page'&quot;", true) } ==
+              std::wstring{ L"http://yahoo.com/pic.jpg" });
+        CHECK(formatHtml(L"&amp;&amp;&amp;", true) == nullptr);
+        }
         }
     SECTION("Base Domain Link")
         {

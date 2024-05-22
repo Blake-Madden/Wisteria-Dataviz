@@ -2771,6 +2771,7 @@ namespace html_utilities
             }
 
         const std::wstring_view QUOT_TAG{ L"&quot;" };
+        const std::wstring_view AMP_TAG{ L"&amp;" };
         if (path.starts_with(QUOT_TAG))
             {
             path.remove_prefix(QUOT_TAG.length());
@@ -2780,10 +2781,13 @@ namespace html_utilities
             path.remove_suffix(QUOT_TAG.length());
             }
 
-        if (const size_t quotPos = path.find(QUOT_TAG);
-            quotPos != std::wstring_view::npos)
+        if (const size_t quotPos = path.find(QUOT_TAG); quotPos != std::wstring_view::npos)
             {
             path = path.substr(0, quotPos);
+            }
+        if (const size_t ampPos = path.find(AMP_TAG); ampPos != std::wstring_view::npos)
+            {
+            path = path.substr(0, ampPos);
             }
         if (path.empty())
             {
