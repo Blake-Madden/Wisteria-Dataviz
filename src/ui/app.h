@@ -178,6 +178,26 @@ namespace Wisteria::UI
             return m_logFile;
             }
 
+        /// @returns @c true if the daily log file is being appended to
+        ///     when the program starts. @c false indicates that it will
+        ///     be overwritten.
+        [[nodiscard]]
+        bool IsAppendingDailyLog() const noexcept
+            {
+            return m_appendDailyLog;
+            }
+
+        /// @brief Specifies whether the log from the same day should be
+        ///     appended to or overwritten when the application starts.
+        /// @param append @c true to append to the log file from today;
+        ///     @c false to overwrite it.
+        /// @note This must be called before BaseApp::OnInit().
+        [[nodiscard]]
+        void AppendDailyLog(const bool append) noexcept
+            {
+            m_appendDailyLog = append;
+            }
+
         /// @brief Sets a support email for the application.
         /// @param email The email address.
         void SetSupportEmail(const wxString& email) { m_supportEmail = email; }
@@ -251,6 +271,7 @@ namespace Wisteria::UI
         wxDocManager* m_docManager{ nullptr };
         Wisteria::UI::BaseMainFrame* m_mainFrame{ nullptr };
         LogFile* m_logFile{ nullptr };
+        bool m_appendDailyLog{ false };
         ResourceManager m_resManager;
 
         wxString m_appSubName;
