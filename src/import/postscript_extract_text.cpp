@@ -14,20 +14,18 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
     clear_log();
     clear();
     m_title.clear();
-    if (ps_buffer == nullptr || ps_buffer[0] == 0 || text_length == 0)
+    if (ps_buffer == nullptr || *ps_buffer == 0 || text_length == 0)
         {
         return nullptr;
         }
     // resize the internal buffer if new postscript stream is bigger
     allocate_text_buffer(text_length);
 
-    size_t i = 0;
-
-    const char* const endSentinel = ps_buffer + text_length;
+    const char* const endSentinel = std::next(ps_buffer, text_length);
 
     // see if it's a valid postscript file and whether we can support parsing it
     const char* const header = std::strstr(ps_buffer, "%!PS-Adobe-");
-    if (!header || header > endSentinel)
+    if (header == nullptr || header >= endSentinel)
         {
         throw postscript_header_not_found();
         }
@@ -41,10 +39,10 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
     bool createdByDVIPS = false;
         {
         const char* const creator = std::strstr(ps_buffer, "%%Creator:");
-        if (creator && creator < endSentinel)
+        if (creator != nullptr && creator < endSentinel)
             {
             const char* const endOfCreator = string_util::strcspn_pointer(creator + 10, "\r\n", 2);
-            if (endOfCreator && endOfCreator < endSentinel)
+            if (endOfCreator != nullptr && endOfCreator < endSentinel)
                 {
                 if (string_util::strnistr(creator, "dvips", (endOfCreator - creator)) ||
                     string_util::strnistr(creator, "Radical Eye Software",
@@ -59,11 +57,11 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         // get the title
         {
         const char* title = std::strstr(ps_buffer, "%%Title:");
-        if (title && title + 8 < endSentinel)
+        if (title != nullptr && title + 8 < endSentinel)
             {
             title += 8;
             const char* const endOfTitle = string_util::strcspn_pointer(title, "\r\n", 2);
-            if (endOfTitle && endOfTitle < endSentinel)
+            if (endOfTitle != nullptr && endOfTitle < endSentinel)
                 {
                 m_title.assign(title, endOfTitle - title);
                 string_util::trim(m_title);
@@ -71,35 +69,36 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
             }
         }
 
+    size_t i = 0;
     // skip past the header block if possible
     const char* const begin = std::strstr(header, "%%Page:");
-    if (begin)
+    if (begin != nullptr)
         {
         i = begin - ps_buffer;
         }
 
-    size_t open_paran_count = 0, close_paran_count = 0;
+    size_t open_paran_count{ 0 }, close_paran_count{ 0 };
 
-    bool umlautMode = false;
-    bool graveMode = false;
-    bool acuteMode = false;
-    bool inNegativeBMode = false;
+    bool umlautMode{ false };
+    bool graveMode{ false };
+    bool acuteMode{ false };
+    bool inNegativeBMode{ false };
     for (/*counter already initialized*/; i < text_length; ++i)
         {
-        switch (ps_buffer[i])
+        switch (*std::next(ps_buffer, i))
             {
         case '%':
             if (open_paran_count > close_paran_count)
                 {
-                add_character(ps_buffer[i]);
+                add_character(*std::next(ps_buffer, i));
                 }
             else
                 {
                 // skip document definition section
                 if (std::strncmp(ps_buffer, "%BeginDocument", 14) == 0)
                     {
-                    const char* end = std::strstr(ps_buffer + i, "%%EndDocument");
-                    if (!end)
+                    const char* end = std::strstr(std::next(ps_buffer, i), "%%EndDocument");
+                    if (end == nullptr)
                         {
                         // file is messed up--just return what we got
                         log_message(L"\"%%EndDocument\" element missing in Postscript file.");
@@ -107,7 +106,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         }
                     else
                         {
-                        ps_buffer = end + 13 /*the length of "%%EndDocument"*/;
+                        ps_buffer = std::next(end, 13 /*the length of "%%EndDocument"*/);
                         }
                     }
                 // it's a comment--move to the end of the line
@@ -115,7 +114,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                     {
                     while (++i < text_length)
                         {
-                        if (std::iswspace(static_cast<wchar_t>(ps_buffer[i])))
+                        if (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
                             {
                             break;
                             }
@@ -126,43 +125,43 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         case '(':
             if (open_paran_count++ > close_paran_count)
                 {
-                add_character(ps_buffer[i]);
+                add_character(*std::next(ps_buffer, i));
                 }
             break;
         case ')':
             if (open_paran_count > ++close_paran_count)
                 {
-                add_character(ps_buffer[i]);
+                add_character(*std::next(ps_buffer, i));
                 }
             /*() are now closed, so move to the character in front
               of the next () set and see the command*/
             else
                 {
-                char command_char = L' ';
-                bool inHyphenJoinMode = false;
-                bool newLineCommandFound(false), newPageFound(false);
-                inHyphenJoinMode = (ps_buffer[i - 1] == '-');
+                char command_char{ L' ' };
+                bool inHyphenJoinMode{ false };
+                bool newLineCommandFound{ false }, newPageFound{ false };
+                inHyphenJoinMode = (*std::next(ps_buffer, i - 1) == '-');
                 // skip any newlines in the file between the ')'
                 // and the first command of the next text section
                 while (i < (text_length - 1) &&
-                       std::iswspace(static_cast<wchar_t>(ps_buffer[i + 1])))
+                       std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))))
                     {
                     ++i;
                     }
-                long horizontalPosition = 10;
-                if (ps_buffer[i + 1] == '-' ||
-                    std::iswdigit(static_cast<wchar_t>(ps_buffer[i + 1])))
+                long horizontalPosition{ 10 };
+                if (*std::next(ps_buffer, i + 1) == '-' ||
+                    std::iswdigit(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))))
                     {
-                    horizontalPosition = std::strtol(ps_buffer + i + 1, nullptr, 10);
+                    horizontalPosition = std::strtol(std::next(ps_buffer, i + 1), nullptr, 10);
                     }
-                while (i < (text_length - 1) && ps_buffer[i + 1] != '(')
+                while (i < (text_length - 1) && *std::next(ps_buffer, i + 1) != '(')
                     {
                     ++i;
-                    if (ps_buffer[i] == '%')
+                    if (*std::next(ps_buffer, i) == '%')
                         {
-                        if (std::strncmp(ps_buffer + i, "%%BeginDocument", 15) == 0)
+                        if (std::strncmp(std::next(ps_buffer, i), "%%BeginDocument", 15) == 0)
                             {
-                            const char* end = std::strstr(ps_buffer + i, "%%EndDocument");
+                            const char* end = std::strstr(std::next(ps_buffer, i), "%%EndDocument");
                             if (!end)
                                 {
                                 // file is messed up--just return what we got
@@ -172,22 +171,23 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                                 }
                             else
                                 {
-                                i = (end + 13 /*the length of "%%EndDocument"*/) - ps_buffer;
+                                i = std::next(end, 13 /*the length of "%%EndDocument"*/) -
+                                    ps_buffer;
                                 }
                             }
-                        else if (std::strncmp(ps_buffer + i, "%%Page:", 7) == 0)
+                        else if (std::strncmp(std::next(ps_buffer, i), "%%Page:", 7) == 0)
                             {
                             newPageFound = true;
                             }
                         }
-                    else if (ps_buffer[i] == 'y' && ps_buffer[i - 1] != 'F')
+                    else if (*std::next(ps_buffer, i) == 'y' && *std::next(ps_buffer, i - 1) != 'F')
                         {
                         newLineCommandFound = true;
                         }
 
-                    if (!std::iswspace(static_cast<wchar_t>(ps_buffer[i])))
+                    if (!std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
                         {
-                        command_char = ps_buffer[i];
+                        command_char = *std::next(ps_buffer, i);
                         }
                     }
 
@@ -204,7 +204,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                           command_char == 'r' || command_char == 's' ||
                           (command_char == 'b' && (horizontalPosition <= 7)) ||
                           (inNegativeBMode && command_char == 'g') || command_char == 't') &&
-                         (i > 0 && ps_buffer[i - 1] != 'F'))
+                         (i > 0 && *std::next(ps_buffer, i - 1) != 'F'))
                     {
                     // NOOP (just leave the characters together)
                     }
@@ -220,14 +220,14 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
             if (open_paran_count > close_paran_count)
                 {
                 ++i;
-                char* stopPoint = nullptr;
+                char* stopPoint{ nullptr };
                 const wchar_t octalVal =
-                    static_cast<wchar_t>(std::strtol(ps_buffer + i, &stopPoint, 8));
-                switch (ps_buffer[i])
+                    static_cast<wchar_t>(std::strtol(std::next(ps_buffer, i), &stopPoint, 8));
+                switch (*std::next(ps_buffer, i))
                     {
                 case '(':
                 case ')':
-                    add_character(ps_buffer[i]);
+                    add_character(*std::next(ps_buffer, i));
                     break;
                 case '\\':
                     if (createdByDVIPS)
@@ -236,7 +236,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         }
                     else
                         {
-                        add_character(ps_buffer[i]);
+                        add_character(*std::next(ps_buffer, i));
                         }
                     break;
                 case 't':
@@ -253,7 +253,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 case '\r':
                     break;
                 default:
-                    if ((stopPoint - (ps_buffer + i)) > 1)
+                    if (std::distance<const char*>(std::next(ps_buffer, i), stopPoint) > 1)
                         {
                         // some sort of DVIPS quirk
                         if (octalVal == 0)
@@ -326,11 +326,11 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                             }
                         // skip to one before the end of the number because
                         // when the loop starts again it will step one more
-                        i += (stopPoint - (ps_buffer + i)) - 1;
+                        i += std::distance<const char*>(std::next(ps_buffer, i), stopPoint) - 1;
                         }
                     else
                         {
-                        add_character(ps_buffer[i]);
+                        add_character(*std::next(ps_buffer, i));
                         }
                     break;
                     }
@@ -342,7 +342,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 // previous \177 flag indicates next character should be umlauted
                 if (umlautMode)
                     {
-                    switch (ps_buffer[i])
+                    switch (*std::next(ps_buffer, i))
                         {
                     case 0x0041: // A
                         add_character(0xC4);
@@ -375,12 +375,12 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         add_character(0xFC);
                         break;
                     default:
-                        add_character(ps_buffer[i]);
+                        add_character(*std::next(ps_buffer, i));
                         };
                     }
                 else if (graveMode)
                     {
-                    switch (ps_buffer[i])
+                    switch (*std::next(ps_buffer, i))
                         {
                     case 0x0041: // A
                         add_character(0xC0);
@@ -413,12 +413,12 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         add_character(0xF9);
                         break;
                     default:
-                        add_character(ps_buffer[i]);
+                        add_character(*std::next(ps_buffer, i));
                         };
                     }
                 else if (acuteMode)
                     {
-                    switch (ps_buffer[i])
+                    switch (*std::next(ps_buffer, i))
                         {
                     case 0x0041: // A
                         add_character(0xC1);
@@ -451,12 +451,12 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         add_character(0xFA);
                         break;
                     default:
-                        add_character(ps_buffer[i]);
+                        add_character(*std::next(ps_buffer, i));
                         };
                     }
                 else
                     {
-                    add_character(ps_buffer[i]);
+                    add_character(*std::next(ps_buffer, i));
                     }
                 umlautMode = false;
                 graveMode = false;
