@@ -1507,6 +1507,20 @@ TEST_CASE("Html Url Format", "[html import]")
               std::wstring{ L"http://yahoo.com/pic.jpg" });
         CHECK(formatHtml(L"&amp;&amp;&amp;", true) == nullptr);
         }
+    SECTION("Font Size Bad Link")
+        {
+        html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
+        CHECK(formatHtml(L"12.3vw", true) == nullptr);
+        CHECK(formatHtml(L"100em", true) == nullptr);
+        CHECK(formatHtml(L"100rem", true) == nullptr);
+        CHECK(formatHtml(L"1.2pt", true) == nullptr);
+        CHECK(formatHtml(L"1.2px", true) == nullptr);
+        CHECK(formatHtml(L"1.2vh", true) == nullptr);
+        CHECK(formatHtml(L"1.2ex", true) == nullptr);
+        CHECK(formatHtml(L"1.2in", true) == nullptr);
+        CHECK(formatHtml(L"12.3vw/", true) == nullptr);
+        CHECK(std::wstring{ formatHtml(L"118.125512/image.png", true) } ==
+              std::wstring{ L"http://mypage.com/blahblahblah/118.125512/image.png" });
         }
     SECTION("Base Domain Link")
         {

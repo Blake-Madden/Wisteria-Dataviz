@@ -2764,6 +2764,23 @@ namespace html_utilities
             return nullptr;
             }
 #if __cplusplus >= 202002L
+        // sometimes font information could be read in as a link,
+        // so report those as not being a valid link
+        const size_t firstNonNumberPos = path.find_first_not_of(L"0123456789.");
+        if (firstNonNumberPos != std::wstring_view::npos && firstNonNumberPos > 0)
+            {
+            auto subPath{ path.substr(firstNonNumberPos) };
+            if (subPath.starts_with(L"vw") || subPath.starts_with(L"vh") ||
+                subPath.starts_with(L"px") || subPath.starts_with(L"pt") ||
+                subPath.starts_with(L"cm") || subPath.starts_with(L"mm") ||
+                subPath.starts_with(L"in") || subPath.starts_with(L"pc") ||
+                subPath.starts_with(L"em") || subPath.starts_with(L"rem") ||
+                subPath.starts_with(L"ex") || subPath.starts_with(L"ch"))
+                {
+                return nullptr;
+                }
+            }
+
         const std::wstring_view SMS_BODY{ L"sms:?&body=" };
         if (path.starts_with(SMS_BODY))
             {
@@ -2908,6 +2925,8 @@ namespace html_utilities
 
         // encode any spaces in the URL
         string_util::replace_all(m_current_url, L" ", 1, L"%20");
+        // sometimes slashes are unicode encoded
+        string_util::replace_all(m_current_url, LR"(\u002F)", 6, L"/");
         return m_current_url.c_str();
         }
 
