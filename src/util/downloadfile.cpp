@@ -390,9 +390,9 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     m_lastUrl =
         ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetURL() :
                                                                  wxString{});
-    m_lastSuggestedFileName =
-        ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ? evt.GetResponse().GetSuggestedFileName() :
-                                                                 wxString{});
+    m_lastSuggestedFileName = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
+                                   evt.GetResponse().GetSuggestedFileName() :
+                                   wxString{});
     m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetResponse().IsOk()) ?
                              evt.GetResponse().GetHeader(_DT(L"Content-Type")) :
                              wxString{});
@@ -405,7 +405,6 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     if (m_lastStatus != 200)
         {
         wxLogVerbose(L"Processing response status info...");
-        wxLogVerbose(L"Full response: %s", m_lastStatusInfo);
         lily_of_the_valley::html_extract_text hExtract;
         hExtract.include_no_script_sections(true);
         const wchar_t* const filteredMsg =
@@ -414,6 +413,11 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
             {
             m_lastStatusInfo.assign(filteredMsg, hExtract.get_filtered_text_length());
             m_lastStatusInfo.Trim(true).Trim(false);
+            wxLogVerbose(L"Full response: %s", m_lastStatusInfo);
+            }
+        else
+            {
+            wxLogVerbose(L"Full response: %s", m_lastStatusInfo);
             }
         // Cloudflare forces the use of javascript to block robots
         if (m_lastStatus == 403 && m_server.CmpNoCase(_DT(L"cloudflare")) == 0)
@@ -467,7 +471,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
 
             /* Check size constraints (if in use)
                to see if we should "download" it to the final destination.
-             
+
                Note that we need to check file size constraints here after already
                downloading because GetBytesExpectedToReceive() during the connection
                stage can be packet size and not reflect the ultimate file size.*/
