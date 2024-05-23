@@ -269,10 +269,10 @@ namespace Wisteria::UI
                 wxRibbonPanel* editPage = new wxRibbonPanel(
                     homePage, ID_EDIT_PANEL, _(L"Edit"), wxNullBitmap, wxDefaultPosition,
                     wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE);
-                wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
+                m_editButtonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
                 if (m_buttonStyle & LD_COPY_BUTTON)
                     {
-                    buttonBar->AddButton(
+                    m_editButtonBar->AddButton(
                         wxID_COPY, _(L"Copy Selection"),
                         wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(32, 32)))
                             .ConvertToImage(),
@@ -280,7 +280,7 @@ namespace Wisteria::UI
                     }
                 if (m_buttonStyle & LD_SELECT_ALL_BUTTON)
                     {
-                    buttonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
+                    m_editButtonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
                                          wxArtProvider::GetBitmap(L"ID_SELECT_ALL", wxART_BUTTON,
                                                                   FromDIP(wxSize(32, 32)))
                                              .ConvertToImage(),
@@ -288,7 +288,7 @@ namespace Wisteria::UI
                     }
                 if (m_buttonStyle & LD_SORT_BUTTON)
                     {
-                    buttonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
+                    m_editButtonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
                                          wxArtProvider::GetBitmap(L"ID_LIST_SORT", wxART_BUTTON,
                                                                   FromDIP(wxSize(32, 32)))
                                              .ConvertToImage(),
@@ -296,7 +296,7 @@ namespace Wisteria::UI
                     }
                 if (m_buttonStyle & LD_CLEAR_BUTTON)
                     {
-                    buttonBar->AddButton(
+                    m_editButtonBar->AddButton(
                         XRCID("ID_CLEAR"), _(L"Clear"),
                         wxArtProvider::GetBitmap(L"ID_CLEAR", wxART_BUTTON, FromDIP(wxSize(32, 32)))
                             .ConvertToImage(),
@@ -304,29 +304,31 @@ namespace Wisteria::UI
                     }
                 if (m_buttonStyle & LD_REFRESH_BUTTON)
                     {
-                    buttonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
+                    m_editButtonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
                                          wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
                                                                   FromDIP(wxSize(32, 32)))
                                              .ConvertToImage(),
                                          _(L"Refresh the log report."));
-                    buttonBar->AddToggleButton(XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
+                    m_editButtonBar->AddToggleButton(
+                        XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
                                                wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE",
                                                                         wxART_BUTTON,
                                                                         FromDIP(wxSize(32, 32)))
                                                    .ConvertToImage(),
                                                _(L"Refresh the log report automatically."));
-                    buttonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
+                    m_editButtonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
                     }
                 if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON)
                     {
-                    buttonBar->AddToggleButton(XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
+                    m_editButtonBar->AddToggleButton(
+                        XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
                                                wxArtProvider::GetBitmap(wxART_INFORMATION,
                                                                         wxART_BUTTON,
                                                                         FromDIP(wxSize(32, 32)))
                                                    .ConvertToImage(),
                                                _(L"Toggles whether the logging system includes "
                                                  "more detailed information."));
-                    buttonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
+                    m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                     }
                 }
             m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
@@ -407,16 +409,10 @@ namespace Wisteria::UI
         m_logFile = log;
 
         // toggle the verbose button to match what the logger is doing
-        wxRibbonPanel* editPanel = m_ribbon->GetPage(0)->GetPanelById(ID_EDIT_PANEL);
-        if (editPanel != nullptr && m_logFile != nullptr)
+        m_isLogVerbose = m_logFile->GetVerbose();
+        if (m_editButtonBar != nullptr)
             {
-            m_isLogVerbose = m_logFile->GetVerbose();
-            wxWindow* editBar = editPanel->FindWindow(ID_EDIT_BUTTON_BAR);
-            if (editBar != nullptr && editBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
-                {
-                dynamic_cast<wxRibbonButtonBar*>(editBar)->ToggleButton(XRCID("ID_VERBOSE_LOG"),
-                                                                        m_logFile->GetVerbose());
-                }
+            m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_logFile->GetVerbose());
             }
 
         RestartRealtimeUpdate();

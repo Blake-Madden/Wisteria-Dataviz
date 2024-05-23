@@ -176,6 +176,17 @@ namespace Wisteria::UI
             OnReadLog(event);
             }
 
+        /// @brief If logging buttons are shown, toggles the verbose logging button.
+        /// @param enable @c true to enable logging.
+        void EnableVerboseLogging(const bool enable)
+            {
+            m_isLogVerbose = enable;
+            if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON && m_editButtonBar != nullptr)
+                {
+                m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
+                }
+            }
+
       private:
         void BindEvents();
         /// Creates the controls and sizers
@@ -211,6 +222,7 @@ namespace Wisteria::UI
         bool m_dontShowAgain{ false };
         ListCtrlEx* m_list{ nullptr };
         wxCheckListBox* m_checkList{ nullptr };
+        wxRibbonButtonBar* m_editButtonBar{ nullptr };
         std::shared_ptr<ListCtrlExDataProvider> m_data{
             std::make_shared<ListCtrlExDataProvider>()
         };
