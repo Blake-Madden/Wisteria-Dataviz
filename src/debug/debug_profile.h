@@ -128,7 +128,7 @@
     #include <source_location>
     // actually displays the signature, not just the name
     #define __DEBUG_FUNCTION_NAME__ std::source_location::current().function_name() 
-#elif __VISUALC__
+#elif defined(__VISUALC__)
     #define __DEBUG_FUNCTION_NAME__ __FUNCSIG__
 #elif defined(__clang__)
     __DEBUG_FUNCTION_NAME__ __func__
