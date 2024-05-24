@@ -8,6 +8,17 @@ Properties for the `"constants"` node:
   - `"name"`: The key used for the item. Other items reference this using the syntax `{{name}}`, where *name* is the look-up key.
   - `"value"` either a string or numeric value to associate with the key. \
     If a number, then it will be formatted to the current locale when displayed in the report. \
+    
+Example:
+
+```json
+"constants": [
+    {
+      "name": "CompanyColor",
+      "value": "#1F5387"
+    }
+]
+```
 
 Note that datasets have a similar `"formulas"` section which can create constants from self-referencing formulas.
 

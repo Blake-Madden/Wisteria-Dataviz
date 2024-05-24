@@ -58,6 +58,31 @@ Properties for `"common-axis"` nodes:
     IDs are assigned to graphs using the `"id"` property, which should be numeric.
 - `"common-perpendicular-axis"`: If `"axis-type"` is `"bottom-x"` and this is `true`,
     then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
+    
+Example:
+
+```json
+{
+  "type": "common-axis",
+  "axis-type": "top-x",
+  "axis-pen": null,
+  "label-display": "no-display",
+  "child-ids": [ 1, 2, 3 ],
+  "common-perpendicular-axis": true,
+  "title": {
+    "text": ""
+  },
+  "brackets": {
+    "dataset": "Revenue",
+    "simplify": true,
+    "style": "curly-braces",
+    "variables": {
+      "label": "FY",
+      "value": "FYStart"
+    }
+  }
+}
+```
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
@@ -74,6 +99,30 @@ Properties for `"fillable-shape"` nodes:
   - `"height"`: The height.
 - `"fill-percent"`: The percent to fill the shape, which is a number between `0.0` and `1.0`. \
   This can either be a numeric or a formula reference.
+  
+Example:
+
+```json
+ {
+  "type": "fillable-shape",
+  "canvas-margins": [ 5, 5, 5, 5 ],
+  "icon": "woman",
+  "fit-row-to-content": true,
+  "fill-percent": "{{PercentFemaleDecimal}}",
+  "size": {
+    "width": 125,
+    "height": 256
+  },
+  "pen": {
+    "color": "black",
+    "style": "solid"
+  },
+  "brush": {
+    "color": "pink",
+    "style": "solid"
+  }
+}
+```
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
@@ -131,6 +180,79 @@ Properties for `"label"` nodes:
 
 Note that it is recommended to set `"fit-row-to-content"` to `true` if the label is a separate
 object on the canvas (i.e., not a label on another object).
+
+Example:
+
+```json
+{
+  "type": "label",
+  "canvas-margins": [ 5, 5, 5, 5 ],
+  "text": "{{ReportName()}}",
+  "horizontal-page-alignment": "right-aligned",
+  "text-alignment": "flush-right",
+  "fit-row-to-content": true,
+  "fixed-width": true,
+  "line-spacing": -5,
+  "header": {
+    "bold": true
+  },
+  "padding": [ 0, 5, 0, 5 ]
+}
+```
+
+Example with a colorful header and logo:
+
+```json
+{
+  "type": "label",
+  "canvas-margins": [ 5, 5, 5, 5 ],
+  "text": "Miskatonic University",
+  "top-image": {
+    "image-import": { "path": "CollegeLogo.png" },
+    "offset": 15
+  },
+  "horizontal-page-alignment": "left-aligned",
+  "fit-row-to-content": true,
+  "line-spacing": -10,
+  "color": "{{CollegeColor}}",
+  "text-alignment": "justified",
+  "header": {
+    "bold": true,
+    "color": "{{CollegeColor}}",
+    "relative-scaling": 3,
+    "text-alignment": "left-aligned"
+  },
+  "padding": [ 0, 5, 0, 0 ]
+}
+```
+
+Note that empty labels can be used to draw divider lines, as well as a way to force another item in the same row
+to be stretched to the full width of the page. For example, a row could be written as this:
+
+```json
+{
+  "items": [
+    {
+      "type": "label",
+      "description": "Just a divider, double lined with ones space between them",
+      "outline": [ true, false, true, false ],
+      "pen": {
+        "color": "{{CompanyColor}}",
+        "width": 2
+      },
+      "canvas-margins": [ 5, 5, 5, 5 ],
+      "padding": [ 1, 0, 0, 0 ],
+      "fit-row-to-content": true
+    },
+    {
+      "type": "label",
+      "description": "empty spacer to stretch previous line across the page",
+      "fixed-width": true
+    }
+  ]
+}
+```
+
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}

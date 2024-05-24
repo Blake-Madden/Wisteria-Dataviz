@@ -44,6 +44,8 @@ book:
       - page-items.qmd
     - part: "Graphs"
       chapters:
+      - graphs-properties.qmd
+      - graphs-base-level.qmd
       - graphs.qmd
     - part: "Notes"
       chapters:

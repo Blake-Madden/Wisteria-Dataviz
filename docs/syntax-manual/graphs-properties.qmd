@@ -1,0 +1,316 @@
+# Common Properties
+
+The following section details properties common to all graphs.
+
+## Base-level Graph Properties {#graph-properties -}
+
+Properties common to all graphs:
+
+- `"dataset"`: If the object requires a dataset (most graphs do), then this is the name of the dataset. \
+     Note that this is the unique name of the dataset loaded from the report's
+     [datasets](#datasets-properties) section, not a filepath. \
+     Also, this is optional if the item type doesn't require a dataset (e.g., a `Wisteria::GraphItems::Label`).
+- `"title"`: The title of the graph, which contains [label](#label-properties) properties.
+- `"sub-title"`: The subtitle of the graph, which contains [label](#label-properties) properties.
+- `"caption"`: The caption of the graph, which contains [label](#label-properties) properties.
+- `"axes"`: An array of [axis](#axis-properties) objects.
+- `"background-color"`: A string specifying the plotting area's background color.
+- `"image-scheme"`: An array of image import specifications. (See [image file properties](#image-file-properties).)
+- `"common-box-image-outline"`: A string specifying the color for the outline around the bars/boxes
+     if using a common box image.
+- `"stipple-shape"`: A shape to use for the shapes draw across bars (when shape stippling is in use). \
+    This is an array of items which contain the following properties:
+    - `"icon"`: The shape to use.
+    - `"color"`: The color for the shape.
+- `"stipple-image"`: An image import specification. (See [image file properties](#image-file-properties).)
+- `"annotations"`: Text messages that can be added on top of the graph, optionally pointing to positions
+  on the graph. This is an array of annotation definitions, which contain the following properties:
+  - `"label"`: The label for the note, which contains [label](#label-properties) properties.
+  - `"interest-points"`: The points that the note will point at. \
+    This is an array of items which contain the following properties:
+    - `"x"`: The X axis position of the point.
+    - `"y"`: The Y axis position of the point.
+  - `"anchor"`: The point to anchor the label. \
+     Note that the `label`'s `"anchoring"` property will control which part of the label that the
+     anchoring point refers to. \
+     If not specified, the graph will attempt to place it at the best location. \
+     This contains the following properties:
+     - `"x"`: The X axis position of the point.
+     - `"y"`: The Y axis position of the point.
+- `"reference-lines"`: An array of reference line definitions, which contain the following properties:
+  - `"axis-type"`: The axis to add the reference line to. \
+    Available options are:
+    - `"bottom-x"`
+    - `"right-y"`
+    - `"left-y"`
+    - `"top-y"`
+  - `"position"`: The axis position for the line. \
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"label"`: The text to display on the legend referring to line.
+  - `"pen"`: The definition for the [pen](#pen-properties) properties.
+- `"reference-areas"`: An array of reference area definitions, which contain the following properties:
+  - `"axis-type"`: The axis to add the reference area to. \
+    Available options are:
+    - `"bottom-x"`
+    - `"right-y"`
+    - `"left-y"`
+    - `"top-y"`
+  - `"start"`: The starting axis position for the area. \
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"end"`: The ending axis position for the area. \
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"label"`: The text to display on the legend referring to area.
+  - `"pen"`: The definition for the [pen](#pen-properties) properties. \
+        The color is used for the surrounding reference lines, and a tinted version
+        is used the area.
+  - `"style"`: The style to apply to the reference area. \
+    Available options are:
+    - `"fade-from-left-to-right"`
+    - `"fade-from-right-to-left"`
+    - `"solid"`
+- `"brush-scheme"`: For graphs that support brush schemes only. \
+     Contains the following properties:
+     `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
+     `"color-scheme"`: A color scheme that is mapped to the brush styles.
+     This can also be a string specifying a named color scheme (e.g., `"icecream"`).
+- `"color-scheme"`: For graphs that support color schemes only. \
+     This can either be an array of color strings or the name of the color scheme. \
+     Refer to `Wisteria::Colors::Schemes` for a list of color schemes.
+- `"icon-scheme"`: For graphs that support icon/marker schemes only. \
+  This an either be an icon scheme name or an array of icon strings (which can be recycled). \
+  Refer to `Wisteria::Icons::Schemes` for a list of icon schemes. \
+  The following individual icons are available:
+  - `"blank"`
+  - `"horizontal-line"`
+  - `"arrow-right"`
+  - `"circle"`
+  - `"image"`
+  - `"horizontal-separator"`
+  - `"horizontal-arrow-right-separator"`
+  - `"color-gradient"`
+  - `"square"`
+  - `"triangle-upward"`
+  - `"triangle-downward"`
+  - `"triangle-right"`
+  - `"triangle-left"`
+  - `"diamond"`
+  - `"plus"`
+  - `"asterisk"`
+  - `"hexagon"`
+  - `"box-plot"`
+  - `"location-marker"`
+  - `"go-road-sign"`
+  - `"warning-road-sign"`
+  - `"sun"`
+  - `"flower"`
+  - `"fall-leaf"`
+  - `"top-curly-brace"`
+  - `"right-curly-brace"`
+  - `"bottom-curly-brace"`
+  - `"left-curly-brace"`
+  - `"man"`
+  - `"woman"`
+  - `"business-woman"`
+  - `"chevron-downward"`
+  - `"chevron-upward"`
+  - `"text"`
+  - `"tack"`
+  - `"banner"`
+  - `"watercolor-rectangle"`
+  - `"thick-watercolor-rectangle"`
+  - `"graduation-cap"`
+  - `"book"`
+  - `"tire"`
+  - `"snowflake"`
+  - `"newspaper"`
+  - `"car"`
+  - `"blackboard"`
+  - `"clock"`
+  - `"ruler"`
+- `"line-scheme"`: For graphs that support line schemes only. \
+  This is an array of line specifications (which can be recycled). \
+  Each specification contains the following:
+  - `"line-style"`: A string specifying the line style. \
+    Available options are:
+    - `"lines"`
+    - `"arrows"`
+    - `"spline"`
+  - `"pen-style"`: A [pen](#pen-properties) specification (although only the pen style is used)
+- `"legend"`: An item containing the following properties:
+  - `"placement"`: Where to place the legend. \
+    Available options are:
+    - `"left"`
+    - `"right"` (the default)
+    - `"top"`
+    - `"bottom"`
+  - `"include-header"`: `true` to include a header (the default), `false` to not.
+  - `"title"`: If `"include-header"` is `true`, a string specifying the title of the legend.
+  - `"ring"`: For pie charts, which ring to use for the legend. \
+    Available options are:
+    - `"outer"`: Only the outer (or only) ring is included. (This is the default.)
+    - `"inner"`: The inner and outer rings are included in the legend.
+
+## Common Features {-}
+
+The following section details properties relevant to graphs and tables.
+
+### Pen {#pen-properties .unnumbered}
+
+Properties for pens:
+
+- `"color"`: The pen color. This can be either a color name or hex-encoded value.
+- `"width"`: The width of the pen's line.
+- `"style"`: The pen's style, which includes the following:
+  - `"dot"`
+  - `"dot-dash"`
+  - `"long-dot"`
+  - `"short-dot"`
+  - `"solid"` (the default)
+  - `"cross-hatch"`
+  - `"horizontal-hatch"`
+  - `"vertical-hatch"`
+
+Note that a pen can be set to `null` to turn it off.
+
+::: {.minipage data-latex="{\textwidth}"}
+### Brush {#brush-properties .unnumbered}
+
+Properties for brushes:
+
+- `"color"`: The brush color. This can be either a color name or hex-encoded value.
+- `"style"`: The brush's pattern, which includes the following:
+  - `"backwards-diagonal-hatch"`
+  - `"forward-diagonal-hatch"`
+  - `"cross-diagonal-hatch"`
+  - `"solid"` (the default)
+  - `"cross-hatch"`
+  - `"horizontal-hatch"`
+  - `"vertical-hatch"`
+
+Note that brushes can be set to `null` to turn it off.
+
+Also, instead of properties, a single string can be specified indicating color for the brush.
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
+### Image Files {#image-file-properties .unnumbered}
+
+Properties for image import specifications:
+
+- `"path"`: A single file path to import for the image.
+- `"paths"`: An array of file paths to import for the image.
+- `"color-filter"`: A string specifying a color to translucently apply across the image.
+- `"opacity"`: A number between `0-255` specifying how opaque the image is. \
+  Note that when loading an image for a page's background, this value will be overridden
+  by the page's background opacity setting.
+- `"stitch"`: A string specifying how to stitch multiple images together.
+  (You must use `"paths"` to import multiple images.) \
+  Available options are:
+  - `"vertical"`
+  - `"horizontal"` (the default)
+
+Note that instead of properties, a single string can be specified indicating a file path to load.
+:::
+
+### Axis {#axis-properties .unnumbered}
+
+`"axes"` nodes can either be part of a graph node definition or a [common-axis](#common-axis-properties) node. \
+  For the former, this can define properties for the various axes in the graph. \
+  `"axes"`: These nodes contain an array of axis objects, each with the following properties:
+
+- `"axis-type"`: The type of axis. \
+  Available options are:
+  - `"bottom-x"`
+  - `"right-y"`
+  - `"left-y"`
+  - `"top-y"`
+- `"title"`: The title of the axis, which contains [label](#label-properties) properties.
+- `"axis-pen"`: The pen for the axis line, which includes [pen](#pen-properties) properties.
+- `"gridline-pen"`: The pen for the gridlines, which includes [pen](#pen-properties) properties.
+- `"double-sided-labels"`: A boolean value specifying whether axis labels should be shown on both sides of the axis.
+- `"tickmarks"`: Tickmark settings, which contains the following properties:
+  - `"display"`: A string, indicating how to display the tickmarks. \
+    Available options are:
+    - `"inner"`
+    - `"outer"`
+    - `"crossed"`
+    - `"no-display"`
+- `"label-display"`: What to display for the labels along the axis. \
+  Available options are:
+  - `"custom-labels-or-values"`
+  - `"only-custom-labels"`
+  - `"custom-labels-and-values"`
+  - `"no-display"`
+- `"number-display"`: A string specifying how to display numeric axis points. \
+  Available options are:
+  - `"percentage"`
+  - `"value"`
+- `"custom-labels"`: An array of custom label specifications, which contains the following properties:
+  - `"value"`: The axis position.
+  - `"label"`: The text to display on next to the brackets, which will contain [label](#label-properties) properties.
+- `"range"`: A node describing the range to use for the axis, which contains the following properties:
+  - `"start"`: A number specifying the start of the range.
+  - `"end"`: A number specifying the end of the range.
+  - `"precision"`: A number specifying the precision to use for numbers displayed on the axis.
+  - `"interval"`: A number specifying the interval of the tickmarks along the range.
+  - `"display-interval"`: A number specifying the how often the axis points should show a label.
+- `"show-outer-labels"`: `true` to show the outer labels on the axis.
+- `"label-length"`: A number specifying the suggested maximum length for the axis labels. \
+    (Default is `100`.)
+- `"label-length-auto"`: If `true`, an attempt will be made to split longer axis labels based on
+     various separators in them (e.g., parentheses, commas, conjunctions).
+
+- `"brackets"`: Adds brackets to the axis,which can be an array of bracket definitions or single set of properties
+  using a dataset. \
+  Available options for either method are:
+  - `"simplify"`: A boolean value indicating whether to simplify the bracket's labels.
+ 
+  If building brackets from a dataset, use the following properties:
+  - `"dataset"`: The name of the dataset to read the columns from. \
+       Note that this dataset can be different from the dataset used for the first
+       child graph if you are wanting to use different labels. For this situation, the
+       `"value"` variable should have the same scale as the child graph.
+  - `"variables"`: Which include the following properties:
+    - `"label"`: The labels column.
+    - `"value"`: The values column. (This can be either a continuous, categorical, or date column.)
+  - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
+  - `"style"`: The style of the braces. \
+    Available options are:
+    - `"arrow"`
+    - `"reverse-arrow"`
+    - `"lines"`
+    - `"curly-braces"`
+    - `"no-connection-lines"`
+  
+  If building brackets individually, specify an area of items, each with the following properties:
+  - `"start"`: The starting axis position for the area. \
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"end"`: The ending axis position for the area. \
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"label"`: The text to display on next to the brackets.
+  - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
+  - `"style"`: The style of the braces. \
+    Available options are:
+    - `"arrow"`
+    - `"reverse-arrow"`
+    - `"lines"`
+    - `"curly-braces"` (the default)
+    - `"no-connection-lines"`
+
+::: {.minipage data-latex="{\textwidth}"}
+### Positions {#position-properties .unnumbered}
+
+Properties for row or column table positions:
+
+- `"origin"`: This is either the zero-based index of the row/column, or a string. \
+     The string values available are `"last-row"` or `"last-column"`,
+     which will be interpreted as the last row or column in the data, respectively. \
+     Column names or row names from the dataset can also be used if looking for a column or row position.
+     To do this, prefix "column:" or "row:" in front of the column or row name.
+- `"offset"`: A numeric value combined with the value for `"origin"`. \
+     This is optional and is useful for when `"origin"` is interpreted at run-time. \
+     For example, if `origin` is `"last-row"`: And `"offset"` is `-1`, then this will
+     result in the second-to-last row.
+
+A position can also be a number or string (e.g., `"last-row"`) if not needing to use the `"origin"`/`"offset"` features.
+:::

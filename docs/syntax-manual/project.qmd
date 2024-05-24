@@ -129,3 +129,36 @@ At the root level of a project file, overall settings for the project are define
     - `"paper-penv-10-rotated"`: PRC Envelope #10 Rotated 458 x 324 m.
     - `"paper-a0"`: A0 Sheet 841 x 1189 mm.
     - `"paper-a1"`: A1 Sheet 594 x 841 mm.
+    
+Example:
+
+```json
+{
+  "name": "RETENTION",
+  "print": {
+      "orientation": "landscape",
+      "paper-size": "paper-a4"
+  }
+}
+```
+
+Boilerplate project containing pages and rows of items:
+
+```json
+{
+  "name": "RETENTION",
+  "pages": [
+    {
+      "rows": [
+        {
+          "items": [
+            {
+            ...
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```

@@ -1,0 +1,88 @@
+# Base-level Graphs
+
+The following are properties relevant to specific graphs' base-level graph type.
+
+## Bar Chart {#bar-chart-properties .unnumbered}
+
+Properties common to all bar-chart derived graphs:
+
+- `"box-effect"`: A string specifying the effects for the bars. \
+  Available options are:
+  - `"common-image"`: (This will require an `"image-scheme"` to be defined.)
+  - `"fade-from-bottom-to-top"`
+  - `"fade-from-left-to-right"`
+  - `"fade-from-right-to-left"`
+  - `"fade-from-top-to-bottom"`
+  - `"glassy"`
+  - `"solid"` (the default)
+  - `"stipple-image"`
+  - `"stipple-shape"`
+  - `"watercolor"`
+- `"bar-label-display"`: A string specifying how to display labels on the bars. \
+  Available options are:
+  - `"percentage"`
+  - `"value"`
+  - `"value-and-percentage"`
+  - `"no-display"`
+  - `"bin-name"`
+  - `"bin-name-and-value"`
+  - `"bin-name-and-percentage"`
+- `"bar-label-suffix"`: A string to add to the end of each bar label.
+- `"include-spaces-between-bars"`: `true` to include spaces between bars.
+- `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.
+- `"showcase-bars"`: An array of strings specifying which bars to showcase.
+- `"bar-icons"`: An array of bar icon specifications. Each specification contains the following:
+  - `"label"`: The label of the bar to add an icon to.
+  - `"image"`: The path to the image to add to the bar label.
+- `"bar-sort"`: Properties specifying how to sort the bars (after loading the data). \
+  Available options are:
+  - `"direction"`: The direction to sort the bars. \
+    Available options are:
+    - `"ascending"`
+    - `"descending"`
+  - `"by"`: How to sort the bars, by label or length. This will override any `"labels"` option. \
+    Available options are:
+    - `"length"`
+    - `"label"`
+  - `"labels"`: The bar labels, specified in the order they should be sorted. \
+       If `"direction"` is `"ascending"`, then the bars will be sorted top-to-bottom or
+       left-to-right (based on the order of the provided labels). Otherwise, they will be
+       sorted bottom-to-top or right-to-left. \
+       Note that this option is ignored if `"by"` is specified.
+- `"bar-group-placement"`: A string specifying how the bar groups (brackets and cumulative bars)
+    are aligned with their respective bars. \
+    Available options are:
+    - `"flush"`
+    - `"next-to-parent"` (the default)
+- `"bar-groups"`: An array of bar groups, each containing the following properties:
+  - `"start"`: The axis label or numeric position to start the group.
+  - `"end"`: The axis label or numeric position to end the group.
+  - `"decal"`: A label to display on the group bar.
+  - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
+  - `"color"`: The base color to paint under the brush. This is useful if the brush is using a hatch pattern.
+- `"decals"`: An array of decals to add to the bars. This will be an array of nodes containing the following properties:
+  - `"bar"`: The axis label of the bar.
+  - `"block"`: The number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
+  - `"decal"`: The decal to add to the bar, which will contain [label](#label-properties) properties. \
+    Embedded constants can be included in this string, including: \
+    `@COUNT@`: The length value of the block.
+- `"first-bar-brackets"`: Properties adding axis brackets that reference the first bar. \
+  Available options are:
+  - `"label"`: A string for the bracket's label.
+  - `"start-block-re"`: A regular expression used to find the starting block for the bracket.
+  - `"end-block-re"`: A regular expression used to find the ending block for the bracket.
+
+  If the `"re"` variations of the starting and ending labels are available, then these properties are used:
+  - `"start-block"`: A string specifying the tag of the starting block of the bar.
+  - `"end-block"`: A string specifying the tag of the ending block of the bar.
+- `"apply-brushes-to-ungrouped-bars"`: `true` to apply the brushes (from the brush scheme) to the series of bars. \
+  This will only take effect if grouping is not in use for the bar chart.
+  Generally, this is not recommended as having different colored bars is bad dataviz practice, but can be useful if
+  only including two bars that need to be contrasted.
+- `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
+
+::: {.notesection data-latex=""}
+Bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
+any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
+if specifying start and end points for your brackets, be aware that the bars will already be sorted.
+:::

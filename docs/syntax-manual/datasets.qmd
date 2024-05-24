@@ -64,6 +64,18 @@ The `"parser"` and `"format"` options are ignored if importing an *Excel* file.
 If no columns are defined, then the importer will import all columns and deduce their types.
 :::
 
+Example:
+
+```json
+ "datasets": [
+    {
+      "path": "GRAD_RATE.xlsx",
+      "worksheet": 2,
+      "md-codes": [ "<10", "< 10", "NC" ],
+      "treat-leading-zeros-as-text": true,
+    }
+```
+
 \newpage
 
 ## Transformations {-}
@@ -107,6 +119,23 @@ Next, any transformation commands for a dataset node are executed. These are per
    - `"column"`: The categorical column to collapse.
    - `"labels-to-keep"`: An array of strings to preserve; all others will be lumped into a new `"Other"` category.
    - `"other-label"`: The label to use for the new category where other labels are lumped into. Default is `"Other"`.
+   
+```json
+ "datasets": [
+    {
+      "path": "GRAD_RATE.xlsx",
+      "worksheet": 2,
+      "md-codes": [ "<10", "NC" ],
+      "treat-leading-zeros-as-text": true,
+      "columns-rename": [
+        {
+          "name-re": "Four[ \\-]Year Grad Rate \\- Class of ([[:digit:]]{4})",
+          "new-name-re": "Graduated \\1"
+        }
+      ],
+      "columns-select": "(IRN|Graduated [0-9]{4})"
+    }
+```
 
 \newpage
 
@@ -179,6 +208,21 @@ Total({{ContinuousColumn(`last`)}})
 ::: {.tipsection data-latex=""}
 Along with the dataset-related functions, [additional functions](#additional-functions) are also available.
 :::
+
+Example:
+
+```json
+"formulas": [
+  {
+    "name": "MaxAY",
+    "value": "MAX(`AY`)"
+  },
+  {
+    "name": "PercentFemaleDecimal",
+    "value": "GroupPercentDecimal(`Gender`, `Female`)"
+  }
+]
+```
 
 :::: {.minipage data-latex="{\textwidth}"}
 ## Subsetting {-}
