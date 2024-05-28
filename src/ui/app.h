@@ -192,7 +192,6 @@ namespace Wisteria::UI
         /// @param append @c true to append to the log file from today;
         ///     @c false to overwrite it.
         /// @note This must be called before BaseApp::OnInit().
-        [[nodiscard]]
         void AppendDailyLog(const bool append) noexcept
             {
             m_appendDailyLog = append;
