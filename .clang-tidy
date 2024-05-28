@@ -10,6 +10,7 @@ CheckOptions:
   readability-identifier-naming.ClassMemberCase: camelBack
   readability-identifier-naming.LocalVariableCase: camelBack
   readability-identifier-naming.MacroDefinitionCase: UPPER_CASE
+  readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
   readability-identifier-naming.ParameterCase: camelBack
   readability-identifier-naming.ClassCase: lower_case
   readability-identifier-naming.StructCase: lower_case
