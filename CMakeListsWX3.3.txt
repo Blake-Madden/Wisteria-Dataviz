@@ -1,4 +1,4 @@
-#############################################################################
+f#############################################################################
 # Name:        CMakeLists.txt
 # Purpose:     Build script for Wisteria Dataviz library and demo project
 # Author:      Blake Madden
@@ -33,24 +33,18 @@ project(Wisteria)
 
 # Build the documentation
 ########################
-# https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
 find_package(Doxygen)
-if(DOXYGEN_FOUND)
-    # set input and output files
-    set(DOXYGEN_IN "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile")
-    if(EXISTS ${DOXYGEN_IN})
-        # note the option ALL which allows to build the docs together with the application
-        add_custom_target(doxygen-docs ALL
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
+if(TARGET doxygen-docs)
+    if(NOT DOXYGEN_FOUND)
+        message("Doxygen not found. API documentation cannot be generated.")
+    endif()
+endif()
+
+add_custom_target(doxygen-docs ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
             COMMENT "Generating API documentation with Doxygen"
-            VERBATIM )
-    else()
-        message("Doxygen project file missing (${DOXYGEN_IN}).")
-    endif()
-else()
-    message("Doxygen not found. API documentation will not be generated.")
-endif()
+            VERBATIM)
 
 # Setup wxWidgets (can be 1-3 folders up from here)
 ########################
