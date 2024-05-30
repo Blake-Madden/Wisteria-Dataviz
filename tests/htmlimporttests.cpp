@@ -1264,7 +1264,6 @@ Some more html text on the page.)";
         CHECK(javascript_hyperlink_parse::get_cookies(text) ==
               std::wstring{ L"theToken=1" });
         }
-
     SECTION("Cookies Bad Script Section")
         {
         std::wstring_view text = LR"(Click to continue
@@ -1277,7 +1276,6 @@ Some more html text on the page.)";
 
         CHECK(javascript_hyperlink_parse::get_cookies(text).empty());
         }
-
     SECTION("Cookies No Script Section")
         {
         std::wstring_view text = LR"(Click to continue
@@ -1321,21 +1319,29 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(parse.get_current_hyperlink_length() == 10);
         }
 
-    SECTION("Script")
+    SECTION("Script links")
         {
-        const wchar_t* text = L"menunum=0;menus=new Array();_d=document;function addmenu(){menunum++;menus[menunum]=menu;}function dumpmenus(){mt=\"<script language=javascript>\";for(a=1;a<menus.length;a++){mt+=\" menu\"+a+\"=menus[\"+a+\"];\"}mt+=\"<\\script>\"\"page.htm\";_d.write(mt)}";
+        const wchar_t* text = L"menunum=0;menus=new Array();_d=document;function addmenu(){menunum++;menus[menunum]=menu;}function dumpmenus(){mt=\"<script language=javascript>\";for(a=1;a<menus.length;a++){mt+=\" menu\"+a+\"=menus[\"+a+\"];\"}mt+=\"<\\script>\"\"www.yahoo.com/page.htm\";_d.write(mt)}";
         javascript_hyperlink_parse parse(text, std::wcslen(text) );
 
-        CHECK(std::wcsncmp(parse(), L"page.htm", 8) == 0);
-        CHECK(parse.get_current_hyperlink_length() == 8);
+        CHECK(std::wstring{ parse(), parse.get_current_hyperlink_length() } == std::wstring{ L"www.yahoo.com/page.htm" });
         }
-    SECTION("Script2")
+    SECTION("Script links 2")
         {
         const wchar_t* text = L"effect = \"fade(duration=0.3);Shadow(color='#777777', Direction=135, Strength=5)\" // Special";
         javascript_hyperlink_parse parse(text, std::wcslen(text) );
 
         CHECK(parse() ==  nullptr);
         CHECK(parse.get_current_hyperlink_length() == 0);
+        }
+    SECTION("Script links 3")
+        {
+        std::wstring_view text = LR"(a=e+"getval(.gui"; src="www.yahoo.com")";
+
+        javascript_hyperlink_parse js(text.data(), text.length());
+        js();
+        CHECK(std::wstring{ js.get_current_link(), js.get_current_hyperlink_length() } == std::wstring{ L"www.yahoo.com" });
+        CHECK(js() == nullptr);
         }
 
     SECTION("Url End Not Found")
@@ -1426,7 +1432,7 @@ TEST_CASE("Hyperlink Parser", "[html import]")
 
     SECTION("Hyperlink And Script")
         {
-        const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\">image1.src = \"images/lblinkon.gif\";</Script><scripT type=\"text/javascript\">image1.src = \"images/lblinkon2.gif\";</Script><A hRef=\"www.page2.com\">page</a>";
+        const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\">image1.src = \"www.pages2.com/images/lblinkon.gif\";</Script><scripT type=\"text/javascript\">image1.src = \"www.yahoo.com/images/lblinkon2.gif\";</Script><A hRef=\"www.page2.com\">page</a>";
         html_hyperlink_parse parse(text, std::wcslen(text) );
 
         CHECK(std::wcsncmp(parse.get_base_url(), L"www.mysite", 10) == 0);
@@ -1442,17 +1448,17 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK_FALSE(parse.is_current_link_an_image());
         CHECK(parse.get_current_hyperlink_length() == 21);
 
-        CHECK(std::wcsncmp(parse(), L"images/lblinkon.gif", 19) == 0);
+        CHECK(std::wstring{ parse(), parse.get_current_hyperlink_length() } == std::wstring{  L"www.pages2.com/images/lblinkon.gif" });
         CHECK_FALSE(parse.is_current_link_an_image());
         CHECK_FALSE(parse.is_current_link_a_javascript());
-        CHECK(parse.get_current_hyperlink_length() == 19);
+        CHECK(parse.get_current_hyperlink_length() == 34);
 
-        CHECK(std::wcsncmp(parse(), L"images/lblinkon2.gif", 20) == 0);
+        CHECK(std::wstring{ parse(), parse.get_current_hyperlink_length() } == std::wstring{ L"www.yahoo.com/images/lblinkon2.gif" });
         CHECK_FALSE(parse.is_current_link_an_image());
         CHECK_FALSE(parse.is_current_link_a_javascript());
-        CHECK(parse.get_current_hyperlink_length() == 20);
+        CHECK(parse.get_current_hyperlink_length() == 34);
 
-        CHECK(std::wcsncmp(parse(), L"www.page2.com", 13) == 0);
+        CHECK(std::wstring{ parse(), parse.get_current_hyperlink_length() } == std::wstring{ L"www.page2.com" });
         CHECK_FALSE(parse.is_current_link_an_image());
         CHECK_FALSE(parse.is_current_link_a_javascript());
         CHECK(parse.get_current_hyperlink_length() == 13);

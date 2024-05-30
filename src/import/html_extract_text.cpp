@@ -2396,8 +2396,8 @@ namespace html_utilities
             }
 
         // jump over the previous link (and its trailing quote)
-        m_js_text_start +=
-            (get_current_hyperlink_length() > 0) ? get_current_hyperlink_length() + 1 : 0;
+        std::advance(m_js_text_start,
+            (get_current_hyperlink_length() > 0) ? get_current_hyperlink_length() + 1 : 0);
         if (m_js_text_start >= m_js_text_end)
             {
             return nullptr;
@@ -2406,37 +2406,20 @@ namespace html_utilities
         for (;;)
             {
             m_js_text_start = std::wcschr(m_js_text_start, L'"');
-            if (m_js_text_start && m_js_text_start < m_js_text_end)
+            if (m_js_text_start != nullptr && m_js_text_start < m_js_text_end)
                 {
-                const wchar_t* endQuote = std::wcschr(++m_js_text_start, L'"');
-                if (endQuote && endQuote < m_js_text_end)
+                std::advance(m_js_text_start, 1);
+                const wchar_t* endQuote = std::wcschr(m_js_text_start, L'"');
+                if (endQuote != nullptr && endQuote < m_js_text_end)
                     {
-                    m_current_hyperlink_length = (endQuote - m_js_text_start);
-                    // see if the current link has a 3 or 4 character file
-                    // extension on it--if not, this is not a link
-                    if (m_current_hyperlink_length < 6 ||
-                        (m_js_text_start[m_current_hyperlink_length - 4] != L'.' &&
-                         m_js_text_start[m_current_hyperlink_length - 5] != L'.'))
+                    m_current_hyperlink_length = std::distance(m_js_text_start, endQuote);
+                    // only accept full URLs
+                    if (!html_url_format::is_absolute_url(
+                            { m_js_text_start, m_current_hyperlink_length }))
                         {
                         m_current_hyperlink_length = 0;
-                        m_js_text_start = ++endQuote;
-                        continue;
-                        }
-                    // make sure this value is a possible link
-                    size_t i = 0;
-                    for (i = 0; i < m_current_hyperlink_length; ++i)
-                        {
-                        if (is_unsafe_uri_char(m_js_text_start[i]))
-                            {
-                            break;
-                            }
-                        }
-                    // if we didn't make through each character then there must be
-                    // a bad char in this string, so move on
-                    if (i < m_current_hyperlink_length)
-                        {
-                        m_current_hyperlink_length = 0;
-                        m_js_text_start = ++endQuote;
+                        std::advance(endQuote, 1);
+                        m_js_text_start = endQuote;
                         continue;
                         }
                     return m_js_text_start;

@@ -77,8 +77,7 @@ namespace html_utilities
 
     /** @brief Functor that accepts a block of script text and
             returns the links in it, one-by-one.
-        @details Links will be anything inside of double quotes that
-            appear to be a path to a file or webpage.*/
+        @details Links will be absolute URLs inside of double quotes.*/
     class javascript_hyperlink_parse
         {
       public:
@@ -105,9 +104,14 @@ namespace html_utilities
 
         /** @brief Main function that returns the next link in the file.
             @returns A pointer to the next link, or null when there are no more links.*/
-        [[nodiscard]]
-        const wchar_t*
-        operator()();
+        const wchar_t* operator()();
+
+        /// @returns The last parsed link from @c operator().
+        /// @note Will be @c nullptr if no more links were found.
+        [[nodiscard]] const wchar_t* get_current_link() const noexcept
+            {
+            return m_js_text_start;
+            }
 
         /** @returns The length of the current hyperlink.*/
         [[nodiscard]]
