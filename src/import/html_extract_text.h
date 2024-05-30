@@ -12,12 +12,12 @@
 #ifndef __HTML_EXTRACT_TEXT_H__
 #define __HTML_EXTRACT_TEXT_H__
 
-#include <map>
-#include <vector>
-#include <set>
-#include <algorithm>
-#include <regex>
 #include "extract_text.h"
+#include <algorithm>
+#include <map>
+#include <regex>
+#include <set>
+#include <vector>
 
 /// @brief Helper classes for HTML parsing.
 namespace html_utilities
@@ -178,39 +178,60 @@ namespace html_utilities
             image map hrefs, image links, JavaScript links, and HTTP redirects.*/
     class html_hyperlink_parse
         {
-    public:
+      public:
         /** @brief Constructor.
             @param html_text The HTML text to analyze.
             @param length The length of html_text.*/
         html_hyperlink_parse(const wchar_t* html_text, const size_t length) noexcept;
+
         /// @returns The base web directory.
         [[nodiscard]]
         const wchar_t* get_base_url() const noexcept
-            { return m_base; }
+            {
+            return m_base;
+            }
+
         /// @returns The length of the base web directory.
         [[nodiscard]]
-        size_t get_base_url_length () const noexcept
-            { return m_base_length; }
+        size_t get_base_url_length() const noexcept
+            {
+            return m_base_length;
+            }
+
         /** @brief Main function that returns the next link in the file.
             @returns Either the next link or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t* operator()();
+        const wchar_t*
+        operator()();
+
         /** @returns The length of the current hyperlink.*/
         [[nodiscard]]
         inline size_t get_current_hyperlink_length() const noexcept
-            { return m_current_hyperlink_length; }
+            {
+            return m_current_hyperlink_length;
+            }
+
         /** @brief Specifies whether or not image links should be reviewed.
             @param include Set to false to skip image links, true to include them.*/
         inline void include_image_links(const bool include) noexcept
-            { m_include_image_links = include; }
+            {
+            m_include_image_links = include;
+            }
+
         /** @returns @c true if the current hyperlink is pointing to an image.*/
         [[nodiscard]]
         inline bool is_current_link_an_image() const noexcept
-            { return m_current_link_is_image; }
+            {
+            return m_current_link_is_image;
+            }
+
         /** @returns @c true if the current hyperlink is pointing to a JavaScript.*/
         [[nodiscard]]
         inline bool is_current_link_a_javascript() const noexcept
-            { return m_current_link_is_javascript; }
+            {
+            return m_current_link_is_javascript;
+            }
+
         /** @brief Finds the end of an url by searching for the first illegal character.
             @param text the HTML text to analyze.
             @returns The valid end of the URL (i.e., the first illegal character).*/
@@ -218,9 +239,12 @@ namespace html_utilities
         static const wchar_t* find_url_end(const wchar_t* text) noexcept
             {
             while (text && is_legal_url_character(text[0]))
-                { ++text; }
+                {
+                ++text;
+                }
             return text;
             }
+
         /** Indicates whether or not character is legal to be in an URL.
                 If false, then that character should be hex encoded.
             @param ch The character to review.
@@ -229,22 +253,21 @@ namespace html_utilities
         constexpr static inline bool is_legal_url_character(const wchar_t ch)
             {
             return (((ch >= 0x41) && (ch <= 0x5A)) || // A-Z
-                ((ch >= 0x61) && (ch <= 0x7A)) || // a-1
-                ((ch >= 0x30) && (ch <= 0x39)) || // 0-9
-                (ch == L'.') ||
-                (ch == 0x24) || // $
-                (ch == L'&') ||
-                (ch == 0x2B) || // +
-                (ch == 0x2C) || // ,
-                (ch == 0x2F) || // /
-                (ch == 0x3A) || // :
-                (ch == 0x3B) || // ;
-                (ch == 0x3D) || // =
-                (ch == 0x3F) || // ?
-                (ch == 0x40) // @
-                );
+                    ((ch >= 0x61) && (ch <= 0x7A)) || // a-1
+                    ((ch >= 0x30) && (ch <= 0x39)) || // 0-9
+                    (ch == L'.') || (ch == 0x24) ||   // $
+                    (ch == L'&') || (ch == 0x2B) ||   // +
+                    (ch == 0x2C) ||                   // ,
+                    (ch == 0x2F) ||                   // /
+                    (ch == 0x3A) ||                   // :
+                    (ch == 0x3B) ||                   // ;
+                    (ch == 0x3D) ||                   // =
+                    (ch == 0x3F) ||                   // ?
+                    (ch == 0x40)                      // @
+            );
             }
-    private:
+
+      private:
         const wchar_t* m_html_text{ nullptr };
         const wchar_t* m_html_text_end{ nullptr };
         size_t m_current_hyperlink_length{ 0 };
@@ -261,7 +284,7 @@ namespace html_utilities
             JavaScript or HTML files.*/
     class hyperlink_parse
         {
-    public:
+      public:
         /// @brief How to parse a hyperlink.
         enum class hyperlink_parse_method
             {
@@ -270,45 +293,60 @@ namespace html_utilities
             /// @brief The source being parsed is a `<script>` section.
             script
             };
+
         /** @brief Constructor to initialize parser.
             @param html_text The text to parse.
             @param length The length of the text being parsed.
             @param method How to parse the text. Either html or script.*/
         hyperlink_parse(const wchar_t* html_text, const size_t length,
-                        const hyperlink_parse_method method) noexcept :
-            m_html_hyperlink_parse(html_text, length),
-            m_javascript_hyperlink_parse(html_text, length), m_method(method)
-            {}
+                        const hyperlink_parse_method method) noexcept
+            : m_html_hyperlink_parse(html_text, length),
+              m_javascript_hyperlink_parse(html_text, length), m_method(method)
+            {
+            }
+
         /** @brief Main function that returns the next link in the file.
             @returns A pointer to the next link, or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t* operator()()
+        const wchar_t*
+        operator()()
             {
             return (get_parse_method() == hyperlink_parse_method::html) ?
-                m_html_hyperlink_parse() :
-                m_javascript_hyperlink_parse();
+                       m_html_hyperlink_parse() :
+                       m_javascript_hyperlink_parse();
             }
+
         /** @returns The HTML parser.*/
         [[nodiscard]]
         html_hyperlink_parse get_html_parser() const noexcept
-            { return m_html_hyperlink_parse; }
+            {
+            return m_html_hyperlink_parse;
+            }
+
         /** @returns The JavaScript parser.*/
         [[nodiscard]]
         javascript_hyperlink_parse get_script_parser() const noexcept
-            { return m_javascript_hyperlink_parse; }
+            {
+            return m_javascript_hyperlink_parse;
+            }
+
         /** @returns The parsing method, either html or script.*/
         [[nodiscard]]
         hyperlink_parse_method get_parse_method() const noexcept
-            { return m_method; }
+            {
+            return m_method;
+            }
+
         /** @returns the length of the current hyperlink.*/
         [[nodiscard]]
         inline size_t get_current_hyperlink_length() const noexcept
             {
             return (get_parse_method() == hyperlink_parse_method::html) ?
-                m_html_hyperlink_parse.get_current_hyperlink_length() :
-                m_javascript_hyperlink_parse.get_current_hyperlink_length();
+                       m_html_hyperlink_parse.get_current_hyperlink_length() :
+                       m_javascript_hyperlink_parse.get_current_hyperlink_length();
             }
-    private:
+
+      private:
         html_hyperlink_parse m_html_hyperlink_parse;
         javascript_hyperlink_parse m_javascript_hyperlink_parse;
         hyperlink_parse_method m_method{ hyperlink_parse_method::html };
@@ -318,7 +356,7 @@ namespace html_utilities
             using a base URL as the starting point.*/
     class html_url_format
         {
-    public:
+      public:
         /** @brief Constructor, which accepts the base URL to format any relative links with.
             @param root_url The base directory to format the URLs to.*/
         explicit html_url_format(std::wstring_view root_url);
@@ -328,45 +366,62 @@ namespace html_utilities
                 This is needed when formatting a full URL to an image from a PHP request.\n
                 @c false is recommended.
             @returns The fully-formed file path.*/
-        const wchar_t* operator()(std::wstring_view path,
-                                  const bool is_image);
+        const wchar_t* operator()(std::wstring_view path, const bool is_image);
+
         /** @returns The domain of the base URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "yahoo.com".*/
         [[nodiscard]]
         const std::wstring& get_root_domain() const noexcept
-            { return m_root_domain; }
+            {
+            return m_root_domain;
+            }
+
         /** @returns The subdomain of the base URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "business.yahoo.com".*/
         [[nodiscard]]
         const std::wstring& get_root_subdomain() const noexcept
-            { return m_root_subdomain; }
+            {
+            return m_root_subdomain;
+            }
+
         /** @returns The full domain of the base URL (domain, subdomain, and protocol).*/
         [[nodiscard]]
         const std::wstring& get_root_full_domain() const noexcept
-            { return m_root_full_domain; }
+            {
+            return m_root_full_domain;
+            }
 
         /** @returns The domain of the current URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "yahoo.com".*/
         [[nodiscard]]
         const std::wstring& get_domain() const noexcept
-            { return m_current_domain; }
+            {
+            return m_current_domain;
+            }
+
         /** @returns The subdomain of the current URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "business.yahoo.com".*/
         [[nodiscard]]
         const std::wstring& get_subdomain() const noexcept
-            { return m_current_subdomain; }
+            {
+            return m_current_subdomain;
+            }
+
         /** @returns The full domain of the current URL (domain, subdomain, and protocol).*/
         [[nodiscard]]
         const std::wstring& get_full_domain() const noexcept
-            { return m_current_full_domain; }
+            {
+            return m_current_full_domain;
+            }
 
         /** @returns The subdomain and folder structure of the current URL.*/
         [[nodiscard]]
         std::wstring get_directory_path();
+
         /** @returns Whether or not URL starts with a server protocol (e.g., "http").
                 If not, then it is a relative URL.
             @param url The url to analyze.*/
@@ -379,10 +434,14 @@ namespace html_utilities
                     string_util::strnicmp<wchar_t>(url.data(), L"ftp:", 4) == 0 ||
                     string_util::strnicmp<wchar_t>(url.data(), L"ftps:", 5) == 0);
             }
+
         /** @returns Whether or not this URL has a PHP query command.*/
         [[nodiscard]]
         bool has_query() const noexcept
-            { return m_query != std::wstring::npos; }
+            {
+            return m_query != std::wstring::npos;
+            }
+
         /** @brief Looks for "image=" in the PHP command.
             @details Example, "www.mypage.com?image=hi.jpg&loc=location" would return "hi.jpg".
             @param url The url to analyze.
@@ -397,7 +456,8 @@ namespace html_utilities
             @param url The url to analyze.*/
         [[nodiscard]]
         static bool is_url_top_level_domain(std::wstring_view url);
-    protected:
+
+      protected:
         /** @returns The position of the top level direction in an URL, as well as
                 the position of the query comment in it (if there is one).
                 Also will add a slash to the URL if need.
@@ -415,7 +475,8 @@ namespace html_utilities
             @param[out] subdomain The subdomain of the URL.*/
         static void parse_domain(const std::wstring& url, std::wstring& full_domain,
                                  std::wstring& domain, std::wstring& subdomain);
-    private:
+
+      private:
         // info about the original starting URL
         std::wstring m_root_url;
         std::wstring m_root_full_domain;
@@ -435,14 +496,14 @@ namespace html_utilities
             format is preserved.*/
     class html_strip_hyperlinks : public lily_of_the_valley::extract_text
         {
-    public:
+      public:
         /** @brief Main interface for extracting plain text from an HTML buffer.
             @param html_text The HTML text to strip.
             @param text_length The length of the HTML text.
             @returns The HTML stream with the hyperlinks removed from it.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* html_text,
-                                  const size_t text_length);
+        const wchar_t*
+        operator()(const wchar_t* html_text, const size_t text_length);
         };
 
     /// @returns @c true if character is not safe to use in an URL.
@@ -453,7 +514,7 @@ namespace html_utilities
         return (character > 127 /*extended ASCII*/ ||
                 character < 33 /*control characters and space*/);
         }
-    }
+    } // namespace html_utilities
 
 namespace lily_of_the_valley
     {
@@ -499,7 +560,7 @@ namespace lily_of_the_valley
     */
     class html_extract_text : public extract_text
         {
-    public:
+      public:
         /** @brief Main interface for extracting plain text from an HTML buffer.
             @param html_text The HTML text to strip.
             @param text_length The length of the HTML text.
@@ -509,40 +570,54 @@ namespace lily_of_the_valley
                 in the output. If @c false, then they will be replaced with spaces,
                 which is the default for HTML renderers. Recommended @c false.
             @returns The plain text from the HTML stream.*/
-        const wchar_t* operator()(const wchar_t* html_text,
-                                  const size_t text_length,
-                                  const bool include_outer_text,
-                                  const bool preserve_newlines);
+        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length,
+                                  const bool include_outer_text, const bool preserve_newlines);
+
         /** @returns The title from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
         [[nodiscard]]
         const std::wstring& get_title() const noexcept
-            { return m_title; }
+            {
+            return m_title;
+            }
+
         /** @returns The subject from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
         [[nodiscard]]
         const std::wstring& get_subject() const noexcept
-            { return m_subject; }
+            {
+            return m_subject;
+            }
+
         /** @returns The description from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
         [[nodiscard]]
         const std::wstring& get_description() const noexcept
-            { return m_description; }
+            {
+            return m_description;
+            }
+
         /** @returns The author from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
         [[nodiscard]]
         const std::wstring& get_author() const noexcept
-            { return m_author; }
+            {
+            return m_author;
+            }
+
         /** @returns The keywords from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
         [[nodiscard]]
         const std::wstring& get_keywords() const noexcept
-            { return m_keywords; }
+            {
+            return m_keywords;
+            }
+
         /** Compares (case insensitively) raw HTML text with an element constant to see
                 if the current element that we are on is the one we are looking for.
             @param text The current position in the HTML buffer that we are examining.
@@ -576,7 +651,7 @@ namespace lily_of_the_valley
                 or strict HTML 4.0.*/
         [[nodiscard]]
         static bool compare_element_case_sensitive(const wchar_t* text, std::wstring_view element,
-            const bool accept_self_terminating_elements);
+                                                   const bool accept_self_terminating_elements);
         /** @returns The current element that a stream is on. (This assumes that you have
                 already skipped the leading < symbol.)
             @note The returned string view will wrap @c text and will share the same lifetime.
@@ -584,8 +659,8 @@ namespace lily_of_the_valley
             @param accept_self_terminating_elements Whether to analyze element such as "<br />".\n
                 @c true is recommended for most cases.*/
         [[nodiscard]]
-        static string_util::case_insensitive_wstring_view get_element_name(const wchar_t* text,
-            const bool accept_self_terminating_elements);
+        static string_util::case_insensitive_wstring_view
+        get_element_name(const wchar_t* text, const bool accept_self_terminating_elements);
         /** @returns The body of an HTML buffer.
             @param text The HTML stream to parse.*/
         [[nodiscard]]
@@ -607,8 +682,8 @@ namespace lily_of_the_valley
             @note Returned string may need to be decoded by another html_extract_text object.*/
         [[nodiscard]]
         static std::wstring_view read_element_as_string(const wchar_t* html_text,
-                                                   const wchar_t* html_end,
-                                                   std::wstring_view element);
+                                                        const wchar_t* html_end,
+                                                        std::wstring_view element);
         /** @brief Searches for a tag inside of an element and returns its value
                 (or empty string if not found).
             @param text The start of the element section.
@@ -623,10 +698,9 @@ namespace lily_of_the_valley
             @returns The pointer to the tag value and its length.
                 Returns null and length of zero on failure.*/
         [[nodiscard]]
-        static std::pair<const wchar_t*, size_t> read_attribute(const wchar_t* text,
-            std::wstring_view tag,
-            const bool allowQuotedTags,
-            const bool allowSpacesInValue);
+        static std::pair<const wchar_t*, size_t>
+        read_attribute(const wchar_t* text, std::wstring_view tag, const bool allowQuotedTags,
+                       const bool allowSpacesInValue);
         /** @brief Same as read_attribute(), except it returns a `std::wstring`
                 instead of a raw pointer.
             @param text The start of the element section.
@@ -640,10 +714,9 @@ namespace lily_of_the_valley
                 such as a font name. @c  false is recommended for most cases.
             @returns The tag value as a string, or empty string on failure.*/
         [[nodiscard]]
-        static std::wstring read_attribute_as_string(const wchar_t* text,
-            std::wstring_view attribute,
-            const bool allowQuotedTags,
-            const bool allowSpacesInValue);
+        static std::wstring
+        read_attribute_as_string(const wchar_t* text, std::wstring_view attribute,
+                                 const bool allowQuotedTags, const bool allowSpacesInValue);
         /** @brief Same as read_attribute(), except it returns the value as a long.
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "score").
@@ -653,9 +726,8 @@ namespace lily_of_the_valley
                 this would need to be @c true. Usually this would be @c false.
             @returns The attribute value as a double, or zero on failure.*/
         [[nodiscard]]
-        static long read_attribute_as_long(const wchar_t* text,
-            std::wstring_view attribute,
-            const bool allowQuotedTags);
+        static long read_attribute_as_long(const wchar_t* text, std::wstring_view attribute,
+                                           const bool allowQuotedTags);
         /** @brief Searches a buffer range for an element (e.g., "<h1>").
             @returns The pointer to the next element, or null if not found.
             @param sectionStart The start of the HTML buffer.
@@ -666,8 +738,7 @@ namespace lily_of_the_valley
                 opening and closing elements with content in them.\n
                 @c true is recommended for most cases.*/
         [[nodiscard]]
-        static const wchar_t* find_element(const wchar_t* sectionStart,
-                                           const wchar_t* sectionEnd,
+        static const wchar_t* find_element(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                            std::wstring_view elementTag,
                                            const bool accept_self_terminating_elements);
         /** @c brief Searches a buffer range for an element's matching close (e.g., "</h1>").
@@ -681,8 +752,8 @@ namespace lily_of_the_valley
                 that we are looking for.*/
         [[nodiscard]]
         static const wchar_t* find_closing_element(const wchar_t* sectionStart,
-            const wchar_t* sectionEnd,
-            std::wstring_view elementTag);
+                                                   const wchar_t* sectionEnd,
+                                                   std::wstring_view elementTag);
         /** @brief Searches for an attribute inside of an element.
             @returns The position of the attribute (or null if not found).
             @param text The start of the element section.
@@ -694,9 +765,8 @@ namespace lily_of_the_valley
             @note If the position is currently on a '<' and you are searching for its matching '>',
                 then you should set @c sectionStart to one character after the '<'.*/
         [[nodiscard]]
-        static const wchar_t* find_tag(const wchar_t* text,
-            std::wstring_view tag,
-            const bool allowQuotedTags);
+        static const wchar_t* find_tag(const wchar_t* text, std::wstring_view tag,
+                                       const bool allowQuotedTags);
         /** @brief Searches a buffer range for a bookmark (e.g., "<a name="citation" />").
             @param sectionStart The start of the HTML buffer.
             @param sectionEnd The end of the HTML buffer.
@@ -704,8 +774,7 @@ namespace lily_of_the_valley
                 bookmark name (e.g., "citation").*/
         [[nodiscard]]
         static const std::pair<const wchar_t*, std::wstring>
-            find_bookmark(const wchar_t* sectionStart,
-                          const wchar_t* sectionEnd);
+        find_bookmark(const wchar_t* sectionStart, const wchar_t* sectionEnd);
         /** @brief Searches for a single character in a string, but ensures that
                 it is not inside of a pair of double or single quotes.
             @details This is specifically tailored for " and ' type of quotes used
@@ -714,8 +783,7 @@ namespace lily_of_the_valley
             @param ch The character to search for.
             @returns The pointer of where the character is, or null if not found.*/
         [[nodiscard]]
-        static const wchar_t* strchr_not_quoted(const wchar_t* string,
-                                                const wchar_t ch) noexcept;
+        static const wchar_t* strchr_not_quoted(const wchar_t* string, const wchar_t ch) noexcept;
         /** @brief Searches for substring in string (case-insensitive), but ensures that
                 what you are searching for is not in quotes.
             @details This is specifically tailored for " and ' type of quotes used
@@ -726,27 +794,30 @@ namespace lily_of_the_valley
             @param strSearchSize The length of @c strSearch.
             @returns The pointer of where the character is, or null if not found.*/
         [[nodiscard]]
-        static const wchar_t* stristr_not_quoted(
-            const wchar_t* string, const size_t stringSize,
-            const wchar_t* strSearch, const size_t strSearchSize) noexcept;
+        static const wchar_t* stristr_not_quoted(const wchar_t* string, const size_t stringSize,
+                                                 const wchar_t* strSearch,
+                                                 const size_t strSearchSize) noexcept;
         /** @returns The charset from the meta section of an HTML buffer.
             @param pageContent The meta section to analyze.
             @param length The length of @c pageContent.*/
         [[nodiscard]]
-        static std::string parse_charset(const char* pageContent,
-                                         const size_t length);
+        static std::string parse_charset(const char* pageContent, const size_t length);
+
         /// @brief Whether text from `<noscript>` blocks should be included in the results.
         /// @details These are using warning messages that scripting should be enabled
         ///     and are recommended to not be included.
         /// @param include @c true to include this sort of text.
         void include_no_script_sections(const bool include) noexcept
-            { m_includeNoScriptSections = include; }
+            {
+            m_includeNoScriptSections = include;
+            }
 
         /// @private
         static const html_utilities::symbol_font_table SYMBOL_FONT_TABLE;
         /// @private
         static const html_utilities::html_entity_table HTML_TABLE_LOOKUP;
-    protected:
+
+      protected:
         /** @brief Converts a section of HTML text that is using Symbol font into the actual
                 symbols that it is meant to display.
             @param symbolFontText The text to convert.
@@ -788,7 +859,7 @@ namespace lily_of_the_valley
         /// @private
         std::wstring m_keywords;
         };
-    }
+    } // namespace lily_of_the_valley
 
 /** @}*/
 
