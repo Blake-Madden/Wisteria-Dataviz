@@ -192,7 +192,7 @@ bool Wisteria::UI::BaseApp::OnInit()
 //----------------------------------------------------------
 int Wisteria::UI::BaseApp::OnExit()
     {
-    wxLogDebug(__WXFUNCTION__);
+    wxLogDebug(__func__);
     SaveFileHistoryMenu();
     wxDELETE(m_docManager);
 

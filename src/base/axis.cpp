@@ -3181,7 +3181,7 @@ namespace Wisteria::GraphItems
                       m_axisLabels.cend(), AxisPoint(value,label)) != m_axisLabels.cend())
             {
             wxLogVerbose(L"Value %f/%s in call to %s ignored; value already present on axis.",
-                         value, label, __WXFUNCTION__);
+                         value, label, __func__);
             return;
             }
         std::vector<AxisPoint>::iterator pos;
