@@ -737,22 +737,22 @@ namespace lily_of_the_valley
             // step over spaces between attribute name and its assignment operator
             while (foundTag && foundTag < elementEnd && *foundTag == L' ')
                 {
-                ++foundTag;
+                std::advance(foundTag, 1);
                 }
             // step over assignment operator
             if (foundTag && foundTag < elementEnd && is_either(*foundTag, L':', L'='))
                 {
-                ++foundTag;
+                std::advance(foundTag, 1);
                 }
             // step over any more spaces after assignment operator
             while (foundTag && foundTag < elementEnd && *foundTag == L' ')
                 {
-                ++foundTag;
+                std::advance(foundTag, 1);
                 }
             // step over any opening quotes
             if (foundTag && foundTag < elementEnd && is_either(*foundTag, L'\'', L'"'))
                 {
-                ++foundTag;
+                std::advance(foundTag, 1);
                 }
             if (foundTag >= elementEnd)
                 {
