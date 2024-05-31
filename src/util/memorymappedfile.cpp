@@ -152,6 +152,11 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
             m_open = true;
             return true;
             }
+        else if (m_mapSize == 0)
+            {
+            Reset();
+            throw MemoryMappedFileEmptyException();
+            }
         else
             {
             Reset();
