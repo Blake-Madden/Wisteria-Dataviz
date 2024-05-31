@@ -546,7 +546,11 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", false));
         CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"style", false, false));
         CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"info", false, false));
-        CHECK(std::wstring(L" ") == html_extract_text::read_attribute_as_string(text, L"info", false, true));
+        CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"info", false, true));
+
+        text = L"body style =\"\" info ='num value' height=275>there<br />world<br >!";
+        CHECK(std::wstring(L"num") == html_extract_text::read_attribute_as_string(text, L"info", false, false));
+        CHECK(std::wstring(L"num value") == html_extract_text::read_attribute_as_string(text, L"info", false, true));
         }
     SECTION("Read Tag Quotable")
         {
@@ -1391,6 +1395,15 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(std::wcsncmp(parse(), L"page.htm", 8) == 0);
         CHECK(parse() == nullptr);
         }
+    
+    SECTION("Leading space")
+        {
+        const wchar_t* text = LR"(<a href=" https://depauwtigers.com/landing/index" target="_blank">Athletics</a>)";
+        html_hyperlink_parse parse(text, std::wcslen(text) );
+
+        CHECK(std::wstring{ parse(), parse.get_current_hyperlink_length() } == std::wstring{ L"https://depauwtigers.com/landing/index" });
+        CHECK(parse() == nullptr);
+        }
 
     SECTION("Hyperlink")
         {
@@ -1619,7 +1632,7 @@ TEST_CASE("Html Url Format", "[html import]")
         html_url_format formatHtml(L"http://business.mypage.com/blah/blah.html");
         CHECK(formatHtml.get_directory_path() == L"business.mypage.com/blah");
         }
-    SECTION("NoProtocal")
+    SECTION("No Protocal")
         {
         html_url_format formatHtml(L"www.mypage.com");
         const wchar_t* p = formatHtml({ L"page.html", 9 }, false);

@@ -754,6 +754,11 @@ namespace lily_of_the_valley
                 {
                 std::advance(foundTag, 1);
                 }
+            // step over spaces after quote
+            while (foundTag && foundTag < elementEnd && *foundTag == L' ')
+                {
+                std::advance(foundTag, 1);
+                }
             if (foundTag >= elementEnd)
                 {
                 return std::make_pair(nullptr, 0);
@@ -2493,6 +2498,10 @@ namespace html_utilities
                                                const size_t length) noexcept
         : m_html_text(html_text), m_html_text_end(html_text + length)
         {
+        if (html_text == nullptr)
+            {
+            return;
+            }
         // see if there is a base url that should be used as an alternative that the client should
         // use instead
         const wchar_t* headStart = string_util::stristr<wchar_t>(m_html_text, L"<head");
