@@ -261,6 +261,7 @@ namespace Wisteria
     bool TextStream::ReadFile(wxString& filePath, wxString& textBuffer,
                               const wxString& srcCharSet /*= wxString{}*/)
         {
+        textBuffer.clear();
         // can't do anything with an empty path, even prompting the user
         // won't make any sense
         if (filePath.empty())
@@ -314,6 +315,11 @@ namespace Wisteria
                 wxMessageBox(_(L"Unable to read file."), _(L"Error"), wxOK | wxICON_EXCLAMATION);
                 return false;
                 }
+            }
+        // empty file's are OK, just silently return
+        catch (MemoryMappedFileEmptyException&)
+            {
+            return true;
             }
         catch (...)
             {
