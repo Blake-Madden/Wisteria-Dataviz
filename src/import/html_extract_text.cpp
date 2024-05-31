@@ -2397,7 +2397,7 @@ namespace html_utilities
 
         // jump over the previous link (and its trailing quote)
         std::advance(m_js_text_start,
-            (get_current_hyperlink_length() > 0) ? get_current_hyperlink_length() + 1 : 0);
+                     (get_current_hyperlink_length() > 0) ? get_current_hyperlink_length() + 1 : 0);
         if (m_js_text_start >= m_js_text_end)
             {
             return nullptr;

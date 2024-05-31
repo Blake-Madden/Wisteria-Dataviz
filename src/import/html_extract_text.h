@@ -108,7 +108,8 @@ namespace html_utilities
 
         /// @returns The last parsed link from @c operator().
         /// @note Will be @c nullptr if no more links were found.
-        [[nodiscard]] const wchar_t* get_current_link() const noexcept
+        [[nodiscard]]
+        const wchar_t* get_current_link() const noexcept
             {
             return m_js_text_start;
             }
