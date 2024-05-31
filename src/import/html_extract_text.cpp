@@ -2392,6 +2392,8 @@ namespace html_utilities
         // is null or at the terminator then we are done
         if (!m_js_text_end || !m_js_text_start || m_js_text_start[0] == 0)
             {
+            m_current_hyperlink_length = 0;
+            m_js_text_start = nullptr;
             return nullptr;
             }
 
