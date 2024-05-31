@@ -2911,6 +2911,8 @@ namespace html_utilities
             m_current_url += m_image_name;
             }
 
+        string_util::trim(m_current_url);
+
         // now get the domain information about this URL
         parse_domain(m_current_url, m_current_full_domain, m_current_domain, m_current_subdomain);
 
