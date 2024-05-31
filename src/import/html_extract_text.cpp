@@ -2400,6 +2400,8 @@ namespace html_utilities
                      (get_current_hyperlink_length() > 0) ? get_current_hyperlink_length() + 1 : 0);
         if (m_js_text_start >= m_js_text_end)
             {
+            m_current_hyperlink_length = 0;
+            m_js_text_start = nullptr;
             return nullptr;
             }
 
@@ -2426,11 +2428,15 @@ namespace html_utilities
                     }
                 else
                     {
+                    m_current_hyperlink_length = 0;
+                    m_js_text_start = nullptr;
                     return nullptr;
                     }
                 }
             else
                 {
+                m_current_hyperlink_length = 0;
+                m_js_text_start = nullptr;
                 return nullptr;
                 }
             }
