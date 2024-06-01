@@ -783,14 +783,14 @@ namespace Wisteria::Graphs
                 { bar.SetEffect(effect); }
             }
         /** @brief Sets the specified bars (by custom axis label) to be fully opaque,
-                and all other to a lighter opacity.
+                and all others to a lighter opacity.
             @param labels The bars to showcase.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
             @sa SetGhostOpacity().*/
         void ShowcaseBars(const std::vector<wxString>& labels);
         /** @brief Sets the specified bars (by axis position) to be fully opaque,
-                and all other to a lighter opacity.
+                and all others to a lighter opacity.
             @param positions The axis positions of the bars to showcase.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
