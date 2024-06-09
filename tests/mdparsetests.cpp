@@ -33,6 +33,33 @@ TEST_CASE("Markdown Parser", "[md import]")
             std::wstring{ L"Here is the actual text to review." });
         }
 
+    SECTION("HTML List")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ LR"(following list:
+
+<ul>
+<li>Interval</li>
+<li>Period</li>
+<li>Int</li>
+<li>More</li>
+</ul>
+
+The End.)" }) } ==
+             std::wstring{ LR"(following list:
+
+
+
+ 
+	Interval 
+	Period 
+	Int 
+	More 
+
+
+ The End.)" });
+        }
+
     SECTION("HTML Table")
         {
         lily_of_the_valley::markdown_extract_text md;

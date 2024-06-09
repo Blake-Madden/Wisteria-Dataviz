@@ -81,13 +81,13 @@ bool lily_of_the_valley::markdown_extract_text::parse_html_block(const std::wstr
         { tag.data() }, { endTag.data() });
     if (endOfTag == nullptr)
         {
-        log_message(L"Bad HTML <table> in markdown file.");
+        log_message(L"Bad HTML section in markdown file.");
         return false;
         }
     std::advance(endOfTag, endTag.length());
     if (endOfTag >= m_currentEndSentinel)
         {
-        log_message(L"Bad HTML </table> in markdown file.");
+        log_message(L"Bad HTML section in markdown file.");
         return false;
         }
     html_extract_text hext;
@@ -140,6 +140,15 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     const std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
     const std::wstring_view BEGIN_FIGURE{ L"\\begin{figure}" };
     const std::wstring_view END_FIGURE{ L"\\end{figure}" };
+
+    const std::wstring_view TABLE{ L"table" };
+    const std::wstring_view TABLE_END{ L"</table>" };
+
+    const std::wstring_view UNORDERED_LIST{ L"ul" };
+    const std::wstring_view UNORDERED_LIST_END{ L"</ul>" };
+
+    const std::wstring_view ORDERED_LIST{ L"ol" };
+    const std::wstring_view ORDERED_LIST_END{ L"</ol>" };
 
     bool isEscaping{ false };
     bool headerMode{ false };
@@ -731,14 +740,34 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             }
         else if (*m_currentStart == L'<')
             {
-            const std::wstring_view TABLE{ L"table" };
-            const std::wstring_view TABLE_END{ L"</table>" };
             if (!isEscaping &&
                 static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) >=
                     TABLE.length() + 1 &&
                 std::wcsncmp(std::next(m_currentStart), TABLE.data(), TABLE.length()) == 0)
                 {
                 if (!parse_html_block(TABLE, TABLE_END))
+                    {
+                    break;
+                    }
+                }
+            else if (!isEscaping &&
+                static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) >=
+                    UNORDERED_LIST.length() + 1 &&
+                std::wcsncmp(std::next(m_currentStart), UNORDERED_LIST.data(),
+                             UNORDERED_LIST.length()) == 0)
+                {
+                if (!parse_html_block(UNORDERED_LIST, UNORDERED_LIST_END))
+                    {
+                    break;
+                    }
+                }
+            else if (!isEscaping &&
+                     static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) >=
+                         ORDERED_LIST.length() + 1 &&
+                     std::wcsncmp(std::next(m_currentStart), ORDERED_LIST.data(),
+                                  ORDERED_LIST.length()) == 0)
+                {
+                if (!parse_html_block(ORDERED_LIST, ORDERED_LIST_END))
                     {
                     break;
                     }
