@@ -16,16 +16,46 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
             return true;
             }
         }
+    const wchar_t* const tagStart{ m_currentStart };
     while (*m_currentStart == tag && m_currentStart < m_currentEndSentinel)
         {
         std::advance(m_currentStart, 1);
         }
-    auto endOfTag = string_util::find_unescaped_char_same_line_n(
+    std::wstring_view currentTag{ tagStart,
+                                  static_cast<size_t>(std::distance(tagStart, m_currentStart)) };
+    const wchar_t* endOfTag = string_util::find_unescaped_char_same_line_n(
         m_currentStart, tag, std::distance(m_currentStart, m_currentEndSentinel));
     if (endOfTag == nullptr || (endOfTag >= m_currentEndSentinel))
         {
         log_message(L"Missing matching styling tag in markdown file.");
         return false;
+        }
+    // if a bold tag (**), then move to the matching (terminating) tag
+    while (currentTag == L"**" && (std::next(endOfTag) < m_currentEndSentinel) &&
+        *std::next(endOfTag) != L'*')
+        {
+        std::advance(endOfTag, 1);
+        endOfTag = string_util::find_unescaped_char_same_line_n(
+            endOfTag, tag, std::distance(endOfTag, m_currentEndSentinel));
+        if (endOfTag == nullptr || (endOfTag >= m_currentEndSentinel))
+            {
+            log_message(L"Missing matching styling tag in markdown file.");
+            return false;
+            }
+        }
+    // or an italic tag(*), then move to the matching (*), skipping over any
+    // embedded bold tags (**)
+    while (currentTag == L"*" && (std::next(endOfTag) < m_currentEndSentinel) &&
+           *std::next(endOfTag) == L'*')
+        {
+        std::advance(endOfTag, 2);
+        endOfTag = string_util::find_unescaped_char_same_line_n(
+            endOfTag, tag, std::distance(endOfTag, m_currentEndSentinel));
+        if (endOfTag == nullptr || (endOfTag >= m_currentEndSentinel))
+            {
+            log_message(L"Missing matching styling tag in markdown file.");
+            return false;
+            }
         }
     while (*endOfTag == tag && (endOfTag < m_currentEndSentinel))
         {
@@ -751,10 +781,10 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     }
                 }
             else if (!isEscaping &&
-                static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) >=
-                    UNORDERED_LIST.length() + 1 &&
-                std::wcsncmp(std::next(m_currentStart), UNORDERED_LIST.data(),
-                             UNORDERED_LIST.length()) == 0)
+                     static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) >=
+                         UNORDERED_LIST.length() + 1 &&
+                     std::wcsncmp(std::next(m_currentStart), UNORDERED_LIST.data(),
+                                  UNORDERED_LIST.length()) == 0)
                 {
                 if (!parse_html_block(UNORDERED_LIST, UNORDERED_LIST_END))
                     {

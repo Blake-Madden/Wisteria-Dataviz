@@ -121,7 +121,6 @@ The End.)" }) } ==
               std::wstring{ L"This is italic and bold and also italic. 2 * 2." });
         CHECK(std::wstring{ md({ L"This is _italic and **bold** text_." }) } ==
             std::wstring{ L"This is italic and bold text." });
-        // can't handle "This is *italic and **bold** text*", will have to be a known limitation
         CHECK(std::wstring{ md({ L"**PGF\\_HOT**" }) } ==
             std::wstring{ L"PGF_HOT" });
         CHECK(std::wstring{ md({ L"TIFF _spe_ci**f**i_c_ *options*" }) } ==
@@ -131,6 +130,22 @@ The End.)" }) } ==
         // unescaped _ in front will get lost, but read in the rest of it
         CHECK(std::wstring{ md({ L"A **_variant_t** _object_" }) } ==
             std::wstring{ L"A variant_t object" });
+        }
+    
+    SECTION("Emphasis (overlapping)")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"**Formalize the routine, use a *top-down* approach.**" }) } ==
+              std::wstring{ L"Formalize the routine, use a top-down approach." });
+        CHECK(std::wstring{ md({ L"*Formalize the routine, use a **top-down** approach.*" }) } ==
+              std::wstring{ L"Formalize the routine, use a top-down approach." });
+        // malformed
+        CHECK(std::wstring{ md({ L"*Formalize the routine, use a **top-down approach.*" }) } ==
+              std::wstring{ L"Formalize the routine, use a top-down approach." });
+        CHECK(std::wstring{ md({ L"**Formalize the routine, use a *top-down* approach." }) } ==
+              std::wstring{ L"Formalize the routine, use a top-down approach." });
+        CHECK(std::wstring{ md({ L"**Formalize the routine, use a *top-down approach." }) } ==
+              std::wstring{ L"Formalize the routine, use a top-down approach." });
         }
 
     SECTION("Blockquoes")
