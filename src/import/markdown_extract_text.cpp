@@ -70,12 +70,41 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
     }
 
 //--------------------------------------------
+bool lily_of_the_valley::markdown_extract_text::parse_html_block(const std::wstring_view tag,
+                                                                 const std::wstring_view endTag)
+    {
+    const auto* originalStart{ m_currentStart };
+    std::advance(m_currentStart, tag.length() + 1); // step over '<' also
+    auto* endOfTag = string_util::find_matching_close_tag(
+        { m_currentStart,
+          static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) },
+        { tag.data() }, { endTag.data() });
+    if (endOfTag == nullptr)
+        {
+        log_message(L"Bad HTML <table> in markdown file.");
+        return false;
+        }
+    std::advance(endOfTag, endTag.length());
+    if (endOfTag >= m_currentEndSentinel)
+        {
+        log_message(L"Bad HTML </table> in markdown file.");
+        return false;
+        }
+    html_extract_text hext;
+    hext(originalStart, std::distance(originalStart, endOfTag), false, false);
+    add_characters({ hext.get_filtered_text(), hext.get_filtered_text_length() });
+    std::advance(m_currentStart, std::distance(m_currentStart, endOfTag));
+    return true;
+    }
+
+//--------------------------------------------
 const wchar_t*
 lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md_text)
     {
     clear_log();
     clear();
     m_currentStart = m_currentEndSentinel = nullptr;
+
     if (md_text.empty())
         {
         return nullptr;
@@ -709,27 +738,10 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     TABLE.length() + 1 &&
                 std::wcsncmp(std::next(m_currentStart), TABLE.data(), TABLE.length()) == 0)
                 {
-                const auto* originalStart{ m_currentStart };
-                std::advance(m_currentStart, TABLE.length() + 1); // step over '<' also
-                auto* endOfTag = string_util::find_matching_close_tag(
-                    { m_currentStart,
-                      static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) },
-                    { TABLE.data() }, { TABLE_END.data() });
-                if (endOfTag == nullptr)
+                if (!parse_html_block(TABLE, TABLE_END))
                     {
-                    log_message(L"Bad HTML <table> in markdown file.");
                     break;
                     }
-                std::advance(endOfTag, TABLE_END.length());
-                if (endOfTag >= m_currentEndSentinel)
-                    {
-                    log_message(L"Bad HTML </table> in markdown file.");
-                    break;
-                    }
-                html_extract_text hext;
-                hext(originalStart, std::distance(originalStart, endOfTag), false, false);
-                add_characters({ hext.get_filtered_text(), hext.get_filtered_text_length() });
-                std::advance(m_currentStart, std::distance(m_currentStart, endOfTag));
                 }
             else if (!isEscaping && std::next(m_currentStart) < m_currentEndSentinel &&
                      (m_currentStart[1] == L'/' || m_currentStart[1] == L'p' ||

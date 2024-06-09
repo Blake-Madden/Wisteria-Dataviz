@@ -45,6 +45,9 @@ namespace lily_of_the_valley
 
         bool parse_styled_text(wchar_t& previousChar, const wchar_t tag);
 
+        [[nodiscard]]
+        bool parse_html_block(const std::wstring_view tag, const std::wstring_view endTag);
+
         /** @brief Metadata sections end on the first blank like, so moves to that.
             @param md_text The Markdown text, starting anywhere in the metadata section.
             @returns The start of the document's body.
