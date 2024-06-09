@@ -43,6 +43,8 @@ namespace lily_of_the_valley
             return (std::wcsncmp(md_text, L"---", 3) == 0);
             }
 
+        bool parse_styled_text(wchar_t& previousChar, const wchar_t tag);
+
         /** @brief Metadata sections end on the first blank like, so moves to that.
             @param md_text The Markdown text, starting anywhere in the metadata section.
             @returns The start of the document's body.
@@ -80,6 +82,8 @@ namespace lily_of_the_valley
             }
 
         std::unique_ptr<markdown_extract_text> m_subParser{ nullptr };
+        const wchar_t* m_currentStart{ nullptr };
+        const wchar_t* m_currentEndSentinel{ nullptr };
         };
     } // namespace lily_of_the_valley
 
