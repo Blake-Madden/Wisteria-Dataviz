@@ -912,7 +912,6 @@ namespace lily_of_the_valley
         // a false paragraph of text.
         size_t consecutiveAHrefs{ 0 };
         constexpr int LINK_LIST_LINK_MIN{ 3 };
-        bool linkListEnded{ false };
         std::vector<size_t> linkListPositions;
         std::vector<size_t> linkListPositionsEnds;
 
