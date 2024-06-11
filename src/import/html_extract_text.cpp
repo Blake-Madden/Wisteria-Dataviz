@@ -905,11 +905,73 @@ namespace lily_of_the_valley
         const wchar_t* const endSentinel = html_text + text_length;
         case_insensitive_wstring currentElement;
         case_insensitive_wstring previousElement;
+
+        // More than three consecutive A HREFs will result in them being formatted
+        // into a list that is tabbed over. Even for links that are next to each other
+        // as a paragraph, we will want to show them as a link list rather than
+        // a false paragraph of text.
+        size_t consecutiveAHrefs{ 0 };
+        constexpr int LINK_LIST_LINK_MIN{ 3 };
+        bool linkListEnded{ false };
+        std::vector<size_t> linkListPositions;
+        std::vector<size_t> linkListPositionsEnds;
+
         while (start && (start < endSentinel))
             {
             const size_t remainingTextLength = (endSentinel - start);
             previousElement = currentElement;
             currentElement.assign(get_element_name(start + 1, false));
+
+            if (currentElement == L"a")
+                {
+                ++consecutiveAHrefs;
+                linkListPositions.push_back(get_filtered_buffer().length());
+                // Review what is between the previous anchor end and this new one.
+                if (linkListPositions.size() > 0 && linkListPositionsEnds.size() > 0)
+                    {
+                    std::wstring_view previousRead =
+                        std::wstring_view{ get_filtered_buffer() }.substr(
+                            linkListPositionsEnds.back(),
+                            linkListPositions.back() - linkListPositionsEnds.back());
+                    if (!previousRead.empty())
+                        {
+                        // if anything other than spaces or punctuation between the links,
+                        // then this isn't a link list
+                        for (const auto chr : previousRead)
+                            {
+                            if (!(std::iswpunct(chr) || std::iswspace(chr)))
+                                {
+                                consecutiveAHrefs = 0;
+                                linkListPositions.clear();
+                                linkListPositionsEnds.clear();
+                                break;
+                                }
+                            }
+                        }
+                    }
+                }
+            else if (currentElement == L"/a")
+                {
+                linkListPositionsEnds.push_back(get_filtered_buffer().length());
+                }
+            // Ignore any breaks and images between links.
+            // (Images can be small icons next to a bullet point hyperlink.)
+            // Anything else will break the current series of A HREFs.
+            else if (currentElement != L"br" && currentElement != L"img")
+                {
+                if (consecutiveAHrefs >= LINK_LIST_LINK_MIN)
+                    {
+                    // insert a newline and tab in front of each link in the link list
+                    for (size_t i = 0; i < linkListPositions.size(); ++i)
+                        {
+                        get_filtered_buffer().insert(linkListPositions[i] + (i * 2), L"\n\t");
+                        }
+                    }
+                consecutiveAHrefs = 0;
+                linkListPositions.clear();
+                linkListPositionsEnds.clear();
+                }
+
             bool isSymbolFontSection = false;
             // if it's a comment, then look for matching comment ending sequence
             if (remainingTextLength >= 4 && start[0] == L'<' && start[1] == L'!' &&
@@ -1316,12 +1378,6 @@ namespace lily_of_the_valley
                             add_character(L'\n');
                             add_character(L'\n');
                             }
-                        // break in front of link indicates that this is a link list,
-                        // so add an extra newline in front of it
-                        else if (previousElement == L"br")
-                            {
-                            add_character(L'\n');
-                            }
                         }
                     }
                 else if (currentElement == L"span")
@@ -1443,6 +1499,16 @@ namespace lily_of_the_valley
                     {
                     --m_subscript_stack;
                     }
+                }
+            }
+
+        // flush out a trailing link list (if present)
+        if (consecutiveAHrefs >= LINK_LIST_LINK_MIN)
+            {
+            // insert newlines and tab in front of each link in the link list
+            for (size_t i = 0; i < linkListPositions.size(); ++i)
+                {
+                get_filtered_buffer().insert(linkListPositions[i] + (i * 2), L"\n\t");
                 }
             }
 
