@@ -854,7 +854,14 @@ TEST_CASE("HTML Parser", "[html import]")
         const std::wstring res = filter_html(text, std::wcslen(text), true, false);
         CHECK(res == std::wstring{ L"\n\nContact:\n\n\n\t\n\t\n\t\n\t\n\nSome more content\n\n" });
         }
-    SECTION("Link list not enough links")
+    SECTION("Link list breaks, overlapping anchors")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = L"<p>Contact:</p><a href=''>Prayer Card<a href=''> Email</a></a>, <a href=''>Mail</a>, <a href=''>Call</a> 555-5555<p>Some more content</p>";
+        const std::wstring res = filter_html(text, std::wcslen(text), true, false);
+        CHECK(res == std::wstring{ L"\n\nContact:\n\nPrayer Card Email, Mail, Call 555-5555\n\nSome more content\n\n" });
+        }
+    SECTION("Link list breaks, not enough links")
         {
         // needs 4 links, only has 3
         html_extract_text filter_html;
@@ -862,13 +869,20 @@ TEST_CASE("HTML Parser", "[html import]")
         const std::wstring res = filter_html(text, std::wcslen(text), true, false);
         CHECK(res == std::wstring{ L"\n\nContact:\n\nPrayer Card, Call 555-5555" });
         }
-    SECTION("Link list with extra content")
+    SECTION("Link list breaks from extra text content")
         {
         // text content between links causes them to not be a link list
         html_extract_text filter_html;
         const wchar_t* text = L"<p>Contact:</p><a href=''>Prayer Card</a> (extras available!) <a href=''>Email</a> <a href=''>Mail</a> <a href=''>Call</a> 555-5555";
         const std::wstring res = filter_html(text, std::wcslen(text), true, false);
         CHECK(res == std::wstring{ L"\n\nContact:\n\nPrayer Card (extras available!) Email Mail Call 555-5555" });
+        }
+    SECTION("Link list breaks from too wide extra content")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = L"<p>Contact:</p><a href=''>Prayer Card</a> <a href=''>Email</a>, ||<a href=''>Mail</a>, <a href=''>Call</a> 555-5555";
+        const std::wstring res = filter_html(text, std::wcslen(text), true, false);
+        CHECK(res == std::wstring{ L"\n\nContact:\n\nPrayer Card Email, ||Mail, Call 555-5555" });
         }
     SECTION("Template placeHolders")
         {

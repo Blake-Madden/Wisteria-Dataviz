@@ -911,45 +911,57 @@ namespace lily_of_the_valley
         // as a paragraph, we will want to show them as a link list rather than
         // a false paragraph of text.
         size_t consecutiveAHrefs{ 0 };
-        constexpr int LINK_LIST_LINK_MIN{ 3 };
+        constexpr int MIN_LINKS_FOR_LINK_LIST{ 3 };
+        constexpr int MAX_CONTENT_BETWEEN_LINK_LIST_LINKS{ 3 };
         std::vector<size_t> linkListPositions;
         std::vector<size_t> linkListPositionsEnds;
 
         while (start && (start < endSentinel))
             {
             const size_t remainingTextLength = (endSentinel - start);
-            previousElement = currentElement;
             currentElement.assign(get_element_name(start + 1, false));
 
-            if (currentElement == L"a")
+            // at the start of a new anchor and not inside of another one
+            // (which isn't valid HTML, but you never know)
+            if (currentElement == L"a" && previousElement != L"a")
                 {
                 ++consecutiveAHrefs;
                 linkListPositions.push_back(get_filtered_buffer().length());
                 // Review what is between the previous anchor end and this new one.
                 if (linkListPositions.size() > 0 && linkListPositionsEnds.size() > 0)
                     {
-                    std::wstring_view previousRead =
+                    const std::wstring_view previousRead =
                         std::wstring_view{ get_filtered_buffer() }.substr(
                             linkListPositionsEnds.back(),
                             linkListPositions.back() - linkListPositionsEnds.back());
                     if (!previousRead.empty())
                         {
-                        // if anything other than spaces or punctuation between the links,
-                        // then this isn't a link list
-                        for (const auto chr : previousRead)
+                        // too much content between end of link and start of next one...
+                        if (previousRead.length() > MAX_CONTENT_BETWEEN_LINK_LIST_LINKS)
                             {
-                            if (!(std::iswpunct(chr) || std::iswspace(chr)))
+                            consecutiveAHrefs = 0;
+                            linkListPositions.clear();
+                            linkListPositionsEnds.clear();
+                            }
+                        else
+                            {
+                            // ...or if anything other than spaces or punctuation between the links,
+                            // then this isn't a link list
+                            for (const auto chr : previousRead)
                                 {
-                                consecutiveAHrefs = 0;
-                                linkListPositions.clear();
-                                linkListPositionsEnds.clear();
-                                break;
+                                if (!(std::iswpunct(chr) || std::iswspace(chr)))
+                                    {
+                                    consecutiveAHrefs = 0;
+                                    linkListPositions.clear();
+                                    linkListPositionsEnds.clear();
+                                    break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            else if (currentElement == L"/a")
+            else if (currentElement == L"/a" && previousElement == L"a")
                 {
                 linkListPositionsEnds.push_back(get_filtered_buffer().length());
                 }
@@ -958,7 +970,8 @@ namespace lily_of_the_valley
             // Anything else will break the current series of A HREFs.
             else if (currentElement != L"br" && currentElement != L"img")
                 {
-                if (consecutiveAHrefs >= LINK_LIST_LINK_MIN)
+                // we have enough consecutive links to consider it a list
+                if (consecutiveAHrefs >= MIN_LINKS_FOR_LINK_LIST)
                     {
                     // insert a newline and tab in front of each link in the link list
                     for (size_t i = 0; i < linkListPositions.size(); ++i)
@@ -1499,10 +1512,12 @@ namespace lily_of_the_valley
                     --m_subscript_stack;
                     }
                 }
+
+            previousElement = currentElement;
             }
 
         // flush out a trailing link list (if present)
-        if (consecutiveAHrefs >= LINK_LIST_LINK_MIN)
+        if (consecutiveAHrefs >= MIN_LINKS_FOR_LINK_LIST)
             {
             // insert newlines and tab in front of each link in the link list
             for (size_t i = 0; i < linkListPositions.size(); ++i)
