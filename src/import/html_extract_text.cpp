@@ -931,9 +931,9 @@ namespace lily_of_the_valley
                 if (linkListPositions.size() > 0 && linkListPositionsEnds.size() > 0)
                     {
                     const std::wstring_view previousRead =
-                        std::wstring_view{ get_filtered_buffer() }.substr(
+                        string_util::trim_view(std::wstring_view{ get_filtered_buffer() }.substr(
                             linkListPositionsEnds.back(),
-                            linkListPositions.back() - linkListPositionsEnds.back());
+                            linkListPositions.back() - linkListPositionsEnds.back()));
                     if (!previousRead.empty())
                         {
                         // too much content between end of link and start of next one...

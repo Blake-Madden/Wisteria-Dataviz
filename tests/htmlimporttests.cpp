@@ -833,6 +833,13 @@ TEST_CASE("HTML Parser", "[html import]")
         const std::wstring res = filter_html(text, std::wcslen(text), true, false);
         CHECK(res == std::wstring{ L"\n\nContact:\n\n\n\tPrayer Card\n\tEmail, \n\tMail, \n\tCall 555-5555" });
         }
+    SECTION("Link list lots of spaces")
+        {
+        html_extract_text filter_html;
+        const wchar_t* text = L"<p>Contact:</p><a href=''>Prayer Card</a><a href=''>Email</a>      ,        <a href=''>Mail</a>, <a href=''>Call</a> 555-5555";
+        const std::wstring res = filter_html(text, std::wcslen(text), true, false);
+        CHECK(res == std::wstring{ L"\n\nContact:\n\n\n\tPrayer Card\n\tEmail      ,        \n\tMail, \n\tCall 555-5555" });
+        }
     SECTION("Link list with trailing content")
         {
         html_extract_text filter_html;
