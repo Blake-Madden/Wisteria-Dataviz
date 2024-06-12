@@ -915,6 +915,18 @@ namespace lily_of_the_valley
         constexpr int MAX_CONTENT_BETWEEN_LINK_LIST_LINKS{ 3 };
         std::vector<size_t> linkListPositions;
         std::vector<size_t> linkListPositionsEnds;
+        const auto isAtStartOfLine = [this]()
+        {
+            const size_t lastNotHSpace = get_filtered_buffer().find_last_not_of(L" \t");
+            if (lastNotHSpace != std::wstring::npos)
+                {
+                return is_either(get_filtered_buffer()[lastNotHSpace], L'\n', L'\r');
+                }
+            else
+                {
+                return true;
+                }
+        };
 
         while (start && (start < endSentinel))
             {
@@ -925,36 +937,40 @@ namespace lily_of_the_valley
             // (which isn't valid HTML, but you never know)
             if (currentElement == L"a" && previousElement != L"a")
                 {
-                ++consecutiveAHrefs;
-                linkListPositions.push_back(get_filtered_buffer().length());
-                // Review what is between the previous anchor end and this new one.
-                if (linkListPositions.size() > 0 && linkListPositionsEnds.size() > 0)
+                // the first link in the list must start at the beginning of a new line
+                if (!(consecutiveAHrefs == 0 && !isAtStartOfLine()))
                     {
-                    const std::wstring_view previousRead =
-                        string_util::trim_view(std::wstring_view{ get_filtered_buffer() }.substr(
-                            linkListPositionsEnds.back(),
-                            linkListPositions.back() - linkListPositionsEnds.back()));
-                    if (!previousRead.empty())
+                    ++consecutiveAHrefs;
+                    linkListPositions.push_back(get_filtered_buffer().length());
+                    // Review what is between the previous anchor end and this new one.
+                    if (linkListPositions.size() > 0 && linkListPositionsEnds.size() > 0)
                         {
-                        // too much content between end of link and start of next one...
-                        if (previousRead.length() > MAX_CONTENT_BETWEEN_LINK_LIST_LINKS)
+                        const std::wstring_view previousRead = string_util::trim_view(
+                            std::wstring_view{ get_filtered_buffer() }.substr(
+                                linkListPositionsEnds.back(),
+                                linkListPositions.back() - linkListPositionsEnds.back()));
+                        if (!previousRead.empty())
                             {
-                            consecutiveAHrefs = 0;
-                            linkListPositions.clear();
-                            linkListPositionsEnds.clear();
-                            }
-                        else
-                            {
-                            // ...or if anything other than spaces or punctuation between the links,
-                            // then this isn't a link list
-                            for (const auto chr : previousRead)
+                            // too much content between end of link and start of next one...
+                            if (previousRead.length() > MAX_CONTENT_BETWEEN_LINK_LIST_LINKS)
                                 {
-                                if (!(std::iswpunct(chr) || std::iswspace(chr)))
+                                consecutiveAHrefs = 0;
+                                linkListPositions.clear();
+                                linkListPositionsEnds.clear();
+                                }
+                            else
+                                {
+                                // ...or if anything other than spaces or punctuation between the
+                                // links, then this isn't a link list
+                                for (const auto chr : previousRead)
                                     {
-                                    consecutiveAHrefs = 0;
-                                    linkListPositions.clear();
-                                    linkListPositionsEnds.clear();
-                                    break;
+                                    if (!(std::iswpunct(chr) || std::iswspace(chr)))
+                                        {
+                                        consecutiveAHrefs = 0;
+                                        linkListPositions.clear();
+                                        linkListPositionsEnds.clear();
+                                        break;
+                                        }
                                     }
                                 }
                             }
