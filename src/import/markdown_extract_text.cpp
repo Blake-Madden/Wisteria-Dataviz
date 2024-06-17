@@ -32,7 +32,7 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
         }
     // if a bold tag (**), then move to the matching (terminating) tag
     while (currentTag == L"**" && (std::next(endOfTag) < m_currentEndSentinel) &&
-        *std::next(endOfTag) != L'*')
+           *std::next(endOfTag) != L'*')
         {
         std::advance(endOfTag, 1);
         endOfTag = string_util::find_unescaped_char_same_line_n(
@@ -803,12 +803,13 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     }
                 }
             else if (!isEscaping && std::next(m_currentStart) < m_currentEndSentinel &&
-                     (m_currentStart[1] == L'/' || m_currentStart[1] == L'p' ||
+                     (*std::next(m_currentStart) == L'/' || *std::next(m_currentStart) == L'p' ||
                       std::wcsncmp(std::next(m_currentStart), L"a ", 2) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"b>", 2) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"i>", 2) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"u>", 2) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"code", 4) == 0 ||
+                      std::wcsncmp(std::next(m_currentStart), L"span", 4) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"strong", 6) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"div", 3) == 0 ||
                       std::wcsncmp(std::next(m_currentStart), L"dl>", 3) == 0 ||
