@@ -737,6 +737,20 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             m_currentStart = endOfTag + 3;
             continue;
             }
+        else if (!isEscaping && std::wcsncmp(m_currentStart, L"<p>", 3) == 0)
+            {
+            m_currentStart += 3;
+            previousChar = L'\n';
+            add_characters(L"\n\n");
+            continue;
+            }
+        else if (!isEscaping && std::wcsncmp(m_currentStart, L"</p>", 4) == 0)
+            {
+            m_currentStart += 4;
+            previousChar = L'\n';
+            add_characters(L"\n\n");
+            continue;
+            }
         // newline hacks found in tables (just replace with space to keep the table structure).
         else if (!isEscaping && std::wcsncmp(m_currentStart, L"<br>\\linebreak", 14) == 0)
             {
