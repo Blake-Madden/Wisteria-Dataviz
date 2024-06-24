@@ -174,7 +174,7 @@ build the library and demo:
 
 ```
 cmake ./
-make -j4
+cmake --build ./ -j 4
 ```
 
 If using KDevelop or VS Code, you can also open the CMake file and build from there.
@@ -187,13 +187,14 @@ Install the following using brew (or build from source):
 - wxWidgets 3.2
 - Threading Building Blocks (tbb)
 - OpenMP (libomp)
+- Doxygen
 
 Go into the project folder and run the following to
 build the library and demo:
 
 ```
 cmake ./
-make -j4
+cmake --build ./ -j 4
 ```
 
 Documentation

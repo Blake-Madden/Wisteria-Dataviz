@@ -7,7 +7,7 @@
 # License:     3-Clause BSD license
 #############################################################################
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.25)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -32,11 +32,11 @@ add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 message(STATUS "Finding Catch2...")
-# place Catch2 at the same folder level as this repo if it isn't installed
-# (you will need to do this on Windows or macOS or if version 3 of Catch2 isn't installed)
-get_filename_component(_fullpath "${_dir}" REALPATH)
-if(EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/../../Catch2")
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
+include(../cmake/folders.cmake)
+# place Catch2 at the same folder level as this repo or somewhere above it
+find_directory("Catch2" CATCH_DIR)
+if(EXISTS ${CATCH_DIR})
+    add_subdirectory(${CATCH_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
 else()
     # ...otherwise, see if it is installed
     find_package(Catch2 3 REQUIRED)
@@ -60,13 +60,13 @@ add_executable(${CMAKE_PROJECT_NAME} ${TEST_SRC_FILES} ${LIB_SRC_FILES})
 
 # Link required libraries to the executable
 if(WIN32)
-    TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION)
-    TARGET_COMPILE_OPTIONS(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus /fsanitize=address)
-    TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} PRIVATE Catch2::Catch2WithMain)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus /fsanitize=address)
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Catch2::Catch2WithMain)
 elseif(UNIX)
-    TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST)
-    FIND_LIBRARY(TBB_LIB tbb)
-    TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${TBB_LIB} Catch2::Catch2WithMain)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST)
+    find_library(TBB_LIB tbb)
+    target_link_libraries(${CMAKE_PROJECT_NAME} ${TBB_LIB} Catch2::Catch2WithMain)
 endif()
 
 # Copy datasets into build folder

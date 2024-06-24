@@ -7,7 +7,7 @@
 # License:     3-Clause BSD license
 #############################################################################
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.25)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -32,23 +32,17 @@ project(WisteriaGuiTestRunner)
 
 # Setup wxWidgets
 ##############################################################
+include(../../cmake/folders.cmake)
 
 # Find wxWidgets (wxWidgetsConfig.cmake, specifically) and select its components
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../wxWidgets")
-    if(WIN32)
-        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
-    elseif(UNIX)
-        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../wxWidgets/wxlib/lib/cmake/wxWidgets")
-    endif()
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets")
-    if(WIN32)
-        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
-    elseif(UNIX)
-        set(wxWidgets_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../wxWidgets/wxlib/lib/cmake/wxWidgets")
-    endif()
+find_directory("wxWidgets" wxWidgets_BASEDIR)
+if(WIN32)
+    set(wxWidgets_DIR "${wxWidgets_BASEDIR}/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
+elseif(UNIX)
+    set(wxWidgets_DIR "${wxWidgets_BASEDIR}/wxlib/lib/cmake/wxWidgets")
 endif()
 
-message(STATUS "Adding wxWidgets CMake cofig folder: ${wxWidgets_DIR}")
+message(STATUS "Adding wxWidgets CMake config folder: ${wxWidgets_DIR}")
 if(NOT EXISTS "${wxWidgets_DIR}/wxWidgetsConfig.cmake" AND NOT EXISTS "${wxWidgets_DIR}/wxwidgets-config.cmake")
     message(WARNING "Cannot find wxWidgets CMake configuration. (Looked in ${wxWidgets_DIR}.)")
 endif()
@@ -82,11 +76,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 add_executable(${TEST_APP} WIN32 MACOSX_BUNDLE ${WISTERIA_SRC} ${TEST_SRC_FILES})
 
 message(STATUS "Finding Catch2...")
-# place Catch2 at the same folder level as this repo if it isn't installed
-# (you will need to do this on Windows or macOS or if version 3 of Catch2 isn't installed)
-get_filename_component(_fullpath "${_dir}" REALPATH)
-if(EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/../../../Catch2")
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
+find_directory("Catch2" CATCH_DIR)
+# place Catch2 at the same folder level as this repo (or somewhere above it)
+if(EXISTS ${CATCH_DIR})
+    add_subdirectory(${CATCH_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
 else()
     # ...otherwise, see if it is installed
     find_package(Catch2 3 REQUIRED)
@@ -94,7 +87,7 @@ endif()
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 if(MSVC)
-    target_compile_definitions(${TEST_APP} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS __UNITTEST _UNICODE
+    target_compile_definitions(${TEST_APP} PUBLIC __WXMSW__ __UNITTEST _UNICODE
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
@@ -112,12 +105,11 @@ if(MSVC)
     # about not wrapping all of this logic in try blocks.
     target_compile_options(${TEST_APP} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
-# Placeholder code for macOS (needs testing)
-#ELSEIF(APPLE)
-#    target_compile_definitions(${TEST_APP} PUBLIC __WXOSX__ __UNITTEST
-#        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-#    target_compile_options(${TEST_APP} PUBLIC -Wall -Wextra -Wpedantic
-#                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+elseif(APPLE)
+    target_compile_definitions(${TEST_APP} PUBLIC __WXOSX__ __UNITTEST
+        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+    target_compile_options(${TEST_APP} PUBLIC -Wall -Wextra -Wpedantic
+                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(UNIX)
     target_compile_definitions(${TEST_APP} PUBLIC __WXGTK__ __UNITTEST
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
