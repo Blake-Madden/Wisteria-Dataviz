@@ -30,7 +30,7 @@ namespace Wisteria
         DCPenChangerIfDifferent(wxDC& dc, const wxPen& pen)
             : m_dc(dc), m_penOld(dc.GetPen()), m_swapPens(pen != dc.GetPen())
             {
-            if (m_swapPens)
+            if (m_swapPens && pen.IsOk())
                 {
                 m_dc.SetPen(pen);
                 }
@@ -68,7 +68,7 @@ namespace Wisteria
         DCBrushChangerIfDifferent(wxDC& dc, const wxBrush& brush)
             : m_dc(dc), m_brushOld(dc.GetBrush()), m_swapBrushes(brush != dc.GetBrush())
             {
-            if (m_swapBrushes)
+            if (m_swapBrushes && brush.IsOk())
                 {
                 m_dc.SetBrush(brush);
                 }
@@ -106,7 +106,7 @@ namespace Wisteria
         DCFontChangerIfDifferent(wxDC& dc, const wxFont& font)
             : m_dc(dc), m_fontOld(dc.GetFont()), m_swapFonts(font != dc.GetFont())
             {
-            if (m_swapFonts)
+            if (m_swapFonts && font.IsOk())
                 {
                 m_dc.SetFont(font);
                 }
@@ -145,7 +145,7 @@ namespace Wisteria
             : m_dc(dc), m_colFgOld(dc.GetTextForeground()),
               m_swapColors(col != dc.GetTextForeground())
             {
-            if (m_swapColors)
+            if (m_swapColors && col.IsOk())
                 {
                 m_dc.SetTextForeground(col);
                 }
