@@ -19,7 +19,9 @@ namespace Wisteria::GraphItems
     wxSize Label::CalcLeftImageSize(const wxCoord textHeight) const
         {
         if (!m_leftImage.IsOk())
-            { return wxSize(0, 0); }
+            {
+            return wxSize(0, 0);
+            }
         const auto imgHeight = std::min(m_leftImage.GetDefaultSize().GetHeight(), textHeight);
         const auto imgWidth = geometry::rescaled_width(
             { m_leftImage.GetDefaultSize().GetWidth(), m_leftImage.GetDefaultSize().GetHeight() },
@@ -31,7 +33,9 @@ namespace Wisteria::GraphItems
     wxSize Label::CalcTopImageSize(const wxCoord textWidth) const
         {
         if (!m_topImage.IsOk())
-            { return wxSize(0, 0); }
+            {
+            return wxSize(0, 0);
+            }
         const auto imgWidth = std::min(m_topImage.GetDefaultSize().GetWidth(), textWidth);
         const auto imgHeight = geometry::rescaled_height(
             { m_topImage.GetDefaultSize().GetWidth(), m_topImage.GetDefaultSize().GetHeight() },
@@ -45,7 +49,7 @@ namespace Wisteria::GraphItems
         wxString newString;
         size_t currentRow{ 0 };
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
-        while (lineTokenizer.HasMoreTokens() )
+        while (lineTokenizer.HasMoreTokens())
             {
             if (line == currentRow)
                 {
@@ -54,7 +58,9 @@ namespace Wisteria::GraphItems
                 lineTokenizer.GetNextToken();
                 }
             else
-                { newString += lineTokenizer.GetNextToken(); }
+                {
+                newString += lineTokenizer.GetNextToken();
+                }
             newString += L"\n";
             ++currentRow;
             }
@@ -77,12 +83,14 @@ namespace Wisteria::GraphItems
             {
             m_lineCount = 0;
             size_t longestLineCharacterCount{ 0 };
-            while (lineTokenizer.HasMoreTokens() )
+            while (lineTokenizer.HasMoreTokens())
                 {
                 ++m_lineCount;
                 const auto currentLineLength = lineTokenizer.GetNextToken().length();
                 if (currentLineLength > longestLineCharacterCount)
-                    { longestLineCharacterCount = currentLineLength; }
+                    {
+                    longestLineCharacterCount = currentLineLength;
+                    }
                 }
             m_longestLineLength = longestLineCharacterCount;
             }
@@ -97,51 +105,69 @@ namespace Wisteria::GraphItems
     wxCoord Label::CalcPageVerticalOffset(const wxDC& dc) const
         {
         return !GetMinimumUserHeightDIPs() ? 0 : // if no min height, then no offset needed
-            (dc.FromDIP(GetMinimumUserHeightDIPs().value()) <= GetCachedContentBoundingBox().GetHeight()) ?
-            0 :
-            (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned) ?
-            0 :
-            (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
-            (dc.FromDIP(GetMinimumUserHeightDIPs().value()) - GetCachedContentBoundingBox().GetHeight()) / 2 :
-            (dc.FromDIP(GetMinimumUserHeightDIPs().value()) - GetCachedContentBoundingBox().GetHeight());
+                   (dc.FromDIP(GetMinimumUserHeightDIPs().value()) <=
+                    GetCachedContentBoundingBox().GetHeight()) ?
+                                             0 :
+               (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned) ?
+                                             0 :
+               (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
+                                             (dc.FromDIP(GetMinimumUserHeightDIPs().value()) -
+                                              GetCachedContentBoundingBox().GetHeight()) /
+                                                 2 :
+                                             (dc.FromDIP(GetMinimumUserHeightDIPs().value()) -
+                                              GetCachedContentBoundingBox().GetHeight());
         }
 
     //-------------------------------------------
     wxCoord Label::CalcPageHorizontalOffset(const wxDC& dc) const
         {
         return !GetMinimumUserWidthDIPs() ? 0 : // if no min width, then no offset needed
-            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) <= GetCachedContentBoundingBox().GetWidth()) ?
-            0 :
-            (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned) ?
-            0 :
-            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
-            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) - GetCachedContentBoundingBox().GetWidth()) / 2 :
-            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) - GetCachedContentBoundingBox().GetWidth());
+                   (dc.FromDIP(GetMinimumUserWidthDIPs().value()) <=
+                    GetCachedContentBoundingBox().GetWidth()) ?
+                                            0 :
+               (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned) ?
+                                            0 :
+               (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
+                                            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) -
+                                             GetCachedContentBoundingBox().GetWidth()) /
+                                                2 :
+                                            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) -
+                                             GetCachedContentBoundingBox().GetWidth());
         }
 
     //-------------------------------------------
-    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc, [[maybe_unused]] const double parentScaling)
+    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc,
+                               [[maybe_unused]] const double parentScaling)
         {
         InvalidateCachedBoundingBox();
 
-        assert(!IsFreeFloating() &&
-               L"SetBoundingBox() should only be called on fixed objects!");
+        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
-            { return; }
+            {
+            return;
+            }
 
         if (GetAnchoring() == Anchoring::Center)
             {
-            SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
-                           rect.GetTop()+(rect.GetHeight()/2)));
+            SetAnchorPoint(wxPoint(rect.GetLeft() + (rect.GetWidth() / 2),
+                                   rect.GetTop() + (rect.GetHeight() / 2)));
             }
         else if (GetAnchoring() == Anchoring::TopLeftCorner)
-            { SetAnchorPoint(rect.GetTopLeft()); }
+            {
+            SetAnchorPoint(rect.GetTopLeft());
+            }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
-            { SetAnchorPoint(rect.GetTopRight()); }
+            {
+            SetAnchorPoint(rect.GetTopRight());
+            }
         else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-            { SetAnchorPoint(rect.GetBottomLeft()); }
+            {
+            SetAnchorPoint(rect.GetBottomLeft());
+            }
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
-            { SetAnchorPoint(rect.GetBottomRight()); }
+            {
+            SetAnchorPoint(rect.GetBottomRight());
+            }
 
         // scale up or down to fit the bounding box if necessary
         wxCoord measuredWidth{ 0 }, measureHeight{ 0 };
@@ -149,45 +175,59 @@ namespace Wisteria::GraphItems
         // adjust area to text drawing area by removing space for the images
         //---------------
         // left image
-        auto measureWidthNoSideImages = ((GetTextOrientation() == Orientation::Horizontal) ?
-            (measuredWidth - CalcLeftImageSize(measureHeight).GetWidth()) : measuredWidth);
-        auto measuredHeightNoSideImages = ((GetTextOrientation() == Orientation::Vertical) ?
-            (measureHeight - CalcLeftImageSize(measuredWidth).GetWidth()) : measureHeight);
+        auto measureWidthNoSideImages =
+            ((GetTextOrientation() == Orientation::Horizontal) ?
+                 (measuredWidth - CalcLeftImageSize(measureHeight).GetWidth()) :
+                 measuredWidth);
+        auto measuredHeightNoSideImages =
+            ((GetTextOrientation() == Orientation::Vertical) ?
+                 (measureHeight - CalcLeftImageSize(measuredWidth).GetWidth()) :
+                 measureHeight);
         // top image
-        measuredHeightNoSideImages -= ((GetTextOrientation() == Orientation::Horizontal) ?
-            std::max<wxCoord>(CalcTopImageSize(measuredWidth).GetHeight() - m_topImageOffset, 0) :
-            0);
-        measureWidthNoSideImages -= ((GetTextOrientation() == Orientation::Vertical) ?
-            std::max<wxCoord>(CalcTopImageSize(measureHeight).GetHeight() - m_topImageOffset, 0) :
-            0);
+        measuredHeightNoSideImages -=
+            ((GetTextOrientation() == Orientation::Horizontal) ?
+                 std::max<wxCoord>(CalcTopImageSize(measuredWidth).GetHeight() - m_topImageOffset,
+                                   0) :
+                 0);
+        measureWidthNoSideImages -=
+            ((GetTextOrientation() == Orientation::Vertical) ?
+                 std::max<wxCoord>(CalcTopImageSize(measureHeight).GetHeight() - m_topImageOffset,
+                                   0) :
+                 0);
 
-        auto textAreaWidthNoSideImages = ((GetTextOrientation() == Orientation::Horizontal) ?
-            (rect.GetWidth() - CalcLeftImageSize(rect.GetHeight()).GetWidth()) : rect.GetWidth());
-        auto textAreaHeightNoSideImages = ((GetTextOrientation() == Orientation::Vertical) ?
-            (rect.GetHeight() - CalcLeftImageSize(rect.GetWidth()).GetWidth()) : rect.GetHeight());
+        auto textAreaWidthNoSideImages =
+            ((GetTextOrientation() == Orientation::Horizontal) ?
+                 (rect.GetWidth() - CalcLeftImageSize(rect.GetHeight()).GetWidth()) :
+                 rect.GetWidth());
+        auto textAreaHeightNoSideImages =
+            ((GetTextOrientation() == Orientation::Vertical) ?
+                 (rect.GetHeight() - CalcLeftImageSize(rect.GetWidth()).GetWidth()) :
+                 rect.GetHeight());
         // top image
-        textAreaHeightNoSideImages -= ((GetTextOrientation() == Orientation::Horizontal) ?
-            std::max<wxCoord>(CalcTopImageSize(rect.GetWidth()).GetHeight() - m_topImageOffset, 0) :
-            0);
-        textAreaWidthNoSideImages -= ((GetTextOrientation() == Orientation::Vertical) ?
-            std::max<wxCoord>(CalcTopImageSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
-            0);
+        textAreaHeightNoSideImages -=
+            ((GetTextOrientation() == Orientation::Horizontal) ?
+                 std::max<wxCoord>(CalcTopImageSize(rect.GetWidth()).GetHeight() - m_topImageOffset,
+                                   0) :
+                 0);
+        textAreaWidthNoSideImages -=
+            ((GetTextOrientation() == Orientation::Vertical) ?
+                 std::max<wxCoord>(
+                     CalcTopImageSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
+                 0);
 
-        if (// too small in both dimensions, so upscale
-            (measuredWidth <= rect.GetWidth() &&
-             measureHeight <= rect.GetHeight()) ||
+        if ( // too small in both dimensions, so upscale
+            (measuredWidth <= rect.GetWidth() && measureHeight <= rect.GetHeight()) ||
             // or too big in one of the dimensions, so downscale
-            (measuredWidth > rect.GetWidth() ||
-             measureHeight > rect.GetHeight()) )
+            (measuredWidth > rect.GetWidth() || measureHeight > rect.GetHeight()))
             {
             // scale the text to fit in the area where the text is going
             // (i.e., the rect with the images removed)
             const wxRect textRect(wxSize(std::min(rect.GetWidth(), textAreaWidthNoSideImages),
-                                  std::min(rect.GetHeight(), textAreaHeightNoSideImages)));
-            const auto widthFactor = safe_divide<double>(textRect.GetWidth(),
-                                                         measureWidthNoSideImages);
-            const auto heightFactor = safe_divide<double>(textRect.GetHeight(),
-                                                          measuredHeightNoSideImages);
+                                         std::min(rect.GetHeight(), textAreaHeightNoSideImages)));
+            const auto widthFactor =
+                safe_divide<double>(textRect.GetWidth(), measureWidthNoSideImages);
+            const auto heightFactor =
+                safe_divide<double>(textRect.GetHeight(), measuredHeightNoSideImages);
             SetScaling(std::max(GetScaling() * std::min(widthFactor, heightFactor),
                                 // don't go too small, though
                                 math_constants::tenth));
@@ -197,8 +237,8 @@ namespace Wisteria::GraphItems
         SetMinimumUserSizeDIPs(dc.ToDIP(rect.GetWidth()), dc.ToDIP(rect.GetHeight()));
 
         GetSize(dc, measuredWidth, measureHeight);
-        SetCachedContentBoundingBox(wxRect(wxPoint(rect.GetTopLeft()),
-                                           wxSize(measuredWidth, measureHeight)));
+        SetCachedContentBoundingBox(
+            wxRect(wxPoint(rect.GetTopLeft()), wxSize(measuredWidth, measureHeight)));
         // if there is a minimum height that is taller than the text, then center
         // the text vertically
         auto contentRect = GetCachedContentBoundingBox();
@@ -207,14 +247,22 @@ namespace Wisteria::GraphItems
         SetCachedContentBoundingBox(contentRect);
 
         wxRect clippedRect{ rect };
-        if (GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustWidth)
-            { clippedRect.SetWidth(measuredWidth); }
-        if (GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustHeight)
-            { clippedRect.SetHeight(measureHeight); }
+        if (GetBoundingBoxToContentAdjustment() &
+            LabelBoundingBoxContentAdjustment::ContentAdjustWidth)
+            {
+            clippedRect.SetWidth(measuredWidth);
+            }
+        if (GetBoundingBoxToContentAdjustment() &
+            LabelBoundingBoxContentAdjustment::ContentAdjustHeight)
+            {
+            clippedRect.SetHeight(measureHeight);
+            }
         // if both width and height are being readjusted, then adjust the min size as well since
         // page alignment is irrelevant now.
-        if (GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustWidth &&
-            GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustHeight)
+        if (GetBoundingBoxToContentAdjustment() &
+                LabelBoundingBoxContentAdjustment::ContentAdjustWidth &&
+            GetBoundingBoxToContentAdjustment() &
+                LabelBoundingBoxContentAdjustment::ContentAdjustHeight)
             {
             SetMinimumUserSizeDIPs(dc.ToDIP(clippedRect.GetWidth()),
                                    dc.ToDIP(clippedRect.GetHeight()));
@@ -227,82 +275,82 @@ namespace Wisteria::GraphItems
     wxRect Label::GetBoundingBox(wxDC& dc) const
         {
         if (!IsOk())
-            { wxRect(); }
+            {
+            wxRect();
+            }
 
         if (!GetCachedBoundingBox().IsEmpty())
-            { return GetCachedBoundingBox(); }
+            {
+            return GetCachedBoundingBox();
+            }
 
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
-        const wxCoord width = std::max<wxCoord>(measuredWidth,
-            dc.FromDIP(GetMinimumUserWidthDIPs().value_or(0)) );
-        const wxCoord height = std::max<wxCoord>(measuredHeight,
-            dc.FromDIP(GetMinimumUserHeightDIPs().value_or(0)) );
+        const wxCoord width =
+            std::max<wxCoord>(measuredWidth, dc.FromDIP(GetMinimumUserWidthDIPs().value_or(0)));
+        const wxCoord height =
+            std::max<wxCoord>(measuredHeight, dc.FromDIP(GetMinimumUserHeightDIPs().value_or(0)));
 
         wxRect boundingBox;
         if (GetTextOrientation() == Orientation::Horizontal)
             {
             if (GetAnchoring() == Anchoring::Center)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width/2,height/2),
-                                     GetAnchorPoint()+wxPoint(width/2,height/2));
+                boundingBox = wxRect(GetAnchorPoint() - wxPoint(width / 2, height / 2),
+                                     GetAnchorPoint() + wxPoint(width / 2, height / 2));
                 }
             else if (GetAnchoring() == Anchoring::TopLeftCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height));
+                boundingBox = wxRect(GetAnchorPoint(), wxSize(width, height));
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint() - wxSize(width,0),
-                                     wxSize(width,height));
+                boundingBox = wxRect(GetAnchorPoint() - wxSize(width, 0), wxSize(width, height));
                 }
             else if (GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height),
-                                     wxSize(width,height));
+                boundingBox = wxRect(GetAnchorPoint() - wxPoint(0, height), wxSize(width, height));
                 }
             else if (GetAnchoring() == Anchoring::BottomRightCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,height),
-                                     wxSize(width,height));
+                boundingBox =
+                    wxRect(GetAnchorPoint() - wxPoint(width, height), wxSize(width, height));
                 }
             }
         else
             {
             if (GetAnchoring() == Anchoring::Center)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width/2,height/2),
-                                     GetAnchorPoint()+wxPoint(width/2,height/2));
+                boundingBox = wxRect(GetAnchorPoint() - wxPoint(width / 2, height / 2),
+                                     GetAnchorPoint() + wxPoint(width / 2, height / 2));
                 }
             else if (GetAnchoring() == Anchoring::TopLeftCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height),
-                                     wxSize(width,height));
+                boundingBox = wxRect(GetAnchorPoint() - wxPoint(0, height), wxSize(width, height));
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height));
+                boundingBox = wxRect(GetAnchorPoint(), wxSize(width, height));
                 }
             else if (GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,height),
-                                     wxSize(width,height));
+                boundingBox =
+                    wxRect(GetAnchorPoint() - wxPoint(width, height), wxSize(width, height));
                 }
             else if (GetAnchoring() == Anchoring::BottomRightCorner)
                 {
-                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,0),
-                                     wxSize(width,height));
+                boundingBox = wxRect(GetAnchorPoint() - wxPoint(width, 0), wxSize(width, height));
                 }
             }
         if (IsFreeFloating())
             {
-            boundingBox.Offset((boundingBox.GetLeftTop()*GetScaling()) -
-                                boundingBox.GetLeftTop());
+            boundingBox.Offset((boundingBox.GetLeftTop() * GetScaling()) -
+                               boundingBox.GetLeftTop());
             }
 
         SetCachedBoundingBox(boundingBox);
-        SetCachedContentBoundingBox(wxRect(wxPoint(boundingBox.GetTopLeft()),
-                                    wxSize(measuredWidth, measuredHeight)));
+        SetCachedContentBoundingBox(
+            wxRect(wxPoint(boundingBox.GetTopLeft()), wxSize(measuredWidth, measuredHeight)));
         // if there is a minimum height that is taller than the text, then center
         // the text vertically
         auto contentRect = GetCachedContentBoundingBox();
@@ -461,62 +509,63 @@ namespace Wisteria::GraphItems
         wxPen scaledPen(GetPen());
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(
-                std::max<double>(ScaleToScreenAndCanvas(scaledPen.GetWidth()), 1));
+            scaledPen.SetWidth(std::max<double>(ScaleToScreenAndCanvas(scaledPen.GetWidth()), 1));
             }
 
-        if (GetTextOrientation() == Orientation::Horizontal &&
-            GetLegendIcons().size())
+        if (GetTextOrientation() == Orientation::Horizontal && GetLegendIcons().size())
             {
             DCPenChangerIfDifferent pc2(dc, scaledPen.IsOk() ? scaledPen : GetPen());
             wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
             const auto topLine = lineTokenizer.GetNextToken();
             wxCoord topLineHeight{ 0 };
-            // measure top line in case it is used as a header
+                // measure top line in case it is used as a header
                 {
-                DCFontChangerIfDifferent fc2(dc,
-                    GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                     GetHeaderInfo().GetRelativeScaling()) :
-                    GetFont());
+                DCFontChangerIfDifferent fc2(
+                    dc, GetHeaderInfo().GetFont().IsOk() ?
+                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                             GetHeaderInfo().GetRelativeScaling()) :
+                            GetFont());
                 topLineHeight = dc.GetTextExtent(topLine).GetHeight();
                 }
-            for (auto iconPos = GetLegendIcons().cbegin();
-                 iconPos != GetLegendIcons().cend();
+
+            for (auto iconPos = GetLegendIcons().cbegin(); iconPos != GetLegendIcons().cend();
                  ++iconPos)
                 {
                 wxPen scaledIconPen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen());
                 if (scaledIconPen.IsOk())
                     {
-                    scaledIconPen.SetWidth(
-                        ScaleToScreenAndCanvas(
-                            // if a line icon, make it a minimum of 2 pixels wide
-                            (iconPos->m_shape == IconShape::HorizontalLine ?
+                    scaledIconPen.SetWidth(ScaleToScreenAndCanvas(
+                        // if a line icon, make it a minimum of 2 pixels wide
+                        (iconPos->m_shape == IconShape::HorizontalLine ?
                              std::max(scaledIconPen.GetWidth(), 2) :
-                             scaledIconPen.GetWidth())) );
+                             scaledIconPen.GetWidth())));
                     }
                 DCPenChangerIfDifferent pc3(dc, scaledIconPen);
-                DCBrushChangerIfDifferent bc2(dc, iconPos->m_brush.IsOk() ?
-                    iconPos->m_brush : GetBrush());
-                const size_t currentIndex = (iconPos-GetLegendIcons().begin());
+                DCBrushChangerIfDifferent bc2(dc, iconPos->m_brush.IsOk() ? iconPos->m_brush :
+                                                                            GetBrush());
+
+                const size_t currentIndex = (iconPos - GetLegendIcons().begin());
                 wxCoord middleOfCurrentRow =
-                    static_cast<wxCoord>((averageLineHeight*currentIndex) +
-                    safe_divide<size_t>(averageLineHeight, 2)) +
+                    static_cast<wxCoord>((averageLineHeight * currentIndex) +
+                                         safe_divide<size_t>(averageLineHeight, 2)) +
                     (static_cast<wxCoord>(currentIndex) *
-                        std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
                     // spaces between proceeding lines
                     ScaleToScreenAndCanvas(GetTopPadding());
                 const auto iconAreaWidth{ averageLineHeight };
-                const auto iconRadius{ iconAreaWidth*.3 };
-                const auto iconMiddleX{ iconAreaWidth*.5 };
+                const auto iconRadius{ iconAreaWidth * .3 };
+                const auto iconMiddleX{ iconAreaWidth * .5 };
                 // if there is a minimum height that is taller than the text, then center
                 // the text vertically
-                const wxCoord yOffset = (GetHeaderInfo().IsEnabled() ?
-                    topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) : 0);
+                const wxCoord yOffset =
+                    (GetHeaderInfo().IsEnabled() ?
+                         topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) :
+                         0);
                 middleOfCurrentRow += yOffset;
                 const wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
-                                             wxPoint(iconMiddleX, middleOfCurrentRow),
-                                             wxSize(1, 1)).Inflate(iconRadius) };
+                                                 wxPoint(iconMiddleX, middleOfCurrentRow),
+                                             wxSize(1, 1))
+                                          .Inflate(iconRadius) };
                 // icons only relevant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == IconShape::HorizontalSeparator ||
                     iconPos->m_shape == IconShape::HorizontalArrowRightSeparator ||
@@ -524,65 +573,69 @@ namespace Wisteria::GraphItems
                     {
                     switch (iconPos->m_shape)
                         {
-                        // Horizontal separators
-                        //----------------------
-                        case IconShape::HorizontalSeparator:
-                            dc.DrawLine(contentBoundingBox.GetTopLeft() +
+                    // Horizontal separators
+                    //----------------------
+                    case IconShape::HorizontalSeparator:
+                        dc.DrawLine(contentBoundingBox.GetTopLeft() +
+                                        wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
+                                    contentBoundingBox.GetTopLeft() +
+                                        wxPoint(contentBoundingBox.GetWidth() -
+                                                    ((ScaleToScreenAndCanvas(2))),
+                                                middleOfCurrentRow));
+                        break;
+                    case IconShape::HorizontalArrowRightSeparator:
+                        GraphItems::Polygon::DrawArrow(
+                            dc,
+                            contentBoundingBox.GetTopLeft() +
                                 wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
-                                contentBoundingBox.GetTopLeft() +
-                                wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
-                                    middleOfCurrentRow));
-                            break;
-                        case IconShape::HorizontalArrowRightSeparator:
-                            GraphItems::Polygon::DrawArrow(dc,
-                                contentBoundingBox.GetTopLeft() +
-                                wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
-                                contentBoundingBox.GetTopLeft() +
-                                wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
-                                    middleOfCurrentRow),
-                                ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
-                            break;
-                        // full-length icons
-                        //------------------
-                        case IconShape::ColorGradient:
-                            if (iconPos->m_colors.size() >= 2)
-                                {
-                                // we need to see how many colors there are and draw separate
-                                // gradients between each pair, until the full spectrum is shown.
-                                wxRect legendArea = contentBoundingBox;
-                                legendArea.y += yOffset+ScaleToScreenAndCanvas(GetTopPadding());
-                                legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
-                                legendArea.SetWidth(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()));
+                            contentBoundingBox.GetTopLeft() +
+                                wxPoint(contentBoundingBox.GetWidth() -
+                                            ((ScaleToScreenAndCanvas(2))),
+                                        middleOfCurrentRow),
+                            ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
+                        break;
+                    // full-length icons
+                    //------------------
+                    case IconShape::ColorGradient:
+                        if (iconPos->m_colors.size() >= 2)
+                            {
+                            // we need to see how many colors there are and draw separate
+                            // gradients between each pair, until the full spectrum is shown.
+                            wxRect legendArea = contentBoundingBox;
+                            legendArea.y += yOffset + ScaleToScreenAndCanvas(GetTopPadding());
+                            legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
+                            legendArea.SetWidth(
+                                ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()));
 
-                                const int chunkSections = iconPos->m_colors.size()-1;
-                                const wxCoord chunkHeight = safe_divide(legendArea.GetHeight(), chunkSections);
-                                for (size_t i = 0; i < iconPos->m_colors.size()-1; ++i)
-                                    {
-                                    wxRect currentLegendChunk = legendArea;
-                                    currentLegendChunk.SetHeight(chunkHeight);
-                                    currentLegendChunk.y += chunkHeight*i;
-                                    dc.GradientFillLinear(currentLegendChunk,
-                                                          iconPos->m_colors[i], iconPos->m_colors[i+1], wxDOWN);
-                                    }
+                            const int chunkSections = iconPos->m_colors.size() - 1;
+                            const wxCoord chunkHeight =
+                                safe_divide(legendArea.GetHeight(), chunkSections);
+                            for (size_t i = 0; i < iconPos->m_colors.size() - 1; ++i)
+                                {
+                                wxRect currentLegendChunk = legendArea;
+                                currentLegendChunk.SetHeight(chunkHeight);
+                                currentLegendChunk.y += chunkHeight * i;
+                                dc.GradientFillLinear(currentLegendChunk, iconPos->m_colors[i],
+                                                      iconPos->m_colors[i + 1], wxDOWN);
                                 }
-                            break;
-                        default:
-                            break;
+                            }
+                        break;
+                    default:
+                        break;
                         };
                     }
                 else
                     {
                     wxBitmapBundle bmp(iconPos->m_img);
-                    Shape sh(
-                        GraphItemInfo().
-                        Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen()).
-                        Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
-                        BaseColor(iconPos->m_baseColor).
-                        Anchoring(Anchoring::TopLeftCorner).
-                        Scaling(GetScaling()).
-                        DPIScaling(GetDPIScaleFactor()),
-                        iconPos->m_shape, boxRect.GetSize(),
-                        iconPos->m_img.IsOk() ? &bmp : nullptr);
+                    Shape sh(GraphItemInfo()
+                                 .Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen())
+                                 .Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush())
+                                 .BaseColor(iconPos->m_baseColor)
+                                 .Anchoring(Anchoring::TopLeftCorner)
+                                 .Scaling(GetScaling())
+                                 .DPIScaling(GetDPIScaleFactor()),
+                             iconPos->m_shape, boxRect.GetSize(),
+                             iconPos->m_img.IsOk() ? &bmp : nullptr);
                     sh.SetBoundingBox(boxRect, dc, GetScaling());
                     sh.Draw(dc);
                     }
@@ -597,16 +650,17 @@ namespace Wisteria::GraphItems
         const wxRect boundingBox = GetBoundingBox(dc);
         // used for drawing the paper lines
         const wxPoint textOffset = ((GetTextOrientation() == Orientation::Horizontal) ?
-            wxPoint(ScaleToScreenAndCanvas(GetLeftPadding()),
-                ScaleToScreenAndCanvas(GetTopPadding())) :
-            wxPoint(ScaleToScreenAndCanvas(GetTopPadding()),
-                ScaleToScreenAndCanvas((GetRightPadding())) -
-                ScaleToScreenAndCanvas((GetLeftPadding()))));
+                                        wxPoint(ScaleToScreenAndCanvas(GetLeftPadding()),
+                                                ScaleToScreenAndCanvas(GetTopPadding())) :
+                                        wxPoint(ScaleToScreenAndCanvas(GetTopPadding()),
+                                                ScaleToScreenAndCanvas((GetRightPadding())) -
+                                                    ScaleToScreenAndCanvas((GetLeftPadding()))));
         if (GetTextOrientation() == Orientation::Horizontal)
             {
             // draw and style
-            const size_t linesToDrawCount = safe_divide<double>(boundingBox.GetHeight(),
-                averageLineHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            const size_t linesToDrawCount = safe_divide<double>(
+                boundingBox.GetHeight(),
+                averageLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             if (GetLabelStyle() == LabelStyle::NoLabelStyle)
                 {
                 // NOOP, most likely branch
@@ -615,105 +669,136 @@ namespace Wisteria::GraphItems
                 {
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    DCPenChangerIfDifferent pc2(dc, wxPen((i == 1) ?
-                        wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
-                        wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    DCPenChangerIfDifferent pc2(
+                        dc, wxPen((i == 1) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
+                                             wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                  ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x,
+                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.y),
+                                wxPoint(boundingBox.GetRightTop().x,
+                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::LinedPaper)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1)));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x,
+                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.y),
+                                wxPoint(boundingBox.GetRightTop().x,
+                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x,
+                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.y),
+                                wxPoint(boundingBox.GetRightTop().x,
+                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
                 {
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                    GraphItems::Polygon::DrawArrow(
+                        dc,
+                        wxPoint(
+                            boundingBox.GetLeftTop().x,
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y),
+                        wxPoint(
+                            boundingBox.GetRightTop().x,
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::LinedPaperWithMargins)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1)));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
                     dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y),
+                        wxPoint(
+                            boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
                                 textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
                     dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                                        boundingBox.GetLeftTop().y +
-                                        (averageLineHeight*i) +
-                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y),
+                        wxPoint(
+                            boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                               wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                DCPenChangerIfDifferent pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i)+((i-1) *
-                                std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                    GraphItems::Polygon::DrawArrow(
+                        dc,
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
                                 textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetRightPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(
+                            boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetRightPadding()),
+                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
@@ -721,9 +806,9 @@ namespace Wisteria::GraphItems
         else
             {
             // draw and style
-            const size_t linesToDrawCount =
-                safe_divide<double>(boundingBox.GetWidth(),
-                                    averageLineHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            const size_t linesToDrawCount = safe_divide<double>(
+                boundingBox.GetWidth(),
+                averageLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             if (GetLabelStyle() == LabelStyle::NoLabelStyle)
                 {
                 // NOOP, most likely branch
@@ -732,110 +817,134 @@ namespace Wisteria::GraphItems
                 {
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    DCPenChangerIfDifferent pc2(dc, wxPen((i == 1) ?
-                        wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
-                        wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
+                    DCPenChangerIfDifferent pc2(
+                        dc, wxPen((i == 1) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
+                                             wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                  ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftTop().y),
+                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::LinedPaper)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1)));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftTop().y),
+                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                               ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftTop().y),
+                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
                 {
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y),
+                    GraphItems::Polygon::DrawArrow(
+                        dc,
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.x,
+                            boundingBox.GetLeftTop().y),
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.x,
+                            boundingBox.GetLeftBottom().y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::LinedPaperWithMargins)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1)));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftTop().y),
+                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                    wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                          ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                DCPenChangerIfDifferent pc2(
+                    dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.DrawLine(
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftTop().y),
+                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                            ((i - 1) *
+                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                            textOffset.x,
+                                        boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
                 {
-                DCPenChangerIfDifferent pc2(dc,
-                               wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                DCPenChangerIfDifferent pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y),
+                    GraphItems::Polygon::DrawArrow(
+                        dc,
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.x,
+                            boundingBox.GetLeftTop().y),
+                        wxPoint(
+                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
+                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.x,
+                            boundingBox.GetLeftBottom().y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
@@ -846,11 +955,17 @@ namespace Wisteria::GraphItems
     wxRect Label::Draw(wxDC& dc) const
         {
         if (!IsShown())
-            { return wxRect(); }
+            {
+            return wxRect();
+            }
         if (IsInDragState())
-            { return GetBoundingBox(dc); }
+            {
+            return GetBoundingBox(dc);
+            }
         if (GetClippingRect())
-            { dc.SetClippingRegion(GetClippingRect().value()); }
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
 
         assert((GetLegendIcons().size() == 0 ||
             (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal)) &&
@@ -907,7 +1022,9 @@ namespace Wisteria::GraphItems
 
         // draw any styling lines on the background (this usually wouldn't be in use)
         if (GetLabelStyle() != LabelStyle::NoLabelStyle)
-            { DrawLabelStyling(dc); }
+            {
+            DrawLabelStyling(dc);
+            }
 
         // draw left image
         if (m_leftImage.IsOk())
@@ -969,9 +1086,13 @@ namespace Wisteria::GraphItems
         // draw the text
         dc.SetTextForeground(GetFontColor());
         if (GetTextOrientation() == Orientation::Horizontal)
-            { DrawMultiLineText(dc, boundingBox.GetLeftTop()); }
+            {
+            DrawMultiLineText(dc, boundingBox.GetLeftTop());
+            }
         else
-            { DrawVerticalMultiLineText(dc, GetCachedContentBoundingBox().GetLeftTop()); }
+            {
+            DrawVerticalMultiLineText(dc, GetCachedContentBoundingBox().GetLeftTop());
+            }
 
         // draw the outline
         if (GetPen().IsOk() && !IsSelected())
@@ -987,26 +1108,42 @@ namespace Wisteria::GraphItems
             else if (GetTextOrientation() == Orientation::Horizontal)
                 {
                 if (GetGraphItemInfo().IsShowingTopOutline())
-                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
+                    {
+                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight());
+                    }
                 if (GetGraphItemInfo().IsShowingBottomOutline())
-                    { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight()); }
+                    {
+                    dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight());
+                    }
 
                 if (GetGraphItemInfo().IsShowingRightOutline())
-                    { dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight()); }
+                    {
+                    dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight());
+                    }
                 if (GetGraphItemInfo().IsShowingLeftOutline())
-                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft()); }
+                    {
+                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft());
+                    }
                 }
             else // vertical text
                 {
                 if (GetGraphItemInfo().IsShowingRightOutline())
-                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
+                    {
+                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight());
+                    }
                 if (GetGraphItemInfo().IsShowingLeftOutline())
-                    { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight()); }
+                    {
+                    dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight());
+                    }
 
                 if (GetGraphItemInfo().IsShowingBottomOutline())
-                    { dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight()); }
+                    {
+                    dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight());
+                    }
                 if (GetGraphItemInfo().IsShowingTopOutline())
-                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft()); }
+                    {
+                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft());
+                    }
                 }
             }
         else if (IsSelected())
@@ -1053,12 +1190,15 @@ namespace Wisteria::GraphItems
             }
 
         // draw as a legend (if applicable)
-        if (GetTextOrientation() == Orientation::Horizontal &&
-            GetLegendIcons().size())
-            { DrawLegendIcons(dc); }
+        if (GetTextOrientation() == Orientation::Horizontal && GetLegendIcons().size())
+            {
+            DrawLegendIcons(dc);
+            }
 
         if (GetClippingRect())
-            { dc.DestroyClippingRegion(); }
+            {
+            dc.DestroyClippingRegion();
+            }
         return boundingBox;
         }
 
@@ -1067,7 +1207,9 @@ namespace Wisteria::GraphItems
         {
         wxString splitText;
         for (size_t i = 0; i < GetText().length(); ++i)
-            { splitText.append(GetText().at(i)).append(L'\n'); }
+            {
+            splitText.append(GetText().at(i)).append(L'\n');
+            }
         SetText(splitText);
         }
 
@@ -1079,9 +1221,8 @@ namespace Wisteria::GraphItems
         const wxString andOrString{ L"(&|and\\b|und\\b|y\\b|et\\b|or\\b|oder\\b|o\\b|ou\\b)" };
         const wxRegEx reCommaSepWithAnd(wxString::Format(L"(?i)(, )%s", andOrString));
         auto replacedCount = reCommaSepWithAnd.ReplaceAll(&splitText, L"\\1\\2\n");
-        // and newline after 
-        const wxRegEx reCommaSep(
-            wxString::Format(L", ([^%s])", andOrString));
+        // and newline after
+        const wxRegEx reCommaSep(wxString::Format(L", ([^%s])", andOrString));
         replacedCount += reCommaSep.ReplaceAll(&splitText, L",\n\\1");
         SetText(splitText);
         return (replacedCount > 0);
@@ -1104,30 +1245,33 @@ namespace Wisteria::GraphItems
         {
         // return if not much to split
         if (GetText().length() < 3)
-            { return false; }
+            {
+            return false;
+            }
 
         wxString splitText = GetText();
 
         if (const auto charPos = splitText.find_first_of(L"([/:&");
-            charPos != std::wstring::npos && charPos != splitText.length() - 1 &&
-            charPos != 0)
+            charPos != std::wstring::npos && charPos != splitText.length() - 1 && charPos != 0)
             {
             if ((splitText[charPos] == L':' || splitText[charPos] == L'&') &&
-                 splitText[charPos+1] == L' ')
-                { splitText[charPos+1] = L'\n'; }
+                splitText[charPos + 1] == L' ')
+                {
+                splitText[charPos + 1] = L'\n';
+                }
             else
                 {
-                splitText.insert(
-                    ((splitText[charPos] == L':' || splitText[charPos] == L'&') ?
-                        charPos+1 : charPos),
-                    1, L'\n');
+                splitText.insert(((splitText[charPos] == L':' || splitText[charPos] == L'&') ?
+                                      charPos + 1 :
+                                      charPos),
+                                 1, L'\n');
                 }
             SetText(splitText);
             return true;
             }
         else if (const auto spacePos = splitText.find_first_of(L' ');
-            spacePos != std::wstring::npos && spacePos != splitText.length() - 1 &&
-            spacePos != 0)
+                 spacePos != std::wstring::npos && spacePos != splitText.length() - 1 &&
+                 spacePos != 0)
             {
             const auto nextSpacePos = splitText.find_first_of(L' ', spacePos + 1);
             // it just two words (no more spaces), then split on the space
@@ -1138,22 +1282,28 @@ namespace Wisteria::GraphItems
                 return true;
                 }
             else
-                { return false; }
+                {
+                return false;
+                }
             }
         else
-            { return false; }
+            {
+            return false;
+            }
         }
 
     //-------------------------------------------
     void Label::SplitTextToFitLength(const size_t suggestedLineLength)
         {
         if (GetText().length() < suggestedLineLength)
-            { return; }
+            {
+            return;
+            }
         // if multi-line, see if any of its lines are too long. If so,
         // we need to split this string up and reformat it.
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         bool lineIsTooLong(false);
-        while (lineTokenizer.HasMoreTokens() )
+        while (lineTokenizer.HasMoreTokens())
             {
             // draw the next line
             if (lineTokenizer.GetNextToken().length() > suggestedLineLength)
@@ -1163,12 +1313,14 @@ namespace Wisteria::GraphItems
                 }
             }
         if (!lineIsTooLong)
-            { return; }
+            {
+            return;
+            }
 
         // strip out any newlines from the original string first
         // (we'll be adding new ones when we re-tokenize the string)
         wxString tempStr(GetText());
-        tempStr.Replace(L"\r\n",L" ", true);
+        tempStr.Replace(L"\r\n", L" ", true);
         tempStr.Replace(L"\r", L" ", true);
         tempStr.Replace(L"\n", L" ", true);
         wxString fittedText;
@@ -1179,10 +1331,12 @@ namespace Wisteria::GraphItems
             const size_t index = tempStr.find_first_of(L" -", suggestedLineLength);
             if (index != std::wstring::npos)
                 {
-                fittedText.append(
-                    std::wstring_view(tempStr.wc_str()).substr(0, index+1).data(), index+1).
-                    Trim(true).append(L'\n');
-                tempStr.erase(0, index+1);
+                fittedText
+                    .append(std::wstring_view(tempStr.wc_str()).substr(0, index + 1).data(),
+                            index + 1)
+                    .Trim(true)
+                    .append(L'\n');
+                tempStr.erase(0, index + 1);
                 }
             else
                 {
@@ -1192,8 +1346,11 @@ namespace Wisteria::GraphItems
             tempStr.Trim(false);
             }
         if (tempStr.length())
-            { fittedText += tempStr; }
-        fittedText.Trim(true); fittedText.Trim(false);
+            {
+            fittedText += tempStr;
+            }
+        fittedText.Trim(true);
+        fittedText.Trim(false);
         SetText(fittedText);
         }
 
@@ -1201,12 +1358,15 @@ namespace Wisteria::GraphItems
     void Label::SplitTextToFitBoundingBox(wxDC& dc, const wxSize& boundingBoxSize)
         {
         if (!boundingBoxSize.IsFullySpecified())
-            { return; }
+            {
+            return;
+            }
         // note that fonts should not have their point size DPI scaled, only scaled to the canvas
         DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
 
         wxString text = GetText();
-        text.Trim(false); text.Trim(true);
+        text.Trim(false);
+        text.Trim(true);
 
         wxCoord textWidth = 0, textHeight = 0, totalHeight = 0;
 
@@ -1217,21 +1377,24 @@ namespace Wisteria::GraphItems
         while (tok.HasMoreTokens())
             {
             nextToken = tok.GetNextToken();
-            dc.GetTextExtent(currentLine+L" "+nextToken, &textWidth, &textHeight);
+            dc.GetTextExtent(currentLine + L" " + nextToken, &textWidth, &textHeight);
             if (textWidth > boundingBoxSize.GetWidth())
                 {
                 dc.GetTextExtent(currentLine, &textWidth, &textHeight);
                 // if the next line will make this too tall, then show the current line
                 // being truncated with an ellipsis and stop
                 if ((totalHeight + textHeight +
-                    std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) > boundingBoxSize.GetHeight())
+                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) >
+                    boundingBoxSize.GetHeight())
                     {
                     if (text.length())
-                        { text[text.length()-1] = wchar_t{ 8230 }; }
+                        {
+                        text[text.length() - 1] = wchar_t{ 8230 };
+                        }
                     break;
                     }
-                text += "\n"+currentLine;
-                totalHeight += textHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                text += "\n" + currentLine;
+                totalHeight += textHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
                 // start the next line with the word that made the previous line too wide
                 currentLine = nextToken;
                 }
@@ -1242,15 +1405,20 @@ namespace Wisteria::GraphItems
             }
         // add any trailing line
         dc.GetTextExtent(currentLine, &textWidth, &textHeight);
-        if ((static_cast<double>(totalHeight+textHeight) +
+        if ((static_cast<double>(totalHeight + textHeight) +
              std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) > boundingBoxSize.GetHeight())
             {
             if (text.length())
-                { text[text.length()-1] = wchar_t{ 8230 }; }
+                {
+                text[text.length() - 1] = wchar_t{ 8230 };
+                }
             }
         else
-            { text += "\n" + currentLine; }
-        text.Trim(false); text.Trim(true);
+            {
+            text += "\n" + currentLine;
+            }
+        text.Trim(false);
+        text.Trim(true);
         SetText(text);
         }
 
@@ -1738,8 +1906,10 @@ namespace Wisteria::GraphItems
         {
         for (const auto& fontName : possibleFontNames)
             {
-            if (wxFontEnumerator::IsValidFacename(fontName) )
-                { return fontName; }
+            if (wxFontEnumerator::IsValidFacename(fontName))
+                {
+                return fontName;
+                }
             }
         // fall back to system default if nothing in the provided list is found
         const wxString systemFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName();
@@ -1749,11 +1919,12 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------------------
-    int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
-                                            const wxRect& boundingBox, const wxString& text)
+    int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
+                                            const wxString& text)
         {
         // start with the smallest possible font and work our way up.
-        wxFont resizedFont(ft); resizedFont.SetPointSize(1);
+        wxFont resizedFont(ft);
+        resizedFont.SetPointSize(1);
         DCFontChangerIfDifferent fc(dc, resizedFont);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
 
@@ -1762,17 +1933,18 @@ namespace Wisteria::GraphItems
             // wxFont::Larger() increases font size by 1.2x, which may cause the
             // point size (integer) to remain the same, messing up the comparison
             // down below when we try to see if the point size can't be increased anymore.
-            // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one operation),
-            // whereas we want to test each point size to find the perfect one.
-            resizedFont.SetPointSize(resizedFont.GetPointSize()+1);
+            // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one
+            // operation), whereas we want to test each point size to find the perfect one.
+            resizedFont.SetPointSize(resizedFont.GetPointSize() + 1);
             // bail if the font can't be made any larger
             if (resizedFont.GetPointSize() == dc.GetFont().GetPointSize())
-                { return resizedFont.GetPointSize(); }
+                {
+                return resizedFont.GetPointSize();
+                }
             DCFontChangerIfDifferent fc2(dc, resizedFont);
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
 
-            if (textWidth > boundingBox.GetWidth() ||
-                textHeight > boundingBox.GetHeight())
+            if (textWidth > boundingBox.GetWidth() || textHeight > boundingBox.GetHeight())
                 {
                 resizedFont.SetPointSize(std::max(1, resizedFont.GetPointSize() - 1));
                 break;
@@ -1783,10 +1955,11 @@ namespace Wisteria::GraphItems
 
     //--------------------------------------------------
     int Label::CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
-                                         const double angleInDegrees, const wxString& text)
+                                    const double angleInDegrees, const wxString& text)
         {
         // start with the smallest possible font and work our way up.
-        wxFont resizedFont(ft); resizedFont.SetPointSize(1);
+        wxFont resizedFont(ft);
+        resizedFont.SetPointSize(1);
         DCFontChangerIfDifferent fc(dc, resizedFont);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
 
@@ -1795,20 +1968,22 @@ namespace Wisteria::GraphItems
             // wxFont::Larger() increases font size by 1.2f, which may cause the
             // point size (integer) to remain the same, messing up the comparison
             // down below when we try to see if the point size can't be increased anymore.
-            // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one operation),
-            // whereas we want to test each point size to find the perfect one.
-            resizedFont.SetPointSize(resizedFont.GetPointSize()+1);
+            // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one
+            // operation), whereas we want to test each point size to find the perfect one.
+            resizedFont.SetPointSize(resizedFont.GetPointSize() + 1);
             // bail if the font can't be made any larger
             if (resizedFont.GetPointSize() == dc.GetFont().GetPointSize())
-                { return resizedFont.GetPointSize(); }
+                {
+                return resizedFont.GetPointSize();
+                }
             DCFontChangerIfDifferent fc2(dc, resizedFont);
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
 
-            const float widthOfWatermark = textWidth *
-                std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees))) -
+            const float widthOfWatermark =
+                textWidth * std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees))) -
                 textHeight * std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees)));
-            const float heightOfWatermark = textWidth *
-                std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees))) +
+            const float heightOfWatermark =
+                textWidth * std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees))) +
                 textHeight * std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees)));
 
             if (widthOfWatermark > boundingBox.GetWidth() ||
