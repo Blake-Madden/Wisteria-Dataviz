@@ -124,11 +124,7 @@
 
 /* The standard __func__ macro doesn't include the name of the class for member functions,
    so it isn't as useful as it could be. Try to use more descriptive macros (if available) first.*/
-#if __cplusplus >= 202002L
-    #include <source_location>
-    // actually displays the signature, not just the name
-    #define __DEBUG_FUNCTION_NAME__ std::source_location::current().function_name() 
-#elif defined(__VISUALC__)
+#if defined(__VISUALC__)
     #define __DEBUG_FUNCTION_NAME__ __FUNCSIG__
 #elif defined(__GNUG__)
     #define __DEBUG_FUNCTION_NAME__ __PRETTY_FUNCTION__
