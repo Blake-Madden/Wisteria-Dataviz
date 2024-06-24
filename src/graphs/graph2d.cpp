@@ -25,7 +25,7 @@ namespace Wisteria::Graphs
             { return; }
 
         legend.GetLegendIcons().push_back(
-            LegendIcon(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2), wxNullColour));
+            LegendIcon(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2), *wxTRANSPARENT_BRUSH));
         wxString textLines;
 
         // combine lines with the same color and label
@@ -75,11 +75,10 @@ namespace Wisteria::Graphs
         for (const auto& refArea : refAreas)
             {
             textLines += refArea.m_label + L"\n";
-            legend.GetLegendIcons().push_back(
-                LegendIcon(IconShape::Square,
-                           wxPen(refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle()),
-                           ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                        Settings::GetTranslucencyValue())));
+            legend.GetLegendIcons().push_back(LegendIcon(
+                IconShape::Square, wxPen{ refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle() },
+                wxBrush{ ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                      Settings::GetTranslucencyValue()) }));
             }
         legend.SetText(legend.GetText() + L"\n \n" + textLines.Trim());
         }
