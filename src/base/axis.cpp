@@ -2449,31 +2449,44 @@ namespace Wisteria::GraphItems
             if (IsSelected())
                 {
                 const auto bBox = GetBoundingBox(dc);
-                Label infoLabel(GraphItemInfo(
-                    wxString::Format(_DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                const auto bracketWidth{ CalcBracketsSpaceRequired(dc) };
+                Label infoLabel(
+                    GraphItemInfo(
+                        wxString::Format(
+                            _DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                                "Bracket Width: %d\n"
                                           "Axis Line Points: (%d, %d), (%d, %d)\n"
                                           "Scaling: %s\n"
                                           "Axis Label Scaling: %s\n"
                                           "Bracket Label Scaling: %s"),
-                        bBox.x, bBox.y, bBox.width, bBox.height,
-                        GetBottomPoint().x, GetBottomPoint().y,
-                        GetTopPoint().x, GetTopPoint().y,
-                        wxNumberFormatter::ToString(GetScaling(), 1,
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                        wxNumberFormatter::ToString(GetAxisLabelScaling(), 1,
+                            bBox.x, bBox.y, bBox.width, bBox.height, bracketWidth,
+                            GetBottomPoint().x, GetBottomPoint().y, GetTopPoint().x,
+                            GetTopPoint().y,
+                            wxNumberFormatter::ToString(
+                                GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(
+                                GetAxisLabelScaling(), 1,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes),
                         wxNumberFormatter::ToString(
-                            GetBrackets().size() ? GetBrackets().front().GetLabel().GetScaling() : 0.0, 1,
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes))).
-                    AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth()/2,
-                                bBox.GetBottomRight().y)).
-                    FontColor(*wxBLUE).
-                    Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
-                    FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+                                GetBrackets().size() ?
+                                    GetBrackets().front().GetLabel().GetScaling() :
+                                    0.0,
+                                1, wxNumberFormatter::Style::Style_NoTrailingZeroes)))
+                        .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth() / 2,
+                                             bBox.GetBottomRight().y))
+                        .FontColor(*wxRED)
+                        .Pen(*wxBLUE_PEN)
+                        .DPIScaling(GetDPIScaleFactor())
+                        .FontBackgroundColor(*wxWHITE)
+                        .Padding(2, 2, 2, 2));
                 if (GetAxisType() == AxisType::LeftYAxis)
-                    { infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner); }
+                    {
+                    infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner);
+                    }
                 else
-                    { infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomRightCorner); }
+                    {
+                    infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomRightCorner);
+                    }
                 infoLabel.Draw(dc);
                 }
             }
