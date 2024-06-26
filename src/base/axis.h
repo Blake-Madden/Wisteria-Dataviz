@@ -399,11 +399,10 @@ namespace Wisteria::GraphItems
             /** @returns The width or height needed for the bracket
                     (including the connection lines).
                 @param dc A graphics context to use for measuring the bracket.
-                @param scaling The scaling of the parent axis.
-                @param dpiScaling The DPI scaling of the parent canvas.
+                @param parentAxis The parent axis to get scaling and font information from.
                 @param parentAxisOrientation The orientation of the bracket's parent axis.*/
             [[nodiscard]]
-            wxCoord CalcSpaceRequired(wxDC& dc, const double scaling, const double dpiScaling,
+            wxCoord CalcSpaceRequired(wxDC& dc, const Axis& parentAxis,
                                       const Orientation parentAxisOrientation) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.

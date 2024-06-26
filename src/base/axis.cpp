@@ -2455,10 +2455,10 @@ namespace Wisteria::GraphItems
                         wxString::Format(
                             _DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
                                 "Bracket Width: %d\n"
-                                          "Axis Line Points: (%d, %d), (%d, %d)\n"
-                                          "Scaling: %s\n"
-                                          "Axis Label Scaling: %s\n"
-                                          "Bracket Label Scaling: %s"),
+                                "Axis Line Points: (%d, %d), (%d, %d)\n"
+                                "Scaling: %s\n"
+                                "Axis Label Scaling: %s\n"
+                                "Bracket Label Scaling: %s"),
                             bBox.x, bBox.y, bBox.width, bBox.height, bracketWidth,
                             GetBottomPoint().x, GetBottomPoint().y, GetTopPoint().x,
                             GetTopPoint().y,
@@ -2466,8 +2466,8 @@ namespace Wisteria::GraphItems
                                 GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             wxNumberFormatter::ToString(
                                 GetAxisLabelScaling(), 1,
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                        wxNumberFormatter::ToString(
+                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(
                                 GetBrackets().size() ?
                                     GetBrackets().front().GetLabel().GetScaling() :
                                     0.0,
@@ -3551,7 +3551,7 @@ namespace Wisteria::GraphItems
         wxCoord spacing{ 0 };
         for (const auto& bracket : GetBrackets())
             {
-            spacing = std::max(bracket.CalcSpaceRequired(dc, GetScaling(), GetDPIScaleFactor(),
+            spacing = std::max(bracket.CalcSpaceRequired(dc, *this,
                                IsHorizontal() ? Orientation::Horizontal : Orientation::Vertical), spacing);
             }
         return spacing;
@@ -3845,13 +3845,15 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Axis::AxisBracket::CalcSpaceRequired(wxDC& dc, const double scaling, const double dpiScaling,
+    wxCoord Axis::AxisBracket::CalcSpaceRequired(wxDC& dc, const Axis& parentAxis,
                                                  const Orientation parentAxisOrientation) const
         {
         auto theLabel{ GetLabel() };
-        theLabel.SetDPIScaleFactor(dpiScaling);
+        theLabel.SetScaling(parentAxis.GetScaling());
+        theLabel.SetDPIScaleFactor(parentAxis.GetDPIScaleFactor());
+        theLabel.SetFont(parentAxis.GetFont());
         const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
-        wxCoord size = GetLineSpacing() * scaling * dpiScaling;
+        wxCoord size = GetLineSpacing() * parentAxis.GetScaling() * parentAxis.GetDPIScaleFactor();
         // If axis is vertical (e.g., a left Y axis), then the width of the bracket's text is what we are measuring
         // since the bracket is to the left or right of the vertical axis. For a horizontal (e.g., bottom X) axis,
         // then the bracket is underneath or above it, so the text's height is what we want.
