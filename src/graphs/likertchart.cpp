@@ -551,11 +551,11 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     LikertChart::LikertChart(Canvas* canvas, const LikertSurveyQuestionFormat type,
-        std::optional<wxColour> negativeColor /*= std::nullopt*/,
-        std::optional<wxColour> positiveColor /*= std::nullopt*/,
-        std::optional<wxColour> neutralColor /*= std::nullopt*/,
-        std::optional<wxColour> noResponseColor /*= std::nullopt*/) :
-        BarChart(canvas), m_surveyType(type)
+                             std::optional<wxColour> negativeColor /*= std::nullopt*/,
+                             std::optional<wxColour> positiveColor /*= std::nullopt*/,
+                             std::optional<wxColour> neutralColor /*= std::nullopt*/,
+                             std::optional<wxColour> noResponseColor /*= std::nullopt*/)
+        : BarChart(canvas), m_surveyType(type)
         {
         SetNegativeColor(negativeColor.value_or(wxNullColour));
         SetPositiveColor(positiveColor.value_or(wxNullColour));
@@ -568,10 +568,14 @@ namespace Wisteria::Graphs
 
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
-            { GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
+            {
+            GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            }
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetScalingAxis().GetAxisLinePen().IsOk())
-            { GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
+            {
+            GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            }
         MirrorXAxis(true);
         MirrorYAxis(true);
 
@@ -1997,10 +2001,14 @@ namespace Wisteria::Graphs
         m_responseBarCount = 0;
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
-            { GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
+            {
+            GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            }
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetScalingAxis().GetAxisLinePen().IsOk())
-            { GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
+            {
+            GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            }
         // load the questions and responses
         if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
             GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint)

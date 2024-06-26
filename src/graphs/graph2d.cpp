@@ -22,7 +22,9 @@ namespace Wisteria::Graphs
     void Graph2D::AddReferenceLinesAndAreasToLegend(GraphItems::Label& legend) const
         {
         if (GetReferenceLines().empty() && GetReferenceAreas().empty())
-            { return; }
+            {
+            return;
+            }
 
         legend.GetLegendIcons().push_back(
             LegendIcon(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2), *wxTRANSPARENT_BRUSH));
@@ -31,18 +33,15 @@ namespace Wisteria::Graphs
         // combine lines with the same color and label
         std::vector<ReferenceLine> refLines{ GetReferenceLines() };
         std::sort(refLines.begin(), refLines.end(),
-                [](const auto& left, const auto& right) noexcept
-                {
-                return (left.m_compKey.CmpNoCase(right.m_compKey) < 0);
-                });
-        refLines.erase(
-            std::unique(refLines.begin(), refLines.end(),
-                [](const auto& left, const auto& right) noexcept
-                {
-                return (left.m_label.CmpNoCase(right.m_label) == 0 &&
-                        left.m_pen.GetColour() == right.m_pen.GetColour());
-                }),
-            refLines.end());
+                  [](const auto& left, const auto& right) noexcept
+                  { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
+        refLines.erase(std::unique(refLines.begin(), refLines.end(),
+                                   [](const auto& left, const auto& right) noexcept
+                                   {
+                                       return (left.m_label.CmpNoCase(right.m_label) == 0 &&
+                                               left.m_pen.GetColour() == right.m_pen.GetColour());
+                                   }),
+                       refLines.end());
         // resort by axis position and add to the legend
         std::sort(refLines.begin(), refLines.end());
         for (const auto& refLine : refLines)
@@ -58,18 +57,15 @@ namespace Wisteria::Graphs
         // combine areas with the same color and label
         std::vector<ReferenceArea> refAreas{ GetReferenceAreas() };
         std::sort(refAreas.begin(), refAreas.end(),
-            [](const auto& left, const auto& right) noexcept
-            {
-            return (left.m_compKey.CmpNoCase(right.m_compKey) < 0);
-            });
-        refAreas.erase(
-            std::unique(refAreas.begin(), refAreas.end(),
-                [](const auto& left, const auto& right) noexcept
-                {
-                return (left.m_label.CmpNoCase(right.m_label) == 0 &&
-                        left.m_pen.GetColour() == right.m_pen.GetColour());
-                }),
-            refAreas.end());
+                  [](const auto& left, const auto& right) noexcept
+                  { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
+        refAreas.erase(std::unique(refAreas.begin(), refAreas.end(),
+                                   [](const auto& left, const auto& right) noexcept
+                                   {
+                                       return (left.m_label.CmpNoCase(right.m_label) == 0 &&
+                                               left.m_pen.GetColour() == right.m_pen.GetColour());
+                                   }),
+                       refAreas.end());
         // resort by axis position and add to the legend
         std::sort(refAreas.begin(), refAreas.end());
         for (const auto& refArea : refAreas)
@@ -96,9 +92,10 @@ namespace Wisteria::Graphs
         legend.SetBoxCorners(BoxCorners::Rounded);
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
-            legend.GetGraphItemInfo().Pen(*wxBLACK_PEN).
-                Padding(4, 4, 4, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4)).
-                FontBackgroundColor(*wxWHITE);
+            legend.GetGraphItemInfo()
+                .Pen(*wxBLACK_PEN)
+                .Padding(4, 4, 4, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4))
+                .FontBackgroundColor(*wxWHITE);
             legend.GetFont().MakeSmaller();
             legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
@@ -106,11 +103,13 @@ namespace Wisteria::Graphs
             {
             legend.SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
             legend.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
-            legend.SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
-            legend.GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4).
-                FixedWidthOnCanvas(true);
+            legend.SetBoundingBoxToContentAdjustment(
+                LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
+            legend.GetGraphItemInfo()
+                .Pen(wxNullPen)
+                .Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0))
+                .CanvasPadding(4, 4, 4, 4)
+                .FixedWidthOnCanvas(true);
             legend.GetFont().MakeSmaller();
             legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
@@ -118,11 +117,13 @@ namespace Wisteria::Graphs
             {
             legend.SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
             legend.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
-            legend.SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
-            legend.GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4).
-                FixedWidthOnCanvas(true);
+            legend.SetBoundingBoxToContentAdjustment(
+                LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
+            legend.GetGraphItemInfo()
+                .Pen(wxNullPen)
+                .Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0))
+                .CanvasPadding(4, 4, 4, 4)
+                .FixedWidthOnCanvas(true);
             legend.GetFont().MakeSmaller();
             legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
@@ -131,12 +132,14 @@ namespace Wisteria::Graphs
         // was off to the right of the graph
         else if (hint == LegendCanvasPlacementHint::AboveOrBeneathGraph)
             {
-            legend.SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
+            legend.SetBoundingBoxToContentAdjustment(
+                LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
             legend.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
-            legend.GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4).
-                FitCanvasHeightToContent(true);
+            legend.GetGraphItemInfo()
+                .Pen(wxNullPen)
+                .Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0))
+                .CanvasPadding(4, 4, 4, 4)
+                .FitCanvasHeightToContent(true);
             }
         }
 
@@ -173,18 +176,24 @@ namespace Wisteria::Graphs
         GetBottomXAxis().SetDPIScaleFactor(scaling);
         GetTopXAxis().SetDPIScaleFactor(scaling);
         for (auto& customAxis : GetCustomAxes())
-            { customAxis.SetDPIScaleFactor(scaling); }
+            {
+            customAxis.SetDPIScaleFactor(scaling);
+            }
 
         GetTitle().SetDPIScaleFactor(scaling);
         GetSubtitle().SetDPIScaleFactor(scaling);
         GetCaption().SetDPIScaleFactor(scaling);
 
         for (auto& object : m_plotObjects)
-            { object->SetDPIScaleFactor(scaling); }
+            {
+            object->SetDPIScaleFactor(scaling);
+            }
         for (auto& object : m_embeddedObjects)
             {
             if (object.GetObject() != nullptr)
-                { object.GetObject()->SetDPIScaleFactor(scaling); }
+                {
+                object.GetObject()->SetDPIScaleFactor(scaling);
+                }
             }
         }
 
@@ -227,9 +236,13 @@ namespace Wisteria::Graphs
                                      [[maybe_unused]] const wxRect boundingBox) const
         {
         for (const auto& object : m_plotObjects)
-            { object->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox()); }
+            {
+            object->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox());
+            }
         for (const auto& object : m_embeddedObjects)
-            { object.GetObject()->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox()); }
+            {
+            object.GetObject()->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox());
+            }
         }
 
     //----------------------------------------------------------------
@@ -1191,7 +1204,9 @@ namespace Wisteria::Graphs
     bool Graph2D::SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)
         {
         if (!IsSelectable())
-            { return false; }
+            {
+            return false;
+            }
         // if CTRL isn't held down, then unselect everything
         if (!wxGetMouseState().ControlDown())
             {
@@ -1213,8 +1228,7 @@ namespace Wisteria::Graphs
 
         // the embedded objects, added by client, that would be sitting
         // on top of everything else
-        for (auto plotObject = m_embeddedObjects.rbegin();
-             plotObject != m_embeddedObjects.rend();
+        for (auto plotObject = m_embeddedObjects.rbegin(); plotObject != m_embeddedObjects.rend();
              ++plotObject)
             {
             if ((*plotObject).GetObject()->IsSelectable() &&
@@ -1225,17 +1239,17 @@ namespace Wisteria::Graphs
                 }
             }
         // the standard graph objects (added via AddObject())
-        for (auto plotObject = m_plotObjects.rbegin();
-             plotObject != m_plotObjects.rend();
+        for (auto plotObject = m_plotObjects.rbegin(); plotObject != m_plotObjects.rend();
              ++plotObject)
             {
             if ((*plotObject)->IsSelectable() && (*plotObject)->HitTest(pt, dc))
                 {
                 // toggle selection (or if it has subitems, then set it to selected
                 // and let it perform its own selection logic)
-                (*plotObject)->SetSelected(
-                    (*plotObject)->GetSelectedIds().size() ? true :
-                    !(*plotObject)->IsSelected());
+                (*plotObject)
+                    ->SetSelected((*plotObject)->GetSelectedIds().size() ?
+                                      true :
+                                      !(*plotObject)->IsSelected());
                 // update list of selected items
                 // (based on whether this is newly selected or just unselected)
                 if ((*plotObject)->IsSelected())
@@ -1255,11 +1269,15 @@ namespace Wisteria::Graphs
                     // were deselected
                     const auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
                     if (unselectedItem != GetSelectedIds().end())
-                        { GetSelectedIds().erase(unselectedItem); }
+                        {
+                        GetSelectedIds().erase(unselectedItem);
+                        }
                     const auto unselectedItemWithSubitems =
                         m_selectedItemsWithSubitems.find((*plotObject)->GetId());
                     if (unselectedItemWithSubitems != m_selectedItemsWithSubitems.end())
-                        { m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems); }
+                        {
+                        m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems);
+                        }
                     }
                 return true;
                 }

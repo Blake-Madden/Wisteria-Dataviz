@@ -396,8 +396,8 @@ namespace Wisteria::GraphItems
                 }
 
           private:
-            /** @returns The width or height needed for the bracket (including the connection
-               lines).
+            /** @returns The width or height needed for the bracket
+                    (including the connection lines).
                 @param dc A graphics context to use for measuring the bracket.
                 @param scaling The scaling of the parent axis.
                 @param dpiScaling The DPI scaling of the parent canvas.

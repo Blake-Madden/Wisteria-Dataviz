@@ -42,12 +42,12 @@ namespace lily_of_the_valley
         {
         if (text == nullptr || attribute.empty())
             {
-            return L"";
+            return std::wstring{};
             }
         const auto rt = read_attribute(text, attribute, allowQuotedTags, allowSpacesInValue);
         if (rt.first == nullptr)
             {
-            return L"";
+            return std::wstring{};
             }
         else
             {
@@ -85,7 +85,7 @@ namespace lily_of_the_valley
             // if this anchor doesn't have a bookmark, then recursively look for the next candidate
             return find_bookmark(nextAnchor + 1, sectionEnd);
             }
-        return std::make_pair(nullptr, L"");
+        return std::make_pair(nullptr, std::wstring{});
         }
 
     //------------------------------------------------------------------
@@ -1741,7 +1741,7 @@ namespace lily_of_the_valley
             {
             return case_insensitive_wstring_view{};
             }
-        const wchar_t* start = text;
+        const wchar_t* start{ text };
         for (;;)
             {
             if (text[0] == 0 || std::iswspace(text[0]) || text[0] == L'>')

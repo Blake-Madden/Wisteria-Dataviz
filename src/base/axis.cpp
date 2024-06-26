@@ -462,14 +462,20 @@ namespace Wisteria::GraphItems
             bottomRightCorner = wxPoint(GetBottomPoint().x +
                 (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
                 GetBottomPoint().y); // the line, tickmarks, and space after that
+            // the axis label
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
-                { bottomRightCorner.x += textMeasurement/2; }
-            topLeftCorner.x -= (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ?
-                                0 :
-                                IsStackingLabels() ? textMeasurement*2 : textMeasurement;
+                {
+                bottomRightCorner.x += textMeasurement / 2;
+                }
+            topLeftCorner.x -=
+                (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ? 0 :
+                IsStackingLabels() ? textMeasurement * 2 :
+                                     textMeasurement;
             if (HasDoubleSidedAxisLabels() &&
                 (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
-                { bottomRightCorner.x += IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
+                {
+                bottomRightCorner.x += IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
+                }
 
             CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
@@ -1352,14 +1358,16 @@ namespace Wisteria::GraphItems
                 // cppcheck-suppress duplicateAssignExpression
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
 
-                auto labelWidth = !IsShowingLabels() ?
-                    0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
-                labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
+                auto labelWidth =
+                    !IsShowingLabels() ? 0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
+                labelWidth = IsStackingLabels() ? labelWidth * 2 : labelWidth;
 
-                connectionX -= (labelWidth + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
-                connectionXDoubleSided += (labelWidth + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
+                connectionX -=
+                    (labelWidth + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionXDoubleSided +=
+                    (labelWidth + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
 
                 wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1984,14 +1992,15 @@ namespace Wisteria::GraphItems
                                 }
                             else // AnchorWithLine
                                 {
-                                x = GetTopPoint().x - ((axisTextWidth/2) +
+                                x = GetTopPoint().x -
+                                    (safe_divide(axisTextWidth, 2) +
                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
                                     CalcTickMarkOuterWidth();
                                 if (IsStackingLabels())
                                     { x -= drawingInnerLabel ? 0 : axisTextWidth; }
                                 axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels() &&
                                 // doesn't make sense to draw labels on top of each other
@@ -2011,14 +2020,14 @@ namespace Wisteria::GraphItems
                                     }
                                 else // AnchorWithLine
                                     {
-                                    x = GetTopPoint().x + (axisTextWidth/2) +
+                                    x = GetTopPoint().x + safe_divide(axisTextWidth, 2) +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                         CalcTickMarkInnerWidth();
                                     if (IsStackingLabels())
                                         { x += drawingInnerLabel ? 0 : axisTextWidth; }
                                     axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2048,14 +2057,14 @@ namespace Wisteria::GraphItems
                             else // AnchorWithLine
                                 {
                                 x = GetTopPoint().x + (GetBottomPoint().x-GetTopPoint().x) +
-                                    (axisTextWidth/2) +
+                                    safe_divide(axisTextWidth, 2) +
                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                     CalcTickMarkOuterWidth();
                                 if (IsStackingLabels())
                                     { x += drawingInnerLabel ? 0 : axisTextWidth; }
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels() &&
                                 GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine)
@@ -2075,14 +2084,14 @@ namespace Wisteria::GraphItems
                                 else // AnchorWithLine
                                     {
                                     x = GetTopPoint().x + (GetBottomPoint().x-GetTopPoint().x) -
-                                        ((axisTextWidth/2) +
+                                        (safe_divide(axisTextWidth, 2) +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                             CalcTickMarkInnerWidth());
                                     if (IsStackingLabels())
                                         { x -= drawingInnerLabel ? 0 : axisTextWidth; }
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2116,7 +2125,7 @@ namespace Wisteria::GraphItems
                                 }
                             if (IsStackingLabels())
                                 { x -= drawingInnerLabel ? 0 : axisTextHeight; }
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2154,7 +2163,7 @@ namespace Wisteria::GraphItems
                                 }
                             if (IsStackingLabels())
                                 { x += drawingInnerLabel ? 0 : axisTextHeight; }
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2168,7 +2177,7 @@ namespace Wisteria::GraphItems
                                     { x -= (axisTextHeight/2); }
                                 if (IsStackingLabels())
                                     { x -= drawingInnerLabel ? 0 : axisTextHeight; }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2315,7 +2324,7 @@ namespace Wisteria::GraphItems
                             x = axisPtIter->GetPhysicalCoordinate();
                             y = GetTopPoint().y + (GetBottomPoint().y-GetTopPoint().y) +
                                 ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                (axisTextWidth/2) + CalcTickMarkOuterWidth();
+                                safe_divide(axisTextWidth, 2) + CalcTickMarkOuterWidth();
                             axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                             }
                         if (GetAxisType() == AxisType::BottomXAxis)
@@ -2368,7 +2377,7 @@ namespace Wisteria::GraphItems
                                 {
                                 y = GetTopPoint().y -
                                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                        CalcTickMarkOuterWidth()+(axisTextWidth/2));
+                                     CalcTickMarkOuterWidth() + safe_divide(axisTextWidth, 2));
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
                             axisLabel.SetAnchorPoint(wxPoint(x,y));
@@ -2391,7 +2400,7 @@ namespace Wisteria::GraphItems
                                     {
                                     y = GetTopPoint().y +
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                            (axisTextWidth/2)+CalcTickMarkInnerWidth();
+                                        safe_divide(axisTextWidth, 2) + CalcTickMarkInnerWidth();
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
                                 axisLabel.SetAnchorPoint(wxPoint(x,y));
@@ -3373,7 +3382,8 @@ namespace Wisteria::GraphItems
         // above the top axis line then it is out of range
         if (pos == GetAxisPoints().cbegin())
             { return false; }
-        auto previousLine = pos; --previousLine;
+        decltype(GetAxisPoints().cbegin()) previousLine = pos;
+        --previousLine;
         const double lowerLineValue = previousLine->GetPhysicalCoordinate();
         const double upperLineValue = pos->GetPhysicalCoordinate();
         const double percentage = safe_divide<double>((coordinate-lowerLineValue),
@@ -3437,7 +3447,8 @@ namespace Wisteria::GraphItems
         // above the top axis line, then it is out of range
         if (pos == GetAxisPoints().cbegin())
             { return false; }
-        auto previousLine = pos; --previousLine;
+        decltype(GetAxisPoints().cbegin()) previousLine = pos;
+        --previousLine;
         const double lowerLineValue = previousLine->GetValue();
         const double upperLineValue = pos->GetValue();
         const double percentage = safe_divide<double>(
