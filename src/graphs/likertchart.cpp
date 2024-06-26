@@ -1997,8 +1997,10 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LikertChart::RecalcSizes(wxDC& dc)
         {
-        ClearBars();
         m_responseBarCount = 0;
+
+        ClearBars();
+        GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
             {
