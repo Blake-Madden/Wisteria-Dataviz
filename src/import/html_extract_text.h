@@ -673,7 +673,7 @@ namespace lily_of_the_valley
         /** @returns The matching > to a <, or null if not found.
             @param text The HTML stream to analyze.*/
         [[nodiscard]]
-        static const wchar_t* find_close_tag(const wchar_t* text) noexcept;
+        static const wchar_t* find_close_tag(const wchar_t* text);
         /** @brief Reads the value inside of an element as a string.
             @details For example, this would read "My title" from "<H1>My title</H1>".
             @param html_text The start of the element.

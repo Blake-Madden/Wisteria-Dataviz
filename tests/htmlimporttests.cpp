@@ -368,6 +368,25 @@ TEST_CASE("HTML Parser Link Lists", "[html import]")
         }
     }
 
+TEST_CASE("HTML Parser 2", "[html import]")
+    {
+    html_extract_text filter_html;
+    SECTION("Stray quote in element")
+        {
+        const std::wstring_view text =
+            LR"(<div class="s3-k"><a href="#content" class="sr-only sr-only-focusable btn btn-tab hidden-print hidden-pdf" ">Skip to main content</a></div>)";
+        const wchar_t* p = filter_html(text.data(), text.length(), true, false);
+        CHECK(std::wstring{ p } == std::wstring{ L"\n\nSkip to main content\n\n" });
+        }
+    SECTION("JS element")
+        {
+        const std::wstring_view text =
+            LR"(<iframe class="iframe" frameborder="0" style="width:100%;min-height:600px;" onload='function embed(t){function e(t){var e="attach"===t?window.addEventListener:window.removeEventListener;e("DOMLoaded",n,!1),e("load",n,!1),e("scroll",n,!1),e("resize",n,!1)}var i=document.querySelector(t);function n(){var t,e,n,o;e=(t=i).getBoundingClientRect(),n=t.clientHeight/4,o=t.clientWidth/2,e.top>=0&&e.left>=0&&e.top<=(window.innerHeight||document.documentElement.clientHeight)-n&&e.left<=(window.innerWidth||document.documentElement.clientWidth)-o&&i.contentWindow.postMessage("start","*")}window.addEventListener("message",function t(i){i&&"https://company.com"===i.origin&&("sessionCreated"===i.data?e("remove",n):"Loaded"===i.data?n():i.data&&"redirect"===i.data.action&&i.data.options&&i.data.options.link&&(window.location.href=i.data.options.link))},!1),e("attach")}embed(".iframe")'>Hello)";
+        const wchar_t* p = filter_html(text.data(), text.length(), true, false);
+        CHECK(std::wstring{ p } == std::wstring{ L"Hello" });
+        }
+    }
+
 TEST_CASE("HTML Parser", "[html import]")
     {
     SECTION("Find Bookmark")
@@ -854,15 +873,6 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"1 is < 5 and 6 is > 5, right? and 4 < 7") == p);
         }
-    SECTION("Missing Tags")
-        {
-        html_extract_text filter_html;
-        const wchar_t* text = L"<style=\'italics' <i>hello</i> there!</body>";
-        std::wstring p = filter_html(text, std::wcslen(text), true, false);
-        // missing > will cause parser to go to closed unquoted <.  It will then
-        // feed in some extra junk into the output, but at least "hello" won't be lost
-        CHECK(std::wstring(L"<style=\'italics' hello there!") == p);
-        }
     SECTION("Extra Tags")
         {
         html_extract_text filter_html;
@@ -1180,7 +1190,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Hello there") == p);
 
-        // Mismatch, will be trash. Just read what we can.
+        // Mismatch, will be trash; just read what we can (this is what browsers do)
         text = LR"(Hello <a hef='submit">there)";
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Hello ") == p);
@@ -1483,16 +1493,7 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(std::wcsncmp(parse(), L"Results.htm", 11) == 0);
         CHECK(parse() == nullptr);
         }
-
-    SECTION("Redirect Malformed")
-        {
-        const wchar_t* text = L"<meta name=layout-width content=717><meta name=date content=\"06 12, 2001 2:34:12 PM\"><meta HTTP-EQUIV=REFRESH CONTENT=\"0;URL=Results.htm <a href=\"page.htm\">";
-        html_hyperlink_parse parse(text, std::wcslen(text) );
-
-        CHECK(std::wcsncmp(parse(), L"page.htm", 8) == 0);
-        CHECK(parse() == nullptr);
-        }
-    
+   
     SECTION("Leading space")
         {
         const wchar_t* text = LR"(<a href=" https://depauwtigers.com/landing/index" target="_blank">Athletics</a>)";

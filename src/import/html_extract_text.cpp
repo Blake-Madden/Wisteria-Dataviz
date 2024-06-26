@@ -1758,54 +1758,75 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    const wchar_t* html_extract_text::find_close_tag(const wchar_t* text) noexcept
+    const wchar_t* html_extract_text::find_close_tag(const wchar_t* text)
         {
         if (text == nullptr)
             {
             return nullptr;
             }
-        // if we are at the beginning of an open statement, skip the opening < so that we can
-        // correctly look for the next opening <
-        else if (text[0] == L'<')
+        // if we are at the beginning of an open statement, skip the opening <
+        else if (*text == L'<')
             {
-            ++text;
+            std::advance(text, 1);
             }
 
         bool is_inside_of_double_quotes{ false };
         bool is_inside_of_single_quotes{ false };
-        long openTagCount{ 0 };
-        while (text)
+        const wchar_t* startPos{ text };
+        const wchar_t* lastQuotePos{ nullptr };
+
+        while (text != nullptr)
             {
-            if (text[0] == 0)
+            if (*text == 0)
                 {
                 return nullptr;
                 }
             // flip the state of double or single quote if not inside of
             // the other type of quotes
-            else if (!is_inside_of_single_quotes && text[0] == L'\"')
+            else if (!is_inside_of_single_quotes && *text == L'\"')
                 {
                 is_inside_of_double_quotes = !is_inside_of_double_quotes;
+                lastQuotePos = text;
                 }
-            else if (!is_inside_of_double_quotes && text[0] == L'\'')
+            else if (!is_inside_of_double_quotes && *text == L'\'')
                 {
                 is_inside_of_single_quotes = !is_inside_of_single_quotes;
+                lastQuotePos = text;
                 }
-            else if (!is_inside_of_double_quotes && !is_inside_of_single_quotes && text[0] == L'<')
+            else if (*text == L'>')
                 {
-                ++openTagCount;
-                }
-            else if (!is_inside_of_double_quotes && !is_inside_of_single_quotes && text[0] == L'>')
-                {
-                if (openTagCount == 0)
+                // not inside of any quoted attributes, so this is the closing >
+                if (!is_inside_of_double_quotes && !is_inside_of_single_quotes)
                     {
                     return text;
                     }
-                else
+                else if (lastQuotePos != nullptr)
                     {
-                    --openTagCount;
+                    const wchar_t* lookBack{ lastQuotePos };
+                    // if the quote we are inside of doesn't have a = in front of it,
+                    // then this quote is garbage; treat the > we are on as
+                    // the closing tag
+                    bool foundEqual{ false };
+                    while (lookBack > startPos)
+                        {
+                        std::advance(lookBack, -1);
+                        if (*lookBack == L'=')
+                            {
+                            foundEqual = true;
+                            break;
+                            }
+                        else if (!std::iswspace(*lookBack))
+                            {
+                            break;
+                            }
+                        }
+                    if (!foundEqual)
+                        {
+                        return text;
+                        }
                     }
                 }
-            ++text;
+            std::advance(text, 1);
             }
         return nullptr;
         }
