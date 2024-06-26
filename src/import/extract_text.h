@@ -125,7 +125,7 @@ namespace lily_of_the_valley
 
         /** @brief Adds a message to the report logging system.
             @param message The message to log.*/
-        void log_message(const std::wstring& message)
+        void log_message(const std::wstring& message) const
             {
             if (m_log.empty())
                 {
@@ -138,7 +138,7 @@ namespace lily_of_the_valley
             }
 
       private:
-        std::wstring m_log;
+        mutable std::wstring m_log;
         std::wstring m_log_message_separator{ L"\n" };
         // data
         std::wstring m_text_buffer;
