@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        mainframe.cpp
+// Name:        app.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2023 Blake Madden
 // License:     3-Clause BSD license
@@ -11,6 +11,8 @@
 #ifdef __WXMSW__
     #include <psapi.h>
     #include <debugapi.h>
+#elif defined(__APPLE__)
+    #include <sys/sysctl.h>
 #elif defined(__UNIX__)
     #include <sys/resource.h>
     #include <sys/sysinfo.h>
@@ -86,6 +88,14 @@ bool Wisteria::UI::BaseApp::OnInit()
                      safe_divide<double>(status.ullTotalPhys, 1024 * 1024 * 1024));
         wxLogMessage(L"Physical Memory (Available): %.02f Gbs.",
                      safe_divide<double>(status.ullAvailPhys, 1024 * 1024 * 1024));
+        }
+#elif defined(__APPLE__)
+    int64_t retVal{ 0 };
+    size_t sizeOfRetVal{ sizeof(retVal) };
+    if (sysctlbyname("hw.memsize", &retVal, &sizeOfRetVal, nullptr, 0) != -1)
+        {
+        wxLogMessage(L"Physical Memory: %.02f Gbs.",
+                     safe_divide<double>(retVal, 1024 * 1024 * 1024));
         }
 #elif defined(__UNIX__)
     struct sysinfo status{};
