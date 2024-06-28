@@ -44,6 +44,9 @@ namespace Wisteria::Graphs
             *Bilingual Education Paper Series*, vol. 7, no. 8, 1984, pp. 1-17.*/
     class CrawfordGraph final : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(CrawfordGraph);
+        CrawfordGraph() = default;
+
       public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.

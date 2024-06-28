@@ -11,6 +11,8 @@
 using namespace Wisteria::Colors;
 using namespace Wisteria::GraphItems;
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGraph2D);
+
 namespace Wisteria::Graphs
     {
     //-----------------------------------

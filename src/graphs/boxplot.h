@@ -67,6 +67,9 @@ namespace Wisteria::Graphs
         @todo Add notch support.*/
     class BoxPlot final : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(BoxPlot);
+        BoxPlot() = default;
+
       public:
         /** @brief A box & whisker used for displaying distribution (and ranges) of data.*/
         class BoxAndWhisker

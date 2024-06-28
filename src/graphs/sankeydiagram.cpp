@@ -8,6 +8,8 @@
 
 #include "sankeydiagram.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Graph2D);
+
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 using namespace geometry;

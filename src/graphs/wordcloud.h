@@ -35,6 +35,9 @@ namespace Wisteria::Graphs
          - If summing a continuous column, then missing data will be ignored (listwise deletion).*/
     class WordCloud final : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(WordCloud);
+        WordCloud() = default;
+
       public:
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.

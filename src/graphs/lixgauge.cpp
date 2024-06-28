@@ -8,6 +8,8 @@
 
 #include "lixgauge.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGraph2D);
+
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Graphs;

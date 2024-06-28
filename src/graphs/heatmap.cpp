@@ -9,6 +9,8 @@
 #include "heatmap.h"
 #include "../util/frequencymap.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGraph2D);
+
 using namespace Wisteria::Colors;
 using namespace Wisteria::Colors::Schemes;
 using namespace Wisteria::GraphItems;

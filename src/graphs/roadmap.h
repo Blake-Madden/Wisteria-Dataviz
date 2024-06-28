@@ -20,6 +20,9 @@ namespace Wisteria::Graphs
         @details This is an abstract base class.*/
     class Roadmap : public Graph2D
         {
+        wxDECLARE_ABSTRACT_CLASS(Roadmap);
+        Roadmap() = default;
+
     public:
         /// @brief Which type of markers to use for the road stops.
         enum class RoadStopTheme

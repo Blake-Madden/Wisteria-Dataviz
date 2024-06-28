@@ -159,6 +159,9 @@ namespace Wisteria::Graphs
     */
     class ProConRoadmap final : public Roadmap
         {
+        wxDECLARE_DYNAMIC_CLASS(ProConRoadmap);
+        ProConRoadmap() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/

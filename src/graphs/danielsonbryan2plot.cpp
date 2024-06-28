@@ -8,6 +8,8 @@
 
 #include "danielsonbryan2plot.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graphs::GroupGraph2D);
+
 using namespace Wisteria;
 using namespace Wisteria::Graphs;
 using namespace Wisteria::GraphItems;

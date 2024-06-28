@@ -48,6 +48,9 @@ namespace Wisteria::Graphs
             vol. 65, no. 1, Spring 1981, pp. 43-53.*/
     class LixGaugeGerman final : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(LixGaugeGerman);
+        LixGaugeGerman() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.

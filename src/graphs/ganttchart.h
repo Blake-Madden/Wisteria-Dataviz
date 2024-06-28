@@ -109,6 +109,9 @@ namespace Wisteria::Graphs
     // clang-format on
     class GanttChart final : public BarChart
         {
+        wxDECLARE_DYNAMIC_CLASS(GanttChart);
+        GanttChart() = default;
+
       public:
         /// @brief What to display on a task's bar.
         enum class TaskLabelDisplay

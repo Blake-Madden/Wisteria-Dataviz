@@ -197,6 +197,9 @@ namespace Wisteria::Graphs
         @endcode*/
     class Table final : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(Table);
+        Table() = default;
+
       public:
         /// @brief Information about how to build an aggregate column/row.
         struct AggregateInfo

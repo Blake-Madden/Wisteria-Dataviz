@@ -9,7 +9,6 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-
 #ifndef __FLESCH_CHART_H__
 #define __FLESCH_CHART_H__
 
@@ -45,6 +44,9 @@ namespace Wisteria::Graphs
             Flesch, Rudolf Franz. *The Art of Readable Writing*. Harper & Row, 1949.*/
     class FleschChart final : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(FleschChart);
+        FleschChart() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.

@@ -25,6 +25,9 @@ namespace Wisteria::Graphs
             overridden in derived classes).*/
     class GroupGraph2D : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(GroupGraph2D);
+        GroupGraph2D() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The parent canvas that the plot is being drawn on.*/

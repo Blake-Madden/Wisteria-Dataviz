@@ -8,6 +8,8 @@
 
 #include "proconroadmap.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roadmap);
+
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

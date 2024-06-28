@@ -113,6 +113,9 @@ namespace Wisteria::Graphs
     */
     class WCurvePlot final : public LinePlot
         {
+        wxDECLARE_DYNAMIC_CLASS(WCurvePlot);
+        WCurvePlot() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.

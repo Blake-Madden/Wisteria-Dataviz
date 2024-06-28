@@ -8,6 +8,8 @@
 
 #include "groupgraph2d.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Graph2D);
+
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Graphs;

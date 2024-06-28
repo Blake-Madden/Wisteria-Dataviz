@@ -46,6 +46,9 @@ namespace Wisteria::Graphs
             *Journalism Quarterly*, vol. 40, 1963, pp. 201-06.*/
     class DanielsonBryan2Plot final : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(DanielsonBryan2Plot);
+        DanielsonBryan2Plot() = default;
+
     public:
          /** @brief Constructor.
              @param canvas The parent canvas to render on.

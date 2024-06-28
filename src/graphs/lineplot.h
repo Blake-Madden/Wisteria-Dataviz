@@ -131,6 +131,9 @@ namespace Wisteria::Graphs
     */
     class LinePlot : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(LinePlot);
+        LinePlot() = default;
+
       public:
         /// @brief A data series drawn on a line plot.
         class Line

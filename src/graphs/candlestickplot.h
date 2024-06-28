@@ -87,6 +87,9 @@ namespace Wisteria::Graphs
     */
     class CandlestickPlot : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(CandlestickPlot);
+        CandlestickPlot() = default;
+
       public:
         /// @brief How to display the gains and losses
         enum class PlotType

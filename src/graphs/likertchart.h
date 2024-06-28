@@ -183,6 +183,9 @@ namespace Wisteria::Graphs
          https://www.airweb.org/article/2021/08/20/data-visualization-quick-tips*/
     class LikertChart final : public BarChart
         {
+        wxDECLARE_DYNAMIC_CLASS(LikertChart);
+        LikertChart() = default;
+
       private:
         /** @brief A three-point (e.g., disagree, neutral, or agree) Likert question.
             @details This will be the question, how many responses it got,

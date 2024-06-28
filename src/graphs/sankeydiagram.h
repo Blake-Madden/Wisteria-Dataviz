@@ -102,6 +102,9 @@ namespace Wisteria::Graphs
     // clang-format on
     class SankeyDiagram : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(SankeyDiagram);
+        SankeyDiagram() = default;
+
       public:
         /** @brief Constructor.
             @param canvas The canvas to draw the diagram on.

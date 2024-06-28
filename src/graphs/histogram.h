@@ -143,6 +143,9 @@ namespace Wisteria::Graphs
         @todo Needs fit lines.*/
     class Histogram final : public Wisteria::Graphs::BarChart
         {
+        wxDECLARE_DYNAMIC_CLASS(Histogram);
+        Histogram() = default;
+
     public:
         /// @brief Methods for sorting data into bins.
         enum class BinningMethod

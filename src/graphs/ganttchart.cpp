@@ -8,6 +8,8 @@
 
 #include "ganttchart.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarChart);
+
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 using namespace Wisteria::Icons;

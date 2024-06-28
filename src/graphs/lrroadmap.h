@@ -104,6 +104,9 @@ namespace Wisteria::Graphs
     */
     class LRRoadmap final : public Roadmap
         {
+        wxDECLARE_DYNAMIC_CLASS(LRRoadmap);
+        LRRoadmap() = default;
+
       public:
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/

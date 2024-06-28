@@ -8,6 +8,8 @@
 
 #include "wcurveplot.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePlot);
+
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

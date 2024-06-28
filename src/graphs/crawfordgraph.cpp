@@ -8,6 +8,8 @@
 
 #include "crawfordgraph.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::GroupGraph2D);
+
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Graphs;

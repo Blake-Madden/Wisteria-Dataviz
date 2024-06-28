@@ -156,6 +156,9 @@ namespace Wisteria::Graphs
     */
     class BarChart : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(BarChart);
+        BarChart() = default;
+
     public:
         /// @brief Ways to compare bars.
         enum class BarSortComparison
@@ -721,8 +724,6 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The parent canvas for the chart to be drawn on.*/
         explicit BarChart(Wisteria::Canvas* canvas);
-        /// @private
-        BarChart() = delete;
 
         /// @name %Bar Functions
         /// @brief Functions relating to adding and editing bars.

@@ -10,6 +10,8 @@
 #include "../math/statistics.h"
 #include "../util/frequencymap.h"
 
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graphs::BarChart);
+
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Icons;
 using namespace Wisteria::Icons::Schemes;

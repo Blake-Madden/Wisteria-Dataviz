@@ -8,6 +8,8 @@
 
 #include "graph2d.h"
 
+wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::Graphs::Graph2D, Wisteria::GraphItems::GraphItemBase);
+
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 using namespace Wisteria::Icons;

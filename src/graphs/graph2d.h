@@ -87,6 +87,11 @@ namespace Wisteria::Graphs
     /// @brief Base class for plotting 2D data.
     class Graph2D : public GraphItems::GraphItemBase
         {
+        wxDECLARE_ABSTRACT_CLASS(Graph2D);
+        // just needed to meet interface requirements for RTTI;
+        // this is made private as this would never really be called
+        Graph2D() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The parent canvas that the plot is being drawn on.*/

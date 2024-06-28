@@ -123,6 +123,9 @@ namespace Wisteria::Graphs
     */
     class HeatMap final : public GroupGraph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(HeatMap);
+        HeatMap() = default;
+
       public:
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.

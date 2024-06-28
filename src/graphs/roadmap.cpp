@@ -8,6 +8,8 @@
 
 #include "roadmap.h"
 
+wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::Graphs::Roadmap, Wisteria::Graphs::Graph2D);
+
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

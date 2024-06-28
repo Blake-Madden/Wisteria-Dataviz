@@ -868,7 +868,7 @@ namespace Wisteria
             };
 
         /// @brief Abstract class for elements that can be drawn on a canvas.
-        class GraphItemBase
+        class GraphItemBase : public wxObject
             {
             friend class Wisteria::Canvas;
             friend class Wisteria::CanvasItemScalingChanger;

@@ -74,6 +74,9 @@ namespace Wisteria::Graphs
          @endcode*/
     class CategoricalBarChart final : public Wisteria::Graphs::BarChart
         {
+        wxDECLARE_DYNAMIC_CLASS(CategoricalBarChart);
+        CategoricalBarChart() = default;
+
     public:
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.

@@ -322,6 +322,9 @@ namespace Wisteria::Graphs
     // clang-format off
     class PieChart final : public Graph2D
         {
+        wxDECLARE_DYNAMIC_CLASS(PieChart);
+        PieChart() = default;
+
       public:
         /// @brief Information about a pie slice.
         class SliceInfo
