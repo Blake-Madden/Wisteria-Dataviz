@@ -61,18 +61,6 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
         {
         std::advance(endOfTag, 1);
         }
-    while (endOfTag < m_currentEndSentinel && (std::iswalnum(*endOfTag) || *endOfTag == L'`'))
-        {
-        std::advance(endOfTag, 1);
-        endOfTag = string_util::find_unescaped_char_same_line_n(
-            endOfTag, tag, std::distance(endOfTag, m_currentEndSentinel));
-        if (endOfTag == nullptr || endOfTag + 1 >= m_currentEndSentinel)
-            {
-            log_message(L"Missing matching styling tag in markdown file.");
-            return false;
-            }
-        std::advance(endOfTag, 1);
-        }
     // in case we stepped ahead, step back to the last closing tag
     if (*endOfTag != tag)
         {
@@ -944,17 +932,17 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             continue;
             }
         // styling tags that just get removed from raw text
-        else if (!isEscaping && std::iswspace(previousChar) && *m_currentStart == L'*')
+        else if (!isEscaping && *m_currentStart == L'*')
             {
             parse_styled_text(previousChar, L'*');
             continue;
             }
-        else if (!isEscaping && std::iswspace(previousChar) && *m_currentStart == L'_')
+        else if (!isEscaping && *m_currentStart == L'_')
             {
             parse_styled_text(previousChar, L'_');
             continue;
             }
-        else if (!isEscaping && std::iswspace(previousChar) && *m_currentStart == L'~')
+        else if (!isEscaping && *m_currentStart == L'~')
             {
             parse_styled_text(previousChar, L'~');
             continue;
