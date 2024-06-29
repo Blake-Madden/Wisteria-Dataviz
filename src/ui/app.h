@@ -124,6 +124,27 @@ namespace Wisteria::UI
         /// @param docManager The document manager to use.
         void SetDocManager(wxDocManager* docManager) noexcept { m_docManager = docManager; }
 
+        /// @brief Gets a window that is suitable for parenting a dialog.
+        /// @details Will use the mainframe if visible; otherwise,
+        ///     the current doc window will be used. If no document window
+        ///     is available, then falls back to the top-level window.
+        /// @returns A window suitable for parenting a dialog.
+        [[nodiscard]]
+        wxWindow* GetParentingWindow()
+            {
+            if (GetMainFrame()->IsShown())
+                {
+                return GetMainFrame();
+                }
+            else if (GetDocManager() != nullptr &&
+                     GetDocManager()->GetCurrentDocument() != nullptr &&
+                     GetDocManager()->GetCurrentDocument()->GetDocumentWindow())
+                {
+                return GetDocManager()->GetCurrentDocument()->GetDocumentWindow();
+                }
+            return GetTopWindow();
+            }
+
         /// @brief Sets a descriptive name for the application's document type.
         /// @param documentTypeName The descriptives.
         void SetDocumentTypeName(const wxString& documentTypeName)
