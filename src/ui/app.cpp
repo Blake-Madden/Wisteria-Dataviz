@@ -175,6 +175,7 @@ bool Wisteria::UI::BaseApp::OnInit()
     wxUILocale::UseDefault();
 
     wxLogMessage(L"System Language: %s", wxUILocale::GetCurrent().GetName());
+    wxLogMessage(L"Resources Location: %s", wxStandardPaths::Get().GetResourcesDir());
     wxLogMessage(L"Translation Catalogs Location: %s",
         wxStandardPaths::Get().GetLocalizedResourcesDir(
             wxUILocale::GetCurrent().GetName(),
@@ -441,12 +442,12 @@ wxString Wisteria::UI::BaseApp::FindResourceFile(const wxString& subFile) const
     if (wxFileName::FileExists(foundFile))
         { return foundFile; }
 #ifdef __WXOSX__
-    // centralized location for all users on OSX
+    // centralized location for all users on macOS
     foundFile = _DT(L"/Library/Application Support/") + wxTheApp->GetAppName() + L"/" + subFile;
     if (wxFileName::FileExists(foundFile))
         { return foundFile; }
 #endif
-    // Some special logic for Linux, where prefix logic is all over the map.
+    // Some special logic for UNIX-like systems, where prefix logic is all over the map.
     // Sometimes the program might be installed to a different prefix than what
     // wxWidgets is detecting.
 #ifdef __UNIX__
@@ -495,10 +496,18 @@ wxString Wisteria::UI::BaseApp::FindResourceDirectory(const wxString& subDir) co
     foundFolder = FindResourceDirectoryWithAppInfo(wxStandardPaths::Get().GetDataDir(), subDir);
     if (wxFileName::DirExists(foundFolder))
         { return foundFolder; }
-    // Some special logic for Linux, where prefix logic is all over the map.
+#ifdef __WXOSX__
+    // centralized location for all users on macOS
+    foundFolder = _DT(L"/Library/Application Support/") + wxTheApp->GetAppName() + L"/" + subDir;
+    if (wxFileName::DirExists(foundFolder))
+        {
+        return foundFolder;
+        }
+#endif
+    // Some special logic for UNIX-like systems, where prefix logic is all over the map.
     // Sometimes the program might be installed to a different prefix than what
     // wxWidgets is detecting.
-#if defined (__UNIX__) || defined (__APPLE__)
+#if defined (__UNIX__)
     // this is usually the default
     foundFolder = FindResourceDirectoryWithAppInfo(_DT(L"/usr/local/share/"), subDir);
     if (wxFileName::DirExists(foundFolder))
