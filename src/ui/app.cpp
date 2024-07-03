@@ -531,59 +531,73 @@ wxString Wisteria::UI::BaseApp::FindResourceDirectory(const wxString& subDir) co
     }
 
 //----------------------------------------------------------
-wxString Wisteria::UI::BaseApp::FindResourceFileWithAppInfo(
-    const wxString& folder, const wxString& subFile) const
+wxString Wisteria::UI::BaseApp::FindResourceFileWithAppInfo(const wxString& folder,
+                                                            const wxString& subFile) const
     {
     wxString appFolderNameNoSpaces = GetAppName();
     appFolderNameNoSpaces.Replace(L" ", wxString{}, true);
 
-    // try the folder + file
-    wxString foundFile = folder + wxFileName::GetPathSeparator() + subFile;
-    if (wxFileName::FileExists(foundFile))
-        { return foundFile; }
+    if (appFolderNameNoSpaces.empty())
+        {
+        return wxString{};
+        }
+
     // try the folder + program name + file
-    foundFile = folder + wxFileName::GetPathSeparator() + GetAppName() +
-        wxFileName::GetPathSeparator() + subFile;
+    wxString foundFile = folder + wxFileName::GetPathSeparator() + GetAppName() +
+                         wxFileName::GetPathSeparator() + subFile;
     if (wxFileName::FileExists(foundFile))
-        { return foundFile; }
+        {
+        return foundFile;
+        }
     foundFile = folder + wxFileName::GetPathSeparator() + appFolderNameNoSpaces +
-        wxFileName::GetPathSeparator() + subFile;
+                wxFileName::GetPathSeparator() + subFile;
     if (wxFileName::FileExists(foundFile))
-        { return foundFile; }
+        {
+        return foundFile;
+        }
     // try the folder + vendor name + program name + file
     foundFile = folder + wxFileName::GetPathSeparator() + GetVendorName() +
-        wxFileName::GetPathSeparator() + GetAppName() +
-        wxFileName::GetPathSeparator() + subFile;
+                wxFileName::GetPathSeparator() + GetAppName() + wxFileName::GetPathSeparator() +
+                subFile;
     if (wxFileName::FileExists(foundFile))
-        { return foundFile; }
+        {
+        return foundFile;
+        }
     return wxString{};
     }
 
 //----------------------------------------------------------
-wxString Wisteria::UI::BaseApp::FindResourceDirectoryWithAppInfo(
-    const wxString& folder, const wxString& subFolder) const
+wxString Wisteria::UI::BaseApp::FindResourceDirectoryWithAppInfo(const wxString& folder,
+                                                                 const wxString& subFolder) const
     {
     wxString appFolderNameNoSpaces = GetAppName();
     appFolderNameNoSpaces.Replace(L" ", wxString{}, true);
 
-    // try the folder + file
-    wxString foundFolder = folder + wxFileName::GetPathSeparator() + subFolder;
-    if (wxFileName::DirExists(foundFolder))
-        { return foundFolder; }
+    if (appFolderNameNoSpaces.empty())
+        {
+        return wxString{};
+        }
+
     // try the folder + program name + file
-    foundFolder = folder + wxFileName::GetPathSeparator() + GetAppName() +
-        wxFileName::GetPathSeparator() + subFolder;
+    wxString foundFolder = folder + wxFileName::GetPathSeparator() + GetAppName() +
+                           wxFileName::GetPathSeparator() + subFolder;
     if (wxFileName::DirExists(foundFolder))
-        { return foundFolder; }
+        {
+        return foundFolder;
+        }
     foundFolder = folder + wxFileName::GetPathSeparator() + appFolderNameNoSpaces +
-        wxFileName::GetPathSeparator() + subFolder;
+                  wxFileName::GetPathSeparator() + subFolder;
     if (wxFileName::DirExists(foundFolder))
-        { return foundFolder; }
+        {
+        return foundFolder;
+        }
     // try the folder + vendor name + program name + file
     foundFolder = folder + wxFileName::GetPathSeparator() + GetVendorName() +
-        wxFileName::GetPathSeparator() + GetAppName() +
-        wxFileName::GetPathSeparator() + subFolder;
+                  wxFileName::GetPathSeparator() + GetAppName() + wxFileName::GetPathSeparator() +
+                  subFolder;
     if (wxFileName::DirExists(foundFolder))
-        { return foundFolder; }
+        {
+        return foundFolder;
+        }
     return wxString{};
     }
