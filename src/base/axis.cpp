@@ -8,6 +8,8 @@
 
 #include "axis.h"
 
+using namespace Wisteria::Colors;
+
 namespace Wisteria::GraphItems
     {
     //-----------------------------------------
@@ -863,6 +865,10 @@ namespace Wisteria::GraphItems
                 { axisPen.SetWidth(ScaleToScreenAndCanvas(2)); }
             else
                 { axisPen.SetWidth(ScaleToScreenAndCanvas(GetAxisLinePen().GetWidth())); }
+            }
+        if (IsGhosted())
+            {
+            axisPen.SetColour(ColorContrast::ChangeOpacity(axisPen.GetColour(), GetGhostOpacity()));
             }
         const wxPen tickMarkPen(axisPen);
 

@@ -1282,6 +1282,29 @@ namespace Wisteria::GraphItems
             @param that The other axis to copy settings from.*/
         void CopySettings(const Axis& that);
 
+        /// @returns The opacity level applied to "ghosted" lines.
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /** @brief Sets the opacity level for "ghosted" lines.
+            @param opacity The opacity level (should be between @c 0 to @c 255).*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
+
+        /// @returns @c true if the lines are being made translucent.
+        [[nodiscard]]
+        bool IsGhosted() const noexcept
+            {
+            return m_ghost;
+            }
+
+        /// @brief Sets the axis line and tickmarkds to be translucent.
+        /// @param ghost @c true to make the lines translucent.
+        /// @note Titles, headers, footers, labels, and brackets will not be affected.
+        void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
+
         /** @name Title Functions
             @brief Functions related to the axis's title.*/
         /// @{
@@ -2039,6 +2062,10 @@ namespace Wisteria::GraphItems
         wxDateTime m_firstDay;
         wxDateTime m_lastDay;
         DateInterval m_dateDisplayInterval{ DateInterval::FiscalQuarterly };
+
+        // ghosting settings
+        uint8_t m_ghostOpacity{ 32 };
+        bool m_ghost{ false };
 
         // scale information
         bool m_scaledReserved{ false };
