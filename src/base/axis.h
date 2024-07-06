@@ -2050,7 +2050,7 @@ namespace Wisteria::GraphItems
         bool m_enableAutoStacking{ true };
         double m_labelSpacingPhysicalOffset{ 0 };
         wxPen m_axisLinePen{ *wxBLACK_PEN };
-        wxPen m_gridlinePen{ wxPen(wxPenInfo(wxColour(211, 211, 211)).Cap(wxCAP_BUTT)) };
+        wxPen m_gridlinePen{ wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT)) };
 
         // date information (if being used to display date intervals)
         wxDateTime m_fyQ1{ wxDateTime(1, wxDateTime::Month::Jul,

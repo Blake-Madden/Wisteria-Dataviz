@@ -58,7 +58,7 @@ namespace Wisteria::GraphItems
             SetTextAlignment(TextAlignment::Centered);
             m_axisLabelAlignment = AxisLabelAlignment::AlignWithAxisLine;
             m_axisLinePen = *wxBLACK_PEN;
-            m_gridlinePen = wxPen(wxPenInfo(wxColour(211, 211, 211)).Cap(wxCAP_BUTT));
+            m_gridlinePen = wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT));
             m_outlineSize = wxDefaultSize;
             }
         if (level == AxisResetLevel::Brackets ||
