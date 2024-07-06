@@ -371,7 +371,7 @@ namespace Wisteria::Graphs
             /// @param desc The description.
             void SetDescription(const wxString& desc) { m_description = desc; }
 
-            /// @returns @c true if the slice being made translucent.
+            /// @returns @c true if the slice is being made translucent.
             [[nodiscard]]
             bool IsGhosted() const noexcept
                 {

@@ -280,11 +280,10 @@ namespace Wisteria::Colors
                      std::clamp(delta, math_constants::empty, math_constants::full));
             }
         /// @brief Shades or tints a color if close to another color (e.g., a background color).
-        /// @param mainColor The color to shade (if necessary).
-        /// @param secondaryColor The color to compare against.
-        ///     If @c mainColor is close to this, then it will be shaded.
+        /// @param mainColor The color to adjust (if necessary).
+        /// @param secondaryColor The base color to compare against.
         /// @returns If @c mainColor is close to @c secondaryColor,
-        ///     then returns a shaded version of @c mainColor; otherwise,
+        ///     then returns a shaded or tinted version of @c mainColor; otherwise,
         ///     returns the original @c mainColor.
         [[nodiscard]]
         static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
