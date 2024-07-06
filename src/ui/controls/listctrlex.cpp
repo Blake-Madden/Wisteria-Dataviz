@@ -597,6 +597,33 @@ namespace Wisteria::UI
             {
             SelectAll();
             }
+        // copy a specific column
+        else if (event.ControlDown() &&
+                 (event.GetKeyCode() == WXK_NUMPAD1 || event.GetKeyCode() == WXK_NUMPAD2 ||
+                  event.GetKeyCode() == WXK_NUMPAD3 || event.GetKeyCode() == WXK_NUMPAD4 ||
+                  event.GetKeyCode() == WXK_NUMPAD5 || event.GetKeyCode() == WXK_NUMPAD6 ||
+                  event.GetKeyCode() == WXK_NUMPAD7 || event.GetKeyCode() == WXK_NUMPAD8 ||
+                  event.GetKeyCode() == WXK_NUMPAD9))
+            {
+            int columnToCopy{ event.GetKeyCode() - WXK_NUMPAD1 };
+            wxString selectedFormattedText;
+            FormatToHtml(selectedFormattedText, false, ExportRowSelection::ExportSelected, 0, -1,
+                         columnToCopy, columnToCopy, false, true);
+
+            wxString selectedText;
+            FormatToText(selectedText, ExportRowSelection::ExportSelected, 0, -1, columnToCopy,
+                         columnToCopy, false);
+            if (wxTheClipboard->Open())
+                {
+                // an empty cell should clear the clipboard
+                wxTheClipboard->Clear();
+                wxDataObjectComposite* obj = new wxDataObjectComposite();
+                obj->Add(new wxHTMLDataObject(selectedFormattedText), true);
+                obj->Add(new wxTextDataObject(selectedText));
+                wxTheClipboard->SetData(obj);
+                wxTheClipboard->Close();
+                }
+            }
         else if (event.ControlDown() && event.GetKeyCode() == WXK_INSERT && IsItemAddingEnabled())
             {
             EditItem(AddRow(), 0);
@@ -624,6 +651,7 @@ namespace Wisteria::UI
             {
             ViewItem(GetFocusedItem());
             }
+        // go to bottom or top row
         else if (event.ControlDown() && event.GetKeyCode() == WXK_DOWN && GetItemCount() > 0)
             {
             DeselectAll();
@@ -2500,9 +2528,9 @@ namespace Wisteria::UI
             _(L"This format will write the list as a tab-delimited file with no formatting.")));
         choices.Add(_DT(L"LaTeX"));
         descriptions.Add(wxString::Format(
-            L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"LaTeX"),
-            _(L"This format will write the list in a longtable{} environment that can be "
-              "included in a larger LaTeX document.")));
+            L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"<tt>LaTeX</tt>"),
+            _(L"This format will write the list in a <tt>longtable{}</tt> environment that can be "
+              "included in a larger <tt>LaTeX</tt> document.")));
         RadioBoxDlg exportTypesDlg(this, _(L"Select List Format"), wxString{}, _(L"List formats:"),
                                    _(L"Export List"), choices, descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
