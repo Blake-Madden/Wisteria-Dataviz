@@ -186,6 +186,9 @@ namespace Wisteria
             return std::make_unique<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk());
             }
 
+        /// @brief The default opacity when ghosting items.
+        constexpr static uint8_t GHOST_OPACITY = 32;
+
       private:
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };

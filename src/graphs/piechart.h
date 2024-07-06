@@ -1086,7 +1086,7 @@ namespace Wisteria::Graphs
 
         bool m_useColorLabels{ false };
 
-        uint8_t m_ghostOpacity{ 32 };
+        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
 
         std::shared_ptr<const TextReplace> m_abbreviate{ std::make_shared<AbbreviateEnglish>(
             true) };

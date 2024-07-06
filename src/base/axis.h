@@ -2064,7 +2064,7 @@ namespace Wisteria::GraphItems
         DateInterval m_dateDisplayInterval{ DateInterval::FiscalQuarterly };
 
         // ghosting settings
-        uint8_t m_ghostOpacity{ 32 };
+        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         bool m_ghost{ false };
 
         // scale information
