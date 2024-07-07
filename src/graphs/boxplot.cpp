@@ -164,8 +164,6 @@ namespace Wisteria::Graphs
         GetBottomXAxis().GetGridlinePen() = wxNullPen;
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         GetLeftYAxis().GetAxisLinePen() = wxNullPen;
-        // turn off connection line pen
-        GetPen() = wxNullPen;
         }
 
     //----------------------------------------------------------------
@@ -708,8 +706,11 @@ namespace Wisteria::Graphs
             }
 
         // draw the connection points
-        if (GetPen().IsOk() && GetBoxCount() >= 2)
+        if (GetBoxCount() >= 2)
             {
+            wxPen connectionPen{ ColorContrast::ShadeOrTintIfClose(
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BondiBlue),
+                GetPlotOrCanvasColor()) };
             for (size_t i = 0; i < GetBoxCount() - 1; ++i)
                 {
                 wxPoint connectionPts[2] = { wxPoint(m_boxes[i].m_middleCoordinate.x,
@@ -717,8 +718,7 @@ namespace Wisteria::Graphs
                                              wxPoint(m_boxes[i + 1].m_middleCoordinate.x,
                                                      m_boxes[i + 1].m_middleCoordinate.y) };
                 AddObject(std::make_unique<GraphItems::Polygon>(
-                    GraphItemInfo().Pen(GetPen()).Brush(*wxBLUE_BRUSH).Scaling(GetScaling()),
-                    connectionPts, 2));
+                    GraphItemInfo().Pen(connectionPen).Scaling(GetScaling()), connectionPts, 2));
                 }
             }
 
