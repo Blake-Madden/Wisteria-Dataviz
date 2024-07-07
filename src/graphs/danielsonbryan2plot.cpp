@@ -39,6 +39,8 @@ namespace Wisteria::Graphs
         GetLeftYAxis().Show(false);
         GetTopXAxis().Show(false);
         GetRightYAxis().Show(false);
+
+        AdjustAxes();
         }
 
     //----------------------------------------------------------------
@@ -168,8 +170,6 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void DanielsonBryan2Plot::RecalcSizes(wxDC& dc)
         {
-        AdjustAxes();
-
         Graph2D::RecalcSizes(dc);
 
         if (GetDataset() == nullptr)
