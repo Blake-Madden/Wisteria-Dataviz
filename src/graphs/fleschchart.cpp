@@ -52,6 +52,7 @@ namespace Wisteria::Graphs
         // words per sentence ruler
             {
             Axis sentenceRuler(Wisteria::AxisType::LeftYAxis);
+            sentenceRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             sentenceRuler.SetCustomXPosition(0.5f);
             sentenceRuler.SetCustomYPosition(50);
             sentenceRuler.SetRange(5, 40, 0, 5, 1);
@@ -69,6 +70,7 @@ namespace Wisteria::Graphs
         // readability score ruler
             {
             Axis scoreRuler(Wisteria::AxisType::LeftYAxis);
+            scoreRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             scoreRuler.SetCustomXPosition(2);
             scoreRuler.SetCustomYPosition(75);
             scoreRuler.SetRange(0, 100, 0, 5, 1);
@@ -101,6 +103,7 @@ namespace Wisteria::Graphs
         // syllables per 100 words ruler
             {
             Axis syllableRuler(Wisteria::AxisType::RightYAxis);
+            syllableRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             syllableRuler.SetCustomXPosition(3.5f);
             syllableRuler.SetCustomYPosition(100);
             syllableRuler.SetRange(120, 200, 0, 5, 1);
@@ -299,13 +302,13 @@ namespace Wisteria::Graphs
 
         // plot the points
         const auto& wordsRuler{ GetCustomAxes()[0] };
-        m_jitterWords.SetJitterWidth(wordsRuler.CalcTickMarkOuterWidth()*2);
+        m_jitterWords.SetJitterWidth(wordsRuler.CalcTickMarkOuterWidth() * 2);
 
         const auto& middleRuler{ GetCustomAxes()[1] };
-        m_jitterScores.SetJitterWidth(middleRuler.CalcTickMarkOuterWidth()*2);
+        m_jitterScores.SetJitterWidth(middleRuler.CalcTickMarkOuterWidth() * 2);
 
         const auto& syllablesRuler{ GetCustomAxes()[2] };
-        m_jitterSyllables.SetJitterWidth(syllablesRuler.CalcTickMarkOuterWidth()*2);
+        m_jitterSyllables.SetJitterWidth(syllablesRuler.CalcTickMarkOuterWidth() * 2);
 
         auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
@@ -320,10 +323,9 @@ namespace Wisteria::Graphs
 
             const auto wordsPerSentence =
                 std::clamp<size_t>(m_wordsPerSentenceColumn->GetValue(i), 5, 40);
-            const auto score =
-                std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto score = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
             const auto syllablesPerWord =
-                std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i)*100, 120, 200);
+                std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i) * 100, 120, 200);
 
             wxCoord coord1{ 0 }, coord2{ 0 }, coord3{ 0 };
             assert(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
@@ -343,17 +345,20 @@ namespace Wisteria::Graphs
                 if (IsShowingConnectionLine())
                     {
                     const wxPoint linePts[4] = { pt1, pt2, pt2, pt3 };
-                    const auto linePen =
-                        wxPen(wxColour(0, 0, 255,
-                            (GetDataset()->GetRowCount() > 10) ? 100 : wxALPHA_OPAQUE));
+                    wxColour lineColor{ ColorContrast::ShadeOrTintIfClose(
+                        Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BondiBlue),
+                        GetPlotOrCanvasColor()) };
+                    if (GetDataset()->GetRowCount() > 10)
+                        {
+                        lineColor = Wisteria::Colors::ColorContrast::ChangeOpacity(lineColor, 100);
+                        }
+                    const wxPen linePen{ lineColor };
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(linePen).Brush(*wxBLUE_BRUSH).
-                        Scaling(GetScaling()),
+                        GraphItemInfo().Pen(linePen).Scaling(GetScaling()),
                         linePts, 2));
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(linePen).Brush(*wxBLUE_BRUSH).
-                        Scaling(GetScaling()),
-                        linePts+2, 2));
+                        GraphItemInfo().Pen(linePen).Scaling(GetScaling()),
+                        linePts + 2, 2));
                     }
 
                 // Convert group ID into color scheme index
@@ -364,24 +369,33 @@ namespace Wisteria::Graphs
                     0;
 
                 // points on the rulers
-                points->AddPoint(Point2D(
-                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
-                    AnchorPoint(pt1).Scaling(GetScaling()).
-                    Brush(GetColorScheme()->GetColor(colorIndex)),
-                    Settings::GetPointRadius(),
-                    GetShapeScheme()->GetShape(colorIndex)), dc);
-                points->AddPoint(Point2D(
-                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
-                    AnchorPoint(pt2).Scaling(GetScaling()).
-                    Brush(GetColorScheme()->GetColor(colorIndex)),
-                    Settings::GetPointRadius(),
-                    GetShapeScheme()->GetShape(colorIndex)), dc);
-                points->AddPoint(Point2D(
-                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
-                    AnchorPoint(pt3).Scaling(GetScaling()).
-                    Brush(GetColorScheme()->GetColor(colorIndex)),
-                    Settings::GetPointRadius(),
-                    GetShapeScheme()->GetShape(colorIndex)), dc);
+                points->AddPoint(
+                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                                .AnchorPoint(pt1)
+                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                    GetPlotOrCanvasColor()))
+                                .Scaling(GetScaling())
+                                .Brush(GetColorScheme()->GetColor(colorIndex)),
+                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    dc);
+                points->AddPoint(
+                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                                .AnchorPoint(pt2)
+                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                    GetPlotOrCanvasColor()))
+                                .Scaling(GetScaling())
+                                .Brush(GetColorScheme()->GetColor(colorIndex)),
+                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    dc);
+                points->AddPoint(
+                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                                .AnchorPoint(pt3)
+                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                    GetPlotOrCanvasColor()))
+                                .Scaling(GetScaling())
+                                .Brush(GetColorScheme()->GetColor(colorIndex)),
+                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    dc);
                 }
             }
         AddObject(std::move(points));

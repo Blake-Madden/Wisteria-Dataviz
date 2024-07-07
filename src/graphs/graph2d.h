@@ -549,6 +549,10 @@ namespace Wisteria::Graphs
                 GetTitle().SetFontColor(
                     Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
                 }
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.ContrastAgainstColor(GetPlotOrCanvasColor());
+                }
             }
 
         /** @brief Updates the settings for a legend based on the provided hints.

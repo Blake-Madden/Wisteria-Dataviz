@@ -17,16 +17,16 @@ using namespace Wisteria::GraphItems;
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    DanielsonBryan2Plot::DanielsonBryan2Plot(Wisteria::Canvas* canvas,
-            std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/) :
-        GroupGraph2D(canvas)
+    DanielsonBryan2Plot::DanielsonBryan2Plot(
+        Wisteria::Canvas* canvas,
+        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
+        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
+        : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors :
-            Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
         SetShapeScheme(shapes != nullptr ? shapes :
-            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
-                Wisteria::Icons::Schemes::StandardShapes()));
+                                           std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                                               Wisteria::Icons::Schemes::StandardShapes()));
         if (GetCanvas() != nullptr)
             {
             GetCanvas()->SetLabel(_(L"Danielson-Bryan Plot"));
@@ -42,10 +42,10 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void DanielsonBryan2Plot::SetData(
-                            std::shared_ptr<const Data::Dataset> data,
-                            const wxString& scoreColumnName,
-                            std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+    void
+    DanielsonBryan2Plot::SetData(std::shared_ptr<const Data::Dataset> data,
+                                 const wxString& scoreColumnName,
+                                 std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -54,13 +54,17 @@ namespace Wisteria::Graphs
         GetSelectedIds().clear();
 
         if (GetDataset() == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
-            { BuildGroupIdMap(); }
+            {
+            BuildGroupIdMap();
+            }
 
         // get the score data
         m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
@@ -69,7 +73,9 @@ namespace Wisteria::Graphs
         for (const auto& datum : m_scoresColumn->GetValues())
             {
             if (std::isnan(datum))
-                { continue; }
+                {
+                continue;
+                }
 
             jitterPoints.insert(std::clamp<size_t>(datum, 0, 100));
             }
@@ -86,6 +92,7 @@ namespace Wisteria::Graphs
 
             {
             Axis leftRuler(Wisteria::AxisType::LeftYAxis);
+            leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(.7f);
             leftRuler.SetCustomYPosition(8);
@@ -93,7 +100,7 @@ namespace Wisteria::Graphs
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
-            leftRuler.AddBracket(Axis::AxisBracket(2, 2 ,2, L"  0-29"));
+            leftRuler.AddBracket(Axis::AxisBracket(2, 2, 2, L"  0-29"));
             leftRuler.AddBracket(Axis::AxisBracket(3, 3, 3, L"30-49"));
             leftRuler.AddBracket(Axis::AxisBracket(4, 4, 4, L"50-59"));
             leftRuler.AddBracket(Axis::AxisBracket(5, 5, 5, L"60-69"));
@@ -112,9 +119,9 @@ namespace Wisteria::Graphs
 
             {
             Axis middleRuler(Wisteria::AxisType::LeftYAxis);
+            middleRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             middleRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            middleRuler.SetPerpendicularLabelAxisAlignment(
-                AxisLabelAlignment::CenterOnAxisLine);
+            middleRuler.SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::CenterOnAxisLine);
             middleRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
             middleRuler.SetCustomLabel(2, GraphItems::Label(L"="));
             middleRuler.SetCustomLabel(3, GraphItems::Label(L"="));
@@ -132,34 +139,29 @@ namespace Wisteria::Graphs
             }
 
             {
-            Axis leftRuler(Wisteria::AxisType::RightYAxis);
-            leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            leftRuler.SetCustomXPosition(0.8);
-            leftRuler.SetCustomYPosition(8);
-            leftRuler.SetRange(0, 8, 0);
-            leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            leftRuler.SetId(100);
-            leftRuler.GetAxisLinePen() = wxNullPen;
-            leftRuler.AddBracket(Axis::AxisBracket(2, 2, 2,
-                _(L"very difficult, college level")));
-            leftRuler.AddBracket(Axis::AxisBracket(3, 3, 3,
-                _(L"difficult, high school level")));
-            leftRuler.AddBracket(Axis::AxisBracket(4, 4, 4,
-                _(L"fairly difficult, junior high school level")));
-            leftRuler.AddBracket(Axis::AxisBracket(5, 5, 5,
-                _(L"standard, sixth-grade level")));
-            leftRuler.AddBracket(Axis::AxisBracket(6, 6, 6,
-                _(L"fairly easy, fifth-grade level")));
-            leftRuler.AddBracket(Axis::AxisBracket(7, 7, 7,
-                _(L"easy, fourth-grade level")));
-            leftRuler.AddBracket(Axis::AxisBracket(8, 8, 8,
-                _(L"very easy, third-grade level")));
-            for (auto& bracket : leftRuler.GetBrackets())
+            Axis rightRuler(Wisteria::AxisType::RightYAxis);
+            rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
+            rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
+            rightRuler.SetCustomXPosition(0.8);
+            rightRuler.SetCustomYPosition(8);
+            rightRuler.SetRange(0, 8, 0);
+            rightRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            rightRuler.SetId(100);
+            rightRuler.GetAxisLinePen() = wxNullPen;
+            rightRuler.AddBracket(Axis::AxisBracket(2, 2, 2, _(L"very difficult, college level")));
+            rightRuler.AddBracket(Axis::AxisBracket(3, 3, 3, _(L"difficult, high school level")));
+            rightRuler.AddBracket(
+                Axis::AxisBracket(4, 4, 4, _(L"fairly difficult, junior high school level")));
+            rightRuler.AddBracket(Axis::AxisBracket(5, 5, 5, _(L"standard, sixth-grade level")));
+            rightRuler.AddBracket(Axis::AxisBracket(6, 6, 6, _(L"fairly easy, fifth-grade level")));
+            rightRuler.AddBracket(Axis::AxisBracket(7, 7, 7, _(L"easy, fourth-grade level")));
+            rightRuler.AddBracket(Axis::AxisBracket(8, 8, 8, _(L"very easy, third-grade level")));
+            for (auto& bracket : rightRuler.GetBrackets())
                 {
                 bracket.SetTickmarkLength(0);
                 bracket.SetBracketLineStyle(BracketLineStyle::NoConnectionLines);
                 }
-            AddCustomAxis(leftRuler);
+            AddCustomAxis(rightRuler);
             }
         }
 
@@ -171,14 +173,16 @@ namespace Wisteria::Graphs
         Graph2D::RecalcSizes(dc);
 
         if (GetDataset() == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         // start plotting the points
         const auto middleRuler{ GetCustomAxes()[1] };
         const double ptLeft{ GetCustomAxes()[0].GetPhysicalCustomXPosition() };
         const double ptRight{ GetCustomAxes()[2].GetPhysicalCustomXPosition() };
 
-        m_jitter.SetJitterWidth(static_cast<size_t>(ptRight-ptLeft));
+        m_jitter.SetJitterWidth(static_cast<size_t>(ptRight - ptLeft));
 
         auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
@@ -187,42 +191,45 @@ namespace Wisteria::Graphs
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(m_scoresColumn->GetValue(i)))
-                { continue; }
+                {
+                continue;
+                }
 
             // sensical scores fall within 0-100
             const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
 
-            const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore) ? 2 :
-                                    is_within<size_t>(std::make_pair(30, 49), currentScore) ? 3 :
-                                    is_within<size_t>(std::make_pair(50, 59), currentScore) ? 4 :
-                                    is_within<size_t>(std::make_pair(60, 69), currentScore) ? 5 :
-                                    is_within<size_t>(std::make_pair(70, 79), currentScore) ? 6 :
-                                    is_within<size_t>(std::make_pair(80, 89), currentScore) ? 7 :
-                                    is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
-                                    8;
+            const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
+                                  is_within<size_t>(std::make_pair(30, 49), currentScore)  ? 3 :
+                                  is_within<size_t>(std::make_pair(50, 59), currentScore)  ? 4 :
+                                  is_within<size_t>(std::make_pair(60, 69), currentScore)  ? 5 :
+                                  is_within<size_t>(std::make_pair(70, 79), currentScore)  ? 6 :
+                                  is_within<size_t>(std::make_pair(80, 89), currentScore)  ? 7 :
+                                  is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
+                                                                                             8;
             wxCoord yPt{ 0 };
             assert(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt) &&
-                L"Unable to find point on DB2 Plot!");
+                   L"Unable to find point on DB2 Plot!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
-            const size_t colorIndex = IsUsingGrouping() ?
-                GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
-                0;
+            const size_t colorIndex =
+                IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
 
             if (middleRuler.GetPhysicalCoordinate(yAxisPos, yPt))
                 {
                 wxPoint pt(middleRuler.GetPhysicalCustomXPosition(), yPt);
                 m_jitter.JitterPoint(pt);
                 // points on the middle ruler
-                points->AddPoint(Point2D(
-                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
-                    AnchorPoint(pt).
-                    Brush(GetColorScheme()->GetColor(colorIndex)),
-                    Settings::GetPointRadius(),
-                    GetShapeScheme()->GetShape(colorIndex)), dc);
+                points->AddPoint(
+                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                                .AnchorPoint(pt)
+                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                    GetPlotOrCanvasColor()))
+                                .Brush(GetColorScheme()->GetColor(colorIndex)),
+                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    dc);
                 }
             }
         AddObject(std::move(points));
         }
-    }
+    } // namespace Wisteria::Graphs

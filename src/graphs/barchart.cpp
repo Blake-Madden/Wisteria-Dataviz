@@ -1945,7 +1945,9 @@ namespace Wisteria::Graphs
 
                         AddObject(std::make_unique<Shape>(
                             GraphItemInfo()
-                                .Pen(wxPen(*wxBLACK, 2))
+                                .Pen(wxPen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                               GetPlotOrCanvasColor()),
+                                           2))
                                 .Scaling(GetScaling())
                                 .DPIScaling(GetDPIScaleFactor())
                                 .AnchorPoint(wxPoint(brackStartXPos,
@@ -2028,7 +2030,9 @@ namespace Wisteria::Graphs
 
                         AddObject(std::make_unique<Shape>(
                             GraphItemInfo()
-                                .Pen(wxPen(*wxBLACK, 2))
+                                .Pen(wxPen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                               GetPlotOrCanvasColor()),
+                                           2))
                                 .Scaling(GetScaling())
                                 .DPIScaling(GetDPIScaleFactor())
                                 .AnchorPoint(
