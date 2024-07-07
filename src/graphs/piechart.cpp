@@ -159,40 +159,35 @@ namespace Wisteria::GraphItems
         const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(1.0, pieArea);
         auto pieLabel = std::make_unique<Label>(GetGraphItemInfo());
-        pieLabel->GetGraphItemInfo().Pen(wxNullPen).
-            Scaling(GetScaling()).
-            Padding(0, 4, 0, 4).
-            Selectable(true).
-            Anchoring(
-                is_within<double>(std::make_pair(0, 90), angle) ?
-                    Anchoring::BottomLeftCorner :
-                is_within<double>(std::make_pair(90, 180), angle) ?
-                    Anchoring::BottomRightCorner :
-                is_within<double>(std::make_pair(180, 270), angle) ?
-                    Anchoring::TopRightCorner :
-                Anchoring::TopLeftCorner).
-            AnchorPoint(wxPoint(arcMiddle.first, arcMiddle.second)).
-            LabelAlignment(
-                (is_within<double>(std::make_pair(0, 90), angle) ||
-                 is_within<double>(std::make_pair(270, 360), angle)) ?
-                TextAlignment::FlushLeft :
-                TextAlignment::FlushRight);
+        pieLabel->GetGraphItemInfo()
+            .Pen(wxNullPen)
+            .Scaling(GetScaling())
+            .Padding(0, 4, 0, 4)
+            .Selectable(true)
+            .Anchoring(
+                is_within<double>(std::make_pair(0, 90), angle)    ? Anchoring::BottomLeftCorner :
+                is_within<double>(std::make_pair(90, 180), angle)  ? Anchoring::BottomRightCorner :
+                is_within<double>(std::make_pair(180, 270), angle) ? Anchoring::TopRightCorner :
+                                                                     Anchoring::TopLeftCorner)
+            .AnchorPoint(wxPoint(arcMiddle.first, arcMiddle.second))
+            .LabelAlignment((is_within<double>(std::make_pair(0, 90), angle) ||
+                             is_within<double>(std::make_pair(270, 360), angle)) ?
+                                TextAlignment::FlushLeft :
+                                TextAlignment::FlushRight);
         // if less than 1%, then use higher precision so that it doesn't just show as "0%"
-        const auto percStr = wxNumberFormatter::ToString(m_percent * 100,
-            ((m_percent * 100) < 1) ? 2 : 0,
-            wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        const auto percStr =
+            wxNumberFormatter::ToString(m_percent * 100, ((m_percent * 100) < 1) ? 2 : 0,
+                                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
         switch (labelDisplay)
             {
         case BinLabelDisplay::BinValue:
             pieLabel->SetText(
-                wxNumberFormatter::ToString(m_value, 0,
-                    Settings::GetDefaultNumberFormat()));
+                wxNumberFormatter::ToString(m_value, 0, Settings::GetDefaultNumberFormat()));
             break;
         case BinLabelDisplay::BinValueAndPercentage:
-            pieLabel->SetText(wxString::Format(L"%s%% (%s)",
-                percStr,
-                wxNumberFormatter::ToString(m_value, 0,
-                    Settings::GetDefaultNumberFormat())) );
+            pieLabel->SetText(wxString::Format(
+                L"%s%% (%s)", percStr,
+                wxNumberFormatter::ToString(m_value, 0, Settings::GetDefaultNumberFormat())));
             break;
         case BinLabelDisplay::BinPercentage:
             pieLabel->SetText(percStr + L"%");
@@ -201,15 +196,12 @@ namespace Wisteria::GraphItems
             pieLabel->SetText(wxEmptyString);
             break;
         case BinLabelDisplay::BinNameAndValue:
-            pieLabel->SetText(wxString::Format(L"%s (%s)",
-                pieLabel->GetText(),
-                wxNumberFormatter::ToString(m_value, 0,
-                    Settings::GetDefaultNumberFormat())));
+            pieLabel->SetText(wxString::Format(
+                L"%s (%s)", pieLabel->GetText(),
+                wxNumberFormatter::ToString(m_value, 0, Settings::GetDefaultNumberFormat())));
             break;
         case BinLabelDisplay::BinNameAndPercentage:
-            pieLabel->SetText(wxString::Format(L"%s (%s%%)",
-                pieLabel->GetText(),
-                percStr));
+            pieLabel->SetText(wxString::Format(L"%s (%s%%)", pieLabel->GetText(), percStr));
             break;
         case BinLabelDisplay::BinName:
             [[fallthrough]];
@@ -218,13 +210,14 @@ namespace Wisteria::GraphItems
             break;
             }
         // outer labels can have headers
-        pieLabel->GetHeaderInfo().LabelAlignment(
-            (is_within<double>(std::make_pair(0, 90), angle) ||
-             is_within<double>(std::make_pair(270, 360), angle)) ?
-            TextAlignment::FlushLeft :
-            TextAlignment::FlushRight).
-            FontColor(GetHeaderInfo().GetFontColor()).
-            GetFont().MakeBold();
+        pieLabel->GetHeaderInfo()
+            .LabelAlignment((is_within<double>(std::make_pair(0, 90), angle) ||
+                             is_within<double>(std::make_pair(270, 360), angle)) ?
+                                TextAlignment::FlushLeft :
+                                TextAlignment::FlushRight)
+            .FontColor(GetHeaderInfo().GetFontColor())
+            .GetFont()
+            .MakeBold();
 
         return pieLabel;
         }
@@ -654,6 +647,8 @@ namespace Wisteria::Graphs
             auto outerLabel = pSlice->CreateOuterLabel(
                 (isInnerSlice ? outerPieDrawArea : pieDrawArea),
                 GetOuterLabelDisplay());
+            outerLabel->SetFontColor(
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
             outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
                 {
@@ -1035,6 +1030,8 @@ namespace Wisteria::Graphs
                 { continue; }
             outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
             outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->SetFontColor(
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
@@ -1113,6 +1110,8 @@ namespace Wisteria::Graphs
                 { continue; }
             outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
             outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->SetFontColor(
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
@@ -1208,6 +1207,9 @@ namespace Wisteria::Graphs
                 { continue; }
             outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
             outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->SetFontColor(
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
                 Label* nextLabel = (i + 1 < outerTopRightLabelAndLines.size() ?
@@ -1285,6 +1287,8 @@ namespace Wisteria::Graphs
                 { continue; }
             outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
             outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->SetFontColor(
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
