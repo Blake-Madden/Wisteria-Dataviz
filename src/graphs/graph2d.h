@@ -534,6 +534,23 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxColour GetImageOutlineColor() const noexcept
             { return m_imageOutlineColor; }
+
+        /// @brief Make axes, titles, etc. black or white (contrasting against the background) if
+        /// they are the same color as the background.
+        void ContrastColors()
+            {
+            GetLeftYAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+            GetBottomXAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+            GetRightYAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+            GetTopXAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+            if (GetTitle().GetFontColor().IsOk() &&
+                GetTitle().GetFontColor() == GetPlotOrCanvasColor())
+                {
+                GetTitle().SetFontColor(
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                }
+            }
+
         /** @brief Updates the settings for a legend based on the provided hints.
                 This should be called on a legend after it is constructed by
                 a derived graph type.

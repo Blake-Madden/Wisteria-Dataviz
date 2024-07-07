@@ -1305,6 +1305,34 @@ namespace Wisteria::GraphItems
         /// @note Titles, headers, footers, labels, and brackets will not be affected.
         void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
 
+        /// @brief If colors in the axes are the same as @c bkColor, then set them
+        ///     to black or white, contrasting against @c bkColor. 
+        void ContrastAgainstColor(const wxColour& bkColor)
+            {
+            const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                bkColor) };
+            if (GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour() == bkColor)
+                {
+                GetAxisLinePen().SetColour(contrastingColor);
+                }
+            if (GetFontColor().IsOk() && GetFontColor() == bkColor)
+                {
+                SetFontColor(contrastingColor);
+                }
+            if (GetTitle().GetFontColor().IsOk() && GetTitle().GetFontColor() == bkColor)
+                {
+                GetTitle().SetFontColor(contrastingColor);
+                }
+            if (GetHeader().GetFontColor().IsOk() && GetHeader().GetFontColor() == bkColor)
+                {
+                GetHeader().SetFontColor(contrastingColor);
+                }
+            if (GetFooter().GetFontColor().IsOk() && GetFooter().GetFontColor() == bkColor)
+                {
+                GetFooter().SetFontColor(contrastingColor);
+                }
+            }
+
         /** @name Title Functions
             @brief Functions related to the axis's title.*/
         /// @{
@@ -2064,7 +2092,7 @@ namespace Wisteria::GraphItems
         DateInterval m_dateDisplayInterval{ DateInterval::FiscalQuarterly };
 
         // ghosting settings
-        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
+        uint8_t m_ghostOpacity{ 32 };
         bool m_ghost{ false };
 
         // scale information

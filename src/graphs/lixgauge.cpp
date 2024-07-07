@@ -115,6 +115,7 @@ void LixGauge::AdjustAxes()
 
         {
         Axis leftRuler(Wisteria::AxisType::LeftYAxis);
+        leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
         leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
         leftRuler.SetCustomXPosition(0.9f);
         leftRuler.SetCustomYPosition(minYAxis);
@@ -165,6 +166,7 @@ void LixGauge::AdjustAxes()
 
         {
         Axis rightRuler(Wisteria::AxisType::RightYAxis);
+        rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
         rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
         rightRuler.SetCustomXPosition(1.1f);
         rightRuler.SetCustomYPosition(minYAxis);
@@ -190,7 +192,6 @@ void LixGauge::AdjustAxes()
             bracket.GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT);
             bracket.GetLinePen().SetWidth(2);
             bracket.SetTickmarkLength(30);
-            bracket.GetLabel().SetFontColor(*wxBLACK);
             }
         AddCustomAxis(rightRuler);
         }
@@ -209,7 +210,9 @@ void LixGauge::RecalcSizes(wxDC& dc)
         }
 
     // draw outer lines
-    auto outerLines = std::make_unique<GraphItems::Lines>(*wxBLACK_PEN, GetScaling());
+    auto outerLines = std::make_unique<GraphItems::Lines>(
+        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+        GetScaling());
     wxCoord coordX1{ 0 }, coordX2{ 0 }, coordY1{ 0 }, coordY2{ 0 }, coordY3{ 0 };
     const auto [startX, endX] = GetBottomXAxis().GetRange();
     const auto [startY, endY] = GetLeftYAxis().GetRange();
@@ -262,6 +265,8 @@ void LixGauge::RecalcSizes(wxDC& dc)
             // points on the middle ruler
             points->AddPoint(Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
                                          .AnchorPoint(pt)
+                                         .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                             GetPlotOrCanvasColor()))
                                          .Brush(GetColorScheme()->GetColor(colorIndex)),
                                      Settings::GetPointRadius(),
                                      GetShapeScheme()->GetShape(colorIndex)),

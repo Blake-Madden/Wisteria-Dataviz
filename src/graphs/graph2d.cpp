@@ -504,6 +504,8 @@ namespace Wisteria::Graphs
         m_currentAssignedId = 0;
         m_plotObjects.clear();
 
+        ContrastColors();
+
         // If bounding box hasn't been set yet, then set it to the parent
         // canvas's size. This would only happen if trying to measure the graph
         // before the window has a size event or is presented.
