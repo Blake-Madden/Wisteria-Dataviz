@@ -675,6 +675,21 @@ namespace Wisteria
                 return *this;
                 }
 
+            /** @brief Sets the minimum size for the item's bounding box.
+                    This is currently only relevant to Label objects.
+                @details This should include space for the text and its padding.
+                @param width The minimum width. Set to @c std::nullopt to ignore it.
+                @param height The minimum height. Set to @c std::nullopt to ignore it.
+                @note This should be used if you wish to make the label larger than its content.
+                    For example, use this to make a series of labels the same width.*/
+            GraphItemInfo& MinimumUserSizeDIPs(const std::optional<wxCoord> width,
+                                               const std::optional<wxCoord> height)
+                {
+                m_minimumUserWidthDIPs = width;
+                m_minimumUserHeightDIPs = height;
+                return *this;
+                }
+
             /// @brief Sets the area that the drawing of this object is restricted to.
             /// @param clippingRect The area to clip drawing to.
             /// @returns A self reference.
@@ -1379,7 +1394,7 @@ namespace Wisteria
             /** @brief Gets the minimum width for the item's bounding box that the client
                     has requested.\n
                     This is currently only relevant to @c Label objects.
-                @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
+                @note By default, this is optional until the client calls SetMinimumUserSizeDIPs().\n
                     This is the minimum size that the client has requested, which may or may not be
                     the same as the actual content's size (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserHeightDIPs().
@@ -1393,7 +1408,7 @@ namespace Wisteria
             /** @brief Gets the minimum height for the item's bounding box that the client
                     has requested.\n
                     This is currently only relevant to Label objects.
-                @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
+                @note By default, this is optional until the client calls SetMinimumUserSizeDIPs().\n
                     This is the minimum size that the client has requested, which may or may not
                     be the same as the actual content's size (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserWidthDIPs().
@@ -1412,7 +1427,7 @@ namespace Wisteria
                 @note This should be used if you wish to make the label larger than its content.
                     For example, use this to make a series of labels the same width.*/
             void SetMinimumUserSizeDIPs(const std::optional<wxCoord> width,
-                                        std::optional<wxCoord> height) noexcept
+                                        const std::optional<wxCoord> height) noexcept
                 {
                 m_itemInfo.m_minimumUserWidthDIPs = width;
                 m_itemInfo.m_minimumUserHeightDIPs = height;
@@ -1431,7 +1446,7 @@ namespace Wisteria
             /** @brief Sets the area that the object's rendering is restricted to.
                 @details By default, objects are drawn as-is and are not clipped.
                 @param clipRect The clipping rect, or @c std::nullopt to turn off clipping.*/
-            void SetClippingRect(std::optional<wxRect> clipRect)
+            void SetClippingRect(const std::optional<wxRect> clipRect)
                 {
                 m_itemInfo.m_clippingRect = clipRect;
                 }
