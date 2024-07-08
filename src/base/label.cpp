@@ -104,35 +104,37 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxCoord Label::CalcPageVerticalOffset(const wxDC& dc) const
         {
-        return !GetMinimumUserHeightDIPs() ? 0 : // if no min height, then no offset needed
-                   (dc.FromDIP(GetMinimumUserHeightDIPs().value()) <=
+        return !GetMinimumUserHeightDIPs() ?
+                   0 : // if no min height, then no offset needed
+                   (ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value()) <=
                     GetCachedContentBoundingBox().GetHeight()) ?
-                                             0 :
+                   0 :
                (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned) ?
-                                             0 :
+                   0 :
                (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
-                                             (dc.FromDIP(GetMinimumUserHeightDIPs().value()) -
-                                              GetCachedContentBoundingBox().GetHeight()) /
-                                                 2 :
-                                             (dc.FromDIP(GetMinimumUserHeightDIPs().value()) -
-                                              GetCachedContentBoundingBox().GetHeight());
+                   (ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value()) -
+                    GetCachedContentBoundingBox().GetHeight()) /
+                       2 :
+                   (ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value()) -
+                    GetCachedContentBoundingBox().GetHeight());
         }
 
     //-------------------------------------------
     wxCoord Label::CalcPageHorizontalOffset(const wxDC& dc) const
         {
-        return !GetMinimumUserWidthDIPs() ? 0 : // if no min width, then no offset needed
-                   (dc.FromDIP(GetMinimumUserWidthDIPs().value()) <=
+        return !GetMinimumUserWidthDIPs() ?
+                   0 : // if no min width, then no offset needed
+                   (ScaleToScreenAndCanvas(GetMinimumUserWidthDIPs().value()) <=
                     GetCachedContentBoundingBox().GetWidth()) ?
-                                            0 :
+                   0 :
                (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned) ?
-                                            0 :
+                   0 :
                (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
-                                            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) -
-                                             GetCachedContentBoundingBox().GetWidth()) /
-                                                2 :
-                                            (dc.FromDIP(GetMinimumUserWidthDIPs().value()) -
-                                             GetCachedContentBoundingBox().GetWidth());
+                   (ScaleToScreenAndCanvas(GetMinimumUserWidthDIPs().value()) -
+                    GetCachedContentBoundingBox().GetWidth()) /
+                       2 :
+                   (ScaleToScreenAndCanvas(GetMinimumUserWidthDIPs().value()) -
+                    GetCachedContentBoundingBox().GetWidth());
         }
 
     //-------------------------------------------
@@ -287,9 +289,9 @@ namespace Wisteria::GraphItems
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
         const wxCoord width =
-            std::max<wxCoord>(measuredWidth, dc.FromDIP(GetMinimumUserWidthDIPs().value_or(0)));
-        const wxCoord height =
-            std::max<wxCoord>(measuredHeight, dc.FromDIP(GetMinimumUserHeightDIPs().value_or(0)));
+            std::max<wxCoord>(measuredWidth, ScaleToScreenAndCanvas(GetMinimumUserWidthDIPs().value_or(0)));
+        const wxCoord height = std::max<wxCoord>(
+            measuredHeight, ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value_or(0)));
 
         wxRect boundingBox;
         if (GetTextOrientation() == Orientation::Horizontal)
