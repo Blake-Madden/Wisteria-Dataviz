@@ -94,8 +94,11 @@ namespace Wisteria::Graphs
             AddObject(std::move(sentenceLabel));
             }
 
-        const auto addTextPoint = [this](const double xValue, const double yValue,
-                                         const double textNumber, const int precision)
+        const wxSize commonLabelSize = dc.ToDIP(dc.GetTextExtent(L"99.9"));
+
+        const auto addTextPoint = [this, commonLabelSize](const double xValue, const double yValue,
+                                                          const double textNumber,
+                                                          const int precision)
         {
             wxPoint textPt;
             if (GetPhysicalCoordinates(xValue, yValue, textPt))
@@ -104,6 +107,10 @@ namespace Wisteria::Graphs
                     GraphItemInfo()
                         .Scaling(GetScaling())
                         .Pen(wxNullPen)
+                        .Padding(0, 0, 0, 0)
+                        .MinimumUserSizeDIPs(commonLabelSize.GetWidth(), std::nullopt)
+                        .LabelAlignment(TextAlignment::Centered)
+                        .LabelPageHorizontalAlignment(PageHorizontalAlignment::RightAligned)
                         .FontColor(GetLeftYAxis().GetFontColor())
                         .Text(wxNumberFormatter::ToString(textNumber, precision,
                                                           wxNumberFormatter::Style::Style_None))
@@ -149,1046 +156,129 @@ namespace Wisteria::Graphs
         addTextPoint(2.0, 170, 14.3, 1);
 
         // 2.5 score
-        if (GetPhysicalCoordinates(2.5, 190, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(16.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 188, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(16.1, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 186, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(15.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 184, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(15.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 182, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(14.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 180, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(14.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 178, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 176, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 174, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 172, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(2.5, 170, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(2.5, 190, 16.6, 1);
+        addTextPoint(2.5, 188, 16.1, 1);
+        addTextPoint(2.5, 186, 15.6, 1);
+        addTextPoint(2.5, 184, 15.2, 1);
+        addTextPoint(2.5, 182, 14.7, 1);
+        addTextPoint(2.5, 180, 14.2, 1);
+        addTextPoint(2.5, 178, 13.7, 1);
+        addTextPoint(2.5, 176, 13.3, 1);
+        addTextPoint(2.5, 174, 12.8, 1);
+        addTextPoint(2.5, 172, 12.3, 1);
+        addTextPoint(2.5, 170, 11.8, 1);
+
         // 3.0 score
-        if (GetPhysicalCoordinates(3.0, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(16.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 198, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(16.1, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 196, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(15.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 194, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(15.1, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 192, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(14.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 190, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(14.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 188, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 186, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 184, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 182, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 180, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 178, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.0, 176, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(3.0, 200, 16.6, 1);
+        addTextPoint(3.0, 198, 16.1, 1);
+        addTextPoint(3.0, 196, 15.6, 1);
+        addTextPoint(3.0, 194, 15.1, 1);
+        addTextPoint(3.0, 192, 14.6, 1);
+        addTextPoint(3.0, 190, 14.2, 1);
+        addTextPoint(3.0, 188, 13.7, 1);
+        addTextPoint(3.0, 186, 13.2, 1);
+        addTextPoint(3.0, 184, 12.7, 1);
+        addTextPoint(3.0, 182, 12.2, 1);
+        addTextPoint(3.0, 180, 11.8, 1);
+        addTextPoint(3.0, 178, 11.3, 1);
+        addTextPoint(3.0, 176, 10.8, 1);
+
         // 3.5 score
-        if (GetPhysicalCoordinates(3.5, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(14.1, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 198, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 196, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 194, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 192, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 190, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 188, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 186, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 184, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 182, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 180, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.3, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 178, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.9, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(3.5, 176, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.4, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(3.5, 200, 14.1, 1);
+        addTextPoint(3.5, 198, 13.6, 1);
+        addTextPoint(3.5, 196, 13.2, 1);
+        addTextPoint(3.5, 194, 12.7, 1);
+        addTextPoint(3.5, 192, 12.2, 1);
+        addTextPoint(3.5, 190, 11.7, 1);
+        addTextPoint(3.5, 188, 11.2, 1);
+        addTextPoint(3.5, 186, 10.8, 1);
+        addTextPoint(3.5, 184, 10.3, 1);
+        addTextPoint(3.5, 182, 9.8, 1);
+        addTextPoint(3.5, 180, 9.3, 1);
+        addTextPoint(3.5, 178, 8.9, 1);
+        addTextPoint(3.5, 176, 8.4, 1);
+
         // 4.0 score
-        if (GetPhysicalCoordinates(4.0, 206, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(13.1, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 204, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.6, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 202, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(12.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 198, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(11.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 196, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 194, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 192, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 190, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.3, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 188, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 186, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.3, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 184, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 182, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.4, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 180, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.9, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 178, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.4, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.0, 176, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.9, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(4.0, 206, 13.1, 1);
+        addTextPoint(4.0, 204, 12.6, 1);
+        addTextPoint(4.0, 202, 12.2, 1);
+        addTextPoint(4.0, 200, 11.7, 1);
+        addTextPoint(4.0, 198, 11.2, 1);
+        addTextPoint(4.0, 196, 10.7, 1);
+        addTextPoint(4.0, 194, 10.2, 1);
+        addTextPoint(4.0, 192, 9.8, 1);
+        addTextPoint(4.0, 190, 9.3, 1);
+        addTextPoint(4.0, 188, 8.8, 1);
+        addTextPoint(4.0, 186, 8.3, 1);
+        addTextPoint(4.0, 184, 7.8, 1);
+        addTextPoint(4.0, 182, 7.4, 1);
+        addTextPoint(4.0, 180, 6.9, 1);
+        addTextPoint(4.0, 178, 6.4, 1);
+        addTextPoint(4.0, 176, 5.9, 1);
+
         // 4.5 score
-        if (GetPhysicalCoordinates(4.5, 206, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 204, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(
-                        wxNumberFormatter::ToString(10.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 202, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.7, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.2, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 198, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 196, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.3, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 194, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 192, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.3, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 190, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.8, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 188, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.4, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 186, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.9, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 184, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.4, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 182, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.9, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 180, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.5, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 178, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.0, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(4.5, 176, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.5, 1, wxNumberFormatter::Style::Style_None)
-                              .Prepend(L" "))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(4.5, 206, 10.7, 1);
+        addTextPoint(4.5, 204, 10.2, 1);
+        addTextPoint(4.5, 202, 9.7, 1);
+        addTextPoint(4.5, 200, 9.2, 1);
+        addTextPoint(4.5, 198, 8.8, 1);
+        addTextPoint(4.5, 196, 8.3, 1);
+        addTextPoint(4.5, 194, 7.8, 1);
+        addTextPoint(4.5, 192, 7.3, 1);
+        addTextPoint(4.5, 190, 6.8, 1);
+        addTextPoint(4.5, 188, 6.4, 1);
+        addTextPoint(4.5, 186, 5.9, 1);
+        addTextPoint(4.5, 184, 5.4, 1);
+        addTextPoint(4.5, 182, 4.9, 1);
+        addTextPoint(4.5, 180, 4.5, 1);
+        addTextPoint(4.5, 178, 4.0, 1);
+        addTextPoint(4.5, 176, 3.5, 1);
+
         // 5.0 score
-        if (GetPhysicalCoordinates(5.0, 212, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 210, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(9.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 208, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 206, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(8.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 204, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 202, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 198, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 196, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 194, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.0, 192, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.5, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(5.0, 212, 9.7, 1);
+        addTextPoint(5.0, 210, 9.2, 1);
+        addTextPoint(5.0, 208, 8.7, 1);
+        addTextPoint(5.0, 206, 8.2, 1);
+        addTextPoint(5.0, 204, 7.8, 1);
+        addTextPoint(5.0, 202, 7.3, 1);
+        addTextPoint(5.0, 200, 6.8, 1);
+        addTextPoint(5.0, 198, 6.3, 1);
+        addTextPoint(5.0, 196, 5.8, 1);
+        addTextPoint(5.0, 194, 5.4, 1);
+        addTextPoint(5.0, 192, 4.5, 1);
+
         // 5.5 score
-        if (GetPhysicalCoordinates(5.5, 212, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(7.2, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 210, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.7, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 208, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(6.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 206, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 204, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 202, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 198, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.9, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 196, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 194, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(2.9, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(5.5, 192, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(2.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(5.5, 212, 7.2, 1);
+        addTextPoint(5.5, 210, 6.7, 1);
+        addTextPoint(5.5, 208, 6.3, 1);
+        addTextPoint(5.5, 206, 5.8, 1);
+        addTextPoint(5.5, 204, 5.3, 1);
+        addTextPoint(5.5, 202, 4.8, 1);
+        addTextPoint(5.5, 200, 4.4, 1);
+        addTextPoint(5.5, 198, 3.9, 1);
+        addTextPoint(5.5, 196, 3.4, 1);
+        addTextPoint(5.5, 194, 2.9, 1);
+        addTextPoint(5.5, 192, 2.4, 1);
+
         // 6.0 score
-        if (GetPhysicalCoordinates(6.0, 214, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(5.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 212, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 210, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 208, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 206, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 204, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(2.9, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 202, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(2.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.0, 200, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(1.9, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(6.0, 214, 5.3, 1);
+        addTextPoint(6.0, 212, 4.8, 1);
+        addTextPoint(6.0, 210, 4.3, 1);
+        addTextPoint(6.0, 208, 3.8, 1);
+        addTextPoint(6.0, 206, 3.4, 1);
+        addTextPoint(6.0, 204, 2.9, 1);
+        addTextPoint(6.0, 202, 2.4, 1);
+        addTextPoint(6.0, 200, 1.9, 1);
+
         // 6.5 score
-        if (GetPhysicalCoordinates(6.5, 220, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(4.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 218, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 216, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(3.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 214, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(2.8, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 212, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(2.3, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 210, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(1.9, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 208, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(1.4, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
-        if (GetPhysicalCoordinates(6.5, 206, pt))
-            {
-            AddObject(std::make_unique<GraphItems::Label>(
-                GraphItemInfo()
-                    .Scaling(GetScaling())
-                    .Pen(wxNullPen)
-                    .Text(wxNumberFormatter::ToString(1.0, 1, wxNumberFormatter::Style::Style_None))
-                    .AnchorPoint(pt)));
-            }
+        addTextPoint(6.5, 220, 4.3, 1);
+        addTextPoint(6.5, 218, 3.8, 1);
+        addTextPoint(6.5, 216, 3.3, 1);
+        addTextPoint(6.5, 214, 2.8, 1);
+        addTextPoint(6.5, 212, 2.3, 1);
+        addTextPoint(6.5, 210, 1.9, 1);
+        addTextPoint(6.5, 208, 1.4, 1);
+        addTextPoint(6.5, 206, 1.0, 1);
 
         if (GetDataset() == nullptr)
             {
