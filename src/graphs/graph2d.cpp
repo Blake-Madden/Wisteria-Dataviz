@@ -59,7 +59,7 @@ namespace Wisteria::Graphs
         adjustLabel(GetTitle());
         adjustLabel(GetSubtitle());
         adjustLabel(GetCaption());
-        
+
         for (auto& customAxis : GetCustomAxes())
             {
             customAxis.ContrastAgainstColor(GetPlotOrCanvasColor());
