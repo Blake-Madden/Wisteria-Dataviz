@@ -310,9 +310,11 @@ namespace Wisteria::GraphItems
 
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-        wxDCPenChanger pc(dc, IsSelected() ?
-                                  wxPen(*wxBLACK, 2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
-                                  scaledPen);
+        const bool penIsLight{ (scaledPen.GetColour().IsOk() &&
+                                Wisteria::Colors::ColorContrast::IsLight(scaledPen.GetColour())) };
+        wxDCPenChanger pc(dc, IsSelected() ? wxPen(penIsLight ? *wxWHITE : *wxBLACK,
+                                                   2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                             scaledPen);
 
         // don't use manual outline drawing unless one side is explicitly turned off
         const bool usingCustomOutline = (!GetGraphItemInfo().IsShowingTopOutline() ||

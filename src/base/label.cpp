@@ -1148,7 +1148,14 @@ namespace Wisteria::GraphItems
             }
         else if (IsSelected())
             {
-            DCPenChangerIfDifferent pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            const bool penIsLight{
+                (GetFontBackgroundColor().IsOk() &&
+                 GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                 Wisteria::Colors::ColorContrast::IsLight(GetFontBackgroundColor())) ||
+                (GetFontColor().IsOk() && Wisteria::Colors::ColorContrast::IsLight(GetFontColor()))
+            };
+            DCPenChangerIfDifferent pc2(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK,
+                                                  ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {

@@ -519,6 +519,8 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcLeftTitles(wxDC& dc, const long spacingWidth)
         {
+        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            GetBackgroundColor()) };
         long leftMarginWidth{ 0 };
         // add the left titles
         for (auto& title : m_leftTitles)
@@ -536,6 +538,26 @@ namespace Wisteria
                     PageVerticalAlignment::TopAligned :
                     PageVerticalAlignment::BottomAligned);
             leftMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
+            // contrast the title if its font color (or background color, if in use)
+            // is the same as the canvas background
+            if (title.GetFontBackgroundColor().IsOk() &&
+                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetFontBackgroundColor() == GetBackgroundColor())
+                {
+                title.SetFontBackgroundColor(contrastingColor);
+                }
+            else if (title.GetFontColor().IsOk() &&
+                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                     title.GetFontColor() == GetBackgroundColor())
+                {
+                title.SetFontColor(contrastingColor);
+                }
+            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
+                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
+                {
+                title.GetHeaderInfo().FontColor(contrastingColor);
+                }
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return leftMarginWidth;
@@ -544,6 +566,8 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcRightTitles(wxDC& dc, const long spacingWidth)
         {
+        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            GetBackgroundColor()) };
         long rightMarginWidth{ 0 };
         long position = GetCanvasRect(dc).GetWidth() - spacingWidth;
         // add the right titles
@@ -563,6 +587,24 @@ namespace Wisteria
                     PageVerticalAlignment::BottomAligned);
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
+            if (title.GetFontBackgroundColor().IsOk() &&
+                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetFontBackgroundColor() == GetBackgroundColor())
+                {
+                title.SetFontBackgroundColor(contrastingColor);
+                }
+            else if (title.GetFontColor().IsOk() &&
+                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                     title.GetFontColor() == GetBackgroundColor())
+                {
+                title.SetFontColor(contrastingColor);
+                }
+            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
+                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
+                {
+                title.GetHeaderInfo().FontColor(contrastingColor);
+                }
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return rightMarginWidth;
@@ -571,6 +613,8 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcTopTitles(wxDC& dc, const long spacingWidth)
         {
+        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            GetBackgroundColor()) };
         long topMarginHeight{ 0 };
         // add the top titles
         for (auto& title : m_topTitles)
@@ -587,6 +631,24 @@ namespace Wisteria
                     PageHorizontalAlignment::RightAligned :
                     PageHorizontalAlignment::LeftAligned);
             topMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
+            if (title.GetFontBackgroundColor().IsOk() &&
+                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetFontBackgroundColor() == GetBackgroundColor())
+                {
+                title.SetFontBackgroundColor(contrastingColor);
+                }
+            else if (title.GetFontColor().IsOk() &&
+                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                     title.GetFontColor() == GetBackgroundColor())
+                {
+                title.SetFontColor(contrastingColor);
+                }
+            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
+                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
+                {
+                title.GetHeaderInfo().FontColor(contrastingColor);
+                }
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return topMarginHeight;
@@ -595,6 +657,8 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcBottomTitles(wxDC& dc, const long spacingWidth)
         {
+        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            GetBackgroundColor()) };
         long bottomMarginHeight{ 0 };
         long position = GetCanvasRect(dc).GetHeight() - spacingWidth;
         // add the bottom titles
@@ -613,6 +677,24 @@ namespace Wisteria
                     PageHorizontalAlignment::LeftAligned);
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             bottomMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
+            if (title.GetFontBackgroundColor().IsOk() &&
+                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetFontBackgroundColor() == GetBackgroundColor())
+                {
+                title.SetFontBackgroundColor(contrastingColor);
+                }
+            else if (title.GetFontColor().IsOk() &&
+                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                     title.GetFontColor() == GetBackgroundColor())
+                {
+                title.SetFontColor(contrastingColor);
+                }
+            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
+                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
+                {
+                title.GetHeaderInfo().FontColor(contrastingColor);
+                }
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return bottomMarginHeight;

@@ -21,6 +21,52 @@ namespace Wisteria::Graphs
     std::mt19937 Graph2D::m_mt{ std::random_device{}() };
 
     //----------------------------------------------------------------
+    void Graph2D::ContrastColors()
+        {
+        GetLeftYAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+        GetBottomXAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+        GetRightYAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+        GetTopXAxis().ContrastAgainstColor(GetPlotOrCanvasColor());
+
+        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            GetPlotOrCanvasColor()) };
+
+        const auto adjustLabel = [this, &contrastingColor](Label& label)
+        {
+            // contrast a label if its font color (or background color, if in use)
+            // is the same as the background
+            if (label.GetFontBackgroundColor().IsOk() &&
+                label.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                label.GetFontBackgroundColor() == GetPlotOrCanvasColor())
+                {
+                label.SetFontBackgroundColor(contrastingColor);
+                }
+            else if (label.GetFontColor().IsOk() &&
+                     label.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                     label.GetFontColor() == GetPlotOrCanvasColor())
+                {
+                label.SetFontColor(contrastingColor);
+                }
+
+            if (label.GetHeaderInfo().IsEnabled() && label.GetHeaderInfo().GetFontColor().IsOk() &&
+                label.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                label.GetHeaderInfo().GetFontColor() == GetPlotOrCanvasColor())
+                {
+                label.GetHeaderInfo().FontColor(contrastingColor);
+                }
+        };
+
+        adjustLabel(GetTitle());
+        adjustLabel(GetSubtitle());
+        adjustLabel(GetCaption());
+        
+        for (auto& customAxis : GetCustomAxes())
+            {
+            customAxis.ContrastAgainstColor(GetPlotOrCanvasColor());
+            }
+        }
+
+    //----------------------------------------------------------------
     void Graph2D::AddReferenceLinesAndAreasToLegend(GraphItems::Label& legend) const
         {
         if (GetReferenceLines().empty() && GetReferenceAreas().empty())

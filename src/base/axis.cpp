@@ -2418,10 +2418,15 @@ namespace Wisteria::GraphItems
                 }
             }
 
+        // if axis is light, then it is probably being contrasted against an dark background,
+        // so make the outline white in that case (black, otherwise)
+        const bool penIsLight{ (GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour().IsOk() &&
+                                Wisteria::Colors::ColorContrast::IsLight(GetAxisLinePen().GetColour())) };
         // draw the selection outline
         if (IsSelected())
             {
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            wxDCPenChanger pc(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK,
+                                        ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             wxPoint pts[5];
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
             pts[4] = pts[0]; // close the square
@@ -2430,7 +2435,8 @@ namespace Wisteria::GraphItems
 
         if (GetOutlineSize().IsFullySpecified())
             {
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
+            wxDCPenChanger pc(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK, ScaleToScreenAndCanvas(1),
+                                        wxPenStyle::wxPENSTYLE_SOLID));
             wxPoint pts[5];
             // area rect was already inflated from GetBoundingBox()
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
