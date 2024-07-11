@@ -1046,9 +1046,13 @@ namespace Wisteria::Graphs
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
                                 // Polygons don't support drop shadows,
-                                // so need to manually add a shadow as another polygon
-                                if ((GetShadowType() != ShadowType::NoDisplay) &&
-                                    (barBlock.GetLength() > rangeStart))
+                                // so need to manually add a shadow as another polygon.
+                                // Also, only use a shadow if the fill color is opaque and
+                                // the bar block isn't too small.
+                                if (GetShadowType() != ShadowType::NoDisplay &&
+                                    blockBrush.GetColour().IsOk() &&
+                                    blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
+                                    barBlock.GetLength() > rangeStart)
                                     {
                                     // in case this bar is way too small because of the
                                     // scaling then don't bother with the shadow
@@ -1496,8 +1500,10 @@ namespace Wisteria::Graphs
                                 {
                                 // polygons don't support drop shadows,
                                 // so need to manually add a shadow as another polygon
-                                if ((GetShadowType() != ShadowType::NoDisplay) &&
-                                    (barBlock.GetLength() > rangeStart))
+                                if (GetShadowType() != ShadowType::NoDisplay &&
+                                    blockBrush.GetColour().IsOk() &&
+                                    blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
+                                    barBlock.GetLength() > rangeStart)
                                     {
                                     // in case this bar is way too small because of the scaling,
                                     // then don't bother with the shadow
