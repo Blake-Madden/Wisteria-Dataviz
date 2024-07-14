@@ -102,7 +102,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Label::CalcPageVerticalOffset(const wxDC& dc) const
+    wxCoord Label::CalcPageVerticalOffset() const
         {
         return !GetMinimumUserHeightDIPs() ?
                    0 : // if no min height, then no offset needed
@@ -120,7 +120,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Label::CalcPageHorizontalOffset(const wxDC& dc) const
+    wxCoord Label::CalcPageHorizontalOffset() const
         {
         return !GetMinimumUserWidthDIPs() ?
                    0 : // if no min width, then no offset needed
@@ -236,7 +236,8 @@ namespace Wisteria::GraphItems
             }
 
         // used for page alignment
-        SetMinimumUserSizeDIPs(dc.ToDIP(rect.GetWidth()), dc.ToDIP(rect.GetHeight()));
+        SetMinimumUserSizeDIPs(DownscaleFromScreenAndCanvas(rect.GetWidth()),
+                               DownscaleFromScreenAndCanvas(rect.GetHeight()));
 
         GetSize(dc, measuredWidth, measureHeight);
         SetCachedContentBoundingBox(
@@ -244,8 +245,8 @@ namespace Wisteria::GraphItems
         // if there is a minimum height that is taller than the text, then center
         // the text vertically
         auto contentRect = GetCachedContentBoundingBox();
-        contentRect.y += CalcPageVerticalOffset(dc);
-        contentRect.x += CalcPageHorizontalOffset(dc);
+        contentRect.y += CalcPageVerticalOffset();
+        contentRect.x += CalcPageHorizontalOffset();
         SetCachedContentBoundingBox(contentRect);
 
         wxRect clippedRect{ rect };
@@ -356,8 +357,8 @@ namespace Wisteria::GraphItems
         // if there is a minimum height that is taller than the text, then center
         // the text vertically
         auto contentRect = GetCachedContentBoundingBox();
-        contentRect.y += CalcPageVerticalOffset(dc);
-        contentRect.x += CalcPageHorizontalOffset(dc);
+        contentRect.y += CalcPageVerticalOffset();
+        contentRect.x += CalcPageHorizontalOffset();
         SetCachedContentBoundingBox(contentRect);
         // wxRect will be 1x1 if created with empty dimensions, so reset that
         // if this label is empty
@@ -1444,7 +1445,7 @@ namespace Wisteria::GraphItems
             // if drawing outline, then calculate that also in case the pen width is large
             ((GetPen().IsOk() && GetGraphItemInfo().IsShowingRightOutline()) ?
                 ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
-        const wxCoord leftOffset = CalcPageHorizontalOffset(dc) +
+        const wxCoord leftOffset = CalcPageHorizontalOffset() +
             ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
                 ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
 
@@ -1647,11 +1648,11 @@ namespace Wisteria::GraphItems
         const wxCoord spaceBetweenLines = (GetLineCount()-1) *
                                            std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
-        pt.y += CalcPageVerticalOffset(dc) + ScaleToScreenAndCanvas(GetTopPadding()) +
+        pt.y += CalcPageVerticalOffset() + ScaleToScreenAndCanvas(GetTopPadding()) +
             // if drawing outline, then calculate that also in case the pen width is large
             ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
                 ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
-        const wxCoord leftOffset = CalcPageHorizontalOffset(dc) +
+        const wxCoord leftOffset = CalcPageHorizontalOffset() +
             ((GetPen().IsOk() && GetGraphItemInfo().IsShowingLeftOutline()) ?
                 ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
 

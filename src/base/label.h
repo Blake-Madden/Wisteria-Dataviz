@@ -434,11 +434,11 @@ namespace Wisteria::GraphItems
         /// @returns The offset from the top if user-defined minimum size is being used it is
         ///     taller than the measured size.
         [[nodiscard]]
-        wxCoord CalcPageVerticalOffset(const wxDC& dc) const;
+        wxCoord CalcPageVerticalOffset() const;
         /// @returns The offset from the left if user-defined minimum size is being used it is
         ///     wider than the measured size.
         [[nodiscard]]
-        wxCoord CalcPageHorizontalOffset(const wxDC& dc) const;
+        wxCoord CalcPageHorizontalOffset() const;
 
         double m_tiltAngle{ 0 };
         double m_spacingBetweenLines{ 1 };

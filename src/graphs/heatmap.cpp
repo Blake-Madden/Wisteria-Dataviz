@@ -428,8 +428,8 @@ namespace Wisteria::Graphs
                         .Pen(wxNullPen)
                         .Padding(0, labelRightPadding, 0, 0)
                         .LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
-                groupRowLabel->SetMinimumUserSizeDIPs(dc.ToDIP(groupLabelWidth),
-                                                      dc.ToDIP(boxWidth));
+                groupRowLabel->SetMinimumUserSizeDIPs(DownscaleFromScreenAndCanvas(groupLabelWidth),
+                                                      DownscaleFromScreenAndCanvas(boxWidth));
                 AddObject(std::move(groupRowLabel));
                 }
 

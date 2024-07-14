@@ -530,7 +530,8 @@ namespace Wisteria
             title.SetTextOrientation(Orientation::Vertical);
             title.SetAnchorPoint(wxPoint(leftMarginWidth, GetCanvasRect(dc).GetHeight()));
             title.SetAnchoring(Anchoring::TopLeftCorner);
-            title.SetMinimumUserSizeDIPs(std::nullopt, GetCanvasRectDIPs().GetHeight());
+            title.SetMinimumUserSizeDIPs(
+                std::nullopt, safe_divide<wxCoord>(GetCanvasRectDIPs().GetHeight(), GetScaling()));
             title.SetPageVerticalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageVerticalAlignment::Centered :
@@ -578,7 +579,8 @@ namespace Wisteria
             title.SetTextOrientation(Orientation::Vertical);
             title.SetAnchorPoint(wxPoint(position, GetCanvasRect(dc).GetHeight()));
             title.SetAnchoring(Anchoring::BottomLeftCorner);
-            title.SetMinimumUserSizeDIPs(std::nullopt, GetCanvasRectDIPs().GetHeight());
+            title.SetMinimumUserSizeDIPs(
+                std::nullopt, safe_divide<wxCoord>(GetCanvasRectDIPs().GetHeight(), GetScaling()));
             title.SetPageVerticalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageVerticalAlignment::Centered :
@@ -623,7 +625,8 @@ namespace Wisteria
             title.SetScaling(GetScaling());
             title.SetAnchorPoint(wxPoint(0, topMarginHeight));
             title.SetAnchoring(Anchoring::TopLeftCorner);
-            title.SetMinimumUserSizeDIPs(GetCanvasRectDIPs().GetWidth(), std::nullopt);
+            title.SetMinimumUserSizeDIPs(
+                safe_divide<wxCoord>(GetCanvasRectDIPs().GetWidth(), GetScaling()), std::nullopt);
             title.SetPageHorizontalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageHorizontalAlignment::Centered :
@@ -668,7 +671,8 @@ namespace Wisteria
             title.SetScaling(GetScaling());
             title.SetAnchorPoint(wxPoint(0, position));
             title.SetAnchoring(Anchoring::BottomLeftCorner);
-            title.SetMinimumUserSizeDIPs(GetCanvasRectDIPs().GetWidth(), std::nullopt);
+            title.SetMinimumUserSizeDIPs(
+                safe_divide<wxCoord>(GetCanvasRectDIPs().GetWidth(), GetScaling()), std::nullopt);
             title.SetPageHorizontalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageHorizontalAlignment::Centered :

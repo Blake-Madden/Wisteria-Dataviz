@@ -1829,7 +1829,7 @@ namespace Wisteria::GraphItems
 
         /// @brief If labels have a background color, then make their boxes wide enough
         ///     to fill the entire place available to them.
-        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, wxDC& dc,
+        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel,
                                                    const bool useMaxWidth) const;
 
         /** @brief Retrieves the value along the axis from a physical
