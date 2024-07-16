@@ -312,7 +312,7 @@ namespace Wisteria::GraphItems
         wxImage outImg{ image.Copy()};
         const auto imgInData = image.GetData();
         const auto imgOutData = outImg.GetData();
-        const auto byteCount{ image.GetWidth() * image.GetHeight() * 3 };
+        [[maybe_unused]] const auto byteCount{ image.GetWidth() * image.GetHeight() * 3 };
 
         std::random_device dev;
         std::mt19937 twister(dev());
