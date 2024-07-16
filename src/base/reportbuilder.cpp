@@ -4614,20 +4614,30 @@ namespace Wisteria
         if (origin->IsOk())
             {
             if (origin->IsValueString())
-                { loadStringToPosition(origin->GetValueString()); }
+                {
+                loadStringToPosition(origin->GetValueString());
+                }
             else if (origin->IsValueNumber())
-                { position = origin->GetValueNumber(); }
+                {
+                position = origin->GetValueNumber();
+                }
             }
         else if (positionNode->IsValueString())
-                { loadStringToPosition(positionNode->GetValueString()); }
+            {
+            loadStringToPosition(positionNode->GetValueString());
+            }
         else if (positionNode->IsValueNumber())
-            { position = positionNode->GetValueNumber(); }
+            {
+            position = positionNode->GetValueNumber();
+            }
         std::optional<double> doubleStartOffset =
             positionNode->HasProperty(L"offset") ?
-            std::optional<double>(positionNode->GetProperty(L"offset")->GetValueNumber()) :
-            std::nullopt;
+                std::optional<double>(positionNode->GetProperty(L"offset")->GetValueNumber()) :
+                std::nullopt;
         if (position.has_value() && doubleStartOffset.has_value())
-            { position.value() += doubleStartOffset.value(); }
+            {
+            position = position.value_or(0) + doubleStartOffset.value();
+            }
 
         return position;
         }
