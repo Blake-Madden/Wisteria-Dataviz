@@ -1951,14 +1951,14 @@ namespace Wisteria::GraphItems
         ///     If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most left (or bottom) label, regardless of orientation.
         [[nodiscard]]
-        std::pair<Label, double> GetFirstDisplayedLabel(wxDC& dc) const;
+        std::pair<Label, double> GetFirstDisplayedLabel() const;
         /// @brief Get the last label (and its axis position) that is being displayed.
         /// @returns The last displayed (right or top) label along the axis. Also,
         ///     returns the axis position of where the label is.
         ///     If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most right (or top) label, regardless of orientation.
         [[nodiscard]]
-        std::pair<Label, double> GetLastDisplayedLabel(wxDC& dc) const;
+        std::pair<Label, double> GetLastDisplayedLabel() const;
 
         /// @returns The (const) custom tick marks.
         [[nodiscard]]

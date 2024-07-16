@@ -341,7 +341,7 @@ namespace Wisteria::GraphItems
                                            wxPoint& bottomRightCorner) const
         {
         // the first (far most left) axis label
-        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel(dc);
+        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel();
         wxCoord firstLabelPhysicalPos{ 0 };
         if (!std::isnan(firstLabelPosition) &&
             GetPhysicalCoordinate(firstLabelPosition, firstLabelPhysicalPos))
@@ -361,7 +361,7 @@ namespace Wisteria::GraphItems
                 }
             }
         // the last (far most right) axis label
-        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel(dc);
+        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel();
         wxCoord lastLabelPhysicalPos{ 0 };
         if (!std::isnan(lastLabelPosition) && GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
             {
@@ -386,7 +386,7 @@ namespace Wisteria::GraphItems
                                          wxPoint& bottomRightCorner) const
         {
         // the first (far most bottom) axis label
-        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel(dc);
+        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel();
         wxCoord firstLabelPhysicalPos{ 0 };
         if (!std::isnan(firstLabelPosition) &&
             GetPhysicalCoordinate(firstLabelPosition, firstLabelPhysicalPos))
@@ -406,7 +406,7 @@ namespace Wisteria::GraphItems
                 }
             }
         // the last (far most top) axis label
-        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel(dc);
+        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel();
         wxCoord lastLabelPhysicalPos{ 0 };
         if (!std::isnan(lastLabelPosition) &&
             GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
@@ -3139,7 +3139,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    std::pair<Label, double> Axis::GetFirstDisplayedLabel(wxDC& dc) const
+    std::pair<Label, double> Axis::GetFirstDisplayedLabel() const
         {
         for (auto axisPos = GetAxisPoints().cbegin();
             axisPos != GetAxisPoints().cend();
@@ -3168,7 +3168,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    std::pair<Label, double> Axis::GetLastDisplayedLabel(wxDC& dc) const
+    std::pair<Label, double> Axis::GetLastDisplayedLabel() const
         {
         for (auto axisPos = GetAxisPoints().crbegin();
             axisPos != GetAxisPoints().crend();
