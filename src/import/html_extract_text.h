@@ -774,8 +774,14 @@ namespace lily_of_the_valley
             @returns The start of the element (i.e., "<a name="citation" /></> and the
                 bookmark name (e.g., "citation").*/
         [[nodiscard]]
-        static const std::pair<const wchar_t*, std::wstring>
+        static std::pair<const wchar_t*, std::wstring>
         find_bookmark(const wchar_t* sectionStart, const wchar_t* sectionEnd);
+        /** @brief Searches a buffer range for an ID (e.g., "<div id="citation" />").
+            @param[in,out] htmlText The the HTML buffer. Its "suffix" will be trimmed past
+                the last read ID section. Will be empty if no more IDs could be found.
+            @returns The ID name (e.g., "citation").*/
+        [[nodiscard]]
+        static std::wstring find_id(std::wstring_view& htmlText);
         /** @brief Searches for a single character in a string, but ensures that
                 it is not inside of a pair of double or single quotes.
             @details This is specifically tailored for " and ' type of quotes used

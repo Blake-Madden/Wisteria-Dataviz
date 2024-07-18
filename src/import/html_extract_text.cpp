@@ -65,14 +65,14 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    const std::pair<const wchar_t*, std::wstring>
+    std::pair<const wchar_t*, std::wstring>
     html_extract_text::find_bookmark(const wchar_t* sectionStart, const wchar_t* sectionEnd)
         {
         const wchar_t* nextAnchor = find_element(sectionStart, sectionEnd, L"a", true);
         if (nextAnchor)
             {
             auto [bookMarkPtr, bookMarkSize] = read_attribute(nextAnchor, L"name", false, false);
-            if (bookMarkPtr && bookMarkSize > 0)
+            if (bookMarkPtr != nullptr && bookMarkSize > 0)
                 {
                 // chop if the leading '#' from the bookmark name
                 if (bookMarkPtr[0] == L'#')
@@ -86,6 +86,45 @@ namespace lily_of_the_valley
             return find_bookmark(nextAnchor + 1, sectionEnd);
             }
         return std::make_pair(nullptr, std::wstring{});
+        }
+    
+    //------------------------------------------------------------------
+    std::wstring html_extract_text::find_id(std::wstring_view& htmlText)
+        {
+        size_t elementStart = htmlText.find(L'<');
+        while (elementStart != std::wstring_view::npos)
+            {
+            auto [bookMarkPtr, bookMarkSize] = read_attribute(htmlText.data(), L"id", false, false);
+            if (bookMarkPtr != nullptr && bookMarkSize > 0)
+                {
+                std::wstring bookmark(bookMarkPtr, bookMarkSize);
+                const auto tagClose = find_close_tag(htmlText.data());
+                if (tagClose == nullptr)
+                    {
+                    htmlText = std::wstring_view{};
+                    return std::wstring{};
+                    }
+                htmlText.remove_prefix(std::distance(htmlText.data(), tagClose));
+                return bookmark;
+                }
+            const auto tagClose = find_close_tag(htmlText.data());
+            if (tagClose == nullptr)
+                {
+                htmlText = std::wstring_view{};
+                return std::wstring{};
+                }
+            htmlText.remove_prefix(std::distance(htmlText.data(), tagClose));
+            elementStart = htmlText.find(L'<');
+            if (elementStart == std::wstring_view::npos)
+                {
+                htmlText = std::wstring_view{};
+                return std::wstring{};
+                }
+            htmlText.remove_prefix(elementStart);
+            }
+        // no more IDs, so clear the buffer
+        htmlText = std::wstring_view{};
+        return std::wstring{};
         }
 
     //------------------------------------------------------------------
