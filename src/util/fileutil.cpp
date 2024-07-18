@@ -189,7 +189,9 @@ wxString FilePathResolverBase::ResolvePath(
                 }
             }
         // ...or in the CWD
-        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() }; wxFile::Exists(absPath))
+        wxLogNull logNo;
+        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() };
+            wxFile::Exists(absPath))
             {
             m_path = absPath;
             m_fileType = FilePathType::LocalOrNetwork;
