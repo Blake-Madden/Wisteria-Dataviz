@@ -284,13 +284,16 @@ namespace Wisteria::Graphs
     void Histogram::SortIntoRanges(const std::optional<size_t> binCount)
         {
         if (GetDataset() == nullptr || m_validN == 0)
-            { return; }
-        double minVal = *std::min_element(
-            m_continuousColumn->GetValues().cbegin(),
-            m_continuousColumn->GetValues().cend());
-        double maxVal = *std::max_element(
-            m_continuousColumn->GetValues().cbegin(),
-            m_continuousColumn->GetValues().cend());
+            {
+            return;
+            }
+        std::vector<double> validData;
+        validData.reserve(GetDataset()->GetRowCount());
+        std::copy_if(m_continuousColumn->GetValues().cbegin(),
+                     m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
+                     [](auto x) { return std::isfinite(x); });
+        double minVal = *std::min_element(validData.cbegin(), validData.cend());
+        double maxVal = *std::max_element(validData.cbegin(), validData.cend());
         // If data fails into a small range (e.g., < 2), then forcibly turn off rounding and integer binning.
         // Make sure that the range is larger than 0 though (otherwise there will probably just be one bin
         // and integer mode would be better there).
@@ -610,16 +613,15 @@ namespace Wisteria::Graphs
         // Scott
         else
             {
-            const auto minVal = *std::min_element(
-                m_continuousColumn->GetValues().cbegin(),
-                m_continuousColumn->GetValues().cend());
-            const auto maxVal = *std::max_element(
-                m_continuousColumn->GetValues().cbegin(),
-                m_continuousColumn->GetValues().cend());
-            const auto sd = statistics::standard_deviation(
-                m_continuousColumn->GetValues(), true);
-            return safe_divide(maxVal - minVal,
-                3.5 * safe_divide(sd, std::cbrt(m_validN)) );
+            std::vector<double> validData;
+            validData.reserve(GetDataset()->GetRowCount());
+            std::copy_if(m_continuousColumn->GetValues().cbegin(),
+                         m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
+                         [](auto x) { return std::isfinite(x); });
+            const auto minVal = *std::min_element(validData.cbegin(), validData.cend());
+            const auto maxVal = *std::max_element(validData.cbegin(), validData.cend());
+            const auto sd = statistics::standard_deviation(validData, true);
+            return safe_divide(maxVal - minVal, 3.5 * safe_divide(sd, std::cbrt(m_validN)));
             }
         }
 
