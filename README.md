@@ -151,14 +151,14 @@ git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 
 Refer [here](https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md) for how to build wxWidgets.
 
-Next, build Wisteria:
+Next, build Wisteria using CMake GUI:
+- open "CMakeLists.txt" (point CMake GUI at Wisteria directory and this happens automatically)
+- set `wxWidgets_ROOT_DIR` to the root folder of wxWidgets.
+- set `wxWidgets_wxrc_EXECUTABLE` (ie `E:/wxWidgets-3.2.5/utils/wxrc/vc_x64_mswud/wxrc.exe`)
+- configure and generate a project file for your compiler.
 
-If using CMake GUI, open "CMakeLists.txt" and set `wxWidgets_ROOT_DIR` to the
-root folder of wxWidgets. Next, configure and generate a project file for your compiler.
-
-If using Visual Studio, open the Wisteria folder to load the project.
-Then go to `Project -> CMake Settings for Wisteria...`. Add an entry for `wxWidgets_ROOT_DIR`
-and specify the path to your wxWidgets folder. Save and then build the project.
+Don't try to use Visual Studio CMake; as of July-2024 Visual Studio 2022 it no longer works with Wisteria...  
+However, Wisteria builds and runs just fine with the above CMake-GUI-generated Visual Studio solution.
 
 Linux
 -----------------------------
