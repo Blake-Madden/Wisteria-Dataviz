@@ -455,10 +455,14 @@ namespace Wisteria::Graphs
             return nullptr;
             }
 
-        const auto minValue = *std::min_element(m_continuousColumn->GetValues().cbegin(),
-                                                m_continuousColumn->GetValues().cend());
-        const auto maxValue = *std::max_element(m_continuousColumn->GetValues().cbegin(),
-                                                m_continuousColumn->GetValues().cend());
+        std::vector<double> validData;
+        std::copy_if(m_continuousColumn->GetValues().cbegin(),
+                     m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
+                     [](auto x) { return std::isfinite(x); });
+        const auto minValue =
+            *std::min_element(validData.cbegin(), validData.cend());
+        const auto maxValue =
+            *std::max_element(validData.cbegin(), validData.cend());
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItemInfo(
                 // add spaces on the empty lines to work around SVG exporting
