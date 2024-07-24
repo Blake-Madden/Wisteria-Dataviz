@@ -121,16 +121,22 @@ namespace Wisteria::Colors
         [[nodiscard]]
         std::vector<wxColour> BrewColors(const T start, const T end)
             {
-            m_range.first = *std::min_element(start, end);
-            m_range.second = *std::max_element(start, end);
+            std::vector<double> validColorData;
+            std::copy_if(start, end, std::back_inserter(validColorData),
+                         [](auto x) { return std::isfinite(x); });
+            m_range.first = *std::min_element(validColorData.cbegin(), validColorData.cend());
+            m_range.second = *std::max_element(validColorData.cbegin(), validColorData.cend());
 
             const size_t rangeSize = std::distance(start, end);
 
-            std::vector<wxColour> colors(rangeSize, wxColour());
+            std::vector<wxColour> colors(rangeSize, wxColour{});
             for (size_t i = 0; i < rangeSize; ++i)
-                { colors[i] = BrewColor(start[i]); }
+                {
+                colors[i] = BrewColor(start[i]);
+                }
             return colors;
             }
+
         /** @brief Converts a range of numbers into a sequence of color values.
             @details The color values for each number represent where it falls on the color scale,
                 relative to the overall range of values.
@@ -142,13 +148,18 @@ namespace Wisteria::Colors
         [[nodiscard]]
         std::vector<wxColour> BrewColors(const std::initializer_list<T>& values)
             {
-            m_range.first = *std::min_element(values.cbegin(), values.cend());
-            m_range.second = *std::max_element(values.cbegin(), values.cend());
+            std::vector<double> validColorData;
+            std::copy_if(values.cbegin(), values.cend(), std::back_inserter(validColorData),
+                         [](auto x) { return std::isfinite(x); });
+            m_range.first = *std::min_element(validColorData.cbegin(), validColorData.cend());
+            m_range.second = *std::max_element(validColorData.cbegin(), validColorData.cend());
 
             std::vector<wxColour> colors;
             colors.reserve(values.size());
             for (const auto& value : values)
-                { colors.push_back(BrewColor(value)); }
+                {
+                colors.push_back(BrewColor(value));
+                }
             return colors;
             }
         /** @brief Returns the calculated min and max of the values from the last
