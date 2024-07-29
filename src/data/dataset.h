@@ -970,7 +970,7 @@ namespace Wisteria::Data
         @details Contains columns for continuous data, categoricals, groupings,
             dates, and observation names/IDs.
 
-        @sa [Importing Data](../../ImportingData.md) and [Building Data](../../BuildingData.md)
+        @sa [Importing Data](../../../ImportingData.md) and [Building Data](../../../BuildingData.md)
             for dataset overviews.*/
     class Dataset
         {

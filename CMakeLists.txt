@@ -34,7 +34,7 @@ PROJECT(Wisteria)
 
 # Build the documentation (not available on Windows)
 ########################
-IF(NOT WIN32)
+#IF(NOT WIN32)
     # https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
     FIND_PACKAGE(Doxygen)
     IF(DOXYGEN_FOUND)
@@ -55,7 +55,7 @@ IF(NOT WIN32)
     ELSE(DOXYGEN_FOUND)
         MESSAGE("Doxygen not found. API documentation will not be generated.")
     ENDIF()
-ENDIF()
+#ENDIF()
 
 # Setup wxWidgets
 ########################
