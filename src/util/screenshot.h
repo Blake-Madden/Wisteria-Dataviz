@@ -30,7 +30,8 @@ class Screenshot
         @param startIdToHighlight The (optional) start control to draw a red line around.
         @param endIdToHighlight The (optional) end control to draw a red line around.
         @param cutoffId An (optional) ID it cutoff vertically at.
-            (This will be the last control at the bottom of the screenshot.)
+            (This will be the last control at the bottom of the screenshot, or top one
+             if above @c startIdToHighlight.)
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshot(const wxString& filePath,
                                const wxWindowID startIdToHighlight = wxID_ANY,

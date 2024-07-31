@@ -655,6 +655,8 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
 
     wxCoord endPointY{ 0 };
 
+    wxPoint startPoint{ 0, 0 };
+
     if (startIdToHighlight != wxID_ANY || endIdToHighlight != wxID_ANY)
         {
         const wxWindow* startWindow = (startIdToHighlight == wxID_ANY) ?
@@ -666,7 +668,6 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                of the children relative to its parent. When dealing with client areas, using
                the screen position of controls will be off because the main dialog's decorations
                aren't factored into that.*/
-            wxPoint startPoint(0, 0);
             auto startWindowParent = startWindow;
             while (startWindowParent && startWindowParent != windowToCapture)
                 {
@@ -718,7 +719,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
         const wxWindow* cutoffWindow = windowToCapture->FindWindow(cutoffId);
         if (cutoffWindow)
             {
-            wxPoint cutoffPoint(0, 0);
+            wxPoint cutoffPoint{ 0, 0 };
             auto cutoffWindowParent = cutoffWindow;
             while (cutoffWindowParent && cutoffWindowParent != windowToCapture)
                 {
@@ -727,11 +728,24 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 }
             wxPoint cutOffEndPoint(cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
                                    cutoffPoint.y + cutoffWindow->GetSize().GetHeight());
-            bitmap = bitmap.GetSubBitmap(
-                wxRect(0, 0, bitmap.GetWidth(),
-                       // if there is something being highlighted, make sure we don't
-                       // cut that off
-                       std::max(cutOffEndPoint.y, endPointY) + wxSizerFlags::GetDefaultBorder()));
+
+            // if cutoff is at the starting point (or above it),
+            // then crop above the first highlighted control
+            if (startPoint.y >= cutoffPoint.y)
+                {
+                const wxCoord yStart = cutoffPoint.y - wxSizerFlags::GetDefaultBorder();
+                bitmap = bitmap.GetSubBitmap(
+                    wxRect(0, yStart, bitmap.GetWidth(), bitmap.GetHeight() - yStart));
+                }
+            // ...otherwise, crop beneath end point
+            else
+                {
+                bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(),
+                                                    // if there is something being highlighted, make
+                                                    // sure we don't cut that off
+                                                    std::max(cutOffEndPoint.y, endPointY) +
+                                                        wxSizerFlags::GetDefaultBorder()));
+                }
             }
         }
 
