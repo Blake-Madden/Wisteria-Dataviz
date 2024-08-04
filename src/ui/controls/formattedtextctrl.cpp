@@ -1709,19 +1709,6 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
 DWORD wxCALLBACK FormattedTextCtrl::EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff,
                                                           LONG cb, LONG* pcb)
     {
-#if wxUSE_THREADS
-    wxMutexGuiLeaveOrEnter();
-#endif // wxUSE_THREADS
-    MSG msg;
-    while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-        if (msg.message != WM_QUIT)
-            {
-            ::TranslateMessage(&msg);
-            ::DispatchMessage(&msg);
-            }
-        }
-
     // Address of our string var is in psEntry
     std::string* psEntry = reinterpret_cast<std::string*>(dwCookie);
 
