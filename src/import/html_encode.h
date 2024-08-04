@@ -153,6 +153,17 @@ namespace lily_of_the_valley
 
         /** @brief Determines if a block of text has characters in it that
                 need to be encoded to be HTML compliant.
+            @details Only checks for `<`. `>`, and `&`.
+            @param text The text to be reviewed.
+            @returns @c true if text should be (simple) HTML encoded.*/
+        [[nodiscard]]
+        static bool needs_to_be_simple_encoded(const std::wstring_view text)
+            {
+            return text.find_first_of(L"<>&") != std::wstring_view::npos;
+            }
+
+        /** @brief Determines if a block of text has characters in it that
+                need to be encoded to be HTML compliant.
             @param text The text to be reviewed.
             @returns @c true if text should be HTML encoded.*/
         [[nodiscard]]
