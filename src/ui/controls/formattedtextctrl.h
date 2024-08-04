@@ -143,7 +143,7 @@ namespace Wisteria::UI
         /// @private
         [[nodiscard]]
         static DWORD wxCALLBACK EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb,
-                                                      [[maybe_unused]] LONG* pcb);
+                                                      LONG* pcb);
 #endif
 
         /** @brief Searches for a given string in the control.

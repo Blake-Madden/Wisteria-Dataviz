@@ -1707,7 +1707,7 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
 #ifdef __WXMSW__
 //-----------------------------------------------------------
 DWORD wxCALLBACK FormattedTextCtrl::EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff,
-                                                          LONG cb, [[maybe_unused]] LONG* pcb)
+                                                          LONG cb, LONG* pcb)
     {
 #if wxUSE_THREADS
     wxMutexGuiLeaveOrEnter();
@@ -1727,6 +1727,7 @@ DWORD wxCALLBACK FormattedTextCtrl::EditStreamOutCallback(DWORD_PTR dwCookie, LP
 
     // write the text
     (*psEntry).append(reinterpret_cast<const char*>(pbBuff), cb);
+    *pcb = cb;
 
     return 0;
     }
