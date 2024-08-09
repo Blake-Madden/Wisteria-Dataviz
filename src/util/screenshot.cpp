@@ -726,14 +726,14 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 cutoffPoint += cutoffWindowParent->GetPosition();
                 cutoffWindowParent = cutoffWindowParent->GetParent();
                 }
-            wxPoint cutOffEndPoint(cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
-                                   cutoffPoint.y + cutoffWindow->GetSize().GetHeight());
+            const wxPoint cutOffEndPoint(cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
+                                         cutoffPoint.y + cutoffWindow->GetSize().GetHeight());
 
             // if cutoff is at the starting point (or above it),
             // then crop above the first highlighted control
-            if (startPoint.y >= cutoffPoint.y)
+            if (startPoint.y >= cutOffEndPoint.y)
                 {
-                const wxCoord yStart = cutoffPoint.y - wxSizerFlags::GetDefaultBorder();
+                const wxCoord yStart = cutOffEndPoint.y - wxSizerFlags::GetDefaultBorder();
                 bitmap = bitmap.GetSubBitmap(
                     wxRect(0, yStart, bitmap.GetWidth(), bitmap.GetHeight() - yStart));
                 }
