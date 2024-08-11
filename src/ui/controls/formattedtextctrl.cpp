@@ -1507,6 +1507,8 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
     {
     GtkTextBuffer* buffer{ nullptr };
 
+    GtkTextIter start, end;
+
     if (useThemed)
         {
         buffer = GTKGetTextBuffer();
@@ -1514,10 +1516,10 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
     else
         {
         buffer = gtk_text_buffer_new(nullptr);
-        text_buffer_set_markup(buffer, m_unthemedContent.utf8_str(), -1);
+        gtk_text_buffer_get_start_iter(buffer, &start);
+        gtk_text_buffer_insert_markup(buffer, &start, m_unthemedContent.utf8_str(), -1);
         }
 
-    GtkTextIter start, end;
     gtk_text_buffer_get_start_iter(buffer, &start);
     gtk_text_buffer_get_end_iter(buffer, &end);
     gchar* bufferedUTF8Text = gtk_text_buffer_get_text(buffer, &start, &end, false);
@@ -1693,7 +1695,12 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
             // multiple events may get fired while editing text, so block those
             {
             EventsSuppressor noevents(this);
-            text_buffer_set_markup(GTKGetTextBuffer(), wxConvUTF8.cWC2MB(formattedText), -1);
+            // clear current content
+            GtkTextIter start, end;
+            gtk_text_buffer_get_bounds(GTKGetTextBuffer(), &start, &end);
+            gtk_text_buffer_delete(GTKGetTextBuffer(), &start, &end);
+
+            gtk_text_buffer_insert_markup(GTKGetTextBuffer(), &start, formattedText.utf8_str(), -1);
             }
         SendTextUpdatedEvent(GetEditableWindow());
         }
@@ -1708,7 +1715,7 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
 //-----------------------------------------------------------
 DWORD wxCALLBACK FormattedTextCtrl::EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff,
                                                           LONG cb, LONG* pcb)
-    {
+            {
     // Address of our string var is in psEntry
     std::string* psEntry = reinterpret_cast<std::string*>(dwCookie);
 
