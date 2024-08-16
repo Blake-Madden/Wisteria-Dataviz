@@ -22,6 +22,7 @@
 #include <limits>
 #include <numeric>
 #include <string_view>
+#include <string>
 
 /// @todo replace this when upgrading to C++20.
 #ifndef M_PI
