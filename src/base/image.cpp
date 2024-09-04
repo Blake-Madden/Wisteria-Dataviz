@@ -886,9 +886,9 @@ namespace Wisteria::GraphItems
         catch (const MemoryMappedFileCloudFileError&)
             {
             wxLogWarning(
-                wxString::Format(_(L"%s: unable to open file from Cloud service."),
+                wxString::Format(L"%s: unable to open file from Cloud service.",
                     filePath),
-                _(L"Error"), wxOK|wxICON_EXCLAMATION);
+                L"Error", wxOK|wxICON_EXCLAMATION);
             return wxNullImage;
             }
         catch (...)
