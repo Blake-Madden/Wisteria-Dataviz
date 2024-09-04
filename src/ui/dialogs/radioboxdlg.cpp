@@ -47,8 +47,7 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
                         .GetAsString(wxC2S_HTML_SYNTAX)) +
                 m_descriptions[m_selected] + L"</body></html>");
             }
-        mainSizer->Add(m_descriptionLabel, 0, wxALIGN_LEFT | wxALL | wxGROW,
-                       wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(m_descriptionLabel, wxSizerFlags{}.Expand().Border().Align(wxALIGN_LEFT));
         }
     mainSizer->AddStretchSpacer(wxSizerFlags::GetDefaultBorder());
     mainSizer->Add(
