@@ -294,7 +294,7 @@ namespace Wisteria::GraphItems
 
         long m_currentAssignedId{ 0 };
         };
-    }; // namespace Wisteria::GraphItems
+    } // namespace Wisteria::GraphItems
 
     /** @}*/
 
