@@ -704,8 +704,8 @@ namespace Wisteria
                         std::nullopt);
             }
         };
-    }; // namespace Wisteria
+    } // namespace Wisteria
 
-    /** @}*/
+/** @}*/
 
 #endif // __WISTERIA_ENUM_CONVERT_H__

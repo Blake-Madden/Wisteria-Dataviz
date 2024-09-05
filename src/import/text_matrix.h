@@ -343,8 +343,8 @@ namespace lily_of_the_valley
         is_end_of_line is_eol;
         std::optional<std::vector<string_typeT>> m_mdVals{ std::nullopt };
         };
-    }; // namespace lily_of_the_valley
+    } // namespace lily_of_the_valley
 
-    /** @}*/
+/** @}*/
 
 #endif //__TEXT_MATRIX_H__

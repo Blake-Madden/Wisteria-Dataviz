@@ -387,8 +387,8 @@ namespace Wisteria::GraphItems
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         PolygonShape m_polygonShape{ PolygonShape::Irregular };
         };
-    }; // namespace Wisteria::GraphItems
+    } // namespace Wisteria::GraphItems
 
-    /** @}*/
+/** @}*/
 
 #endif //__WISTERIA_POLYGON_H__

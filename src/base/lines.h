@@ -109,8 +109,8 @@ namespace Wisteria::GraphItems
         std::vector<std::pair<wxPoint, wxPoint>> m_lines;
         LineStyle m_lineStyle{ LineStyle::Lines };
         };
-    }; // namespace Wisteria::GraphItems
+    } // namespace Wisteria::GraphItems
 
-    /** @}*/
+/** @}*/
 
 #endif //__WISTERIA_LINES_H__

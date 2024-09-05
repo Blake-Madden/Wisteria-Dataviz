@@ -299,8 +299,8 @@ namespace lily_of_the_valley
         Tparser m_parser;
         std::optional<size_t> m_repeat_count{ std::nullopt };
         };
-    }; // namespace lily_of_the_valley
+    } // namespace lily_of_the_valley
 
-    /** @}*/
+/** @}*/
 
 #endif //__TEXT_COLUMN_H__

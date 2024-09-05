@@ -145,8 +145,8 @@ namespace Wisteria
         wxSize m_originalSize;
         bool m_sizeChanged{ false };
         };
-    }; // namespace Wisteria
+    } // namespace Wisteria
 
-    /** @}*/
+/** @}*/
 
 #endif //__WISTERIA_REPORT_PRINTOUT_H__

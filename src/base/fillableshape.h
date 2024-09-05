@@ -61,8 +61,8 @@ namespace Wisteria::GraphItems
       private:
         double m_fillPercent{ math_constants::empty };
         };
-    }; // namespace Wisteria::GraphItems
+    } // namespace Wisteria::GraphItems
 
-    /** @}*/
+/** @}*/
 
 #endif //__WISTERIA_FILLABLE_SHAPE_H__

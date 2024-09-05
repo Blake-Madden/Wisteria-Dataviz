@@ -103,8 +103,8 @@ namespace Wisteria
         BuildXAxis(Canvas* canvas, const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                    AxisType axisType, const bool useCommonLeftAxis = false);
         };
-    }; // namespace Wisteria
+    } // namespace Wisteria
 
-    /** @}*/
+/** @}*/
 
 #endif //__WISTERIA_COMMON_AXIS_BUILDER_H__

@@ -116,8 +116,7 @@ namespace Wisteria
         /// @brief Loads the base properties for a graph item
         /// @param itemNode The JSON node to parse.
         /// @param item[in,out] The item to write the properties to.
-        void LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
-                      GraphItems::GraphItemBase& item);
+        void LoadItem(const wxSimpleJSON::Ptr_t& itemNode, GraphItems::GraphItemBase& item);
         /// @brief Finalizes loading options for a graph.
         /// @details This will load general graph options from a node,
         ///     apply them to the graph, and add the graph (and possibly its legend) to the canvas.
@@ -566,8 +565,8 @@ namespace Wisteria
 
         wxString m_configFilePath;
         };
-    }; // namespace Wisteria
+    } // namespace Wisteria
 
-    /** @}*/
+/** @}*/
 
 #endif //__WISTERIA_REPORT_BUILDER_H__

@@ -21,12 +21,12 @@
 #include <initializer_list>
 #include <limits>
 #include <numeric>
-#include <string_view>
 #include <string>
+#include <string_view>
 
 /// @todo replace this when upgrading to C++20.
 #ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
+    #define M_PI 3.1415926535897932384626433832795
 #endif
 
 /// @brief Math constants.
@@ -970,8 +970,8 @@ namespace geometry
             return downscaled_size(adjustedSize, boundingSize);
             }
         }
-    }; // namespace geometry
+    } // namespace geometry
 
-    /** @}*/
+/** @}*/
 
 #endif //__MATHEMATICS_H__
