@@ -39,11 +39,7 @@ namespace Wisteria::UI
         /// @private
         SearchPanel(const SearchPanel&) = delete;
         /// @private
-        SearchPanel(SearchPanel&&) = delete;
-        /// @private
         SearchPanel& operator=(const SearchPanel&) = delete;
-        /// @private
-        SearchPanel& operator=(SearchPanel&&) = delete;
 
         /// @brief Sets the string to search for.
         /// @param value The text to search for.
