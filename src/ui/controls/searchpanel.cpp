@@ -113,8 +113,6 @@ void SearchPanel::OnSearch(wxCommandEvent& event)
     {
     if (m_search->GetValue().empty())
         {
-        wxMessageBox(_(L"Please enter an item to search for."), _(L"Search"),
-                     wxOK | wxICON_INFORMATION, nullptr);
         return;
         }
     m_previousSearches.push_back(m_search->GetValue());
