@@ -4636,7 +4636,9 @@ namespace Wisteria
                 std::nullopt;
         if (position.has_value() && doubleStartOffset.has_value())
             {
-            position = position.value_or(0) + doubleStartOffset.value();
+            // value() should work here, but GCC throws an
+            // 'uninitialized value' false positive warning
+            position = position.value_or(0) + doubleStartOffset.value_or(0);
             }
 
         return position;
