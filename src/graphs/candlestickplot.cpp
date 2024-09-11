@@ -8,7 +8,7 @@
 
 #include "candlestickplot.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::Graph2D);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::Graph2D)
 
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

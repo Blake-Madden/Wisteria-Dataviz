@@ -14,7 +14,7 @@
 
 wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

@@ -9,7 +9,7 @@
 #include "wordcloud.h"
 #include "../util/frequencymap.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D)
 
 using namespace Wisteria::Colors;
 using namespace Wisteria::Colors::Schemes;

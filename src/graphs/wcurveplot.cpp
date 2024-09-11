@@ -8,7 +8,7 @@
 
 #include "wcurveplot.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePlot);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePlot)
 
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;

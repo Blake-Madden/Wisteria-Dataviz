@@ -8,7 +8,7 @@
 
 #include "lineplot.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGraph2D);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGraph2D)
 
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Icons;

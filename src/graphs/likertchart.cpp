@@ -8,7 +8,7 @@
 
 #include "likertchart.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarChart);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarChart)
 
 using namespace Wisteria::Colors;
 using namespace Wisteria::Data;

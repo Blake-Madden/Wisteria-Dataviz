@@ -8,7 +8,7 @@
 
 #include "lrroadmap.h"
 
-wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap);
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap)
 
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
