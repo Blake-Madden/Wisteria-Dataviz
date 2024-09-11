@@ -87,13 +87,12 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     controlsSizer->Add(column1Sizer);
     controlsSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
     controlsSizer->Add(column2Sizer);
-    mainSizer->Add(controlsSizer, 0, wxEXPAND | wxALIGN_TOP | wxALL,
-                   wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(controlsSizer, wxSizerFlags{}.Expand().Border().Align(wxALIGN_TOP));
 
     wxStaticBoxSizer* imageSizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Image Size"));
     auto imageSizeInfoSizer = new wxGridSizer(
         2, 2, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
-    imageSizeSizer->Add(imageSizeInfoSizer, 1, wxEXPAND);
+    imageSizeSizer->Add(imageSizeInfoSizer, wxSizerFlags{ 1 }.Expand());
 
     wxStaticText* widthLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC,
                                                 _(L"Width:"), wxDefaultPosition, wxDefaultSize);
@@ -114,7 +113,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
                        wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
     heightCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.y));
     imageSizeInfoSizer->Add(heightCtrl);
-    column1Sizer->Add(imageSizeSizer, 0, wxEXPAND);
+    column1Sizer->Add(imageSizeSizer, wxSizerFlags{}.Expand());
 
     // unknown/non-image formats (e.g., SVG) won't use these options
     if (bitmapType != wxBITMAP_TYPE_ANY)
@@ -125,7 +124,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxRadioBox* colorModesRadioBox = new wxRadioBox(
             this, ControlIDs::COLOR_MODE_COMBO_ID, _(L"Color Mode"), wxDefaultPosition,
             wxDefaultSize, colorModes, 0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_options.m_mode));
-        column1Sizer->Add(colorModesRadioBox, 0, wxEXPAND);
+        column1Sizer->Add(colorModesRadioBox, wxSizerFlags{}.Expand());
         column1Sizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
         }
 
@@ -133,7 +132,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         {
         wxStaticBox* tiffBox = new wxStaticBox(this, wxID_ANY, _(L"TIFF options:"));
         wxStaticBoxSizer* tiffOptionsBoxSizer = new wxStaticBoxSizer(tiffBox, wxVERTICAL);
-        column1Sizer->Add(tiffOptionsBoxSizer, 0, wxEXPAND);
+        column1Sizer->Add(tiffOptionsBoxSizer, wxSizerFlags{}.Expand());
 
         wxBoxSizer* compressionSizer = new wxBoxSizer(wxHORIZONTAL);
         tiffOptionsBoxSizer->Add(compressionSizer, 0, wxALIGN_LEFT | wxALL,
@@ -171,8 +170,8 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         column2Sizer->Add(previewSizer);
         }
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
-                   wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),
+                   wxSizerFlags{}.Expand().Border());
 
     SetSizerAndFit(mainSizer);
     }

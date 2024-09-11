@@ -73,20 +73,20 @@ void ArchiveDlg::CreateControls()
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(fileBrowseBoxSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(fileBrowseBoxSizer, wxSizerFlags{}.Expand().Border());
 
     wxTextCtrl* filePathEdit =
         new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                        wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
     filePathEdit->AutoCompleteFileNames();
-    fileBrowseBoxSizer->Add(filePathEdit, 1, wxEXPAND);
+    fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
 
     wxBitmapButton* fileBrowseButton = new wxBitmapButton(
         this, ID_FILE_BROWSE_BUTTON, wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
     fileBrowseBoxSizer->Add(fileBrowseButton, 0, wxALIGN_CENTER_VERTICAL);
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(fileTypeSizer, 0, wxEXPAND);
+    mainSizer->Add(fileTypeSizer, wxSizerFlags{}.Expand());
     fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:")), 0,
                        wxALIGN_CENTER_VERTICAL | wxLEFT, wxSizerFlags::GetDefaultBorder());
     wxArrayString choiceStrings;
@@ -103,12 +103,12 @@ void ArchiveDlg::CreateControls()
                                      // need to hard code size in case file filter is too wide
                                      wxSize(FromDIP(wxSize(150, 150)).GetWidth(), -1),
                                      choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
-    fileTypeSizer->Add(m_fileFilterCombo, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+    fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 
     mainSizer->AddStretchSpacer();
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
-                   wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),
+                   wxSizerFlags{}.Expand().Border());
 
     SetSizerAndFit(mainSizer);
 

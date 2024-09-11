@@ -157,8 +157,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxGridBagSizer* varsSizer =
         new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
-    mainSizer->Add(varsSizer,
-                   wxSizerFlags(1).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+    mainSizer->Add(varsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
     // fill the main list of variables
     varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables")), wxGBPosition(0, 0),
@@ -234,8 +233,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
     varsSizer->AddGrowableCol(0);
     varsSizer->AddGrowableCol(2);
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
-                   wxSizerFlags().Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), wxSizerFlags{}.Expand().Border());
 
     SetSizerAndFit(mainSizer);
 

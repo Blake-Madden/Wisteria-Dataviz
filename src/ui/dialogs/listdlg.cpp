@@ -228,7 +228,7 @@ namespace Wisteria::UI
             auto searcher = new Wisteria::UI::SearchPanel(this, wxID_ANY);
             searcher->SetBackgroundColour(GetBackgroundColour());
             searchSizer->Add(searcher, 0);
-            mainSizer->Add(searchSizer, 0, wxEXPAND);
+            mainSizer->Add(searchSizer, wxSizerFlags{}.Expand());
             }
         if ((m_buttonStyle & LD_COPY_BUTTON) || (m_buttonStyle & LD_SELECT_ALL_BUTTON) ||
             (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_SAVE_BUTTON) ||
@@ -332,7 +332,7 @@ namespace Wisteria::UI
                     }
                 }
             m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
-            mainSizer->Add(m_ribbon, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(m_ribbon, wxSizerFlags{}.Expand().Border());
             m_ribbon->Realise();
             }
 
@@ -344,7 +344,7 @@ namespace Wisteria::UI
                 }
             m_checkList = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                              m_values, wxLB_EXTENDED | wxLB_SORT);
-            mainSizer->Add(m_checkList, 1, wxEXPAND);
+            mainSizer->Add(m_checkList, wxSizerFlags{ 1 }.Expand());
             }
         else
             {
@@ -366,28 +366,28 @@ namespace Wisteria::UI
             m_list->SetVirtualDataSize(m_data->GetItemCount(), 1);
             m_list->DistributeColumns();
 
-            mainSizer->Add(m_list, 1, wxEXPAND);
+            mainSizer->Add(m_list, wxSizerFlags{ 1 }.Expand());
             }
 
         wxSizer* OkCancelSizer = nullptr;
         if (m_buttonStyle & LD_OK_CANCEL_BUTTONS)
             {
             OkCancelSizer = CreateButtonSizer(wxOK | wxCANCEL);
-            mainSizer->Add(OkCancelSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_OK);
             SetEscapeId(wxID_CANCEL);
             }
         else if (m_buttonStyle & LD_YES_NO_BUTTONS)
             {
             OkCancelSizer = CreateButtonSizer(wxYES_NO);
-            mainSizer->Add(OkCancelSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_YES);
             SetEscapeId(wxID_NO);
             }
         else if (m_buttonStyle & LD_CLOSE_BUTTON)
             {
             OkCancelSizer = CreateButtonSizer(wxCLOSE);
-            mainSizer->Add(OkCancelSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_CLOSE);
             }
 
@@ -396,8 +396,7 @@ namespace Wisteria::UI
             m_checkBox =
                 new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"), wxDefaultPosition,
                                wxDefaultSize, wxCHK_2STATE, wxGenericValidator(&m_dontShowAgain));
-            OkCancelSizer->Insert(0, m_checkBox, 0, wxALL | wxEXPAND,
-                                  wxSizerFlags::GetDefaultBorder());
+            OkCancelSizer->Insert(0, m_checkBox, wxSizerFlags{}.Expand().Border());
             }
 
         SetSizerAndFit(mainSizer);

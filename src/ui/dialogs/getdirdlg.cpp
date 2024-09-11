@@ -73,14 +73,14 @@ void GetDirFilterDialog::CreateControls()
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(fileBrowseBoxSizer, 0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(fileBrowseBoxSizer, wxSizerFlags{}.Expand().Border());
 
     wxTextCtrl* filePathEdit =
         new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
                        wxSize(FromDIP(wxSize(600, 600)).GetWidth(), -1),
                        wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
     filePathEdit->AutoCompleteFileNames();
-    fileBrowseBoxSizer->Add(filePathEdit, 1, wxEXPAND);
+    fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
 
     wxBitmapButton* fileBrowseButton =
         new wxBitmapButton(this, ID_FOLDER_BROWSE_BUTTON,
@@ -88,7 +88,7 @@ void GetDirFilterDialog::CreateControls()
     fileBrowseBoxSizer->Add(fileBrowseButton, 0, wxALIGN_CENTER_VERTICAL);
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
-    mainSizer->Add(fileTypeSizer, 0, wxEXPAND);
+    mainSizer->Add(fileTypeSizer, wxSizerFlags{}.Expand());
     fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:"),
                                         wxDefaultPosition, wxDefaultSize, 0),
                        0, wxALIGN_CENTER_VERTICAL | wxLEFT, wxSizerFlags::GetDefaultBorder());
@@ -105,7 +105,7 @@ void GetDirFilterDialog::CreateControls()
     m_fileFilterCombo = new wxChoice(this, wxID_ANY, wxDefaultPosition,
                                      wxSize(FromDIP(wxSize(100, 100)).GetWidth(), -1),
                                      choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
-    fileTypeSizer->Add(m_fileFilterCombo, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+    fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 
     wxCheckBox* recurseDirsCheckBox =
         new wxCheckBox(this, wxID_ANY, _(L"&Search directories recursively"), wxDefaultPosition,
@@ -113,8 +113,8 @@ void GetDirFilterDialog::CreateControls()
     mainSizer->Add(recurseDirsCheckBox, 0, wxALIGN_LEFT | wxALL, wxSizerFlags::GetDefaultBorder());
     mainSizer->AddStretchSpacer(1);
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
-                   wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),
+                   wxSizerFlags{}.Expand().Border());
 
     SetSizerAndFit(mainSizer);
 

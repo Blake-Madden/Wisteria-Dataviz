@@ -65,8 +65,7 @@ void OpacityDlg::CreateControls()
                                 wxGenericValidator(&m_opacity)),
                    wxSizerFlags(0).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL,
-                   wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), wxSizerFlags{}.Expand().Border());
 
     SetSizerAndFit(mainSizer);
     }

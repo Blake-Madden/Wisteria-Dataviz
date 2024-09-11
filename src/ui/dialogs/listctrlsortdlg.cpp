@@ -17,7 +17,7 @@ namespace Wisteria::UI
         mainSizer->SetMinSize(FromDIP(wxSize(500, 300)));
 
         wxBoxSizer* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
-        mainSizer->Add(optionsSizer, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(optionsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         // construct this first so that we can measure the row height
         m_columnList =
@@ -57,15 +57,15 @@ namespace Wisteria::UI
             }
         optionsSizer->Add(labelsSizer, 0, wxALL, wxSizerFlags::GetDefaultBorder());
 
-        optionsSizer->Add(m_columnList, 1, wxEXPAND);
+        optionsSizer->Add(m_columnList, wxSizerFlags{ 1 }.Expand());
 
         wxStaticText* infoText = new wxStaticText(
             this, wxID_ANY, _(L"Double click a field to add or edit a sort criterion."));
         infoText->Wrap(GetSize().GetWidth());
-        mainSizer->Add(infoText, 0, wxALL | wxEXPAND, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(infoText, wxSizerFlags{}.Expand().Border());
 
-        mainSizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
-                       wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(CreateButtonSizer(wxOK | wxCANCEL | wxHELP),
+                       wxSizerFlags{}.Expand().Border());
 
         SetSizerAndFit(mainSizer);
         }

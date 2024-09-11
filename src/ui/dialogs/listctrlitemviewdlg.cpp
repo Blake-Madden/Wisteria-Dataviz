@@ -50,11 +50,11 @@ namespace Wisteria::UI
         m_grid->AutoSizeColumns(false);
         m_grid->SetRowLabelSize(0);
 
-        mainSizer->Add(m_grid, 1, wxALL | wxEXPAND, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(m_grid, wxSizerFlags{ 1 }.Expand().Border());
 
         mainSizer->Add(
             new wxStaticLine(this),
-            wxSizerFlags().Expand().Border(wxRIGHT | wxLEFT, wxSizerFlags::GetDefaultBorder()));
+            wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT)));
         wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
         if (wxCHECK_VERSION(3, 3, 0))

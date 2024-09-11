@@ -20,12 +20,12 @@ namespace Wisteria::UI
             new wxRadioBox(this, wxID_ANY, _(L"Merge Images:"), wxDefaultPosition, wxDefaultSize,
                            orientations, 0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_orientRadio));
         orientationsRadioBox->SetSelection(0);
-        mainSizer->Add(orientationsRadioBox,
-                       wxSizerFlags().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        mainSizer->Add(orientationsRadioBox, wxSizerFlags{}.Border());
 
         m_horizontalThumbsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this);
 
-        m_baseImagePath = wxFileName{ ((imgPaths.size() > 0) ? wxFileName(imgPaths[0]) : wxString{}) };
+        m_baseImagePath =
+            wxFileName{ ((imgPaths.size() > 0) ? wxFileName(imgPaths[0]) : wxString{}) };
 
         wxString imageNames;
         for (const auto& imgPath : imgPaths)
@@ -40,9 +40,7 @@ namespace Wisteria::UI
 
         AdjustThumbnailsHorizontally();
 
-        mainSizer->Add(
-            m_horizontalThumbsSizer,
-            wxSizerFlags(1).Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        mainSizer->Add(m_horizontalThumbsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         m_verticalThumbsSizer = new wxStaticBoxSizer(wxVERTICAL, this);
 
@@ -56,19 +54,15 @@ namespace Wisteria::UI
 
         AdjustThumbnailsVertically();
 
-        mainSizer->Add(
-            m_verticalThumbsSizer,
-            wxSizerFlags(1).Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        mainSizer->Add(m_verticalThumbsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
-        mainSizer->Add(
-            new wxStaticText(this, wxID_STATIC,
-                             _(L"Click any thumbnail to select a different image.\n"
-                               "Click OK to combine images into a new one.")),
-            wxSizerFlags().Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        mainSizer->Add(new wxStaticText(this, wxID_STATIC,
+                                        _(L"Click any thumbnail to select a different image.\n"
+                                          "Click OK to combine images into a new one.")),
+                       wxSizerFlags{}.Expand().Border());
 
-        mainSizer->Add(
-            CreateSeparatedButtonSizer(wxOK | wxCANCEL),
-            wxSizerFlags().Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
 
         m_horizontalThumbsSizer->Show(m_orientRadio == 0);
         m_verticalThumbsSizer->Show(m_orientRadio == 1);

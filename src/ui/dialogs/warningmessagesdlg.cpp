@@ -33,13 +33,13 @@ void WarningMessagesDlg::CreateControls()
             new wxCheckBox(checksBoxSizer->GetStaticBox(), wxID_ANY,
                            warningLabel.second->GetDescription(), wxDefaultPosition, wxDefaultSize,
                            0, wxGenericValidator(&warningLabel.second->ShouldBeShown()));
-        checksBoxSizer->Add(checkBox, 0, wxALL, wxSizerFlags::GetDefaultBorder());
+        checksBoxSizer->Add(checkBox, wxSizerFlags{}.Border());
         }
 
-    mainSizer->Add(checksBoxSizer, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(checksBoxSizer, wxSizerFlags{ 1 }.Expand().Border());
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
-                   wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),
+                   wxSizerFlags{}.Expand().Border());
 
     SetSizer(mainSizer);
     mainSizer->Fit(this);

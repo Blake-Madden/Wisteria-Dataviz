@@ -84,7 +84,7 @@ namespace Wisteria::UI
 
             m_canvas = new Wisteria::Canvas(this);
             m_canvas->SetFixedObjectsGridSize(1, 1);
-            mainSizer->Add(m_canvas, 1, wxALL | wxEXPAND, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(m_canvas, wxSizerFlags{ 1 }.Expand().Border());
 
             mainSizer->Add(
                 new wxStaticLine(this),

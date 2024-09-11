@@ -138,7 +138,7 @@ void Wisteria::UI::BaseMainFrame::InitControls(wxRibbonBar* ribbon)
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     if (m_ribbon)
         {
-        mainSizer->Add(m_ribbon, 0, wxEXPAND);
+        mainSizer->Add(m_ribbon, wxSizerFlags{}.Expand());
         }
     SetSizer(mainSizer);
     }

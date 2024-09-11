@@ -22,7 +22,7 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
     banner->SetGradient(banner->GetBackgroundColour(),
                         ColorContrast::ShadeOrTint(banner->GetBackgroundColour()));
 
-    mainSizer->Add(banner, wxSizerFlags().Expand());
+    mainSizer->Add(banner, wxSizerFlags{}.Expand());
 
     wxRadioBox* radioBox =
         new wxRadioBox(this, wxID_ANY, m_optionsLabel, wxDefaultPosition, wxDefaultSize, m_choices,
@@ -52,7 +52,7 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
     mainSizer->AddStretchSpacer(wxSizerFlags::GetDefaultBorder());
     mainSizer->Add(
         CreateSeparatedButtonSizer(showHelpButton ? (wxOK | wxCANCEL | wxHELP) : (wxOK | wxCANCEL)),
-        0, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+        wxSizerFlags{}.Expand().Border());
 
     mainSizer->SetMinSize(FromDIP(wxSize(500, 250)));
     SetSizerAndFit(mainSizer);

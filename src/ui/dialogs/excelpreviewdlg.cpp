@@ -92,15 +92,14 @@ namespace Wisteria::UI
             m_grid->SetDefaultCellOverflow(false);
             m_grid->Enable(m_importMethod == 1);
 
-            mainSizer->Add(m_grid, 1, wxEXPAND);
+            mainSizer->Add(m_grid, wxSizerFlags{ 1 }.Expand());
             }
 
         mainSizer->Add(new wxStaticText(this, wxID_STATIC,
                                         _(L"Note: only text cells are being shown and are "
                                           "truncated here for display purposes.")),
                        0, wxALL, wxSizerFlags::GetDefaultBorder());
-        mainSizer->Add(CreateButtonSizer(wxOK | wxHELP), 0, wxEXPAND | wxALL,
-                       wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(CreateButtonSizer(wxOK | wxHELP), wxSizerFlags{}.Expand().Border());
 
         mainSizer->SetMinSize(GetSize());
         SetSizer(mainSizer);

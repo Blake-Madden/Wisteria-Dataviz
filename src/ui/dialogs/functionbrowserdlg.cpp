@@ -247,8 +247,8 @@ namespace Wisteria::UI
         wxBoxSizer* categorySizer = new wxBoxSizer(wxVERTICAL);
         categorySizer->Add(new wxStaticText(this, wxID_STATIC, firstWindowCaption));
         categorySizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
-        categorySizer->Add(m_categoryList, 1, wxEXPAND);
-        listsSizer->Add(categorySizer, 0, wxEXPAND);
+        categorySizer->Add(m_categoryList, wxSizerFlags{ 1 }.Expand());
+        listsSizer->Add(categorySizer, wxSizerFlags{}.Expand());
 
         listsSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 
@@ -258,16 +258,15 @@ namespace Wisteria::UI
         wxBoxSizer* functionSizer = new wxBoxSizer(wxVERTICAL);
         functionSizer->Add(new wxStaticText(this, wxID_STATIC, secondWindowCaption));
         functionSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
-        functionSizer->Add(m_functionList, 1, wxEXPAND);
-        listsSizer->Add(functionSizer, 1, wxEXPAND);
+        functionSizer->Add(m_functionList, wxSizerFlags{ 1 }.Expand());
+        listsSizer->Add(functionSizer, wxSizerFlags{ 1 }.Expand());
 
-        mainSizer->Add(listsSizer, 1, wxEXPAND | wxALL, wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(listsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         m_functionDescriptionWindow =
             new wxHtmlWindow(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(500, 150)),
                              wxHW_SCROLLBAR_AUTO | wxBORDER_THEME | wxHW_NO_SELECTION);
-        mainSizer->Add(m_functionDescriptionWindow, 0, wxEXPAND | wxALL,
-                       wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(m_functionDescriptionWindow, wxSizerFlags{}.Expand().Border());
 
         SetSizer(mainSizer);
 
@@ -298,8 +297,8 @@ namespace Wisteria::UI
         mainSizer->Add(m_funcBrowserControl, wxSizerFlags(1).Expand());
 
         // Close and Insert buttons
-        mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP), 0, wxEXPAND | wxALL,
-                       wxSizerFlags::GetDefaultBorder());
+        mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),
+                       wxSizerFlags{}.Expand().Border());
 
         SetSizerAndFit(mainSizer);
 

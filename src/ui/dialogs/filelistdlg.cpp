@@ -18,18 +18,14 @@ namespace Wisteria::UI
         m_infoBar = new wxInfoBar(this);
         mainSizer->Add(m_infoBar, wxSizerFlags().Expand());
 
-        const wxSizerFlags szFlags(
-            wxSizerFlags().Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        const wxSizerFlags szFlags(wxSizerFlags{}.Expand().Border());
 
         wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
-        mainSizer->Add(controlsSizer, wxSizerFlags(1).Expand().Border(
-                                          wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        mainSizer->Add(controlsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         // file list and toolbar
         wxBoxSizer* fileListSizer = new wxBoxSizer(wxVERTICAL);
-        controlsSizer->Add(
-            fileListSizer,
-            wxSizerFlags(2).Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        controlsSizer->Add(fileListSizer, wxSizerFlags{ 2 }.Expand().Border());
 
         auto buttonsSizer = new wxGridSizer(
             4, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
@@ -86,9 +82,7 @@ namespace Wisteria::UI
         m_label = new wxStaticText(this, wxID_ANY, L"\n\n\n");
         fileInfoSizer->Add(m_label, szFlags);
 
-        controlsSizer->Add(
-            fileInfoSizer,
-            wxSizerFlags(1).Expand().Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
+        controlsSizer->Add(fileInfoSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxCLOSE), szFlags);
 
@@ -195,10 +189,7 @@ namespace Wisteria::UI
         // delete files
         Bind(
             wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&)
-            {
-                m_listCtrl->DeleteSelectedItems();
-            },
+            [this]([[maybe_unused]] wxCommandEvent&) { m_listCtrl->DeleteSelectedItems(); },
             wxID_DELETE);
 
         // file list refresh
