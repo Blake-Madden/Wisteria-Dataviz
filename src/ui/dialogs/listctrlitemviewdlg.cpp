@@ -54,7 +54,7 @@ namespace Wisteria::UI
 
         mainSizer->Add(
             new wxStaticLine(this),
-            wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT)));
+            wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
         wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
         if (wxCHECK_VERSION(3, 3, 0))
