@@ -1307,6 +1307,7 @@ namespace Wisteria::GraphItems
 
         /// @brief If colors in the axes are the same as @c bkColor, then set them
         ///     to black or white, contrasting against @c bkColor. 
+        /// @param bkColor The background color to contrast against.
         void ContrastAgainstColor(const wxColour& bkColor)
             {
             const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(

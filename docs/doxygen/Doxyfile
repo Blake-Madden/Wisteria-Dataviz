@@ -1058,6 +1058,18 @@ EXCLUDE                = ../../src/easyexif \
                          ../../src/ui/controls/gtk/gtktextview-helper.h \
                          ../../src/ui/controls/gtk/gtktextview-helper.cpp \
                          ../../src/base/image.cpp \
+                         ../../src/base/canvas.cpp \
+                         ../../src/graphs/wordcloud.cpp \
+                         ../../src/graphs/table.cpp \
+                         ../../src/graphs/sankeydiagram.cpp \
+                         ../../src/graphs/lineplot.cpp \
+                         ../../src/graphs/likertchart.cpp \
+                         ../../src/graphs/histogram.cpp \
+                         ../../src/graphs/heatmap.cpp \
+                         ../../src/graphs/ganttchart.cpp \
+                         ../../src/graphs/categoricalbarchart.cpp \
+                         ../../src/graphs/candlestickplot.cpp \
+                         ../../src/graphs/boxplot.cpp \
                          ../../src/data/dataset.cpp
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or

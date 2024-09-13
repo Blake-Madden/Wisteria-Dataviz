@@ -681,7 +681,8 @@ namespace Wisteria
                 @param width The minimum width. Set to @c std::nullopt to ignore it.
                 @param height The minimum height. Set to @c std::nullopt to ignore it.
                 @note This should be used if you wish to make the label larger than its content.
-                    For example, use this to make a series of labels the same width.*/
+                    For example, use this to make a series of labels the same width.
+                @returns A self reference.*/
             GraphItemInfo& MinimumUserSizeDIPs(const std::optional<wxCoord> width,
                                                const std::optional<wxCoord> height)
                 {
