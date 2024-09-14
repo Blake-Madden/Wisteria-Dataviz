@@ -447,7 +447,8 @@ namespace Wisteria
     Canvas::Canvas(wxWindow* parent, int itemId, const wxPoint& pos, const wxSize& size,
                    const long flags)
         : wxScrolledWindow(parent, itemId, pos, size,
-                           flags | wxBORDER_NONE | wxVSCROLL | wxHSCROLL | wxFULL_REPAINT_ON_RESIZE)
+                           flags | wxBORDER_NONE | wxVSCROLL | wxHSCROLL |
+                               wxALWAYS_SHOW_SB | wxFULL_REPAINT_ON_RESIZE)
         {
         m_watermarkFont.MakeBold();
         SetCanvasMinWidthDIPs(GetDefaultCanvasWidthDIPs());
@@ -709,15 +710,13 @@ namespace Wisteria
         {
         if (m_delayResize && m_blockResize)
             {
-            if (m_resizeTimer.IsRunning())
-                {
-                m_resizeTimer.Stop();
-                }
+            m_resizeTimer.Stop();
             m_resizeTimer.StartOnce(500); // half a second
             event.Skip();
             return;
             }
 
+        m_resizeTimer.Stop();
         m_blockResize = true;
 
         wxGCDC gdc(this);
