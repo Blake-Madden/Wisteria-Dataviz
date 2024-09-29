@@ -93,7 +93,7 @@ namespace Wisteria::UI
             @param[in,out] functions The classes and functions inside of the library.
                 The syntax for these strings is
                 the name of the function and (optionally) a return type following a tab character.
-                For example, `"GetUser()\tUser"` will load a function named `GetUser`
+                For example, `"GetUser()->User"` will load a function named `GetUser`
                 with a return type of `User`.
             @sa Finalize().*/
         void AddLibrary(const wxString& library, NameList& functions);
@@ -102,7 +102,7 @@ namespace Wisteria::UI
             @param[in,out] functions The functions inside of the class.
                 The syntax for these strings is the name of the function and
                 (optionally) a return type following a tab character.
-                For example, `"GetUser()\tUser"` will load a function
+                For example, `"GetUser()->User"` will load a function
                 named `GetUser` with a return type of `User`.
             @sa Finalize().*/
         void AddClass(const wxString& theClass, NameList& functions);

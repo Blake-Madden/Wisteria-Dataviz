@@ -417,10 +417,10 @@ wxString CodeEditor::StripExtraInfo(const wxString& function)
 //-------------------------------------------------------------
 wxString CodeEditor::GetReturnType(const wxString& function)
     {
-    const auto parenthesisStart = function.find(L"\t");
-    if (parenthesisStart != wxString::npos)
+    const auto retSepStart = function.find(L"->");
+    if (retSepStart != wxString::npos)
         {
-        wxString returnType = function.substr(parenthesisStart);
+        wxString returnType = function.substr(retSepStart + 2);
         returnType.Trim(true);
         returnType.Trim(false);
         return returnType;
