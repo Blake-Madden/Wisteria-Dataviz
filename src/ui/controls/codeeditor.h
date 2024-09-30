@@ -255,6 +255,8 @@ namespace Wisteria::UI
         [[nodiscard]]
         static wxString StripExtraInfo(const wxString& function);
         [[nodiscard]]
+        static wxString StripReturnType(const wxString& function);
+        [[nodiscard]]
         static wxString GetReturnType(const wxString& function);
 
         void OnMarginClick(wxStyledTextEvent& event);
@@ -262,11 +264,21 @@ namespace Wisteria::UI
         void OnAutoCompletionSelected(wxStyledTextEvent& event);
         void OnKeyDown(wxKeyEvent& event);
 
-        std::map<wxString, wxString, wxStringCmpNoCase> m_libraryCollection;
-        std::map<wxString, wxString, wxStringCmpNoCase> m_classCollection;
-        std::map<wxString, wxString, wxStringCmpNoCase> m_libraryFunctionsWithReturnTypes;
+        void ResetActiveFunctionMap() noexcept { m_activeFunctionsAndSignaturesMap = nullptr; }
+
+        using wxStringNoCaseMap = std::map<wxString, wxString, wxStringCmpNoCase>;
+        // Library name, string of function names, and map of function names
+        // and their respective full signature
+        using ObjectAndFunctionsMap = std::map<wxString, std::pair<wxString, wxStringNoCaseMap>, wxStringCmpNoCase>;
+
+        ObjectAndFunctionsMap m_libraryCollection;
+        ObjectAndFunctionsMap m_classCollection;
+
+        wxStringNoCaseMap m_libraryFunctionsWithReturnTypes;
         std::set<wxString, wxStringPartialCmpNoCase> m_libaryAndClassNames;
         wxString m_libaryAndClassNamesStr;
+
+        const wxStringNoCaseMap* m_activeFunctionsAndSignaturesMap{ nullptr };
 
         int m_lexer{ wxSTC_LEX_LUA };
 

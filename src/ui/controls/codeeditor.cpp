@@ -345,6 +345,8 @@ long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
 //-------------------------------------------------------------
 void CodeEditor::AddFunctionsOrClasses(const NameList& functions)
     {
+    ResetActiveFunctionMap();
+
     for (const auto& func : functions)
         {
         m_libaryAndClassNames.insert(StripExtraInfo(func.c_str()));
@@ -354,31 +356,42 @@ void CodeEditor::AddFunctionsOrClasses(const NameList& functions)
 //-------------------------------------------------------------
 void CodeEditor::AddLibrary(const wxString& library, NameList& functions)
     {
+    ResetActiveFunctionMap();
+
     wxString functionString;
-    wxString returnTypeStr;
+    wxStringNoCaseMap funcNamesAndSignatures;
     for (const auto& func : functions)
         {
-        functionString += L" " + StripExtraInfo(func);
-        returnTypeStr = GetReturnType(func);
+        const wxString funcName = StripExtraInfo(func);
+        const wxString returnTypeStr = GetReturnType(func);
         if (returnTypeStr.length())
             {
             m_libraryFunctionsWithReturnTypes.insert(
                 std::make_pair(library + L"." + StripExtraInfo(func), returnTypeStr));
             }
+        funcNamesAndSignatures.emplace(funcName, StripReturnType(func));
+        functionString += L" " + funcName;
         }
-    m_libraryCollection.insert(std::make_pair(library, functionString));
+    m_libraryCollection.insert(
+        std::make_pair(library, std::make_pair(functionString, funcNamesAndSignatures)));
     m_libaryAndClassNames.insert(library);
     }
 
 //-------------------------------------------------------------
 void CodeEditor::AddClass(const wxString& theClass, NameList& functions)
     {
+    ResetActiveFunctionMap();
+
     wxString functionString;
+    wxStringNoCaseMap funcNamesAndSignatures;
     for (const auto& func : functions)
         {
-        functionString += L" " + StripExtraInfo(func);
+        const wxString funcName = StripExtraInfo(func);
+        funcNamesAndSignatures.emplace(funcName, StripReturnType(func));
+        functionString += L" " + funcName;
         }
-    m_classCollection.insert(std::make_pair(theClass, functionString));
+    m_classCollection.insert(
+        std::make_pair(theClass, std::make_pair(functionString, funcNamesAndSignatures)));
     m_libaryAndClassNames.insert(theClass);
     }
 
@@ -407,6 +420,20 @@ wxString CodeEditor::StripExtraInfo(const wxString& function)
     if (extraInfoStart != wxString::npos)
         {
         return function.substr(0, extraInfoStart);
+        }
+    else
+        {
+        return function;
+        }
+    }
+
+//-------------------------------------------------------------
+wxString CodeEditor::StripReturnType(const wxString& function)
+    {
+    const auto retSepStart = function.find(L"->");
+    if (retSepStart != wxString::npos)
+        {
+        return function.substr(0, retSepStart);
         }
     else
         {
@@ -474,7 +501,8 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
         auto pos = m_libraryCollection.find(lastWord);
         if (pos != m_libraryCollection.cend())
             {
-            AutoCompShow(0, pos->second);
+            m_activeFunctionsAndSignaturesMap = &pos->second.second;
+            AutoCompShow(0, pos->second.first);
             }
         }
     else if (event.GetKey() == L')' || event.GetKey() == L'(')
@@ -495,10 +523,11 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
             if (libraryPos != m_libraryFunctionsWithReturnTypes.cend())
                 {
-                libraryPos = m_classCollection.find(libraryPos->second);
-                if (libraryPos != m_classCollection.cend())
+                auto classPos = m_classCollection.find(libraryPos->second);
+                if (classPos != m_classCollection.cend())
                     {
-                    AutoCompShow(0, libraryPos->second);
+                    m_activeFunctionsAndSignaturesMap = &classPos->second.second;
+                    AutoCompShow(0, classPos->second.first);
                     }
                 }
             }
@@ -530,7 +559,8 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                     const auto classPos = m_classCollection.find(assignment);
                     if (classPos != m_classCollection.cend())
                         {
-                        AutoCompShow(0, classPos->second);
+                        m_activeFunctionsAndSignaturesMap = &classPos->second.second;
+                        AutoCompShow(0, classPos->second.first);
                         break;
                         }
                     else
@@ -556,7 +586,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
 
         if (lastWord.length())
             {
-            // see if we are inside a library, if so show its list of functions
+            // see if we are inside a library; if so show its list of functions
             if (wordStart > 2 && GetCharAt(wordStart - 1) == GetLibraryAccessor())
                 {
                 const wxString libraryName =
@@ -564,13 +594,14 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 auto pos = m_libraryCollection.find(libraryName);
                 if (pos != m_libraryCollection.cend())
                     {
+                    m_activeFunctionsAndSignaturesMap = &pos->second.second;
                     if (AutoCompActive())
                         {
                         AutoCompSelect(lastWord);
                         }
                     else
                         {
-                        AutoCompShow(lastWord.length(), pos->second);
+                        AutoCompShow(lastWord.length(), pos->second.first);
                         }
                     }
                 }
@@ -590,16 +621,17 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                     auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
                     if (libraryPos != m_libraryFunctionsWithReturnTypes.cend())
                         {
-                        libraryPos = m_classCollection.find(libraryPos->second);
-                        if (libraryPos != m_classCollection.cend())
+                        auto classPos = m_classCollection.find(libraryPos->second);
+                        if (classPos != m_classCollection.cend())
                             {
+                            m_activeFunctionsAndSignaturesMap = &classPos->second.second;
                             if (AutoCompActive())
                                 {
                                 AutoCompSelect(lastWord);
                                 }
                             else
                                 {
-                                AutoCompShow(lastWord.length(), libraryPos->second);
+                                AutoCompShow(lastWord.length(), classPos->second.first);
                                 }
                             }
                         }
@@ -669,6 +701,16 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
 void CodeEditor::OnAutoCompletionSelected(wxStyledTextEvent& event)
     {
     wxString selectedString = event.GetText();
+
+    if (m_activeFunctionsAndSignaturesMap != nullptr)
+        {
+        const auto foundFunc = m_activeFunctionsAndSignaturesMap->find(selectedString);
+        if (foundFunc != m_activeFunctionsAndSignaturesMap->cend())
+            {
+            // use the full function signature instead of just its name
+            selectedString = foundFunc->second;
+            }
+        }
     wxString paramText;
     const bool hasParams = SplitFunctionAndParams(selectedString, paramText);
 
@@ -687,4 +729,5 @@ void CodeEditor::OnAutoCompletionSelected(wxStyledTextEvent& event)
         paramText += L")";
         CallTipShow(GetCurrentPos(), paramText);
         }
+    ResetActiveFunctionMap();
     }
