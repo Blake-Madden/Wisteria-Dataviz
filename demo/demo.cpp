@@ -2205,6 +2205,9 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
 
     wxPrinter printer;
     printer.GetPrintDialogData().SetPrintData(canvases[0]->GetPrinterSettings());
+    printer.GetPrintDialogData().SetAllPages(true);
+    printer.GetPrintDialogData().SetFromPage(1);
+    printer.GetPrintDialogData().SetToPage(canvases.size());
     if (!printer.Print(this, printOut.get(), true) )
         {
         // just show a message if a real error occurred. They may have just cancelled.
