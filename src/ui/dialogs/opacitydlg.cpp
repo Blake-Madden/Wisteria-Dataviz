@@ -47,7 +47,7 @@ void OpacityDlg::CreateControls()
     assert(m_image.IsOk());
     if (m_image.IsOk())
         {
-        const wxSize scaledSize = FromDIP(wxSize(300, 300));
+        const wxSize scaledSize = FromDIP(wxSize{ 300, 300 });
         const std::pair<double, double> thumbSize = geometry::downscaled_size(
             std::make_pair(m_image.GetWidth(), m_image.GetHeight()),
             std::make_pair(scaledSize.GetWidth(), scaledSize.GetHeight()));
@@ -57,13 +57,14 @@ void OpacityDlg::CreateControls()
         m_thumb->SetOpacity(static_cast<uint8_t>(GetOpacity()));
         m_thumb->SetMinSize(wxSize(thumbSize.first, thumbSize.second));
 
-        mainSizer->Add(m_thumb, wxSizerFlags(1).Expand());
+        mainSizer->Add(m_thumb, wxSizerFlags{ 1 }.Expand());
         }
 
-    mainSizer->Add(new wxSlider(this, wxID_ANY, m_opacity, 0, 255, wxDefaultPosition, wxDefaultSize,
+    mainSizer->Add(new wxSlider(this, wxID_ANY, m_opacity, wxALPHA_TRANSPARENT, wxALPHA_OPAQUE,
+                                wxDefaultPosition, wxDefaultSize,
                                 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_AUTOTICKS,
                                 wxGenericValidator(&m_opacity)),
-                   wxSizerFlags(0).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+                   wxSizerFlags{}.Expand().Border());
 
     mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), wxSizerFlags{}.Expand().Border());
 

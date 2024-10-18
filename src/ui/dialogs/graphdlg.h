@@ -88,7 +88,7 @@ namespace Wisteria::UI
 
             mainSizer->Add(
                 new wxStaticLine(this),
-                wxSizerFlags().Expand().Border(wxRIGHT | wxLEFT, wxSizerFlags::GetDefaultBorder()));
+                wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT, wxSizerFlags::GetDefaultBorder()));
             wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
                 {
                 wxButton* button = new wxButton(this, wxID_PRINT);

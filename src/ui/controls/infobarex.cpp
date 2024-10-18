@@ -44,20 +44,15 @@ bool InfoBarEx::Create(wxWindow* parent, wxWindowID winid)
     // button at the very right
     wxBoxSizer* const sizer = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* const firstRowSizer = new wxBoxSizer(wxHORIZONTAL);
-    firstRowSizer->Add(
-        m_icon, wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
-    firstRowSizer->Add(
-        m_text,
-        wxSizerFlags().Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()).Proportion(1));
+    firstRowSizer->Add(m_icon, wxSizerFlags{}.CentreVertical().Border());
+    firstRowSizer->Add(m_text, wxSizerFlags{ 1 }.Expand().Border());
     firstRowSizer->AddStretchSpacer();
-    firstRowSizer->Add(closeButton, wxSizerFlags().CentreVertical().Border(
-                                        wxALL, wxSizerFlags::GetDefaultBorder()));
+    firstRowSizer->Add(closeButton, wxSizerFlags{}.CentreVertical().Border());
 
     wxBoxSizer* const secondRowSizer = new wxBoxSizer(wxHORIZONTAL);
-    secondRowSizer->Add(m_dontShowAgainCheckbox, wxSizerFlags().CentreVertical().Border(
-                                                     wxALL, wxSizerFlags::GetDefaultBorder()));
+    secondRowSizer->Add(m_dontShowAgainCheckbox, wxSizerFlags{}.CentreVertical().Border());
 
-    sizer->Add(firstRowSizer, wxSizerFlags().Proportion(1).Expand());
+    sizer->Add(firstRowSizer, wxSizerFlags{ 1 }.Expand());
     sizer->Add(secondRowSizer);
     sizer->Show(m_dontShowAgainCheckbox, m_includeDontShowAgain, true);
 

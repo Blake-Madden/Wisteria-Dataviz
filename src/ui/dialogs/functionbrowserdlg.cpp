@@ -294,7 +294,7 @@ namespace Wisteria::UI
 
         m_funcBrowserControl =
             new FunctionBrowserCtrl(this, editor, wxID_ANY, firstWindowCaption, secondWindowCaption);
-        mainSizer->Add(m_funcBrowserControl, wxSizerFlags(1).Expand());
+        mainSizer->Add(m_funcBrowserControl, wxSizerFlags{ 1 }.Expand());
 
         // Close and Insert buttons
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),

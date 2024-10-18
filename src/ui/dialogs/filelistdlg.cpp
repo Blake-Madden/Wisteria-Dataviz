@@ -16,7 +16,7 @@ namespace Wisteria::UI
 
         // infobar
         m_infoBar = new wxInfoBar(this);
-        mainSizer->Add(m_infoBar, wxSizerFlags().Expand());
+        mainSizer->Add(m_infoBar, wxSizerFlags{}.Expand());
 
         const wxSizerFlags szFlags(wxSizerFlags{}.Expand().Border());
 
@@ -33,24 +33,24 @@ namespace Wisteria::UI
         wxButton* button = new wxButton(this, wxID_OPEN, _(L"&Open File(s)..."));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-        buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
+        buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
 #ifdef __WXMSW__
         button = new wxButton(this, ID_FOLDER_OPEN, _(L"Open &Folder(s)..."));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-        buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
+        buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 #endif
 
         button = new wxButton(this, wxID_DELETE, _(L"&Delete File(s)"));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-        buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
+        buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
         button = new wxButton(this, wxID_REFRESH, _(L"&Refresh List"));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_REDO, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-        buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
+        buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
         fileListSizer->Add(buttonsSizer);
 
@@ -67,14 +67,14 @@ namespace Wisteria::UI
         m_listCtrl->EnableFileDeletion();
         m_listCtrl->SetVirtualDataProvider(m_fileData);
         m_listCtrl->SetVirtualDataSize(1, 3);
-        fileListSizer->Add(m_listCtrl, wxSizerFlags(1).Expand());
+        fileListSizer->Add(m_listCtrl, wxSizerFlags{ 1 }.Expand());
 
         // file information
         wxBoxSizer* fileInfoSizer = new wxBoxSizer(wxVERTICAL);
         m_thumbnail = new Wisteria::UI::Thumbnail(
             this, wxNullBitmap, Wisteria::ClickMode::FullSizeViewable, false, wxID_ANY,
             wxDefaultPosition, FromDIP(wxSize(256, 256)));
-        fileInfoSizer->Add(m_thumbnail, wxSizerFlags().Border(wxDirection::wxALL,
+        fileInfoSizer->Add(m_thumbnail, wxSizerFlags{}.Border(wxDirection::wxALL,
                                                               wxSizerFlags::GetDefaultBorder()));
 
         fileInfoSizer->AddStretchSpacer();
