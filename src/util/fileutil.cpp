@@ -411,7 +411,6 @@ wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /
 
             wxArrayString folders;
             wxStringTokenizer tkz(foldersString, L'/');
-            wxString nextFileExt;
             while (tkz.HasMoreTokens())
                 {
                 folders.Add(tkz.GetNextToken());
