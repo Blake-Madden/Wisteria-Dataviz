@@ -8,13 +8,13 @@
 
 #include <wx/paper.h>
 #ifdef __WXOSX__
-#include "wx/osx/private.h"
+    #include "wx/osx/private.h"
 #elif defined(__WXGTK__)
-#include "gtk/gtktextview-helper.h"
-#include <gtk/gtk.h>
-#include <gtk/gtktextchild.h>
-#include <gtk/gtktextiter.h>
-#include <gtk/gtktexttag.h>
+    #include "gtk/gtktextview-helper.h"
+    #include <gtk/gtk.h>
+    #include <gtk/gtktextchild.h>
+    #include <gtk/gtktextiter.h>
+    #include <gtk/gtktexttag.h>
 #endif
 #include "../../import/html_encode.h"
 #include "../../import/rtf_encode.h"
@@ -1366,34 +1366,12 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextRtf(
 wxString
 FormattedTextCtrl::GetFormattedTextRtf([[maybe_unused]] const bool fixHighlightingTags /*= true*/)
     {
-    wxString text;
-#ifdef __WXMSW__
-    /* If SetValue was called instead of SetFormattedText
-       then liberally assume that the underlying RTF is twice as long.
-       Otherwise, make it a little bigger than the original RTF length because
-       we need to insert some extra tags.*/
-    text.reserve((m_rtfLength > 0) ? m_rtfLength * 1.5 : GetValue().length() * 2);
-    // the Rich Edit control must write to a char buffer,
-    // so this won't work with unicode wxStrings
-    std::string buffer;
-    buffer.reserve((m_rtfLength > 0) ? m_rtfLength * 1.5 : GetValue().length() * 2);
-
-    // EM_GETTEXTEX simply returns plain text, so stream out to get the RTF instead
-    EDITSTREAM es{ 0 };
-    es.dwError = 0;
-    es.pfnCallback = FormattedTextCtrl::EditStreamOutCallback;
-    // our EditStreamOutCallback() expects a std::string to write
-    // to (dwCookie is function specific)
-    es.dwCookie = reinterpret_cast<DWORD_PTR>(&buffer);
-
-    ::SendMessage(GetHwnd(), EM_STREAMOUT, (WPARAM)SF_RTF | SFF_PLAINRTF, (LPARAM)&es);
-    text = wxString(buffer.c_str(), *wxConvCurrent);
-    buffer.clear();
-#elif defined(__WXGTK__)
+#ifdef __WXGTK__
     return GtkGetFormattedText(GtkFormat::RtfFormat, true);
-#else
-    text = GetTextPeer()->GetRtfValue();
 #endif
+
+    wxString text = IsRTFSupported() ? GetRTFValue() : wxString{};
+
     if (fixHighlightingTags)
         {
         text = FixHighlightingTags(text);
@@ -1671,25 +1649,11 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
 #endif
 
 //-----------------------------------------------------------
-void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
+void FormattedTextCtrl::SetFormattedText(const wxString& formattedText)
     {
-    m_rtfLength = static_cast<unsigned long>(std::wcslen(formattedText));
+    m_rtfLength = static_cast<decltype(m_rtfLength)>(formattedText.length());
 
-#ifdef __WXMSW__
-    SETTEXTEX textInfo{ 0 };
-    textInfo.flags = ST_DEFAULT;
-    textInfo.codepage = CP_ACP;
-
-    /* Never pass unicode text here (even in a unicode build).
-       If you pass in unicode text, then the control's RTF parser
-       never gets called and your formatting code is actually
-       displayed in the control! Just make sure that the text you pass
-       in here has extended ASCII characters RTF encoded;
-       that way you won't lose anything in the conversion.*/
-    ::SendMessage(GetHwnd(), EM_SETTEXTEX, (WPARAM)&textInfo,
-                  (LPARAM) static_cast<const char*>(wxConvCurrent->cWX2MB(formattedText)));
-
-#elif defined(__WXGTK__)
+#ifdef __WXGTK__
     if (IsMultiLine())
         {
             // multiple events may get fired while editing text, so block those
@@ -1705,25 +1669,11 @@ void FormattedTextCtrl::SetFormattedText(const wchar_t* formattedText)
         SendTextUpdatedEvent(GetEditableWindow());
         }
 #else
-    GetTextPeer()->SetRtfValue(formattedText);
+    if (IsRTFSupported())
+        {
+        SetRTFValue(formattedText);
+        }
 #endif
 
     SetInsertionPoint(0);
     }
-
-#ifdef __WXMSW__
-//-----------------------------------------------------------
-DWORD wxCALLBACK FormattedTextCtrl::EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff,
-                                                          LONG cb, LONG* pcb)
-            {
-    // Address of our string var is in psEntry
-    std::string* psEntry = reinterpret_cast<std::string*>(dwCookie);
-
-    // write the text
-    (*psEntry).append(reinterpret_cast<const char*>(pbBuff), cb);
-    *pcb = cb;
-
-    return 0;
-    }
-
-#endif

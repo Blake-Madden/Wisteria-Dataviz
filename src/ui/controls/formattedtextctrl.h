@@ -115,8 +115,9 @@ namespace Wisteria::UI
         ///     (This is HTML meant for white background and black text.)
         /// @param CssStylePrefix A prefix to append to the CSS classes defined in the style
         /// section.\n
-        ///     This is useful to prevent duplicate CSS classes when combining HTML output from
-        ///     multiple controls.\n This is only used for macOS and Windows where the RTF converts
+        ///     This is useful to prevent duplicate CSS classes when combining HTML
+        ///     output from multiple controls.\n
+        ///     This is only used for macOS and Windows where the RTF converts
         ///     its color table to a CSS table. For GTK+, all the formatting is done in place.
         [[nodiscard]]
         wxString
@@ -124,7 +125,7 @@ namespace Wisteria::UI
         /// @brief Inserts formatted text into the control.
         /// @param formattedText The formatted text.
         /// @details On Windows and Mac this is RTF text, on Linux, it is Pango markup.
-        void SetFormattedText(const wchar_t* formattedText);
+        void SetFormattedText(const wxString& formattedText);
         /// @returns The window's content as RTF.
         /// @param fixHighlightingTags Whether or not to include the "addChcbpatTag" tag,
         ///     which is used to highlight the background of text.\n
@@ -139,12 +140,6 @@ namespace Wisteria::UI
             {
             return m_rtfLength;
             }
-#ifdef __WXMSW__
-        /// @private
-        [[nodiscard]]
-        static DWORD wxCALLBACK EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb,
-                                                      LONG* pcb);
-#endif
 
         /** @brief Searches for a given string in the control.
             @details Text will automatically be selected (if found).\n
