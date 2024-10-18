@@ -32,8 +32,10 @@ wxIMPLEMENT_APP(MyApp);
 // Initialise this in OnInit, not statically
 bool MyApp::OnInit()
     {
-    if (!wxApp::OnInit() )
+    if (!wxApp::OnInit())
+        {
         return false;
+        }
 
     wxUILocale::UseDefault();
 
@@ -55,8 +57,7 @@ bool MyApp::OnInit()
 
 // Define my frame constructor
 MyFrame::MyFrame()
-       : wxMDIParentFrame(nullptr, wxID_ANY, _(L"Wisteria Demo"),
-                          wxDefaultPosition, wxSize(750, 500))
+    : wxMDIParentFrame(nullptr, wxID_ANY, _(L"Wisteria Demo"), wxDefaultPosition, wxSize(750, 500))
     {
     SetSize(FromDIP(wxSize(750, 500)));
 
@@ -74,14 +75,11 @@ MyFrame::MyFrame()
         {
         // we can change the labels of standard items (which also means we can
         // set up accelerators for them as they're part of the label)
-        windowMenu->SetLabel(wxID_MDI_WINDOW_TILE_HORZ,
-                             _(L"Tile Horizontally\tCtrl-Shift-H"));
-        windowMenu->SetLabel(wxID_MDI_WINDOW_TILE_VERT,
-                             _(L"Tile Vertically\tCtrl-Shift-V"));
+        windowMenu->SetLabel(wxID_MDI_WINDOW_TILE_HORZ, _(L"Tile Horizontally\tCtrl-Shift-H"));
+        windowMenu->SetLabel(wxID_MDI_WINDOW_TILE_VERT, _(L"Tile Vertically\tCtrl-Shift-V"));
 
         // we can also change the help string
-        windowMenu->SetHelpString(wxID_MDI_WINDOW_CASCADE,
-                                  _(L"Arrange windows in cascade"));
+        windowMenu->SetHelpString(wxID_MDI_WINDOW_CASCADE, _(L"Arrange windows in cascade"));
 
         // we can remove some items
         windowMenu->Delete(wxID_MDI_WINDOW_ARRANGE_ICONS);
@@ -113,7 +111,8 @@ MyFrame::MyFrame()
 
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BOXPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HISTOGRAM);
-    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HISTOGRAM_UNIQUE_VALUES);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this,
+         MyApp::ControlIDs::ID_NEW_HISTOGRAM_UNIQUE_VALUES);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_GANTT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CANDLESTICK_AXIS);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LINEPLOT);
@@ -122,8 +121,10 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BARCHART_STYLIZED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BARCHART_IMAGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART);
-    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART_GROUPED);
-    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART_STIPPLED);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this,
+         MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART_GROUPED);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this,
+         MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART_STIPPLED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PIECHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PIECHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_DONUTCHART);
@@ -167,14 +168,16 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"));
-    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED,
+                     _(L"Bar Chart (Categorical Data, Grouped)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Icon)"));
     fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"));
     fileMenu->Append(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"));
     fileMenu->Append(MyApp::ID_NEW_DONUTCHART, _(L"Donut Chart"));
     fileMenu->Append(MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"));
     fileMenu->Append(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"));
-    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES, _(L"Histogram (Discrete Category Counts)"));
+    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES,
+                     _(L"Histogram (Discrete Category Counts)"));
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"));
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"));
     fileMenu->AppendSeparator();
@@ -210,7 +213,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_PRINT_ALL, _(L"&Print All..."), _(L"Print All"));
     fileMenu->AppendSeparator();
 
-    fileMenu->Append(MyApp::ID_TEXT_CLASSIFIER, _(L"&Text Classifier..."), _(L"Demonstrates the Text Classifier feature"));
+    fileMenu->Append(MyApp::ID_TEXT_CLASSIFIER, _(L"&Text Classifier..."),
+                     _(L"Demonstrates the Text Classifier feature"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(wxID_CLOSE, _(L"&Close child\tCtrl+F4"));
@@ -231,8 +235,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog recodingFileDlg(this, _(L"Select Recoding Data"), wxString{}, wxString{},
-                                  Dataset::GetDataFileFilter(),
-                                  wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+                                 Dataset::GetDataFileFilter(),
+                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
     if (recodingFileDlg.ShowModal() != wxID_OK)
         {
@@ -267,10 +271,10 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         this,
         Dataset::ReadColumnInfo(recodingFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
                                 recodingWorksheetName),
-        { VariableSelectDlg::VariableListInfo().Label(_(L"Matching Regular Expressions")).SingleSelection(true),
-          VariableSelectDlg::VariableListInfo()
-              .Label(_(L"Replacements"))
-              .SingleSelection(true) });
+        { VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Matching Regular Expressions"))
+              .SingleSelection(true),
+          VariableSelectDlg::VariableListInfo().Label(_(L"Replacements")).SingleSelection(true) });
     if (recodingVarDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -312,7 +316,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     VariableSelectDlg classiferVarDlg(
         this,
         Dataset::ReadColumnInfo(classiferFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-            classifierWorksheetName),
+                                classifierWorksheetName),
         { VariableSelectDlg::VariableListInfo().Label(_(L"Categories")).SingleSelection(true),
           VariableSelectDlg::VariableListInfo()
               .Label(_(L"Subcategories"))
@@ -363,7 +367,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     VariableSelectDlg surveyVarDlg(
         this,
         Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-            surveyWorksheetName),
+                                surveyWorksheetName),
         { VariableSelectDlg::VariableListInfo().Label(_(L"Comments")).SingleSelection(true) });
     if (surveyVarDlg.ShowModal() != wxID_OK)
         {
@@ -376,19 +380,18 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     try
         {
         recodingData->Import(recodingFileDlg.GetPath(),
-                               Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
+                             Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
                                  recodingFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                   recodingWorksheetName)),
+                                 recodingWorksheetName)),
                              recodingWorksheetName);
 
-        classifierData->Import(
-            classiferFileDlg.GetPath(),
-            Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(classiferFileDlg.GetPath(),
-                Data::ImportInfo{}, std::nullopt,
-                classifierWorksheetName)),
-            classifierWorksheetName);
+        classifierData->Import(classiferFileDlg.GetPath(),
+                               Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
+                                   classiferFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+                                   classifierWorksheetName)),
+                               classifierWorksheetName);
 
-		surveyData->Import(surveyFileDlg.GetPath(),
+        surveyData->Import(surveyFileDlg.GetPath(),
                            Dataset::ImportInfoFromPreview(
                                Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{},
                                                        std::nullopt, surveyWorksheetName))
@@ -413,7 +416,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         matchedData->ExportCSV(wxFileName{ surveyFileDlg.GetPath() }.GetPathWithSep() +
                                L"Matched.csv");
         unclassifiedData->ExportCSV(wxFileName{ surveyFileDlg.GetPath() }.GetPathWithSep() +
-                               L"Unclassified.csv");
+                                    L"Unclassified.csv");
 
         wxMessageBox(_(L"Matched and Unclassified output files successfully created."),
                      _(L"Text Classification Complete"), wxOK | wxCENTRE);
@@ -426,10 +429,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         }
     }
 
-void MyFrame::OnQuit([[maybe_unused]] wxCommandEvent& event)
-    {
-    Close();
-    }
+void MyFrame::OnQuit([[maybe_unused]] wxCommandEvent& event) { Close(); }
 
 void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     {
@@ -440,7 +440,7 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     aboutInfo.SetDevelopers(devs);
     aboutInfo.SetName(_(L"Wisteria Dataviz Library Demo"));
     aboutInfo.SetDescription(_(L"Demonstration of Wisteria Dataviz, "
-                                "a wxWidgets-based data visualization library."));
+                               "a wxWidgets-based data visualization library."));
 
     wxAboutBox(aboutInfo, this);
     }
@@ -448,11 +448,12 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
 void MyFrame::OnOpenProject([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog fileDlg(this, _(L"Open Project"), wxEmptyString, GetLabel(),
-            _(L"Project File (*.json)|*.json"),
-            wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+                         _(L"Project File (*.json)|*.json"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (fileDlg.ShowModal() != wxID_OK)
-        { return; }
+        {
+        return;
+        }
 
     ReportBuilder rb;
     auto report = rb.LoadConfigurationFile(fileDlg.GetPath(), this);
@@ -484,22 +485,23 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                ImportInfo().ContinuousColumns({ L"hwy" }).
-                CategoricalColumns({
-                    { L"class", CategoricalImportMethod::ReadAsStrings },
-                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings } }));
+            mpgData->ImportCSV(
+                appDir + L"/datasets/mpg.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"hwy" })
+                    .CategoricalColumns(
+                        { { L"class", CategoricalImportMethod::ReadAsStrings },
+                          { L"manufacturer", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
 
-        plot->SetData(mpgData,
-                      L"hwy",
+        plot->SetData(mpgData, L"hwy",
                       // leave this as std::nullopt to not create grouped boxes
                       L"class");
 
@@ -518,35 +520,34 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto testScoresData = std::make_shared<Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(appDir + L"/datasets/Student Scores.csv",
-                ImportInfo().
-                ContinuousColumns({ L"test_score" }).
-                IdColumn(L"Week"));
+            testScoresData->ImportCSV(
+                appDir + L"/datasets/Student Scores.csv",
+                ImportInfo().ContinuousColumns({ L"test_score" }).IdColumn(L"Week"));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
         auto plot = std::make_shared<HeatMap>(subframe->m_canvas);
 
         // add a title to the plot
-        plot->GetTitle().GetGraphItemInfo().Text(_(L"Test Scores")).
-                ChildAlignment(RelativeAlignment::FlushLeft).
-                Pen(wxNullPen).Padding(4, 0, 0, 4).
-                Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
-                     MakeLarger());
+        plot->GetTitle()
+            .GetGraphItemInfo()
+            .Text(_(L"Test Scores"))
+            .ChildAlignment(RelativeAlignment::FlushLeft)
+            .Pen(wxNullPen)
+            .Padding(4, 0, 0, 4)
+            .Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).MakeLarger());
 
         plot->SetData(testScoresData, L"TEST_SCORE");
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(
-            LegendOptions().
-                IncludeHeader(true).
-                PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
+        auto legend{ plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+            LegendCanvasPlacementHint::RightOfGraph)) };
         legend->SetLine(0, _(L"Range of Scores"));
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
@@ -562,26 +563,29 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto testScoresData = std::make_shared<Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(appDir + L"/datasets/Student Scores.csv",
-                ImportInfo().
-                ContinuousColumns({ L"test_score" }).
-                IdColumn(L"Week").
-                CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
+            testScoresData->ImportCSV(
+                appDir + L"/datasets/Student Scores.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"test_score" })
+                    .IdColumn(L"Week")
+                    .CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
         auto plot = std::make_shared<HeatMap>(subframe->m_canvas);
         // add a title to the plot
-        plot->GetTitle().GetGraphItemInfo().Text(_(L"Test Scores")).
-            ChildAlignment(RelativeAlignment::FlushLeft).
-            Pen(wxNullPen).Padding(4, 0, 0, 4).
-            Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
-                 MakeLarger());
+        plot->GetTitle()
+            .GetGraphItemInfo()
+            .Text(_(L"Test Scores"))
+            .ChildAlignment(RelativeAlignment::FlushLeft)
+            .Pen(wxNullPen)
+            .Padding(4, 0, 0, 4)
+            .Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).MakeLarger());
 
         // use group and put all of the students' heatmaps into one column
         plot->SetData(testScoresData, L"TEST_SCORE", L"Name", 1);
@@ -590,10 +594,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(
-            LegendOptions().
-                IncludeHeader(true).
-                PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
+        auto legend{ plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+            LegendCanvasPlacementHint::RightOfGraph)) };
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
         }
     // Histogram
@@ -604,22 +606,24 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mtcarsData = std::make_shared<Data::Dataset>();
         try
             {
-            mtcarsData->ImportCSV(appDir + L"/datasets/mtcars.csv",
-                ImportInfo().
-                ContinuousColumns({ L"mpg" }).
-                CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
+            mtcarsData->ImportCSV(
+                appDir + L"/datasets/mtcars.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"mpg" })
+                    .CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
-        auto plot = std::make_shared<Histogram>(subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()) );
+        auto plot = std::make_shared<Histogram>(
+            subframe->m_canvas,
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
 
-        plot->SetData(mtcarsData, L"mpg", 
+        plot->SetData(mtcarsData, L"mpg",
                       // grouping variable, we won't use one here
                       std::nullopt,
                       // make the ranges neat integers
@@ -641,11 +645,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a legend if grouping (in this case, we aren't)
         if (plot->GetGroupCount() > 0)
             {
-            subframe->m_canvas->SetFixedObject(0, 1,
-                plot->CreateLegend(
-                    LegendOptions().
-                        IncludeHeader(true).
-                        PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
+            subframe->m_canvas->SetFixedObject(
+                0, 1,
+                plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+                    LegendCanvasPlacementHint::RightOfGraph)));
             }
         }
     // Histogram (discrete categories from a grouping variable get their own bars)
@@ -657,21 +660,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                ImportInfo().
-                ContinuousColumns({ L"cyl" }));
+                               ImportInfo().ContinuousColumns({ L"cyl" }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
-        auto plot = std::make_shared<Histogram>(subframe->m_canvas,
+        auto plot = std::make_shared<Histogram>(
+            subframe->m_canvas,
             std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
 
-        plot->SetData(mpgData, L"cyl",
-                      std::nullopt,
+        plot->SetData(mpgData, L"cyl", std::nullopt,
                       // don't create range-based bins;
                       // instead, create one for each unique value.
                       Histogram::BinningMethod::BinUniqueValues,
@@ -680,8 +682,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                       // In this case, the data is already discrete, so no rounding needed.
                       RoundingMethod::NoRounding,
                       // since we aren't using ranges, show labels under the middle of the bins.
-                      Histogram::IntervalDisplay::Midpoints,
-                      BinLabelDisplay::BinValue,
+                      Histogram::IntervalDisplay::Midpoints, BinLabelDisplay::BinValue,
                       // pass in false to remove the empty '7' bin
                       true);
 
@@ -695,23 +696,25 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlotData = std::make_shared<Data::Dataset>();
         try
             {
-            linePlotData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
-                ImportInfo().
+            linePlotData->ImportCSV(
+                appDir + L"/datasets/Spelling Grades.csv",
+                ImportInfo()
+                    .
                 // first the Y column
-                ContinuousColumns({ L"AVG_GRADE"}).
+                ContinuousColumns({ L"AVG_GRADE" })
+                    .
                 // group and X
-                CategoricalColumns({
-                    { L"Gender", CategoricalImportMethod::ReadAsStrings },
-                    { L"WEEK_NAME", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings },
+                                     { L"WEEK_NAME", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas,
+        auto linePlot = std::make_shared<LinePlot>(
+            subframe->m_canvas,
             // use a different color scheme
             std::make_shared<Colors::Schemes::Decade1960s>(),
             // or create your own scheme
@@ -733,40 +736,42 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add some titles
         linePlot->GetTitle().SetText(_(L"Average Grades"));
         linePlot->GetSubtitle().SetText(_(L"Average grades taken from\n"
-                                           "last 5 weeks' spelling tests."));
+                                          "last 5 weeks' spelling tests."));
         linePlot->GetCaption().SetText(_(L"Note: not all grades have been\n"
-                                          "entered yet for last week."));
+                                         "entered yet for last week."));
         // remove default titles
         linePlot->GetBottomXAxis().GetTitle().SetText(L"");
         linePlot->GetLeftYAxis().GetTitle().SetText(L"");
 
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
-        subframe->m_canvas->SetFixedObject(0, 1,
-            linePlot->CreateLegend(
-                LegendOptions().
-                    IncludeHeader(true).
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            linePlot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+                LegendCanvasPlacementHint::RightOfGraph)));
 
         /* A note about dataset design. If you have a dataset built like this:
-           
+
            X    Y1    Y2
            -------------
            1    7     9
            2    7.5   11
-           
+
            and you wish to plot Y1 and Y2 as separate lines along the X values, then
            you will need to pivot the dataset longer. To do this, call Pivot::PivotLonger() and
-           pass in the dataset to get back a "long" dataset that you can then use with the line plot.
+           pass in the dataset to get back a "long" dataset that you can then use with
+           the line plot.
 
            For example:
-           
+
            Pivot pv;
-           auto newDataset = pv.PivotLonger(myDataset, { L"x" }, { L"y1", L"y2" }, { L"GROUP" }, L"YValues");
-           
-           At this point, you can pass newDataset to the line plot and specify "X" and "YValues" as the X and Y
-           and "GROUP" as the grouping column. From there, this will create a line for the Y1 values and
-           another line for the Y2 values.*/
+           auto newDataset = pv.PivotLonger(myDataset,
+               { L"x" }, { L"y1", L"y2" }, { L"GROUP" },
+               L"YValues");
+
+           At this point, you can pass newDataset to the line plot and specify "X" and "YValues" as
+           the X and Y and "GROUP" as the grouping column. From there, this will create a line for
+           the Y1 values and another line for the Y2 values.*/
         }
     // Line Plot (customized)
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT_CUSTOMIZED)
@@ -776,27 +781,28 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlotData = std::make_shared<Data::Dataset>();
         try
             {
-            linePlotData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
-                ImportInfo().
+            linePlotData->ImportCSV(
+                appDir + L"/datasets/Spelling Grades.csv",
+                ImportInfo()
+                    .
                 // first the Y column, then the X
-                ContinuousColumns({ L"AVG_GRADE", L"WeeK"}).
-                CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
+                ContinuousColumns({ L"AVG_GRADE", L"WeeK" })
+                    .CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas,
+        auto linePlot = std::make_shared<LinePlot>(
+            subframe->m_canvas,
             // create your own color scheme
-            std::make_shared<Colors::Schemes::ColorScheme>
-                 (Colors::Schemes::ColorScheme{
-                     ColorBrewer::GetColor(Colors::Color::Auburn),
-                     ColorBrewer::GetColor(Colors::Color::GrannySmithApple) }),
+            std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::ColorScheme{
+                ColorBrewer::GetColor(Colors::Color::Auburn),
+                ColorBrewer::GetColor(Colors::Color::GrannySmithApple) }),
             // use custom markers
-            std::make_shared<IconScheme>(IconScheme
-                {IconShape::Diamond, IconShape::Hexagon }));
+            std::make_shared<IconScheme>(IconScheme{ IconShape::Diamond, IconShape::Hexagon }));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -821,32 +827,28 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         // change the color for any point less than 60 to red to show if failing
-        linePlot->SetPointColorCriteria(
-                                        []([[maybe_unused]] const double x, const double y)
-                                          {
-                                          return (y < 60.0) ?
-                                              *wxRED :
-                                              wxColour();
-                                          });
+        linePlot->SetPointColorCriteria([]([[maybe_unused]] const double x, const double y)
+                                        { return (y < 60.0) ? *wxRED : wxColour(); });
 
         // add a note
         auto note = std::make_shared<Label>(
-            GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???")).
-            Pen(*wxLIGHT_GREY).
-            FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite)).
-            Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
+            GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???"))
+                .Pen(*wxLIGHT_GREY)
+                .FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite))
+                .Anchoring(Anchoring::TopRightCorner)
+                .Padding(4, 4, 4, 4));
         linePlot->AddAnnotation(note,
-            // top corner of note
-            wxPoint(3, 38),
-            // the suspect data point to make the note point to
-            { wxPoint(4, 59) });
+                                // top corner of note
+                                wxPoint(3, 38),
+                                // the suspect data point to make the note point to
+                                { wxPoint(4, 59) });
 
         // add some titles
         linePlot->GetTitle().SetText(_(L"Average Grades"));
         linePlot->GetSubtitle().SetText(_(L"Average grades taken from\n"
-                                           "last 5 weeks' spelling tests."));
+                                          "last 5 weeks' spelling tests."));
         linePlot->GetCaption().SetText(_(L"Note: not all grades have been\n"
-                                          "entered yet for last week."));
+                                         "entered yet for last week."));
         // remove default titles
         linePlot->GetBottomXAxis().GetTitle().SetText(L"");
         linePlot->GetLeftYAxis().GetTitle().SetText(L"");
@@ -854,23 +856,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
             {
-            linePlot->GetBottomXAxis().SetCustomLabel(i,
-                Label(wxString::Format(_(L"Week %i"), i)));
+            linePlot->GetBottomXAxis().SetCustomLabel(i, Label(wxString::Format(_(L"Week %i"), i)));
             }
 
         // add a red background for failing grades
         // (note that this will appear on the legend and the plot)
-        linePlot->AddReferenceArea(ReferenceArea(AxisType::LeftYAxis, 0, 59,
-                                                 _(L"Failing"), *wxRED));
+        linePlot->AddReferenceArea(
+            ReferenceArea(AxisType::LeftYAxis, 0, 59, _(L"Failing"), *wxRED));
 
         // add the line plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // add a legend to the side and center it vertically
-        auto legend = linePlot->CreateLegend(
-            LegendOptions().
-                IncludeHeader(false).
-                PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+        auto legend = linePlot->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
+            LegendCanvasPlacementHint::RightOfGraph));
         legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
@@ -885,7 +884,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a watermark to the bottom right corner
         subframe->m_canvas->SetWatermarkLogo(
             wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg",
-                Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
+                                        Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
             wxSize(32, 32));
         }
     // Gantt Chart
@@ -898,10 +897,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             const auto datasetPath{ appDir + L"/datasets/economics/company_acquisition.csv" };
-            companyAcquisitionData->ImportCSV(datasetPath,
+            companyAcquisitionData->ImportCSV(
+                datasetPath,
                 // preview the data and deduce how to import it
-                Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath)));
+                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /*companyAcquisitionData->ImportCSV(datasetPath,
                 ImportInfo().
@@ -918,38 +917,37 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(err.what()),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
-        auto ganttChart = std::make_shared<GanttChart>(subframe->m_canvas,
-            // use a different color scheme where the colors
-            // stand out more from each other
-            std::make_shared<Colors::Schemes::Decade1920s>());
-        ganttChart->SetData(companyAcquisitionData,
-            DateInterval::FiscalQuarterly, FiscalYear::USBusiness,
-            L"Task", L"Start", "End",
-            // these columns are optional
-            L"Resource", L"Description", L"Completion", L"Resource");
+        auto ganttChart =
+            std::make_shared<GanttChart>(subframe->m_canvas,
+                                         // use a different color scheme where the colors
+                                         // stand out more from each other
+                                         std::make_shared<Colors::Schemes::Decade1920s>());
+        ganttChart->SetData(companyAcquisitionData, DateInterval::FiscalQuarterly,
+                            FiscalYear::USBusiness, L"Task", L"Start", "End",
+                            // these columns are optional
+                            L"Resource", L"Description", L"Completion", L"Resource");
 
         // add deadlines
-        auto releaseDate = ganttChart->GetScalingAxis().FindDatePosition(
-            wxDateTime(25, wxDateTime::Dec, 2022));
+        auto releaseDate =
+            ganttChart->GetScalingAxis().FindDatePosition(wxDateTime(25, wxDateTime::Dec, 2022));
         if (releaseDate)
             {
-            ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
-                releaseDate.value(), _(L"Release"),
-                ColorBrewer::GetColor(Colors::Color::TractorRed)) );
+            ganttChart->AddReferenceLine(
+                ReferenceLine(AxisType::BottomXAxis, releaseDate.value(), _(L"Release"),
+                              ColorBrewer::GetColor(Colors::Color::TractorRed)));
             }
 
-        auto updateReleaseDate = ganttChart->GetScalingAxis().FindDatePosition(
-            wxDateTime(15, wxDateTime::Mar, 2023));
+        auto updateReleaseDate =
+            ganttChart->GetScalingAxis().FindDatePosition(wxDateTime(15, wxDateTime::Mar, 2023));
         if (updateReleaseDate)
             {
-            ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
-                updateReleaseDate.value(),
-                _(L"Hotfix Release"),
+            ganttChart->AddReferenceLine(ReferenceLine(
+                AxisType::BottomXAxis, updateReleaseDate.value(), _(L"Hotfix Release"),
                 ColorBrewer::GetColor(Colors::Color::TractorRed,
                                       Wisteria::Settings::GetTranslucencyValue())));
             }
@@ -957,11 +955,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         ganttChart->SetCanvasMargins(5, 5, 5, 5);
         subframe->m_canvas->SetFixedObject(0, 0, ganttChart);
         // add a legend, showing whom is assigned to which tasks
-        subframe->m_canvas->SetFixedObject(0, 1,
-            ganttChart->CreateLegend(
-                LegendOptions().
-                    IncludeHeader(false).
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            ganttChart->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
+                LegendCanvasPlacementHint::RightOfGraph)));
         }
     else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
         {
@@ -972,10 +969,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             const auto datasetPath{ appDir + L"/datasets/economics/silver_futures.csv" };
-            silverFuturesData->ImportCSV(datasetPath,
+            silverFuturesData->ImportCSV(
+                datasetPath,
                 // preview the data and deduce how to import it
-                Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath)));
+                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /* silverFuturesData->ImportCSV(datasetPath,
                 ImportInfo().
@@ -984,8 +981,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(err.what()),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1001,8 +998,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // so that there isn't a scrollbar.
         // candlestickPlot->SetPointsPerDefaultCanvasSize(365);
 
-        candlestickPlot->SetData(silverFuturesData,
-            L"Date", L"Open", L"High", L"Low", L"Close/Last");
+        candlestickPlot->SetData(silverFuturesData, L"Date", L"Open", L"High", L"Low",
+                                 L"Close/Last");
 
         candlestickPlot->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
 
@@ -1021,29 +1018,21 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
 
-        plot->AddBar(BarChart::Bar(1,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
-            },
-            L"", Label(_(L"Bugs")), BoxEffect::Solid) );
+        plot->AddBar(
+            BarChart::Bar(1, { BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor)) },
+                          L"", Label(_(L"Bugs")), BoxEffect::Solid));
 
-        plot->AddBar(BarChart::Bar(2,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
-            },
-            L"", Label(_(L"Pending feature requests")), BoxEffect::Solid));
+        plot->AddBar(
+            BarChart::Bar(2, { BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor)) },
+                          L"", Label(_(L"Pending feature requests")), BoxEffect::Solid));
 
-        plot->AddBar(BarChart::Bar(3,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
-            },
-            L"", Label(_(L"Unfinished help topics")), BoxEffect::Solid));
+        plot->AddBar(
+            BarChart::Bar(3, { BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor)) },
+                          L"", Label(_(L"Unfinished help topics")), BoxEffect::Solid));
 
-        plot->AddBar(BarChart::Bar(4,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
-            },
-            L"", Label(_(L"Missing unit tests")), BoxEffect::Solid));
+        plot->AddBar(
+            BarChart::Bar(4, { BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor)) },
+                          L"", Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
@@ -1067,42 +1056,33 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
 
-        plot->AddBar(BarChart::Bar(1,
-            {
-            // this bar will have two sections to it, where a red section
-            // refers to the more critical bugs
-            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
-            },
-            L"", Label(_(L"Bugs")), BoxEffect::Glassy,
-            // we will make the width of the bar twice as wide as the others
-            // to show how important it is
-            wxALPHA_OPAQUE, 2));
+        plot->AddBar(
+            BarChart::Bar(1,
+                          { // this bar will have two sections to it, where a red section
+                            // refers to the more critical bugs
+                            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+                            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor)) },
+                          L"", Label(_(L"Bugs")), BoxEffect::Glassy,
+                          // we will make the width of the bar twice as wide as the others
+                          // to show how important it is
+                          wxALPHA_OPAQUE, 2));
 
         // Note that because the first bar has an unusual width, this will offset
         // the positions of the following bars. Therefore, we need to place them
         // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
-        plot->AddBar(BarChart::Bar(2.5,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
-            },
-            L"", Label(_(L"Pending feature requests")), BoxEffect::Glassy,
-            // this bar will be translucent
-            75, 1));
+        plot->AddBar(
+            BarChart::Bar(2.5, { BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor)) },
+                          L"", Label(_(L"Pending feature requests")), BoxEffect::Glassy,
+                          // this bar will be translucent
+                          75, 1));
 
-        plot->AddBar(BarChart::Bar(3.5,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
-            },
-            L"", Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
-            wxALPHA_OPAQUE, 1));
+        plot->AddBar(BarChart::Bar(
+            3.5, { BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor)) }, L"",
+            Label(_(L"Unfinished help topics")), BoxEffect::Glassy, wxALPHA_OPAQUE, 1));
 
-        plot->AddBar(BarChart::Bar(4.5,
-            {
-             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
-            },
-            L"", Label(_(L"Missing unit tests")), BoxEffect::Glassy,
-            wxALPHA_OPAQUE, 1));
+        plot->AddBar(BarChart::Bar(
+            4.5, { BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor)) }, L"",
+            Label(_(L"Missing unit tests")), BoxEffect::Glassy, wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
         plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -1110,13 +1090,18 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
         plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1, 0.5, 1);
 
-        plot->GetBarAxis().GetTitle().GetGraphItemInfo().
-            Text(L"ISSUES").Orient(Orientation::Horizontal).Padding(5, 10, 0, 0).
-            LabelAlignment(TextAlignment::Centered);
+        plot->GetBarAxis()
+            .GetTitle()
+            .GetGraphItemInfo()
+            .Text(L"ISSUES")
+            .Orient(Orientation::Horizontal)
+            .Padding(5, 10, 0, 0)
+            .LabelAlignment(TextAlignment::Centered);
         plot->GetBarAxis().GetTitle().SplitTextByCharacter();
 
         // align the axis labels over to the left
-        plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::AlignWithBoundary);
+        plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
+            AxisLabelAlignment::AlignWithBoundary);
 
         plot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1136,10 +1121,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // Photo by ThisisEngineering RAEng on Unsplash
         auto bgImage = GraphItems::Image::LoadFile(
             appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg");
-        plot->SetImageScheme(
-            std::make_shared<Wisteria::Images::Schemes::ImageScheme>(
-                std::vector<wxBitmapBundle>
-                { wxBitmapBundle(bgImage) }));
+        plot->SetImageScheme(std::make_shared<Wisteria::Images::Schemes::ImageScheme>(
+            std::vector<wxBitmapBundle>{ wxBitmapBundle(bgImage) }));
         // To create a selective colorization effect with the bars, uncomment the following:
         //
         // bgImage = GraphItems::Image::ApplyEffect(Wisteria::ImageEffect::Grayscale, bgImage);
@@ -1149,32 +1132,25 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
 
-        plot->AddBar(BarChart::Bar(1,
-            {
-            // this bar will have two sections to it, where a red section
-            // refers to the more critical bugs
-            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
-            },
-            L"", Label(_(L"Bugs")), BoxEffect::CommonImage));
+        plot->AddBar(
+            BarChart::Bar(1,
+                          { // this bar will have two sections to it, where a red section
+                            // refers to the more critical bugs
+                            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+                            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor)) },
+                          L"", Label(_(L"Bugs")), BoxEffect::CommonImage));
 
-        plot->AddBar(BarChart::Bar(2,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
-            },
-            L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage));
+        plot->AddBar(
+            BarChart::Bar(2, { BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor)) },
+                          L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage));
 
-        plot->AddBar(BarChart::Bar(3,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
-            },
-            L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage));
+        plot->AddBar(
+            BarChart::Bar(3, { BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor)) },
+                          L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage));
 
-        plot->AddBar(BarChart::Bar(4,
-            {
-            BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
-            },
-            L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage));
+        plot->AddBar(
+            BarChart::Bar(4, { BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor)) },
+                          L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage));
 
         // only show the labels on the axis
         plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -1182,11 +1158,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
         plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1);
 
-        plot->GetBarAxis().GetTitle().GetGraphItemInfo().
-            Text(L"ISSUES").Padding(5, 10, 0, 0);
+        plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(L"ISSUES").Padding(5, 10, 0, 0);
 
         // align the axis labels over to the left
-        plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::AlignWithBoundary);
+        plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
+            AxisLabelAlignment::AlignWithBoundary);
 
         plot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1201,19 +1177,19 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                ImportInfo().
-                CategoricalColumns({
-                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
-                    { L"model", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                               ImportInfo().CategoricalColumns(
+                                   { { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
+                                     { L"model", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
-        auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
+        auto plot = std::make_shared<CategoricalBarChart>(
+            subframe->m_canvas,
             std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"manufacturer");
@@ -1230,21 +1206,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                ImportInfo().
-                CategoricalColumns({
-                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
-                    { L"class", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                               ImportInfo().CategoricalColumns(
+                                   { { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
+                                     { L"class", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(err.what()),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
-        auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()) );
+        auto plot = std::make_shared<CategoricalBarChart>(
+            subframe->m_canvas,
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"manufacturer", std::nullopt, L"class");
         plot->SetBarOpacity(220);
@@ -1252,11 +1227,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
-        subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(
-                LegendOptions().
-                    IncludeHeader(true).
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+                LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Bar Chart using a stipple icon
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
@@ -1266,16 +1240,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                ImportInfo().
-                CategoricalColumns({
-                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings }
-                    }));
+            mpgData->ImportCSV(
+                appDir + L"/datasets/mpg.csv",
+                ImportInfo().CategoricalColumns(
+                    { { L"manufacturer", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1288,8 +1261,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetStippleShapeColor(wxColour(29, 29, 37));
 
         // do this to use an image instead of a built-in vector icon:
-        /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir + L"/res/tobias_Blue_Twingo.svg",
-            Image::GetSVGSize(appDir + L"/res/tobias_Blue_Twingo.svg")));
+        /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir +
+           L"/res/tobias_Blue_Twingo.svg", Image::GetSVGSize(appDir +
+           L"/res/tobias_Blue_Twingo.svg")));
+
            plot->SetBarEffect(BoxEffect::StippleImage);*/
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -1303,27 +1278,28 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Enrollment" }).
-                CategoricalColumns({
-                    { L"Course", CategoricalImportMethod::ReadAsStrings },
-                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                               ImportInfo()
+                                   .ContinuousColumns({ L"Enrollment" })
+                                   .CategoricalColumns(
+                                       { { L"Course", CategoricalImportMethod::ReadAsStrings },
+                                         { L"COLLEGE", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(),
-                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
+                                    PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
-            { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
+            {
+            foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
+            }
 
         // apply the slice's colors to its respective outside label
         plot->UseColorLabels(true);
@@ -1339,27 +1315,28 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Enrollment" }).
-                CategoricalColumns({
-                    { L"Course", CategoricalImportMethod::ReadAsStrings },
-                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                               ImportInfo()
+                                   .ContinuousColumns({ L"Enrollment" })
+                                   .CategoricalColumns(
+                                       { { L"Course", CategoricalImportMethod::ReadAsStrings },
+                                         { L"COLLEGE", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(),
-                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
+                                    PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
-            { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
+            {
+            foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
+            }
 
         // apply the slice's colors to its respective outside label
         plot->UseColorLabels(true);
@@ -1379,27 +1356,28 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Enrollment" }).
-                CategoricalColumns({
-                    { L"Course", CategoricalImportMethod::ReadAsStrings },
-                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                               ImportInfo()
+                                   .ContinuousColumns({ L"Enrollment" })
+                                   .CategoricalColumns(
+                                       { { L"Course", CategoricalImportMethod::ReadAsStrings },
+                                         { L"COLLEGE", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(),
-                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
+                                    PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
-            { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
+            {
+            foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
+            }
         // turn off all but one of the outer labels for the inner ring
         // to draw attention to it
         plot->ShowInnerPieLabels(true, { L"Visual Basic.NET" });
@@ -1410,11 +1388,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // add a legend for the inner ring (i.e., the subgroup column,
         // which will also show headers for their parent groups)
-        subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(
-                LegendOptions().
-                    RingPerimeter(Perimeter::Inner).
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            plot->CreateLegend(LegendOptions()
+                                   .RingPerimeter(Perimeter::Inner)
+                                   .PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Donut Chart (with Subgroup)
     else if (event.GetId() == MyApp::ID_NEW_DONUTCHART_GROUPED)
@@ -1424,18 +1402,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Enrollment" }).
-                CategoricalColumns({
-                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
-                    { L"Course", CategoricalImportMethod::ReadAsStrings }
-                    }));
+            pieData->ImportCSV(
+                appDir + L"/datasets/institutional_research/fall_enrollment.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"Enrollment" })
+                    .CategoricalColumns({ { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
+                                          { L"Course", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1446,15 +1423,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // show one of the outer labels for the inner ring
         // and add a custom description to it
         std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
-            [](auto& slice)
-                {
-                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
-                    {
-                    slice.ShowGroupLabel(true);
-                    slice.SetDescription(_(L"Drop this from the catalog?"));
-                    }
-                }
-            );
+                      [](auto& slice)
+                      {
+                          if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
+                              {
+                              slice.ShowGroupLabel(true);
+                              slice.SetDescription(_(L"Drop this from the catalog?"));
+                              }
+                      });
         // place the label around the pie, not off to the side
         plot->SetLabelPlacement(LabelPlacement::NextToParent);
 
@@ -1468,11 +1444,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // add a legend for the inner ring (i.e., the subgroup column,
         // which will also show headers for their parent groups)
-        subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(
-                LegendOptions().
-                    RingPerimeter(Perimeter::Inner).
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            plot->CreateLegend(LegendOptions()
+                                   .RingPerimeter(Perimeter::Inner)
+                                   .PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Sankey Diagram
     else if (event.GetId() == MyApp::ID_NEW_SANKEY_DIAGRAM)
@@ -1483,19 +1459,18 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto sankeyData = std::make_shared<Data::Dataset>();
         try
             {
-            sankeyData->ImportCSV(appDir + L"/datasets/historical/titanic.csv",
-                ImportInfo().
-                CategoricalColumns({
-                    { L"Sex", CategoricalImportMethod::ReadAsStrings },
-                    { L"Embarked", CategoricalImportMethod::ReadAsStrings },
-                    { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
-                    { L"Survived", CategoricalImportMethod::ReadAsIntegers }
-                    }));
+            sankeyData->ImportCSV(
+                appDir + L"/datasets/historical/titanic.csv",
+                ImportInfo().CategoricalColumns(
+                    { { L"Sex", CategoricalImportMethod::ReadAsStrings },
+                      { L"Embarked", CategoricalImportMethod::ReadAsStrings },
+                      { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
+                      { L"Survived", CategoricalImportMethod::ReadAsIntegers } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1514,30 +1489,26 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto sankeyData = std::make_shared<Data::Dataset>();
         try
             {
-            sankeyData->ImportCSV(appDir + L"/datasets/institutional_research/hs_graduate_matriculation.csv",
-                ImportInfo().ContinuousColumns( { L"Graduated", L"Enrolled" }).
-                CategoricalColumns({
-                    { L"County" },
-                    { L"High School" },
-                    { L"University" }
-                    }));
+            sankeyData->ImportCSV(
+                appDir + L"/datasets/institutional_research/hs_graduate_matriculation.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"Graduated", L"Enrolled" })
+                    .CategoricalColumns({ { L"County" }, { L"High School" }, { L"University" } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
         auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
-        sankey->SetData(sankeyData, L"High School", L"University", L"Graduated", L"Enrolled", L"County");
+        sankey->SetData(sankeyData, L"High School", L"University", L"Graduated", L"Enrolled",
+                        L"County");
         sankey->SetGroupLabelDisplay(BinLabelDisplay::BinNameAndValue);
         sankey->SetColumnHeaderDisplay(GraphColumnHeader::AsHeader);
-        sankey->SetColumnHeaders(
-            {
-            _(L"Of @COUNT@ High School Graduates"),
-            _(L"@COUNT@ Enrolled at Miskatonic University")
-            });
+        sankey->SetColumnHeaders({ _(L"Of @COUNT@ High School Graduates"),
+                                   _(L"@COUNT@ Enrolled at Miskatonic University") });
         sankey->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, sankey);
@@ -1551,17 +1522,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto friendsData = std::make_shared<Data::Dataset>();
         try
             {
-            friendsData->ImportCSV(appDir + L"/datasets/social/friends descriptions.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Frequency"  }).
-                CategoricalColumns({
-                    { L"Word", CategoricalImportMethod::ReadAsStrings }
-                    }));
+            friendsData->ImportCSV(
+                appDir + L"/datasets/social/friends descriptions.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"Frequency" })
+                    .CategoricalColumns({ { L"Word", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1569,12 +1539,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // remove the low-frequency words, and also the extreme high frequency
         // ones to remove the main characters
         wordCloud->SetData(friendsData, L"Word", L"Frequency", 2, 100, 25);
-        wordCloud->GetTitle().GetGraphItemInfo().Padding(5, 5, 25, 5).
-            Text(_(L"Top Words from Episode Descriptions of the Sitcom 'Friends'"));
+        wordCloud->GetTitle()
+            .GetGraphItemInfo()
+            .Padding(5, 5, 25, 5)
+            .Text(_(L"Top Words from Episode Descriptions of the Sitcom 'Friends'"));
         wordCloud->GetTitle().GetFont().MakeBold();
 
-        wordCloud->GetCaption().GetGraphItemInfo().Padding(25, 5, 5, 5).
-            Text(_(L"Note: main characters (Rachel, Ross, Monica, Chandler, Joey, & Phoebe) "
+        wordCloud->GetCaption()
+            .GetGraphItemInfo()
+            .Padding(25, 5, 5, 5)
+            .Text(_(L"Note: main characters (Rachel, Ross, Monica, Chandler, Joey, & Phoebe) "
                     "and common words have been excluded."));
 
         wordCloud->SetCanvasMargins(5, 5, 5, 5);
@@ -1590,25 +1564,27 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto roadmapData = std::make_shared<Data::Dataset>();
         try
             {
-            roadmapData->ImportCSV(appDir + L"/datasets/institutional_research/first-year_osprey.csv",
-                ImportInfo().
-                ContinuousColumns({ L"coefficient" }).
-                CategoricalColumns({ { L"factor", CategoricalImportMethod::ReadAsStrings } }));
+            roadmapData->ImportCSV(
+                appDir + L"/datasets/institutional_research/first-year_osprey.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"coefficient" })
+                    .CategoricalColumns({ { L"factor", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
         auto roadmap = std::make_shared<LRRoadmap>(subframe->m_canvas);
-        roadmap->SetData(roadmapData, L"factor", L"coefficient",
-            std::nullopt, std::nullopt, std::nullopt, _(L"GPA"));
+        roadmap->SetData(roadmapData, L"factor", L"coefficient", std::nullopt, std::nullopt,
+                         std::nullopt, _(L"GPA"));
         roadmap->SetCanvasMargins(5, 5, 5, 5);
         // add the default caption explaining how to read the graph
         roadmap->AddDefaultCaption();
-        roadmap->GetTitle().SetText(_(L"First-Year Osprey Roadmap\n"
+        roadmap->GetTitle().SetText(_(
+            L"First-Year Osprey Roadmap\n"
             "How do background characteristics and decisions affect First - Year Students' GPA?"));
         // add a title with a blue banner background and white font
         roadmap->GetTitle().GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
@@ -1619,10 +1595,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, roadmap);
 
         // add the legend at the bottom (beneath the explanatory caption)
-        auto legend = roadmap->CreateLegend(
-            LegendOptions().
-                IncludeHeader(true).
-                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+        auto legend = roadmap->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+            LegendCanvasPlacementHint::AboveOrBeneathGraph));
         subframe->m_canvas->SetFixedObject(1, 0, std::move(legend));
 
         subframe->m_canvas->CalcRowDimensions();
@@ -1637,26 +1611,22 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             swData->ImportCSV(appDir + L"/datasets/economics/erp_migration_survey.csv",
-                ImportInfo().
-                CategoricalColumns({
-                    { L"Strength", CategoricalImportMethod::ReadAsStrings },
-                    { L"Weakness", CategoricalImportMethod::ReadAsStrings },
-                    { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
-                    { L"Threat", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                              ImportInfo().CategoricalColumns(
+                                  { { L"Strength", CategoricalImportMethod::ReadAsStrings },
+                                    { L"Weakness", CategoricalImportMethod::ReadAsStrings },
+                                    { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
+                                    { L"Threat", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                            _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
         // strengths and weaknesses
         auto SWroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
-        SWroadmap->SetData(swData,
-                            L"Strength", std::nullopt,
-                            L"Weakness", std::nullopt, 2);
+        SWroadmap->SetData(swData, L"Strength", std::nullopt, L"Weakness", std::nullopt, 2);
         SWroadmap->SetCanvasMargins(5, 5, 0, 5);
         SWroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Strengths & Weaknesses"));
         SWroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
@@ -1668,11 +1638,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // opportunities and threats
         auto OTroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
-        OTroadmap->SetData(swData,
-                            L"Opportunity", std::nullopt,
-                            L"Threat", std::nullopt,
-                            // ignore items that are only mentioned once
-                            2);
+        OTroadmap->SetData(swData, L"Opportunity", std::nullopt, L"Threat", std::nullopt,
+                           // ignore items that are only mentioned once
+                           2);
         OTroadmap->SetCanvasMargins(0, 5, 5, 5);
         OTroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
         OTroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
@@ -1687,26 +1655,24 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the legend at the bottom (beneath the explanatory caption)
         OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
         OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
-        auto legend = OTroadmap->CreateLegend(
-            LegendOptions().
-                IncludeHeader(true).
-                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
+        auto legend = OTroadmap->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+            LegendCanvasPlacementHint::AboveOrBeneathGraph));
 
         // add a title with a green banner background and white font
-        Label topTitle(GraphItemInfo(_(L"ERP Migration SWOT Analysis\n"
-            "Employee Survey Results Regarding Proposed Migration to new ERP Software")).
-            Padding(5, 5, 5, 5).
-            ChildAlignment(RelativeAlignment::FlushLeft).
-            FontColor(*wxWHITE).
-            FontBackgroundColor(ColorBrewer::GetColor(Colors::Color::HunterGreen)));
+        Label topTitle(
+            GraphItemInfo(
+                _(L"ERP Migration SWOT Analysis\n"
+                  "Employee Survey Results Regarding Proposed Migration to new ERP Software"))
+                .Padding(5, 5, 5, 5)
+                .ChildAlignment(RelativeAlignment::FlushLeft)
+                .FontColor(*wxWHITE)
+                .FontBackgroundColor(ColorBrewer::GetColor(Colors::Color::HunterGreen)));
         topTitle.GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
         subframe->m_canvas->GetTopTitles().push_back(topTitle);
 
         // set a common scale for the road stop sizes between the two roadmaps
-        SWroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
-                                         OTroadmap->GetMagnitude()));
-        OTroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
-                                         OTroadmap->GetMagnitude()));
+        SWroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(), OTroadmap->GetMagnitude()));
+        OTroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(), OTroadmap->GetMagnitude()));
 
         // add everything to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, SWroadmap);
@@ -1730,19 +1696,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto wcurveData = std::make_shared<Data::Dataset>();
         try
             {
-            wcurveData->ImportCSV(appDir + L"/datasets/institutional_research/sense_of_belonging.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Year", L"Belong" }).
-                CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
+            wcurveData->ImportCSV(
+                appDir + L"/datasets/institutional_research/sense_of_belonging.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"Year", L"Belong" })
+                    .CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto WCurve = std::make_shared<WCurvePlot>(subframe->m_canvas,
-            std::make_shared<Colors::Schemes::EarthTones>());
+                                                   std::make_shared<Colors::Schemes::EarthTones>());
         // add padding around the plot
         WCurve->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1769,11 +1736,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, WCurve);
-        subframe->m_canvas->SetFixedObject(0, 1,
-            WCurve->CreateLegend(
-                LegendOptions().
-                    IncludeHeader(false).
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            WCurve->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
+                LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Likert (3-Point)
     else if (event.GetId() == MyApp::ID_NEW_LIKERT_3POINT)
@@ -1786,10 +1752,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             const auto datasetPath{ appDir + L"/datasets/Graph Library Survey.csv" };
-            surveyData->ImportCSV(datasetPath,
+            surveyData->ImportCSV(
+                datasetPath,
                 // preview the data and deduce how to import it
-                Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath)));
+                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /* surveyData->ImportCSV(datasetPath,
                 Data::ImportInfo().
@@ -1814,8 +1780,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         // Original data has a scale going from 1-7, but we want to simplify
@@ -1823,9 +1789,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // into one, and all negative levels into another level.
         auto categoricalNames{ surveyData->GetCategoricalColumnNames() };
         Dataset::RemoveColumnNamesFromList(categoricalNames, { L"Gender" });
-        const auto responsesScale = LikertChart::Simplify(surveyData,
-                                                 categoricalNames,
-                                                 LikertChart::LikertSurveyQuestionFormat::SevenPoint);
+        const auto responsesScale = LikertChart::Simplify(
+            surveyData, categoricalNames, LikertChart::LikertSurveyQuestionFormat::SevenPoint);
 
         /* Simplify() will use stock labels for the responses.
            To change these, do the following:
@@ -1839,11 +1804,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         LikertChart::SetLabels(surveyData, codes);*/
 
-        auto likertChart = std::make_shared<LikertChart>(subframe->m_canvas,
+        auto likertChart = std::make_shared<LikertChart>(
+            subframe->m_canvas,
             // Simplify() will return LikertChart::LikertSurveyQuestionFormat::ThreePoint
             responsesScale);
-        likertChart->SetData(surveyData,
-            categoricalNames,
+        likertChart->SetData(
+            surveyData, categoricalNames,
             // passing in a grouping column will change it from ThreePoint -> ThreePointCategorized
             L"Gender");
 
@@ -1865,14 +1831,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             const auto datasetPath = appDir + L"/datasets/Graph Library Survey.csv";
-            surveyData->ImportCSV(datasetPath,
-                Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath)));
+            surveyData->ImportCSV(
+                datasetPath, Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1882,35 +1847,28 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // Because the responses in the dataset were coded 1-7, we will need to
         // add meaningful labels to the dataset. The following will add stock
         // labels to represent the responses.
-        LikertChart::SetLabels(surveyData,
-            categoricalNames,
+        LikertChart::SetLabels(
+            surveyData, categoricalNames,
             LikertChart::CreateLabels(LikertChart::LikertSurveyQuestionFormat::SevenPoint));
 
-        auto likertChart = std::make_shared<LikertChart>(subframe->m_canvas,
-            LikertChart::LikertSurveyQuestionFormat::SevenPoint);
+        auto likertChart = std::make_shared<LikertChart>(
+            subframe->m_canvas, LikertChart::LikertSurveyQuestionFormat::SevenPoint);
         likertChart->SetData(surveyData, categoricalNames);
 
         // add brackets around some of the questions to group them
-        likertChart->AddQuestionsBracket(
-            LikertChart::QuestionsBracket{
-            L"Customization is important to me",
-            L"Extensibility is important to me",
-            _(L"Advanced Features")
-            });
-        likertChart->AddQuestionsBracket(
-            LikertChart::QuestionsBracket{
+        likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
+            L"Customization is important to me", L"Extensibility is important to me",
+            _(L"Advanced Features") });
+        likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
             LR"(Standard, "out-of-the-box" graph support is important to me)",
-            L"Data importing features are important to me",
-            _(L"Standard Features")
-            });
+            L"Data importing features are important to me", _(L"Standard Features") });
 
         likertChart->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         subframe->m_canvas->SetFixedObject(0, 1,
-            likertChart->CreateLegend(
-                LegendOptions().
-                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+                                           likertChart->CreateLegend(LegendOptions().PlacementHint(
+                                               LegendCanvasPlacementHint::RightOfGraph)));
 
         // when printing, make it landscape and stretch it to fill the entire page
         subframe->m_canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
@@ -1926,17 +1884,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             pieData->ImportCSV(
                 appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Enrollment" }).
-                CategoricalColumns({
-                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
-                    { L"Course", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                ImportInfo()
+                    .ContinuousColumns({ L"Enrollment" })
+                    .CategoricalColumns({ { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
+                                          { L"Course", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         auto donutChart = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1971,16 +1927,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a large note to the canvas
         // (into the second row, beneath the donut chart)
-        auto note = std::make_shared<Label>(GraphItemInfo(
-            _(L"NOTE\n"
-               "Should we consider dropping VB.NET from the catalog?\n"
-               "Enrollment has been really low the last few years.")).
-            Padding(4, 4, 4, 4).
-            Scaling(2).
-            DPIScaling(subframe->m_canvas->GetDPIScaleFactor()).
+        auto note = std::make_shared<Label>(
+            GraphItemInfo(_(L"NOTE\n"
+                            "Should we consider dropping VB.NET from the catalog?\n"
+                            "Enrollment has been really low the last few years."))
+                .Padding(4, 4, 4, 4)
+                .Scaling(2)
+                .DPIScaling(subframe->m_canvas->GetDPIScaleFactor())
+                .
             // will set the proportions of the note's row based on how tall the note is
-            FitCanvasHeightToContent(true).
-            Pen(wxNullPen));
+            FitCanvasHeightToContent(true)
+                .Pen(wxNullPen));
         // make the font smaller, and customize the header's appearance
         note->GetFont().MakeSmaller().MakeSmaller();
         note->GetHeaderInfo().Enable(true).FontColor(*wxBLUE).GetFont().MakeBold();
@@ -2004,27 +1961,27 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto spellingData = std::make_shared<Data::Dataset>();
         try
             {
-            spellingData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
-                ImportInfo().
-                ContinuousColumns({ L"Week", L"AVG_GRADE" }).
-                CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
+            spellingData->ImportCSV(
+                appDir + L"/datasets/Spelling Grades.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"Week", L"AVG_GRADE" })
+                    .CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
         // create your own color scheme
-        const auto colors = std::make_shared<Colors::Schemes::ColorScheme>
-            (Colors::Schemes::ColorScheme{
-                ColorBrewer::GetColor(Colors::Color::GrannySmithApple),
-                ColorBrewer::GetColor(Colors::Color::Auburn) });
+        const auto colors = std::make_shared<Colors::Schemes::ColorScheme>(
+            Colors::Schemes::ColorScheme{ ColorBrewer::GetColor(Colors::Color::GrannySmithApple),
+                                          ColorBrewer::GetColor(Colors::Color::Auburn) });
 
-        auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas, colors,
+        auto linePlot = std::make_shared<LinePlot>(
+            subframe->m_canvas, colors,
             // use custom markers
-            std::make_shared<IconScheme>(IconScheme
-                { IconShape::Diamond, IconShape::Hexagon }));
+            std::make_shared<IconScheme>(IconScheme{ IconShape::Diamond, IconShape::Hexagon }));
 
         // set the data and use the grouping column from the dataset to create separate lines
         linePlot->SetData(spellingData, L"AVG_GRADE", L"WeeK", L"Gender");
@@ -2032,26 +1989,23 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
             {
-            linePlot->GetBottomXAxis().SetCustomLabel(i,
-                Label(wxString::Format(_(L"Week %i"), i)));
+            linePlot->GetBottomXAxis().SetCustomLabel(i, Label(wxString::Format(_(L"Week %i"), i)));
             }
 
         // instead of adding the legend to the canvas, overlay it on top of the line plot
-        auto lineLegend = linePlot->CreateLegend(
-            LegendOptions().
-                IncludeHeader(false).
-                PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
+        auto lineLegend = linePlot->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
+            LegendCanvasPlacementHint::EmbeddedOnGraph));
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
         linePlot->AddAnnotation(std::move(lineLegend),
-            wxPoint(linePlot->GetBottomXAxis().GetRange().second,
-                    linePlot->GetLeftYAxis().GetRange().first));
+                                wxPoint(linePlot->GetBottomXAxis().GetRange().second,
+                                        linePlot->GetLeftYAxis().GetRange().first));
 
         // add the line plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // create a box plot with the same data
-        auto boxPlot = std::make_shared<BoxPlot>(subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(*colors));
+        auto boxPlot = std::make_shared<BoxPlot>(
+            subframe->m_canvas, std::make_shared<Brushes::Schemes::BrushScheme>(*colors));
 
         boxPlot->SetData(spellingData, L"AVG_GRADE", std::nullopt);
 
@@ -2063,18 +2017,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 1, boxPlot);
 
         subframe->m_canvas->SetFixedObject(0, 2,
-            // construct a common axis connected to the line and box plots,
-            // and add it to the right of them on the canvas
-            CommonAxisBuilder::BuildYAxis(subframe->m_canvas,
-                { linePlot, boxPlot}, AxisType::RightYAxis));
+                                           // construct a common axis connected to the line and box
+                                           // plots, and add it to the right of them on the canvas
+                                           CommonAxisBuilder::BuildYAxis(subframe->m_canvas,
+                                                                         { linePlot, boxPlot },
+                                                                         AxisType::RightYAxis));
 
         // add a centered title and subtitle on the canvas
         // (above the plots)
         subframe->m_canvas->GetTopTitles().emplace_back(_(L"Average Grades"));
         subframe->m_canvas->GetTopTitles().emplace_back(
-            Label(GraphItemInfo(_(L"Average grades taken from last 5 weeks' spelling tests.")).
-                FontColor(ColorBrewer::GetColor(Color::DarkGray)).Pen(wxNullPen).
-                Font(subframe->m_canvas->GetTopTitles().back().GetFont().MakeSmaller())));
+            Label(GraphItemInfo(_(L"Average grades taken from last 5 weeks' spelling tests."))
+                      .FontColor(ColorBrewer::GetColor(Color::DarkGray))
+                      .Pen(wxNullPen)
+                      .Font(subframe->m_canvas->GetTopTitles().back().GetFont().MakeSmaller())));
         }
     // Table
     else if (event.GetId() == MyApp::ID_NEW_TABLE)
@@ -2087,29 +2043,25 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             juniorSeniorMajors->ImportCSV(
                 appDir + L"/datasets/institutional_research/junior_&_senior_majors(pop_20).csv",
-                ImportInfo().
-                ContinuousColumns({ L"Female", L"Male" }).
-                CategoricalColumns({
-                    { L"Division" },
-                    { L"Department" }
-                    }));
+                ImportInfo()
+                    .ContinuousColumns({ L"Female", L"Male" })
+                    .CategoricalColumns({ { L"Division" }, { L"Department" } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
         auto tableGraph = std::make_shared<Table>(subframe->m_canvas);
-        tableGraph->SetData(juniorSeniorMajors,
-            { L"Division", L"Department", L"Female", L"Male" });
+        tableGraph->SetData(juniorSeniorMajors, { L"Division", L"Department", L"Female", L"Male" });
         // group the schools together in the first row
         tableGraph->GroupColumn(0);
 
         // add ratio aggregate column and group row totals
-        tableGraph->InsertAggregateColumn(Table::AggregateInfo(AggregateType::Ratio),
-                                          _(L"Ratio"), std::nullopt);
+        tableGraph->InsertAggregateColumn(Table::AggregateInfo(AggregateType::Ratio), _(L"Ratio"),
+                                          std::nullopt);
         tableGraph->InsertRowTotals();
 
         // make the headers and row groups bold (and center the headers)
@@ -2121,14 +2073,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             // Find outlier in the female-to-male ratios for the majors.
             // (Note that we use a more liberal search, considering
             // z-scores > 2 as being outliers
-            tableGraph->GetOutliers(tableGraph->GetColumnCount()-1, 2);
+            tableGraph->GetOutliers(tableGraph->GetColumnCount() - 1, 2);
         // if any outliers, make a note of it off to the side
         if (ratioOutliers.size())
             {
-            tableGraph->AddCellAnnotation(
-                { L"Majors with the most lopsided female-to-male ratios",
-                   ratioOutliers, Side::Right, std::nullopt, wxColour() }
-                );
+            tableGraph->AddCellAnnotation({ L"Majors with the most lopsided female-to-male ratios",
+                                            ratioOutliers, Side::Right, std::nullopt, wxColour() });
             }
 
         // if you also want to place annotations on the left of the table,
@@ -2136,11 +2086,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // tableGraph->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
 
         // add a title
-        subframe->m_canvas->GetTopTitles().push_back(Label(
-            GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)")).
-            Padding(5, 5, 5, 5).Pen(wxNullPen).
-            ChildAlignment(RelativeAlignment::FlushLeft).
-            FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen))) );
+        subframe->m_canvas->GetTopTitles().push_back(
+            Label(GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)"))
+                      .Padding(5, 5, 5, 5)
+                      .Pen(wxNullPen)
+                      .ChildAlignment(RelativeAlignment::FlushLeft)
+                      .FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen))));
 
         tableGraph->GetCaption().SetText(_(L"Source: Office of Institutional Research"));
         tableGraph->GetCaption().SetPadding(5, 5, 5, 5);
@@ -2149,10 +2100,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, tableGraph);
 
         // make the canvas tall since it's a long table, but not very wide
-        subframe->m_canvas->SetCanvasMinHeightDIPs(
-            subframe->m_canvas->GetDefaultCanvasWidthDIPs());
-        subframe->m_canvas->SetCanvasMinWidthDIPs(
-            subframe->m_canvas->GetDefaultCanvasHeightDIPs());
+        subframe->m_canvas->SetCanvasMinHeightDIPs(subframe->m_canvas->GetDefaultCanvasWidthDIPs());
+        subframe->m_canvas->SetCanvasMinWidthDIPs(subframe->m_canvas->GetDefaultCanvasHeightDIPs());
         // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
@@ -2165,7 +2114,9 @@ void MyFrame::OnSaveWindow(wxCommandEvent& event)
     {
     MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
-        { return; }
+        {
+        return;
+        }
 
     pChild->m_canvas->OnSave(event);
     }
@@ -2174,7 +2125,9 @@ void MyFrame::OnPrintWindow(wxCommandEvent& event)
     {
     MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
-        { return; }
+        {
+        return;
+        }
 
     pChild->m_canvas->OnPrint(event);
     }
@@ -2188,11 +2141,15 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
         {
         auto pChild = dynamic_cast<MyChild*>(window);
         if (pChild == nullptr)
-            { continue; }
+            {
+            continue;
+            }
         canvases.push_back(pChild->m_canvas);
         }
     if (canvases.size() == 0)
-        { return; }
+        {
+        return;
+        }
 
     // add them to a report printer (using the first canvas's print settings)
     auto printOut = std::make_unique<ReportPrintout>(canvases, canvases[0]->GetLabel());
@@ -2208,14 +2165,14 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     printer.GetPrintDialogData().SetAllPages(true);
     printer.GetPrintDialogData().SetFromPage(1);
     printer.GetPrintDialogData().SetToPage(canvases.size());
-    if (!printer.Print(this, printOut.get(), true) )
+    if (!printer.Print(this, printOut.get(), true))
         {
         // just show a message if a real error occurred. They may have just cancelled.
         if (printer.GetLastError() == wxPRINTER_ERROR)
             {
             wxMessageBox(_(L"An error occurred while printing.\n"
-                            "Your default printer may not be set correctly."),
-                            _(L"Print"), wxOK|wxICON_WARNING);
+                           "Your default printer may not be set correctly."),
+                         _(L"Print"), wxOK | wxICON_WARNING);
             }
         }
     }
@@ -2224,7 +2181,9 @@ void MyFrame::OnCopyWindow(wxCommandEvent& event)
     {
     MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
-        { return; }
+        {
+        return;
+        }
 
     pChild->m_canvas->OnCopy(event);
     }
@@ -2233,8 +2192,10 @@ void MyFrame::OnCloseAll([[maybe_unused]] wxCommandEvent& event)
     {
     for (auto child : GetChildren())
         {
-        if (child->IsKindOf(wxCLASSINFO(wxMDIChildFrame)) )
-            { child->Close(); }
+        if (child->IsKindOf(wxCLASSINFO(wxMDIChildFrame)))
+            {
+            child->Close();
+            }
         }
     }
 
@@ -2242,7 +2203,9 @@ void MyFrame::OnClose([[maybe_unused]] wxCommandEvent& event)
     {
     MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
-        { return; }
+        {
+        return;
+        }
 
     pChild->Close();
     }
@@ -2253,111 +2216,115 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     const wxSize iconSize{ wxSize(16, 16) };
 
     toolBar->AddTool(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
-        _(L"Bar Chart"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     _(L"Bar Chart"));
     toolBar->AddTool(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize),
-        _(L"Bar Chart (Stylized)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize),
+                     _(L"Bar Chart (Stylized)"));
     toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
-        _(L"Bar Chart (Commom Image)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
+                     _(L"Bar Chart (Commom Image)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
-        _(L"Bar Chart (Categorical Data)"));
-    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
-        _(L"Bar Chart (Categorical Data, Grouped)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     _(L"Bar Chart (Categorical Data)"));
+    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED,
+                     _(L"Bar Chart (Categorical Data, Grouped)"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     _(L"Bar Chart (Categorical Data, Grouped)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Icon)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
-        _(L"Bar Chart (Stipple Icon)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     _(L"Bar Chart (Stipple Icon)"));
 
     toolBar->AddTool(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),
-        _(L"Pie Chart"));
-    toolBar->AddTool(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),
+                     _(L"Pie Chart"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart-subgrouped.svg", iconSize),
         _(L"Pie Chart (with Subgroup)"));
 
     toolBar->AddTool(MyApp::ID_NEW_DONUTCHART, _(L"Donut Chart"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/donut.svg", iconSize),
-        _(L"Donut Chart"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/donut.svg", iconSize),
+                     _(L"Donut Chart"));
     toolBar->AddTool(MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/donut-subgrouped.svg", iconSize),
-        _(L"Donut Chart (with Subgroup)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/donut-subgrouped.svg", iconSize),
+                     _(L"Donut Chart (with Subgroup)"));
 
     toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
-        _(L"Histogram"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
+                     _(L"Histogram"));
 
-    toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES, _(L"Histogram (Discrete Category Counts)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
-        _(L"Histogram (Discrete Category Counts)"));
+    toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES,
+                     _(L"Histogram (Discrete Category Counts)"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
+                     _(L"Histogram (Discrete Category Counts)"));
 
     toolBar->AddTool(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot.svg", iconSize),
-        _(L"Line Plot"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot.svg", iconSize),
+                     _(L"Line Plot"));
     toolBar->AddTool(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot-points.svg", iconSize),
-        _(L"Line Plot (Customized)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot-points.svg", iconSize),
+                     _(L"Line Plot (Customized)"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/boxplot.svg", iconSize),
-        _(L"Box Plot"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/boxplot.svg", iconSize),
+                     _(L"Box Plot"));
     toolBar->AddTool(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap.svg", iconSize),
-        _(L"Heat Map"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap.svg", iconSize),
+                     _(L"Heat Map"));
     toolBar->AddTool(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap-grouped.svg", iconSize),
-        _(L"Heat Map (Grouped)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap-grouped.svg", iconSize),
+                     _(L"Heat Map (Grouped)"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/gantt.svg", iconSize),
-        _(L"Gantt Chart"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/gantt.svg", iconSize),
+                     _(L"Gantt Chart"));
 
     toolBar->AddTool(MyApp::ID_NEW_CANDLESTICK_AXIS, _(L"Candlestick Plot"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/candlestick.svg", iconSize),
-        _(L"Candlestick Plot"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/candlestick.svg", iconSize),
+                     _(L"Candlestick Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/likert3.svg", iconSize),
-        _(L"Likert Chart (3-Point Scale)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/likert3.svg", iconSize),
+                     _(L"Likert Chart (3-Point Scale)"));
     toolBar->AddTool(MyApp::ID_NEW_LIKERT_7POINT, _(L"Likert Chart (7-Point Scale)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/likert7.svg", iconSize),
-        _(L"Likert Chart (7-Point Scale)"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/likert7.svg", iconSize),
+                     _(L"Likert Chart (7-Point Scale)"));
     toolBar->AddTool(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
-        _(L"W-Curve Plot"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
+                     _(L"W-Curve Plot"));
     toolBar->AddTool(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
-        _(L"Linear Regression Roadmap"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
+                     _(L"Linear Regression Roadmap"));
     toolBar->AddTool(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
-        _(L"Pros & Cons Roadmap"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
+                     _(L"Pros & Cons Roadmap"));
     toolBar->AddTool(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
-        _(L"Sankey Diagram"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
+                     _(L"Sankey Diagram"));
     toolBar->AddTool(MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM, _(L"Grouped Sankey Diagram"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
-        _(L"Grouped Sankey Diagram"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
+                     _(L"Grouped Sankey Diagram"));
     toolBar->AddTool(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/wordcloud.svg", iconSize),
-        _(L"Word Cloud"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/wordcloud.svg", iconSize),
+                     _(L"Word Cloud"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot.svg", iconSize),
-        _(L"Multiple Plots"));
-    toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot.svg", iconSize),
+                     _(L"Multiple Plots"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot-common-axis.svg", iconSize),
         _(L"Multiple Plots (Common Axis)"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_TABLE, _(L"Table"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/spreadsheet.svg", iconSize),
-        _(L"Table"));
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/spreadsheet.svg", iconSize),
+                     _(L"Table"));
 
     toolBar->Realize();
     }
@@ -2366,8 +2333,7 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
 // MyChild
 // ---------------------------------------------------------------------------
 
-MyChild::MyChild(wxMDIParentFrame *parent)
-       : wxMDIChildFrame(parent, wxID_ANY, L"")
+MyChild::MyChild(wxMDIParentFrame* parent) : wxMDIChildFrame(parent, wxID_ANY, L"")
     {
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
     const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");
@@ -2380,5 +2346,7 @@ MyChild::MyChild(wxMDIParentFrame *parent)
     // this should work for MDI frames as well as for normal ones, provided
     // they can be resized at all
     if (!IsAlwaysMaximized())
-        { SetSizeHints(200, 200); }
+        {
+        SetSizeHints(200, 200);
+        }
     }
