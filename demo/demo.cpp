@@ -160,8 +160,6 @@ MyFrame::MyFrame()
 
 wxMenuBar* MyFrame::CreateMainMenubar()
     {
-    const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-
     wxMenu* fileMenu = new wxMenu;
 
     fileMenu->Append(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"));
