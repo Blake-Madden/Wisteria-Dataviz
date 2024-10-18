@@ -2347,6 +2347,6 @@ MyChild::MyChild(wxMDIParentFrame* parent) : wxMDIChildFrame(parent, wxID_ANY, L
     // they can be resized at all
     if (!IsAlwaysMaximized())
         {
-        SetSizeHints(200, 200);
+        SetSizeHints(FromDIP(200), FromDIP(200));
         }
     }
