@@ -517,7 +517,6 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
         if (lastWord == L"()")
             {
             wordStart = WordStartPosition(wordStart - 1, false);
-            const wxString functionName = GetTextRange(wordStart, GetCurrentPos() - 3);
             wordStart = WordStartPosition(wordStart - 1, false);
             const wxString libraryName = GetTextRange(wordStart, GetCurrentPos() - 3);
             auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
@@ -615,7 +614,6 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 if (previousWord == L"()")
                     {
                     previousWordStart = WordStartPosition(previousWordStart - 1, false);
-                    const wxString functionName = GetTextRange(previousWordStart, wordStart - 1);
                     previousWordStart = WordStartPosition(previousWordStart - 1, false);
                     const wxString libraryName = GetTextRange(previousWordStart, wordStart - 1);
                     auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
