@@ -1074,67 +1074,45 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event)
 long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDown,
                                  const bool matchWholeWord, const bool caseSensitiveSearch)
     {
-    std::wstring_view textToFindView{ textToFind };
-
 #ifdef __WXMSW__
-    // set up the flags
-    unsigned int flags = 0;
-    if (searchDown)
+    long selStart{ 0 }, selEnd{ 0 };
+    GetSelection(&selStart, &selEnd);
+    wxTextSearchResult result =
+        SearchText(wxTextSearch{ textToFind }
+                       .MatchCase(caseSensitiveSearch)
+                       .MatchWholeWord(matchWholeWord)
+                       .SearchDirection(searchDown ? wxTextSearch::Direction::Down :
+                                                     wxTextSearch::Direction::Up)
+                       .Start(searchDown ? selEnd : selStart));
+    
+    if (result)
         {
-        flags |= FR_DOWN;
-        }
-    if (matchWholeWord)
-        {
-        flags |= FR_WHOLEWORD;
-        }
-    if (caseSensitiveSearch)
-        {
-        flags |= FR_MATCHCASE;
-        }
-
-    FINDTEXTW findText;
-    SendMessage(GetHwnd(), EM_EXGETSEL, 0, (LPARAM)&findText.chrg);
-    const long startOfSelection = findText.chrg.cpMin;
-    if (searchDown)
-        {
-        // begin search from end of selection
-        findText.chrg.cpMin = findText.chrg.cpMax;
-        findText.chrg.cpMax = -1;
-        }
-    else
-        {
-        // if at the beginning of the window then we can't search up
-        if (findText.chrg.cpMin == 0)
-            {
-            return wxNOT_FOUND;
-            }
-        findText.chrg.cpMax = 0;
+        SetSelection(result.m_start, result.m_end);
+        ShowPosition(result.m_start);
+        return result.m_start;
         }
 
-    findText.lpstrText = textToFind;
-    long retval = SendMessage(GetHwnd(), EM_FINDTEXTW, flags, (LPARAM)&findText);
-    if (retval != wxNOT_FOUND)
-        {
-        SetSelection(retval, retval + static_cast<long>(textToFindView.length()));
-        ShowPosition(retval);
-        }
     // if not found and searching down, ask if they would like to start
-    // from the beginning and try again
-    if ((retval == wxNOT_FOUND) && searchDown && (startOfSelection > 0) &&
+    // from the beginning and try again.
+    if (searchDown && selStart > 0 &&
         (wxMessageBox(_(L"Search has reached the end of the document. "
                         "Do you wish to restart the search from the beginning?"),
                       _(L"Continue Search"), wxYES_NO | wxICON_QUESTION) == wxYES))
         {
-        findText.chrg.cpMin = 0;
-        findText.chrg.cpMax = startOfSelection;
-        retval = SendMessage(GetHwnd(), EM_FINDTEXTW, flags, (LPARAM)&findText);
-        if (retval != wxNOT_FOUND)
+        result = SearchText(wxTextSearch{ textToFind }
+                                .MatchCase(caseSensitiveSearch)
+                                .MatchWholeWord(matchWholeWord)
+                                .SearchDirection(wxTextSearch::Direction::Down)
+                                .Start(0));
+        if (result)
             {
-            SetSelection(retval, retval + static_cast<long>(textToFindView.length()));
-            ShowPosition(retval);
+            SetSelection(result.m_start, result.m_end);
+            ShowPosition(result.m_start);
+            return result.m_start;
             }
         }
-    return retval;
+
+    return wxNOT_FOUND;
 #elif defined(__WXGTK__)
     const GtkTextSearchFlags flags = static_cast<GtkTextSearchFlags>(
         caseSensitiveSearch ? GTK_TEXT_SEARCH_TEXT_ONLY :
@@ -1275,6 +1253,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         return wxNOT_FOUND;
         }
 #else
+    std::wstring_view textToFindView{ textToFind };
     long location =
         GetTextPeer()->Find(textToFind, caseSensitiveSearch, searchDown, matchWholeWord);
     if (location != wxNOT_FOUND)
