@@ -77,7 +77,7 @@ void GetDirFilterDialog::CreateControls()
 
     wxTextCtrl* filePathEdit =
         new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                       wxSize(FromDIP(wxSize(600, 600)).GetWidth(), -1),
+                       wxSize(FromDIP(wxSize{ 600, 600 }).GetWidth(), -1),
                        wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
     filePathEdit->AutoCompleteFileNames();
     fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
@@ -85,13 +85,13 @@ void GetDirFilterDialog::CreateControls()
     wxBitmapButton* fileBrowseButton =
         new wxBitmapButton(this, ID_FOLDER_BROWSE_BUTTON,
                            wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
-    fileBrowseBoxSizer->Add(fileBrowseButton, 0, wxALIGN_CENTER_VERTICAL);
+    fileBrowseBoxSizer->Add(fileBrowseButton, wxSizerFlags{}.CenterVertical());
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(fileTypeSizer, wxSizerFlags{}.Expand());
     fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:"),
                                         wxDefaultPosition, wxDefaultSize, 0),
-                       0, wxALIGN_CENTER_VERTICAL | wxLEFT, wxSizerFlags::GetDefaultBorder());
+                       wxSizerFlags{}.CenterVertical().Border(wxLEFT));
     wxArrayString choiceStrings;
     wxStringTokenizer tkz(m_fullFileFilter, L"|", wxTOKEN_STRTOK);
     while (tkz.HasMoreTokens())
@@ -103,7 +103,7 @@ void GetDirFilterDialog::CreateControls()
             }
         }
     m_fileFilterCombo = new wxChoice(this, wxID_ANY, wxDefaultPosition,
-                                     wxSize(FromDIP(wxSize(100, 100)).GetWidth(), -1),
+                                     wxSize(FromDIP(wxSize{ 100, 100 }).GetWidth(), -1),
                                      choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
     fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 

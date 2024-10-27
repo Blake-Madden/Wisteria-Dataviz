@@ -17,22 +17,22 @@ SearchPanel::SearchPanel(wxWindow* parent, wxWindowID id) : wxWindow(parent, id)
     wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_search = new wxSearchCtrl(this, ControlIDs::ID_SEARCH_TEXT_ENTRY, wxString{},
-                                wxDefaultPosition, FromDIP(wxSize(200, -1)), 0);
-    mainSizer->Add(m_search, 0, wxTOP | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
+                                wxDefaultPosition, FromDIP(wxSize{ 200, -1 }), 0);
+    mainSizer->Add(m_search, wxSizerFlags{}.Border(wxTOP | wxBOTTOM));
 
     wxBitmapButton* nextButton =
         new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
                            wxArtProvider::GetBitmapBundle(wxART_GO_DOWN, wxART_BUTTON));
     nextButton->SetToolTip(_(L"Find the next occurrence"));
-    mainSizer->Add(nextButton, 0, wxALIGN_CENTER_VERTICAL);
+    mainSizer->Add(nextButton, wxSizerFlags{}.CentreVertical());
 
     wxBitmapButton* peviousButton =
         new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
                            wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
     peviousButton->SetToolTip(_(L"Find the previous occurrence"));
-    mainSizer->Add(peviousButton, 0, wxALIGN_CENTER_VERTICAL);
+    mainSizer->Add(peviousButton, wxSizerFlags{}.CentreVertical());
 
-    mainSizer->AddSpacer(3);
+    mainSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 
     SetSizerAndFit(mainSizer);
 

@@ -53,9 +53,9 @@ namespace Wisteria::UI
             {
             label = new wxStaticText(this, wxID_STATIC, _(L"...then by:"), wxDefaultPosition,
                                      wxDefaultSize, 0);
-            labelsSizer->Add(label, 0, wxTOP, wxSizerFlags::GetDefaultBorder());
+            labelsSizer->Add(label, wxSizerFlags{}.Border(wxTOP));
             }
-        optionsSizer->Add(labelsSizer, 0, wxALL, wxSizerFlags::GetDefaultBorder());
+        optionsSizer->Add(labelsSizer, wxSizerFlags{}.Border());
 
         optionsSizer->Add(m_columnList, wxSizerFlags{ 1 }.Expand());
 

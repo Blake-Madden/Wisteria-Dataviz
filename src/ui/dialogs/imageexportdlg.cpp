@@ -87,7 +87,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     controlsSizer->Add(column1Sizer);
     controlsSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
     controlsSizer->Add(column2Sizer);
-    mainSizer->Add(controlsSizer, wxSizerFlags{}.Expand().Border().Align(wxALIGN_TOP));
+    mainSizer->Add(controlsSizer, wxSizerFlags{}.Expand().Border().Top());
 
     wxStaticBoxSizer* imageSizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Image Size"));
     auto imageSizeInfoSizer = new wxGridSizer(
@@ -96,7 +96,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
 
     wxStaticText* widthLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC,
                                                 _(L"Width:"), wxDefaultPosition, wxDefaultSize);
-    imageSizeInfoSizer->Add(widthLabel, 0, wxALIGN_CENTER_VERTICAL);
+    imageSizeInfoSizer->Add(widthLabel, wxSizerFlags{}.CenterVertical());
     wxSpinCtrl* widthCtrl =
         new wxSpinCtrl(imageSizeSizer->GetStaticBox(), ControlIDs::IMAGE_WIDTH_ID,
                        std::to_wstring(m_options.m_imageSize.GetWidth()), wxDefaultPosition,
@@ -106,7 +106,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
 
     wxStaticText* heightLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC,
                                                  _(L"Height:"), wxDefaultPosition, wxDefaultSize);
-    imageSizeInfoSizer->Add(heightLabel, 0, wxALIGN_CENTER_VERTICAL);
+    imageSizeInfoSizer->Add(heightLabel, wxSizerFlags{}.CenterVertical());
     wxSpinCtrl* heightCtrl =
         new wxSpinCtrl(imageSizeSizer->GetStaticBox(), ControlIDs::IMAGE_HEIGHT_ID,
                        std::to_wstring(m_options.m_imageSize.GetHeight()), wxDefaultPosition,
@@ -135,13 +135,11 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         column1Sizer->Add(tiffOptionsBoxSizer, wxSizerFlags{}.Expand());
 
         wxBoxSizer* compressionSizer = new wxBoxSizer(wxHORIZONTAL);
-        tiffOptionsBoxSizer->Add(compressionSizer, 0, wxALIGN_LEFT | wxALL,
-                                 wxSizerFlags::GetDefaultBorder());
+        tiffOptionsBoxSizer->Add(compressionSizer, wxSizerFlags{}.Border());
         wxStaticText* compressionLabel =
             new wxStaticText(tiffOptionsBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Compression:"),
                              wxDefaultPosition, wxDefaultSize, 0);
-        compressionSizer->Add(compressionLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT,
-                              wxSizerFlags::GetDefaultBorder());
+        compressionSizer->Add(compressionLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
 
         wxArrayString compressionChoices;
         compressionChoices.Add(_(L"None"));
@@ -165,7 +163,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxStaticBoxSizer* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
         m_previewThumbnail =
             new Thumbnail(previewSizer->GetStaticBox(), m_originalBitmap, ClickMode::DoNothing,
-                          false, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(512, 512)));
+                          false, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 512, 512 }));
         previewSizer->Add(m_previewThumbnail);
         column2Sizer->Add(previewSizer);
         }

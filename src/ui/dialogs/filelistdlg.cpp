@@ -54,7 +54,7 @@ namespace Wisteria::UI
 
         fileListSizer->Add(buttonsSizer);
 
-        m_listCtrl = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(600, 400)),
+        m_listCtrl = new ListCtrlEx(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 600, 400 }),
                                     wxLC_REPORT | wxLC_VIRTUAL);
         m_listCtrl->EnableGridLines();
         m_listCtrl->EnableAlternateRowColours(false);
@@ -73,9 +73,8 @@ namespace Wisteria::UI
         wxBoxSizer* fileInfoSizer = new wxBoxSizer(wxVERTICAL);
         m_thumbnail = new Wisteria::UI::Thumbnail(
             this, wxNullBitmap, Wisteria::ClickMode::FullSizeViewable, false, wxID_ANY,
-            wxDefaultPosition, FromDIP(wxSize(256, 256)));
-        fileInfoSizer->Add(m_thumbnail, wxSizerFlags{}.Border(wxDirection::wxALL,
-                                                              wxSizerFlags::GetDefaultBorder()));
+            wxDefaultPosition, FromDIP(wxSize{ 256, 256 }));
+        fileInfoSizer->Add(m_thumbnail, wxSizerFlags{}.Border());
 
         fileInfoSizer->AddStretchSpacer();
 

@@ -63,7 +63,7 @@ namespace Wisteria::UI
             {
             SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
             wxDialog::Create(parent, id, caption, pos, size, style);
-            SetMinSize(FromDIP(wxSize(800, 600)));
+            SetMinSize(FromDIP(wxSize{ 800, 600 }));
 
             CreateControls();
 
@@ -80,7 +80,7 @@ namespace Wisteria::UI
         void CreateControls()
             {
             wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-            mainSizer->SetMinSize(FromDIP(wxSize(800, 600)));
+            mainSizer->SetMinSize(FromDIP(wxSize{ 800, 600 }));
 
             m_canvas = new Wisteria::Canvas(this);
             m_canvas->SetFixedObjectsGridSize(1, 1);
@@ -88,7 +88,7 @@ namespace Wisteria::UI
 
             mainSizer->Add(
                 new wxStaticLine(this),
-                wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT, wxSizerFlags::GetDefaultBorder()));
+                wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
             wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
                 {
                 wxButton* button = new wxButton(this, wxID_PRINT);
@@ -114,7 +114,7 @@ namespace Wisteria::UI
                 button->SetDefault();
                 buttonSizer->Add(button);
                 }
-            mainSizer->Add(buttonSizer, 0, wxALIGN_RIGHT | wxALL, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(buttonSizer, wxSizerFlags{}.Border().Right());
 
             SetSizerAndFit(mainSizer);
             }

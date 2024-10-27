@@ -83,12 +83,12 @@ void ArchiveDlg::CreateControls()
 
     wxBitmapButton* fileBrowseButton = new wxBitmapButton(
         this, ID_FILE_BROWSE_BUTTON, wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
-    fileBrowseBoxSizer->Add(fileBrowseButton, 0, wxALIGN_CENTER_VERTICAL);
+    fileBrowseBoxSizer->Add(fileBrowseButton, wxSizerFlags{}.CenterVertical());
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(fileTypeSizer, wxSizerFlags{}.Expand());
-    fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:")), 0,
-                       wxALIGN_CENTER_VERTICAL | wxLEFT, wxSizerFlags::GetDefaultBorder());
+    fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:")),
+                       wxSizerFlags{}.CenterVertical().Border(wxLEFT));
     wxArrayString choiceStrings;
     wxStringTokenizer tkz(m_fullFileFilter, L"|", wxTOKEN_STRTOK);
     while (tkz.HasMoreTokens())
@@ -101,7 +101,7 @@ void ArchiveDlg::CreateControls()
         }
     m_fileFilterCombo = new wxChoice(this, wxID_ANY, wxDefaultPosition,
                                      // need to hard code size in case file filter is too wide
-                                     wxSize(FromDIP(wxSize(150, 150)).GetWidth(), -1),
+                                     wxSize(FromDIP(wxSize{ 150, 150 }).GetWidth(), -1),
                                      choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
     fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 

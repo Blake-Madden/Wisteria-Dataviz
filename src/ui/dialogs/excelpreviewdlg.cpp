@@ -86,7 +86,7 @@ namespace Wisteria::UI
                        0, wxLEFT | wxTOP | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
         if (m_wrk->size() > 0)
             {
-            m_grid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(800, 400)));
+            m_grid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 800, 400 }));
             m_grid->SetTable(new ExcelTable(m_wrk, m_excelFile), true);
             m_grid->EnableEditing(false);
             m_grid->SetDefaultCellOverflow(false);
@@ -98,7 +98,7 @@ namespace Wisteria::UI
         mainSizer->Add(new wxStaticText(this, wxID_STATIC,
                                         _(L"Note: only text cells are being shown and are "
                                           "truncated here for display purposes.")),
-                       0, wxALL, wxSizerFlags::GetDefaultBorder());
+                       wxSizerFlags{}.Border());
         mainSizer->Add(CreateButtonSizer(wxOK | wxHELP), wxSizerFlags{}.Expand().Border());
 
         mainSizer->SetMinSize(GetSize());

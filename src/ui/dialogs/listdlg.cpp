@@ -209,7 +209,7 @@ namespace Wisteria::UI
     void ListDlg::CreateControls()
         {
         wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-        mainSizer->SetMinSize(FromDIP(wxSize(800, 600)));
+        mainSizer->SetMinSize(FromDIP(wxSize{ 800, 600 }));
 
         // the top label
         if (m_label.length())
@@ -218,7 +218,7 @@ namespace Wisteria::UI
             labelSizer->Add(new wxStaticText(this, wxID_STATIC, m_label), 0, wxALIGN_CENTER | wxALL,
                             0);
             labelSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
-            mainSizer->Add(labelSizer, 0, wxALL, wxSizerFlags::GetDefaultBorder());
+            mainSizer->Add(labelSizer, wxSizerFlags{}.Border());
             }
 
         if ((m_buttonStyle & LD_FIND_BUTTON))

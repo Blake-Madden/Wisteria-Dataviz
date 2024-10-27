@@ -62,7 +62,7 @@ namespace Wisteria::UI
             wxButton* button = new wxButton(this, wxID_COPY);
             button->SetBitmap(
                 wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
-            buttonSizer->Add(button, 0, wxRIGHT, wxSizerFlags::GetDefaultBorder());
+            buttonSizer->Add(button, wxSizerFlags{}.Border(wxRIGHT));
             }
 
             {
@@ -70,7 +70,7 @@ namespace Wisteria::UI
             button->SetBitmap(
                 wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
             button->SetDefault();
-            buttonSizer->Add(button, 0, wxRIGHT, wxSizerFlags::GetDefaultBorder());
+            buttonSizer->Add(button, wxSizerFlags{}.Border(wxRIGHT));
             }
 
         mainSizer->Add(buttonSizer, 0, wxALIGN_RIGHT | wxALL, wxSizerFlags::GetDefaultBorder());
