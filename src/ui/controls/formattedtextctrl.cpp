@@ -1084,7 +1084,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
                        .SearchDirection(searchDown ? wxTextSearch::Direction::Down :
                                                      wxTextSearch::Direction::Up)
                        .Start(searchDown ? selEnd : selStart));
-    
+
     if (result)
         {
         SetSelection(result.m_start, result.m_end);
