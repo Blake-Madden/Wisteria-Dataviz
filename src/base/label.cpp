@@ -279,7 +279,7 @@ namespace Wisteria::GraphItems
         {
         if (!IsOk())
             {
-            wxRect();
+            return wxRect{};
             }
 
         if (!GetCachedBoundingBox().IsEmpty())
