@@ -88,7 +88,21 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
             docNames.Add(data[i]->GetDescription());
             }
         // find a suitable parent window
-        RadioBoxDlg radioDlg(wxTheApp->GetTopWindow(), _(L"Select Project Type"), wxEmptyString,
+        wxWindow* parentWindow =
+            [this]()
+            {
+            if (wxTheApp->GetTopWindow() != nullptr && wxTheApp->GetTopWindow()->IsShown())
+                {
+                return wxTheApp->GetTopWindow();
+                }
+            else if (GetCurrentDocument() != nullptr &&
+                     GetCurrentDocument()->GetDocumentWindow() != nullptr)
+                {
+                return GetCurrentDocument()->GetDocumentWindow();
+                }
+            return wxTheApp->GetTopWindow();
+            }();
+        RadioBoxDlg radioDlg(parentWindow, _(L"Select Project Type"), wxString{},
                              _(L"Project types:"), _(L"New Project"), docNames, docDescriptions);
         if (radioDlg.ShowModal() == wxID_OK)
             {
