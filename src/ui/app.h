@@ -138,7 +138,7 @@ namespace Wisteria::UI
                 }
             else if (GetDocManager() != nullptr &&
                      GetDocManager()->GetCurrentDocument() != nullptr &&
-                     GetDocManager()->GetCurrentDocument()->GetDocumentWindow())
+                     GetDocManager()->GetCurrentDocument()->GetDocumentWindow() != nullptr)
                 {
                 return GetDocManager()->GetCurrentDocument()->GetDocumentWindow();
                 }
