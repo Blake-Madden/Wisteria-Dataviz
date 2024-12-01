@@ -567,7 +567,7 @@ namespace Wisteria
 
         /** @name Print Functions
             @brief Functions related to printing and printer settings.
-            @sa The [printing](../../Printing.md) overview for more information.*/
+            @sa The [printing](../../../Printing.md) overview for more information.*/
         /// @{
 
         /** @brief Sets the printer data, which includes paper size, orientation, etc.

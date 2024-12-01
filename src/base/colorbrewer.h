@@ -20,7 +20,7 @@
 #include <wx/wx.h>
 
 /// @brief Color management features (building, brewing, contrasting, etc.).
-/// @sa The [color management](../../Colors.md) overview for more information.
+/// @sa The [color management](../../../Colors.md) overview for more information.
 namespace Wisteria::Colors
     {
     /** @brief Constructs a color scale for a given range of values.
