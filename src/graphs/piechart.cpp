@@ -1388,6 +1388,7 @@ namespace Wisteria::Graphs
             const double holeRadius{ (pieDrawArea.GetWidth() * GetDonutHoleProportion()) / 2 };
             donutHole->SetRadius(donutHole->DownscaleFromScreenAndCanvas(holeRadius));
 
+            queueObjectForOffsetting(std::move(donutHole));
             if (GetDonutHoleLabel().GetText().length())
                 {
                 auto donutHoleLabel = std::make_unique<Label>(GetDonutHoleLabel());
@@ -1408,7 +1409,6 @@ namespace Wisteria::Graphs
                     dc, GetScaling());
                 queueObjectForOffsetting(std::move(donutHoleLabel));
                 }
-            queueObjectForOffsetting(std::move(donutHole));
             }
 
         // Resplits labels that may be been split. This is meant to take advantage
