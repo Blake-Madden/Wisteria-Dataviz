@@ -12,10 +12,10 @@
 #ifndef __LIX_GAUGE_GERMAN_H__
 #define __LIX_GAUGE_GERMAN_H__
 
-#include "groupgraph2d.h"
 #include "../data/jitter.h"
-#include "../i18n-check/src/donttranslate.h"
 #include "../math/mathematics.h"
+#include "../util/donttranslate.h"
+#include "groupgraph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -42,23 +42,25 @@ namespace Wisteria::Graphs
          - Blank group labels will be lumped into a "[NO GROUP]" category.
 
         @par Citations:
-            Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research Quarterly*, vol. 18, no. 4, 1983, pp. 480-97.
-            
-            Schulz, Renate A. “Literature and Readability: Bridging the Gap in Foreign Language Reading.” *The Modern Language Journal*,
-            vol. 65, no. 1, Spring 1981, pp. 43-53.*/
+            Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research
+            Quarterly*, vol. 18, no. 4, 1983, pp. 480-97.
+
+            Schulz, Renate A. “Literature and Readability: Bridging the Gap in Foreign Language
+            Reading.” *The Modern Language Journal*, vol. 65, no. 1, Spring 1981, pp. 43-53.*/
     class LixGaugeGerman final : public GroupGraph2D
         {
         wxDECLARE_DYNAMIC_CLASS(LixGaugeGerman);
         LixGaugeGerman() = default;
 
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.
             @param colors The color scheme to apply to the points.
                 Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
                 Leave as null to use the standard shapes.*/
-        explicit LixGaugeGerman(Wisteria::Canvas* canvas,
+        explicit LixGaugeGerman(
+            Wisteria::Canvas* canvas,
             std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
@@ -80,13 +82,16 @@ namespace Wisteria::Graphs
         ///     Otherwise, the German labels from the original article are shown.
         [[nodiscard]]
         bool IsUsingEnglishLabels() const noexcept
-            { return m_useEnglishLabels; }
+            {
+            return m_useEnglishLabels;
+            }
+
         /** @brief Sets whether to use English labels for the brackets.
             @param useEnglish @c true to use the translated (English) labels.
                 @c false to use the German labels from the article.*/
-        void UseEnglishLabels(const bool useEnglish) noexcept
-            { m_useEnglishLabels = useEnglish; }
-    private:
+        void UseEnglishLabels(const bool useEnglish) noexcept { m_useEnglishLabels = useEnglish; }
+
+      private:
         void RecalcSizes(wxDC& dc) final;
         void AdjustAxes();
 
@@ -94,7 +99,7 @@ namespace Wisteria::Graphs
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
         bool m_useEnglishLabels{ false }; // use translated labels from Schulz article
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

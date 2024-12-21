@@ -12,8 +12,8 @@
 #ifndef __WISTERIA_GRAPH_ITEMS_H__
 #define __WISTERIA_GRAPH_ITEMS_H__
 
-#include "../i18n-check/src/donttranslate.h"
 #include "../math/mathematics.h"
+#include "../util/donttranslate.h"
 #include "enums.h"
 #include "icons.h"
 #include "settings.h"
@@ -1395,9 +1395,11 @@ namespace Wisteria
             /** @brief Gets the minimum width for the item's bounding box that the client
                     has requested.\n
                     This is currently only relevant to @c Label objects.
-                @note By default, this is optional until the client calls SetMinimumUserSizeDIPs().\n
-                    This is the minimum size that the client has requested, which may or may not be
-                    the same as the actual content's size (including text, padding, icons, etc.).
+                @note By default, this is optional until the client calls
+                    SetMinimumUserSizeDIPs().\n
+                    This is the minimum size that the client has requested,
+                    which may or may not be the same as the actual content's size
+                    (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserHeightDIPs().
                 @returns The minimum user width.*/
             [[nodiscard]]
@@ -1409,9 +1411,11 @@ namespace Wisteria
             /** @brief Gets the minimum height for the item's bounding box that the client
                     has requested.\n
                     This is currently only relevant to Label objects.
-                @note By default, this is optional until the client calls SetMinimumUserSizeDIPs().\n
-                    This is the minimum size that the client has requested, which may or may not
-                    be the same as the actual content's size (including text, padding, icons, etc.).
+                @note By default, this is optional until the client calls
+                    SetMinimumUserSizeDIPs().\n
+                    This is the minimum size that the client has requested,
+                    which may or may not be the same as the actual content's size
+                    (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserWidthDIPs().
                 @returns The minimum user width.*/
             [[nodiscard]]
@@ -2123,7 +2127,7 @@ namespace Wisteria
             mutable wxRect m_cachedContentBoundingBox;
             };
         } // namespace GraphItems
-    }     // namespace Wisteria
+    } // namespace Wisteria
 
 /** @}*/
 

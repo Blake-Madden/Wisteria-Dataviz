@@ -12,10 +12,10 @@
 #ifndef __EXTRACT_TEXT_H__
 #define __EXTRACT_TEXT_H__
 
-#include "../i18n-check/src/char_traits.h"
-#include "../i18n-check/src/donttranslate.h"
-#include "../i18n-check/src/string_util.h"
 #include "../math/safe_math.h"
+#include "../util/char_traits.h"
+#include "../util/donttranslate.h"
+#include "../util/string_util.h"
 #include <exception>
 #include <string_view>
 #include <unordered_map>
@@ -111,10 +111,7 @@ namespace lily_of_the_valley
         void trim() { string_util::rtrim(m_text_buffer); }
 
         /** @brief Clears any text.*/
-        void clear()
-            {
-            m_text_buffer.clear();
-            }
+        void clear() { m_text_buffer.clear(); }
 
         /** @brief Resizes the buffer.
             @param newSize The new size of the buffer.*/

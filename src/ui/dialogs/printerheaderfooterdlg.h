@@ -12,7 +12,7 @@
 #ifndef __PRINTERHEADERFOOTER_DLG_H__
 #define __PRINTERHEADERFOOTER_DLG_H__
 
-#include "../../i18n-check/src/donttranslate.h"
+#include "../../util/donttranslate.h"
 #include "dialogwithhelp.h"
 #include <set>
 #include <wx/combobox.h>

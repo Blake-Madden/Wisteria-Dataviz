@@ -13,8 +13,8 @@
 #define __LISTCTRL_DATA_PROVIDERS_H__
 
 #include "../../base/graphitems.h"
-#include "../../i18n-check/src/string_util.h"
 #include "../../util/numberformat.h"
+#include "../../util/string_util.h"
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -149,40 +149,35 @@ namespace Wisteria::UI
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const ListCellString& that) const
+            bool operator<(const ListCellString& that) const
                 {
                 return Compare(that) < 0;
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator>(const ListCellString& that) const
+            bool operator>(const ListCellString& that) const
                 {
                 return Compare(that) > 0;
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<=(const ListCellString& that) const
+            bool operator<=(const ListCellString& that) const
                 {
                 return Compare(that) <= 0;
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator>=(const ListCellString& that) const
+            bool operator>=(const ListCellString& that) const
                 {
                 return Compare(that) >= 0;
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator==(const ListCellString& that) const
+            bool operator==(const ListCellString& that) const
                 {
                 return Compare(that) == 0;
                 }

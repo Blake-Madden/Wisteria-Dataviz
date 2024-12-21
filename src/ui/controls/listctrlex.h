@@ -32,21 +32,21 @@
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
 #ifdef __WXMSW__
-#include <commctrl.h>
+    #include <commctrl.h>
 #endif
 #include "../../base/canvas.h"
-#include "../../i18n-check/src/donttranslate.h"
 #include "../../math/mathematics.h"
+#include "../../util/donttranslate.h"
 #include "../../util/fileutil.h"
 #include "../dialogs/gridexportdlg.h"
 #include "../dialogs/listctrlitemviewdlg.h"
 #include "listctrlexdataprovider.h"
 
 #ifndef HDF_SORTUP
-#define HDF_SORTUP 0x400
+    #define HDF_SORTUP 0x400
 #endif
 #ifndef HDF_SORTDOWN
-#define HDF_SORTDOWN 0x200
+    #define HDF_SORTDOWN 0x200
 #endif
 
 /// @cond DOXYGEN_IGNORE

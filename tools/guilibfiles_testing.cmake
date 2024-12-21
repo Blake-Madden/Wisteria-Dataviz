@@ -52,7 +52,6 @@ SET(WISTERIA_SRC
     ../../src/graphs/table.cpp
     ../../src/graphs/wcurveplot.cpp
     ../../src/graphs/wordcloud.cpp
-    ../../src/i18n-check/src/i18n_string_util.cpp
     ../../src/import/cpp_extract_text.cpp
     ../../src/import/doc_extract_text.cpp
     ../../src/import/docx_extract_text.cpp
@@ -94,6 +93,7 @@ SET(WISTERIA_SRC
     ../../src/util/downloadfile.cpp
     ../../src/util/fileutil.cpp
     ../../src/util/formulaformat.cpp
+    ../../src/util/i18n_string_util.cpp
     ../../src/util/idhelpers.cpp
     ../../src/util/logfile.cpp
     ../../src/util/memorymappedfile.cpp

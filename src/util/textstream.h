@@ -12,12 +12,12 @@
 #ifndef __TEXTSTREAM_H__
 #define __TEXTSTREAM_H__
 
-#include "../i18n-check/src/donttranslate.h"
-#include "../i18n-check/src/string_util.h"
 #include "../import/html_extract_text.h"
 #include "../import/unicode_extract_text.h"
 #include "../math/mathematics.h"
 #include "../utfcpp/source/utf8.h"
+#include "../util/donttranslate.h"
+#include "../util/string_util.h"
 #include "memorymappedfile.h"
 #include <memory>
 #include <vector>

@@ -12,8 +12,8 @@
 #ifndef __IMAGEEXPORT_DLG_H__
 #define __IMAGEEXPORT_DLG_H__
 
-#include "../../i18n-check/src/donttranslate.h"
 #include "../../math/mathematics.h"
+#include "../../util/donttranslate.h"
 #include "../controls/thumbnail.h"
 #include <wx/bitmap.h>
 #include <wx/combobox.h>

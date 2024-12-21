@@ -51,7 +51,6 @@ SET(WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
     src/graphs/wordcloud.cpp
-    src/i18n-check/src/i18n_string_util.cpp
     src/import/html_extract_text.cpp
     src/import/markdown_extract_text.cpp
     src/import/xlsx_extract_text.cpp
@@ -64,6 +63,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/variableselectdlg.cpp
     src/util/fileutil.cpp
     src/util/formulaformat.cpp
+    src/util/i18n_string_util.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
     src/util/textreplace.cpp

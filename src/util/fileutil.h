@@ -27,12 +27,12 @@
 #include <wx/tokenzr.h>
 #include <wx/wx.h>
 #ifdef __WXMSW__
-#include <shlobj.h>
-#include <windows.h>
+    #include <shlobj.h>
+    #include <windows.h>
 #endif
 #include "../data/dataset.h"
-#include "../i18n-check/src/donttranslate.h"
-#include "../i18n-check/src/string_util.h"
+#include "../util/donttranslate.h"
+#include "../util/string_util.h"
 
 /// @brief The filepaths that a string may be resolved to.
 enum class FilePathType
