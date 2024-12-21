@@ -1,16 +1,16 @@
-name: i18n-check
+name: quneiform
 on: [push]
 
 jobs:
   build:
-    name: i18n-check
+    name: quneiform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: install i18n-check
+      - name: install quneiform
         run: |
-             git clone https://github.com/Blake-Madden/i18n-check.git --recurse-submodules
+             git clone https://github.com/Blake-Madden/quneiform.git --recurse-submodules
              cd i18n-check
              cmake ./
              make -j4
@@ -18,10 +18,10 @@ jobs:
 
       - name: analyze
         run: |
-             # Ignore i18n-check's own folder.
+             # Ignore quneiform's own folder.
              # You can ignore other folders by adding a comma and the folder name
-             # after "--ignore=i18n-check".
-             ./i18n-check/bin/cuneiform ./src --ignore=import,i18n-check,math,debug,base/colors.h,base/colors.cpp -q --enable=allI18N,allCodeFormatting -o i18nresults.txt
+             # after "--ignore=quneiform".
+             ./quneiform/bin/quneiform ./src --ignore=import,quneiform,math,debug,base/colors.h,base/colors.cpp -q --enable=allI18N,allCodeFormatting -o i18nresults.txt
 
       - name: review results
         run: |
