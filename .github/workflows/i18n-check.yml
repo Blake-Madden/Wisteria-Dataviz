@@ -11,7 +11,7 @@ jobs:
       - name: install quneiform
         run: |
              git clone https://github.com/Blake-Madden/quneiform.git --recurse-submodules
-             cd i18n-check
+             cd quneiform
              cmake ./
              make -j4
              cd ..
