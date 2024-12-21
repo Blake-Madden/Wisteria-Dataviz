@@ -12,8 +12,8 @@
 #ifndef __RESOURCE_MANAGER_H__
 #define __RESOURCE_MANAGER_H__
 
-#include "../i18n-check/src/donttranslate.h"
 #include "../math/mathematics.h"
+#include "../util/donttranslate.h"
 #include "memorymappedfile.h"
 #include "zipcatalog.h"
 #include <map>

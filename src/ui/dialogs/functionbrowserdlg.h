@@ -12,9 +12,9 @@
 #ifndef __FUNCTION_BROWSER_DLG_H__
 #define __FUNCTION_BROWSER_DLG_H__
 
-#include "../../i18n-check/src/string_util.h"
 #include "../../import/html_encode.h"
 #include "../../import/html_extract_text.h"
+#include "../../util/string_util.h"
 #include "../controls/sidebar.h"
 #include "dialogwithhelp.h"
 #include <set>
@@ -167,8 +167,7 @@ namespace Wisteria::UI
             CategoryInfo() = default;
 
             [[nodiscard]]
-            bool
-            operator<(const CategoryInfo& that) const noexcept
+            bool operator<(const CategoryInfo& that) const noexcept
                 {
                 return string_util::stricmp(m_name.c_str(), that.m_name.c_str()) < 0;
                 }

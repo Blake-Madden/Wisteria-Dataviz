@@ -14,34 +14,34 @@
 
 #include <wx/wx.h>
 #if defined(__WXMSW__)
+    #include <richedit.h>
     #include <wx/msw/dc.h>
     #include <wx/msw/private.h>
-    #include <richedit.h>
 #endif
-#include <wx/textctrl.h>
-#include <wx/fdrepdlg.h>
-#include <wx/strconv.h>
-#include <wx/file.h>
-#include <wx/filename.h>
-#include <wx/dcprint.h>
-#include <wx/dcps.h>
-#include <wx/print.h>
-#include <wx/printdlg.h>
-#include <wx/html/htmprint.h>
-#include <wx/datetime.h>
+#include "../../base/canvas.h"
+#include "../../import/rtf_extract_text.h"
+#include "../../util/clipboard_rtf.h"
+#include "../../util/donttranslate.h"
+#include <memory>
+#include <string>
+#include <vector>
 #include <wx/busyinfo.h>
 #include <wx/clipbrd.h>
+#include <wx/datetime.h>
+#include <wx/dcprint.h>
+#include <wx/dcps.h>
+#include <wx/fdrepdlg.h>
+#include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/html/htmprint.h>
+#include <wx/print.h>
+#include <wx/printdlg.h>
+#include <wx/strconv.h>
+#include <wx/textctrl.h>
 #include <wx/xrc/xmlres.h>
-#include <memory>
-#include <vector>
-#include <string>
-#include "../../import/rtf_extract_text.h"
-#include "../../i18n-check/src/donttranslate.h"
-#include "../../util/clipboard_rtf.h"
-#include "../../base/canvas.h"
 
 /// @private
-static constexpr int TWIPS_PER_INCH = 1440;
+constexpr static int TWIPS_PER_INCH = 1440;
 
 namespace Wisteria::UI
     {
@@ -504,7 +504,7 @@ namespace Wisteria::UI
 
         wxDECLARE_DYNAMIC_CLASS(FormattedTextCtrl);
         };
-    }
+    } // namespace Wisteria::UI
 
 /** @}*/
 

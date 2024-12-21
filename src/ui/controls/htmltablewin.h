@@ -13,7 +13,7 @@
 #define __HTML_TABLE_WINDOW_H__
 
 #include "../../base/canvas.h"
-#include "../../i18n-check/src/donttranslate.h"
+#include "../../util/donttranslate.h"
 #include <wx/clipbrd.h>
 #include <wx/fdrepdlg.h>
 #include <wx/file.h>

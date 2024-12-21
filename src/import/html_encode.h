@@ -12,7 +12,7 @@
 #ifndef __HTML_ENCODE_H__
 #define __HTML_ENCODE_H__
 
-#include "../i18n-check/src/string_util.h"
+#include "../util/string_util.h"
 #include "html_extract_text.h"
 
 namespace lily_of_the_valley
@@ -28,8 +28,7 @@ namespace lily_of_the_valley
             @param encodeSpaces @c true to preserve consecutive spaces with `&#nbsp;`.
             @returns A string encoded to HTML.*/
         [[nodiscard]]
-        std::wstring
-        operator()(const std::wstring_view text, const bool encodeSpaces) const
+        std::wstring operator()(const std::wstring_view text, const bool encodeSpaces) const
             {
             std::wstring encoded_text;
             if (text.empty())

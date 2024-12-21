@@ -12,9 +12,9 @@
 #ifndef __XML_FORMAT_H__
 #define __XML_FORMAT_H__
 
-#include "../i18n-check/src/donttranslate.h"
 #include "../import/html_encode.h"
 #include "../math/mathematics.h"
+#include "../util/donttranslate.h"
 #include <cmath>
 #include <cstdlib>
 #include <cstring>

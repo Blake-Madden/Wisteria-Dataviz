@@ -12,8 +12,8 @@
 #ifndef __CODE_EDITOR_H__
 #define __CODE_EDITOR_H__
 
-#include "../../i18n-check/src/donttranslate.h"
-#include "../../i18n-check/src/string_util.h"
+#include "../../util/donttranslate.h"
+#include "../../util/string_util.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -234,8 +234,7 @@ namespace Wisteria::UI
         struct wxStringCmpNoCase
             {
             [[nodiscard]]
-            bool
-            operator()(const wxString& s1, const wxString& s2) const
+            bool operator()(const wxString& s1, const wxString& s2) const
                 {
                 return s1.CmpNoCase(s2) < 0;
                 }
@@ -244,8 +243,7 @@ namespace Wisteria::UI
         struct wxStringPartialCmpNoCase
             {
             [[nodiscard]]
-            bool
-            operator()(const wxString& s1, const wxString& s2) const
+            bool operator()(const wxString& s1, const wxString& s2) const
                 {
                 return s1.CmpNoCase(s2.substr(0, s1.length())) < 0;
                 }
@@ -269,7 +267,8 @@ namespace Wisteria::UI
         using wxStringNoCaseMap = std::map<wxString, wxString, wxStringCmpNoCase>;
         // Library name, string of function names, and map of function names
         // and their respective full signature
-        using ObjectAndFunctionsMap = std::map<wxString, std::pair<wxString, wxStringNoCaseMap>, wxStringCmpNoCase>;
+        using ObjectAndFunctionsMap =
+            std::map<wxString, std::pair<wxString, wxStringNoCaseMap>, wxStringCmpNoCase>;
 
         ObjectAndFunctionsMap m_libraryCollection;
         ObjectAndFunctionsMap m_classCollection;

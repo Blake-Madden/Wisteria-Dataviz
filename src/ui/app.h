@@ -13,8 +13,8 @@
 #define __BASEAPP_H__
 
 #include "../debug/debug_profile.h"
-#include "../i18n-check/src/donttranslate.h"
 #include "../math/safe_math.h"
+#include "../util/donttranslate.h"
 #include "../util/logfile.h"
 #include "../util/resource_manager.h"
 #include "mainframe.h"
@@ -213,10 +213,7 @@ namespace Wisteria::UI
         /// @param append @c true to append to the log file from today;
         ///     @c false to overwrite it.
         /// @note This must be called before BaseApp::OnInit().
-        void AppendDailyLog(const bool append) noexcept
-            {
-            m_appendDailyLog = append;
-            }
+        void AppendDailyLog(const bool append) noexcept { m_appendDailyLog = append; }
 
         /// @brief Sets a support email for the application.
         /// @param email The email address.

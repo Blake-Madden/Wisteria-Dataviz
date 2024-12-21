@@ -12,7 +12,7 @@
 #ifndef __RTF_EXTRACT_H__
 #define __RTF_EXTRACT_H__
 
-#include "../i18n-check/src/string_util.h"
+#include "../util/string_util.h"
 #include "extract_text.h"
 #include "html_extract_text.h"
 #include <iomanip>
@@ -267,8 +267,7 @@ namespace lily_of_the_valley
         rtf_symbol() = delete;
 
         [[nodiscard]]
-        bool
-        operator<(const rtf_symbol& that) const noexcept
+        bool operator<(const rtf_symbol& that) const noexcept
             {
             return (szKeyword.compare(that.szKeyword) < 0);
             }

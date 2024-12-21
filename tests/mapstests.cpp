@@ -5,7 +5,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/util/frequencymap.h"
 #include "../src/math/mathematics.h"
-#include "../src/i18n-check/src/string_util.h"
+#include "../src/util/string_util.h"
 
 using namespace Catch::Matchers;
 
