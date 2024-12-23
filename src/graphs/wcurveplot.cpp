@@ -10,7 +10,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePlot)
 
-using namespace Wisteria;
+    using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 using namespace Wisteria::Colors::Schemes;
@@ -71,7 +71,10 @@ namespace Wisteria::Graphs
         GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         GetTopXAxis().GetAxisLinePen() = wxNullPen;
 
-        GetBottomXAxis().GetTitle().SetText(_(L"TIME"));
+        GetBottomXAxis().GetTitle().SetText(
+            /* TRANSLATORS: OK to translate as "Time".
+               This is uppercased only because that's how it appears in the original article.*/
+            _(L"TIME"));
         GetLeftYAxis().GetTitle().SetText(_(L"Level of control, satisfaction, and effectiveness"));
 
         ResetTimeLabels();
@@ -105,34 +108,44 @@ namespace Wisteria::Graphs
         switch (step)
             {
         case 1:
-            return wxString::Format(_(L"First %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"First %s"), m_timeLabel);
             break;
         case 2:
-            return wxString::Format(_(L"Second %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Second %s"), m_timeLabel);
             break;
         case 3:
-            return wxString::Format(_(L"Third %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Third %s"), m_timeLabel);
             break;
         case 4:
-            return wxString::Format(_(L"Fourth %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Fourth %s"), m_timeLabel);
             break;
         case 5:
-            return wxString::Format(_(L"Fifth %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Fifth %s"), m_timeLabel);
             break;
         case 6:
-            return wxString::Format(_(L"Sixth %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Sixth %s"), m_timeLabel);
             break;
         case 7:
-            return wxString::Format(_(L"Seventh %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Seventh %s"), m_timeLabel);
             break;
         case 8:
-            return wxString::Format(_(L"Eighth %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Eighth %s"), m_timeLabel);
             break;
         case 9:
-            return wxString::Format(_(L"Ninth %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Ninth %s"), m_timeLabel);
             break;
         case 10:
-            return wxString::Format(_(L"Tenth %s"), m_timeLabel);
+            return wxString::Format( // TRANSLATORS: %s is time interval (e.g., semester)
+                _(L"Tenth %s"), m_timeLabel);
             break;
         default:
             return wxString{};

@@ -432,9 +432,9 @@ void MyFrame::OnQuit([[maybe_unused]] wxCommandEvent& event) { Close(); }
 void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     {
     wxAboutDialogInfo aboutInfo;
-    aboutInfo.SetCopyright(L"Copyright (c) 2024");
+    aboutInfo.SetCopyright(_(L"Copyright (c) 2025"));
     wxArrayString devs;
-    devs.Add(L"Blake Madden");
+    devs.Add(_DT(L"Blake Madden"));
     aboutInfo.SetDevelopers(devs);
     aboutInfo.SetName(_(L"Wisteria Dataviz Library Demo"));
     aboutInfo.SetDescription(_(L"Demonstration of Wisteria Dataviz, "
@@ -825,7 +825,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         // change the color for any point less than 60 to red to show if failing
-        linePlot->SetPointColorCriteria([]([[maybe_unused]] const double x, const double y)
+        linePlot->SetPointColorCriteria([]([[maybe_unused]]
+                                           const double x,
+                                           const double y)
                                         { return (y < 60.0) ? *wxRED : wxColour(); });
 
         // add a note
@@ -854,7 +856,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
             {
-            linePlot->GetBottomXAxis().SetCustomLabel(i, Label(wxString::Format(_(L"Week %i"), i)));
+            linePlot->GetBottomXAxis().SetCustomLabel(
+                i, Label(wxString::Format(
+                       /* TRANSLATORS: Week # of the school year */
+                       _(L"Week %i"), i)));
             }
 
         // add a red background for failing grades
@@ -996,8 +1001,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // so that there isn't a scrollbar.
         // candlestickPlot->SetPointsPerDefaultCanvasSize(365);
 
-        candlestickPlot->SetData(silverFuturesData, L"Date", L"Open", L"High", L"Low",
-                                 L"Close/Last");
+        candlestickPlot->SetData(
+            silverFuturesData, L"Date", L"Open", L"High", L"Low",
+            _DT(L"Close/Last", DTExplanation::Syntax, L"Name of variable from dataset"));
 
         candlestickPlot->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
 
@@ -1340,7 +1346,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->UseColorLabels(true);
         // add a donut hole
         plot->IncludeDonutHole(true);
-        plot->GetDonutHoleLabel().SetText(L"Enrollment\nFall 2023");
+        plot->GetDonutHoleLabel().SetText(_(L"Enrollment\nFall 2023"));
         plot->SetDonutHoleProportion(.5);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -1436,7 +1442,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->UseColorLabels(true);
         // add a donut hole
         plot->IncludeDonutHole(true);
-        plot->GetDonutHoleLabel().SetText(L"Enrollment\nFall 2023");
+        plot->GetDonutHoleLabel().SetText(_(L"Enrollment\nFall 2023"));
         plot->SetDonutHoleProportion(.8);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -1491,7 +1497,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 appDir + L"/datasets/institutional_research/hs_graduate_matriculation.csv",
                 ImportInfo()
                     .ContinuousColumns({ L"Graduated", L"Enrolled" })
-                    .CategoricalColumns({ { L"County" }, { L"High School" }, { L"University" } }));
+                    .CategoricalColumns({ { L"County" },
+                                          { _DT(L"High School", DTExplanation::Syntax,
+                                                L"Name of variable from dataset") },
+                                          { L"University" } }));
             }
         catch (const std::exception& err)
             {
@@ -1501,8 +1510,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
-        sankey->SetData(sankeyData, L"High School", L"University", L"Graduated", L"Enrolled",
-                        L"County");
+        sankey->SetData(
+            sankeyData,
+            _DT(L"High School", DTExplanation::Syntax, L"Name of variable from dataset"),
+            L"University", L"Graduated", L"Enrolled", L"County");
         sankey->SetGroupLabelDisplay(BinLabelDisplay::BinNameAndValue);
         sankey->SetColumnHeaderDisplay(GraphColumnHeader::AsHeader);
         sankey->SetColumnHeaders({ _(L"Of @COUNT@ High School Graduates"),
@@ -1577,7 +1588,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto roadmap = std::make_shared<LRRoadmap>(subframe->m_canvas);
         roadmap->SetData(roadmapData, L"factor", L"coefficient", std::nullopt, std::nullopt,
-                         std::nullopt, _(L"GPA"));
+                         std::nullopt, // TRANSLATORS: Grade Point Average
+                         _(L"GPA"));
         roadmap->SetCanvasMargins(5, 5, 5, 5);
         // add the default caption explaining how to read the graph
         roadmap->AddDefaultCaption();
@@ -1855,11 +1867,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add brackets around some of the questions to group them
         likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
-            L"Customization is important to me", L"Extensibility is important to me",
+            _DT(L"Customization is important to me", DTExplanation::Syntax,
+                L"Name of variable from dataset"),
+            _DT(L"Extensibility is important to me", DTExplanation::Syntax,
+                L"Name of variable from dataset"),
             _(L"Advanced Features") });
         likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
             LR"(Standard, "out-of-the-box" graph support is important to me)",
-            L"Data importing features are important to me", _(L"Standard Features") });
+            _DT(L"Data importing features are important to me", DTExplanation::Syntax,
+                L"Name of variable from dataset"),
+            _(L"Standard Features") });
 
         likertChart->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1987,7 +2004,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
             {
-            linePlot->GetBottomXAxis().SetCustomLabel(i, Label(wxString::Format(_(L"Week %i"), i)));
+            linePlot->GetBottomXAxis().SetCustomLabel(i,
+                                                      Label(wxString::Format(
+                                                          // TRANSLATORS: Week # of the school year
+                                                          _(L"Week %i"), i)));
             }
 
         // instead of adding the legend to the canvas, overlay it on top of the line plot
@@ -2075,8 +2095,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // if any outliers, make a note of it off to the side
         if (ratioOutliers.size())
             {
-            tableGraph->AddCellAnnotation({ L"Majors with the most lopsided female-to-male ratios",
-                                            ratioOutliers, Side::Right, std::nullopt, wxColour() });
+            tableGraph->AddCellAnnotation(
+                { _(L"Majors with the most lopsided female-to-male ratios"), ratioOutliers,
+                  Side::Right, std::nullopt, wxColour() });
             }
 
         // if you also want to place annotations on the left of the table,

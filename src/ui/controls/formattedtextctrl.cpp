@@ -1597,7 +1597,7 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
         }
     else if (format == GtkFormat::RtfFormat)
         {
-        wxString defaultFontFamily(family, *wxConvCurrent);
+        const wxString defaultFontFamily(family);
         g_free(family);
         wxString headerText = wxString::Format(
             L"{\\rtf1\\ansi\\deff0\\deflang1033{\\fonttbl{\\f0\\%s\\fcharset0 %s;}}\n",

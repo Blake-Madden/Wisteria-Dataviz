@@ -10,7 +10,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarChart)
 
-using namespace Wisteria::GraphItems;
+    using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 using namespace Wisteria::Icons;
 using namespace Wisteria::Icons::Schemes;
@@ -209,35 +209,40 @@ namespace Wisteria::Graphs
                 const double daysFinished =
                     safe_divide<double>(taskInfo.m_percentFinished, 100) * daysInTask;
                 const double daysRemaining = daysInTask - daysFinished;
-                Bar br(GetBars().size(),
-                       { { BarBlock(BarBlockInfo(daysFinished)
-                                        .Brush(wxBrush(
-                                            ColorContrast::BlackOrWhiteContrast(taskInfo.m_color),
-                                            wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH))
-                                        .Color(taskInfo.m_color)
-                                        .SelectionLabel(GraphItems::Label(
-                                            wxString(wxString::Format(
-                                                         _(L"%s\n%d days\n(%s through %s)"),
-                                                         wxString(taskInfo.m_resource + L"\n" +
-                                                                  taskInfo.m_description)
-                                                             .Trim(),
-                                                         daysInTask, taskInfo.m_start.FormatDate(),
-                                                         taskInfo.m_end.FormatDate()))
-                                                .Trim(true)
-                                                .Trim(false)))) },
-                         { BarBlock(BarBlockInfo(daysRemaining)
-                                        .Brush(taskInfo.m_color)
-                                        .SelectionLabel(GraphItems::Label(
-                                            wxString(wxString::Format(
-                                                         _(L"%s\n%d days\n(%s through %s)"),
-                                                         wxString(taskInfo.m_resource + L"\n" +
-                                                                  taskInfo.m_description)
-                                                             .Trim(),
-                                                         daysInTask, taskInfo.m_start.FormatDate(),
-                                                         taskInfo.m_end.FormatDate()))
-                                                .Trim(true)
-                                                .Trim(false)))) } },
-                       wxEmptyString, axisLabel, GetBarEffect(), GetBarOpacity());
+                Bar br(
+                    GetBars().size(),
+                    { { BarBlock(
+                          BarBlockInfo(daysFinished)
+                              .Brush(wxBrush(ColorContrast::BlackOrWhiteContrast(taskInfo.m_color),
+                                             wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH))
+                              .Color(taskInfo.m_color)
+                              .SelectionLabel(GraphItems::Label(
+                                  wxString(
+                                      wxString::Format(
+                                          // TRANSLATORS: Description, # of days, then a date range
+                                          _(L"%s\n%d days\n(%s through %s)"),
+                                          wxString(taskInfo.m_resource + L"\n" +
+                                                   taskInfo.m_description)
+                                              .Trim(),
+                                          daysInTask, taskInfo.m_start.FormatDate(),
+                                          taskInfo.m_end.FormatDate()))
+                                      .Trim(true)
+                                      .Trim(false)))) },
+                      { BarBlock(BarBlockInfo(daysRemaining)
+                                     .Brush(taskInfo.m_color)
+                                     .SelectionLabel(GraphItems::Label(
+                                         wxString(wxString::Format(
+                                                      // TRANSLATORS: Description, # of days,
+                                                      // then a date range
+                                                      _(L"%s\n%d days\n(%s through %s)"),
+                                                      wxString(taskInfo.m_resource + L"\n" +
+                                                               taskInfo.m_description)
+                                                          .Trim(),
+                                                      daysInTask, taskInfo.m_start.FormatDate(),
+                                                      taskInfo.m_end.FormatDate()))
+                                             .Trim(true)
+                                             .Trim(false)))) } },
+                    wxEmptyString, axisLabel, GetBarEffect(), GetBarOpacity());
                 // remove "completed" bar block if nothing is actually completed
                 if (taskInfo.m_percentFinished == 0)
                     {
@@ -280,7 +285,9 @@ namespace Wisteria::Graphs
                         daysInTask);
                     break;
                 case TaskLabelDisplay::Days:
-                    decalStr = wxString::Format(_(L"%d days"), daysInTask);
+                    decalStr = wxString::Format(
+                        // TRANSLATORS: # of days remaining in a task
+                        _(L"%d days"), daysInTask);
                     break;
                 case TaskLabelDisplay::NoDisplay:
                     [[fallthrough]];

@@ -190,8 +190,7 @@ wxString FilePathResolverBase::ResolvePath(
             }
         // ...or in the CWD
         wxLogNull logNo;
-        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() };
-            wxFile::Exists(absPath))
+        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() }; wxFile::Exists(absPath))
             {
             m_path = absPath;
             m_fileType = FilePathType::LocalOrNetwork;
@@ -753,16 +752,18 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
         }
 
     wxProgressDialog progressDlg(
-        wxString::Format(_(L"Moving %s"), fromDirectory), _(L"Moving Folder"),
-        static_cast<int>(filesToMove.GetCount()), nullptr,
+        wxString::Format(/* TRANSLATORS: %s is a folder name */ _(L"Moving %s"), fromDirectory),
+        _(L"Moving Folder"), static_cast<int>(filesToMove.GetCount()), nullptr,
         wxPD_AUTO_HIDE | wxPD_SMOOTH | wxPD_ESTIMATED_TIME | wxPD_REMAINING_TIME | wxPD_CAN_ABORT);
     progressDlg.Centre();
     progressDlg.Raise();
     for (size_t i = 0; i < filesToMove.GetCount(); ++i)
         {
         wxYield();
-        if (!progressDlg.Update(static_cast<int>(i),
-                                wxString::Format(_(L"Moving %s"), filesToMove[i])))
+        if (!progressDlg.Update(
+                static_cast<int>(i),
+                wxString::Format(/* TRANSLATORS: %s is a file name */ _(L"Moving %s"),
+                                 filesToMove[i])))
             {
             return false;
             }

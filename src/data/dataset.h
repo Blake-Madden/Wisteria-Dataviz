@@ -17,6 +17,7 @@
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
 #include "../math/mathematics.h"
+#include "../util/donttranslate.h"
 #include "../util/frequencymap.h"
 #include "excelreader.h"
 #include <algorithm>
@@ -74,8 +75,7 @@ namespace Wisteria::Data
       public:
         /// @private
         [[nodiscard]]
-        bool
-        operator()(const wxString& lhs, const wxString& rhs) const
+        bool operator()(const wxString& lhs, const wxString& rhs) const
             {
             return lhs.CmpNoCase(rhs) < 0;
             }
@@ -851,7 +851,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         static std::vector<std::wstring> GetCommonMDCodes()
             {
-            return std::vector<std::wstring>{ L"NA", L"N/A", L"NULL" };
+            return std::vector<std::wstring>{ _DT(L"NA"), _DT(L"N/A"), _DT(L"NULL") };
             }
 
         /** @brief Set whether to import numeric columns with leading zeros as text.

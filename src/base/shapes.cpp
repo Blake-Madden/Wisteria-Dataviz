@@ -1100,7 +1100,10 @@ namespace Wisteria::GraphItems
             const auto signRect = wxRect(rect.GetLeftTop(),
                                          wxSize(rect.GetWidth(),
                                                 rect.GetHeight() * math_constants::two_thirds));
-            DrawCircularSign(signRect, ColorBrewer::GetColor(Color::KellyGreen), _(L"GO"), dc);
+            DrawCircularSign(signRect,
+                ColorBrewer::GetColor(Color::KellyGreen),
+                // TRANSLATORS: A GO sign, as in OK to proceed
+                _(L"GO"), dc);
             }
         }
 
@@ -1749,7 +1752,11 @@ namespace Wisteria::GraphItems
         textRect.SetHeight(dcRect.GetHeight() * math_constants::half);
         textRect.Offset(wxPoint(frameWidth, frameWidth));
 
-        Label boardText(GraphItemInfo(_("ABC")).FontColor(*wxWHITE).Pen(wxNullPen).
+        Label boardText(
+            GraphItemInfo(
+                /* TRANSLATORS: Simple placeholder text of any sort */
+                _("ABC")).
+            FontColor(*wxWHITE).Pen(wxNullPen).
             DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()));
         boardText.GetFont().MakeBold().SetFaceName(Label::GetFirstAvailableCursiveFont());
         boardText.SetBoundingBox(textRect, dc, GetScaling());
