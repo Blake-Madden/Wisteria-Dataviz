@@ -12,8 +12,8 @@
 #ifndef __WISTERIA_GRAPH_ITEMS_H__
 #define __WISTERIA_GRAPH_ITEMS_H__
 
+#include "../i18n-check/src/donttranslate.h"
 #include "../math/mathematics.h"
-#include "../util/donttranslate.h"
 #include "enums.h"
 #include "icons.h"
 #include "settings.h"
@@ -317,7 +317,7 @@ namespace Wisteria
             TextAlignment m_alignment{ TextAlignment::FlushLeft };
             bool m_enabled{ false };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
-            wxColour m_fontColor{ *wxBLACK };
+            wxColour m_fontColor{ 0, 0, 0 };
             double m_relativeScaling{ 1.0 };
             };
 
@@ -843,8 +843,8 @@ namespace Wisteria
             bool m_fitCanvasRowToContent{ false };
             bool m_fitContentWidthToCanvas{ false };
             // labels and drawing
-            wxPen m_pen{ *wxBLACK_PEN };
-            wxBrush m_brush{ *wxWHITE_BRUSH };
+            wxPen m_pen{ wxColour{ 0, 0, 0 } };
+            wxBrush m_brush{ wxColour{ 255, 255, 255 } };
             wxBrush m_selectionBrush{ wxNullBrush };
             std::bitset<4> m_outline{ 0 };
             /// @brief A color to show under the brush if it is hatch pattern.
@@ -861,7 +861,7 @@ namespace Wisteria
             PageHorizontalAlignment m_pageHorizontalAlignment{
                 PageHorizontalAlignment::LeftAligned
             };
-            wxColour m_textColor{ *wxBLACK };
+            wxColour m_textColor{ 0, 0, 0 };
             wxColour m_textBgColor{ wxNullColour };
             wxString m_text;
             LabelStyle m_labelStyle{ LabelStyle::NoLabelStyle };
@@ -1414,8 +1414,8 @@ namespace Wisteria
                 @note By default, this is optional until the client calls
                     SetMinimumUserSizeDIPs().\n
                     This is the minimum size that the client has requested,
-                    which may or may not be the same as the actual content's size
-                    (including text, padding, icons, etc.).
+                   which may or may not be the same as the actual content's size
+                   (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserWidthDIPs().
                 @returns The minimum user width.*/
             [[nodiscard]]
