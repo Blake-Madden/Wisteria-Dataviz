@@ -1513,7 +1513,9 @@ namespace Wisteria::Graphs
         // homogenize cells' text scaling to the smallest size and add them
         for (auto& cellLabel : cellLabels)
             {
+            const wxRect bBox = cellLabel->GetBoundingBox(dc);
             cellLabel->SetScaling(smallestTextScaling);
+            cellLabel->SetBoundingBox(bBox, dc, GetScaling());
             // if using page alignment other than left aligned, then adjust its position
             if (horizontalAlignmentOffset > 0 || verticalAlignmentOffset > 0)
                 {
