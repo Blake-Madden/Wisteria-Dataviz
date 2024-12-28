@@ -1873,7 +1873,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 L"Name of variable from dataset"),
             _(L"Advanced Features") });
         likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
-            LR"(Standard, "out-of-the-box" graph support is important to me)",
+            _DT(LR"(Standard, "out-of-the-box" graph support is important to me)",
+                DTExplanation::Syntax, L"Name of variable from dataset"),
             _DT(L"Data importing features are important to me", DTExplanation::Syntax,
                 L"Name of variable from dataset"),
             _(L"Standard Features") });

@@ -252,6 +252,7 @@ namespace Wisteria::Graphs
                     {
                     br.GetLabel().SetText(
                         taskInfo.m_percentFinished == 100 ?
+                            // TRANSLATORS: \x2713 is a checkmark character
                             _(L"\x2713 Complete") :
                             wxString::Format(_(L"%d%% complete"), taskInfo.m_percentFinished));
                     }
@@ -266,20 +267,24 @@ namespace Wisteria::Graphs
                     decalStr = taskInfo.m_resource;
                     break;
                 case TaskLabelDisplay::ResourceAndDays:
-                    decalStr = wxString::Format(_(L"%s\n%d days"), taskInfo.m_resource, daysInTask);
+                    decalStr = wxString::Format(
+                        // TRANSLATORS: %s -> task resource, %d -> number of days for a task
+                        _(L"%s\n%d days"), taskInfo.m_resource, daysInTask);
                     break;
                 case TaskLabelDisplay::Description:
                     decalStr = taskInfo.m_description;
                     break;
                 case TaskLabelDisplay::DescriptionAndDays:
-                    decalStr =
-                        wxString::Format(_(L"%s\n%d days"), taskInfo.m_description, daysInTask);
+                    decalStr = wxString::Format(
+                        // TRANSLATORS: %s -> task description, %d -> number of days for a task
+                        _(L"%s\n%d days"), taskInfo.m_description, daysInTask);
                     break;
                 case TaskLabelDisplay::ResourceAndDescription:
                     decalStr = taskInfo.m_resource + L"\n" + taskInfo.m_description;
                     break;
                 case TaskLabelDisplay::ResourceDescriptionAndDays:
                     decalStr = wxString::Format(
+                        // TRANSLATORS: %s -> task description, %d -> number of days for a task
                         _(L"%s\n%d days"),
                         wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).Trim(),
                         daysInTask);
