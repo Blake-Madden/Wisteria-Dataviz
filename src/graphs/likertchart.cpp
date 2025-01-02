@@ -1098,8 +1098,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_negativeRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_negativeRate, 0,
@@ -1124,8 +1124,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_positiveRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_positiveRate, 0,
@@ -1149,8 +1149,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_neutralRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_neutralRate,
@@ -1178,8 +1178,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_naRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_naRate,
@@ -1315,8 +1315,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negativeRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_negativeRate, 0,
@@ -1339,8 +1339,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positiveRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_positiveRate, 0,
@@ -1366,8 +1366,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_neutralRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_neutralRate, 0,
@@ -1395,8 +1395,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_naRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_naRate, 0,
@@ -1470,8 +1470,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative1Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_negative1Rate, 0,
@@ -1489,8 +1489,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative2Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_negative2Rate, 0,
@@ -1508,8 +1508,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive1Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_positive1Rate, 0,
@@ -1527,8 +1527,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive2Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_positive2Rate, 0,
@@ -1550,8 +1550,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_neutralRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_neutralRate,
@@ -1575,8 +1575,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_naRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_naRate,
@@ -1705,8 +1705,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative1Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_negative1Rate, 0,
@@ -1725,8 +1725,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative2Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
-                                      wxString::Format(
+                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_negative2Rate, 0,
@@ -1745,8 +1745,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive1Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_positive1Rate, 0,
@@ -1765,8 +1765,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive2Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_positive2Rate, 0,
@@ -1789,8 +1789,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_neutralRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_neutralRate, 0,
@@ -1814,8 +1814,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_naRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_naRate, 0,
@@ -1886,8 +1886,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative1Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_negative1Rate, 0,
@@ -1905,8 +1905,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative2Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_negative2Rate, 0,
@@ -1924,8 +1924,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative3Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_negative3Rate, 0,
@@ -1943,8 +1943,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive1Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_positive1Rate, 0,
@@ -1962,8 +1962,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive2Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_positive2Rate, 0,
@@ -1981,8 +1981,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive3Rate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_positive3Rate, 0,
@@ -2005,8 +2005,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_neutralRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_neutralRate,
@@ -2030,8 +2030,8 @@ namespace Wisteria::Graphs
                       .Decal(Label(
                           GraphItemInfo(
                               (IsShowingPercentages() && question.m_naRate > 0) ?
-                                  // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                   wxString::Format(
+                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
                                           question.m_naRate,
@@ -2163,8 +2163,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative1Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_negative1Rate, 0,
@@ -2183,8 +2183,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative2Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_negative2Rate, 0,
@@ -2203,8 +2203,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative3Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_negative3Rate, 0,
@@ -2223,8 +2223,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive1Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_positive1Rate, 0,
@@ -2243,8 +2243,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive2Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_positive2Rate, 0,
@@ -2263,8 +2263,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive3Rate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_positive3Rate, 0,
@@ -2288,8 +2288,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_neutralRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_neutralRate, 0,
@@ -2313,8 +2313,8 @@ namespace Wisteria::Graphs
                           .Decal(Label(
                               GraphItemInfo(
                                   (IsShowingPercentages() && category->m_naRate > 0) ?
-                                      // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       wxString::Format(
+                                          // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
                                               category->m_naRate, 0,
