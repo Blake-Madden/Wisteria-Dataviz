@@ -576,8 +576,6 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcRightTitles(wxDC& dc, const long spacingWidth)
         {
-        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-            GetBackgroundColor()) };
         long rightMarginWidth{ 0 };
         long position = GetCanvasRect(dc).GetWidth() - spacingWidth;
         // add the right titles
@@ -607,8 +605,6 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcTopTitles(wxDC& dc, const long spacingWidth)
         {
-        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-            GetBackgroundColor()) };
         long topMarginHeight{ 0 };
         // add the top titles
         for (auto& title : m_topTitles)
@@ -635,8 +631,6 @@ namespace Wisteria
     //----------------------------------------------------------------
     long Canvas::CalcBottomTitles(wxDC& dc, const long spacingWidth)
         {
-        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-            GetBackgroundColor()) };
         long bottomMarginHeight{ 0 };
         long position = GetCanvasRect(dc).GetHeight() - spacingWidth;
         // add the bottom titles

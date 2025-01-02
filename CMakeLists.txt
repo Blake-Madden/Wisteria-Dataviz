@@ -3,102 +3,101 @@
 # Purpose:     Build script for Wisteria Dataviz library and demo project
 # Author:      Blake Madden
 # Created:     2022-01-17
-# Copyright:   (c) 2005-2022 Blake Madden
+# Copyright:   (c) 2005-2024 Blake Madden
 # License:     3-Clause BSD license
 #############################################################################
 
 # Declare the minimum required CMake version
-# Note that CMake 3.24 is needed if compiling wxWidgets 3.2
-CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
-SET(CMAKE_CXX_STANDARD 20)
-SET(CMAKE_CXX_STANDARD_REQUIRED True)
+cmake_minimum_required(VERSION 3.25)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-IF(NOT CMAKE_CONFIGURATION_TYPES)
-    GET_PROPERTY(HAVE_MULTI_CONFIG_GENERATOR GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    get_property(HAVE_MULTI_CONFIG_GENERATOR GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     # Set default configuration types for multi-config generators
-    IF(HAVE_MULTI_CONFIG_GENERATOR)
-        SET(CMAKE_CONFIGURATION_TYPES "Debug;Release")
-    ENDIF()
-ENDIF()
+    if(HAVE_MULTI_CONFIG_GENERATOR)
+        set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+    endif()
+endif()
 
 # https://blog.kitware.com/cmake-and-the-default-build-type/
-IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    SET(default_build_type "Debug")
-    MESSAGE(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-    SET(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(default_build_type "Debug")
+    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
-    SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
-ENDIF()
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+endif()
 
-PROJECT(Wisteria)
+project(Wisteria)
 
-# Build the documentation (not available on Windows)
+# Build the documentation
 ########################
-IF(NOT WIN32)
-    # https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
-    FIND_PACKAGE(Doxygen)
-    IF(DOXYGEN_FOUND)
-        # set input and output files
-        SET(DOXYGEN_IN "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile")
-        IF(EXISTS ${DOXYGEN_IN})
-            MESSAGE("Doxygen build started")
+find_package(Doxygen)
+if(TARGET doxygen-docs)
+    if(NOT DOXYGEN_FOUND)
+        message(STATUS "Doxygen not found. API documentation cannot be generated.")
+    endif()
+endif()
 
-            # note the option ALL which allows to build the docs together with the application
-            ADD_CUSTOM_TARGET( doc_doxygen ALL
-                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
-                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
-                COMMENT "Generating API documentation with Doxygen"
-                VERBATIM )
-        ELSE()
-            MESSAGE("Doxygen project file missing (${DOXYGEN_IN}).")
-        ENDIF()
-    ELSE(DOXYGEN_FOUND)
-        MESSAGE("Doxygen not found. API documentation will not be generated.")
-    ENDIF()
-ENDIF()
+add_custom_target(doxygen-docs
+            COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM)
 
-# Setup wxWidgets
+# Setup wxWidgets (can be 1-5 folders up from here)
 ########################
+include(cmake/folders.cmake)
 
-# Linux: install the wxWidgets development files to your system
-# Windows: set wxWidgets_ROOT_DIR to the wxWidgets root path
+# Find wxWidgets (wxWidgetsConfig.cmake, specifically) and select its components
+find_directory("wxWidgets" wxWidgets_BASEDIR)
+if(WIN32)
+    set(wxWidgets_DIR "${wxWidgets_BASEDIR}/out/install/x64-${CMAKE_BUILD_TYPE}/lib/cmake/wxWidgets")
+elseif(UNIX)
+    set(wxWidgets_DIR "${wxWidgets_BASEDIR}/wxlib/lib/cmake/wxWidgets")
+endif()
 
-# Find wxWidgets and select its components
-FIND_PACKAGE(wxWidgets REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
-# Include the wxWidgets use file to initialize various settings
-INCLUDE(${wxWidgets_USE_FILE})
-MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
-MESSAGE(STATUS "Adding wxWidgets configuration file: ${wxWidgets_CONFIGURATION}/wx/setup.h")
+message(STATUS "Adding wxWidgets CMake config folder: ${wxWidgets_DIR}")
+if(NOT EXISTS "${wxWidgets_DIR}/wxWidgetsConfig.cmake" AND NOT EXISTS "${wxWidgets_DIR}/wxwidgets-config.cmake")
+    message(WARNING "Cannot find wxWidgets CMake configuration. (Looked in ${wxWidgets_DIR}.)")
+endif()
+set(wxWidgets_USE_STATIC 1)
+find_package(wxWidgets 3.3 COMPONENTS core base xrc propgrid xml aui ribbon qa stc net richtext REQUIRED CONFIG)
+message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
+message(STATUS "Adding wxWidgets: ${wxPLATFORM_LIB_DIR}")
 
-IF(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
     # OS version (this has to be set before the first project() call)
-    IF(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-        SET(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "iOS Deployment Target")
-    ELSE()
-        SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.10 CACHE STRING "macOS Deployment Target")
-    ENDIF()
-ENDIF()
+    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "iOS Deployment Target")
+    else()
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10 CACHE STRING "macOS Deployment Target")
+    endif()
+endif()
 
-ADD_COMPILE_OPTIONS("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 # Build Wisteria library
 ########################
 # (run "tools/Build CMake Files List.R" to update this)
-INCLUDE(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
-ADD_LIBRARY(WisteriaLib STATIC ${WISTERIA_SRC})
-# Add OpenMP for mutlithreading
-FIND_PACKAGE(OpenMP)
-IF(OpenMP_CXX_FOUND)
-    MESSAGE(STATUS "OpenMP available; will be included.")
-    TARGET_LINK_LIBRARIES(WisteriaLib PUBLIC OpenMP::OpenMP_CXX)
-ENDIF()
-TARGET_INCLUDE_DIRECTORIES(WisteriaLib PUBLIC ${wxWidgets_INCLUDE_DIRS})
+include(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
+set(WISTIER_LIB wisteria)
+add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
+if(WIN32)
+    target_link_libraries(${WISTIER_LIB} PUBLIC ${wxWidgets_LIBRARIES})
+elseif(UNIX)
+    # Add OpenMP for mutlithreading
+    find_package(OpenMP)
+    find_library(TBB_LIB tbb)
+    target_link_libraries(${WISTIER_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
+endif()
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
-IF(MSVC)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
+if(MSVC)
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
@@ -114,73 +113,67 @@ IF(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
+    target_compile_options(${WISTIER_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
-ELSEIF(MINGW OR MSYS)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__
+elseif(MINGW OR MSYS)
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__
             $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
-# TODO: Experimental code for macOS (undergoing testing currently)
-ELSEIF(APPLE)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__
+elseif(APPLE)
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXOSX__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
-ELSEIF(UNIX)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__
+elseif(UNIX)
+    target_compile_definitions(${WISTIER_LIB} PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
-ENDIF()
+endif()
 
 # Build the library demo
 ########################
-SET(DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/demo.cpp)
+set(DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/demo.cpp)
 
-IF(WIN32)
+if(WIN32)
     # Include an RC file and HiDPI manifest for Windows (provided by wxWidgets)
-    SET(wxUSE_DPI_AWARE_MANIFEST 1)
-    LIST(APPEND DEMO_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx.rc)
-    LIST(APPEND DEMO_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
-ELSEIF(APPLE)
+    set(wxUSE_DPI_AWARE_MANIFEST 1)
+    list(APPEND DEMO_SRC_FILES "${wxWidgets_BASEDIR}/include/wx/msw/wx.rc")
+    list(APPEND DEMO_SRC_FILES "${wxWidgets_BASEDIR}/include/wx/msw/wx_dpi_aware.manifest")
+elseif(APPLE)
     # Add an icon for the apple .app file
-    LIST(APPEND DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/wxmac.icns)
-ENDIF()
+    list(APPEND DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/wisteria-dv.icns)
+endif()
 
 # Define the build target for the executable and copy it into the "demo" subfolder
-MESSAGE(STATUS "Building the demonstration program...")
-SET(DEMO_APP WisteriaDemo)
-ADD_EXECUTABLE(${DEMO_APP} WIN32 MACOSX_BUNDLE ${DEMO_SRC_FILES})
-SET_TARGET_PROPERTIES(${DEMO_APP} PROPERTIES
+message(STATUS "Configuring demonstration program...")
+set(DEMO_APP demo)
+add_executable(${DEMO_APP} WIN32 MACOSX_BUNDLE ${DEMO_SRC_FILES})
+set_target_properties(${DEMO_APP} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/demo")
 
 # Link required libraries to the executable
-IF(WIN32)
-    TARGET_LINK_LIBRARIES(${DEMO_APP} WisteriaLib ${wxWidgets_LIBRARIES})
-ELSEIF(UNIX)
-    FIND_LIBRARY(TBB_LIB tbb)
-    TARGET_LINK_LIBRARIES(${DEMO_APP} WisteriaLib ${wxWidgets_LIBRARIES} ${TBB_LIB})
-ENDIF()
+target_link_libraries(${DEMO_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
 
 # Copy resources and datasets into build folder
-MESSAGE(STATUS "Copying demo resources...")
-ADD_CUSTOM_COMMAND(TARGET ${DEMO_APP}
+message(STATUS "Copying demo resources...")
+add_custom_command(TARGET ${DEMO_APP}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_SOURCE_DIR}/demo/res $<TARGET_FILE_DIR:${DEMO_APP}>/res)
-ADD_CUSTOM_COMMAND(TARGET ${DEMO_APP}
+add_custom_command(TARGET ${DEMO_APP}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_SOURCE_DIR}/datasets $<TARGET_FILE_DIR:${DEMO_APP}>/datasets)
 
-IF(APPLE)
-    SET_TARGET_PROPERTIES(${DEMO_APP} PROPERTIES
-        RESOURCE "demo/wxmac.icns"
-        MACOSX_BUNDLE_ICON_FILE wxmac.icns
+if(APPLE)
+    set_target_properties(${DEMO_APP} PROPERTIES
+        RESOURCE wisteria-dv.icns
+        MACOSX_BUNDLE_ICON_FILE wisteria-dv.icns
         MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.demo")
-ENDIF()
+endif()
 
 # Build the app (not currently available)
 ########################
@@ -196,11 +189,11 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteria
         LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
     ELSEIF(APPLE)
         # Add an icon for the apple .app file
-        LIST(APPEND APP_SRC_FILES ${CMAKE_SOURCE_DIR}/app/wxmac.icns)
+        LIST(APPEND APP_SRC_FILES ${CMAKE_SOURCE_DIR}/wisteria-dv.icns)
     ENDIF()
 
     # Define the build target for the executable and copy it into the "app" subfolder
-    MESSAGE(STATUS "Building the program...")
+    MESSAGE(STATUS "Configuring the program...")
     SET(WISTERIA_APP WisteriaDV)
     ADD_EXECUTABLE(${WISTERIA_APP} WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
     SET_TARGET_PROPERTIES(${WISTERIA_APP} PROPERTIES
@@ -208,10 +201,10 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteria
 
     # Link required libraries to the executable
     IF(WIN32)
-        TARGET_LINK_LIBRARIES(${WISTERIA_APP} WisteriaLib ${wxWidgets_LIBRARIES})
+        TARGET_LINK_LIBRARIES(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES})
     ELSEIF(UNIX)
         FIND_LIBRARY(TBB_LIB tbb)
-        TARGET_LINK_LIBRARIES(${WISTERIA_APP} WisteriaLib ${wxWidgets_LIBRARIES} ${TBB_LIB})
+        TARGET_LINK_LIBRARIES(${WISTERIA_APP} ${WISTIER_LIB} ${wxWidgets_LIBRARIES} ${TBB_LIB})
     ENDIF()
 
     # Copy resources and datasets into build folder
@@ -227,8 +220,8 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteria
 
     IF(APPLE)
         SET_TARGET_PROPERTIES(${WISTERIA_APP} PROPERTIES
-            RESOURCE "app/wxmac.icns"
-            MACOSX_BUNDLE_ICON_FILE wxmac.icns
+            RESOURCE wisteria-dv.icns
+            MACOSX_BUNDLE_ICON_FILE wisteria-dv.icns
             MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
             MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.app")
     ENDIF()
