@@ -16,7 +16,7 @@ wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
-using namespace Wisteria::GraphItems;
+    using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 using namespace Wisteria::UI;
 
@@ -447,8 +447,8 @@ namespace Wisteria
     Canvas::Canvas(wxWindow* parent, int itemId, const wxPoint& pos, const wxSize& size,
                    const long flags)
         : wxScrolledWindow(parent, itemId, pos, size,
-                           flags | wxBORDER_NONE | wxVSCROLL | wxHSCROLL |
-                               wxALWAYS_SHOW_SB | wxFULL_REPAINT_ON_RESIZE)
+                           flags | wxBORDER_NONE | wxVSCROLL | wxHSCROLL | wxALWAYS_SHOW_SB |
+                               wxFULL_REPAINT_ON_RESIZE)
         {
         m_watermarkFont.MakeBold();
         SetCanvasMinWidthDIPs(GetDefaultCanvasWidthDIPs());
@@ -467,14 +467,11 @@ namespace Wisteria
 
         m_resizeTimer.SetOwner(this);
 
-        Bind(
-            wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomIn(); }, wxID_ZOOM_IN);
+        Bind(wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomIn(); }, wxID_ZOOM_IN);
 
-        Bind(
-            wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomOut(); }, wxID_ZOOM_OUT);
+        Bind(wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomOut(); }, wxID_ZOOM_OUT);
 
-        Bind(
-            wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomReset(); }, wxID_ZOOM_FIT);
+        Bind(wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomReset(); }, wxID_ZOOM_FIT);
 
         Bind(wxEVT_TIMER,
              [this]([[maybe_unused]] wxTimerEvent&)
@@ -484,7 +481,7 @@ namespace Wisteria
                  OnResize(event);
                  Refresh();
                  Update();
-            });
+             });
 
         Bind(wxEVT_KEY_DOWN, &Canvas::OnKeyDown, this);
         Bind(wxEVT_PAINT, &Canvas::OnPaint, this);
@@ -518,10 +515,38 @@ namespace Wisteria
         }
 
     //----------------------------------------------------------------
-    long Canvas::CalcLeftTitles(wxDC& dc, const long spacingWidth)
+    void Canvas::ContrastTitleLabel(GraphItems::Label& title)
         {
         const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
             GetBackgroundColor()) };
+        if (title.GetFontBackgroundColor().IsOk() &&
+            title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
+            {
+            if (title.GetFontBackgroundColor() == GetBackgroundColor())
+                {
+                title.SetFontBackgroundColor(contrastingColor);
+                }
+            }
+        else if (title.GetFontColor().IsOk() &&
+                 title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                 title.GetFontColor() == GetBackgroundColor())
+            {
+            title.SetFontColor(contrastingColor);
+            }
+        if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
+            title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+            title.GetHeaderInfo().GetFontColor() == GetBackgroundColor() &&
+            // if a font background color is valid, then don't adjust the font color
+            !(title.GetFontBackgroundColor().IsOk() &&
+              title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT))
+            {
+            title.GetHeaderInfo().FontColor(contrastingColor);
+            }
+        }
+
+    //----------------------------------------------------------------
+    long Canvas::CalcLeftTitles(wxDC& dc, const long spacingWidth)
+        {
         long leftMarginWidth{ 0 };
         // add the left titles
         for (auto& title : m_leftTitles)
@@ -542,24 +567,7 @@ namespace Wisteria
             leftMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             // contrast the title if its font color (or background color, if in use)
             // is the same as the canvas background
-            if (title.GetFontBackgroundColor().IsOk() &&
-                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetFontBackgroundColor() == GetBackgroundColor())
-                {
-                title.SetFontBackgroundColor(contrastingColor);
-                }
-            else if (title.GetFontColor().IsOk() &&
-                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                     title.GetFontColor() == GetBackgroundColor())
-                {
-                title.SetFontColor(contrastingColor);
-                }
-            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
-                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
-                {
-                title.GetHeaderInfo().FontColor(contrastingColor);
-                }
+            ContrastTitleLabel(title);
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return leftMarginWidth;
@@ -590,24 +598,7 @@ namespace Wisteria
                     PageVerticalAlignment::BottomAligned);
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
-            if (title.GetFontBackgroundColor().IsOk() &&
-                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetFontBackgroundColor() == GetBackgroundColor())
-                {
-                title.SetFontBackgroundColor(contrastingColor);
-                }
-            else if (title.GetFontColor().IsOk() &&
-                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                     title.GetFontColor() == GetBackgroundColor())
-                {
-                title.SetFontColor(contrastingColor);
-                }
-            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
-                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
-                {
-                title.GetHeaderInfo().FontColor(contrastingColor);
-                }
+            ContrastTitleLabel(title);
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return rightMarginWidth;
@@ -635,24 +626,7 @@ namespace Wisteria
                     PageHorizontalAlignment::RightAligned :
                     PageHorizontalAlignment::LeftAligned);
             topMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            if (title.GetFontBackgroundColor().IsOk() &&
-                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetFontBackgroundColor() == GetBackgroundColor())
-                {
-                title.SetFontBackgroundColor(contrastingColor);
-                }
-            else if (title.GetFontColor().IsOk() &&
-                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                     title.GetFontColor() == GetBackgroundColor())
-                {
-                title.SetFontColor(contrastingColor);
-                }
-            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
-                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
-                {
-                title.GetHeaderInfo().FontColor(contrastingColor);
-                }
+            ContrastTitleLabel(title);
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return topMarginHeight;
@@ -682,24 +656,7 @@ namespace Wisteria
                     PageHorizontalAlignment::LeftAligned);
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             bottomMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            if (title.GetFontBackgroundColor().IsOk() &&
-                title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetFontBackgroundColor() == GetBackgroundColor())
-                {
-                title.SetFontBackgroundColor(contrastingColor);
-                }
-            else if (title.GetFontColor().IsOk() &&
-                     title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                     title.GetFontColor() == GetBackgroundColor())
-                {
-                title.SetFontColor(contrastingColor);
-                }
-            if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
-                title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                title.GetHeaderInfo().GetFontColor() == GetBackgroundColor())
-                {
-                title.GetHeaderInfo().FontColor(contrastingColor);
-                }
+            ContrastTitleLabel(title);
             GetTitles().push_back(std::make_unique<GraphItems::Label>(title));
             }
         return bottomMarginHeight;

@@ -859,6 +859,10 @@ namespace Wisteria
         [[nodiscard]]
         long CalcBottomTitles(wxDC& dc, const long spacingWidth);
 
+        /** @brief Contrasts a title label against the canvas.
+            @param[in,out] title The title lable to contrast.*/
+        void ContrastTitleLabel(GraphItems::Label& title);
+
         /// @returns The top-level floating (i.e., not anchored) object on the
         ///     canvas located at @c pt.
         /// @param pt The point to look at.

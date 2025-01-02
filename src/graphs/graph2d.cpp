@@ -36,10 +36,12 @@ namespace Wisteria::Graphs
             // contrast a label if its font color (or background color, if in use)
             // is the same as the background
             if (label.GetFontBackgroundColor().IsOk() &&
-                label.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                label.GetFontBackgroundColor() == GetPlotOrCanvasColor())
+                label.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
                 {
-                label.SetFontBackgroundColor(contrastingColor);
+                if (label.GetFontBackgroundColor() == GetPlotOrCanvasColor())
+                    {
+                    label.SetFontBackgroundColor(contrastingColor);
+                    }
                 }
             else if (label.GetFontColor().IsOk() &&
                      label.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
@@ -50,7 +52,10 @@ namespace Wisteria::Graphs
 
             if (label.GetHeaderInfo().IsEnabled() && label.GetHeaderInfo().GetFontColor().IsOk() &&
                 label.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
-                label.GetHeaderInfo().GetFontColor() == GetPlotOrCanvasColor())
+                label.GetHeaderInfo().GetFontColor() == GetPlotOrCanvasColor() &&
+                // if a font background color is valid, then don't adjust the font color
+                !(label.GetFontBackgroundColor().IsOk() &&
+                  label.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT))
                 {
                 label.GetHeaderInfo().FontColor(contrastingColor);
                 }
