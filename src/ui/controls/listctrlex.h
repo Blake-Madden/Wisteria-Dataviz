@@ -338,7 +338,7 @@ namespace Wisteria::UI
             if (m_enableFileDelete)
                 {
                 m_enableItemDelete = true;
-                m_deletePrompt = _(L"Do you wish to delete the selected file(s)?");
+                m_deletePrompt = _(L"Do you wish to delete the selected files?");
                 }
             }
 

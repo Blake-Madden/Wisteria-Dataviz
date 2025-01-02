@@ -30,19 +30,19 @@ namespace Wisteria::UI
         auto buttonsSizer = new wxGridSizer(
             4, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
 
-        wxButton* button = new wxButton(this, wxID_OPEN, _(L"&Open File(s)..."));
+        wxButton* button = new wxButton(this, wxID_OPEN, _(L"&Open Files..."));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
 #ifdef __WXMSW__
-        button = new wxButton(this, ID_FOLDER_OPEN, _(L"Open &Folder(s)..."));
+        button = new wxButton(this, ID_FOLDER_OPEN, _(L"Open &Folders..."));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 #endif
 
-        button = new wxButton(this, wxID_DELETE, _(L"&Delete File(s)"));
+        button = new wxButton(this, wxID_DELETE, _(L"&Delete Files"));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());

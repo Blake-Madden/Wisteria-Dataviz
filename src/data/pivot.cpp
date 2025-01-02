@@ -52,7 +52,7 @@ namespace Wisteria::Data
             }
         else if (IdColumns.empty())
             {
-            throw std::runtime_error(_(L"ID column(s) required to pivot dataset.").ToUTF8());
+            throw std::runtime_error(_(L"ID column is required to pivot dataset.").ToUTF8());
             }
 
         std::set<PivotedWiderRow> pivotedRows;
@@ -272,16 +272,16 @@ namespace Wisteria::Data
             }
         else if (columnsToKeep.empty())
             {
-            throw std::runtime_error(_(L"ID column(s) required to pivot dataset.").ToUTF8());
+            throw std::runtime_error(_(L"ID column is required to pivot dataset.").ToUTF8());
             }
         else if (fromColumns.empty())
             {
-            throw std::runtime_error(_(L"'From' column(s) required to pivot dataset.").ToUTF8());
+            throw std::runtime_error(_(L"'From' column is required to pivot dataset.").ToUTF8());
             }
         else if (namesTo.empty())
             {
             throw std::runtime_error(
-                _(L"'Names to' column(s) required to pivot dataset.").ToUTF8());
+                _(L"'Names to' column is required to pivot dataset.").ToUTF8());
             }
         else if (namesTo.size() > 1 && namesPattern.empty())
             {
