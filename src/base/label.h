@@ -12,13 +12,13 @@
 #ifndef __WISTERIA_CANVASLABEL_H__
 #define __WISTERIA_CANVASLABEL_H__
 
-#include <vector>
+#include "graphitems.h"
 #include <string_view>
-#include <wx/wx.h>
-#include <wx/tokenzr.h>
+#include <vector>
 #include <wx/fontenum.h>
 #include <wx/regex.h>
-#include "graphitems.h"
+#include <wx/tokenzr.h>
+#include <wx/wx.h>
 
 // forward declares
 namespace Wisteria
@@ -30,14 +30,14 @@ namespace Wisteria::Graphs
     {
     class Graph2D;
     class HeatMap;
-    }
+    } // namespace Wisteria::Graphs
 
 namespace Wisteria::GraphItems
     {
     class Points2D;
     class GraphItemBase;
     class Axis;
-    }
+    } // namespace Wisteria::GraphItems
 
 namespace Wisteria::GraphItems
     {
@@ -53,7 +53,8 @@ namespace Wisteria::GraphItems
         friend class Axis;
         friend class Points2D;
         friend class GraphItemBase;
-    public:
+
+      public:
         /// @private
         Label() noexcept
             {
@@ -61,20 +62,20 @@ namespace Wisteria::GraphItems
             ShowLabelWhenSelected(false);
             GetPen() = wxNullPen;
             }
+
         /** @brief Constructor.
             @param itemInfo Base plot object settings.*/
-        explicit Label(const GraphItems::GraphItemInfo& itemInfo) :
-              GraphItemBase(itemInfo)
+        explicit Label(const GraphItems::GraphItemInfo& itemInfo) : GraphItemBase(itemInfo)
             {
             GetGraphItemInfo().Outline(true, true, true, true);
             ShowLabelWhenSelected(false);
             InvalidateCachedBoundingBox();
             CalcLongestLineLength();
             }
+
         /** @brief Constructor.
             @param text The text to display on the label.*/
-        explicit Label(const wxString& text) :
-              GraphItemBase(1.0f, text)
+        explicit Label(const wxString& text) : GraphItemBase(1.0f, text)
             {
             GetGraphItemInfo().Outline(true, true, true, true);
             GetPen() = wxNullPen;
@@ -94,7 +95,7 @@ namespace Wisteria::GraphItems
         static constexpr wxCoord GetMinLegendWidthDIPs() noexcept
             {
             return Wisteria::Icons::LegendIcon::GetIconWidthDIPs() +
-                   2/* 1 DIP on each side of icon*/;
+                   2 /* 1 DIP on each side of icon*/;
             }
 
         /// @brief Gets/sets the lines that are drawn ignoring the left margin.
@@ -102,11 +103,16 @@ namespace Wisteria::GraphItems
         /// @returns The lines ignoring (left) margins.
         [[nodiscard]]
         std::set<size_t>& GetLinesIgnoringLeftMargin() noexcept
-            { return m_linesIgnoringLeftMargin; }
+            {
+            return m_linesIgnoringLeftMargin;
+            }
+
         /// @private
         [[nodiscard]]
         const std::set<size_t>& GetLinesIgnoringLeftMargin() const noexcept
-            { return m_linesIgnoringLeftMargin; }
+            {
+            return m_linesIgnoringLeftMargin;
+            }
 
         /// @name Text Functions
         /// @brief Functions for settings and editing the label's text.
@@ -183,21 +189,28 @@ namespace Wisteria::GraphItems
         /// @returns Number of lines of text in the label.
         [[nodiscard]]
         size_t GetLineCount() const noexcept
-            { return m_lineCount; }
+            {
+            return m_lineCount;
+            }
+
         /// @returns Number of lines of text in the label, ignoring the header (if enabled).
         [[nodiscard]]
         size_t GetLineCountWithoutHeader() const noexcept
-            { return m_lineCount - (GetHeaderInfo().IsEnabled() ? 1 : 0); }
+            {
+            return m_lineCount - (GetHeaderInfo().IsEnabled() ? 1 : 0);
+            }
+
         /// @returns The number of characters from the longest line of text in the label.
         [[nodiscard]]
         size_t GetLongestLineLength() const noexcept
             {
             // make sure this was cached properly
             assert(((GetText().empty() && m_longestLineLength == 0) ||
-                (GetText().length() > 0 && m_longestLineLength > 0)) &&
-                L"Longest line length in label was not calculated!");
+                    (GetText().length() > 0 && m_longestLineLength > 0)) &&
+                   L"Longest line length in label was not calculated!");
             return m_longestLineLength;
             }
+
         /// @}
 
         /// @name Style Functions
@@ -207,32 +220,35 @@ namespace Wisteria::GraphItems
         /// @returns How the corners are drawn.
         [[nodiscard]]
         BoxCorners GetBoxCorners() const noexcept
-            { return m_boxCorners; }
+            {
+            return m_boxCorners;
+            }
+
         /** @brief Sets how the corners are drawn.
             @details Only relevant if drawing an outline.
             @param boxCorners The corner display to use.*/
-        void SetBoxCorners(const BoxCorners boxCorners) noexcept
-            { m_boxCorners = boxCorners; }
+        void SetBoxCorners(const BoxCorners boxCorners) noexcept { m_boxCorners = boxCorners; }
 
         /** @brief Tilts the text by the provided degree.
             @param tiltAngle The angle to tilt the text.
             @warning The bounding box of the label will not take this tilt into account.
                 This will enable vertical labels with a slight tilt to blend with each other
                 without creating large negative spaces between them.*/
-        void Tilt(const double tiltAngle) noexcept
-            { m_tiltAngle = tiltAngle; }
+        void Tilt(const double tiltAngle) noexcept { m_tiltAngle = tiltAngle; }
 
         /** @returns The number of pixels between lines.
             @warning This will need to be scaled when being drawn or measured.*/
         [[nodiscard]]
         double GetLineSpacing() const noexcept
-            { return m_spacingBetweenLines; }
+            {
+            return m_spacingBetweenLines;
+            }
+
         /** @brief Sets the number of DIPs between lines (if label is multiline).
             @param spacing The number of DIPs to space between lines.
             @note This is in DIPS; the framework will scale this to the current DPI and zoom
                 level for you.*/
-        void SetLineSpacing(const double spacing) noexcept
-            { m_spacingBetweenLines = spacing; }
+        void SetLineSpacing(const double spacing) noexcept { m_spacingBetweenLines = spacing; }
 
         /** @brief Adds an image to the left side of the text.
             @details This is a shortcut for creating a whole-image legend for the label.\n
@@ -240,8 +256,8 @@ namespace Wisteria::GraphItems
                 the height will be scaled to the height of the text (preserving the aspect ratio).
             @warning This will reset any legend that the label currently has.
             @param bmp The image to use.*/
-        void SetLeftImage(const wxBitmapBundle& bmp)
-            { m_leftImage = bmp; }
+        void SetLeftImage(const wxBitmapBundle& bmp) { m_leftImage = bmp; }
+
         /** @brief Adds an image to the top side of the text.
             @details The image's size will be its original size,
                 but the width will be scaled to the width of the text if necessary
@@ -256,6 +272,7 @@ namespace Wisteria::GraphItems
             m_topImage = bmp;
             m_topImageOffset = offset;
             }
+
         /// @}
 
         /// @name Bounding Box Functions
@@ -279,14 +296,27 @@ namespace Wisteria::GraphItems
                 width- and length-wise, then it will be anchored.\n
                 Call SetAnchoring() to control how it is anchored.
             @sa SetBoundingBoxToContentAdjustment().*/
-        void SetBoundingBox(const wxRect& rect, wxDC& dc, [[maybe_unused]] const double parentScaling) final;
+        void SetBoundingBox(const wxRect& rect, wxDC& dc,
+                            [[maybe_unused]] const double parentScaling) final;
+
+        /// @brief When calling SetBoundingBox(), calling this first will prevent the scaling
+        ///     from being adjusted to the new bounding box.
+        /// @detail This can be used wanting to prevent the text scaling from growing larger to
+        ///     larger box.
+        /// @sa UnlockBoundingBoxScaling().
+        void LockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = true; }
+
+        /// @brief When calling SetBoundingBox(), having the scaling unlocked (the default)
+        ///     will cause the scaling to be adjusted to the new bounding box.
+        /// @sa LockBoundingBoxScaling().
+        void UnlockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = false; }
 
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) final
             {
-            SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove));
+            SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove));
             InvalidateCachedBoundingBox();
             }
 
@@ -303,12 +333,19 @@ namespace Wisteria::GraphItems
                 its canvas proportion was calculated.
              @param adjust @c true to tell SetBoundingBox() to only treat its size
                 as a suggestion.*/
-        void SetBoundingBoxToContentAdjustment(const LabelBoundingBoxContentAdjustment adjust) noexcept
-            { m_adjustBoundingBoxToContent = adjust; }
+        void
+        SetBoundingBoxToContentAdjustment(const LabelBoundingBoxContentAdjustment adjust) noexcept
+            {
+            m_adjustBoundingBoxToContent = adjust;
+            }
+
         /// @returns How the bounding box passed to SetBoundingBox() is being applied.
         [[nodiscard]]
         LabelBoundingBoxContentAdjustment GetBoundingBoxToContentAdjustment() const noexcept
-            { return m_adjustBoundingBoxToContent; }
+            {
+            return m_adjustBoundingBoxToContent;
+            }
+
         /// @}
 
         /// @name Font Functions
@@ -326,12 +363,11 @@ namespace Wisteria::GraphItems
             @warning @c boundingBoxSize is assumed to be scaled from the parent already,
                 so the font size returned will fit this area as-is.\n
                 Because `Label`s adjust their font size based on scaling,
-                setting its point size to this should also set its scaling to 1 (not the parent's).*/
+                setting its point size to this should also set its scaling to 1
+                (not the parent's).*/
         [[nodiscard]]
-        static int CalcDiagonalFontSize(wxDC& dc,
-                                        const wxFont& ft, const wxRect& boundingBox,
-                                        const double angleInDegrees,
-                                        const wxString& text);
+        static int CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
+                                        const double angleInDegrees, const wxString& text);
         /** @returns The font size that would fit for a given string within a given bounding box.
             @param dc The device context that the text is being drawn on.
             @param ft The font this is being drawn with.
@@ -344,13 +380,13 @@ namespace Wisteria::GraphItems
                 (not the parent's)*/
         [[nodiscard]]
         static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
-                                                const wxRect& boundingBox,
-                                                const wxString& text);
+                                                const wxRect& boundingBox, const wxString& text);
         /** @returns The first available font (face name) found from the given list,
                 or the system default if none are found.
             @param possibleFontNames The list of font names to choose from.*/
         [[nodiscard]]
         static wxString GetFirstAvailableFont(const std::vector<wxString>& possibleFontNames);
+
         /** @returns The first available cursive font (face name) found on the system,
                 or the system default if none are found.
             @note This function uses a list of known cursive fonts to search with.*/
@@ -360,32 +396,33 @@ namespace Wisteria::GraphItems
             return GetFirstAvailableFont(
                 { L"Gabriola", L"Brush Script", L"Segoe Script", L"AR BERKLEY" });
             }
-        /** @returns The first available font (face name) that looks nice in a word processor on the system,
-                or the system default if none are found.
+
+        /** @returns The first available font (face name) that looks nice in a word processor
+                on the system, or the system default if none are found.
             @note This function uses a list of known fonts to search with.*/
         [[nodiscard]]
         static wxString GetFirstAvailableWordProcessorFont()
             {
-            return GetFirstAvailableFont(
-                { L"Aptos", L"Bierstadt", L"Grandview", L"Seaford",
-                  L"Skeena", L"Tenorite", L"Calibri", L"Garamond",
-                  L"Franklin Gothic", L"Helvetica Neue" });
+            return GetFirstAvailableFont({ L"Aptos", L"Bierstadt", L"Grandview", L"Seaford",
+                                           L"Skeena", L"Tenorite", L"Calibri", L"Garamond",
+                                           L"Franklin Gothic", L"Helvetica Neue" });
             }
+
         /** @returns The first available monospace font (face name) found on the system,
                 or the system default if none are found.
             @note This function uses a list of monospace fonts to search with.*/
         [[nodiscard]]
         static wxString GetFirstAvailableMonospaceFont()
             {
-            return GetFirstAvailableFont(
-                { L"Cascadia Mono", L"Consolas", L"Times New Roman" });
+            return GetFirstAvailableFont({ L"Cascadia Mono", L"Consolas", L"Times New Roman" });
             }
+
         /// @brief Corrects issues with fonts such as bogus facenames and point sizes.
         /// @param theFont The font to review and correct.
         static void FixFont(wxFont& theFont);
         /// @}
 
-    private:
+      private:
         /** @brief Draws the line styling onto the background of the label.
             @param dc The dc to draw on.*/
         void DrawLabelStyling(wxDC& dc) const;
@@ -404,11 +441,15 @@ namespace Wisteria::GraphItems
         /// @param textWidth The current width of the label.
         [[nodiscard]]
         wxSize CalcTopImageSize(const wxCoord textWidth) const;
+
         /** @returns @c true if the given point is inside of the label.
             @param pt The point to check.*/
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const final
-            { return GetBoundingBox(dc).Contains(pt); }
+            {
+            return GetBoundingBox(dc).Contains(pt);
+            }
+
         /** @brief Draws a vertical multi-line text string at the specified point,
              using the current text font, and the current text foreground and background colors.
             @param dc The device context to draw to.
@@ -420,7 +461,8 @@ namespace Wisteria::GraphItems
                  text font, and the current text foreground and background colors.
             @param dc The device context that the text is being drawn on.
             @param pt The point to draw the text.\n
-                This coordinate refers to the top-left corner of the rectangle bounding the string.*/
+                This coordinate refers to the top-left corner of the rectangle
+                bounding the string.*/
         void DrawMultiLineText(wxDC& dc, wxPoint pt) const;
         /// @brief Figures out how many characters are in the longest line of text
         ///     (takes multiline labels into account).
@@ -442,8 +484,9 @@ namespace Wisteria::GraphItems
 
         double m_tiltAngle{ 0 };
         double m_spacingBetweenLines{ 1 };
-        LabelBoundingBoxContentAdjustment m_adjustBoundingBoxToContent
-            { LabelBoundingBoxContentAdjustment::ContentAdjustNone };
+        LabelBoundingBoxContentAdjustment m_adjustBoundingBoxToContent{
+            LabelBoundingBoxContentAdjustment::ContentAdjustNone
+        };
         size_t m_lineCount{ 0 };
         size_t m_longestLineLength{ 0 };
         std::set<size_t> m_linesIgnoringLeftMargin;
@@ -451,8 +494,9 @@ namespace Wisteria::GraphItems
         wxBitmapBundle m_leftImage;
         wxBitmapBundle m_topImage;
         size_t m_topImageOffset{ 0 };
+        bool m_boundingBoxScalingLocked{ false };
         };
-    }
+    } // namespace Wisteria::GraphItems
 
 /** @}*/
 

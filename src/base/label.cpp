@@ -217,18 +217,19 @@ namespace Wisteria::GraphItems
                      CalcTopImageSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
                  0);
 
-        if ( // too small in both dimensions, so upscale
-            (measuredWidth <= rect.GetWidth() && measureHeight <= rect.GetHeight()) ||
-            // or too big in one of the dimensions, so downscale
-            (measuredWidth > rect.GetWidth() || measureHeight > rect.GetHeight()))
+        if (!m_boundingBoxScalingLocked &&
+            ( // too small in both dimensions, so upscale
+                (measuredWidth <= rect.GetWidth() && measureHeight <= rect.GetHeight()) ||
+                // or too big in one of the dimensions, so downscale
+                (measuredWidth > rect.GetWidth() || measureHeight > rect.GetHeight())))
             {
             // scale the text to fit in the area where the text is going
             // (i.e., the rect with the images removed)
             const wxRect textRect(wxSize(std::min(rect.GetWidth(), textAreaWidthNoSideImages),
                                          std::min(rect.GetHeight(), textAreaHeightNoSideImages)));
-            const auto widthFactor =
+            const double widthFactor =
                 safe_divide<double>(textRect.GetWidth(), measureWidthNoSideImages);
-            const auto heightFactor =
+            const double heightFactor =
                 safe_divide<double>(textRect.GetHeight(), measuredHeightNoSideImages);
             SetScaling(std::max(GetScaling() * std::min(widthFactor, heightFactor),
                                 // don't go too small, though
@@ -289,8 +290,8 @@ namespace Wisteria::GraphItems
 
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
-        const wxCoord width =
-            std::max<wxCoord>(measuredWidth, ScaleToScreenAndCanvas(GetMinimumUserWidthDIPs().value_or(0)));
+        const wxCoord width = std::max<wxCoord>(
+            measuredWidth, ScaleToScreenAndCanvas(GetMinimumUserWidthDIPs().value_or(0)));
         const wxCoord height = std::max<wxCoord>(
             measuredHeight, ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value_or(0)));
 
@@ -377,40 +378,46 @@ namespace Wisteria::GraphItems
 
         width = height = 0;
 
-        DCFontChangerIfDifferent fc(dc, (GetFont().Scaled(GetScaling())) );
+        DCFontChangerIfDifferent fc(dc, (GetFont().Scaled(GetScaling())));
 
         wxStringTokenizer tokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
-        const wxCoord spaceBetweenLines = ((tokenizer.CountTokens() == 0) ?
-                                            0 :
-                                            (tokenizer.CountTokens()-1) *
-                                            std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) );
+        const wxCoord spaceBetweenLines =
+            ((tokenizer.CountTokens() == 0) ?
+                 0 :
+                 (tokenizer.CountTokens() - 1) *
+                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
 
         if (GetTextOrientation() == Orientation::Horizontal)
             {
             // If top line is a header, then we need to not include that in the initial measure,
-            // just measure the rest of the text. (This is because headers have their own left/right margins.)
+            // just measure the rest of the text. (This is because headers have their own
+            // left/right margins.)
             const auto firstLineEnd = GetText().find_first_of(L"\r\n", 0, 2);
-            const auto secondLineStart = GetText().find_first_not_of(L"\r\n",
-                ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
+            const auto secondLineStart = GetText().find_first_not_of(
+                L"\r\n", ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
             if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos)
-                { dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &width, &height); }
+                {
+                dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &width, &height);
+                }
             else if (GetText().length())
-                { dc.GetMultiLineTextExtent(GetText(), &width, &height); }
+                {
+                dc.GetMultiLineTextExtent(GetText(), &width, &height);
+                }
             // add padding around text
             width += ScaleToScreenAndCanvas(GetLeftPadding()) +
                      ScaleToScreenAndCanvas(GetRightPadding());
-            height += spaceBetweenLines +
-                      ScaleToScreenAndCanvas(GetTopPadding()) +
+            height += spaceBetweenLines + ScaleToScreenAndCanvas(GetTopPadding()) +
                       ScaleToScreenAndCanvas(GetBottomPadding());
-            // now, if top line is a header, then measure that and see if needs to increase the width of the box
+            // now, if top line is a header, then measure that and see if needs to increase the
+            // width of the box
             if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos &&
                 secondLineStart != std::wstring::npos)
                 {
-                DCFontChangerIfDifferent fc2(dc,
-                    GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                     GetHeaderInfo().GetRelativeScaling()) :
-                    dc.GetFont());
+                DCFontChangerIfDifferent fc2(
+                    dc, GetHeaderInfo().GetFont().IsOk() ?
+                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                             GetHeaderInfo().GetRelativeScaling()) :
+                            dc.GetFont());
                 auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
                 topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
                                  ScaleToScreenAndCanvas(GetRightPadding());
@@ -418,17 +425,16 @@ namespace Wisteria::GraphItems
                 height += topLineSize.GetHeight();
                 }
             // if drawing outline, then calculate that also in case the pen width is large
-            if (GetPen().IsOk() &&
-                (GetGraphItemInfo().IsShowingTopOutline() ||
-                 GetGraphItemInfo().IsShowingBottomOutline() ||
-                 GetGraphItemInfo().IsShowingLeftOutline() ||
-                 GetGraphItemInfo().IsShowingRightOutline()))
+            if (GetPen().IsOk() && (GetGraphItemInfo().IsShowingTopOutline() ||
+                                    GetGraphItemInfo().IsShowingBottomOutline() ||
+                                    GetGraphItemInfo().IsShowingLeftOutline() ||
+                                    GetGraphItemInfo().IsShowingRightOutline()))
                 {
                 const auto penWidthScaled = ScaleToScreenAndCanvas(GetPen().GetWidth());
                 height += (GetGraphItemInfo().IsShowingTopOutline() ? penWidthScaled : 0) +
-                    (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
+                          (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
                 width += (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
-                    (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
+                         (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
                 // Situation where there is an outline with a thick pen, but little or no text
                 // and both sides of a dimension's outline are turned off. In this case,
                 // we want to force that dimension to be a thick as the lines of the *other*
@@ -444,49 +450,49 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, topBottomOutlineWidth);
                 }
             width += CalcLeftImageSize(height).GetWidth();
-            height += std::max<wxCoord>(
-                CalcTopImageSize(width).GetHeight() - m_topImageOffset,
-                0);
+            height += std::max<wxCoord>(CalcTopImageSize(width).GetHeight() - m_topImageOffset, 0);
             }
         else
             {
             const auto firstLineEnd = GetText().find_first_of(L"\r\n", 0, 2);
-            const auto secondLineStart = GetText().find_first_not_of(L"\r\n",
-                ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
+            const auto secondLineStart = GetText().find_first_not_of(
+                L"\r\n", ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
             if (GetHeaderInfo().IsEnabled() && secondLineStart != std::wstring::npos)
-                { dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &height, &width); }
+                {
+                dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &height, &width);
+                }
             else
-                { dc.GetMultiLineTextExtent(GetText(), &height, &width); }
+                {
+                dc.GetMultiLineTextExtent(GetText(), &height, &width);
+                }
             height += ScaleToScreenAndCanvas(GetLeftPadding()) +
                       ScaleToScreenAndCanvas(GetRightPadding());
-            width += spaceBetweenLines +
-                     ScaleToScreenAndCanvas(GetTopPadding()) +
+            width += spaceBetweenLines + ScaleToScreenAndCanvas(GetTopPadding()) +
                      ScaleToScreenAndCanvas(GetBottomPadding());
             if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos &&
                 secondLineStart != std::wstring::npos)
                 {
-                DCFontChangerIfDifferent fc2(dc,
-                    GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                     GetHeaderInfo().GetRelativeScaling()) :
-                    dc.GetFont());
+                DCFontChangerIfDifferent fc2(
+                    dc, GetHeaderInfo().GetFont().IsOk() ?
+                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                             GetHeaderInfo().GetRelativeScaling()) :
+                            dc.GetFont());
                 auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
                 topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
                                  ScaleToScreenAndCanvas(GetRightPadding());
                 height = std::max(topLineSize.GetWidth(), height);
                 width += topLineSize.GetHeight();
                 }
-            if (GetPen().IsOk() &&
-                (GetGraphItemInfo().IsShowingTopOutline() ||
-                 GetGraphItemInfo().IsShowingBottomOutline() ||
-                 GetGraphItemInfo().IsShowingLeftOutline() ||
-                 GetGraphItemInfo().IsShowingRightOutline()))
+            if (GetPen().IsOk() && (GetGraphItemInfo().IsShowingTopOutline() ||
+                                    GetGraphItemInfo().IsShowingBottomOutline() ||
+                                    GetGraphItemInfo().IsShowingLeftOutline() ||
+                                    GetGraphItemInfo().IsShowingRightOutline()))
                 {
                 const auto penWidthScaled = ScaleToScreenAndCanvas(GetPen().GetWidth());
                 width += (GetGraphItemInfo().IsShowingTopOutline() ? penWidthScaled : 0) +
-                    (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
+                         (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
                 height += (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
-                    (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
+                          (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
 
                 const auto leftRightOutlineWidth =
                     (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
@@ -498,8 +504,7 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, leftRightOutlineWidth);
                 }
             height += CalcLeftImageSize(width).GetWidth();
-            width += std::max<wxCoord>(CalcTopImageSize(height).GetHeight() - m_topImageOffset,
-                0);
+            width += std::max<wxCoord>(CalcTopImageSize(height).GetHeight() - m_topImageOffset, 0);
             }
         }
 
@@ -971,14 +976,15 @@ namespace Wisteria::GraphItems
             }
 
         assert((GetLegendIcons().size() == 0 ||
-            (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal)) &&
-            L"Vertical legend not supported!");
-        wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 || !HasLegendIcons() ||
-            (GetTextOrientation() == Orientation::Horizontal &&
-             GetLeftPadding() >= GetMinLegendWidthDIPs()),
+                (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal)) &&
+               L"Vertical legend not supported!");
+        wxASSERT_LEVEL_2_MSG(
+            GetLegendIcons().size() == 0 || !HasLegendIcons() ||
+                (GetTextOrientation() == Orientation::Horizontal &&
+                 GetLeftPadding() >= GetMinLegendWidthDIPs()),
             wxString::Format(L"Left margin of text label should be at least %d DIPs "
-                "if using legend icons! It is currently %d.",
-                GetMinLegendWidthDIPs(), GetLeftPadding()));
+                             "if using legend icons! It is currently %d.",
+                             GetMinLegendWidthDIPs(), GetLeftPadding()));
 
         assert(GetFont().IsOk() && L"Invalid font in label!");
         DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
@@ -994,17 +1000,17 @@ namespace Wisteria::GraphItems
                 {
                 dc.DrawRoundedRectangle(
                     wxRect(boundingBox.GetLeftTop() +
-                           wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
-                                   ScaleToScreenAndCanvas(GetShadowOffset())),
-                           boundingBox.GetSize()), Settings::GetBoxRoundedCornerRadius());
+                               wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
+                                       ScaleToScreenAndCanvas(GetShadowOffset())),
+                           boundingBox.GetSize()),
+                    Settings::GetBoxRoundedCornerRadius());
                 }
             else
                 {
-                dc.DrawRectangle(
-                    wxRect(boundingBox.GetLeftTop() +
-                        wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
-                                ScaleToScreenAndCanvas(GetShadowOffset())),
-                        boundingBox.GetSize()));
+                dc.DrawRectangle(wxRect(boundingBox.GetLeftTop() +
+                                            wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
+                                                    ScaleToScreenAndCanvas(GetShadowOffset())),
+                                        boundingBox.GetSize()));
                 }
             }
         // draw the background, if we are drawing a box around the text
@@ -1039,18 +1045,20 @@ namespace Wisteria::GraphItems
                 // center vertically
                 auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
                 leftCorner.y += safe_divide(GetCachedContentBoundingBox().GetHeight(), 2) -
-                    safe_divide(bmp.GetHeight(), 2);
+                                safe_divide(bmp.GetHeight(), 2);
                 dc.DrawBitmap(bmp, leftCorner);
                 }
             else
                 {
-                const auto img = m_leftImage.GetBitmap(
-                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight())).
-                    ConvertToImage().Rotate90(false);
+                const auto img =
+                    m_leftImage
+                        .GetBitmap(CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()))
+                        .ConvertToImage()
+                        .Rotate90(false);
                 // center horizontally
                 auto leftCorner{ GetCachedContentBoundingBox().GetBottomLeft() };
                 leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
-                    safe_divide(img.GetHeight(), 2);
+                                safe_divide(img.GetHeight(), 2);
                 leftCorner.y -= img.GetWidth();
                 dc.DrawBitmap(img, leftCorner);
                 }
@@ -1065,23 +1073,25 @@ namespace Wisteria::GraphItems
                 // center horizontally
                 auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
                 leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
-                    safe_divide(bmp.GetWidth(), 2);
+                                safe_divide(bmp.GetWidth(), 2);
                 // ensure image doesn't go below (and outside of) the text
-                leftCorner.y = std::min(leftCorner.y,
-                    GetCachedContentBoundingBox().GetBottom() - bmp.GetHeight());
+                leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
+                                                          bmp.GetHeight());
                 dc.DrawBitmap(bmp, leftCorner);
                 }
             else
                 {
-                const auto img = m_topImage.GetBitmap(
-                    CalcTopImageSize(GetCachedContentBoundingBox().GetHeight())).
-                    ConvertToImage().Rotate90(false);
+                const auto img =
+                    m_topImage
+                        .GetBitmap(CalcTopImageSize(GetCachedContentBoundingBox().GetHeight()))
+                        .ConvertToImage()
+                        .Rotate90(false);
                 // center vertically
                 auto leftCorner{ GetCachedContentBoundingBox().GetBottomLeft() };
                 leftCorner.y -= safe_divide(GetCachedContentBoundingBox().GetHeight(), 2) -
-                    safe_divide(img.GetWidth(), 2);
+                                safe_divide(img.GetWidth(), 2);
                 leftCorner.x = std::min(leftCorner.x,
-                    GetCachedContentBoundingBox().GetRight() - img.GetHeight());
+                                        GetCachedContentBoundingBox().GetRight() - img.GetHeight());
                 dc.DrawBitmap(img, leftCorner);
                 }
             }
@@ -1100,9 +1110,11 @@ namespace Wisteria::GraphItems
         // draw the outline
         if (GetPen().IsOk() && !IsSelected())
             {
-            DCPenChangerIfDifferent pc2(dc, wxPen(wxPenInfo(GetPen().GetColour(),
-                                         ScaleToScreenAndCanvas(GetPen().GetWidth()),
-                                         GetPen().GetStyle()).Cap(wxPenCap::wxCAP_BUTT)));
+            DCPenChangerIfDifferent pc2(
+                dc,
+                wxPen(wxPenInfo(GetPen().GetColour(), ScaleToScreenAndCanvas(GetPen().GetWidth()),
+                                GetPen().GetStyle())
+                          .Cap(wxPenCap::wxCAP_BUTT)));
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
@@ -1168,32 +1180,41 @@ namespace Wisteria::GraphItems
                 {
                 dc.DrawRectangle(boundingBox);
                 }
-            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+            if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
-                DCPenChangerIfDifferent pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                DCPenChangerIfDifferent pcDebug(
+                    dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 dc.DrawRectangle(GetCachedContentBoundingBox());
-                if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+                if constexpr (Settings::IsDebugFlagEnabled(
+                                  DebugSettings::DrawInformationOnSelection))
                     {
                     const auto bBox = GetBoundingBox(dc);
-                    Label infoLabel(GraphItemInfo(
-                        wxString::Format(_DT(L"Scaling: %s\n"
-                                              "Width: %s\n"
-                                              "Height: %s\n"
-                                              "Default font size: %d\n"
-                                              "Font size: %d"),
-                            wxNumberFormatter::ToString(GetScaling(), 1,
-                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                            wxNumberFormatter::ToString(bBox.GetWidth(), 0,
-                                wxNumberFormatter::Style::Style_WithThousandsSep),
-                            wxNumberFormatter::ToString(bBox.GetHeight(), 0,
-                                wxNumberFormatter::Style::Style_WithThousandsSep),
-                            GetFont().GetPointSize(),
-                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
-                        AnchorPoint(bBox.GetTopLeft()).
-                        Anchoring(Anchoring::TopLeftCorner).
-                        FontColor(*wxBLUE).
-                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
-                        FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+                    Label infoLabel(
+                        GraphItemInfo(
+                            wxString::Format(
+                                _DT(L"Scaling: %s\n"
+                                    "Width: %s\n"
+                                    "Height: %s\n"
+                                    "Default font size: %d\n"
+                                    "Font size: %d"),
+                                wxNumberFormatter::ToString(
+                                    GetScaling(), 1,
+                                    wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                                wxNumberFormatter::ToString(
+                                    bBox.GetWidth(), 0,
+                                    wxNumberFormatter::Style::Style_WithThousandsSep),
+                                wxNumberFormatter::ToString(
+                                    bBox.GetHeight(), 0,
+                                    wxNumberFormatter::Style::Style_WithThousandsSep),
+                                GetFont().GetPointSize(),
+                                wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()))
+                            .AnchorPoint(bBox.GetTopLeft())
+                            .Anchoring(Anchoring::TopLeftCorner)
+                            .FontColor(*wxBLUE)
+                            .Pen(*wxBLUE_PEN)
+                            .DPIScaling(GetDPIScaleFactor())
+                            .FontBackgroundColor(*wxWHITE)
+                            .Padding(2, 2, 2, 2));
                     infoLabel.Draw(dc);
                     }
                 }
@@ -1436,18 +1457,22 @@ namespace Wisteria::GraphItems
     void Label::DrawVerticalMultiLineText(wxDC& dc, wxPoint pt) const
         {
         if (!IsOk())
-            { return; }
+            {
+            return;
+            }
 
-        const wxCoord spaceBetweenLines = (GetLineCount()-1) *
-                                           std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+        const wxCoord spaceBetweenLines =
+            (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
         pt.y += GetCachedContentBoundingBox().GetHeight() +
-            // if drawing outline, then calculate that also in case the pen width is large
-            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingRightOutline()) ?
-                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
+                // if drawing outline, then calculate that also in case the pen width is large
+                ((GetPen().IsOk() && GetGraphItemInfo().IsShowingRightOutline()) ?
+                     ScaleToScreenAndCanvas(GetPen().GetWidth()) :
+                     0);
         const wxCoord leftOffset = CalcPageHorizontalOffset() +
-            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
-                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
+                                   ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
+                                        ScaleToScreenAndCanvas(GetPen().GetWidth()) :
+                                        0);
 
         // render the text
         wxCoord lineX{ 0 }, lineY{ 0 }, offset{ 0 };
@@ -1458,42 +1483,43 @@ namespace Wisteria::GraphItems
             GetTextAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSz.SetWidth(fullTextSz.GetWidth() -
-                (ScaleToScreenAndCanvas(GetTopPadding()) +
-                ScaleToScreenAndCanvas(GetBottomPadding())) );
+                                (ScaleToScreenAndCanvas(GetTopPadding()) +
+                                 ScaleToScreenAndCanvas(GetBottomPadding())));
             fullTextSz.SetHeight(fullTextSz.GetHeight() -
-                (spaceBetweenLines +
-                ScaleToScreenAndCanvas(GetLeftPadding()) +
-                ScaleToScreenAndCanvas(GetRightPadding())) );
+                                 (spaceBetweenLines + ScaleToScreenAndCanvas(GetLeftPadding()) +
+                                  ScaleToScreenAndCanvas(GetRightPadding())));
             }
         if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter ||
             GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
-                (ScaleToScreenAndCanvas(GetTopPadding()) +
-                ScaleToScreenAndCanvas(GetBottomPadding())) );
+                                         (ScaleToScreenAndCanvas(GetTopPadding()) +
+                                          ScaleToScreenAndCanvas(GetBottomPadding())));
             fullTextSzForHeader.SetHeight(fullTextSzForHeader.GetHeight() -
-                (spaceBetweenLines +
-                ScaleToScreenAndCanvas(GetLeftPadding()) +
-                ScaleToScreenAndCanvas(GetRightPadding())) );
+                                          (spaceBetweenLines +
+                                           ScaleToScreenAndCanvas(GetLeftPadding()) +
+                                           ScaleToScreenAndCanvas(GetRightPadding())));
             }
-        fullTextSz.SetHeight(fullTextSz.GetHeight() -
-                CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth() );
-        fullTextSzForHeader.SetHeight(fullTextSzForHeader.GetHeight() -
-                CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth() );
+        fullTextSz.SetHeight(
+            fullTextSz.GetHeight() -
+            CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth());
+        fullTextSzForHeader.SetHeight(
+            fullTextSzForHeader.GetHeight() -
+            CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth());
 
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         size_t currentLineNumber{ 0 };
         std::vector<wxString> tokenizedLineLetters;
 
-        const auto trackTextLine = [&dc, &tokenizedLineLetters]
-                                   (wxString& textLine, const wxSize textSz, bool atCharacter)
-            {
+        const auto trackTextLine =
+            [&dc, &tokenizedLineLetters](wxString& textLine, const wxSize textSz, bool atCharacter)
+        {
             constexpr wchar_t hairSpace{ 0x200A };
             // Measure 10 hair spaces (with the current font)
             // and divide by 10 to more precisely measure of how wide one is.
             // Measuring just one will double up and cause the calculation to be way off.
-            const double hairSpaceWidth = safe_divide<double>(
-                dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
+            const double hairSpaceWidth =
+                safe_divide<double>(dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
             tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
             // more spaces (spread evenly throughout) until it fits
@@ -1510,7 +1536,8 @@ namespace Wisteria::GraphItems
                 else
                     {
                     // split at each space (i.e., word)
-                    wxStringTokenizer tkzr(textLine, L" ", wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
+                    wxStringTokenizer tkzr(textLine, L" ",
+                                           wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
                     while (tkzr.HasMoreTokens())
                         {
                         tokenizedLineLetters.push_back(tkzr.GetNextToken());
@@ -1518,30 +1545,35 @@ namespace Wisteria::GraphItems
                     }
                 // need at least two letters for justifying text
                 if (tokenizedLineLetters.size() < 2)
-                    { return; }
+                    {
+                    return;
+                    }
                 // use hair spaces between letters for more precise tracking
                 const auto lineDiff = textSz.GetHeight() - dc.GetTextExtent(textLine).GetWidth();
                 long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
                 const auto letterSpaces = tokenizedLineLetters.size() - 1;
-                const auto hairSpacesPerWordPair = std::max(1.0,
-                    std::floor(safe_divide<double>(hairSpacesNeeded, letterSpaces)));
-                long extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair*letterSpaces);
+                const auto hairSpacesPerWordPair =
+                    std::max(1.0, std::floor(safe_divide<double>(hairSpacesNeeded, letterSpaces)));
+                long extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair * letterSpaces);
                 // rebuild the text line with more (hair) spaces in it
                 textLine.clear();
                 for (const auto& letter : tokenizedLineLetters)
                     {
                     textLine.append(letter).append(
-                                                 (hairSpacesPerWordPair * (hairSpacesNeeded > 0 ? 1 : 0)) +
-                                                 (extraSpaces > 0 ? 1 : 0), hairSpace);
+                        (hairSpacesPerWordPair * (hairSpacesNeeded > 0 ? 1 : 0)) +
+                            (extraSpaces > 0 ? 1 : 0),
+                        hairSpace);
                     --extraSpaces;
                     hairSpacesNeeded -= hairSpacesPerWordPair;
                     }
                 }
             else
-                { return; }
-            };
+                {
+                return;
+                }
+        };
 
-        while (lineTokenizer.HasMoreTokens() )
+        while (lineTokenizer.HasMoreTokens())
             {
             // draw the next line
             wxString token = lineTokenizer.GetNextToken();
@@ -1549,45 +1581,51 @@ namespace Wisteria::GraphItems
 
             if (GetHeaderInfo().IsEnabled() && currentLineNumber == 0 && GetLineCount() > 1)
                 {
-                DCFontChangerIfDifferent fc(dc,
-                    GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                     GetHeaderInfo().GetRelativeScaling()) :
-                    dc.GetFont());
+                DCFontChangerIfDifferent fc(
+                    dc, GetHeaderInfo().GetFont().IsOk() ?
+                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                             GetHeaderInfo().GetRelativeScaling()) :
+                            dc.GetFont());
                 dc.GetTextExtent(token, &lineX, &lineY);
                 if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushLeft)
                     {
-                    offset = HasLegendIcons() ? 0 :
-                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = HasLegendIcons() ?
+                                 0 :
+                                 leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
-                    offset = (safe_divide<double>(fullTextSzForHeader.GetHeight(),2) -
+                    offset = (safe_divide<double>(fullTextSzForHeader.GetHeight(), 2) -
                               safe_divide<double>(lineX, 2)) +
                              leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
-                    offset = (fullTextSzForHeader.GetHeight()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
-                        (HasLegendIcons() ? 0 : leftOffset);
+                    offset = (fullTextSzForHeader.GetHeight() - lineX -
+                              ScaleToScreenAndCanvas(GetLeftPadding())) +
+                             (HasLegendIcons() ? 0 : leftOffset);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
-                    offset = HasLegendIcons() ? 0 :
-                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = HasLegendIcons() ?
+                                 0 :
+                                 leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, true);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
                     {
-                    offset = HasLegendIcons() ? 0 :
-                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = HasLegendIcons() ?
+                                 0 :
+                                 leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, false);
                     }
                 }
             else
                 {
                 if (GetTextAlignment() == TextAlignment::FlushLeft)
-                    { offset = ScaleToScreenAndCanvas(GetLeftPadding()); }
+                    {
+                    offset = ScaleToScreenAndCanvas(GetLeftPadding());
+                    }
                 else if (GetTextAlignment() == TextAlignment::Centered)
                     {
                     offset = (safe_divide<double>(fullTextSz.GetHeight(), 2) -
@@ -1595,8 +1633,8 @@ namespace Wisteria::GraphItems
                     }
                 else if (GetTextAlignment() == TextAlignment::FlushRight)
                     {
-                    offset = fullTextSz.GetHeight() - lineX -
-                        ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset =
+                        fullTextSz.GetHeight() - lineX - ScaleToScreenAndCanvas(GetLeftPadding());
                     }
                 else if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
@@ -1615,27 +1653,28 @@ namespace Wisteria::GraphItems
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto currentLineOffset =
-                (GetLinesIgnoringLeftMargin().find(currentLineNumber) != GetLinesIgnoringLeftMargin().cend()) ? 0 :
-                ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
-                CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth();
+                (GetLinesIgnoringLeftMargin().find(currentLineNumber) !=
+                 GetLinesIgnoringLeftMargin().cend()) ?
+                    0 :
+                    ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
+                        CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth();
             const auto xOffset = std::max<wxCoord>(
-                CalcTopImageSize(GetCachedContentBoundingBox().GetHeight()).GetHeight() - m_topImageOffset,
+                CalcTopImageSize(GetCachedContentBoundingBox().GetHeight()).GetHeight() -
+                    m_topImageOffset,
                 0);
-            const bool isHeader{ (currentLineNumber == 0 &&
-                                  GetLineCount() > 1 &&
+            const bool isHeader{ (currentLineNumber == 0 && GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&
                                   GetHeaderInfo().GetFont().IsOk()) };
-            DCFontChangerIfDifferent fc(dc,
-                isHeader ?
-                GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                 GetHeaderInfo().GetRelativeScaling()) :
-                dc.GetFont());
-            DCTextColourChangerIfDifferent tcc(dc,
-                isHeader ?
-                GetHeaderInfo().GetFontColor() : dc.GetTextForeground());
-            dc.DrawRotatedText(token, pt.x + xOffset, pt.y-offset-currentLineOffset, 90+m_tiltAngle);
+            DCFontChangerIfDifferent fc(
+                dc, isHeader ? GetHeaderInfo().GetFont().Scaled(
+                                   GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
+                               dc.GetFont());
+            DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
+                                                              dc.GetTextForeground());
+            dc.DrawRotatedText(token, pt.x + xOffset, pt.y - offset - currentLineOffset,
+                               90 + m_tiltAngle);
             // move over for next line
-            pt.x += (lineY+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            pt.x += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             ++currentLineNumber;
             }
         }
@@ -1644,17 +1683,21 @@ namespace Wisteria::GraphItems
     void Label::DrawMultiLineText(wxDC& dc, wxPoint pt) const
         {
         if (!IsOk())
-            { return; }
-        const wxCoord spaceBetweenLines = (GetLineCount()-1) *
-                                           std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+            {
+            return;
+            }
+        const wxCoord spaceBetweenLines =
+            (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
         pt.y += CalcPageVerticalOffset() + ScaleToScreenAndCanvas(GetTopPadding()) +
-            // if drawing outline, then calculate that also in case the pen width is large
-            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
-                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
+                // if drawing outline, then calculate that also in case the pen width is large
+                ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
+                     ScaleToScreenAndCanvas(GetPen().GetWidth()) :
+                     0);
         const wxCoord leftOffset = CalcPageHorizontalOffset() +
-            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingLeftOutline()) ?
-                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
+                                   ((GetPen().IsOk() && GetGraphItemInfo().IsShowingLeftOutline()) ?
+                                        ScaleToScreenAndCanvas(GetPen().GetWidth()) :
+                                        0);
 
         // render the text
         wxCoord lineX{ 0 }, lineY{ 0 }, offset{ 0 };
@@ -1665,43 +1708,44 @@ namespace Wisteria::GraphItems
             GetTextAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSz.SetWidth(fullTextSz.GetWidth() -
-                (ScaleToScreenAndCanvas(GetLeftPadding()) +
-                 ScaleToScreenAndCanvas(GetRightPadding())) );
+                                (ScaleToScreenAndCanvas(GetLeftPadding()) +
+                                 ScaleToScreenAndCanvas(GetRightPadding())));
             fullTextSz.SetHeight(fullTextSz.GetHeight() -
-                (spaceBetweenLines +
-                ScaleToScreenAndCanvas(GetTopPadding()) +
-                ScaleToScreenAndCanvas(GetBottomPadding())) );
+                                 (spaceBetweenLines + ScaleToScreenAndCanvas(GetTopPadding()) +
+                                  ScaleToScreenAndCanvas(GetBottomPadding())));
             }
         if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter ||
             GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
-                (ScaleToScreenAndCanvas(GetLeftPadding()) +
-                 ScaleToScreenAndCanvas(GetRightPadding())) );
+                                         (ScaleToScreenAndCanvas(GetLeftPadding()) +
+                                          ScaleToScreenAndCanvas(GetRightPadding())));
             fullTextSzForHeader.SetHeight(fullTextSzForHeader.GetHeight() -
-                (spaceBetweenLines +
-                ScaleToScreenAndCanvas(GetTopPadding()) +
-                ScaleToScreenAndCanvas(GetBottomPadding())) );
+                                          (spaceBetweenLines +
+                                           ScaleToScreenAndCanvas(GetTopPadding()) +
+                                           ScaleToScreenAndCanvas(GetBottomPadding())));
             }
-        fullTextSz.SetWidth(fullTextSz.GetWidth() -
-                 CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth() );
-        fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
-                 CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth() );
+        fullTextSz.SetWidth(
+            fullTextSz.GetWidth() -
+            CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth());
+        fullTextSzForHeader.SetWidth(
+            fullTextSzForHeader.GetWidth() -
+            CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth());
 
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         size_t currentLineNumber{ 0 };
         std::vector<wxString> tokenizedLineLetters;
 
-        const auto trackTextLine = [&dc, &tokenizedLineLetters]
-                                   (wxString& textLine, const wxSize textSz, bool atCharacter)
-            {
+        const auto trackTextLine =
+            [&dc, &tokenizedLineLetters](wxString& textLine, const wxSize textSz, bool atCharacter)
+        {
             constexpr wchar_t hairSpace{ 0x200A };
 
             // Measure 10 hair spaces (with the current font)
             // and divide by 10 to more precisely measure of how wide one is.
             // Measuring just one will double up and cause the calculation to be way off.
-            const double hairSpaceWidth = safe_divide<double>(
-                dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
+            const double hairSpaceWidth =
+                safe_divide<double>(dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
             tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
             // hair spaces (spread evenly throughout) until it fits
@@ -1718,7 +1762,8 @@ namespace Wisteria::GraphItems
                 else
                     {
                     // split at each space (i.e., word)
-                    wxStringTokenizer tkzr(textLine, L" ", wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
+                    wxStringTokenizer tkzr(textLine, L" ",
+                                           wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
                     while (tkzr.HasMoreTokens())
                         {
                         tokenizedLineLetters.push_back(tkzr.GetNextToken());
@@ -1726,15 +1771,17 @@ namespace Wisteria::GraphItems
                     }
                 // need at least two letters for justifying text
                 if (tokenizedLineLetters.size() < 2)
-                    { return; }
+                    {
+                    return;
+                    }
                 // use hair spaces between letters for more precise tracking
                 const auto lineDiff = textSz.GetWidth() - dc.GetTextExtent(textLine).GetWidth();
                 long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
                 const auto letterSpaces = tokenizedLineLetters.size() - 1;
-                const auto hairSpacesPerWordPair = std::max(1.0,
-                    std::floor(safe_divide<double>(hairSpacesNeeded, letterSpaces)));
+                const auto hairSpacesPerWordPair =
+                    std::max(1.0, std::floor(safe_divide<double>(hairSpacesNeeded, letterSpaces)));
                 // the last gap between letters may not need as many spaces as the others
-                long extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair*letterSpaces);
+                long extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair * letterSpaces);
                 // rebuild the text line with more (hair) spaces in it
                 textLine.clear();
                 for (const auto& letter : tokenizedLineLetters)
@@ -1748,10 +1795,12 @@ namespace Wisteria::GraphItems
                     }
                 }
             else
-                { return; }
-            };
+                {
+                return;
+                }
+        };
 
-        while (lineTokenizer.HasMoreTokens() )
+        while (lineTokenizer.HasMoreTokens())
             {
             // draw the next line
             wxString token = lineTokenizer.GetNextToken();
@@ -1760,25 +1809,26 @@ namespace Wisteria::GraphItems
             if (GetHeaderInfo().IsEnabled() && currentLineNumber == 0 && GetLineCount() > 1)
                 {
                 // remeasure for (possibly) different font in header
-                DCFontChangerIfDifferent fc(dc,
-                    GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                     GetHeaderInfo().GetRelativeScaling()) :
-                    dc.GetFont());
+                DCFontChangerIfDifferent fc(
+                    dc, GetHeaderInfo().GetFont().IsOk() ?
+                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                             GetHeaderInfo().GetRelativeScaling()) :
+                            dc.GetFont());
                 dc.GetTextExtent(token, &lineX, &lineY);
                 // if pushed to the left and it's a legend, then it should be to the edge;
                 // otherwise, align with the rest of the text
                 if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushLeft)
                     {
-                    offset = HasLegendIcons() ? 0 :
-                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = HasLegendIcons() ?
+                                 0 :
+                                 leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     }
                 // note that for centering we need to add half of the margin back in
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
                     offset = (safe_divide<double>(fullTextSzForHeader.GetWidth(), 2) -
                               safe_divide<double>(lineX, 2)) +
-                        leftOffset;
+                             leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
@@ -1788,21 +1838,25 @@ namespace Wisteria::GraphItems
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
-                    offset = HasLegendIcons() ? 0 :
-                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = HasLegendIcons() ?
+                                 0 :
+                                 leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, true);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
                     {
-                    offset = HasLegendIcons() ? 0 :
-                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = HasLegendIcons() ?
+                                 0 :
+                                 leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, false);
                     }
                 }
             else
                 {
                 if (GetTextAlignment() == TextAlignment::FlushLeft)
-                    { offset = ScaleToScreenAndCanvas(GetLeftPadding()); }
+                    {
+                    offset = ScaleToScreenAndCanvas(GetLeftPadding());
+                    }
                 else if (GetTextAlignment() == TextAlignment::Centered)
                     {
                     offset = (safe_divide<double>(fullTextSz.GetWidth(), 2) -
@@ -1810,8 +1864,8 @@ namespace Wisteria::GraphItems
                     }
                 else if (GetTextAlignment() == TextAlignment::FlushRight)
                     {
-                    offset = fullTextSz.GetWidth() - lineX -
-                             ScaleToScreenAndCanvas(GetRightPadding());
+                    offset =
+                        fullTextSz.GetWidth() - lineX - ScaleToScreenAndCanvas(GetRightPadding());
                     }
                 else if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
@@ -1830,30 +1884,35 @@ namespace Wisteria::GraphItems
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto currentLineOffset =
-                (GetLinesIgnoringLeftMargin().find(currentLineNumber) != GetLinesIgnoringLeftMargin().cend()) ? 0 :
-                ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
-                CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth();
-            const bool isHeader{ (currentLineNumber == 0 &&
-                                  GetLineCount() > 1 &&
+                (GetLinesIgnoringLeftMargin().find(currentLineNumber) !=
+                 GetLinesIgnoringLeftMargin().cend()) ?
+                    0 :
+                    ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
+                        CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth();
+            const bool isHeader{ (currentLineNumber == 0 && GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&
                                   GetHeaderInfo().GetFont().IsOk()) };
             const auto yOffset = std::max<wxCoord>(
-                CalcTopImageSize(GetCachedContentBoundingBox().GetWidth()).GetHeight() - m_topImageOffset,
+                CalcTopImageSize(GetCachedContentBoundingBox().GetWidth()).GetHeight() -
+                    m_topImageOffset,
                 0);
-            DCFontChangerIfDifferent fc(dc,
-                isHeader ?
-                GetHeaderInfo().GetFont().Scaled(GetScaling() *
-                                                 GetHeaderInfo().GetRelativeScaling()) :
-                dc.GetFont());
-            DCTextColourChangerIfDifferent tcc(dc,
-                isHeader ?
-                GetHeaderInfo().GetFontColor() : dc.GetTextForeground());
+            DCFontChangerIfDifferent fc(
+                dc, isHeader ? GetHeaderInfo().GetFont().Scaled(
+                                   GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
+                               dc.GetFont());
+            DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
+                                                              dc.GetTextForeground());
             if (m_tiltAngle != 0)
-                { dc.DrawRotatedText(token,pt.x+offset+currentLineOffset, pt.y + yOffset, m_tiltAngle); }
+                {
+                dc.DrawRotatedText(token, pt.x + offset + currentLineOffset, pt.y + yOffset,
+                                   m_tiltAngle);
+                }
             else
-                { dc.DrawText(token,pt.x+offset+currentLineOffset, pt.y + yOffset); }
+                {
+                dc.DrawText(token, pt.x + offset + currentLineOffset, pt.y + yOffset);
+                }
             // move down for next line
-            pt.y += (lineY+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            pt.y += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             ++currentLineNumber;
             }
         }
@@ -1862,42 +1921,45 @@ namespace Wisteria::GraphItems
     void Label::FixFont(wxFont& theFont)
         {
         const wxString originalFaceName = theFont.GetFaceName();
-        // fix the point size: a size that is zero can cause a crash on some platforms, and if the size
-        // is too small to be supported by the font then it appears blank in a font selection dialog.
-        // The smallest size is 8 on Windows and 9 on OSX, so reset bogus sizes if needed.
+        // fix the point size: a size that is zero can cause a crash on some platforms, and if the
+        // size is too small to be supported by the font then it appears blank in a font selection
+        // dialog. The smallest size is 8 on Windows and 9 on OSX, so reset bogus sizes if needed.
         constexpr int minimumPointSize =
 #ifdef __WXMSW__
-        8;
+            8;
 #else
-        9;
+            9;
 #endif
         if (theFont.GetPointSize() < minimumPointSize)
-            { theFont.SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()); }
-        // Fix the facename. Of interest is that some versions of macOS use hidden fonts for their default
-        // font, which won't be displayed in a standard font selection dialog. We have to remap these here.
-        // OSX 10.9 font
+            {
+            theFont.SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
+            }
+        // Fix the facename. Of interest is that some versions of macOS use hidden fonts for their
+        // default font, which won't be displayed in a standard font selection dialog. We have to
+        // remap these here. OSX 10.9 font
         if (theFont.GetFaceName() == L".Lucida Grande UI")
             {
-            theFont.SetFaceName(wxFontEnumerator::IsValidFacename(L"Lucida Grande") ?
-                wxString(L"Lucida Grande") : wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
+            theFont.SetFaceName(
+                wxFontEnumerator::IsValidFacename(L"Lucida Grande") ?
+                    wxString(L"Lucida Grande") :
+                    wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
             }
         // OSX 10.10 font
         else if (theFont.GetFaceName() == L".Helvetica Neue DeskInterface")
             {
-            theFont.SetFaceName(wxFontEnumerator::IsValidFacename(L"Helvetica Neue") ?
-                wxString(L"Helvetica Neue") : wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
+            theFont.SetFaceName(
+                wxFontEnumerator::IsValidFacename(L"Helvetica Neue") ?
+                    wxString(L"Helvetica Neue") :
+                    wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
             }
         // and finally, make sure the font is valid
         if (!wxFontEnumerator::IsValidFacename(theFont.GetFaceName()) &&
-             // system mapped font on macOS 10.15+, leave it alone
-             theFont.GetFaceName() != L".AppleSystemUIFont")
+            // system mapped font on macOS 10.15+, leave it alone
+            theFont.GetFaceName() != L".AppleSystemUIFont")
             {
-            theFont.SetFaceName(
-                GetFirstAvailableFont(
-                    {
-                    wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
-                    L"Helvetica Neue", L"Lucida Grande", L"Calibri", L"Arial", L"Courier New"
-                    }));
+            theFont.SetFaceName(GetFirstAvailableFont(
+                { wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
+                  L"Helvetica Neue", L"Lucida Grande", L"Calibri", L"Arial", L"Courier New" }));
             }
         assert(theFont.GetFaceName().length() && L"Corrected font facename is empty.");
         // if font is still messed up, fall back to system default
@@ -1905,10 +1967,14 @@ namespace Wisteria::GraphItems
         if (!theFont.IsOk())
             {
             theFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
-            wxLogWarning(L"Unable to correct font '%s'; will be replaced by system default.", theFont.GetFaceName());
+            wxLogWarning(L"Unable to correct font '%s'; will be replaced by system default.",
+                         theFont.GetFaceName());
             }
         if (originalFaceName != theFont.GetFaceName())
-            { wxLogMessage(L"Font remapped from '%s' to '%s'.", originalFaceName, theFont.GetFaceName()); }
+            {
+            wxLogMessage(L"Font remapped from '%s' to '%s'.", originalFaceName,
+                         theFont.GetFaceName());
+            }
         }
 
     //------------------------------------------------------
@@ -2005,4 +2071,4 @@ namespace Wisteria::GraphItems
             }
         return resizedFont.GetPointSize();
         }
-    }
+    } // namespace Wisteria::GraphItems
