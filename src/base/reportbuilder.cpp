@@ -4428,6 +4428,7 @@ namespace Wisteria
                     {
                     const auto outliersNode = cellsNode->GetProperty(L"column-outliers");
                     const auto topNNode = cellsNode->GetProperty(L"column-top-n");
+                    const auto rangeNode = cellsNode->GetProperty(L"range");
                     if (outliersNode->IsOk() && outliersNode->IsValueString())
                         {
                         const auto colIndex = table->FindColumnIndex(outliersNode->GetValueString());
@@ -4444,6 +4445,18 @@ namespace Wisteria
                             {
                             cellAnnotation.m_cells = table->GetTopN(colIndex.value(),
                                                                     cellsNode->GetProperty(L"n")->GetValueNumber(1));
+                            table->AddCellAnnotation(cellAnnotation);
+                            }
+                        }
+                    else if (rangeNode->IsOk() && rangeNode->HasProperty(L"start") && rangeNode->HasProperty(L"end"))
+                        {
+                        const auto startCell =
+                            table->FindCellPosition(rangeNode->GetProperty(L"start")->GetValueString());
+                        const auto endCell =
+                            table->FindCellPosition(rangeNode->GetProperty(L"end")->GetValueString());
+                        if (startCell && endCell)
+                            {
+                            cellAnnotation.m_cells = { startCell.value(), endCell.value() };
                             table->AddCellAnnotation(cellAnnotation);
                             }
                         }

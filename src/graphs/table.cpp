@@ -1941,6 +1941,29 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    std::optional<Table::CellPosition> Table::FindCellPosition(const wxString& textToFind)
+        {
+        if (m_table.size() == 0)
+            {
+            return std::nullopt;
+            }
+
+        const size_t colCount{ m_table[0].size()};
+        for (size_t i = 0; i < m_table.size(); ++i)
+            {
+            for (size_t j = 0; j < colCount; ++j)
+                {
+                auto& cell = m_table[i][j];
+                if (cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                    {
+                    return CellPosition{ i, j };
+                    }
+                }
+            }
+        return std::nullopt;
+        }
+
+    //----------------------------------------------------------------
     std::optional<size_t> Table::FindColumnIndex(const wxString& textToFind)
         {
         if (m_table.size() == 0)

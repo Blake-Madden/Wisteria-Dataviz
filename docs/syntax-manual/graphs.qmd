@@ -649,6 +649,7 @@ The remaining properties are executed in the following order:
   - `"background"`
   - `"cells"`: Properties for which cells to annotate. \
     Available options are:
+    - `"range"`: A provided range of cells (`"start"` and `"end"` subkeys must be provided.)
     - `"column-outliers"`: A provided column, with its outliers being annotated.
     - `"column-top-n"`: A provided column, with *n* number of highest-value items annotated.
     - `"n"`: If `"column-top-n"` is in use, a number specifying how many top items should be returned.
