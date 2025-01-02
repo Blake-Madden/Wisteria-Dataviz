@@ -10,7 +10,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
 
-using namespace Wisteria::GraphItems;
+    using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 
 namespace Wisteria::Graphs
@@ -385,8 +385,7 @@ namespace Wisteria::Graphs
             {
             const auto& cellLabel{ m_table[i][columnToSort] };
             const auto foundPos =
-                std::find_if(labels.cbegin(), labels.cend(),
-                             [&cellLabel](const auto& label)
+                std::find_if(labels.cbegin(), labels.cend(), [&cellLabel](const auto& label)
                              { return label.CmpNoCase(cellLabel.GetDisplayValue()) == 0; });
             if (foundPos == labels.cend())
                 {
@@ -1515,7 +1514,14 @@ namespace Wisteria::Graphs
             {
             const wxRect bBox = cellLabel->GetBoundingBox(dc);
             cellLabel->SetScaling(smallestTextScaling);
+            // Changing the scaling to something smaller will scale down the bounding box,
+            // so reset that back to the original box while preserving the new scaling.
+            // In this case, the text will be shrunk to the same scale as the other cells,
+            // but its box size (including the background color-filled area) will remain
+            // the same.
+            cellLabel->LockBoundingBoxScaling();
             cellLabel->SetBoundingBox(bBox, dc, GetScaling());
+            cellLabel->UnlockBoundingBoxScaling();
             // if using page alignment other than left aligned, then adjust its position
             if (horizontalAlignmentOffset > 0 || verticalAlignmentOffset > 0)
                 {
@@ -1785,7 +1791,8 @@ namespace Wisteria::Graphs
                 auto noteLabel = std::make_unique<Label>(
                     GraphItemInfo(note.m_note)
                         .Pen(wxNullPen)
-                        // use same text scale as the table (or 1.0 if the table font is really small)
+                        // use same text scale as the table (or 1.0 if the table font
+                        // is really small)
                         .Scaling(std::max(1.0, smallestTextScaling))
                         .DPIScaling(GetDPIScaleFactor())
                         .Anchoring(Anchoring::BottomLeftCorner)
@@ -1948,7 +1955,7 @@ namespace Wisteria::Graphs
             return std::nullopt;
             }
 
-        const size_t colCount{ m_table[0].size()};
+        const size_t colCount{ m_table[0].size() };
         for (size_t i = 0; i < m_table.size(); ++i)
             {
             for (size_t j = 0; j < colCount; ++j)
