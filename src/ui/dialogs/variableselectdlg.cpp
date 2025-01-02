@@ -161,7 +161,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
 
     // fill the main list of variables
     varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables")), wxGBPosition(0, 0),
-                   wxGBSpan(1, 1), wxEXPAND | wxALL);
+                   wxGBSpan(1, 1));
     m_mainVarlist = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                    wxLC_REPORT | wxLC_NO_HEADER);
     m_mainVarlist->InsertColumn(0, wxString{});
@@ -170,7 +170,7 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name);
         }
 
-    varsSizer->Add(m_mainVarlist, wxGBPosition(1, 0), wxGBSpan(3, 1), wxEXPAND | wxALL);
+    varsSizer->Add(m_mainVarlist, wxGBPosition(1, 0), wxGBSpan(3, 1));
 
     // set up the variable groups on the right side
     int currentButtonRow{ 1 };
@@ -195,12 +195,12 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         currentButtonRow += 2;
 
         varsSizer->Add(new wxStaticText(this, wxID_STATIC, label), wxGBPosition(currentLabelRow, 2),
-                       wxGBSpan(1, 1), wxEXPAND | wxALL);
+                       wxGBSpan(1, 1));
         currentLabelRow += 2;
 
         auto list = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, listStyle);
         list->InsertColumn(0, wxString{});
-        varsSizer->Add(list, wxGBPosition(currentListRow, 2), wxGBSpan(1, 1), wxEXPAND | wxALL);
+        varsSizer->Add(list, wxGBPosition(currentListRow, 2), wxGBSpan(1, 1));
         currentListRow += 2;
 
         return list;
@@ -307,7 +307,7 @@ bool VariableSelectDlg::Validate()
         {
         if (varList.m_required && varList.m_list && varList.m_list->GetItemCount() == 0)
             {
-            wxMessageBox(wxString::Format(_(L"Variable(s) must be selected for the '%s' list."),
+            wxMessageBox(wxString::Format(_(L"Variables must be selected for the '%s' list."),
                                           varList.m_label),
                          _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
             return false;

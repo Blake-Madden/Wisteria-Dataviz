@@ -15,7 +15,9 @@ namespace Wisteria::UI
         {
         wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        wxArrayString orientations = { _(L"Horizontally"), _(L"Vertically") };
+        wxArrayString orientations;
+        orientations.Add(_(L"Horizontally"));
+        orientations.Add(_(L"Vertically"));
         wxRadioBox* orientationsRadioBox =
             new wxRadioBox(this, wxID_ANY, _(L"Merge Images:"), wxDefaultPosition, wxDefaultSize,
                            orientations, 0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_orientRadio));
