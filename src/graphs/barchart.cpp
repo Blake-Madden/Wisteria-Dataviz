@@ -42,7 +42,9 @@ namespace Wisteria::Graphs
                         Settings::GetDefaultNumberFormat())) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
                 bar.GetAxisLabel().GetText() +
-                wxString::Format(L" (%s%%)",
+                wxString::Format(
+                    // TRANSLATORS: Percent value (%s) and percentage symbol (%%)
+                    _(L" (%s%%)"),
                     wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?

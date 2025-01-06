@@ -178,7 +178,10 @@ namespace Wisteria::GraphItems
         static wxString GetImageFileFilter()
             {
             return _(
-                LR"(Image Files (*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx)|*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|Bitmap (*.bmp)|*.bmp|JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|PNG (*.png)|*.png|GIF (*.gif)|*.gif|Targa (*.tga)|*.tga|TIFF (*.tif;*.tiff)|*.tif;*.tiff|PCX (*.pcx)|*.pcx)");
+                LR"(Image Files (*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx)|"
+                  "*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|Bitmap (*.bmp)|*.bmp|"
+                  "JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|PNG (*.png)|*.png|GIF (*.gif)|*.gif|"
+                  "Targa (*.tga)|*.tga|TIFF (*.tif;*.tiff)|*.tif;*.tiff|PCX (*.pcx)|*.pcx)");
             }
 
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).

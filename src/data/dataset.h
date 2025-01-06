@@ -1728,7 +1728,9 @@ namespace Wisteria::Data
         static wxString GetDataFileFilter()
             {
             return _(
-                LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|Excel Files (*.xlsx)|*.xlsx)");
+                LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|"
+                  "Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|"
+                  "Excel Files (*.xlsx)|*.xlsx)");
             }
 
         /// @}

@@ -430,7 +430,9 @@ namespace Wisteria::Graphs
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
                                         wxNumberFormatter::Style::Style_WithThousandsSep)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                                wxString::Format(L"%s%%",
+                                wxString::Format(
+                                    // TRANSLATORS: Percent value placeholder and percentage symbol (%%)
+                                    _(L"%s%%"),
                                     wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinValue) ?
                                 wxString::Format(L"%s",

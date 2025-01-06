@@ -56,7 +56,9 @@ namespace Wisteria::GraphItems
                     Settings::GetDefaultNumberFormat())));
             break;
         case BinLabelDisplay::BinNameAndPercentage:
-            pieLabel->SetText(wxString::Format(L"%s\n(%s%%)",
+            pieLabel->SetText(wxString::Format(
+                // TRANSLATORS: Pie chart label and then a percentage value in parentheses
+                _(L"%s\n(%s%%)"),
                 pieLabel->GetText(),
                 percStr));
             break;
@@ -201,7 +203,9 @@ namespace Wisteria::GraphItems
                 wxNumberFormatter::ToString(m_value, 0, Settings::GetDefaultNumberFormat())));
             break;
         case BinLabelDisplay::BinNameAndPercentage:
-            pieLabel->SetText(wxString::Format(L"%s (%s%%)", pieLabel->GetText(), percStr));
+            pieLabel->SetText(wxString::Format(
+                      // TRANSLATORS: Pie chart label and then a percentage value in parentheses
+                      _(L"%s (%s%%)"), pieLabel->GetText(), percStr));
             break;
         case BinLabelDisplay::BinName:
             [[fallthrough]];
