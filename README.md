@@ -143,38 +143,42 @@ git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodu
 Windows
 -----------------------------
 
-Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher:
+Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+same folder level as this project:
 
-```
-git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-```
+- Open *Visual Studio* and select *Clone a Repository*
+  - Enter "https://github.com/wxWidgets/wxWidgets.git" and clone it to same level as this project
+- Once the wxWidgets folder is cloned and opened in *Visual Studio*:
+  - Open **Project** > **CMake Settings for wxWidgets**
+    - Uncheck **wxBUILD_SHARED**
+    - Save your changes
+  - Select **Build** > **Install wxWidgets** (builds and then copies the header, lib, and cmake files to the prefix folder)
 
-Refer [here](https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md) for how to build wxWidgets.
-
-Next, build Wisteria:
-
-If using CMake GUI, open "CMakeLists.txt" and set `wxWidgets_ROOT_DIR` to the
-root folder of wxWidgets. Next, configure and generate a project file for your compiler.
-
-If using Visual Studio, open the Wisteria folder to load the project.
-Then go to `Project -> CMake Settings for Wisteria...`. Add an entry for `wxWidgets_ROOT_DIR`
-and specify the path to your wxWidgets folder. Save and then build the project.
+Next, open the Wisteria folder in Visual Studio and build the project.
 
 Linux
 -----------------------------
 
 Install the following from your repository manager (or build from source):
 
-- wxWidgets 3.2
-- GTK3 development files (version 3.2 or higher)
+- GTK3 development files (version 3.3 or higher)
 - Threading Building Blocks (libtbb) and its development files
+
+Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+same folder level as this project:
+
+```
+git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
+cmake --build . --target install -j4
+```
 
 Go into the project folder and run the following to
 build the library and demo:
 
 ```
-cmake ./
-cmake --build ./ -j 4
+cmake .
+cmake --build . -j 4
 ```
 
 If using KDevelop or VS Code, you can also open the CMake file and build from there.
@@ -184,17 +188,25 @@ macOS
 
 Install the following using brew (or build from source):
 
-- wxWidgets 3.2
 - Threading Building Blocks (tbb)
 - OpenMP (libomp)
 - Doxygen
+
+Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+same folder level as this project:
+
+```
+git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
+cmake --build . --target install -j4
+```
 
 Go into the project folder and run the following to
 build the library and demo:
 
 ```
-cmake ./
-cmake --build ./ -j 4
+cmake .
+cmake --build . -j 4
 ```
 
 Documentation
@@ -205,12 +217,8 @@ To build the API documentation, open "docs/doxygen/Doxyfile" in Doxygen and run 
 Dependencies
 =============================
 
-- [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher
+- [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher
 - GTK 3 (Linux)
-- Threading Building Blocks: libtbb (Linux), tbb (macOS)
+- Threading Building Blocks: libtbb (Linux)
 - A C++20 compatible compiler
-- OpenMP (optional): libomp (macOS)
-
-If using a version of CMake older than 3.24, please refer to
-[wxWidgets's CMake overview](https://docs.wxwidgets.org/trunk/overview_cmake.html) for instructions
-on how to set up CMake to work with wxWidgets 3.2.
+- OpenMP (optional)
