@@ -15,17 +15,14 @@ jobs:
              brew install cmake tbb libomp
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets
-             mkdir build-cocoa
-             cd build-cocoa
-             ../configure --enable-debug
-             make -j4
-             sudo make install
+             cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
+             cmake --build . --target install -j4
  
       - name: Build
         run: |
              cd ${{ github.workspace }}
              cmake ./
-             make -j4
+             cmake --build . -j4
 
       - name: Run tests
         run: |
@@ -34,7 +31,7 @@ jobs:
              git clone https://github.com/catchorg/Catch2.git
              cd ${{ github.workspace }}/tests
              cmake ./
-             make -j4
+             cmake --build . -j4
              cd bin
              ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
              cat WDV-junit.xml
