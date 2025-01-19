@@ -16,24 +16,16 @@ jobs:
              sudo apt install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets
-             mkdir buildgtk
-             cd buildgtk
-             ../configure --with-gtk
-             make -j4
-             sudo make install
-             sudo ldconfig
-             cd ..
-             cd ..
-             cmake ./
-             make -j4
-             
+             cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
+             cmake --build . --target install -j4
+
       - name: build
         run: |
              cd ..
              cd Wisteria-Dataviz
              cmake ./
-             make -j4
-             
+             cmake --build . -j4
+
       - name: run tests
         run: |
              cd ..
