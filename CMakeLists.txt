@@ -86,7 +86,7 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 include(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
 set(WISTIER_LIB wisteria)
 add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
-if(WIN32)
+if(WIN32 OR APPLE)
     target_link_libraries(${WISTIER_LIB} PUBLIC ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     # Add OpenMP for mutlithreading
