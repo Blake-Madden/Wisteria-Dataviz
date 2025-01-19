@@ -423,7 +423,10 @@ namespace Wisteria::Graphs
                             GetGroupLabelDisplay() == BinLabelDisplay::BinName) ?
                                 group.m_label :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
-                                wxString::Format(L"%s (%s%%)", group.m_label,
+                                wxString::Format(
+                                    // TRANSLATORS: Group label, the percentage value,
+                                    // and then percent sign (%%)
+                                    _(L"%s (%s%%)"), group.m_label,
                                     wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
                                 wxString::Format(L"%s (%s)", group.m_label,
@@ -439,7 +442,10 @@ namespace Wisteria::Graphs
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
                                         wxNumberFormatter::Style::Style_WithThousandsSep)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinValueAndPercentage) ?
-                                wxString::Format(L"%s (%s%%)",
+                                wxString::Format(
+                                    // TRANSLATORS: Group frequency, the percentage value,
+                                    // and then percent sign (%%)
+                                    _(L"%s (%s%%)"),
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
                                         wxNumberFormatter::Style::Style_WithThousandsSep),
                                     wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
