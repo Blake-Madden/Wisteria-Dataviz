@@ -1074,7 +1074,6 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event)
 long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDown,
                                  const bool matchWholeWord, const bool caseSensitiveSearch)
     {
-#if defined(__WXMSW__) || defined(__WXGTK__)
     long selStart{ 0 }, selEnd{ 0 };
     GetSelection(&selStart, &selEnd);
     wxTextSearchResult result =
@@ -1113,39 +1112,6 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
         }
 
     return wxNOT_FOUND;
-#else
-    std::wstring_view textToFindView{ textToFind };
-    long location =
-        GetTextPeer()->Find(textToFind, caseSensitiveSearch, searchDown, matchWholeWord);
-    if (location != wxNOT_FOUND)
-        {
-        SetSelection(location, location + static_cast<long>(textToFindView.length()));
-        ShowPosition(location);
-        }
-    // if not found and searching down, ask if they would like to start
-    // from the beginning and try again
-    long startOfSelection, endOfSelection;
-    GetSelection(&startOfSelection, &endOfSelection);
-    if ((location == wxNOT_FOUND) && searchDown && (startOfSelection > 0) &&
-        (wxMessageBox(_(L"Search has reached the end of the document. "
-                        "Do you wish to restart the search from the beginning?"),
-                      _(L"Continue Search"), wxYES_NO | wxICON_QUESTION) == wxYES))
-        {
-        SetSelection(0, 0);
-        location = GetTextPeer()->Find(textToFind, caseSensitiveSearch, searchDown, matchWholeWord);
-        if (location != wxNOT_FOUND)
-            {
-            SetSelection(location, location + static_cast<long>(textToFindView.length()));
-            ShowPosition(location);
-            }
-        else
-            {
-            SetSelection(startOfSelection, endOfSelection);
-            ShowPosition(startOfSelection);
-            }
-        }
-    return location;
-#endif
     }
 
 //-----------------------------------------------------------
