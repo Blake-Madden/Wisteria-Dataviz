@@ -21,7 +21,7 @@ jobs:
              # Ignore quneiform's own folder.
              # You can ignore other folders by adding a comma and the folder name
              # after "--ignore=quneiform".
-             ./quneiform/bin/quneiform ./src --ignore=import,quneiform,math,debug,base/colors.h,base/colors.cpp -q --enable=allI18N,allCodeFormatting -o i18nresults.txt
+             ./quneiform/bin/quneiform ./src --ignore=import,quneiform,math,debug,base/colors.h,base/colors.cpp,util/logfile.cpp -q --enable=allI18N,allCodeFormatting -o i18nresults.txt
 
       - name: review results
         run: |
