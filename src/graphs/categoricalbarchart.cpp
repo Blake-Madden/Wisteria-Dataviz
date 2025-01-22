@@ -181,14 +181,18 @@ namespace Wisteria::Graphs
             wxString blockLabelText =
                 (m_useWeightColumn ?
                      wxString::Format(
-                         _(L"%s item(s), totaling %s"),
+                         // TRANSLATORS: the number of items in a bin
+                         wxPLURAL(L"%s item, totaling %s", L"%s items, totaling %s",
+                                  blockTable.second.first),
                          wxNumberFormatter::ToString(blockTable.second.first, 0,
                                                      Settings::GetDefaultNumberFormat()),
                          wxNumberFormatter::ToString(blockTable.second.second, 2,
                                                      Settings::GetDefaultNumberFormat())) :
-                     wxString::Format(_(L"%s item(s)"), wxNumberFormatter::ToString(
-                                                            blockTable.second.first, 0,
-                                                            Settings::GetDefaultNumberFormat())));
+                     wxString::Format(
+                         // TRANSLATORS: the number of items in a bin
+                         wxPLURAL(L"%s item", L"%s items", blockTable.second.first),
+                         wxNumberFormatter::ToString(blockTable.second.first, 0,
+                                                     Settings::GetDefaultNumberFormat())));
 
             if (IsUsingGrouping())
                 {

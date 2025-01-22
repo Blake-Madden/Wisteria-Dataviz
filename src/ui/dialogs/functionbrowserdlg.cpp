@@ -94,7 +94,7 @@ namespace Wisteria::UI
                         currentDescriptionAndRetVal += wxString::Format(
                             L"<br />%s<tt><span style='font-weight:bold;'>"
                             "<span style=\"color:blue\"><a href=\"%s\">%s</a></span></span></tt>.",
-                            _(L"Returns the object as a "), retVal, retVal);
+                            _(L"Returns: "), retVal, retVal);
                         }
                     m_currentFunctionsAndDescriptions.emplace_back(
                         FormatFunctionSignature(currentFunctionSignature),

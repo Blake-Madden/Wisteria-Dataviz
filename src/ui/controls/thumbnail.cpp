@@ -296,7 +296,8 @@ namespace Wisteria::UI
         else if (m_clickMode == ClickMode::BrowseForImageFile)
             {
             wxFileDialog fileDlg(this, _(L"Select an Image"), wxString{}, wxString{},
-                                 _(L"Image Files ") + wxImage::GetImageExtWildcard(),
+                                 wxString::Format(L"%s %s",
+                                 _(L"Image Files"), wxImage::GetImageExtWildcard()),
                                  wxFD_OPEN | wxFD_PREVIEW);
             if (fileDlg.ShowModal() == wxID_OK)
                 {

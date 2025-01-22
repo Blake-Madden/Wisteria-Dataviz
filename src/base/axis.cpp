@@ -3082,10 +3082,14 @@ namespace Wisteria::GraphItems
                     }
                 else // Percent
                     {
-                    axisPt.SetDisplayValue(
-                        wxNumberFormatter::ToString(axisPt.GetValue() * 100, m_displayPrecision,
-                            wxNumberFormatter::Style::Style_WithThousandsSep |
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%");
+                    axisPt.SetDisplayValue(wxString::Format(
+                        /* TRANSLATORS: Percentage value (%s) that
+                           axis point consumes from the total axis and % symbol (%%).
+                           '%%' can be changed and/or moved elsewhere in the string. */
+                        _(L"%s%%"), wxNumberFormatter::ToString(
+                                        axisPt.GetValue() * 100, m_displayPrecision,
+                                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes)));
                     }
                 }
             }

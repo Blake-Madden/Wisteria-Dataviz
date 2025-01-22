@@ -42,7 +42,7 @@ wxColour ColorBrewer::BrewColor(const double value) const
         }
     double normalizedValue = statistics::normalize<double>(m_range.first, m_range.second, value);
 
-    // |-- Our desired color will be between these two indexes in "colorSpectrum".
+    // Our desired color will be between these two indexes in "colorSpectrum".
     int idx1{ 0 }, idx2{ 0 };
     // Fraction between "idx1" and "idx2" where our value is.
     double fractBetween{ 0 };

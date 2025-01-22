@@ -210,7 +210,9 @@ namespace Wisteria::Graphs
             const wxBrush blockBrush = (IsUsingGrouping() ?
                 GetBrushScheme()->GetBrush(blockTable.first.m_schemeIndex) : GetBrushScheme()->GetBrush(0));
 
-            wxString blockLabel{ wxString::Format(_(L"%s item(s)\n"),
+            wxString blockLabel{ wxString::Format(
+                // TRANSLATORS: the number of items in a bin
+                wxPLURAL(L"%s item\n", L"%s items\n", blockTable.second.second),
                 wxNumberFormatter::ToString(blockTable.second.second, 0,
                     Settings::GetDefaultNumberFormat())) };
             // piece the first few observations together as a display label for the block
@@ -485,7 +487,9 @@ namespace Wisteria::Graphs
 
                 currentBarBlocksTotal += block.second.first;
 
-                wxString blockLabel{ wxString::Format(_(L"%s item(s)\n"),
+                wxString blockLabel{ wxString::Format(
+                    // TRANSLATORS: the number of items in a bin
+                    wxPLURAL(L"%s item\n", L"%s items\n", block.second.first),
                     wxNumberFormatter::ToString(block.second.first, 0,
                         Settings::GetDefaultNumberFormat())) };
                 for (const auto& obsLabel : block.second.second)
@@ -527,14 +531,20 @@ namespace Wisteria::Graphs
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                     wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                    wxNumberFormatter::ToString(percentage, 0,
-                                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
+                    wxString::Format(
+                        /* TRANSLATORS: Percentage value (%s) % symbol (%%).
+                           '%%' can be changed and/or moved elsewhere in the string. */
+                        _(L"%s%%"),
+                        wxNumberFormatter::ToString(percentage, 0,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                    wxString::Format(
+                    /* TRANSLATORS: Bar length, percentage of overall length, and percent symbol (%%).
+                       '%%' can be changed or moved. */
+                    _(L"%s (%s%%)"),
                     wxNumberFormatter::ToString(barValue, 0,
-                    Settings::GetDefaultNumberFormat()) +
-                    L" (" +
+                        Settings::GetDefaultNumberFormat()),
                     wxNumberFormatter::ToString(percentage, 0,
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                    L"%)";
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
             theBar.GetLabel().SetText(barLabel);
 
             /* If values are being rounded and the intervals are integral, then show the bins
@@ -570,10 +580,13 @@ namespace Wisteria::Graphs
             else
                 {
                 const wxString axisLabel = ((i == 0) ? L">= " : L"> ") +
-                    wxNumberFormatter::ToString(minVal+(i*binSize), 6,
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes) + _(L" and <= ") +
-                    wxNumberFormatter::ToString(minVal+(i*binSize)+binSize, 6,
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                    wxString::Format(
+                        // TRANSLATORS: %s are the cutoff points for a bin
+                        _(L"%s and <= %s"),
+                        wxNumberFormatter::ToString(minVal+(i*binSize), 6,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                        wxNumberFormatter::ToString(minVal+(i*binSize)+binSize, 6,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
                     {
                     GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*binSize),

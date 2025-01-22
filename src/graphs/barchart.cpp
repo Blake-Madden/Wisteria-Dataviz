@@ -41,10 +41,12 @@ namespace Wisteria::Graphs
                     wxNumberFormatter::ToString(bar.GetLength(), 0,
                         Settings::GetDefaultNumberFormat())) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
-                bar.GetAxisLabel().GetText() +
                 wxString::Format(
-                    // TRANSLATORS: Percent value (%s) and percentage symbol (%%)
-                    _(L" (%s%%)"),
+                    /* TRANSLATORS: Bar axis label (%s), percent value (%s)
+                       and percentage symbol (%%). '%%' can be changed and/or
+                       moved elsewhere in the string. */
+                    _(L"%s (%s%%)"),
+                    bar.GetAxisLabel().GetText(),
                     wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
@@ -52,15 +54,20 @@ namespace Wisteria::Graphs
                                         Settings::GetDefaultNumberFormat()) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                 // if less than 1%, then use higher precision so that it doesn't just show as "0%"
-                wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
-                                        wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                L"%" :
+                wxString::Format(
+                    /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
+                       '%%' can be changed and/or moved elsewhere in the string. */
+                    _(L"%s%%"),
+                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
+                                        wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                 // BinValueAndPercentage
-                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
-                L" (" +
+                wxString::Format(
+                /* TRANSLATORS: Bar length, percentage of overall length, and percent symbol (%%).
+                   '%%' can be changed or moved. */
+                _(L"%s (%s%%)"),
+                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()),
                 wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
-                                            wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                L"%)";
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
         bar.GetLabel().SetText(labelStr + m_binLabelSuffix);
         }
 

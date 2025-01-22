@@ -1162,8 +1162,12 @@ namespace Wisteria
                 const auto percDec = CalcGroupPercentDecimal(countFormula, dataset);
                 if (percDec)
                     {
-                    return wxNumberFormatter::ToString(percDec.value() * 100, 0,
-                                wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%";
+                    return wxString::Format(
+                        /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
+                           '%%' can be changed and/or moved elsewhere in the string. */
+                        _(L"%s%%"), wxNumberFormatter::ToString(
+                                        percDec.value() * 100, 0,
+                                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
                     }
                 }
             }

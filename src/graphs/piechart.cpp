@@ -38,13 +38,17 @@ namespace Wisteria::GraphItems
                     Settings::GetDefaultNumberFormat()));
             break;
         case BinLabelDisplay::BinValueAndPercentage:
-            pieLabel->SetText(wxString::Format(L"%s%%\n(%s)",
-                percStr,
-                wxNumberFormatter::ToString(m_value, 0,
-                    Settings::GetDefaultNumberFormat())) );
+            pieLabel->SetText(wxString::Format(
+                /* TRANSLATORS: Percentage value (%s), % symbol (%%), and value.
+                   '%%' can be changed and/or moved elsewhere in the string.*/
+                _(L"%s%%\n(%s)"), percStr,
+                wxNumberFormatter::ToString(m_value, 0, Settings::GetDefaultNumberFormat())));
             break;
         case BinLabelDisplay::BinPercentage:
-            pieLabel->SetText(percStr + L"%");
+            pieLabel->SetText(wxString::Format(
+                /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
+                   '%%' can be changed and/or moved elsewhere in the string.*/
+                _(L"%s%%"), percStr));
             break;
         case BinLabelDisplay::NoDisplay:
             pieLabel->SetText(wxEmptyString);
@@ -188,11 +192,16 @@ namespace Wisteria::GraphItems
             break;
         case BinLabelDisplay::BinValueAndPercentage:
             pieLabel->SetText(wxString::Format(
-                L"%s%% (%s)", percStr,
+                /* TRANSLATORS: Percentage value (%s), % symbol (%%), and value.
+                   '%%' can be changed and/or moved elsewhere in the string.*/
+                _(L"%s%% (%s)"), percStr,
                 wxNumberFormatter::ToString(m_value, 0, Settings::GetDefaultNumberFormat())));
             break;
         case BinLabelDisplay::BinPercentage:
-            pieLabel->SetText(percStr + L"%");
+            pieLabel->SetText(wxString::Format(
+                /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
+                   '%%' can be changed and/or moved elsewhere in the string.*/
+                _(L"%s%%"), percStr));
             break;
         case BinLabelDisplay::NoDisplay:
             pieLabel->SetText(wxEmptyString);

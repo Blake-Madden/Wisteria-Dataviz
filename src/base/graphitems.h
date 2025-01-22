@@ -12,8 +12,8 @@
 #ifndef __WISTERIA_GRAPH_ITEMS_H__
 #define __WISTERIA_GRAPH_ITEMS_H__
 
-#include "../i18n-check/src/donttranslate.h"
 #include "../math/mathematics.h"
+#include "../util/donttranslate.h"
 #include "enums.h"
 #include "icons.h"
 #include "settings.h"
@@ -2127,7 +2127,7 @@ namespace Wisteria
             mutable wxRect m_cachedContentBoundingBox;
             };
         } // namespace GraphItems
-    } // namespace Wisteria
+    }     // namespace Wisteria
 
 /** @}*/
 

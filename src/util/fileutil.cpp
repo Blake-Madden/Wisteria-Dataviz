@@ -72,7 +72,7 @@ wxString FilePathResolverBase::ResolvePath(
         return m_path;
         }
     // else, if a file path using the file protocol then strip off the protocol
-    else if (string_util::strnicmp(m_path.wc_str(), L"file:", 5) == 0)
+    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"file:"), 5) == 0)
         {
         if (string_util::strnicmp(m_path.wc_str(), L"file://localhost/", 17) == 0)
             {

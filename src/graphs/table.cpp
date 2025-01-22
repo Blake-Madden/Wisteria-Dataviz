@@ -62,10 +62,12 @@ namespace Wisteria::Graphs
             else if (m_valueFormat == TableCellFormat::Percent ||
                      m_valueFormat == TableCellFormat::PercentChange)
                 {
-                return wxNumberFormatter::ToString(
-                           (*dVal) * 100, m_precision,
-                           wxNumberFormatter::Style::Style_WithThousandsSep) +
-                       L"%";
+                return wxString::Format(
+                    /* TRANSLATORS: Percentage value and percentage symbol (%%).
+                       '%%' can be changed and/or moved within string. */
+                    _(L"%s%%"),
+                    wxNumberFormatter::ToString((*dVal) * 100, m_precision,
+                                                wxNumberFormatter::Style::Style_WithThousandsSep));
                 }
             else if (m_valueFormat == TableCellFormat::Accounting)
                 {
