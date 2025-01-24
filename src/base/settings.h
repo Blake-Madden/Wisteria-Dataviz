@@ -64,9 +64,9 @@ namespace Wisteria
         };
 
 #if wxDEBUG_LEVEL >= 2
-#define DEBUG_LOG_INFO
-#define DEBUG_BOXES
-#define DEBUG_FILE_IO
+    #define DEBUG_LOG_INFO
+    #define DEBUG_BOXES
+    #define DEBUG_FILE_IO
 #endif
 
     /// @brief Class for managing global library settings.
@@ -159,6 +159,17 @@ namespace Wisteria
             m_maxLegendTextLength = std::max<size_t>(1, length); // at least length of one
             }
 
+        /// @returns The default currency symbol.
+        [[nodiscard]]
+        static wxString GetCurrencySymbol()
+            {
+            return m_currencySymbol;
+            }
+
+        /// @brief Sets the symbol used for currency.
+        /// @param str The symbol to use.
+        static void SetCurrencySymbol(const wxString& str) { m_currencySymbol = str; }
+
         /// @brief Determines if a debug flag is enabled.
         /// @param flag The flag to check for.
         /// @returns @c true if the given flag is enabled.
@@ -196,6 +207,7 @@ namespace Wisteria
         inline static size_t m_pointRadius{ 4 };
         inline static double m_roundedCornerRadius{ 5 };
         inline static size_t m_maxObservationsInBin{ 25 };
+        inline static wxString m_currencySymbol{ L"$" };
         // clang-format off
         constexpr static int m_debugSettings
             {

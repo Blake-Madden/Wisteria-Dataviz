@@ -41,7 +41,7 @@ namespace Wisteria::Graphs
         else if (m_valueFormat == TableCellFormat::Accounting)
             {
             m_precision = 2;
-            m_prefix = L"$";
+            m_prefix = Wisteria::Settings::GetCurrencySymbol();
             m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
             }
         }
