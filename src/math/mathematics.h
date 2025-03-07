@@ -73,6 +73,9 @@ namespace math_constants
 
     /// @brief Full (i.e., 100%).
     constexpr double full = 1.0;
+
+    /// @brief Synonym for full (i.e., 100%).
+    constexpr double whole = full;
     } // namespace math_constants
 
 /// @returns @c true if a value is within a given range.
