@@ -1462,17 +1462,7 @@ void FormattedTextCtrl::SetFormattedText(const wxString& formattedText)
 #ifdef __WXGTK__
     if (IsMultiLine())
         {
-            // multiple events may get fired while editing text, so block those
-            {
-            EventsSuppressor noevents(this);
-            // clear current content
-            GtkTextIter start, end;
-            gtk_text_buffer_get_bounds(GTKGetTextBuffer(), &start, &end);
-            gtk_text_buffer_delete(GTKGetTextBuffer(), &start, &end);
-
-            gtk_text_buffer_insert_markup(GTKGetTextBuffer(), &start, formattedText.utf8_str(), -1);
-            }
-        SendTextUpdatedEvent(GetEditableWindow());
+        GTKSetPangoMarkup(formattedText);
         }
 #else
     if (IsRTFSupported())
