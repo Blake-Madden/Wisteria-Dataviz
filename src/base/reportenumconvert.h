@@ -141,7 +141,20 @@ namespace Wisteria
                 { L"car", Icons::IconShape::Car },
                 { L"blackboard", Icons::IconShape::Blackboard },
                 { L"clock", Icons::IconShape::Clock },
-                { L"ruler", Icons::IconShape::Ruler }
+                { L"ruler", Icons::IconShape::Ruler },
+                { L"ivbag", Icons::IconShape::IVBag },
+                { L"cold-thermometer", Icons::IconShape::ColdThermometer },
+                { L"hot-thermometer", Icons::IconShape::HotThermometer },
+                { L"apple", Icons::IconShape::Apple },
+                { L"granny-smith-apple", Icons::IconShape::GrannySmithApple },
+                { L"heart", Icons::IconShape::Heart },
+                { L"immaculate-heart", Icons::IconShape::ImmaculateHeart },
+                { L"flame", Icons::IconShape::Flame },
+                { L"office", Icons::IconShape::Office },
+                { L"factory", Icons::IconShape::Factory },
+                { L"house", Icons::IconShape::House },
+                { L"barn", Icons::IconShape::Barn },
+                { L"farm", Icons::IconShape::Farm }
             };
 
             const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));

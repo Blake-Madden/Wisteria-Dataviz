@@ -218,7 +218,20 @@ namespace Wisteria::GraphItems
             { IconShape::Car, &ShapeRenderer::DrawCar },
             { IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
             { IconShape::Clock, &ShapeRenderer::DrawClock },
-            { IconShape::Ruler, &ShapeRenderer::DrawRuler }
+            { IconShape::Ruler, &ShapeRenderer::DrawRuler },
+            { IconShape::IVBag, &ShapeRenderer::DrawIVBag },
+            { IconShape::ColdThermometer, &ShapeRenderer::DrawColdThermometer },
+            { IconShape::HotThermometer, &ShapeRenderer::DrawHotThermometer },
+            { IconShape::Apple, &ShapeRenderer::DrawRedApple },
+            { IconShape::GrannySmithApple, &ShapeRenderer::DrawGrannySmithApple },
+            { IconShape::Heart, &ShapeRenderer::DrawHeart },
+            { IconShape::ImmaculateHeart, &ShapeRenderer::DrawImmaculateHeart },
+            { IconShape::Flame, &ShapeRenderer::DrawFlame },
+            { IconShape::Office, &ShapeRenderer::DrawOffice },
+            { IconShape::Factory, &ShapeRenderer::DrawFactory },
+            { IconShape::House, &ShapeRenderer::DrawHouse },
+            { IconShape::Barn, &ShapeRenderer::DrawBarn },
+            { IconShape::Farm, &ShapeRenderer::DrawFarm }
         };
 
         // connect the rendering function to the shape
@@ -438,13 +451,849 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawThermometer(const wxRect rect, wxDC& dc, const Temperature temp) const
+        {
+        wxPen scaledPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(
+                                       rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                                           math_constants::half :
+                                           math_constants::full)) };
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(1));
+        // adjust to center it horizontally inside of square area
+        if (rect.GetWidth() == rect.GetHeight())
+            {
+            const auto adjustedWidth{ drawRect.GetWidth() * 0.4 };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
+            }
+            // add padding
+            {
+            const auto adjustedWidth{ drawRect.GetWidth() * 0.8 };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
+            }
+
+        wxRect sunOrSnowRect{ rect };
+        sunOrSnowRect.SetHeight(sunOrSnowRect.GetHeight() * math_constants::half);
+        sunOrSnowRect.SetWidth(sunOrSnowRect.GetWidth() * math_constants::half);
+        if (temp == Temperature::Hot)
+            {
+            DrawSun(sunOrSnowRect, dc);
+            }
+        else
+            {
+            DrawSnowflake(sunOrSnowRect, dc);
+            }
+
+            // stem
+            {
+                {
+                wxDCBrushChanger bc(dc, *wxWHITE);
+                dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
+                drawRect.Deflate(static_cast<int>(ScaleToScreenAndCanvas(1.5)));
+                }
+                // mercury
+                {
+                wxRect mercuryRect{ drawRect };
+                if (temp == Temperature::Cold)
+                    {
+                    mercuryRect.SetHeight(mercuryRect.GetHeight() * math_constants::third);
+                    mercuryRect.Offset(0, drawRect.GetHeight() * math_constants::two_thirds);
+                    wxDCBrushChanger bc(dc, Colors::ColorBrewer::GetColor(Colors::Color::Ice));
+                    dc.DrawRectangle(mercuryRect);
+                    }
+                else
+                    {
+                    wxDCBrushChanger bc(dc,
+                                        Colors::ColorBrewer::GetColor(Colors::Color::TractorRed));
+                    dc.DrawRectangle(mercuryRect);
+                    }
+                }
+            }
+
+        if (temp == Temperature::Hot)
+            {
+            scaledPen.SetColour(Colors::ColorBrewer::GetColor(Colors::Color::LightGray));
+            }
+        DCPenChangerIfDifferent pc2(dc, scaledPen);
+        // measuring lines along stem
+        wxRect clipRect{ rect };
+        clipRect.SetHeight(clipRect.GetHeight() * 0.90);
+        wxDCClipper clip{ dc, clipRect };
+        int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
+        int currentLine{ 0 };
+        while (currentY < drawRect.GetBottom())
+            {
+            dc.DrawLine(
+                { drawRect.GetLeft() +
+                      static_cast<int>(drawRect.GetWidth() * ((currentLine % 4 == 0) ?
+                                                                  math_constants::half :
+                                                                  math_constants::three_fourths)),
+                  currentY },
+                { drawRect.GetRight(), currentY });
+            currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
+            ++currentLine;
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawColdThermometer(const wxRect rect, wxDC& dc) const
+        {
+        DrawThermometer(rect, dc, Temperature::Cold);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawHotThermometer(const wxRect rect, wxDC& dc) const
+        {
+        DrawThermometer(rect, dc, Temperature::Hot);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawRedApple(const wxRect rect, wxDC& dc) const
+        {
+        DrawApple(rect, dc, ColorBrewer::GetColor(Color::CandyApple));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawGrannySmithApple(const wxRect rect, wxDC& dc) const
+        {
+        DrawApple(rect, dc, ColorBrewer::GetColor(Color::GrannySmithApple));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawApple(const wxRect rect, wxDC& dc, const wxColour color) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
+                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                             0);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for apple!");
+        if (gc != nullptr)
+            {
+            gc->SetPen(wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(1)) });
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(rect, math_constants::three_fourths),
+                GetYPosFromTop(rect, math_constants::half),
+                ApplyParentColorOpacity(
+                    ColorContrast::ShadeOrTint(color, math_constants::three_fourths)),
+                ApplyParentColorOpacity(color)));
+
+            wxGraphicsPath applePath = gc->CreatePath();
+
+            applePath.MoveToPoint(wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                                          GetYPosFromTop(drawRect, 0.3)));
+            // left side
+            applePath.AddCurveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0), GetYPosFromTop(drawRect, 0)),
+                wxPoint(GetXPosFromLeft(drawRect, 0.2), GetYPosFromTop(drawRect, 0.9)),
+                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                        GetYPosFromTop(drawRect, 0.7)));
+            // right side
+            applePath.AddCurveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0.8), GetYPosFromTop(drawRect, 0.9)),
+                wxPoint(GetXPosFromLeft(drawRect, 1.0), GetYPosFromTop(drawRect, 0)),
+                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                        GetYPosFromTop(drawRect, 0.3)));
+
+            applePath.CloseSubpath();
+            gc->FillPath(applePath);
+            gc->StrokePath(applePath);
+
+            // shine
+            wxGraphicsPath shinePath = gc->CreatePath();
+
+            gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 },
+                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+
+            shinePath.MoveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0.35), GetYPosFromTop(drawRect, 0.35)));
+            shinePath.AddQuadCurveToPoint(
+                GetXPosFromLeft(drawRect, 0.25), GetYPosFromTop(drawRect, 0.37),
+                GetXPosFromLeft(drawRect, 0.3), GetYPosFromTop(drawRect, math_constants::half));
+
+            gc->StrokePath(shinePath);
+
+            // leaf
+            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::JungleGreen));
+            gc->SetPen(*wxTRANSPARENT_PEN);
+
+            wxGraphicsPath leafPath = gc->CreatePath();
+
+            leafPath.MoveToPoint(wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                                         GetYPosFromTop(drawRect, 0.3)));
+            leafPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(drawRect, 0.325), GetYPosFromTop(drawRect, 0.2),
+                GetXPosFromLeft(drawRect, 0.25), GetYPosFromTop(drawRect, 0.1));
+            leafPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(drawRect, 0.475), GetYPosFromTop(drawRect, 0.1),
+                GetXPosFromLeft(drawRect, math_constants::half), GetYPosFromTop(drawRect, 0.3));
+
+            leafPath.CloseSubpath();
+            gc->FillPath(leafPath);
+            gc->StrokePath(leafPath);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawOffice(const wxRect rect, wxDC& dc) const
+        {
+        DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawHouse(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for house!");
+        if (gc != nullptr)
+            {
+            // chimney
+            wxRect chimneyRect{ rect };
+            chimneyRect.Deflate(ScaleToScreenAndCanvas(2));
+            chimneyRect.SetWidth(chimneyRect.GetWidth() * math_constants::fifth);
+            chimneyRect.SetHeight(chimneyRect.GetHeight() * 0.9);
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(chimneyRect, -math_constants::quarter),
+                GetYPosFromTop(chimneyRect, math_constants::half),
+                GetXPosFromLeft(chimneyRect, math_constants::full),
+                GetYPosFromTop(chimneyRect, math_constants::half),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
+            gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
+                              chimneyRect.GetHeight());
+
+            // house body
+            DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::PastelYellow));
+
+            // roof
+            wxRect roofRect{ rect };
+            roofRect.SetHeight((chimneyRect.GetHeight() * math_constants::third) +
+                               ScaleToScreenAndCanvas(3));
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(chimneyRect, -math_constants::quarter),
+                GetYPosFromTop(chimneyRect, math_constants::half),
+                GetXPosFromLeft(chimneyRect, math_constants::full),
+                GetYPosFromTop(chimneyRect, math_constants::half),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)))));
+
+            wxGraphicsPath roofPath = gc->CreatePath();
+
+            roofPath.MoveToPoint(roofRect.GetBottomLeft());
+            roofPath.AddLineToPoint(GetXPosFromLeft(roofRect, math_constants::half),
+                                    GetYPosFromTop(roofRect, 0));
+            roofPath.AddLineToPoint(GetXPosFromLeft(roofRect, math_constants::full),
+                                    GetYPosFromTop(roofRect, math_constants::full));
+
+            roofPath.CloseSubpath();
+            gc->FillPath(roofPath);
+            gc->StrokePath(roofPath);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFactory(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for factory!");
+        if (gc != nullptr)
+            {
+            // smoke
+            wxRect smokeRect{ rect };
+            smokeRect.Deflate(ScaleToScreenAndCanvas(2));
+            smokeRect.SetTop(rect.GetTop());
+            smokeRect.SetWidth(smokeRect.GetWidth() * math_constants::fifth * 2);
+            smokeRect.SetHeight(rect.GetHeight() * .2);
+
+            gc->SetPen(
+                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, math_constants::full),
+                GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, 0),
+                Colors::ColorContrast::ChangeOpacity(
+                    ColorContrast::ShadeOrTint(
+                        Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
+                    200),
+                Colors::ColorContrast::ChangeOpacity(
+                    Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack), 50)));
+
+            wxGraphicsPath smokePath = gc->CreatePath();
+
+            smokePath.MoveToPoint(smokeRect.GetBottomLeft());
+            smokePath.AddQuadCurveToPoint(GetXPosFromLeft(smokeRect, math_constants::tenth),
+                                          GetYPosFromTop(smokeRect, math_constants::half),
+                                          GetXPosFromLeft(smokeRect, -math_constants::fifth),
+                                          GetYPosFromTop(smokeRect, 0));
+            smokePath.AddQuadCurveToPoint(
+                GetXPosFromLeft(smokeRect, 1.4), GetYPosFromTop(smokeRect, 0),
+                GetXPosFromLeft(smokeRect, 1.4), GetYPosFromTop(smokeRect, 0));
+            smokePath.AddQuadCurveToPoint(GetXPosFromLeft(smokeRect, 1.4),
+                                          GetYPosFromTop(smokeRect, math_constants::quarter),
+                                          GetXPosFromLeft(smokeRect, math_constants::full),
+                                          GetYPosFromTop(smokeRect, math_constants::half));
+            smokePath.AddQuadCurveToPoint(GetXPosFromLeft(smokeRect, 1.2),
+                                          GetYPosFromTop(smokeRect, 0.6),
+                                          GetXPosFromLeft(smokeRect, math_constants::full),
+                                          GetYPosFromTop(smokeRect, math_constants::full));
+            smokePath.AddQuadCurveToPoint(
+                GetXPosFromLeft(smokeRect, 1.1), GetYPosFromTop(smokeRect, 1.1),
+                GetXPosFromLeft(smokeRect, math_constants::full), GetYPosFromTop(smokeRect, 1.4));
+            smokePath.AddQuadCurveToPoint(
+                GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, 1.2),
+                GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, 1.2));
+
+            smokePath.CloseSubpath();
+            gc->FillPath(smokePath);
+
+            // smoke stacks
+            wxRect chimneyRect{ rect };
+            chimneyRect.Deflate(ScaleToScreenAndCanvas(2));
+            chimneyRect.SetWidth(chimneyRect.GetWidth() * math_constants::fifth);
+            chimneyRect.SetHeight(chimneyRect.GetHeight() * 0.9);
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(chimneyRect, -math_constants::quarter),
+                GetYPosFromTop(chimneyRect, math_constants::half),
+                GetXPosFromLeft(chimneyRect, math_constants::full),
+                GetYPosFromTop(chimneyRect, math_constants::half),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
+            gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
+                              chimneyRect.GetHeight());
+            const auto yOffset{ chimneyRect.GetHeight() * math_constants::fifth };
+            chimneyRect.SetHeight(chimneyRect.GetHeight() * 0.8);
+            chimneyRect.Offset(chimneyRect.GetWidth(), yOffset);
+            gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
+                              chimneyRect.GetHeight());
+            }
+
+        DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::BrickRed));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour color) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(2));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for building!");
+        if (gc != nullptr)
+            {
+            const auto drawWindow = [&gc, this](const wxRect drawingRect)
+            {
+                gc->SetPen(wxPen{ *wxBLACK,
+                                  static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+
+                gc->SetBrush(gc->CreateLinearGradientBrush(
+                    GetXPosFromLeft(drawingRect, 0),
+                    GetYPosFromTop(drawingRect, math_constants::half),
+                    GetXPosFromLeft(drawingRect, 2),
+                    GetYPosFromTop(drawingRect, math_constants::half),
+                    ApplyParentColorOpacity(
+                        Colors::ColorBrewer::GetColor(Colors::Color::BlizzardBlue)),
+                    ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::White))));
+
+                gc->DrawRectangle(drawingRect.GetX(), drawingRect.GetY(), drawingRect.GetWidth(),
+                                  drawingRect.GetHeight());
+
+                gc->StrokeLine(GetXPosFromLeft(drawingRect, 0),
+                               GetYPosFromTop(drawingRect, math_constants::half),
+                               GetXPosFromLeft(drawingRect, math_constants::full),
+                               GetYPosFromTop(drawingRect, math_constants::half));
+                gc->StrokeLine(GetXPosFromLeft(drawingRect, math_constants::half),
+                               GetYPosFromTop(drawingRect, 0),
+                               GetXPosFromLeft(drawingRect, math_constants::half),
+                               GetYPosFromTop(drawingRect, math_constants::full));
+            };
+
+            gc->SetPen(
+                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, -math_constants::quarter),
+                GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(rect, math_constants::full),
+                GetYPosFromTop(rect, math_constants::half),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(color)),
+                ApplyParentColorOpacity(color)));
+
+            wxRect mainBuildingRect{ drawRect };
+            const auto yOffset{ mainBuildingRect.GetHeight() * math_constants::third };
+            mainBuildingRect.SetHeight(mainBuildingRect.GetHeight() * math_constants::two_thirds);
+            mainBuildingRect.Offset(0, yOffset);
+            gc->DrawRectangle(mainBuildingRect.GetX(), mainBuildingRect.GetY(),
+                              mainBuildingRect.GetWidth(), mainBuildingRect.GetHeight());
+
+            wxRect windowRect{ mainBuildingRect };
+            windowRect.SetWidth(mainBuildingRect.GetWidth() * math_constants::third);
+            windowRect.SetHeight(mainBuildingRect.GetHeight() * math_constants::third);
+            windowRect.SetLeft(mainBuildingRect.GetLeft() +
+                               (mainBuildingRect.GetWidth() * math_constants::tenth));
+            windowRect.SetTop(mainBuildingRect.GetTop() + (mainBuildingRect.GetHeight() * 0.15));
+            drawWindow(windowRect);
+
+            const auto newWindowX{ (mainBuildingRect.GetRight() -
+                                    (mainBuildingRect.GetWidth() * math_constants::tenth)) -
+                                   windowRect.GetWidth() };
+            const auto oldWindowX{ windowRect.GetX() };
+            windowRect.Offset(newWindowX - windowRect.GetX(), 0);
+            drawWindow(windowRect);
+
+            windowRect.SetX(oldWindowX);
+            windowRect.Offset(0, windowRect.GetHeight() +
+                                     mainBuildingRect.GetWidth() * math_constants::tenth);
+            drawWindow(windowRect);
+
+            windowRect.Offset(newWindowX - windowRect.GetX(), 0);
+            windowRect.SetBottom(mainBuildingRect.GetBottom());
+            const auto doorOffset{ windowRect.GetWidth() * math_constants::quarter };
+            windowRect.SetWidth(windowRect.GetWidth() * math_constants::half);
+            windowRect.Offset(doorOffset, 0);
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(windowRect, 0), GetYPosFromTop(windowRect, math_constants::half),
+                GetXPosFromLeft(windowRect, 2), GetYPosFromTop(windowRect, math_constants::half),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::White))));
+            gc->DrawRectangle(windowRect.GetX(), windowRect.GetY(), windowRect.GetWidth(),
+                              windowRect.GetHeight());
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawBarn(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(2));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for barn!");
+        if (gc != nullptr)
+            {
+            gc->SetPen(
+                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(rect, math_constants::full),
+                GetYPosFromTop(rect, math_constants::half),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Color::FireEngineRed))),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Color::FireEngineRed))));
+
+            wxRect barnRect{ drawRect };
+            const std::vector<wxPoint> barnPoints = {
+                barnRect.GetBottomLeft(),
+                wxPoint(GetXPosFromLeft(barnRect, 0),
+                        GetYPosFromTop(barnRect, math_constants::half)),
+                wxPoint(GetXPosFromLeft(barnRect, math_constants::tenth),
+                        GetYPosFromTop(barnRect, math_constants::fourth)),
+                wxPoint(GetXPosFromLeft(barnRect, math_constants::half),
+                        GetYPosFromTop(barnRect, 0)),
+                wxPoint(GetXPosFromLeft(barnRect, math_constants::full - math_constants::tenth),
+                        GetYPosFromTop(barnRect, math_constants::fourth)),
+                wxPoint(GetXPosFromLeft(barnRect, math_constants::full),
+                        GetYPosFromTop(barnRect, math_constants::half)),
+                wxPoint(GetXPosFromLeft(barnRect, math_constants::full),
+                        GetYPosFromTop(barnRect, math_constants::full))
+            };
+
+            wxGraphicsPath barnPath = gc->CreatePath();
+
+            barnPath.MoveToPoint(barnPoints[0].x, barnPoints[0].y);
+            barnPath.AddLineToPoint(barnPoints[1].x, barnPoints[1].y);
+            barnPath.AddLineToPoint(barnPoints[2].x, barnPoints[2].y);
+            barnPath.AddLineToPoint(barnPoints[3].x, barnPoints[3].y);
+            barnPath.AddLineToPoint(barnPoints[4].x, barnPoints[4].y);
+            barnPath.AddLineToPoint(barnPoints[5].x, barnPoints[5].y);
+            barnPath.AddLineToPoint(barnPoints[6].x, barnPoints[6].y);
+
+            barnPath.CloseSubpath();
+            gc->StrokePath(barnPath);
+            gc->FillPath(barnPath);
+
+            // draw lines across barn to look like boards
+            gc->SetPen(wxPen{ Colors::ColorContrast::ChangeOpacity(
+                                  Colors::ColorBrewer::GetColor(Color::DarkGray), 75),
+                              static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
+            double clipX{ 0 }, clipY{ 0 }, clipW{ 0 }, clipH{ 0 };
+            gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
+            const wxRect originalClipRect(clipX, clipY, clipW, clipH);
+            wxRegion barnRegion{ barnPoints.size(), &barnPoints[0] };
+            gc->Clip(barnRegion);
+            wxCoord currentY{ barnRect.GetTop() };
+            int currentLine{ 0 };
+            while (currentY < barnRect.GetBottom())
+                {
+                dc.DrawLine({ barnRect.GetLeft(), currentY }, { barnRect.GetRight(), currentY });
+                currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2);
+                ++currentLine;
+                }
+            gc->ResetClip();
+            if (!originalClipRect.IsEmpty())
+                {
+                gc->Clip(originalClipRect);
+                }
+
+            // roof
+            gc->SetPen(wxPenInfo{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(1.5)) }.Join(
+                wxPenJoin::wxJOIN_MITER));
+            gc->StrokeLine(barnPoints[1].x, barnPoints[1].y, barnPoints[2].x, barnPoints[2].y);
+            gc->StrokeLine(barnPoints[2].x, barnPoints[2].y, barnPoints[3].x, barnPoints[3].y);
+            gc->StrokeLine(barnPoints[3].x, barnPoints[3].y, barnPoints[4].x, barnPoints[4].y);
+            gc->StrokeLine(barnPoints[4].x, barnPoints[4].y, barnPoints[5].x, barnPoints[5].y);
+
+            // alley doors
+            gc->SetPen(wxPenInfo{ *wxWHITE,
+                                  static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
+                           .Join(wxPenJoin::wxJOIN_MITER));
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+
+            wxRect doorRect{ barnRect };
+            doorRect.SetWidth(doorRect.GetWidth() * math_constants::half);
+            doorRect.SetHeight(doorRect.GetHeight() * 0.4);
+            doorRect.Offset((barnRect.GetWidth() * math_constants::half) -
+                                (doorRect.GetWidth() * math_constants::half),
+                            (barnRect.GetHeight() * 0.6) -
+                                static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)));
+            gc->DrawRectangle(doorRect.x, doorRect.y, doorRect.GetWidth(), doorRect.GetHeight());
+
+            gc->StrokeLine(doorRect.GetBottomLeft().x, doorRect.GetBottomLeft().y,
+                           doorRect.GetTopRight().x, doorRect.GetTopRight().y);
+            gc->StrokeLine(doorRect.GetTopLeft().x, doorRect.GetTopLeft().y,
+                           doorRect.GetBottomRight().x, doorRect.GetBottomRight().y);
+            gc->SetPen(wxPenInfo{
+                *wxWHITE, static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) }
+                           .Join(wxPenJoin::wxJOIN_MITER));
+            gc->StrokeLine(doorRect.GetTopLeft().x + (doorRect.GetWidth() * math_constants::half),
+                           doorRect.GetTopLeft().y,
+                           doorRect.GetBottomLeft().x +
+                               (doorRect.GetWidth() * math_constants::half),
+                           doorRect.GetBottomLeft().y);
+
+            // loft opening
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(*wxBLACK);
+            const wxSize originalSize{ doorRect.GetSize() };
+            doorRect.SetWidth(doorRect.GetWidth() * math_constants::half);
+            doorRect.SetHeight(doorRect.GetHeight() * math_constants::half);
+            doorRect.Offset((originalSize.GetWidth() * math_constants::half) -
+                                (doorRect.GetWidth() * math_constants::half),
+                            -(doorRect.GetHeight() * 1.5));
+            gc->DrawRectangle(doorRect.x, doorRect.y, doorRect.GetWidth(), doorRect.GetHeight());
+
+            // hay bale
+            wxRect hayRect{ doorRect };
+            hayRect.SetWidth(hayRect.GetWidth() * math_constants::half);
+            hayRect.SetHeight(hayRect.GetHeight() * math_constants::half);
+            hayRect.Offset(0, doorRect.GetHeight() - hayRect.GetHeight());
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(rect, math_constants::full),
+                GetYPosFromTop(rect, math_constants::half),
+                ApplyParentColorOpacity(
+                    ColorContrast::ShadeOrTint(Colors::ColorBrewer::GetColor(Color::Yellow))),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Color::Yellow))));
+            gc->DrawRectangle(hayRect.x, hayRect.y, hayRect.GetWidth(), hayRect.GetHeight());
+
+            // draw the loft opening's frame
+            gc->SetPen(wxPenInfo{ *wxWHITE,
+                                  static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
+                           .Join(wxPenJoin::wxJOIN_MITER));
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            gc->DrawRectangle(doorRect.x, doorRect.y, doorRect.GetWidth(), doorRect.GetHeight());
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFarm(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(2));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for farm!");
+        if (gc != nullptr)
+            {
+            // silo
+            gc->SetPen(wxPenInfo{ *wxBLACK,
+                                  static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
+                           .Cap(wxPenCap::wxCAP_BUTT));
+
+            wxRect siloRect{ drawRect };
+            siloRect.SetWidth(siloRect.GetWidth() * math_constants::half);
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(siloRect, 0), GetYPosFromTop(siloRect, math_constants::half),
+                GetXPosFromLeft(siloRect, math_constants::full),
+                GetYPosFromTop(siloRect, math_constants::half),
+                ApplyParentColorOpacity(
+                    ColorContrast::ShadeOrTint(Colors::ColorBrewer::GetColor(Color::LightGray))),
+                ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Color::LightGray))));
+
+            wxRect siloBodyRect{ siloRect };
+            siloBodyRect.SetHeight(siloBodyRect.GetHeight() * math_constants::three_fourths);
+            siloBodyRect.Offset(0, siloRect.GetHeight() - siloBodyRect.GetHeight());
+
+            gc->DrawRectangle(siloBodyRect.x, siloBodyRect.y, siloBodyRect.GetWidth(),
+                              siloBodyRect.GetHeight());
+
+            // ladder
+            wxRect ladderRect{ siloBodyRect };
+            ladderRect.Offset(siloBodyRect.GetWidth() * math_constants::fifth, 0);
+            ladderRect.SetWidth(ladderRect.GetWidth() * math_constants::third);
+            gc->StrokeLine(ladderRect.x, ladderRect.y, ladderRect.x,
+                           ladderRect.y + ladderRect.GetHeight());
+            gc->StrokeLine(ladderRect.x + ladderRect.GetWidth(), ladderRect.y,
+                           ladderRect.x + ladderRect.GetWidth(),
+                           ladderRect.y + ladderRect.GetHeight());
+
+            int currentY{ ladderRect.GetTop() };
+            int currentLine{ 0 };
+            while (currentY < ladderRect.GetBottom())
+                {
+                gc->StrokeLine(ladderRect.GetLeft(), currentY, ladderRect.GetRight(), currentY);
+                currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
+                ++currentLine;
+                }
+
+            // top of silo
+            wxGraphicsPath siloLidPath = gc->CreatePath();
+
+            siloLidPath.MoveToPoint(wxPoint(siloBodyRect.x, siloBodyRect.y));
+            // left side
+            siloLidPath.AddCurveToPoint(
+                wxPoint(siloBodyRect.x, siloRect.y),
+                wxPoint(siloBodyRect.x + siloBodyRect.GetWidth(), siloRect.y),
+                wxPoint(siloBodyRect.x + siloBodyRect.GetWidth(), siloBodyRect.y));
+
+            siloLidPath.CloseSubpath();
+            gc->FillPath(siloLidPath);
+            gc->StrokePath(siloLidPath);
+            }
+
+        wxRect barnRect{ rect };
+        barnRect.SetWidth(barnRect.GetWidth() * math_constants::three_fourths);
+        barnRect.SetHeight(barnRect.GetHeight() * math_constants::three_fourths);
+        barnRect.Offset(rect.GetWidth() - barnRect.GetWidth(),
+                        rect.GetHeight() - barnRect.GetHeight());
+        DrawBarn(barnRect, dc);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawHeart(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
+                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                             0);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for heart!");
+        if (gc != nullptr)
+            {
+            gc->SetPen(
+                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
+                GetXPosFromLeft(rect, math_constants::three_fourths),
+                GetYPosFromTop(rect, math_constants::half),
+                ApplyParentColorOpacity(ColorContrast::ShadeOrTint(
+                    ColorBrewer::GetColor(Color::CandyApple), math_constants::three_fourths)),
+                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::CandyApple))));
+
+            wxGraphicsPath applePath = gc->CreatePath();
+
+            applePath.MoveToPoint(wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                                          GetYPosFromTop(drawRect, 0.3)));
+            // left side
+            applePath.AddCurveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, -.1), GetYPosFromTop(drawRect, 0.0)),
+                wxPoint(GetXPosFromLeft(drawRect, 0.2), GetYPosFromTop(drawRect, 0.9)),
+                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                        GetYPosFromTop(drawRect, .95)));
+            // right side
+            applePath.AddCurveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0.8), GetYPosFromTop(drawRect, 0.9)),
+                wxPoint(GetXPosFromLeft(drawRect, 1.1), GetYPosFromTop(drawRect, 0.0)),
+                wxPoint(GetXPosFromLeft(drawRect, math_constants::half),
+                        GetYPosFromTop(drawRect, 0.3)));
+
+            applePath.CloseSubpath();
+            gc->FillPath(applePath);
+            gc->StrokePath(applePath);
+
+            // shine
+            wxGraphicsPath shinePath = gc->CreatePath();
+
+            gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 },
+                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+
+            shinePath.MoveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0.35), GetYPosFromTop(drawRect, 0.35)));
+            shinePath.AddQuadCurveToPoint(
+                GetXPosFromLeft(drawRect, 0.25), GetYPosFromTop(drawRect, 0.37),
+                GetXPosFromLeft(drawRect, 0.3), GetYPosFromTop(drawRect, math_constants::half));
+
+            gc->StrokePath(shinePath);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawImmaculateHeart(const wxRect rect, wxDC& dc) const
+        {
+        DrawHeart(rect, dc);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(drawRect.GetWidth() * math_constants::quarter);
+        drawRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
+        DrawFlame(drawRect, dc);
+
+        drawRect = rect;
+        drawRect.Deflate(drawRect.GetWidth() * math_constants::third);
+        drawRect.SetLeft(rect.GetLeft());
+        drawRect.Offset(0, drawRect.GetHeight() * math_constants::fifth);
+        while ((drawRect.GetRight() - drawRect.GetWidth() * math_constants::quarter) <
+               rect.GetRight())
+            {
+            DrawFlower(drawRect, dc);
+            drawRect.Offset(drawRect.GetWidth() * math_constants::half, 0);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFlame(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(1));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for flame!");
+        if (gc != nullptr)
+            {
+            const auto drawFlame =
+                [&gc, this](const wxRect drawingRect, const wxColour color1, const wxColour color2)
+            {
+                gc->SetBrush(gc->CreateLinearGradientBrush(
+                    GetXPosFromLeft(drawingRect, math_constants::half),
+                    GetYPosFromTop(drawingRect, math_constants::full),
+                    GetXPosFromLeft(drawingRect, math_constants::half),
+                    GetYPosFromTop(drawingRect, math_constants::fifth),
+                    ApplyParentColorOpacity(color1), ApplyParentColorOpacity(color2)));
+                gc->SetPen(*wxTRANSPARENT_PEN);
+
+                wxGraphicsPath flamePath = gc->CreatePath();
+
+                flamePath.MoveToPoint(wxPoint(GetXPosFromLeft(drawingRect, math_constants::half),
+                                              GetYPosFromTop(drawingRect, math_constants::full)));
+                flamePath.AddCurveToPoint(
+                    GetXPosFromLeft(drawingRect, -.1), GetYPosFromTop(drawingRect, 0.9),
+                    GetXPosFromLeft(drawingRect, 0.4), GetYPosFromTop(drawingRect, 0.45),
+                    GetXPosFromLeft(drawingRect, 0.25), GetYPosFromTop(drawingRect, 0.4));
+                flamePath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(drawingRect, 0.4), GetYPosFromTop(drawingRect, 0.4),
+                    GetXPosFromLeft(drawingRect, 0.35), GetYPosFromTop(drawingRect, 0.525));
+                flamePath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(drawingRect, 0.6), GetYPosFromTop(drawingRect, 0.2),
+                    GetXPosFromLeft(drawingRect, 0.5), GetYPosFromTop(drawingRect, 0.1));
+                flamePath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(drawingRect, 0.7), GetYPosFromTop(drawingRect, 0.2),
+                    GetXPosFromLeft(drawingRect, 0.6), GetYPosFromTop(drawingRect, 0.5));
+                flamePath.AddQuadCurveToPoint(GetXPosFromLeft(drawingRect, 0.8),
+                                              GetYPosFromTop(drawingRect, 0.4),
+                                              GetXPosFromLeft(drawingRect, 0.8),
+                                              GetYPosFromTop(drawingRect, math_constants::fifth));
+                flamePath.AddCurveToPoint(
+                    GetXPosFromLeft(drawingRect, 1), GetYPosFromTop(drawingRect, 0.6),
+                    GetXPosFromLeft(drawingRect, .95), GetYPosFromTop(drawingRect, 0.97),
+                    GetXPosFromLeft(drawingRect, math_constants::half),
+                    GetYPosFromTop(drawingRect, math_constants::full));
+
+                flamePath.CloseSubpath();
+                gc->FillPath(flamePath);
+                gc->StrokePath(flamePath);
+            };
+
+            drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::OrangeRed),
+                      Colors::ColorBrewer::GetColor(Colors::Color::Orange));
+
+            // draw inner flames
+            wxCoord previousBottom{ drawRect.GetBottom() };
+            drawRect.Deflate(drawRect.GetWidth() * math_constants::fifth);
+            drawRect.Offset(0, previousBottom - drawRect.GetBottom());
+            drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::OrangeYellow),
+                      Colors::ColorBrewer::GetColor(Colors::Color::YellowPepper));
+
+            previousBottom = drawRect.GetBottom();
+            drawRect.Deflate(drawRect.GetWidth() * math_constants::fifth);
+            drawRect.Offset(0, previousBottom - drawRect.GetBottom());
+            drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::PastelOrange),
+                      Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange));
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawRuler(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen
-            {
-            *wxBLACK,
-            static_cast<int>(ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? .5 : 1.0))
-            };
+        wxPen scaledPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(
+                                       rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                                           math_constants::half :
+                                           math_constants::full)) };
         DCPenChangerIfDifferent pc(dc, scaledPen);
 
         wxRect drawRect{ rect };
@@ -470,7 +1319,8 @@ namespace Wisteria::GraphItems
 
         dc.GradientFillLinear(drawRect,
             Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
-            ColorContrast::Shade(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow), .75),
+            ColorContrast::Shade(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
+                math_constants::three_fourths),
             wxWEST);
         wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(drawRect);
@@ -482,10 +1332,11 @@ namespace Wisteria::GraphItems
             dc.DrawLine(
                 { drawRect.GetLeft() +
                     static_cast<int>(drawRect.GetWidth() *
-                        ((currentLine % 4 == 0) ? math_constants::half : math_constants::three_fourths)),
+                        ((currentLine % 4 == 0) ?
+                            math_constants::half : math_constants::three_fourths)),
                   currentY},
                 { drawRect.GetRight(), currentY });
-            currentY += ScaleToScreenAndCanvas(2);
+            currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
             ++currentLine;
             }
         }
@@ -796,6 +1647,84 @@ namespace Wisteria::GraphItems
             DCPenChangerIfDifferent pc4(dc, scaledPen);
             dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
             dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawIVBag(const wxRect rect, wxDC& dc) const
+        {
+        wxPen scaledPen{ *wxBLACK,
+                         static_cast<int>(ScaleToScreenAndCanvas(
+                             rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 0.5 : 1.0)) };
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
+                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                             0);
+        drawRect.SetHeight(drawRect.GetHeight() * math_constants::three_fourths);
+            // add padding
+            {
+            const auto adjustedWidth{ drawRect.GetWidth() * math_constants::two_thirds };
+            const auto adjustLeft{ (drawRect.GetWidth() - adjustedWidth) * math_constants::half };
+            drawRect.SetWidth(adjustedWidth);
+            drawRect.Offset(wxPoint(adjustLeft, 0));
+            }
+
+            // outside of bag
+            {
+            wxDCBrushChanger bc(dc, *wxWHITE);
+            dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
+            }
+
+            // IV line going from bag
+            {
+            wxDCPenChanger pc2(
+                dc, wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                           static_cast<int>(drawRect.GetWidth() * math_constants::fifth) });
+            wxPoint lineTop{ rect.GetLeftTop() };
+            lineTop.x += rect.GetWidth() * 0.6;
+            wxPoint lineBottom{ rect.GetLeftBottom() };
+            lineBottom.x += rect.GetWidth() * 0.6;
+            lineBottom.y -= ScaleToScreenAndCanvas(2);
+            wxRect lineRect{ rect };
+            lineRect.SetHeight(lineRect.GetHeight() * math_constants::half);
+            lineRect.Offset(0, lineRect.GetHeight());
+            wxDCClipper clip(dc, lineRect);
+            dc.DrawLine(lineTop, lineBottom);
+                {
+                wxDCPenChanger pc3(
+                    dc, wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::RedTomato),
+                               static_cast<int>(drawRect.GetWidth() * math_constants::tenth) });
+                dc.DrawLine(lineTop, lineBottom);
+                }
+            }
+
+        // fill the bag with blood
+        drawRect.Deflate(static_cast<wxCoord>(ScaleToScreenAndCanvas(1.5)));
+            {
+            wxDCBrushChanger bc(dc, Colors::ColorBrewer::GetColor(Colors::Color::RedTomato));
+            wxRect liquidRect{ drawRect };
+            liquidRect.SetHeight(liquidRect.GetHeight() * math_constants::half);
+            liquidRect.Offset(0, liquidRect.GetHeight());
+            wxDCClipper clip(dc, liquidRect);
+            dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
+            }
+
+        // ruler lines along the side of the bag
+        int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
+        int currentLine{ 0 };
+        while (currentY < drawRect.GetBottom())
+            {
+            dc.DrawLine(
+                { drawRect.GetLeft() +
+                      static_cast<int>(drawRect.GetWidth() * ((currentLine % 4 == 0) ?
+                                                                  math_constants::half :
+                                                                  math_constants::three_fourths)),
+                  currentY },
+                { drawRect.GetRight(), currentY });
+            currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
+            ++currentLine;
             }
         }
 
@@ -1972,8 +2901,8 @@ namespace Wisteria::GraphItems
         if (gc != nullptr)
             {
             const wxPen bodyPen(ColorBrewer::GetColor(Colors::Color::Ice),
-                                ScaleToScreenAndCanvas(2));
-            const wxPen leafPen(ColorBrewer::GetColor(Colors::Color::Ice),
+                                ScaleToScreenAndCanvas(1));
+            const wxPen crystalPen(ColorBrewer::GetColor(Colors::Color::Ice),
                                 ScaleToScreenAndCanvas(1));
 
             const auto centerPt = rect.GetTopLeft() +
@@ -2017,7 +2946,7 @@ namespace Wisteria::GraphItems
                     GetXPosFromLeft(rect, math_constants::full - (penCapWiggleRoom * 2)) - centerPt.x,
                     GetYPosFromTop(rect, math_constants::half + math_constants::tenth) - centerPt.y);
                 // inner leaf branch
-                gc->SetPen(leafPen);
+                gc->SetPen(crystalPen);
                 gc->StrokeLine(
                     GetXPosFromLeft(rect, math_constants::three_fourths - math_constants::tenth) - centerPt.x,
                     GetYPosFromTop(rect, math_constants::half) - centerPt.y,

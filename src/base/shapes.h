@@ -339,8 +339,65 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawRuler(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws an IV bag.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawIVBag(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a thermometer showing a cold temperature.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawColdThermometer(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a thermometer showing a hot temperature.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawHotThermometer(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a red apple.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawRedApple(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a green apple.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawGrannySmithApple(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a heart.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawHeart(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws an Immaculate Heart.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawImmaculateHeart(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a flame.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawFlame(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws an office building.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawOffice(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a factory building.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawFactory(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a house.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawHouse(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a barn.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawBarn(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a barn and grain silo.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawFarm(const wxRect rect, wxDC& dc) const;
         /// @}
       private:
+        enum class Temperature { Hot, Cold };
+
+        void DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour color) const;
+        void DrawThermometer(const wxRect rect, wxDC& dc, const Temperature temp) const;
+        void DrawApple(const wxRect rect, wxDC& dc, const wxColour color) const;
         void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
         void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
@@ -454,7 +511,7 @@ namespace Wisteria::GraphItems
             @param shape The icon shape to draw.
             @param sz The size of the shape (in DIPs).
             @param img An image to use for the shape if using IconShape::ImageIcon.*/
-        Shape(GraphItems::GraphItemInfo itemInfo, const Icons::IconShape shape, const wxSize sz,
+        Shape(const GraphItems::GraphItemInfo& itemInfo, const Icons::IconShape shape, const wxSize sz,
               const wxBitmapBundle* img = nullptr);
         /// @private
         Shape(const Shape&) = delete;

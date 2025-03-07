@@ -93,7 +93,20 @@ namespace Wisteria::Icons
         Car,                      /*!< A car (specifically, a 2006 Scion xB).*/
         Blackboard,               /*!< A school blackboard.*/
         Clock,                    /*!< An analog, 12-hour clock.*/
-        Ruler                     /*!< A measurement ruler.*/
+        Ruler,                    /*!< A measurement ruler.*/
+        IVBag,                    /*!< An intravenous bag (filled with blood).*/
+        ColdThermometer,          /*!< A thermometer showing a cold temperature.*/
+        HotThermometer,           /*!< A thermometer showing a hot temperature.*/
+        Apple,                    /*!< A red apple.*/
+        GrannySmithApple,         /*!< A green apple.*/
+        Heart,                    /*!< A heart.*/
+        ImmaculateHeart,          /*!< An Immaculate Heart.*/
+        Flame,                    /*!< A flame.*/
+        Office,                   /*!< An office building.*/
+        Factory,                  /*!< A factory.*/
+        House,                    /*!< A house.*/
+        Barn,                     /*!< A barn.*/
+        Farm                      /*!< A barn and grain silo.*/
         };
 
     /// @brief Item to draw on a legend.
@@ -104,10 +117,10 @@ namespace Wisteria::Icons
         /** @brief Constructs a color gradient legend.
             @param colors The color gradient to use (must contain at least two colors).
             @note The colors are drawn top-to-bottom, starting from the first color.*/
-        explicit LegendIcon(const std::vector<wxColour>& colors)
-            : m_shape(IconShape::ColorGradient), m_colors(colors)
+        explicit LegendIcon(std::vector<wxColour> colors)
+            : m_shape(IconShape::ColorGradient), m_colors(std::move(colors))
             {
-            assert(m_colors.size() >= 2 && L"Color gradient legend created with only one color!");
+            assert(m_colors.size() >= 2 && L"Color gradient legend created with only one color!?");
             }
 
         /** @brief Constructs legend icon.
@@ -149,7 +162,7 @@ namespace Wisteria::Icons
         [[nodiscard]]
         static wxSize GetArrowheadSizeDIPs()
             {
-            return wxSize(2, 2);
+            return wxSize{ 2, 2 };
             }
         };
 

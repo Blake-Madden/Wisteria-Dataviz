@@ -127,6 +127,19 @@ Properties common to all graphs:
   - `"blackboard"`
   - `"clock"`
   - `"ruler"`
+  - `"ivbag"`
+  - `"cold-thermometer"`
+  - `"hot-thermometer"`
+  - `"apple"`
+  - `"granny-smith-apple"`
+  - `"flame"`
+  - `"heart"`
+  - `"immaculate-heart"`
+  - `"office"`
+  - `"factory"`
+  - `"house"`
+  - `"barn"`
+  - `"farm"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:
