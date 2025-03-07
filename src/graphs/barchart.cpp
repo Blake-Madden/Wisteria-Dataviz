@@ -1034,7 +1034,7 @@ namespace Wisteria::Graphs
                                 {
                                 const wxSize stippleImgSize(shapeWidth, barWidth);
                                 auto shape = std::make_unique<Shape>(
-                                    GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }.
+                                    GraphItemInfo{}.
                                     Pen(wxNullPen).Brush(GetStippleShapeColor()).
                                     AnchorPoint(wxPoint(currentXLeft, lineYStart)).
                                     Anchoring(Anchoring::TopLeftCorner).
@@ -1487,7 +1487,7 @@ namespace Wisteria::Graphs
                                 {
                                 const wxSize stippleImgSize(barWidth, shapeHeight);
                                 auto shape = std::make_unique<Shape>(
-                                    GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }.
+                                    GraphItemInfo{}.
                                     Pen(wxNullPen).Brush(GetStippleShapeColor()).
                                     AnchorPoint(wxPoint(lineXStart, currentYTop)).
                                     Anchoring(Anchoring::TopLeftCorner).
