@@ -186,7 +186,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).
             @param filePath The filepath of the image to load.
-            @note Memory mapping is used when loading, which can help memory usage when
+            @note Memory mapping is used when loading, which can help memory usage with
                 large files.
             @returns The image loaded from @c filePath.*/
         [[nodiscard]]
@@ -585,10 +585,7 @@ namespace Wisteria::Images::Schemes
       public:
         /// @brief Constructor.
         /// @param images The vector of images to fill the scheme with.
-        explicit ImageScheme(const std::vector<wxBitmapBundle>& images) : m_images(images) {}
-
-        /// @private
-        explicit ImageScheme(std::vector<wxBitmapBundle>&& images) : m_images(std::move(images)) {}
+        explicit ImageScheme(std::vector<wxBitmapBundle> images) : m_images(std::move(images)) {}
 
         /// @brief Constructor.
         /// @param images The initializer list of images to fill the scheme with.
