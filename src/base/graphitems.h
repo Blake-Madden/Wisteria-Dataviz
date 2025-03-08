@@ -2127,7 +2127,7 @@ namespace Wisteria
             mutable wxRect m_cachedContentBoundingBox;
             };
         } // namespace GraphItems
-    }     // namespace Wisteria
+    } // namespace Wisteria
 
 /** @}*/
 

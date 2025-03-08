@@ -393,7 +393,11 @@ namespace Wisteria::GraphItems
         void DrawFarm(const wxRect rect, wxDC& dc) const;
         /// @}
       private:
-        enum class Temperature { Hot, Cold };
+        enum class Temperature
+            {
+            Hot,
+            Cold
+            };
 
         void DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour color) const;
         void DrawThermometer(const wxRect rect, wxDC& dc, const Temperature temp) const;
@@ -511,8 +515,8 @@ namespace Wisteria::GraphItems
             @param shape The icon shape to draw.
             @param sz The size of the shape (in DIPs).
             @param img An image to use for the shape if using IconShape::ImageIcon.*/
-        Shape(const GraphItems::GraphItemInfo& itemInfo, const Icons::IconShape shape, const wxSize sz,
-              const wxBitmapBundle* img = nullptr);
+        Shape(const GraphItems::GraphItemInfo& itemInfo, const Icons::IconShape shape,
+              const wxSize sz, const wxBitmapBundle* img = nullptr);
         /// @private
         Shape(const Shape&) = delete;
         /// @private

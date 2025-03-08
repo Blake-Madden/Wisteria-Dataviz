@@ -187,9 +187,8 @@ namespace Wisteria::UI
 
         // delete files
         Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&) { m_listCtrl->DeleteSelectedItems(); },
-            wxID_DELETE);
+            wxEVT_BUTTON, [this]([[maybe_unused]] wxCommandEvent&)
+            { m_listCtrl->DeleteSelectedItems(); }, wxID_DELETE);
 
         // file list refresh
         Bind(
