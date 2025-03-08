@@ -960,6 +960,7 @@ namespace Wisteria::GraphItems
             wxRegion barnRegion{ barnPoints.size(), &barnPoints[0] };
             gc->Clip(barnRegion);
             wxCoord currentY{ barnRect.GetTop() };
+            [[maybe_unused]] // clang false positive
             int currentLine{ 0 };
             while (currentY < barnRect.GetBottom())
                 {
@@ -1093,6 +1094,7 @@ namespace Wisteria::GraphItems
                            ladderRect.y + ladderRect.GetHeight());
 
             int currentY{ ladderRect.GetTop() };
+            [[maybe_unused]] // clang false positive
             int currentLine{ 0 };
             while (currentY < ladderRect.GetBottom())
                 {
