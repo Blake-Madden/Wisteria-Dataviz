@@ -26,6 +26,7 @@
 #include <wx/fs_mem.h>
 #include <wx/fs_zip.h>
 #include <wx/image.h>
+#include <wx/locale.h>
 #include <wx/log.h>
 #include <wx/mimetype.h>
 #include <wx/print.h>
@@ -290,6 +291,7 @@ namespace Wisteria::UI
         LogFile* m_logFile{ nullptr };
         bool m_appendDailyLog{ false };
         ResourceManager m_resManager;
+        wxLocale* m_locale{ nullptr };
 
         wxString m_appSubName;
         wxString m_fileExtension;

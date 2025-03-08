@@ -171,7 +171,10 @@ bool Wisteria::UI::BaseApp::OnInit()
     // fix color mapping on Windows
     wxSystemOptions::SetOption(DONTTRANSLATE(L"msw.remap"), 0);
 
-    // set the locale (for number formatting, etc.) and load any translations
+    // Set the locale (for number formatting, etc.) and load translation catalog locations.
+    // (Note that constructing the wxLocale object is needed for
+    //  localizing the C runtime functions.)
+    m_locale = new wxLocale(wxLANGUAGE_DEFAULT, wxLOCALE_LOAD_DEFAULT);
     wxUILocale::UseDefault();
 
     wxLogMessage(L"System Language: %s", wxUILocale::GetCurrent().GetName());
@@ -207,6 +210,7 @@ int Wisteria::UI::BaseApp::OnExit()
     wxLogDebug(__func__);
     SaveFileHistoryMenu();
     wxDELETE(m_docManager);
+    wxDELETE(m_locale);
 
 // dump max memory usage
 #ifndef NDEBUG
