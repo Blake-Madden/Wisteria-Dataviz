@@ -1264,28 +1264,6 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
 
 #ifdef __WXGTK__
 //-----------------------------------------------------------
-wxString FormattedTextCtrl::GtkGetThemedPangoText()
-    {
-    GtkTextBuffer* buffer = GTKGetTextBuffer();
-
-    GtkTextIter start, end;
-    gtk_text_buffer_get_start_iter(buffer, &start);
-    gtk_text_buffer_get_end_iter(buffer, &end);
-    gchar* bufferedUTF8Text = gtk_text_buffer_get_text(buffer, &start, &end, false);
-    if (!bufferedUTF8Text)
-        {
-        return wxString{};
-        }
-    /* Always convert this UTF8 text to unicode in here while we format it. This makes
-       things much easier because the GTK offset functions treat offsets as characters instead
-       of bytes.*/
-    const wxString bufferedText = wxString::FromUTF8(bufferedUTF8Text);
-    g_free(bufferedUTF8Text);
-
-    return bufferedText;
-    }
-
-//-----------------------------------------------------------
 wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
                                                 const bool useThemed /*= false*/)
     {

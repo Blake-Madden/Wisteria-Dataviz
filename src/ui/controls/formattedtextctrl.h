@@ -426,11 +426,6 @@ namespace Wisteria::UI
             HtmlFormat,
             RtfFormat
             };
-        /// @returns The Pango buffer from the control directly.
-        /// @note Call @c GetUnthemedFormattedText() to get the unthemed Pango text under GTK+.
-        ///     (This is appropriate for exporting as Pango or printing.)
-        [[nodiscard]]
-        wxString GtkGetThemedPangoText();
         [[nodiscard]]
         wxString GtkGetFormattedText(const GtkFormat format, const bool useThemed = false);
 #endif
