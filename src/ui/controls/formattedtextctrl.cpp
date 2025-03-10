@@ -376,7 +376,14 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
 
         if (m_printData->GetPaperId() == wxPAPER_NONE)
             {
-            SetPaperSizeInMillimeters(m_printData->GetPaperSize());
+            if (m_printData->GetPaperSize().GetWidth() > 0)
+                {
+                SetPaperSizeInMillimeters(m_printData->GetPaperSize());
+                }
+            else
+                {
+                SetPaperSizeInMillimeters(dc->GetSizeMM());
+                }
             }
         else
             {
@@ -591,7 +598,14 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
 
         if (m_printData->GetPaperId() == wxPAPER_NONE)
             {
-            SetPaperSizeInMillimeters(m_printData->GetPaperSize());
+            if (m_printData->GetPaperSize().GetWidth() > 0)
+                {
+                SetPaperSizeInMillimeters(m_printData->GetPaperSize());
+                }
+            else
+                {
+                SetPaperSizeInMillimeters(dc->GetSizeMM());
+                }
             }
         else
             {
@@ -645,203 +659,14 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
 //------------------------------------------------------
 void FormattedTextCtrl::SetPaperSize(const wxPaperSize size)
     {
-    switch (size)
+    wxSize sz = wxThePrintPaperDatabase->GetSize(size);
+
+    if (sz != wxSize{ 0, 0 })
         {
-    case wxPAPER_A_PLUS:
-        SetPaperSizeInInches(8.937, 14.015);
-        break;
-    case wxPAPER_A2:
-        SetPaperSizeInInches(16.535, 23.385);
-        break;
-    case wxPAPER_A3:
-        [[fallthrough]];
-    case wxPAPER_A3_TRANSVERSE:
-        SetPaperSizeInInches(11.692, 16.53);
-        break;
-    case wxPAPER_A3_EXTRA_TRANSVERSE:
-        SetPaperSizeInInches(12.677, 17.519);
-        break;
-    case wxPAPER_A3_EXTRA:
-        SetPaperSizeInInches(12.677, 17.519);
-        break;
-    // most A4's are the same
-    case wxPAPER_A4:
-        [[fallthrough]];
-    case wxPAPER_A4_TRANSVERSE:
-        [[fallthrough]];
-    case wxPAPER_A4SMALL:
-        SetPaperSizeInInches(8.267, 11.692);
-        break;
-    case wxPAPER_A4_PLUS:
-        SetPaperSizeInInches(8.267, 12.992);
-        break;
-    case wxPAPER_A5:
-        [[fallthrough]];
-    case wxPAPER_A5_TRANSVERSE:
-        SetPaperSizeInInches(5.826, 8.267);
-        break;
-    case wxPAPER_A5_EXTRA:
-        SetPaperSizeInInches(6.850, 9.251);
-        break;
-    case wxPAPER_B_PLUS:
-        SetPaperSizeInInches(12.007, 19.173);
-        break;
-    case wxPAPER_B4:
-        SetPaperSizeInInches(9.842, 13.937);
-        break;
-    case wxPAPER_B5:
-        [[fallthrough]];
-    case wxPAPER_B5_TRANSVERSE:
-        SetPaperSizeInInches(7.165, 10.118);
-        break;
-    case wxPAPER_B5_EXTRA:
-        SetPaperSizeInInches(7.913, 10.866);
-        break;
-    case wxPAPER_CSHEET:
-        SetPaperSizeInInches(17, 22);
-        break;
-    case wxPAPER_DSHEET:
-        SetPaperSizeInInches(22, 34);
-        break;
-    case wxPAPER_ESHEET:
-        SetPaperSizeInInches(34, 44);
-        break;
-    case wxPAPER_TABLOID:
-        SetPaperSizeInInches(11, 17);
-        break;
-    case wxPAPER_LEDGER:
-        SetPaperSizeInInches(17, 11);
-        break;
-    case wxPAPER_STATEMENT:
-        SetPaperSizeInInches(5.5, 8.5);
-        break;
-    case wxPAPER_EXECUTIVE:
-        SetPaperSizeInInches(7.25, 10.5);
-        break;
-    case wxPAPER_FOLIO:
-        SetPaperSizeInInches(8.5, 13);
-        break;
-    case wxPAPER_9X11:
-        SetPaperSizeInInches(9, 11);
-        break;
-    case wxPAPER_10X11:
-        SetPaperSizeInInches(10, 11);
-        break;
-    case wxPAPER_10X14:
-        SetPaperSizeInInches(10, 14);
-        break;
-    case wxPAPER_11X17:
-        SetPaperSizeInInches(11, 17);
-        break;
-    case wxPAPER_15X11:
-        SetPaperSizeInInches(15, 11);
-        break;
-    case wxPAPER_LEGAL:
-        SetPaperSizeInInches(8.5, 14);
-        break;
-    case wxPAPER_LETTER_EXTRA:
-        SetPaperSizeInInches(9.275, 12);
-        break;
-    case wxPAPER_LEGAL_EXTRA:
-        SetPaperSizeInInches(9.275, 15);
-        break;
-    case wxPAPER_TABLOID_EXTRA:
-        SetPaperSizeInInches(11.69, 18);
-        break;
-    case wxPAPER_A4_EXTRA:
-        SetPaperSizeInInches(9.27, 12.69);
-        break;
-    case wxPAPER_LETTER_TRANSVERSE:
-        SetPaperSizeInInches(8.275, 11);
-        break;
-    case wxPAPER_LETTER_EXTRA_TRANSVERSE:
-        SetPaperSizeInInches(9.275, 12);
-        break;
-    case wxPAPER_LETTER_PLUS:
-        SetPaperSizeInInches(8.5, 12.69);
-        break;
-    case wxPAPER_QUARTO:
-        SetPaperSizeInInches(8.464, 10.826);
-        break;
-    case wxPAPER_ISO_B4:
-        SetPaperSizeInInches(9.842, 13.897);
-        break;
-    case wxPAPER_JAPANESE_POSTCARD:
-        SetPaperSizeInInches(3.937, 5.826);
-        break;
-    // envelopes
-    case wxPAPER_ENV_DL:
-        SetPaperSizeInInches(4.330, 8.661);
-        break;
-    case wxPAPER_ENV_B4:
-        SetPaperSizeInInches(9.842, 13.897);
-        break;
-    case wxPAPER_ENV_B5:
-        SetPaperSizeInInches(6.929, 9.842);
-        break;
-    case wxPAPER_ENV_B6:
-        SetPaperSizeInInches(6.929, 4.921);
-        break;
-    case wxPAPER_ENV_C3:
-        SetPaperSizeInInches(12.755, 18.031);
-        break;
-    case wxPAPER_ENV_C4:
-        SetPaperSizeInInches(9.015, 12.755);
-        break;
-    case wxPAPER_ENV_C5:
-        SetPaperSizeInInches(6.377, 9.015);
-        break;
-    case wxPAPER_ENV_C6:
-        SetPaperSizeInInches(4.488, 6.377);
-        break;
-    case wxPAPER_ENV_C65:
-        SetPaperSizeInInches(4.488, 9.015);
-        break;
-    case wxPAPER_ENV_ITALY:
-        SetPaperSizeInInches(4.330, 9.055);
-        break;
-    case wxPAPER_ENV_INVITE:
-        SetPaperSizeInInches(8.661, 8.661);
-        break;
-    case wxPAPER_ENV_9:
-        SetPaperSizeInInches(3.875, 8.875);
-        break;
-    case wxPAPER_ENV_10:
-        SetPaperSizeInInches(4.125, 9.5);
-        break;
-    case wxPAPER_ENV_11:
-        SetPaperSizeInInches(4.5, 10.375);
-        break;
-    case wxPAPER_ENV_12:
-        SetPaperSizeInInches(4.75, 11);
-        break;
-    case wxPAPER_ENV_14:
-        SetPaperSizeInInches(5, 11.5);
-        break;
-    case wxPAPER_ENV_MONARCH:
-        SetPaperSizeInInches(3.875, 7.5);
-        break;
-    case wxPAPER_ENV_PERSONAL:
-        SetPaperSizeInInches(3.625, 6.5);
-        break;
-    // fan folds
-    case wxPAPER_FANFOLD_US:
-        SetPaperSizeInInches(14.875, 11);
-        break;
-    case wxPAPER_FANFOLD_STD_GERMAN:
-        SetPaperSizeInInches(8.5, 12);
-        break;
-    case wxPAPER_FANFOLD_LGL_GERMAN:
-        SetPaperSizeInInches(8.5, 13);
-        break;
-    case wxPAPER_LETTER:
-        [[fallthrough]];
-    case wxPAPER_LETTERSMALL:
-        [[fallthrough]];
-    case wxPAPER_NOTE:
-        [[fallthrough]];
-    default:
-        SetPaperSizeInInches(8.5, 11);
+        // sz is in 10ths of a mm, while paper size is in mm
+        sz.x /= 10;
+        sz.y /= 10;
+        SetPaperSizeInMillimeters(sz);
         }
     }
 
