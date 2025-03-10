@@ -13,6 +13,7 @@
 #define __DOWNLOADFILE_H__
 
 #include "../import/html_extract_text.h"
+#include <chrono>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -76,7 +77,8 @@ class QueueDownload
     /// @brief Constructor.
     /// @param handler The parent event handler (e.g., dialog or @c wxApp)
     ///     to connect to this queue.
-    explicit QueueDownload(wxEvtHandler* handler) : m_handler(handler){};
+    explicit QueueDownload(wxEvtHandler* handler) : m_handler(handler) {}
+
     /// @private
     QueueDownload() = default;
     /// @private
@@ -273,7 +275,7 @@ class FileDownload
     /// @brief Constructor.
     /// @param handler The parent event handler (e.g., dialog or @c wxApp)
     ///     to connect to this queue.
-    explicit FileDownload(wxEvtHandler* handler) : m_handler(handler){};
+    explicit FileDownload(wxEvtHandler* handler) : m_handler(handler) {}
 
     /// @private
     FileDownload() = default;
