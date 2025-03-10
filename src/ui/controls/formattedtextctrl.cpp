@@ -329,7 +329,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(FormattedTextCtrl, wxTextCtrl)
 
     std::vector<long> m_pageStarts;
     FormattedTextCtrl* m_control{ nullptr };
-    FormattedTextCtrl* m_controlForPrinting{ nullptr };
     int m_currentPage{ 0 };
     wxBitmap m_printCanvas;
     };
@@ -374,7 +373,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     if (m_printData)
         {
         dc = new wxPrinterDC(*m_printData);
-        SetPrintOrientation(m_printData->GetOrientation());
+
         if (m_printData->GetPaperId() == wxPAPER_NONE)
             {
             SetPaperSizeInMillimeters(m_printData->GetPaperSize());
@@ -590,7 +589,6 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
         dc = new wxPrinterDC(*m_printData);
         dc2 = new wxPrinterDC(*m_printData);
 
-        SetPrintOrientation(m_printData->GetOrientation());
         if (m_printData->GetPaperId() == wxPAPER_NONE)
             {
             SetPaperSizeInMillimeters(m_printData->GetPaperSize());

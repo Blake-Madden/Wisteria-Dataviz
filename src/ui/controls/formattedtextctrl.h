@@ -216,18 +216,7 @@ namespace Wisteria::UI
 
         /// @brief Sets the paper size in TWIPs.
         /// @param size The size to use.
-        void SetPaperSizeInTwips(const wxSize size)
-            {
-            // if landscape, then "turn the page on its side" by flipping the page size
-            if (m_printOrientation == wxLANDSCAPE)
-                {
-                m_paperSize.Set(size.y, size.x);
-                }
-            else
-                {
-                m_paperSize = size;
-                }
-            }
+        void SetPaperSizeInTwips(const wxSize size) { m_paperSize = size; }
 
         /// @brief Sets the paper size in inches.
         /// @param widthInInches The width to use.
@@ -264,23 +253,36 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxRect GetPageRect() const
             {
-            return wxRect(wxPoint(0, 0), m_paperSize);
+            // if landscape, then "turn the page on its side" by flipping the page size
+            return wxRect(wxPoint{ 0, 0 }, (m_printData->GetOrientation() == wxLANDSCAPE) ?
+                                             wxSize{ m_paperSize.y,
+                                                     m_paperSize.x } :
+                                             m_paperSize);
             }
 
         /// @returns The width of the printing area.
         [[nodiscard]]
         int GetPageContentAreaWidth() const
             {
-            return m_paperSize.x - m_rectMargin.GetLeft() - m_rectMargin.GetRight();
+            const int paperWidth = (m_printData->GetOrientation() == wxLANDSCAPE) ?
+                                       m_paperSize.y :
+                                       m_paperSize.x;
+            return paperWidth - m_rectMargin.GetLeft() - m_rectMargin.GetRight();
             }
 
         /// @returns The actual area being printed (page minus the margins).
         [[nodiscard]]
         wxRect GetPageContentRect() const
             {
+            const int paperWidth = (m_printData->GetOrientation() == wxLANDSCAPE) ?
+                                       m_paperSize.y :
+                                       m_paperSize.x;
+            const int paperHeight = (m_printData->GetOrientation() == wxLANDSCAPE) ?
+                                       m_paperSize.x :
+                                       m_paperSize.y;
             wxRect printRect(m_rectMargin.GetLeft(), m_rectMargin.GetTop(),
-                             m_paperSize.x - m_rectMargin.GetRight(),
-                             m_paperSize.y - m_rectMargin.GetBottom());
+                             paperWidth - m_rectMargin.GetRight(),
+                             paperHeight - m_rectMargin.GetBottom());
             if (GetLeftPrinterHeader().length() || GetCenterPrinterHeader().length() ||
                 GetRightPrinterHeader().length())
                 {
@@ -307,18 +309,6 @@ namespace Wisteria::UI
         wxRect GetMarginRect() const noexcept
             {
             return m_rectMargin;
-            }
-
-        /// @brief Sets the paper orientation.
-        /// @param orientation The paper orientation.
-        void SetPrintOrientation(const wxPrintOrientation orientation)
-            {
-            // if orientation is changing then "turn" the paper
-            if (m_printOrientation != orientation)
-                {
-                m_paperSize.Set(m_paperSize.y, m_paperSize.x);
-                }
-            m_printOrientation = orientation;
             }
 
         /// @brief Sets the left printer header.
@@ -462,7 +452,6 @@ namespace Wisteria::UI
             that->m_paperSize = m_paperSize;
             that->m_rectMargin = m_rectMargin;
             that->m_printData = m_printData;
-            that->m_printOrientation = m_printOrientation;
             that->m_leftPrinterHeader = m_leftPrinterHeader;
             that->m_centerPrinterHeader = m_centerPrinterHeader;
             that->m_rightPrinterHeader = m_rightPrinterHeader;
@@ -478,11 +467,11 @@ namespace Wisteria::UI
 
         // printing data
         FormattedTextCtrl* m_printWindow{ nullptr };
+        // cached size converted from paper IDs right before printing
         wxSize m_paperSize;
         wxRect m_rectMargin{ 720, 720, 720, 720 };
 
         wxPrintData* m_printData{ nullptr };
-        wxPrintOrientation m_printOrientation{ wxLANDSCAPE };
 
         // headers
         wxString m_leftPrinterHeader;
