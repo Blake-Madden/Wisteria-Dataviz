@@ -301,7 +301,7 @@ namespace Wisteria::GraphItems
 
         /// @brief When calling SetBoundingBox(), calling this first will prevent the scaling
         ///     from being adjusted to the new bounding box.
-        /// @detail This can be used wanting to prevent the text scaling from growing larger to
+        /// @details This can be used wanting to prevent the text scaling from growing larger to
         ///     larger box.
         /// @sa UnlockBoundingBoxScaling().
         void LockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = true; }

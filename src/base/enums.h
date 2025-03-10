@@ -183,18 +183,18 @@ namespace Wisteria
         {
         /// @brief Text is flush left/ragged right. (This is the default for Labels.)
         FlushLeft,
-        /// @brief Same as FlushLeft.
+        /// @brief Same as @c FlushLeft.
         RaggedRight = FlushLeft,
         /// @brief Text is flush right/ragged left.
         FlushRight,
-        /// @brief Same as FlushRight.
+        /// @brief Same as @c FlushRight.
         RaggedLeft = FlushRight,
         /// @brief Text is centered.
         Centered,
         /// @brief Multiline text is tracked (space inserted) to make lines equal width.
         ///     Hair spaces are inserted between each character.
         JustifiedAtCharacter,
-        /// @brief Same as JustifiedAtCharacter.
+        /// @brief Same as @c JustifiedAtCharacter.
         Justified = JustifiedAtCharacter,
         /// @brief Multiline text is tracked (space inserted) to make lines equal width.
         ///     Hair spaces are inserted between each word.
@@ -438,7 +438,7 @@ namespace Wisteria
         BlurVertical,
         /// @brief A sepia (i.e., faded photograph) effect.
         Sepia,
-        /// @brief A frosted glass window effect to an image.
+        /// @brief A frosted glass window effect.
         ///     In other words, the image as it may appear when viewed through frosted glass.
         FrostedGlass,
         /// @brief An oil painting effect.
