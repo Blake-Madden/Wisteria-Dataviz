@@ -410,7 +410,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
             {
             wxMessageBox(_(L"An error occurred while printing.\n"
                            "Your default printer may not be set correctly."),
-                         _(L"Print"), wxOK | wxICON_QUESTION);
+                         _(L"Print"), wxOK);
             }
         }
     if (m_printData)
@@ -623,7 +623,7 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
         wxDELETE(dc2);
         wxMessageBox(_(L"An error occurred while previewing.\n"
                        "Your default printer may not be set correctly."),
-                     _(L"Print Preview"), wxOK | wxICON_QUESTION);
+                     _(L"Print Preview"), wxOK);
         return;
         }
     int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
