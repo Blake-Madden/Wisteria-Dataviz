@@ -61,6 +61,7 @@ bool InfoBarEx::Create(wxWindow* parent, wxWindowID winid)
     return true;
     }
 
+//------------------------------------------------------
 bool InfoBarEx::SetForegroundColour(const wxColour& colour)
     {
     if (m_text)
@@ -71,6 +72,7 @@ bool InfoBarEx::SetForegroundColour(const wxColour& colour)
     return true;
     }
 
+//------------------------------------------------------
 InfoBarEx::BarPlacement InfoBarEx::GetBarPlacement() const
     {
     wxSizer* const sizer = GetContainingSizer();
@@ -94,6 +96,7 @@ InfoBarEx::BarPlacement InfoBarEx::GetBarPlacement() const
         }
     }
 
+//------------------------------------------------------
 wxShowEffect InfoBarEx::GetShowEffect() const
     {
     if (m_showEffect != wxSHOW_EFFECT_MAX)
@@ -114,6 +117,7 @@ wxShowEffect InfoBarEx::GetShowEffect() const
         }
     }
 
+//------------------------------------------------------
 wxShowEffect InfoBarEx::GetHideEffect() const
     {
     if (m_hideEffect != wxSHOW_EFFECT_MAX)
@@ -134,6 +138,7 @@ wxShowEffect InfoBarEx::GetHideEffect() const
         }
     }
 
+//------------------------------------------------------
 void InfoBarEx::UpdateParent()
     {
     wxWindow* const parent = GetParent();
@@ -144,12 +149,14 @@ void InfoBarEx::UpdateParent()
         }
     }
 
+//------------------------------------------------------
 void InfoBarEx::DoHide()
     {
     HideWithEffect(GetHideEffect(), GetEffectDuration());
     UpdateParent();
     }
 
+//------------------------------------------------------
 void InfoBarEx::DoShow()
     {
     // re-layout the parent first so that the window expands into an already
@@ -173,6 +180,7 @@ void InfoBarEx::DoShow()
     ShowWithEffect(GetShowEffect(), GetEffectDuration());
     }
 
+//------------------------------------------------------
 void InfoBarEx::ShowMessage(const wxString& msg, int flags)
     {
     // first update the controls
@@ -207,8 +215,10 @@ void InfoBarEx::ShowMessage(const wxString& msg, int flags)
         }
     }
 
+//------------------------------------------------------
 void InfoBarEx::Dismiss() { DoHide(); }
 
+//------------------------------------------------------
 void InfoBarEx::OnButton(wxCommandEvent& event)
     {
     TransferDataFromWindow();

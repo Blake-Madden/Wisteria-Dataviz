@@ -53,11 +53,7 @@ namespace Wisteria::UI
         /// @private
         InfoBarEx(const InfoBarEx&) = delete;
         /// @private
-        InfoBarEx(InfoBarEx&&) = delete;
-        /// @private
         InfoBarEx& operator=(const InfoBarEx&) = delete;
-        /// @private
-        InfoBarEx& operator=(InfoBarEx&&) = delete;
 
         /** @brief Constructor.
             @param parent The parent window.
@@ -83,7 +79,7 @@ namespace Wisteria::UI
 
         /// @returns Whether the "Do not show this again" checkbox was checked at the
         ///     time of the window being closed.
-        /// @note This should be called in your handler for the `wxID_CLOSE button` being clicked.
+        /// @note This should be called in your handler for the `wxID_CLOSE` button being clicked.
         bool IsDontShowAgainChecked() const { return m_dontShowAgain; }
 
         /// @returns Whether the "Do not show this again" checkbox is being shown.
