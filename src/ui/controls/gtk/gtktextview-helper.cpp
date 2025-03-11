@@ -1,8 +1,7 @@
-/** @date 2005-2023
+/** @date 2005-2025
     @copyright Blake Madden
     @author Blake Madden
-            Tim-Philipp Mueller (Gtk+ bug report patch for GtkTextView Pango functionality)
-            Anthony Bretaudeau (portions of wxWidgets printing code)
+        Anthony Bretaudeau (portions of wxWidgets printing code)
     @details This program is free software; you can redistribute it and/or modify
         it under the terms of the 3-Clause BSD License
         (some portions are wxWindows licensed, where noted).
@@ -12,7 +11,6 @@
 @{*/
 
 #include "gtktextview-helper.h"
-#include "../../../debug/debug_profile.h"
 #include <algorithm>
 
 // clang-format off

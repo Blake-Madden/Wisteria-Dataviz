@@ -1,6 +1,6 @@
 /** @addtogroup UI
     @brief Utility classes.
-    @date 2005-2023
+    @date 2005-2025
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify

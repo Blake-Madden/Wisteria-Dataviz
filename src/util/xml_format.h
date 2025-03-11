@@ -1,6 +1,6 @@
 /** @addtogroup Formatting
     @brief Classes for parsing and formatting results output.
-    @date 2005-2023
+    @date 2005-2025
     @copyright Oleander Software, Ltd.
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify

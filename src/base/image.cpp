@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        image.cpp
 // Author:      Blake Madden (portions from Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata)
-// Copyright:   (c) 2005-2023 Blake Madden
+// Copyright:   (c) 2005-2025 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause, CPOL-1.02
 ///////////////////////////////////////////////////////////////////////////////

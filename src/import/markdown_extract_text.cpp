@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////////////////////////////
+// Name:        markdown_extract_text.cpp
+// Author:      Blake Madden
+// Copyright:   (c) 2005-2025 Blake Madden
+// License:     3-Clause BSD license
+// SPDX-License-Identifier: BSD-3-Clause
+///////////////////////////////////////////////////////////////////////////////
+
 #include "markdown_extract_text.h"
 
 //--------------------------------------------

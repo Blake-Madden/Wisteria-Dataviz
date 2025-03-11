@@ -11,8 +11,8 @@
 
 //********************************************************
 // Modified by Blake Madden, where status info is also sent
-//  to the debug window (under Windows). Also, emits a
-//  compile error if being included in a release build.
+// to the debug window (under Windows). Also, emits a
+// compile error if being included in a release build.
 
 #ifndef TRACKNEW_HPP
 #define TRACKNEW_HPP

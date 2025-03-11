@@ -1,6 +1,6 @@
 /** @addtogroup Graphics
     @brief Graphing classes.
-    @date 2005-2023
+    @date 2005-2025
     @copyright Blake Madden
     @author Blake Madden (portions from Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata)
     @details This program is free software; you can redistribute it and/or modify

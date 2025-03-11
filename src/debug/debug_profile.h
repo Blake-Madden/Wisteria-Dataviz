@@ -23,7 +23,7 @@
     This was inspired by the article:
 
     Hjelstrom, Greg, and Byon Garrabrant. "Real-Time Hierarchical Profiling." *Game Programming Gems 3*, Charles River Media, 2002, pp 146-152.
-   @date 2005-2023
+   @date 2005-2025
    @copyright Blake Madden
    @author Blake Madden
    @par Example
