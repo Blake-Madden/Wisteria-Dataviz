@@ -176,6 +176,9 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     const std::wstring_view ORDERED_LIST{ L"ol" };
     const std::wstring_view ORDERED_LIST_END{ L"</ol>" };
 
+    const std::wstring_view SUP{ L"sup" };
+    const std::wstring_view SUP_END{ L"</sup>" };
+
     bool isEscaping{ false };
     bool headerMode{ false };
     wchar_t previousChar{ L'\n' };
@@ -808,6 +811,16 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                                   ORDERED_LIST.length()) == 0)
                 {
                 if (!parse_html_block(ORDERED_LIST, ORDERED_LIST_END))
+                    {
+                    break;
+                    }
+                }
+            else if (!isEscaping &&
+                     static_cast<size_t>(std::distance(m_currentStart, m_currentEndSentinel)) >=
+                         SUP.length() + 1 &&
+                     std::wcsncmp(std::next(m_currentStart), SUP.data(), SUP.length()) == 0)
+                {
+                if (!parse_html_block(SUP, SUP_END))
                     {
                     break;
                     }
