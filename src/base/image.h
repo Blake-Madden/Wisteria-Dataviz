@@ -342,15 +342,6 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxImage CreateColorFilteredImage(const wxImage& image, const wxColour color,
                                                 const uint8_t opacity = 100);
-        /** @private
-            @brief Renders a glassy surface across a box.
-            @param fillSize The size of the output image to create.
-            @param color The base color to fill the box with.
-            @param direction The direction of the glassy shine.
-            @returns The glassy image.*/
-        [[deprecated("Use Polygon::SetShape() with GlassyRectangle instead.")]] [[nodiscard]]
-        static wxImage CreateGlassEffect(const wxSize fillSize, const wxColour color,
-                                         const Orientation direction);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
             @param opacity The opacity to set the bitmap to.

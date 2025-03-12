@@ -560,28 +560,6 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxImage Image::CreateGlassEffect(const wxSize fillSize, const wxColour color,
-                                     const Orientation direction)
-        {
-        wxBitmap background(fillSize);
-        wxMemoryDC memDC(background);
-        // fill with the color
-        memDC.GradientFillLinear(wxRect(fillSize), color, color.ChangeLightness(140),
-                                 (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
-        // create a shiny overlay
-        memDC.GradientFillLinear(wxRect(0, 0,
-                                    (direction == Orientation::Vertical) ?
-                                        fillSize.GetWidth() : fillSize.GetWidth() * math_constants::quarter,
-                                    (direction == Orientation::Vertical) ?
-                                        fillSize.GetHeight() * math_constants::quarter : fillSize.GetHeight()),
-                                 color.ChangeLightness(115),color.ChangeLightness(155),
-                                 (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
-        memDC.SelectObject(wxNullBitmap);
-
-        return background.ConvertToImage();
-        }
-
-    //-------------------------------------------
     void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity,
                            const bool preserveTransparentPixels /*= false*/)
         {
