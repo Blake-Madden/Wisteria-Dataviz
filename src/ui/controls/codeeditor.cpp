@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        codeeditor.cpp
 // Author:      Blake Madden
-// Copyright:   (c) 2005-2025 Blake Madden
+// Copyright:   (c) 2005-2023 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
@@ -508,9 +508,100 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             AutoCompShow(0, pos->second.first);
             }
         }
-    else if (event.GetKey() == L')' || event.GetKey() == L'(')
+    else if (event.GetKey() == L')')
         {
         CallTipCancel();
+        }
+    else if (event.GetKey() == L'(')
+        {
+        CallTipCancel();
+
+        const int wordStart = WordStartPosition(GetCurrentPos() - 1, true);
+        const wxString functionName = GetTextRange(wordStart, GetCurrentPos() - 1);
+
+        // if a library function, then show its param list in a tooltip
+        if (wordStart > 0 && GetCharAt(wordStart - 1) == GetLibraryAccessor())
+            {
+            const int libNameStart = WordStartPosition(wordStart - 1, true);
+            const wxString libName = GetTextRange(libNameStart, wordStart - 1);
+
+            auto libPos = m_libraryCollection.find(libName);
+            if (libPos != m_libraryCollection.cend())
+                {
+                m_activeFunctionsAndSignaturesMap = &libPos->second.second;
+                const auto foundFunc = libPos->second.second.find(functionName);
+                if (foundFunc != libPos->second.second.cend())
+                    {
+                    wxString params, foundKeyword{ foundFunc->second };
+                    if (SplitFunctionAndParams(foundKeyword, params))
+                        {
+                        CallTipShow(GetCurrentPos(), L"(" + params + L")");
+                        }
+                    }
+                }
+            }
+        // or an object
+        else if (wordStart > 0 && GetCharAt(wordStart - 1) == GetObjectAccessor())
+            {
+            const int objectNameStart = WordStartPosition(wordStart - 1, true);
+            const wxString objectName = GetTextRange(objectNameStart, wordStart - 1);
+
+            int foundPos{ 0 };
+            while (foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+                {
+                foundPos = FindText(foundPos, wordStart, objectName,
+                                    wxSTC_FIND_WHOLEWORD | wxSTC_FIND_MATCHCASE);
+                if (foundPos != wxSTC_INVALID_POSITION &&
+                    foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+                    {
+                    foundPos += objectName.length();
+                    while (foundPos < GetLength() && GetCharAt(foundPos) == L' ')
+                        {
+                        ++foundPos;
+                        }
+                    // found an assignment to this variable
+                    if (foundPos < GetLength() && GetCharAt(foundPos) == L'=')
+                        {
+                        // scan to whatever it is assigned to
+                        do
+                            {
+                            ++foundPos;
+                            } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
+                        // if it is a known class of ours, then show the functions
+                        // available for that class
+                        const wxString dataType =
+                            GetTextRange(foundPos, WordEndPosition(foundPos, true));
+                        const auto classPos = m_classCollection.find(dataType);
+                        if (classPos != m_classCollection.cend())
+                            {
+                            m_activeFunctionsAndSignaturesMap = &classPos->second.second;
+                            const auto foundFunc = classPos->second.second.find(functionName);
+                            if (foundFunc != classPos->second.second.cend())
+                                {
+                                wxString params, foundKeyword{ foundFunc->second };
+                                if (SplitFunctionAndParams(foundKeyword, params))
+                                    {
+                                    CallTipShow(GetCurrentPos(), L"(" + params + L")");
+                                    }
+                                }
+                            break;
+                            }
+                        else
+                            {
+                            continue;
+                            }
+                        }
+                    else
+                        {
+                        continue;
+                        }
+                    }
+                else
+                    {
+                    break;
+                    }
+                }
+            }
         }
     else if (event.GetKey() == GetObjectAccessor())
         {
@@ -519,7 +610,9 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
 
         if (lastWord == L"()")
             {
+            // step over function
             wordStart = WordStartPosition(wordStart - 1, false);
+            // ...then step back to name of library
             wordStart = WordStartPosition(wordStart - 1, false);
             const wxString libraryName = GetTextRange(wordStart, GetCurrentPos() - 3);
             auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
@@ -534,7 +627,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 }
             }
         // might be a variable, look for where it was first assigned to something
-        int foundPos = 0;
+        int foundPos{ 0 };
         while (foundPos + lastWord.length() + 2 < static_cast<size_t>(wordStart))
             {
             foundPos = FindText(foundPos, wordStart, lastWord,
@@ -557,8 +650,9 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                         } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
                     // if it is a known class of ours, then show the functions
                     // available for that class
-                    wxString assignment = GetTextRange(foundPos, WordEndPosition(foundPos, true));
-                    const auto classPos = m_classCollection.find(assignment);
+                    const wxString dataType =
+                        GetTextRange(foundPos, WordEndPosition(foundPos, true));
+                    const auto classPos = m_classCollection.find(dataType);
                     if (classPos != m_classCollection.cend())
                         {
                         m_activeFunctionsAndSignaturesMap = &classPos->second.second;
