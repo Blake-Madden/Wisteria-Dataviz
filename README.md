@@ -134,79 +134,103 @@ Release information is available [here](Release.md).
 Building
 =============================
 
-First, download Wisteria:
+First, download *Wisteria*:
 
 ```
-git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
+git clone  --recurse-submodules
 ```
 
 Windows
 -----------------------------
 
-Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
-same folder level as this project:
+Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher:
 
 - Open *Visual Studio* and select *Clone a Repository*
-  - Enter "https://github.com/wxWidgets/wxWidgets.git" and clone it to same level as this project
+  - Enter [https://github.com/wxWidgets/wxWidgets.git](https://github.com/wxWidgets/wxWidgets.git) and clone it
 - Once the wxWidgets folder is cloned and opened in *Visual Studio*:
   - Open **Project** > **CMake Settings for wxWidgets**
     - Uncheck **wxBUILD_SHARED**
+    - Set **wxBUILD_OPTIMISE** to "ON"
+    - Set the configuration type to "Release"
     - Save your changes
   - Select **Build** > **Install wxWidgets** (builds and then copies the header, lib, and cmake files to the prefix folder)
 
-Next, open the Wisteria folder in Visual Studio and build the project.
+Next, download and build *Wisteria*:
+
+- Open *Visual Studio* and select *Clone a Repository*
+  - Enter [https://github.com/Blake-Madden/Wisteria-Dataviz.git](https://github.com/Blake-Madden/Wisteria-Dataviz.git) and clone it
+    Note that this project's folder should be at the save level as the *wxWidgets* folder.
+- Open this project's *CMake* file in *Visual Studio*:
+  - Open **Project** > **CMake Settings for Wisteria**
+    - Set the configuration type to "Release" (or create a new release configuration)
+    - Save your changes
+- Select **View** > **CMake Targets**
+- Build the *demo*, and *wisteria*, and/or *doxygen-docs* targets
 
 Linux
 -----------------------------
 
 Install the following from your repository manager (or build from source):
 
-- GTK3 development files (version 3.3 or higher)
-- Threading Building Blocks (libtbb) and its development files
+- *GTK3* development files (version 3.3 or higher)
+- *OpenMP* (libomp) and its development files
+- *Threading Building Blocks* (libtbb) and its development files
+- *Doxygen* (if building the API documentation)
 
 Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
 same folder level as this project:
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
-cmake --build . --target install -j4
+cd wxWidgets
+cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF \
+    -DwxBUILD_OPTIMISE=ON -DwxBUILD_STRIPPED_RELEASE=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build . --target install -j4 --config Release
+cd ..
 ```
 
-Go into the project folder and run the following to
-build the library and demo:
+Next, download *Wisteria* and build the library, demo, and documentation:
 
 ```
-cmake .
-cmake --build . -j 4
+git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
+cd Wisteria-Dataviz
+cmake . -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j4 --config Release
 ```
 
-If using KDevelop or VS Code, you can also open the CMake file and build from there.
+If using *KDevelop* or *VS Code*, you can also open the *CMake* file and build from there.
 
 macOS
 -----------------------------
 
 Install the following using brew (or build from source):
 
-- Threading Building Blocks (tbb)
-- OpenMP (libomp)
-- Doxygen
+- *XCode*
+- *Doxygen* (if building the API documentation)
 
 Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
 same folder level as this project:
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
-cmake --build . --target install -j4
+cd wxWidgets
+cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF \
+    -DwxBUILD_OPTIMISE=ON -DwxBUILD_STRIPPED_RELEASE=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build . --target install -j4 --config Release
+cd ..
 ```
 
-Go into the project folder and run the following to
-build the library and demo:
+Next, download *Wisteria* and build the library, demo, and documentation:
 
 ```
-cmake .
-cmake --build . -j 4
+git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
+cd Wisteria-Dataviz
+cmake . -DCMAKE_BUILD_TYPE=Release
+# XCode will not understand an "all" target,
+# so the binaries and manual must be built separately
+cmake --build . --target demo -j4 --config Release
+cmake --build . --target wisteria -j4 --config Release
+cmake --build . --target doxygen-docs -j4
 ```
 
 Documentation
@@ -218,7 +242,9 @@ Dependencies
 =============================
 
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher
-- GTK 3 (Linux)
-- Threading Building Blocks: libtbb (Linux)
-- A C++20 compatible compiler
-- OpenMP (optional)
+- A C++20 compatible compiler (*XCode* on macOS)
+- *CMake* 3.25 or higher
+- *Doxygen* (if building the API documentation)
+- *GTK 3* (Linux)
+- *Threading Building Blocks*: libtbb (Linux)
+- *OpenMP* (Linux)
