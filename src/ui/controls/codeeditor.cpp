@@ -606,7 +606,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
 
         if (lastWord == L"()")
             {
-            // step over function
+            // step over function...
             wordStart = WordStartPosition(wordStart - 1, false);
             // ...then step back to name of library
             wordStart = WordStartPosition(wordStart - 1, false);
@@ -687,13 +687,29 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 if (pos != m_libraryCollection.cend())
                     {
                     m_activeFunctionsAndSignaturesMap = &pos->second.second;
-                    if (AutoCompActive())
+                    // widdle the list of functions down to the ones that
+                    // contain the current word
+                    wxStringTokenizer tkz{ pos->second.first };
+                    wxString matchedFuncs;
+                    bool funcStartsWith{ false };
+                    while (tkz.HasMoreTokens())
                         {
-                        AutoCompSelect(lastWord);
+                        const wxString nextToken = tkz.GetNextToken();
+                        if (nextToken.Lower().find(lastWord.Lower()) != wxString::npos)
+                            {
+                            matchedFuncs.append(L' ').append(nextToken);
+                            // set closest match if we can
+                            if (!funcStartsWith && nextToken.Lower().starts_with(lastWord))
+                                {
+                                funcStartsWith = true;
+                                }
+                            }
                         }
-                    else
+                    matchedFuncs.Trim(true).Trim(false);
+                    AutoCompCancel();
+                    if (!matchedFuncs.empty())
                         {
-                        AutoCompShow(lastWord.length(), pos->second.first);
+                        AutoCompShow(funcStartsWith ? lastWord.length() : 0, matchedFuncs);
                         }
                     }
                 }
@@ -706,7 +722,9 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 // see if it is an object returned from a known function
                 if (previousWord == L"()")
                     {
+                    // step over function...
                     previousWordStart = WordStartPosition(previousWordStart - 1, false);
+                    // ...then step back to name of object
                     previousWordStart = WordStartPosition(previousWordStart - 1, false);
                     const wxString libraryName = GetTextRange(previousWordStart, wordStart - 1);
                     auto libraryPos = m_libraryFunctionsWithReturnTypes.find(libraryName);
