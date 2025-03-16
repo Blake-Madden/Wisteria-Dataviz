@@ -492,6 +492,46 @@ void CodeEditor::OnMarginClick(wxStyledTextEvent& event)
 //-------------------------------------------------------------
 void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
     {
+    // Given a variable name, searches for the datatype of that variable based
+    // on the first place it was assigned a value. 
+    const auto findDataType = [this](const int wordStart, const wxString objectName)
+        {
+        int foundPos{ 0 };
+        while (foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+            {
+            foundPos = FindText(foundPos, wordStart, objectName,
+                                wxSTC_FIND_WHOLEWORD | wxSTC_FIND_MATCHCASE);
+            if (foundPos != wxSTC_INVALID_POSITION &&
+                foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+                {
+                foundPos += objectName.length();
+                while (foundPos < GetLength() && GetCharAt(foundPos) == L' ')
+                    {
+                    ++foundPos;
+                    }
+                // found an assignment to this variable
+                if (foundPos < GetLength() && GetCharAt(foundPos) == L'=')
+                    {
+                    // scan to whatever it is assigned to
+                    do
+                        {
+                        ++foundPos;
+                        } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
+                    return GetTextRange(foundPos, WordEndPosition(foundPos, true));
+                    }
+                else
+                    {
+                    continue;
+                    }
+                }
+            else
+                {
+                break;
+                }
+            }
+        return wxString{};
+        };
+
     if (event.GetKey() == GetLibraryAccessor())
         {
         const int wordStart = WordStartPosition(GetCurrentPos() - 1, true);
@@ -542,27 +582,9 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             const int objectNameStart = WordStartPosition(wordStart - 1, true);
             const wxString objectName = GetTextRange(objectNameStart, wordStart - 1);
 
-            int foundPos{ 0 };
-            while (foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
+            const wxString dataType = findDataType(wordStart, objectName);
+            if (!dataType.empty())
                 {
-                foundPos = FindText(foundPos, wordStart, objectName,
-                                    wxSTC_FIND_WHOLEWORD | wxSTC_FIND_MATCHCASE);
-                if (foundPos != wxSTC_INVALID_POSITION &&
-                    foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
-                    {
-                    foundPos += objectName.length();
-                    while (foundPos < GetLength() && GetCharAt(foundPos) == L' ')
-                        {
-                        ++foundPos;
-                        }
-                    // found an assignment to this variable
-                    if (foundPos < GetLength() && GetCharAt(foundPos) == L'=')
-                        {
-                        // scan to whatever it is assigned to
-                        do
-                            {
-                            ++foundPos;
-                            } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
                         // if it is a known class of ours, then show the functions
                         // available for that class
                         const wxString dataType =
@@ -623,52 +645,14 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 }
             }
         // might be a variable, look for where it was first assigned to something
-        int foundPos{ 0 };
-        while (foundPos + lastWord.length() + 2 < static_cast<size_t>(wordStart))
-            {
-            foundPos = FindText(foundPos, wordStart, lastWord,
-                                wxSTC_FIND_WHOLEWORD | wxSTC_FIND_MATCHCASE);
-            if (foundPos != wxSTC_INVALID_POSITION &&
-                foundPos + lastWord.length() + 2 < static_cast<size_t>(wordStart))
-                {
-                foundPos += lastWord.length();
-                while (foundPos < GetLength() && GetCharAt(foundPos) == L' ')
-                    {
-                    ++foundPos;
-                    }
-                // found an assignment to this variable
-                if (foundPos < GetLength() && GetCharAt(foundPos) == L'=')
-                    {
-                    // scan to whatever it is assigned to
-                    do
-                        {
-                        ++foundPos;
-                        } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
+        const wxString dataType = findDataType(wordStart, lastWord);
                     // if it is a known class of ours, then show the functions
                     // available for that class
-                    const wxString dataType =
-                        GetTextRange(foundPos, WordEndPosition(foundPos, true));
                     const auto classPos = m_classCollection.find(dataType);
                     if (classPos != m_classCollection.cend())
                         {
                         m_activeFunctionsAndSignaturesMap = &classPos->second.second;
                         AutoCompShow(0, classPos->second.first);
-                        break;
-                        }
-                    else
-                        {
-                        continue;
-                        }
-                    }
-                else
-                    {
-                    continue;
-                    }
-                }
-            else
-                {
-                break;
-                }
             }
         }
     else
