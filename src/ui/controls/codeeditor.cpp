@@ -126,6 +126,7 @@ void CodeEditor::SetThemeColor(const wxColour& background)
 void CodeEditor::SetLanguage(const int lang)
     {
     m_lexer = lang;
+    SetLexer(m_lexer);
     if (wxSTC_LEX_LUA == m_lexer)
         {
         // core language keywords
