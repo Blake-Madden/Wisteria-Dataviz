@@ -75,6 +75,8 @@ wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
     Bind(wxEVT_STC_MARGINCLICK, &CodeEditor::OnMarginClick, this, wxID_ANY);
     Bind(wxEVT_STC_CHARADDED, &CodeEditor::OnCharAdded, this, wxID_ANY);
     Bind(wxEVT_STC_AUTOCOMP_SELECTION, &CodeEditor::OnAutoCompletionSelected, this, wxID_ANY);
+
+    SetThemeColor(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_WINDOW));
     }
 
 //-------------------------------------------------------------
