@@ -19,7 +19,7 @@ using namespace Wisteria::Colors;
 wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 
     //-------------------------------------------------------------
-    CodeEditor::CodeEditor(wxWindow* parent, wxWindowID id /*=wxID_ANY*/,
+    CodeEditor::CodeEditor(wxWindow* parent, const int lang, wxWindowID id /*=wxID_ANY*/,
                            const wxPoint& pos /*=wxDefaultPosition*/,
                            const wxSize& size /*=wxDefaultSize*/, long style /*=0*/,
                            const wxString& name /*"CodeEditor"*/)
@@ -76,6 +76,8 @@ wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
     Bind(wxEVT_STC_CHARADDED, &CodeEditor::OnCharAdded, this, wxID_ANY);
     Bind(wxEVT_STC_AUTOCOMP_SELECTION, &CodeEditor::OnAutoCompletionSelected, this, wxID_ANY);
 
+    SetLanguage(lang);
+
     SetThemeColor(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_WINDOW));
     }
 
@@ -94,32 +96,39 @@ void CodeEditor::SetThemeColor(const wxColour& background)
         StyleSetForeground(i, foreground);
         }
 
-    StyleSetForeground(wxSTC_LUA_WORD, contrast.Contrast(m_keywordColor1));
-    StyleSetForeground(wxSTC_LUA_WORD2, contrast.Contrast(m_keywordColor2));
-    StyleSetForeground(wxSTC_LUA_STRING, contrast.Contrast(m_stringColor));
-    StyleSetForeground(wxSTC_LUA_OPERATOR, contrast.Contrast(m_operatorColor));
-    StyleSetForeground(wxSTC_LUA_COMMENTLINE, contrast.Contrast(m_commentColor));
-
-    StyleSetForeground(wxSTC_C_WORD, contrast.Contrast(m_keywordColor1));
-    StyleSetForeground(wxSTC_C_WORD2, contrast.Contrast(m_keywordColor2));
-    StyleSetForeground(wxSTC_C_STRING, contrast.Contrast(m_stringColor));
-    StyleSetForeground(wxSTC_C_OPERATOR, contrast.Contrast(m_operatorColor));
-    StyleSetForeground(wxSTC_C_COMMENTLINE, contrast.Contrast(m_commentColor));
-    StyleSetForeground(wxSTC_C_COMMENT, contrast.Contrast(m_commentColor));
-    StyleSetForeground(wxSTC_C_COMMENTLINEDOC, contrast.Contrast(m_commentColor));
-    StyleSetForeground(wxSTC_C_COMMENTDOC, contrast.Contrast(m_commentColor));
-    StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORD, contrast.Contrast(m_commentDocColor));
-    StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORDERROR, contrast.Contrast(m_commentDocColor));
-
-    StyleSetForeground(wxSTC_H_ENTITY, contrast.Contrast(m_keywordColor1));
-    StyleSetForeground(wxSTC_H_TAG, contrast.Contrast(m_keywordColor1));
-    StyleSetForeground(wxSTC_H_TAGUNKNOWN, contrast.Contrast(m_keywordColor1));
-    StyleSetForeground(wxSTC_H_ATTRIBUTE, contrast.Contrast(m_keywordColor2));
-    StyleSetForeground(wxSTC_H_ATTRIBUTEUNKNOWN, contrast.Contrast(m_keywordColor2));
-    StyleSetForeground(wxSTC_H_DOUBLESTRING, contrast.Contrast(m_stringColor));
-    StyleSetForeground(wxSTC_H_SINGLESTRING, contrast.Contrast(m_stringColor));
-    StyleSetForeground(wxSTC_H_COMMENT, contrast.Contrast(m_commentColor));
-    StyleSetForeground(wxSTC_H_XCCOMMENT, contrast.Contrast(m_commentColor));
+    if (wxSTC_LEX_LUA == m_lexer)
+        {
+        StyleSetForeground(wxSTC_LUA_WORD, contrast.Contrast(m_keywordColor1));
+        StyleSetForeground(wxSTC_LUA_WORD2, contrast.Contrast(m_keywordColor2));
+        StyleSetForeground(wxSTC_LUA_STRING, contrast.Contrast(m_stringColor));
+        StyleSetForeground(wxSTC_LUA_OPERATOR, contrast.Contrast(m_operatorColor));
+        StyleSetForeground(wxSTC_LUA_COMMENTLINE, contrast.Contrast(m_commentColor));
+        }
+    else if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
+        {
+        StyleSetForeground(wxSTC_C_WORD, contrast.Contrast(m_keywordColor1));
+        StyleSetForeground(wxSTC_C_WORD2, contrast.Contrast(m_keywordColor2));
+        StyleSetForeground(wxSTC_C_STRING, contrast.Contrast(m_stringColor));
+        StyleSetForeground(wxSTC_C_OPERATOR, contrast.Contrast(m_operatorColor));
+        StyleSetForeground(wxSTC_C_COMMENTLINE, contrast.Contrast(m_commentColor));
+        StyleSetForeground(wxSTC_C_COMMENT, contrast.Contrast(m_commentColor));
+        StyleSetForeground(wxSTC_C_COMMENTLINEDOC, contrast.Contrast(m_commentColor));
+        StyleSetForeground(wxSTC_C_COMMENTDOC, contrast.Contrast(m_commentColor));
+        StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORD, contrast.Contrast(m_commentDocColor));
+        StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORDERROR, contrast.Contrast(m_commentDocColor));
+        }
+    else if (wxSTC_LEX_HTML == m_lexer)
+        {
+        StyleSetForeground(wxSTC_H_ENTITY, contrast.Contrast(m_keywordColor1));
+        StyleSetForeground(wxSTC_H_TAG, contrast.Contrast(m_keywordColor1));
+        StyleSetForeground(wxSTC_H_TAGUNKNOWN, contrast.Contrast(m_keywordColor1));
+        StyleSetForeground(wxSTC_H_ATTRIBUTE, contrast.Contrast(m_keywordColor2));
+        StyleSetForeground(wxSTC_H_ATTRIBUTEUNKNOWN, contrast.Contrast(m_keywordColor2));
+        StyleSetForeground(wxSTC_H_DOUBLESTRING, contrast.Contrast(m_stringColor));
+        StyleSetForeground(wxSTC_H_SINGLESTRING, contrast.Contrast(m_stringColor));
+        StyleSetForeground(wxSTC_H_COMMENT, contrast.Contrast(m_commentColor));
+        StyleSetForeground(wxSTC_H_XCCOMMENT, contrast.Contrast(m_commentColor));
+        }
 
     MarkerDefine(wxSTC_MARKNUM_FOLDER, wxSTC_MARK_DOTDOTDOT, foreground, background);
     MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_ARROWDOWN, foreground, background);

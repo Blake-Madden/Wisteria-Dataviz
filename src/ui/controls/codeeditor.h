@@ -40,9 +40,8 @@ namespace Wisteria::UI
 
         @par Example:
         @code
-        codeEditor = new CodeEditor(theParentDlg);
         // core Lua keywords will now be loaded for highlighting
-        codeEditor->SetLanguage(wxSTC_LEX_LUA);
+        codeEditor = new CodeEditor(theParentDlg, wxSTC_LEX_LUA);
 
         // add a set of global math functions
         CodeEditor::NameList MathFunctions;
@@ -68,12 +67,16 @@ namespace Wisteria::UI
         using NameList = std::set<std::wstring, string_util::string_no_case_less>;
         /** @brief Constructor.
             @param parent The parent window.
+            @param lang Sets the language used in this editor.\n
+                @c wxSTC_LEX_LUA, @wxSTC_LEX_HTML, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE
+                are currently supported.
             @param id The ID for this editor.
             @param pos The position.
             @param size The size of the editor.
             @param style The window style for this editor.
             @param name The class name for this window.*/
-        explicit CodeEditor(wxWindow* parent, wxWindowID id = wxID_ANY,
+        explicit CodeEditor(wxWindow* parent, const int lang,
+                            wxWindowID id = wxID_ANY,
                             const wxPoint& pos = wxDefaultPosition,
                             const wxSize& size = wxDefaultSize, long style = 0,
                             const wxString& name = L"CodeEditor");
@@ -82,11 +85,6 @@ namespace Wisteria::UI
         /// @private
         CodeEditor& operator=(const CodeEditor&) = delete;
 
-        /** @brief Sets the language used in this editor.
-            @param lang The language.\n
-                @c wxSTC_LEX_LUA, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE
-                are currently supported.*/
-        void SetLanguage(const int lang);
         /** @brief Adds a library and its functions/classes.
                 This information is used for autocompletion.
             @param library The name of the library.
@@ -218,10 +216,6 @@ namespace Wisteria::UI
             return m_fileFilter;
             }
 
-        /// @brief Sets the main color for the control. This will be the background color,
-        ///     and all text colors will be adjusted to contrast against this color.
-        /// @param background The color for the control's background.
-        void SetThemeColor(const wxColour& background);
 
         /// @brief Can be useful when calling find event from parent container.
         /// @private
@@ -249,6 +243,11 @@ namespace Wisteria::UI
                 }
             };
 
+        /// @brief Sets the main color for the control. This will be the background color,
+        ///     and all text colors will be adjusted to contrast against this color.
+        /// @param background The color for the control's background.
+        void SetThemeColor(const wxColour& background);
+        void SetLanguage(const int lang);
         static bool SplitFunctionAndParams(wxString& function, wxString& params);
         [[nodiscard]]
         static wxString StripExtraInfo(const wxString& function);
@@ -266,7 +265,7 @@ namespace Wisteria::UI
 
         using wxStringNoCaseMap = std::map<wxString, wxString, wxStringCmpNoCase>;
         // Library name, string of function names, and map of function names
-        // and their respective full signature
+        // and their respective full signatures
         using ObjectAndFunctionsMap =
             std::map<wxString, std::pair<wxString, wxStringNoCaseMap>, wxStringCmpNoCase>;
 
