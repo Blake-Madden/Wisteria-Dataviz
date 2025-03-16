@@ -493,9 +493,9 @@ void CodeEditor::OnMarginClick(wxStyledTextEvent& event)
 void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
     {
     // Given a variable name, searches for the datatype of that variable based
-    // on the first place it was assigned a value. 
+    // on the first place it was assigned a value.
     const auto findDataType = [this](const int wordStart, const wxString objectName)
-        {
+    {
         int foundPos{ 0 };
         while (foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
             {
@@ -530,7 +530,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 }
             }
         return wxString{};
-        };
+    };
 
     if (event.GetKey() == GetLibraryAccessor())
         {
@@ -585,38 +585,21 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             const wxString dataType = findDataType(wordStart, objectName);
             if (!dataType.empty())
                 {
-                        // if it is a known class of ours, then show the functions
-                        // available for that class
-                        const wxString dataType =
-                            GetTextRange(foundPos, WordEndPosition(foundPos, true));
-                        const auto classPos = m_classCollection.find(dataType);
-                        if (classPos != m_classCollection.cend())
-                            {
-                            m_activeFunctionsAndSignaturesMap = &classPos->second.second;
-                            const auto foundFunc = classPos->second.second.find(functionName);
-                            if (foundFunc != classPos->second.second.cend())
-                                {
-                                wxString params, foundKeyword{ foundFunc->second };
-                                if (SplitFunctionAndParams(foundKeyword, params))
-                                    {
-                                    CallTipShow(GetCurrentPos(), L"(" + params + L")");
-                                    }
-                                }
-                            break;
-                            }
-                        else
-                            {
-                            continue;
-                            }
-                        }
-                    else
-                        {
-                        continue;
-                        }
-                    }
-                else
+                // if it is a known class of ours, then show the functions
+                // available for that class
+                const auto classPos = m_classCollection.find(dataType);
+                if (classPos != m_classCollection.cend())
                     {
-                    break;
+                    m_activeFunctionsAndSignaturesMap = &classPos->second.second;
+                    const auto foundFunc = classPos->second.second.find(functionName);
+                    if (foundFunc != classPos->second.second.cend())
+                        {
+                        wxString params, foundKeyword{ foundFunc->second };
+                        if (SplitFunctionAndParams(foundKeyword, params))
+                            {
+                            CallTipShow(GetCurrentPos(), L"(" + params + L")");
+                            }
+                        }
                     }
                 }
             }
@@ -646,13 +629,13 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             }
         // might be a variable, look for where it was first assigned to something
         const wxString dataType = findDataType(wordStart, lastWord);
-                    // if it is a known class of ours, then show the functions
-                    // available for that class
-                    const auto classPos = m_classCollection.find(dataType);
-                    if (classPos != m_classCollection.cend())
-                        {
-                        m_activeFunctionsAndSignaturesMap = &classPos->second.second;
-                        AutoCompShow(0, classPos->second.first);
+        // if it is a known class of ours, then show the functions
+        // available for that class
+        const auto classPos = m_classCollection.find(dataType);
+        if (classPos != m_classCollection.cend())
+            {
+            m_activeFunctionsAndSignaturesMap = &classPos->second.second;
+            AutoCompShow(0, classPos->second.first);
             }
         }
     else
@@ -726,6 +709,41 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                                 {
                                 AutoCompShow(lastWord.length(), classPos->second.first);
                                 }
+                            }
+                        }
+                    }
+                else
+                    {
+                    const wxString dataType = findDataType(wordStart, previousWord);
+                    // if it is a known class of ours, then show the functions
+                    // available for that class
+                    const auto classPos = m_classCollection.find(dataType);
+                    if (classPos != m_classCollection.cend())
+                        {
+                        m_activeFunctionsAndSignaturesMap = &classPos->second.second;
+                        // widdle the list of functions down to the ones that
+                        // contain the current word
+                        wxStringTokenizer tkz{ classPos->second.first };
+                        wxString matchedFuncs;
+                        bool funcStartsWith{ false };
+                        while (tkz.HasMoreTokens())
+                            {
+                            const wxString nextToken = tkz.GetNextToken();
+                            if (nextToken.Lower().find(lastWord.Lower()) != wxString::npos)
+                                {
+                                matchedFuncs.append(L' ').append(nextToken);
+                                // set closest match if we can
+                                if (!funcStartsWith && nextToken.Lower().starts_with(lastWord))
+                                    {
+                                    funcStartsWith = true;
+                                    }
+                                }
+                            }
+                        matchedFuncs.Trim(true).Trim(false);
+                        AutoCompCancel();
+                        if (!matchedFuncs.empty())
+                            {
+                            AutoCompShow(funcStartsWith ? lastWord.length() : 0, matchedFuncs);
                             }
                         }
                     }
