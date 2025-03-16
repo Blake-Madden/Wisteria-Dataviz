@@ -111,6 +111,16 @@ void CodeEditor::SetThemeColor(const wxColour& background)
     StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORD, contrast.Contrast(m_commentDocColor));
     StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORDERROR, contrast.Contrast(m_commentDocColor));
 
+    StyleSetForeground(wxSTC_H_ENTITY, contrast.Contrast(m_keywordColor1));
+    StyleSetForeground(wxSTC_H_TAG, contrast.Contrast(m_keywordColor1));
+    StyleSetForeground(wxSTC_H_TAGUNKNOWN, contrast.Contrast(m_keywordColor1));
+    StyleSetForeground(wxSTC_H_ATTRIBUTE, contrast.Contrast(m_keywordColor2));
+    StyleSetForeground(wxSTC_H_ATTRIBUTEUNKNOWN, contrast.Contrast(m_keywordColor2));
+    StyleSetForeground(wxSTC_H_DOUBLESTRING, contrast.Contrast(m_stringColor));
+    StyleSetForeground(wxSTC_H_SINGLESTRING, contrast.Contrast(m_stringColor));
+    StyleSetForeground(wxSTC_H_COMMENT, contrast.Contrast(m_commentColor));
+    StyleSetForeground(wxSTC_H_XCCOMMENT, contrast.Contrast(m_commentColor));
+
     MarkerDefine(wxSTC_MARKNUM_FOLDER, wxSTC_MARK_DOTDOTDOT, foreground, background);
     MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_ARROWDOWN, foreground, background);
     MarkerDefine(wxSTC_MARKNUM_FOLDERSUB, wxSTC_MARK_EMPTY, foreground, background);
@@ -130,25 +140,16 @@ void CodeEditor::SetLanguage(const int lang)
     if (wxSTC_LEX_LUA == m_lexer)
         {
         // core language keywords
-        SetLexer(m_lexer);
         SetKeyWords(0, _DT(L"and break do else elseif end false for function if in local "
                            "nil not or repeat return then true until while dofile"));
         // other language settings
-        SetFileFilter(_(L"Lua Script (*.lua)|*.lua"));
+        SetFileFilter(_(L"Lua Scripts (*.lua)|*.lua"));
         SetLibraryAccessor(L'.');
         SetObjectAccessor(L':');
-
-        // highlighting for Lua
-        StyleSetForeground(wxSTC_LUA_WORD, m_keywordColor1);
-        StyleSetForeground(wxSTC_LUA_WORD2, m_keywordColor2);
-        StyleSetForeground(wxSTC_LUA_STRING, m_stringColor);
-        StyleSetForeground(wxSTC_LUA_OPERATOR, m_operatorColor);
-        StyleSetForeground(wxSTC_LUA_COMMENTLINE, m_commentColor);
         }
-    if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
+    else if (wxSTC_LEX_CPP == m_lexer || wxSTC_LEX_CPPNOCASE == m_lexer)
         {
         // core language keywords
-        SetLexer(m_lexer);
         SetKeyWords(
             0, _DT(L"alignas alignof and_eq asm atomic_cancel atomic_commit atomic_noexcept auto "
                    "bitand bitor bool break case catch char char8_t char16_t char32_t class compl "
@@ -162,21 +163,13 @@ void CodeEditor::SetLanguage(const int lang)
                    "union unsigned using virtual void volatile wchar_t while xor xor_eq "
                    "final override import module"));
         // other language settings
-        SetFileFilter(_(L"C++ Source Files (*.cpp)|*.cpp"));
+        SetFileFilter(_(L"C++ Source Files (*.cpp;*.c;*.h;*.hpp)|*.cpp;*.c;*.h;*.hpp"));
         SetLibraryAccessor(L':');
         SetObjectAccessor(L'.');
-
-        // highlighting for C/C++
-        StyleSetForeground(wxSTC_C_WORD, m_keywordColor1);
-        StyleSetForeground(wxSTC_C_WORD2, m_keywordColor2);
-        StyleSetForeground(wxSTC_C_STRING, m_stringColor);
-        StyleSetForeground(wxSTC_C_OPERATOR, m_operatorColor);
-        StyleSetForeground(wxSTC_C_COMMENTLINE, m_commentColor);
-        StyleSetForeground(wxSTC_C_COMMENT, m_commentColor);
-        StyleSetForeground(wxSTC_C_COMMENTLINEDOC, m_commentColor);
-        StyleSetForeground(wxSTC_C_COMMENTDOC, m_commentColor);
-        StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORD, m_commentDocColor);
-        StyleSetForeground(wxSTC_C_COMMENTDOCKEYWORDERROR, m_commentDocColor);
+        }
+    else if (wxSTC_LEX_HTML == m_lexer)
+        {
+        SetFileFilter(_(L"HTML Files (*.html;*.htm)|*.html;*.htm"));
         }
     }
 
