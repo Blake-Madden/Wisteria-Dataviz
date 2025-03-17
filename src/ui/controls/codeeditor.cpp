@@ -505,6 +505,11 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
     // on the first place it was assigned a value.
     const auto findDataType = [this](const int wordStart, const wxString objectName)
     {
+        if (objectName.empty())
+            {
+            return wxString{};
+            }
+
         int foundPos{ 0 };
         while (foundPos + objectName.length() + 2 < static_cast<size_t>(wordStart))
             {
