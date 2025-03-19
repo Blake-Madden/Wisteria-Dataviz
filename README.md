@@ -134,12 +134,6 @@ Release information is available [here](Release.md).
 Building
 =============================
 
-First, download *Wisteria*:
-
-```
-git clone  --recurse-submodules
-```
-
 Windows
 -----------------------------
 
