@@ -58,6 +58,7 @@ wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
     // enable auto-completion
     AutoCompSetIgnoreCase(true);
     AutoCompSetAutoHide(true);
+    AutoCompSetMaxHeight(30);
     // annotations styles
     StyleSetBackground(
         ERROR_ANNOTATION_STYLE,
