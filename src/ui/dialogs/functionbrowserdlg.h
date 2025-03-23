@@ -106,6 +106,10 @@ namespace Wisteria::UI
             return m_categoryList;
             }
 
+        /// @brief Sets the editor that the control is pointing to.
+        /// @param editor The editor window.
+        void SetEditor(wxWindow* editor) { m_editWindow = editor; }
+
         /** @brief Specifies the separator used between function arguments
                 (usually a comma, sometimes a semicolon for other regions.
                 The default is a comma.

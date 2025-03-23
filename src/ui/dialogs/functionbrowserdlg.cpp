@@ -23,7 +23,7 @@ namespace Wisteria::UI
         // insert it into the parent editor.
         else
             {
-            if (m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
+            if (m_editWindow != nullptr && m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
                 {
                 wxStyledTextCtrl* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
                 styleWindow->AddText(event.GetLinkInfo().GetHref());
@@ -230,7 +230,8 @@ namespace Wisteria::UI
                          _(L"Invalid Selection"), wxOK | wxICON_INFORMATION);
             return;
             }
-        if (m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
+        if (m_editWindow != nullptr &&
+            m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
             {
             lily_of_the_valley::html_extract_text filter_html;
             wxString functionStr =
