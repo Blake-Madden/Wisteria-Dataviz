@@ -1,6 +1,6 @@
 /** @addtogroup UI
     @brief User interface classes.
-    @date 2005-2025s
+    @date 2005-2023
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -61,22 +61,22 @@ namespace Wisteria::UI
         /// @brief Container type for function, class, and category names.
         using NameList = std::set<std::wstring, string_util::string_no_case_less>;
 
-        /** @brief Adds a category that doesn't contain functions, but rather other categories
+        /** @brief Adds a category that doesn't contain functions, but rather other categories.
             @param category The category label.
             @param Id The ID for the category. This ID is used to connect subcategories to this one.
-            @param iconIndex The icon to show next to the category label. -1 means no icon.*/
+            @param iconIndex The icon to show next to the category label. @c -1 means no icon.*/
         void AddCategory(const wxString& category, const wxWindowID Id, const long iconIndex = -1)
             {
             m_categoryList->InsertItem(m_categoryList->GetFolderCount(), category, Id, iconIndex);
             }
 
-        /** @brief Adds a category that doesn't contain functions, but rather other categories
+        /** @brief Adds a category and its associated functions.
             @param category The category label.
             @param functions The functions to associate with the category.\n
                 Each item in this array should be a tab-delimited string containing
                 the function name, description, and return type (optional).
             @param parentId The ID of the parent category to attach this to category under.
-                If @c -1, then this will be a root-level category.
+                If @c wxID_ANY, then this will be a root-level category.
             @param iconIndex The icon to show next to the category label.
                 @c -1 means no icon.*/
         void AddCategory(const std::wstring& category,

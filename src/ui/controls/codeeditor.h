@@ -88,22 +88,22 @@ namespace Wisteria::UI
         /** @brief Adds a library and its functions/classes.
                 This information is used for autocompletion.
             @param library The name of the library.
-            @param[in,out] functions The classes and functions inside of the library.
+            @param functions The classes and functions inside of the library.
                 The syntax for these strings is
                 the name of the function and (optionally) a return type following a tab character.
                 For example, `"GetUser()->User"` will load a function named `GetUser`
                 with a return type of `User`.
             @sa Finalize().*/
-        void AddLibrary(const wxString& library, NameList& functions);
+        void AddLibrary(const wxString& library, const NameList& functions);
         /** @brief Adds a class and its functions. This information is used for autocompletion.
             @param theClass The name of the class.
-            @param[in,out] functions The functions inside of the class.
+            @param functions The functions inside of the class.
                 The syntax for these strings is the name of the function and
                 (optionally) a return type following a tab character.
                 For example, `"GetUser()->User"` will load a function
                 named `GetUser` with a return type of `User`.
             @sa Finalize().*/
-        void AddClass(const wxString& theClass, NameList& functions);
+        void AddClass(const wxString& theClass, const NameList& functions);
         /** @brief Adds a set of function or class names that the highlighting and
                 auto-completion should recognize.
             @param functions The array of functions to add.

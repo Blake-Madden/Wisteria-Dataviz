@@ -363,7 +363,7 @@ void CodeEditor::AddFunctionsOrClasses(const NameList& functions)
     }
 
 //-------------------------------------------------------------
-void CodeEditor::AddLibrary(const wxString& library, NameList& functions)
+void CodeEditor::AddLibrary(const wxString& library, const NameList& functions)
     {
     ResetActiveFunctionMap();
 
@@ -387,7 +387,7 @@ void CodeEditor::AddLibrary(const wxString& library, NameList& functions)
     }
 
 //-------------------------------------------------------------
-void CodeEditor::AddClass(const wxString& theClass, NameList& functions)
+void CodeEditor::AddClass(const wxString& theClass, const NameList& functions)
     {
     ResetActiveFunctionMap();
 
