@@ -73,8 +73,10 @@ namespace Wisteria::UI
         /** @brief Adds a category and its associated functions.
             @param category The category label.
             @param functions The functions to associate with the category.\n
-                Each item in this array should be a tab-delimited string containing
-                the function name, description, and return type (optional).
+                Each item in this array can be either:
+                - a tab-delimited string containing the function signature, description,
+                  and return type (optional).
+                - a string containing function signature, "->" and the return type (can be empty).
             @param parentId The ID of the parent category to attach this to category under.
                 If @c wxID_ANY, then this will be a root-level category.
             @param iconIndex The icon to show next to the category label.

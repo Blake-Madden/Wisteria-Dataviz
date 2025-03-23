@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Name:        functionbrowserdlg.cpp
 // Author:      Blake Madden
-// Copyright:   (c) 2005-2025 Blake Madden
+// Copyright:   (c) 2005-2023 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,24 +81,46 @@ namespace Wisteria::UI
                 wxString currentDescriptionAndRetVal;
                 for (const auto& func : pos->m_functions)
                     {
-                    tkz.SetString(func, L"\t");
-                    // the function signature
-                    currentFunctionSignature = tkz.GetNextToken();
-                    funcNames.Add(GetFunctionName(currentFunctionSignature));
-                    // description
-                    currentDescriptionAndRetVal = tkz.GetNextToken();
-                    // a special return type
-                    if (tkz.HasMoreTokens())
+                    if (const auto retPos = func.find(L"->"); retPos != wxString::npos)
                         {
-                        const wxString retVal = tkz.GetNextToken();
-                        currentDescriptionAndRetVal += wxString::Format(
-                            L"<br />%s<tt><span style='font-weight:bold;'>"
-                            "<span style=\"color:blue\"><a href=\"%s\">%s</a></span></span></tt>.",
-                            _(L"Returns: "), retVal, retVal);
+                        currentFunctionSignature = func.substr(0, retPos);
+                        funcNames.Add(GetFunctionName(currentFunctionSignature));
+                        const wxString retVal = func.substr(retPos + 2);
+                        currentDescriptionAndRetVal.clear();
+                        if (!retVal.empty())
+                            {
+                            currentDescriptionAndRetVal =
+                                wxString::Format(L"<br />%s<tt><span style='font-weight:bold;'>"
+                                                 "<span style=\"color:blue\"><a "
+                                                 "href=\"%s\">%s</a></span></span></tt>.",
+                                                 _(L"Returns: "), retVal, retVal);
+                            }
+                        m_currentFunctionsAndDescriptions.emplace_back(
+                            FormatFunctionSignature(currentFunctionSignature),
+                            currentDescriptionAndRetVal);
                         }
-                    m_currentFunctionsAndDescriptions.emplace_back(
-                        FormatFunctionSignature(currentFunctionSignature),
-                        currentDescriptionAndRetVal);
+                    else
+                        {
+                        tkz.SetString(func, L"\t");
+                        // the function signature
+                        currentFunctionSignature = tkz.GetNextToken();
+                        funcNames.Add(GetFunctionName(currentFunctionSignature));
+                        // description
+                        currentDescriptionAndRetVal = tkz.GetNextToken();
+                        // a special return type
+                        if (tkz.HasMoreTokens())
+                            {
+                            const wxString retVal = tkz.GetNextToken();
+                            currentDescriptionAndRetVal +=
+                                wxString::Format(L"<br />%s<tt><span style='font-weight:bold;'>"
+                                                 "<span style=\"color:blue\"><a "
+                                                 "href=\"%s\">%s</a></span></span></tt>.",
+                                                 _(L"Returns: "), retVal, retVal);
+                            }
+                        m_currentFunctionsAndDescriptions.emplace_back(
+                            FormatFunctionSignature(currentFunctionSignature),
+                            currentDescriptionAndRetVal);
+                        }
                     }
                 m_functionList->Clear();
                 m_functionList->Append(funcNames);
