@@ -47,12 +47,22 @@ RibbonMetroArtProvider::RibbonMetroArtProvider(bool set_colour_scheme) :
     m_button_bar_label_font = m_tab_label_font;
     m_panel_label_font = m_tab_label_font;
 
-    if (set_colour_scheme)
+    if(set_colour_scheme)
     {
-        SetColourScheme(
-            wxColour(255, 255, 255),
-            wxColour(120, 174, 229),
-            wxColour(  0,   0,   0));
+        if (wxSystemSettings::GetAppearance().IsDark())
+        {
+            SetColourScheme(
+                wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE),
+                wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT),
+                wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT));
+        }
+        else
+        {
+            SetColourScheme(
+                wxColour(194, 216, 241),
+                wxColour(255, 223, 114),
+                wxColour(0, 0, 0));
+        }
     }
 
     m_cached_tab_separator_visibility = -10.0; // valid visibilities are in range [0, 1]
@@ -97,79 +107,91 @@ void RibbonMetroArtProvider::SetColourScheme(
 
     // Map primary saturation from [0, 1] to [.25, .75]
     bool primary_is_gray = false;
-    static const double gray_saturation_threshold = 0.01;
+    static const float gray_saturation_threshold = 0.01f;
     if(primary_hsl.saturation <= gray_saturation_threshold)
         primary_is_gray = true;
     else
-        {
-        primary_hsl.saturation = cos(primary_hsl.saturation * M_PI)
-            * -0.25 + 0.5;
-        }
+    {
+        primary_hsl.saturation = std::cos(primary_hsl.saturation * float(M_PI))
+            * -0.25f + 0.5f;
+    }
 
     // Map primary luminance from [0, 1] to [.23, .83]
-    primary_hsl.luminance = cos(primary_hsl.luminance * M_PI) * -0.3 + 0.53;
+    primary_hsl.luminance = std::cos(primary_hsl.luminance * float(M_PI)) * -0.3f + 0.53f;
 
     // Map secondary saturation from [0, 1] to [0.16, 0.84]
-    if(secondary_hsl.saturation > gray_saturation_threshold)
-        {
-        secondary_hsl.saturation = cos(secondary_hsl.saturation * M_PI)
-            * -0.34 + 0.5;
-        }
+    bool secondary_is_gray = false;
+    if(secondary_hsl.saturation <= gray_saturation_threshold)
+        secondary_is_gray = true;
+    else
+    {
+        secondary_hsl.saturation = std::cos(secondary_hsl.saturation * float(M_PI))
+            * -0.34f + 0.5f;
+    }
 
     // Map secondary luminance from [0, 1] to [0.1, 0.9]
-    secondary_hsl.luminance = cos(secondary_hsl.luminance * M_PI) * -0.4 + 0.5;
+    secondary_hsl.luminance = std::cos(secondary_hsl.luminance * float(M_PI)) * -0.4f + 0.5f;
 
-    const auto LikePrimary = [&primary_hsl, &primary_is_gray = std::as_const(primary_is_gray)]
-        (const double h, const double s, const double l)
+    const auto LikePrimary = [primary_hsl, primary_is_gray]
+        (double h, double s, double l)
         {
-        return primary_hsl.ShiftHue(h).Saturated(primary_is_gray ? 0.0 : s).Lighter(l).ToRGB();
+            return primary_hsl.ShiftHue(h).Saturated(primary_is_gray ? 0.0 : s)
+                .AdjustLuminance(l).ToRGB();
+        };
+    const auto LikeSecondary = [secondary_hsl, secondary_is_gray]
+        (double h, double s, double l)
+        {
+            return secondary_hsl.ShiftHue(h).Saturated(secondary_is_gray ? 0.0 : s)
+                .AdjustLuminance(l).ToRGB();
         };
 
-    m_page_border_pen = wxColour(218,219,220); // LikePrimary(1.4, 0.00, -0.2); // LikePrimary(1.4, 0.00, -0.08);
+    m_page_border_pen = LikePrimary(1.4, 0.00, -0.08);
 
-    // these are all needed for galleries (which are drawn using base class methods)
-    m_page_background_top_colour = wxColour(245,246,247); // wxColour(254,254,254);
-    m_page_background_top_gradient_colour = wxColour(245,246,247); // wxColour(242,244,246);
-    m_page_background_colour = m_primary_scheme_colour;
-    m_page_background_gradient_colour = wxColour(245,246,247); // wxColour(229,233,238);
+    m_page_background_top_colour = LikePrimary(-0.1, -0.03, 0.12);
+    m_page_hover_background_top_colour = LikePrimary(-2.8, 0.27, 0.17);
+    m_page_background_top_gradient_colour = LikePrimary(0.1, -0.10, 0.08);
+    m_page_hover_background_top_gradient_colour = LikePrimary(3.2, 0.16, 0.13);
+    m_page_background_colour = LikePrimary(0.4, -0.09, 0.05);
+    m_page_hover_background_colour = LikePrimary(0.1, 0.19, 0.10);
+    m_page_background_gradient_colour = LikePrimary(-3.2, 0.27, 0.10);
+    m_page_hover_background_gradient_colour = LikePrimary(1.8, 0.01, 0.15);
 
-    m_tab_active_background_colour = m_primary_scheme_colour;
-    m_tab_active_background_gradient_colour = *wxBLUE; // wxColour(250,250,250); // LikePrimary(1.0, 1.0, 0.94);
-    m_tab_separator_colour = wxColour (245,246,247); // LikePrimary(0.9, 0.24, 0.05);
-    m_tab_ctrl_background_brush = m_secondary_scheme_colour;
-    m_tab_hover_background_colour = m_tertiary_scheme_colour;
-    m_tab_hover_background_top_colour = *wxBLUE; // wxColour(254,254,254); // LikePrimary(1.4, 0.36, 0.08);
-    m_tab_border_pen = wxColour(218,219,220); // LikePrimary(1.4, 0.03, -0.05);
+    m_tab_active_background_colour = LikePrimary(-0.1, -0.31, 0.16);
+    m_tab_active_background_gradient_colour = LikePrimary(-0.1, -0.03, 0.12);
+    m_tab_separator_colour = LikePrimary(0.9, 0.24, 0.05);
+    m_tab_ctrl_background_brush = LikePrimary(1.0, 0.39, 0.07);
+    m_tab_hover_background_colour = LikePrimary(1.3, 0.15, 0.10);
+    m_tab_hover_background_top_colour = LikePrimary(1.4, 0.36, 0.08);
+    m_tab_border_pen = LikePrimary(1.4, 0.03, -0.05);
     m_tab_separator_gradient_colour = LikePrimary(1.7, -0.15, -0.18);
-    m_tab_hover_background_top_gradient_colour =  *wxBLUE; // wxColour(254,254,254); // LikePrimary(1.8, 0.34, 0.13);
+    m_tab_hover_background_top_gradient_colour = LikePrimary(1.8, 0.34, 0.13);
     m_tab_label_colour = LikePrimary(4.3, 0.13, -0.49);
-    m_tab_hover_background_gradient_colour =  *wxBLUE;
+    m_tab_active_label_colour = m_tab_label_colour;
+    m_tab_hover_label_colour = m_tab_label_colour;
+    m_tab_hover_background_gradient_colour = LikeSecondary(-1.5, -0.34, 0.01);
 
-    m_panel_minimised_border_gradient_pen = wxColour(232,239,247); // LikePrimary(-6.9, -0.17, -0.09);
-    m_panel_minimised_border_pen = wxColour(164, 206, 249); // LikePrimary(-5.3, -0.24, -0.06);
-    m_panel_border_gradient_pen = *wxBLUE; // LikePrimary(-5.2, -0.15, -0.06);
-    m_panel_border_pen = wxColour(226,227,228); // LikePrimary(-2.8, -0.32, 0.02);
-    m_panel_hover_label_background_brush = *wxBLUE; // LikePrimary(1.0, 0.30, 0.09);
-    m_panel_active_background_colour = LikePrimary(1.6, -0.18, 0.18);
+    m_panel_minimised_border_gradient_pen = LikePrimary(-6.9, -0.17, -0.09);
+    m_panel_minimised_border_pen = LikePrimary(-5.3, -0.24, -0.06);
+    m_panel_hover_border_gradient_pen = m_panel_border_gradient_pen = LikePrimary(-5.2, -0.15, -0.06);
+    m_panel_hover_border_pen = m_panel_border_pen = LikePrimary(-2.8, -0.32, 0.02);
+    m_panel_label_background_brush = LikePrimary(-1.5, 0.03, 0.05);
     m_panel_active_background_gradient_colour = LikePrimary(0.5, 0.34, 0.05);
-    m_panel_label_colour = LikePrimary(2.8, -0.14, -0.45); // LikePrimary(2.8, -0.14, -0.35);
+    m_panel_hover_label_background_brush = LikePrimary(1.0, 0.30, 0.09);
+    m_panel_active_background_top_gradient_colour = LikePrimary(1.4, -0.17, -0.13);
+    m_panel_active_background_colour = LikePrimary(1.6, -0.18, -0.18);
+    m_panel_active_background_top_colour = LikePrimary(1.7, -0.20, -0.03);
+    m_panel_label_colour = LikePrimary(2.8, -0.14, -0.35);
+    m_panel_hover_label_colour = m_panel_label_colour;
     m_panel_minimised_label_colour = m_tab_label_colour;
-    m_panel_hover_button_background_brush = wxColour(232,239,247);
-    m_panel_hover_button_border_pen = wxColour(164, 206, 249);
-    SetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR, m_tertiary_scheme_colour);
-    SetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR, m_tertiary_scheme_colour);
+    m_panel_hover_button_background_brush = LikeSecondary(-0.9, 0.16, -0.07);
+    m_panel_hover_button_border_pen = LikeSecondary(-3.9, -0.16, -0.14);
+    SetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR, LikePrimary(1.4, -0.21, -0.23));
+    SetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR, LikePrimary(1.5, -0.24, -0.29));
 
-    m_button_bar_label_colour = LikePrimary(2.8, -0.14, -0.6); // m_tab_label_colour;
-    m_button_bar_hover_border_pen = wxColour(164, 206, 249);
-    m_button_bar_hover_background_gradient_colour = wxColour(232,239,247);
-    m_button_bar_hover_background_colour = m_tertiary_scheme_colour;
-    m_button_bar_hover_background_top_gradient_colour = wxColour(232,239,247);
-
-    m_button_bar_active_border_pen = wxColour(102,167,232);
-    m_button_bar_active_background_top_colour = *wxYELLOW;
-    m_button_bar_active_background_top_gradient_colour = *wxYELLOW;
-    m_button_bar_active_background_colour = wxColour(209,232,255);
-    m_button_bar_active_background_gradient_colour = *wxYELLOW;
+    m_ribbon_toggle_brush = LikeSecondary(-0.9, 0.16, -0.07);
+    m_ribbon_toggle_pen = LikeSecondary(-3.9, -0.16, -0.14);
+    SetColour(wxRIBBON_ART_PAGE_TOGGLE_FACE_COLOUR, LikePrimary(1.7, -0.20, -0.15));
+    SetColour(wxRIBBON_ART_PAGE_TOGGLE_HOVER_FACE_COLOUR, LikePrimary(1.8, -0.23, -0.21));
 
     m_gallery_button_disabled_background_colour = LikePrimary(-2.8, -0.46, 0.09);
     m_gallery_button_disabled_background_top_brush = LikePrimary(-2.8, -0.36, 0.15);
@@ -184,28 +206,66 @@ void RibbonMetroArtProvider::SetColourScheme(
     SetColour(wxRIBBON_ART_GALLERY_BUTTON_DISABLED_FACE_COLOUR, LikePrimary(0.0, -1.0, 0.0));
     m_gallery_button_disabled_background_gradient_colour = LikePrimary(1.5, -0.43, 0.12);
     m_gallery_button_background_gradient_colour = LikePrimary(1.7, 0.11, 0.09);
-    m_gallery_item_border_pen = m_tertiary_scheme_colour;
-    m_gallery_button_hover_background_colour = m_button_bar_hover_background_colour;
-    m_gallery_button_hover_background_gradient_colour = m_button_bar_hover_background_gradient_colour;
-    m_gallery_button_hover_background_top_brush = m_button_bar_hover_background_top_gradient_colour;
-    m_gallery_button_active_background_colour = m_tertiary_scheme_colour;
-    m_gallery_button_active_background_gradient_colour = m_tertiary_scheme_colour;
-    m_gallery_button_active_background_top_brush = m_tertiary_scheme_colour;
+    m_gallery_item_border_pen = LikeSecondary(-3.9, -0.16, -0.14);
+    m_gallery_button_hover_background_colour = LikeSecondary(-0.9, 0.16, -0.07);
+    m_gallery_button_hover_background_gradient_colour = LikeSecondary(0.1, 0.12, 0.03);
+    m_gallery_button_hover_background_top_brush = LikeSecondary(4.3, 0.16, 0.17);
 
-    m_toolbar_border_pen = m_button_bar_hover_border_pen; // LikePrimary(1.4, -0.21, -0.16);
+    m_gallery_button_active_background_colour = LikeSecondary(-9.9, 0.03, -0.22);
+    m_gallery_button_active_background_gradient_colour = LikeSecondary(-9.5, 0.14, -0.11);
+    m_gallery_button_active_background_top_brush = LikeSecondary(-9.0, 0.15, -0.08);
+
+    m_button_bar_label_colour = m_tab_label_colour;
+    m_button_bar_label_disabled_colour = m_tab_label_colour;
+
+    m_button_bar_hover_border_pen = LikeSecondary(-6.2, -0.47, -0.14);
+    m_button_bar_hover_background_gradient_colour = LikeSecondary(-0.6, 0.16, 0.04);
+    m_button_bar_hover_background_colour = LikeSecondary(-0.2, 0.16, -0.10);
+    m_button_bar_hover_background_top_gradient_colour = LikeSecondary(0.2, 0.16, 0.03);
+    m_button_bar_hover_background_top_colour = LikeSecondary(8.8, 0.16, 0.17);
+    m_button_bar_active_border_pen = LikeSecondary(-6.2, -0.47, -0.25);
+    m_button_bar_active_background_top_colour = LikeSecondary(-8.4, 0.08, 0.06);
+    m_button_bar_active_background_top_gradient_colour = LikeSecondary(-9.7, 0.13, -0.07);
+    m_button_bar_active_background_colour = LikeSecondary(-9.9, 0.14, -0.14);
+    m_button_bar_active_background_gradient_colour = LikeSecondary(-8.7, 0.17, -0.03);
+
+    m_toolbar_border_pen = LikePrimary(1.4, -0.21, -0.16);
     SetColour(wxRIBBON_ART_TOOLBAR_FACE_COLOUR, LikePrimary(1.4, -0.17, -0.22));
-    m_tool_background_top_colour = m_tertiary_scheme_colour;
-    m_tool_background_top_gradient_colour = m_tertiary_scheme_colour;
-    m_tool_background_colour = m_tertiary_scheme_colour;
-    m_tool_background_gradient_colour = m_tertiary_scheme_colour;
-    m_tool_hover_background_top_colour = m_button_bar_hover_background_top_colour;
-    m_tool_hover_background_top_gradient_colour = m_button_bar_hover_background_top_gradient_colour;
-    m_tool_hover_background_colour = m_button_bar_hover_background_colour;
-    m_tool_hover_background_gradient_colour = m_button_bar_hover_background_gradient_colour;
-    m_tool_active_background_top_colour = m_tertiary_scheme_colour;
-    m_tool_active_background_top_gradient_colour = m_tertiary_scheme_colour;
-    m_tool_active_background_colour = m_tertiary_scheme_colour;
-    m_tool_active_background_gradient_colour = m_tertiary_scheme_colour;
+    m_tool_background_top_colour = LikePrimary(-1.9, -0.07, 0.06);
+    m_tool_background_top_gradient_colour = LikePrimary(1.4, 0.12, 0.08);
+    m_tool_background_colour = LikePrimary(1.4, -0.09, 0.03);
+    m_tool_background_gradient_colour = LikePrimary(1.9, 0.11, 0.09);
+    m_tool_hover_background_top_colour = LikeSecondary(3.4, 0.11, 0.16);
+    m_tool_hover_background_top_gradient_colour = LikeSecondary(-1.4, 0.04, 0.08);
+    m_tool_hover_background_colour = LikeSecondary(-1.8, 0.16, -0.12);
+    m_tool_hover_background_gradient_colour = LikeSecondary(-2.6, 0.16, 0.05);
+    m_tool_active_background_top_colour = LikeSecondary(-9.9, -0.12, -0.09);
+    m_tool_active_background_top_gradient_colour = LikeSecondary(-8.5, 0.16, -0.12);
+    m_tool_active_background_colour = LikeSecondary(-7.9, 0.16, -0.20);
+    m_tool_active_background_gradient_colour = LikeSecondary(-6.6, 0.16, -0.10);
+
+    //For highlight pages we show a colour between the active page and for a hovered page:
+    wxColour top_colour1((m_tab_active_background_colour.Red()   + m_tab_hover_background_top_colour.Red())/2,
+                         (m_tab_active_background_colour.Green() + m_tab_hover_background_top_colour.Green())/2,
+                         (m_tab_active_background_colour.Blue()  + m_tab_hover_background_top_colour.Blue())/2);
+
+    wxColour bottom_colour1((m_tab_active_background_gradient_colour.Red()   + m_tab_hover_background_top_gradient_colour.Red())/2,
+                            (m_tab_active_background_gradient_colour.Green() + m_tab_hover_background_top_gradient_colour.Green())/2,
+                            (m_tab_active_background_gradient_colour.Blue()  + m_tab_hover_background_top_gradient_colour.Blue())/2);
+
+    m_tab_highlight_top_colour = top_colour1;
+    m_tab_highlight_top_gradient_colour = bottom_colour1;
+
+    wxColour top_colour2((m_tab_active_background_colour.Red()   + m_tab_hover_background_colour.Red())/2,
+                         (m_tab_active_background_colour.Green() + m_tab_hover_background_colour.Green())/2,
+                         (m_tab_active_background_colour.Blue()  + m_tab_hover_background_colour.Blue())/2);
+
+    wxColour bottom_colour2((m_tab_active_background_gradient_colour.Red()   + m_tab_hover_background_gradient_colour.Red())/2,
+                            (m_tab_active_background_gradient_colour.Green() + m_tab_hover_background_gradient_colour.Green())/2,
+                            (m_tab_active_background_gradient_colour.Blue()  + m_tab_hover_background_gradient_colour.Blue())/2);
+
+    m_tab_highlight_colour = top_colour2;
+    m_tab_highlight_gradient_colour = bottom_colour2;
 
     // Invalidate cached tab separator
     m_cached_tab_separator_visibility = -1.0;
