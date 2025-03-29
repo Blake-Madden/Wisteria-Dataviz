@@ -235,7 +235,12 @@ bool CodeEditor::Save()
     {
     if (GetScriptFilePath().empty())
         {
-        wxFileDialog dialogSave(this, _(L"Save Script As"), wxString{}, wxString{}, GetFileFilter(),
+        wxString defaultFileName{ _(L"Untitled") };
+        if (wxSTC_LEX_LUA == m_lexer)
+            {
+            defaultFileName += L".lua";
+            }
+        wxFileDialog dialogSave(this, _(L"Save Script As"), wxString{}, defaultFileName, GetFileFilter(),
                                 wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
         if (dialogSave.ShowModal() != wxID_OK)
