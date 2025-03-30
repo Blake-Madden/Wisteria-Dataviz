@@ -1192,22 +1192,30 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawImmaculateHeart(const wxRect rect, wxDC& dc) const
         {
-        DrawHeart(rect, dc);
+        wxRect heartRect{ rect };
+        heartRect.SetHeight(heartRect.GetHeight() * math_constants::three_quarters);
+        heartRect.Offset(0, rect.GetHeight() * math_constants::quarter);
+        DrawHeart(heartRect, dc);
 
-        wxRect drawRect{ rect };
-        drawRect.Deflate(drawRect.GetWidth() * math_constants::quarter);
-        drawRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
-        DrawFlame(drawRect, dc);
+        wxRect flameRect{ rect };
+        flameRect.Deflate(flameRect.GetWidth() * 0.24);
+        flameRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
+        DrawFlame(flameRect, dc);
 
-        drawRect = rect;
-        drawRect.Deflate(drawRect.GetWidth() * math_constants::third);
-        drawRect.SetLeft(rect.GetLeft());
-        drawRect.Offset(0, drawRect.GetHeight() * math_constants::fifth);
-        while ((drawRect.GetRight() - drawRect.GetWidth() * math_constants::quarter) <
-               rect.GetRight())
+        wxRect flowerRect = heartRect;
+        flowerRect.SetHeight(rect.GetHeight() * math_constants::fifth);
+        flowerRect.SetWidth(rect.GetWidth() * math_constants::fifth);
+        flowerRect.Offset(safe_divide<double>(rect.GetWidth() * math_constants::fifth, 2),
+                          safe_divide<double>(heartRect.GetHeight(), 2) -
+                              safe_divide<double>(flowerRect.GetHeight(), 2));
+        if (flowerRect.GetWidth() > 0)
             {
-            DrawFlower(drawRect, dc);
-            drawRect.Offset(drawRect.GetWidth() * math_constants::half, 0);
+            while ((flowerRect.GetRight() - flowerRect.GetWidth() * math_constants::tenth) <
+                   rect.GetRight())
+                {
+                DrawFlower(flowerRect, dc);
+                flowerRect.Offset(flowerRect.GetWidth() * math_constants::three_quarters, 0);
+                }
             }
         }
 
