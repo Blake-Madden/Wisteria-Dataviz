@@ -387,7 +387,20 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                         }
                     if (!isMultiline || pastFirstLine)
                         {
-                        add_character(*m_currentStart);
+                        // step over line if Quarto code block directive
+                        if (std::wcsncmp(m_currentStart, L"#| ", 3) == 0)
+                            {
+                            while (m_currentStart < endOfTag &&
+                                   !(*m_currentStart == L'\r' || *m_currentStart == L'\n'))
+                                {
+                                ++m_currentStart;
+                                }
+                            continue;
+                            }
+                        else
+                            {
+                            add_character(*m_currentStart);
+                            }
                         }
                     ++m_currentStart;
                     }
