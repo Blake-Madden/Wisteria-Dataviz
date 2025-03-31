@@ -369,42 +369,58 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                         }
                     ++scanAhead;
                     }
-                bool pastFirstLine{ false };
-                // tab over each line inside of the code block
-                while (m_currentStart < endOfTag)
+                // if Quarto and this block is not getting echoed, then don't include
+                // it in the parsed text
+                if (const auto includeFalse = std::wcsstr(m_currentStart, L"#| include: false");
+                    includeFalse != nullptr && includeFalse < endOfTag)
                     {
-                    if (*m_currentStart == L'\r' || *m_currentStart == L'\n')
+                    m_currentStart = endOfTag + 3;
+                    }
+                else if (const auto includeFalse =
+                             std::wcsstr(m_currentStart, L"#| echo: false");
+                         includeFalse != nullptr && includeFalse < endOfTag)
+                    {
+                    m_currentStart = endOfTag + 3;
+                    }
+                else
+                    {
+                    bool pastFirstLine{ false };
+                    // tab over each line inside of the code block
+                    while (m_currentStart < endOfTag)
                         {
-                        while (m_currentStart < endOfTag &&
-                               (*m_currentStart == L'\r' || *m_currentStart == L'\n'))
-                            {
-                            add_character(*m_currentStart);
-                            ++m_currentStart;
-                            }
-                        add_character(L'\t');
-                        pastFirstLine = true;
-                        continue;
-                        }
-                    if (!isMultiline || pastFirstLine)
-                        {
-                        // step over line if Quarto code block directive
-                        if (std::wcsncmp(m_currentStart, L"#| ", 3) == 0)
+                        if (*m_currentStart == L'\r' || *m_currentStart == L'\n')
                             {
                             while (m_currentStart < endOfTag &&
-                                   !(*m_currentStart == L'\r' || *m_currentStart == L'\n'))
+                                   (*m_currentStart == L'\r' || *m_currentStart == L'\n'))
                                 {
+                                add_character(*m_currentStart);
                                 ++m_currentStart;
                                 }
+                            add_character(L'\t');
+                            pastFirstLine = true;
                             continue;
                             }
-                        else
+                        if (!isMultiline || pastFirstLine)
                             {
-                            add_character(*m_currentStart);
+                            // step over line if Quarto code block directive
+                            if (std::wcsncmp(m_currentStart, L"#| ", 3) == 0)
+                                {
+                                while (m_currentStart < endOfTag &&
+                                       !(*m_currentStart == L'\r' || *m_currentStart == L'\n'))
+                                    {
+                                    ++m_currentStart;
+                                    }
+                                continue;
+                                }
+                            else
+                                {
+                                add_character(*m_currentStart);
+                                }
                             }
+                        ++m_currentStart;
                         }
-                    ++m_currentStart;
+                    m_currentStart = endOfTag + 3;
                     }
-                m_currentStart = endOfTag + 3;
                 // if code block is not inline, then force a line break later after it
                 if (m_currentStart < m_currentEndSentinel &&
                     ((*m_currentStart == L'\r' || *m_currentStart == L'\n')))
