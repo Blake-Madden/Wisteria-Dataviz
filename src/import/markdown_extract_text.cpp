@@ -376,9 +376,9 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     {
                     m_currentStart = endOfTag + 3;
                     }
-                else if (const auto includeFalse =
+                else if (const auto echoFalse =
                              std::wcsstr(m_currentStart, L"#| echo: false");
-                         includeFalse != nullptr && includeFalse < endOfTag)
+                         echoFalse != nullptr && echoFalse < endOfTag)
                     {
                     m_currentStart = endOfTag + 3;
                     }
