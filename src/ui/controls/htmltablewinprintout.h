@@ -162,8 +162,16 @@ class HtmlTablePrintout final : public wxPrintout
         {
         wxString expandedString = printString;
 
-        expandedString.Replace(L"@PAGENUM@", std::to_wstring(m_currentPage), true);
-        expandedString.Replace(L"@PAGESCNT@", std::to_wstring(GetPageCount()), true);
+        expandedString.Replace(
+            L"@PAGENUM@",
+            wxNumberFormatter::ToString(m_currentPage, 0,
+                                        wxNumberFormatter::Style::Style_WithThousandsSep),
+            true);
+        expandedString.Replace(
+            L"@PAGESCNT@",
+            wxNumberFormatter::ToString(GetPageCount(), 0,
+                                        wxNumberFormatter::Style::Style_WithThousandsSep),
+            true);
         expandedString.Replace(L"@TITLE@", GetTitle(), true);
         expandedString.Replace(L"@USER@", wxGetUserName(), true);
         const wxDateTime now = wxDateTime::Now();
