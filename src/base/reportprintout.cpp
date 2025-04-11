@@ -225,6 +225,7 @@ wxString ReportPrintout::ExpandPrintString(const wxString& printString, const in
 
     const wxDateTime now = wxDateTime::Now();
     expandedString.Replace(L"@TITLE@", GetCanvasFromPageNumber(pageNumber)->GetLabel(), true);
+    expandedString.Replace(L"@USER@", wxGetUserName(), true);
     expandedString.Replace(L"@DATE@", now.FormatDate(), true);
     expandedString.Replace(L"@TIME@", now.FormatTime(), true);
 

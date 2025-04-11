@@ -74,7 +74,7 @@ bool PrinterHeaderFooterDlg::Validate()
     {
     wxRegEx re(L"(@[[:alpha:]]+@)");
     const std::set<wxString, Wisteria::Data::wxStringLessNoCase> supportedTags = {
-        L"@TITLE@", L"@DATE@", L"@TIME@", L"@PAGENUM@", L"@PAGESCNT@"
+        L"@TITLE@", L"@DATE@", L"@TIME@", L"@PAGENUM@", L"@PAGESCNT@", L"@USER@"
     };
 
     // make sure the embedded "@@" tags are recognized
@@ -136,6 +136,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     choiceStrings.Add(_(L"Page @PAGENUM@ of @PAGESCNT@"));
     choiceStrings.Add(DONTTRANSLATE(L"@DATE@"));
     choiceStrings.Add(DONTTRANSLATE(L"@TIME@"));
+    choiceStrings.Add(DONTTRANSLATE(L"@USER@"));
     leftHeaderPrinterCombo =
         new wxComboBox(headerFrameSizer->GetStaticBox(), ControlIDs::ID_LEFT_HEADER_COMBOBOX,
                        wxString{}, wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,

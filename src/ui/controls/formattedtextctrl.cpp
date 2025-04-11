@@ -121,6 +121,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(FormattedTextCtrl, wxTextCtrl)
         expandedString.Replace(L"@PAGENUM@", std::to_wstring(m_currentPage), true);
         expandedString.Replace(L"@PAGESCNT@", std::to_wstring(GetPageCount()), true);
         expandedString.Replace(L"@TITLE@", m_control->GetTitleName(), true);
+        expandedString.Replace(L"@USER@", wxGetUserName(), true);
         expandedString.Replace(L"@DATE@", now.FormatDate(), true);
         expandedString.Replace(L"@TIME@", now.FormatTime(), true);
 

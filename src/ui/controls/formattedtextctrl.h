@@ -405,6 +405,7 @@ namespace Wisteria::UI
             expandedString.Replace(L"@PAGENUM@", _DT(L"@PN"), true);
             expandedString.Replace(L"@PAGESCNT@", _DT(L"@PC"), true);
             expandedString.Replace(L"@TITLE@", GetTitleName(), true);
+            expandedString.Replace(L"@USER@", wxGetUserName(), true);
             expandedString.Replace(L"@DATE@", now.FormatDate(), true);
             expandedString.Replace(L"@TIME@", now.FormatTime(), true);
 
