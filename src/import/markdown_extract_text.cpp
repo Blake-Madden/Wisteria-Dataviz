@@ -180,7 +180,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     const std::wstring_view SUP_END{ L"</sup>" };
 
     bool isEscaping{ false };
-    bool headerMode{ true };
+    bool headerMode{ false };
     wchar_t previousChar{ L'\n' };
 
     while (m_currentStart != nullptr && *m_currentStart != 0 &&
@@ -969,8 +969,16 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             // (e.g., a header) is seen as a space
             else if (newlineCount == 1)
                 {
-                add_character(L' ');
-                previousChar = L' ';
+                if (*m_currentStart == L'#' || *m_currentStart == L'-' || *m_currentStart == L'|')
+                    {
+                    add_character(L'\n');
+                    previousChar = L'\n';
+                    }
+                else
+                    {
+                    add_character(L' ');
+                    previousChar = L' ';
+                    }
                 }
             else
                 {
