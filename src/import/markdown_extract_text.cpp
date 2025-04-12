@@ -180,7 +180,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     const std::wstring_view SUP_END{ L"</sup>" };
 
     bool isEscaping{ false };
-    bool headerMode{ false };
+    bool headerMode{ true };
     wchar_t previousChar{ L'\n' };
 
     while (m_currentStart != nullptr && *m_currentStart != 0 &&
@@ -965,7 +965,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     previousChar = L' ';
                     }
                 }
-            // a single newline not a end of a self-contained line
+            // a single newline not at end of a self-contained line
             // (e.g., a header) is seen as a space
             else if (newlineCount == 1)
                 {
