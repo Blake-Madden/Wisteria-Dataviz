@@ -1009,8 +1009,35 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
         else if (!isEscaping && (*m_currentStart == L'|'))
             {
             previousChar = L'|';
-            add_characters(L"\t|");
-            ++m_currentStart;
+            auto scanAhead{ std::next(m_currentStart) };
+            // if the line is table column format specifiers (e.g., ":--"),
+            // then step over the whole line
+            while (scanAhead < m_currentEndSentinel && (*scanAhead == L' ' || *scanAhead == L'\t'))
+                {
+                ++scanAhead;
+                }
+            if ((*scanAhead == L'-' && *std::next(scanAhead) == L'-') ||
+                (*scanAhead == L':' && *std::next(scanAhead) == L'-'))
+                {
+                // move to the end of the line...
+                while (scanAhead < m_currentEndSentinel &&
+                       !(*scanAhead == L'\r' || *scanAhead == L'\n'))
+                    {
+                    ++scanAhead;
+                    }
+                // ...and then step of the newlines
+                while (scanAhead < m_currentEndSentinel &&
+                       (*scanAhead == L'\r' || *scanAhead == L'\n'))
+                    {
+                    ++scanAhead;
+                    }
+                m_currentStart = scanAhead;
+                }
+            else
+                {
+                add_characters(L"\t|");
+                ++m_currentStart;
+                }
             continue;
             }
         // turn off escaping and load the character

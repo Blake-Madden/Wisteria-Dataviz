@@ -286,7 +286,22 @@ TEST_CASE("Markdown Parser Styling", "[md import]")
         }
     }
 
-TEST_CASE("Markdown Parser", "[md import]")
+TEST_CASE("Markdown Parser Table", "[md import]")
+    {
+    SECTION("Table")
+        {
+        lily_of_the_valley::markdown_extract_text md;
+        CHECK(std::wstring{ md({ L"| Syntax | Description |\n| --- | ----------- |\n| Header | Title |" }) } ==
+              std::wstring{ L"\t| Syntax \t| Description \t|\n\t| Header \t| Title \t|" });
+        CHECK(std::wstring{ md({ L"| Syntax | Description |\n| :-- | ----------: |\n| Header | Title |" }) } ==
+              std::wstring{ L"\t| Syntax \t| Description \t|\n\t| Header \t| Title \t|" });
+        // boundary check
+        CHECK(std::wstring{ md({ L"| Syntax | Description |\n| :-- | ----------: |" }) } ==
+              std::wstring{ L"\t| Syntax \t| Description \t|\n" });
+        }
+    }
+
+TEST_CASE("Markdown Parser Header", "[md import]")
     {
     SECTION("Null")
         {
@@ -311,15 +326,6 @@ TEST_CASE("Markdown Parser", "[md import]")
               std::wstring{ L"\nHeader1\n\nHeader2\n\n Not a #header" });
         CHECK(std::wstring{ md({ L"Some content\n# Header1\n### Header2\n Not a #header" }) } ==
               std::wstring{ L"Some content\nHeader1\n\nHeader2\n\n Not a #header" });
-        }
-
-    SECTION("Table")
-        {
-        lily_of_the_valley::markdown_extract_text md;
-        CHECK(std::wstring{ md({ L"| Syntax | Description |\n| --- | ----------- |\n| Header | Title |" }) } ==
-              std::wstring{ L"\t| Syntax \t| Description \t|\n\t| --- \t| ----------- \t|\n\t| Header \t| Title \t|" });
-        CHECK(std::wstring{ md({ L"| Syntax | Description |\n| :-- | ----------: |\n| Header | Title |" }) } ==
-              std::wstring{ L"\t| Syntax \t| Description \t|\n\t| :-- \t| ----------: \t|\n\t| Header \t| Title \t|" });
         }
     }
 
