@@ -127,24 +127,14 @@ namespace Wisteria::UI
 
         /// @brief Gets a window that is suitable for parenting a dialog.
         /// @details Will use the mainframe if visible; otherwise,
-        ///     the current doc window will be used. If no document window
-        ///     is available, then falls back to the top-level window.
+        ///     the current doc window will be used (if visible).
+        ///     Then goes through the rest of the documents until it finds one that is visible.
+        ///     If no document window is available and visible, then falls back
+        ///     to the top-level window.
+        ///     Visibility is necessary for parenting under Linux.
         /// @returns A window suitable for parenting a dialog.
         [[nodiscard]]
-        wxWindow* GetParentingWindow()
-            {
-            if (GetMainFrame()->IsShown())
-                {
-                return GetMainFrame();
-                }
-            else if (GetDocManager() != nullptr &&
-                     GetDocManager()->GetCurrentDocument() != nullptr &&
-                     GetDocManager()->GetCurrentDocument()->GetDocumentWindow() != nullptr)
-                {
-                return GetDocManager()->GetCurrentDocument()->GetDocumentWindow();
-                }
-            return GetTopWindow();
-            }
+        wxWindow* GetParentingWindow();
 
         /// @brief Sets a descriptive name for the application's document type.
         /// @param documentTypeName The descriptives.

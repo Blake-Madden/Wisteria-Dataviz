@@ -606,3 +606,33 @@ wxString Wisteria::UI::BaseApp::FindResourceDirectoryWithAppInfo(const wxString&
         }
     return wxString{};
     }
+
+//----------------------------------------------------------
+wxWindow* Wisteria::UI::BaseApp::GetParentingWindow()
+    {
+    if (GetMainFrame() != nullptr && GetMainFrame()->IsShown())
+        {
+        return GetMainFrame();
+        }
+    else if (GetDocManager() != nullptr)
+        {
+        // active document window
+        if (GetDocManager()->GetCurrentDocument() != nullptr &&
+            GetDocManager()->GetCurrentDocument()->GetDocumentWindow() != nullptr &&
+            GetDocManager()->GetCurrentDocument()->GetDocumentWindow()->IsShown())
+            {
+            return GetDocManager()->GetCurrentDocument()->GetDocumentWindow();
+            }
+        // first document window that is visible
+        for (const auto& doc : GetDocManager()->GetDocumentsVector())
+            {
+            if (doc != nullptr &&
+                doc->GetDocumentWindow() != nullptr &&
+                doc->GetDocumentWindow()->IsShown())
+                {
+                return doc->GetDocumentWindow();
+                }
+            }
+        }
+    return GetTopWindow();
+    }
