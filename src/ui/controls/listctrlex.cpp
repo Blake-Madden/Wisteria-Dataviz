@@ -504,7 +504,6 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListCtrlEx::DeleteSelectedItems()
         {
-        wxWindowUpdateLocker noUpdates(this);
         long item = wxNOT_FOUND;
         const long firstSelected = GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         for (;;)
@@ -531,6 +530,7 @@ namespace Wisteria::UI
                 {
                 DeleteItem(item--);
                 }
+            Refresh();
             }
 
         // select item after the one that was deleted

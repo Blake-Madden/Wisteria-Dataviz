@@ -24,8 +24,8 @@
 namespace Wisteria::UI
     {
     /** @brief Dialog which displays a list of files.
-    @details When selecting a file in the list, information (and thumbnail) about the file
-        is displayed to the right.*/
+        @details When selecting a file in the list, information (and thumbnail) about the file
+            is displayed to the right.*/
     class FileListDlg final : public Wisteria::UI::DialogWithHelp
         {
       public:
@@ -94,6 +94,6 @@ namespace Wisteria::UI
         };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif //__FILELIST_DLG_H__
