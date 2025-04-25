@@ -60,13 +60,13 @@ namespace lily_of_the_valley
                 return nullptr;
                 }
             // step over first line
-            auto eol = string_util::strcspn_pointer(md_text, L"\r\n", 2);
+            const wchar_t* eol = string_util::strcspn_pointer(md_text, L"\r\n", 2);
             if (eol == nullptr)
                 {
                 return md_text;
                 }
             // ...and find the terminating --- line
-            auto endOfYaml = std::wcsstr(eol, L"\n---");
+            const wchar_t* endOfYaml = std::wcsstr(eol, L"\n---");
             if (endOfYaml == nullptr)
                 {
                 return md_text;
