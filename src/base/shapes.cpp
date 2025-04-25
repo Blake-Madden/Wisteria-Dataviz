@@ -955,6 +955,7 @@ namespace Wisteria::GraphItems
             wxRegion barnRegion{ barnPoints.size(), &barnPoints[0] };
             gc->Clip(barnRegion);
             wxCoord currentY{ barnRect.GetTop() };
+            wxCLANG_WARNING_SUPPRESS(unused-but-set-variable);
             int currentLine{ 0 };
             while (currentY < barnRect.GetBottom())
                 {
@@ -962,6 +963,7 @@ namespace Wisteria::GraphItems
                 currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2);
                 ++currentLine;
                 }
+            wxCLANG_WARNING_RESTORE(unused-but-set-variable);
             gc->ResetClip();
             if (!originalClipRect.IsEmpty())
                 {
@@ -1088,6 +1090,7 @@ namespace Wisteria::GraphItems
                            ladderRect.y + ladderRect.GetHeight());
 
             int currentY{ ladderRect.GetTop() };
+            wxCLANG_WARNING_SUPPRESS(unused-but-set-variable);
             int currentLine{ 0 };
             while (currentY < ladderRect.GetBottom())
                 {
@@ -1095,7 +1098,7 @@ namespace Wisteria::GraphItems
                 currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
                 ++currentLine;
                 }
-
+            wxCLANG_WARNING_RESTORE(unused-but-set-variable);
             // top of silo
             wxGraphicsPath siloLidPath = gc->CreatePath();
 
