@@ -207,7 +207,7 @@ namespace Wisteria::Graphs
                                       const wxString& lastBarBlock, const wxString& bracketLabel)
         {
         assert(GetBars().size() && L"No bars available when adding an axis bracket!");
-        if (GetBars().size() == 0)
+        if (GetBars().empty())
             {
             throw std::runtime_error(
                 _(L"No bars available when adding an axis bracket.").ToUTF8());
@@ -243,7 +243,7 @@ namespace Wisteria::Graphs
                                         const wxString& bracketLabel)
         {
         assert(GetBars().size() && L"No bars available when adding an axis bracket!");
-        if (GetBars().size() == 0)
+        if (GetBars().empty())
             {
             throw std::runtime_error(
                 _(L"No bars available when adding an axis bracket.").ToUTF8());
@@ -273,7 +273,7 @@ namespace Wisteria::Graphs
                                      const wxString& lastBarBlock, const wxString& bracketLabel)
         {
         assert(GetBars().size() && L"No bars when adding an axis bracket!");
-        if (GetBars().size() == 0)
+        if (GetBars().empty())
             {
             throw std::runtime_error(
                 _(L"No bars when adding an axis bracket.").ToUTF8());
@@ -314,7 +314,7 @@ namespace Wisteria::Graphs
                                        const wxString& bracketLabel)
         {
         assert(GetBars().size() && L"No bars when adding an axis bracket!");
-        if (GetBars().size() == 0)
+        if (GetBars().empty())
             {
             throw std::runtime_error(
                 _(L"No bars when adding an axis bracket.").ToUTF8());
@@ -817,7 +817,7 @@ namespace Wisteria::Graphs
         const auto defaultFontPointSize{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize() };
 
         // if no bars then just draw a blank 10x10 grid
-        if (GetBars().size() == 0)
+        if (GetBars().empty())
             {
             GetRightYAxis().Reset();
             GetBarAxis().Reset();

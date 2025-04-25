@@ -108,7 +108,7 @@ namespace Wisteria::Data
                                  const wxString& contentColumnName)
         {
         // nothing patterns or categories loaded from previous call to SetClassifierData()?
-        if (m_categoryPatternsMap.get_data().size() == 0)
+        if (m_categoryPatternsMap.get_data().empty())
             {
             return std::make_pair(nullptr, nullptr);
             }

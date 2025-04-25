@@ -137,7 +137,7 @@ namespace Wisteria::Graphs
     void WordCloud::RecalcSizes(wxDC& dc)
         {
         // if no data then bail
-        if (m_words.size() == 0)
+        if (m_words.empty())
             {
             return;
             }

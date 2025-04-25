@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_POLYGON_H__
-#define __WISTERIA_POLYGON_H__
+#ifndef WISTERIA_POLYGON_H
+#define WISTERIA_POLYGON_H
 
 #include "graphitems.h"
 
@@ -222,7 +222,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static double GetPolygonArea(const polygonT& polygon)
             {
-            if (polygon.size() == 0)
+            if (polygon.empty())
                 {
                 return 0.0;
                 }
@@ -391,4 +391,4 @@ namespace Wisteria::GraphItems
 
 /** @}*/
 
-#endif //__WISTERIA_POLYGON_H__
+#endif // WISTERIA_POLYGON_H

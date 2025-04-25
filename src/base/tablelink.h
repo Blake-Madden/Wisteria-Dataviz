@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_TABLELINK_H__
-#define __WISTERIA_TABLELINK_H__
+#ifndef WISTERIA_TABLELINK_H
+#define WISTERIA_TABLELINK_H
 
 #include "../graphs/table.h"
 
@@ -50,7 +50,7 @@ namespace Wisteria
         ///     number of rows and columns (based on the largest number of rows and columns).
         void SyncTableSizes()
             {
-            if (m_tables.size() == 0)
+            if (m_tables.empty())
                 {
                 return;
                 }
@@ -83,4 +83,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_TABLELINK_H__
+#endif // WISTERIA_TABLELINK_H

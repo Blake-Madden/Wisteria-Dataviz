@@ -1217,7 +1217,7 @@ namespace Wisteria
         assert(GetFixedObjects().size());
         assert(row < GetFixedObjects().size());
         assert(column < GetFixedObjects().at(0).size());
-        if (GetFixedObjects().size() == 0 || row >= GetFixedObjects().size() ||
+        if (GetFixedObjects().empty() || row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
             {
             return nullptr;
@@ -1248,7 +1248,7 @@ namespace Wisteria
         assert(GetFixedObjects().size());
         assert(row < GetFixedObjects().size());
         assert(column < GetFixedObjects().at(0).size());
-        if (GetFixedObjects().size() == 0 || row >= GetFixedObjects().size() ||
+        if (GetFixedObjects().empty() || row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
             {
             return nullptr;
@@ -1333,7 +1333,7 @@ namespace Wisteria
             }
         // resize the grid, if necessary
         auto currentColumnCount =
-            (GetFixedObjects().size() == 0 ? 0 : GetFixedObjects().at(0).size());
+            (GetFixedObjects().empty() ? 0 : GetFixedObjects().at(0).size());
         if (row >= GetFixedObjects().size())
             {
             SetFixedObjectsGridSize(row + 1, std::max(column + 1, currentColumnCount));

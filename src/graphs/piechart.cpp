@@ -1586,7 +1586,7 @@ namespace Wisteria::Graphs
     std::vector<wxString> PieChart::GetLargestOuterPieSlices() const
         {
         std::vector<wxString> pieLabels;
-        if (GetOuterPie().size() == 0)
+        if (GetOuterPie().empty())
             { return pieLabels; }
 
         // find largest percentage
@@ -1611,7 +1611,7 @@ namespace Wisteria::Graphs
     std::vector<wxString> PieChart::GetSmallestOuterPieSlices() const
         {
         std::vector<wxString> pieLabels;
-        if (GetOuterPie().size() == 0)
+        if (GetOuterPie().empty())
             { return pieLabels; }
 
         // find smallest percentage
@@ -1636,7 +1636,7 @@ namespace Wisteria::Graphs
     std::vector<wxString> PieChart::GetLargestInnerPieSlices() const
         {
         std::vector<wxString> pieLabels;
-        if (GetInnerPie().size() == 0)
+        if (GetInnerPie().empty())
             { return pieLabels; }
 
         // find largest percentage
@@ -1672,7 +1672,7 @@ namespace Wisteria::Graphs
                     { innerSlicesForCurrentGroup.push_back(&slice); }
                 }
                 );
-            if (innerSlicesForCurrentGroup.size() == 0)
+            if (innerSlicesForCurrentGroup.empty())
                 { continue; }
             // find largest percentage within the subgroup of slices
             const auto maxPie = *std::max_element(
@@ -1698,7 +1698,7 @@ namespace Wisteria::Graphs
     std::vector<wxString> PieChart::GetSmallestInnerPieSlices() const
         {
         std::vector<wxString> pieLabels;
-        if (GetInnerPie().size() == 0)
+        if (GetInnerPie().empty())
             { return pieLabels; }
 
         // find smallest percentage
@@ -1734,7 +1734,7 @@ namespace Wisteria::Graphs
                     { innerSlicesForCurrentGroup.push_back(&slice); }
                 }
                 );
-            if (innerSlicesForCurrentGroup.size() == 0)
+            if (innerSlicesForCurrentGroup.empty())
                 { continue; }
             // find smallest percentage within the subgroup of slices
             const auto minPie = *std::min_element(
@@ -2063,7 +2063,7 @@ namespace Wisteria::Graphs
         {
         assert(GetInnerPie().size() > 1 &&
                L"Inner ring of pie chart empty, cannot create legend!");
-        if (GetInnerPie().size() == 0)
+        if (GetInnerPie().empty())
             { return nullptr; }
 
         auto legend = std::make_unique<GraphItems::Label>(

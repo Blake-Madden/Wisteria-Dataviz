@@ -8,8 +8,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __STATISTICS_H__
-#define __STATISTICS_H__
+#ifndef WISTERIA_STATISTICS_H
+#define WISTERIA_STATISTICS_H
 
 #include "../debug/debug_assert.h"
 #include "../util/frequencymap.h"
@@ -49,7 +49,7 @@ namespace statistics
     std::set<T> mode(const std::vector<T>& data)
         {
         std::set<T> modes;
-        if (data.size() == 0)
+        if (data.empty())
             {
             return modes;
             }
@@ -100,7 +100,7 @@ namespace statistics
     std::set<T> mode(const std::vector<T>& data, predicateT transformValue)
         {
         std::set<T> modes;
-        if (data.size() == 0)
+        if (data.empty())
             {
             return modes;
             }
@@ -583,4 +583,4 @@ namespace statistics
 
 /** @}*/
 
-#endif //__STATISTICS_H__
+#endif // WISTERIA_STATISTICS_H

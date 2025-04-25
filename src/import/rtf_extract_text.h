@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __RTF_EXTRACT_H__
-#define __RTF_EXTRACT_H__
+#ifndef RTF_EXTRACT_H
+#define RTF_EXTRACT_H
 
 #include "../util/string_util.h"
 #include "extract_text.h"
@@ -651,9 +651,9 @@ namespace lily_of_the_valley
             [[nodiscard]]
             std::wstring close_stack()
                 {
-                if (m_stacks.size() == 0)
+                if (m_stacks.empty())
                     {
-                    return L"";
+                    return std::wstring{};
                     }
                 // close the <span> generating commands in the current set of {}
                 std::wstring closeStr;
@@ -691,4 +691,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__RTF_EXTRACT_H__
+#endif // RTF_EXTRACT_H

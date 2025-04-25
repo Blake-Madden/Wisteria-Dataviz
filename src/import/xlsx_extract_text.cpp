@@ -249,7 +249,7 @@ namespace lily_of_the_valley
                                                 std::vector<std::wstring>& cells)
         {
         cells.clear();
-        if (wrk.size() == 0)
+        if (wrk.empty())
             {
             return;
             }
@@ -876,7 +876,7 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void xlsx_extract_text::fix_jagged_sheet(worksheet& data)
         {
-        if (data.size() == 0)
+        if (data.empty())
             {
             return;
             }

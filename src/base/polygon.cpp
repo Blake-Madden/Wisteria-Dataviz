@@ -220,7 +220,7 @@ namespace Wisteria::GraphItems
     wxRect Polygon::GetPolygonBoundingBox(const std::vector<wxPoint>& polygon)
         {
         assert(polygon.size());
-        if (polygon.size() == 0)
+        if (polygon.empty())
             {
             return wxRect();
             }

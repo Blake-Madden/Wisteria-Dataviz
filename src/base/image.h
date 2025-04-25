@@ -10,8 +10,8 @@
      SPDX-License-Identifier: BSD-3-Clause, CPOL-1.02
 @{*/
 
-#ifndef __WISTERIA_GRAPHIMAGE_H__
-#define __WISTERIA_GRAPHIMAGE_H__
+#ifndef WISTERIA_GRAPHIMAGE_H
+#define WISTERIA_GRAPHIMAGE_H
 
 #include <cstring>
 #include <random>
@@ -244,7 +244,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxImage StitchHorizontally(const std::vector<T>& images)
             {
-            if (images.size() == 0)
+            if (images.empty())
                 {
                 return wxNullImage;
                 }
@@ -282,7 +282,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxImage StitchVertically(const std::vector<T>& images)
             {
-            if (images.size() == 0)
+            if (images.empty())
                 {
                 return wxNullImage;
                 }
@@ -607,7 +607,7 @@ namespace Wisteria::Images::Schemes
         [[nodiscard]]
         const wxBitmapBundle& GetImage(const size_t index) const noexcept
             {
-            return (m_images.size() == 0) ? m_emptyImage : m_images.at(index % m_images.size());
+            return (m_images.empty() ? m_emptyImage : m_images.at(index % m_images.size()));
             }
 
         /** @brief Adds an image to the scheme.
@@ -625,4 +625,4 @@ namespace Wisteria::Images::Schemes
 
 /** @}*/
 
-#endif //__WISTERIA_GRAPHIMAGE_H__
+#endif // WISTERIA_GRAPHIMAGE_H

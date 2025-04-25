@@ -1096,7 +1096,7 @@ namespace Wisteria::Data
         // if we have existing rows and need to fill this column
         if (GetRowCount())
             {
-            if (stringTable.size() == 0)
+            if (stringTable.empty())
                 {
                 m_categoricalColumns.back().GetStringTable().insert(std::make_pair(0, wxString{}));
                 m_categoricalColumns.back().Resize(GetRowCount(), 0);

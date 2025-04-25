@@ -975,11 +975,11 @@ namespace Wisteria::GraphItems
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
-        assert((GetLegendIcons().size() == 0 ||
+        assert((GetLegendIcons().empty() ||
                 (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal)) &&
                L"Vertical legend not supported!");
         wxASSERT_LEVEL_2_MSG(
-            GetLegendIcons().size() == 0 || !HasLegendIcons() ||
+            GetLegendIcons().empty() || !HasLegendIcons() ||
                 (GetTextOrientation() == Orientation::Horizontal &&
                  GetLeftPadding() >= GetMinLegendWidthDIPs()),
             wxString::Format(L"Left margin of text label should be at least %d DIPs "

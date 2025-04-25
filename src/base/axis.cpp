@@ -3246,12 +3246,13 @@ namespace Wisteria::GraphItems
     void Axis::AdjustRangeToLabels()
         {
         if (GetAxisPointsCount() == 0)
-            { return; }
+            {
+            return;
+            }
         m_rangeStart = GetAxisPoints().at(0).GetValue();
         m_rangeEnd = GetAxisPoints().at(0).GetValue();
-        for (auto labelsIter = GetAxisPoints().cbegin();
-            labelsIter != GetAxisPoints().cend();
-            ++labelsIter)
+        for (auto labelsIter = GetAxisPoints().cbegin(); labelsIter != GetAxisPoints().cend();
+             ++labelsIter)
             {
             if (IsReversed())
                 {
@@ -3273,31 +3274,39 @@ namespace Wisteria::GraphItems
         m_tallestLabel.SetScaling(GetAxisLabelScaling());
         // use cached calculation from previous call if labels haven't changed
         if (m_tallestLabel.IsOk())
-            { return m_tallestLabel; }
+            {
+            return m_tallestLabel;
+            }
 
         // otherwise, reset and recalculate
         m_tallestLabel = Label(GraphItemInfo().Ok(false).DPIScaling(GetDPIScaleFactor()));
-        if (GetAxisPoints().size() == 0)
-            { return m_tallestLabel; }
+        if (GetAxisPoints().empty())
+            {
+            return m_tallestLabel;
+            }
 
         wxCoord tallestLabelHeight{ 0 };
         Label tallestAxisLabel;
         Label currentLabel(
-            GraphItemInfo().Pen(wxNullPen).Scaling(GetAxisLabelScaling()).
-            Font(GetFont()).DPIScaling(GetDPIScaleFactor()).
-            Padding(GetTopPadding(), GetRightPadding(), GetBottomPadding(), GetLeftPadding()));
+            GraphItemInfo()
+                .Pen(wxNullPen)
+                .Scaling(GetAxisLabelScaling())
+                .Font(GetFont())
+                .DPIScaling(GetDPIScaleFactor())
+                .Padding(GetTopPadding(), GetRightPadding(), GetBottomPadding(), GetLeftPadding()));
 
         if ((IsVertical() && GetAxisLabelOrientation() == AxisLabelOrientation::Parallel) ||
             (IsHorizontal() && GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular))
-            { currentLabel.SetTextOrientation(Orientation::Vertical); }
+            {
+            currentLabel.SetTextOrientation(Orientation::Vertical);
+            }
 
         for (const auto& axisPt : GetAxisPoints())
             {
             if (IsPointDisplayingLabel(axisPt))
                 {
                 currentLabel.SetText(GetDisplayableValue(axisPt).GetText());
-                const wxCoord textHeight =
-                    currentLabel.GetBoundingBox(dc).GetSize().GetHeight();
+                const wxCoord textHeight = currentLabel.GetBoundingBox(dc).GetSize().GetHeight();
                 if (textHeight > tallestLabelHeight)
                     {
                     tallestAxisLabel = currentLabel;
@@ -3318,23 +3327,32 @@ namespace Wisteria::GraphItems
         m_widestLabel.SetScaling(GetAxisLabelScaling());
         // use cached calculation from previous call if labels haven't changed
         if (m_widestLabel.IsOk())
-            { return m_widestLabel; }
+            {
+            return m_widestLabel;
+            }
 
         // otherwise, reset and recalculate
         m_widestLabel = Label(GraphItemInfo().Ok(false).DPIScaling(GetDPIScaleFactor()));
-        if (GetAxisPoints().size() == 0)
-            { return m_widestLabel; }
+        if (GetAxisPoints().empty())
+            {
+            return m_widestLabel;
+            }
 
         wxCoord longestLabelWidth{ 0 };
         Label longestAxisLabel;
         Label currentLabel(
-            GraphItemInfo().Pen(wxNullPen).Scaling(GetAxisLabelScaling()).
-            Font(GetFont()).DPIScaling(GetDPIScaleFactor()).
-            Padding(GetTopPadding(), GetRightPadding(), GetBottomPadding(), GetLeftPadding()));
+            GraphItemInfo()
+                .Pen(wxNullPen)
+                .Scaling(GetAxisLabelScaling())
+                .Font(GetFont())
+                .DPIScaling(GetDPIScaleFactor())
+                .Padding(GetTopPadding(), GetRightPadding(), GetBottomPadding(), GetLeftPadding()));
 
         if ((IsVertical() && GetAxisLabelOrientation() == AxisLabelOrientation::Parallel) ||
             (IsHorizontal() && GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular))
-            { currentLabel.SetTextOrientation(Orientation::Vertical); }
+            {
+            currentLabel.SetTextOrientation(Orientation::Vertical);
+            }
 
         for (const auto& axisPt : GetAxisPoints())
             {

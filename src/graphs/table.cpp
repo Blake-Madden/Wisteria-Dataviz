@@ -361,7 +361,7 @@ namespace Wisteria::Graphs
     void Table::Sort(const size_t columnToSort, std::vector<wxString> labels,
                      const SortDirection direction)
         {
-        if (m_table.size() == 0)
+        if (m_table.empty())
             {
             return;
             }
@@ -459,7 +459,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::Sort(const size_t columnToSort, const SortDirection direction)
         {
-        if (m_table.size() == 0)
+        if (m_table.empty())
             {
             return;
             }
@@ -775,7 +775,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::AddCellAnnotation(const CellAnnotation& cellNote)
         {
-        if (cellNote.m_cells.size() == 0)
+        if (cellNote.m_cells.empty())
             {
             return;
             }
@@ -801,7 +801,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::AddCellAnnotation(CellAnnotation&& cellNote)
         {
-        if (cellNote.m_cells.size() == 0)
+        if (cellNote.m_cells.empty())
             {
             return;
             }
@@ -1003,7 +1003,7 @@ namespace Wisteria::Graphs
 
             std::vector<double> maxValues;
             std::copy_n(values.cbegin(), std::min(values.size(), N), std::back_inserter(maxValues));
-            if (maxValues.size() == 0)
+            if (maxValues.empty())
                 {
                 return topNPositions;
                 }
@@ -1952,7 +1952,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::optional<Table::CellPosition> Table::FindCellPosition(const wxString& textToFind)
         {
-        if (m_table.size() == 0)
+        if (m_table.empty())
             {
             return std::nullopt;
             }
@@ -1975,7 +1975,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::optional<size_t> Table::FindColumnIndex(const wxString& textToFind)
         {
-        if (m_table.size() == 0)
+        if (m_table.empty())
             {
             return std::nullopt;
             }

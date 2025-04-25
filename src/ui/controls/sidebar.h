@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __SIDEBAR_H__
-#define __SIDEBAR_H__
+#ifndef WISTERIA_SIDEBAR_H
+#define WISTERIA_SIDEBAR_H
 
 #include <algorithm>
 #include <optional>
@@ -215,7 +215,7 @@ namespace Wisteria::UI
             {
             m_folders.erase(m_folders.begin() + index);
             m_highlightedFolder = std::nullopt;
-            if (m_folders.size() == 0)
+            if (m_folders.empty())
                 {
                 m_selectedFolder = std::nullopt;
                 }
@@ -701,4 +701,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__SIDEBAR_H__
+#endif // WISTERIA_SIDEBAR_H

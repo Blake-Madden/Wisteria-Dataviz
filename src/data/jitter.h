@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_JITTER_H__
-#define __WISTERIA_JITTER_H__
+#ifndef WISTERIA_JITTER_H
+#define WISTERIA_JITTER_H
 
 #include "../base/axis.h"
 #include "../base/graphitems.h"
@@ -104,7 +104,7 @@ namespace Wisteria::Data
         template<typename T>
         void CalcSpread(const frequency_set<T>& points) noexcept
             {
-            if (points.get_data().size() == 0)
+            if (points.get_data().empty())
                 {
                 m_numberOfPointsOnEachSide = 0;
                 return;
@@ -195,4 +195,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_JITTER_H__
+#endif // WISTERIA_JITTER_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_BRUSHSCHEME_H__
-#define __WISTERIA_BRUSHSCHEME_H__
+#ifndef WISTERIA_BRUSHSCHEME_H
+#define WISTERIA_BRUSHSCHEME_H
 
 #include "colorbrewer.h"
 
@@ -90,8 +90,8 @@ namespace Wisteria::Brushes
             [[nodiscard]]
             wxBrush GetBrush(const size_t index) const
                 {
-                return (m_brushes.size() == 0) ? *wxBLACK_BRUSH :
-                                                 m_brushes.at(index % m_brushes.size());
+                return (m_brushes.empty()) ? *wxBLACK_BRUSH :
+                                             m_brushes.at(index % m_brushes.size());
                 }
 
             /** @brief Adds a brush to the scheme.
@@ -109,4 +109,4 @@ namespace Wisteria::Brushes
 
 /** @}*/
 
-#endif //__WISTERIA_BRUSHSCHEME_H__
+#endif // WISTERIA_BRUSHSCHEME_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_ICONS_H__
-#define __WISTERIA_ICONS_H__
+#ifndef WISTERIA_ICONS_H
+#define WISTERIA_ICONS_H
 
 #include "../math/mathematics.h"
 #include "settings.h"
@@ -209,8 +209,7 @@ namespace Wisteria::Icons
             [[nodiscard]]
             IconShape GetShape(const size_t index) const
                 {
-                return (m_shapes.size() == 0) ? IconShape::Blank :
-                                                m_shapes.at(index % m_shapes.size());
+                return (m_shapes.empty() ? IconShape::Blank : m_shapes.at(index % m_shapes.size()));
                 }
 
             /** @brief Adds a shape to the scheme.
@@ -227,8 +226,8 @@ namespace Wisteria::Icons
             [[nodiscard]]
             const wxBitmapBundle& GetImage(const size_t index) const noexcept
                 {
-                return (m_iconImages.size() == 0) ? m_emptyImage :
-                                                    m_iconImages.at(index % m_iconImages.size());
+                return (m_iconImages.empty() ? m_emptyImage :
+                                               m_iconImages.at(index % m_iconImages.size()));
                 }
 
             /// @brief Removes all shapes from the collection.
@@ -260,8 +259,8 @@ namespace Wisteria::Icons
             Semesters() : IconScheme({ IconShape::FallLeaf, IconShape::Flower, IconShape::Sun }) {}
             };
         } // namespace Schemes
-    }     // namespace Wisteria::Icons
+    } // namespace Wisteria::Icons
 
 /** @}*/
 
-#endif //__WISTERIA_ICONS_H__
+#endif // WISTERIA_ICONS_H

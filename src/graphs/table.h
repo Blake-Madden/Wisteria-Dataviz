@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_TABLE_H__
-#define __WISTERIA_TABLE_H__
+#ifndef WISTERIA_TABLE_H
+#define WISTERIA_TABLE_H
 
 #include "../math/mathematics.h"
 #include "graph2d.h"
@@ -661,7 +661,7 @@ namespace Wisteria::Graphs
         ///     be returned as 11 rows for the table size.
         std::pair<size_t, size_t> GetTableSize() const noexcept
             {
-            if (m_table.size() == 0)
+            if (m_table.empty())
                 {
                 return std::make_pair(0, 0);
                 }
@@ -805,7 +805,7 @@ namespace Wisteria::Graphs
                 {
                 return std::nullopt;
                 }
-            else if (m_currentAggregateColumns.size() == 0)
+            else if (m_currentAggregateColumns.empty())
                 {
                 return GetColumnCount() - 1;
                 }
@@ -828,7 +828,7 @@ namespace Wisteria::Graphs
                 {
                 return std::nullopt;
                 }
-            else if (m_currentAggregateRows.size() == 0)
+            else if (m_currentAggregateRows.empty())
                 {
                 return GetRowCount() - 1;
                 }
@@ -1646,4 +1646,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_TABLE_H__
+#endif // WISTERIA_TABLE_H

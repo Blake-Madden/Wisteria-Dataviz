@@ -148,7 +148,7 @@ namespace Wisteria
                         const auto rows = rowsProperty->GetValueArrayObject();
                         rowCount = rows.size();
                         // Empty page? Go to next one.
-                        if (rows.size() == 0)
+                        if (rows.empty())
                             {
                             continue;
                             }
@@ -1011,7 +1011,7 @@ namespace Wisteria
             NumberOrStringRegEx() + ClosingParenthesisRegEx());
         if (re.Matches(formula))
             {
-            if (dataset->GetContinuousColumns().size() == 0)
+            if (dataset->GetContinuousColumns().empty())
                 {
                 throw std::runtime_error(
                     wxString(
@@ -1679,7 +1679,7 @@ namespace Wisteria
                         {
                         std::vector<ColumnFilterInfo> cf;
                         const auto filterAndNodes = filterAndNode->GetValueArrayObject();
-                        if (filterAndNodes.size() == 0)
+                        if (filterAndNodes.empty())
                             {
                             throw std::runtime_error(
                                 _(L"Subset missing filters.").ToUTF8());
@@ -1696,7 +1696,7 @@ namespace Wisteria
                         {
                         std::vector<ColumnFilterInfo> cf;
                         const auto filterOrNodes = filterOrNode->GetValueArrayObject();
-                        if (filterOrNodes.size() == 0)
+                        if (filterOrNodes.empty())
                             {
                             throw std::runtime_error(
                                 _(L"Subset missing filters.").ToUTF8());
@@ -4716,7 +4716,7 @@ namespace Wisteria
             {
             std::vector<wxColour> colors;
             const auto colorValues = colorSchemeNode->GetValueStringVector();
-            if (colorValues.size() == 0)
+            if (colorValues.empty())
                 {
                 return nullptr;
                 }
@@ -4763,7 +4763,7 @@ namespace Wisteria
                 if (foundPos != lineStyleEnsums.cend())
                     { lineStyles.emplace_back(pn.GetStyle(), foundPos->second); }
                 }
-            if (lineStyles.size() == 0)
+            if (lineStyles.empty())
                 { return nullptr; }
             return std::make_shared<LineStyleScheme>(lineStyles);
             }
@@ -4788,7 +4788,7 @@ namespace Wisteria
             {
             std::vector<IconShape> icons;
             const auto iconValues = iconSchemeNode->GetValueStringVector();
-            if (iconValues.size() == 0)
+            if (iconValues.empty())
                 { return nullptr; }
             for (const auto& icon : iconValues)
                 {
@@ -4798,7 +4798,7 @@ namespace Wisteria
                     icons.push_back(iconValue.value());
                     }
                 }
-            if (icons.size() == 0)
+            if (icons.empty())
                 { return nullptr; }
             return std::make_shared<IconScheme>(icons);
             }

@@ -1284,7 +1284,7 @@ namespace Wisteria::UI
                     {
                     rowStarts.clear();
                     const auto currentPageRows =
-                        (IsIncludingTableCaption() && m_pageStarts.size() == 0) ?
+                        (IsIncludingTableCaption() && m_pageStarts.empty()) ?
                             rowsPerPage - linesNeededForTableCaption :
                             rowsPerPage;
                     for (long i = 0; i < tablesPerPage; ++i)

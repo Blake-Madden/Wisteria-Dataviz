@@ -109,7 +109,7 @@ namespace Wisteria::Graphs
             }
 
         // if nothing left after filtering then quit
-        if (influencers.get_data().size() == 0)
+        if (influencers.get_data().empty())
             { return; }
 
         // Get the range of values, which will be the magnitude (not raw values).

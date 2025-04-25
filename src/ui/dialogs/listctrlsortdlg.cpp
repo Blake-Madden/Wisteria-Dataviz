@@ -78,7 +78,7 @@ namespace Wisteria::UI
         m_columnList->SetVirtualDataSize(m_columnChoices.Count(), 2);
         // if no sort columns, then just use the first column in ascending order, it looks
         // odd not having any sort criteria when this dialog is shown.
-        if (sortColumns.size() == 0 && m_columnChoices.size() > 0)
+        if (sortColumns.empty() && m_columnChoices.size() > 0)
             {
             m_columnList->SetItemText(0, 0, m_columnChoices[0]);
             m_columnList->SetItemText(0, 1, GetAscendingLabel());

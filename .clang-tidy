@@ -1,5 +1,5 @@
 ---
-Checks: '-clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-*,cert-*,bugprone-*,misc-*,openmp-*,performance-*,portability-*,hicpp-*,google-*,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-hicpp-use-emplace,-modernize-use-emplace,-readability-function-cognitive-complexity,-bugprone-branch-clone,-hicpp-signed-bitwise,-misc-use-anonymous-namespace,-misc-no-recursion,-modernize-use-trailing-return-type,-misc-include-cleaner'
+Checks: '-clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-*,cert-*,bugprone-*,misc-*,openmp-*,performance-*,portability-*,hicpp-*,google-*,-readability-function-cognitive-complexity,-bugprone-branch-clone,-hicpp-signed-bitwise,-misc-use-anonymous-namespace,-misc-no-recursion,-modernize-use-trailing-return-type,-misc-include-cleaner,-cppcoreguidelines-owning-memory,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-readability-isolate-declaration,-cppcoreguidelines-pro-bounds-constant-array-index,-readability-avoid-const-params-in-decls,-performance-enum-size'
 HeaderFilterRegex:   ''
 FormatStyle:         none
 InheritParentConfig: true
@@ -11,9 +11,3 @@ CheckOptions:
   readability-identifier-naming.LocalVariableCase: camelBack
   readability-identifier-naming.MacroDefinitionCase: UPPER_CASE
   readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
-  readability-identifier-naming.ParameterCase: camelBack
-  readability-identifier-naming.ClassCase: lower_case
-  readability-identifier-naming.StructCase: lower_case
-  readability-identifier-naming.EnumCase: lower_case
-  readability-identifier-naming.FunctionNameCase: lower_case
-  readability-identifier-naming.NamespaceCase: lower_case

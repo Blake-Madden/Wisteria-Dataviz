@@ -48,7 +48,7 @@ void QueueDownload::Remove(const int ID)
         m_downloads.erase(downloadInfo);
         }
     // Reset the ID if everything has been processed.
-    if (m_downloads.size() == 0)
+    if (m_downloads.empty())
         {
         m_currentId = 0;
         }

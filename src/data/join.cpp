@@ -30,7 +30,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(_(L"Invalid right dataset when left joining.").ToUTF8());
             }
-        if (byColumns.size() == 0)
+        if (byColumns.empty())
             {
             throw std::runtime_error(
                 _(L"No comparison columns where provided when left joining.").ToUTF8());

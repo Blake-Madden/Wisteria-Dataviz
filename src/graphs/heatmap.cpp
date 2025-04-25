@@ -65,7 +65,7 @@ namespace Wisteria::Graphs
         m_matrix.clear();
         m_range = { 0, 0 };
 
-        if (GetDataset()->GetContinuousColumns().size() == 0)
+        if (GetDataset()->GetContinuousColumns().empty())
             {
             wxFAIL_MSG(L"Heatmap requires a continuous column to analyze!");
             SetDataset(nullptr);
@@ -200,7 +200,7 @@ namespace Wisteria::Graphs
     void HeatMap::RecalcSizes(wxDC& dc)
         {
         // if no data then bail
-        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_matrix.size() == 0)
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_matrix.empty())
             {
             return;
             }

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_COLORBREWER_H__
-#define __WISTERIA_COLORBREWER_H__
+#ifndef WISTERIA_COLORBREWER_H
+#define WISTERIA_COLORBREWER_H
 
 #include "../math/statistics.h"
 #include "colors.h"
@@ -355,13 +355,11 @@ namespace Wisteria::Colors
             [[nodiscard]]
             wxColour GetColor(const size_t index) const
                 {
-                return (m_colors.size() == 0) ?
-                    *wxWHITE :
-                    (index < m_colors.size()) ?
-                    m_colors.at(index) :
-                    (index < m_colors.size()*2) ?
-                    ColorContrast::ShadeOrTint(m_colors.at(index % m_colors.size())) :
-                    *wxWHITE;
+                return (m_colors.empty()              ? *wxWHITE :
+                        (index < m_colors.size())     ? m_colors.at(index) :
+                        (index < m_colors.size() * 2) ? ColorContrast::ShadeOrTint(
+                                                            m_colors.at(index % m_colors.size())) :
+                                                        *wxWHITE);
                 }
             /** @brief Gets the color from a given index and applies an opacity value to it.
                 @param index The index into the color list to return.
@@ -385,9 +383,7 @@ namespace Wisteria::Colors
             [[nodiscard]]
             wxColour GetRecycledColor(const size_t index) const
                 {
-                return (m_colors.size() == 0) ?
-                    *wxWHITE :
-                    m_colors.at(index % m_colors.size());
+                return (m_colors.empty() ? *wxWHITE : m_colors.at(index % m_colors.size()));
                 }
             /** @brief Adds a color to the scheme.
                 @param color The color to add.*/
@@ -1063,4 +1059,4 @@ namespace Wisteria::Colors
     }
 /** @}*/
 
-#endif //__WISTERIA_COLORBREWER_H__
+#endif // WISTERIA_COLORBREWER_H
