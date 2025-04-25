@@ -26,7 +26,7 @@
 #include <wx/fs_mem.h>
 #include <wx/fs_zip.h>
 #include <wx/image.h>
-#include <wx/locale.h>
+#include <wx/intl.h>
 #include <wx/log.h>
 #include <wx/mimetype.h>
 #include <wx/print.h>
