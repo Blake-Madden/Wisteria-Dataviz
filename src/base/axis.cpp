@@ -13,23 +13,21 @@ using namespace Wisteria::Colors;
 namespace Wisteria::GraphItems
     {
     //-----------------------------------------
-    void Axis::AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel,
-                                                     const bool useMaxWidth) const
+    void Axis::AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, const bool useMaxWidth) const
         {
-        if (GetFontBackgroundColor().IsOk() &&
-            GetFontBackgroundColor() != wxTransparentColour &&
+        if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor() != wxTransparentColour &&
             GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
             {
             if (IsHorizontal())
                 {
                 if (useMaxWidth)
                     {
-                    axisLabel.SetMinimumUserSizeDIPs(
-                        DownscaleFromScreenAndCanvas(m_maxLabelWidth), std::nullopt);
+                    axisLabel.SetMinimumUserSizeDIPs(DownscaleFromScreenAndCanvas(m_maxLabelWidth),
+                                                     std::nullopt);
                     }
-                axisLabel.SetPadding(std::max(4, GetTopPadding()),
-                    std::max(4, GetRightPadding()),
-                    std::max(4, GetBottomPadding()), std::max(4, GetLeftPadding()));
+                axisLabel.SetPadding(std::max(4, GetTopPadding()), std::max(4, GetRightPadding()),
+                                     std::max(4, GetBottomPadding()),
+                                     std::max(4, GetLeftPadding()));
                 }
             else
                 {
@@ -38,9 +36,9 @@ namespace Wisteria::GraphItems
                     axisLabel.SetMinimumUserSizeDIPs(std::nullopt,
                                                      DownscaleFromScreenAndCanvas(m_maxLabelWidth));
                     }
-                axisLabel.SetPadding(std::max(4, GetTopPadding()),
-                    std::max(4, GetRightPadding()),
-                    std::max(4, GetBottomPadding()), std::max(4, GetLeftPadding()));
+                axisLabel.SetPadding(std::max(4, GetTopPadding()), std::max(4, GetRightPadding()),
+                                     std::max(4, GetBottomPadding()),
+                                     std::max(4, GetLeftPadding()));
                 }
             }
         }
@@ -48,8 +46,7 @@ namespace Wisteria::GraphItems
     //-----------------------------------------
     void Axis::Reset(const AxisResetLevel level /*= AxisResetLevel::RangeAndLabelValues*/)
         {
-        if (level == AxisResetLevel::CosmeticSettings ||
-            level == AxisResetLevel::AllSettings)
+        if (level == AxisResetLevel::CosmeticSettings || level == AxisResetLevel::AllSettings)
             {
             GetFont() = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeSmaller();
             SetFontColor(wxColour(*wxBLACK));
@@ -60,17 +57,16 @@ namespace Wisteria::GraphItems
             m_gridlinePen = wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT));
             m_outlineSize = wxDefaultSize;
             }
-        if (level == AxisResetLevel::Brackets ||
-            level == AxisResetLevel::AllSettings)
-            { ClearBrackets(); }
-        if (level == AxisResetLevel::TitleHeaderFooter ||
-            level == AxisResetLevel::AllSettings)
+        if (level == AxisResetLevel::Brackets || level == AxisResetLevel::AllSettings)
+            {
+            ClearBrackets();
+            }
+        if (level == AxisResetLevel::TitleHeaderFooter || level == AxisResetLevel::AllSettings)
             {
             GetTitle() = GetHeader() = GetFooter() =
                 Label(GraphItemInfo(wxString{}).DPIScaling(GetDPIScaleFactor()));
             }
-        if (level == AxisResetLevel::RangeAndLabelValues ||
-            level == AxisResetLevel::AllSettings)
+        if (level == AxisResetLevel::RangeAndLabelValues || level == AxisResetLevel::AllSettings)
             {
             m_axisLabels.clear();
             m_customAxisLabels.clear();
@@ -101,20 +97,20 @@ namespace Wisteria::GraphItems
             m_suggestedMaxLengthPerLine = 100;
             m_tickMarkDisplayType = TickMark::DisplayType::NoDisplay;
             m_doubleSidedAxisLabels = false;
-            GetTitle().SetTextOrientation((IsVertical() ?
-                Orientation::Vertical : Orientation::Horizontal));
+            GetTitle().SetTextOrientation(
+                (IsVertical() ? Orientation::Vertical : Orientation::Horizontal));
             }
         }
 
     //-------------------------------------------
-    void Axis::SetBoundingBox(const wxRect& rect,
-                              [[maybe_unused]] wxDC& dc,
+    void Axis::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                               [[maybe_unused]] const double parentScaling)
         {
-        assert(!IsFreeFloating() &&
-               L"SetBoundingBox() should only be called on fixed objects!");
+        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
-            { return; }
+            {
+            return;
+            }
         SetScaling(parentScaling);
 
         SetAxisLabelScaling(GetScaling());
@@ -125,64 +121,74 @@ namespace Wisteria::GraphItems
         const wxRect protrudingBox = GetProtrudingBoundingBox(dc);
 
         const auto calculateVerticalLabelOverhang = [this, &dc]()
-            {
-            const wxPoint topLeftCornerOriginal{ GetTopPoint() }, bottomRightCornerOriginal{ GetBottomPoint() };
+        {
+            const wxPoint topLeftCornerOriginal{ GetTopPoint() },
+                bottomRightCornerOriginal{ GetBottomPoint() };
             wxPoint topLeftCorner{ GetTopPoint() }, bottomRightCorner{ GetBottomPoint() };
             CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
             const wxCoord protrudingLabelTopPadding = topLeftCornerOriginal.y - topLeftCorner.y;
-            const wxCoord protrudingLabelBottomPadding = bottomRightCorner.y - bottomRightCornerOriginal.y;
+            const wxCoord protrudingLabelBottomPadding =
+                bottomRightCorner.y - bottomRightCornerOriginal.y;
             return std::make_pair(protrudingLabelTopPadding, protrudingLabelBottomPadding);
-            };
+        };
 
         const auto calculateHorizontalLabelOverhang = [this, &dc]()
-            {
-            const wxPoint topLeftCornerOriginal{ GetLeftPoint() }, bottomRightCornerOriginal{ GetRightPoint() };
+        {
+            const wxPoint topLeftCornerOriginal{ GetLeftPoint() },
+                bottomRightCornerOriginal{ GetRightPoint() };
             wxPoint topLeftCorner{ GetLeftPoint() }, bottomRightCorner{ GetRightPoint() };
             CalcHorizontalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
             const wxCoord protrudingLabelLeftPadding = topLeftCornerOriginal.x - topLeftCorner.x;
-            const wxCoord protrudingLabelRightPadding = bottomRightCorner.x - bottomRightCornerOriginal.x;
+            const wxCoord protrudingLabelRightPadding =
+                bottomRightCorner.x - bottomRightCornerOriginal.x;
             return std::make_pair(protrudingLabelLeftPadding, protrudingLabelRightPadding);
-            };
+        };
 
         if (GetAxisType() == AxisType::LeftYAxis)
             {
-            const auto [protrudingLabelTopPadding, protrudingLabelBottomPadding] = calculateVerticalLabelOverhang();
+            const auto [protrudingLabelTopPadding, protrudingLabelBottomPadding] =
+                calculateVerticalLabelOverhang();
 
-            wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(dc).GetSize().GetHeight() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelTopPadding :
-                protrudingLabelTopPadding;
-            const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelBottomPadding :
-                protrudingLabelBottomPadding;
+            wxCoord headerPadding =
+                GetHeader().GetText().length() ?
+                    GetHeader().GetBoundingBox(dc).GetSize().GetHeight() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelTopPadding :
+                    protrudingLabelTopPadding;
+            const wxCoord footerPadding =
+                GetFooter().GetText().length() ?
+                    GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelBottomPadding :
+                    protrudingLabelBottomPadding;
             if (GetAnchoring() == Anchoring::TopLeftCorner ||
                 GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
-                SetPoints(wxPoint(rect.GetTopLeft().x+protrudingBox.GetWidth(),
-                                  rect.GetTopLeft().y+headerPadding),
-                          wxPoint(rect.GetBottomLeft().x+protrudingBox.GetWidth(),
-                                  rect.GetBottomLeft().y-footerPadding),
+                SetPoints(wxPoint(rect.GetTopLeft().x + protrudingBox.GetWidth(),
+                                  rect.GetTopLeft().y + headerPadding),
+                          wxPoint(rect.GetBottomLeft().x + protrudingBox.GetWidth(),
+                                  rect.GetBottomLeft().y - footerPadding),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
-                SetPoints(wxPoint(rect.GetTopLeft().x+((rect.GetWidth()/2)),
-                                  rect.GetTopLeft().y+headerPadding),
-                          wxPoint(rect.GetBottomLeft().x+((rect.GetWidth()/2)),
-                                  rect.GetBottomLeft().y-footerPadding),
+                SetPoints(wxPoint(rect.GetTopLeft().x + ((rect.GetWidth() / 2)),
+                                  rect.GetTopLeft().y + headerPadding),
+                          wxPoint(rect.GetBottomLeft().x + ((rect.GetWidth() / 2)),
+                                  rect.GetBottomLeft().y - footerPadding),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner ||
                      GetAnchoring() == Anchoring::BottomRightCorner)
                 {
-                SetPoints(wxPoint(rect.GetTopLeft().x+(rect.GetWidth() -
-                                    (boundingBox.GetWidth()-protrudingBox.GetWidth())),
-                                  rect.GetTopLeft().y+headerPadding),
-                          wxPoint(rect.GetBottomLeft().x+(rect.GetWidth() -
-                                    (boundingBox.GetWidth()-protrudingBox.GetWidth())),
-                                  rect.GetBottomLeft().y-footerPadding),
-                          dc);
+                SetPoints(
+                    wxPoint(rect.GetTopLeft().x + (rect.GetWidth() - (boundingBox.GetWidth() -
+                                                                      protrudingBox.GetWidth())),
+                            rect.GetTopLeft().y + headerPadding),
+                    wxPoint(rect.GetBottomLeft().x + (rect.GetWidth() - (boundingBox.GetWidth() -
+                                                                         protrudingBox.GetWidth())),
+                            rect.GetBottomLeft().y - footerPadding),
+                    dc);
                 }
             }
         else if (GetAxisType() == AxisType::RightYAxis)
@@ -190,38 +196,46 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelTopPadding, protrudingLabelBottomPadding] =
                 calculateVerticalLabelOverhang();
 
-            wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(dc).GetSize().GetHeight() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) + protrudingLabelTopPadding :
-                protrudingLabelTopPadding;
-            const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) + protrudingLabelBottomPadding :
-                protrudingLabelBottomPadding;
-            if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
+            wxCoord headerPadding =
+                GetHeader().GetText().length() ?
+                    GetHeader().GetBoundingBox(dc).GetSize().GetHeight() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelTopPadding :
+                    protrudingLabelTopPadding;
+            const wxCoord footerPadding =
+                GetFooter().GetText().length() ?
+                    GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelBottomPadding :
+                    protrudingLabelBottomPadding;
+            if (GetAnchoring() == Anchoring::TopLeftCorner ||
+                GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
-                SetPoints(wxPoint(rect.GetTopLeft().x + (boundingBox.GetWidth() - protrudingBox.GetWidth()),
+                SetPoints(wxPoint(rect.GetTopLeft().x +
+                                      (boundingBox.GetWidth() - protrudingBox.GetWidth()),
                                   rect.GetTopLeft().y + headerPadding),
-                          wxPoint(rect.GetBottomLeft().x + (boundingBox.GetWidth() - protrudingBox.GetWidth()),
+                          wxPoint(rect.GetBottomLeft().x +
+                                      (boundingBox.GetWidth() - protrudingBox.GetWidth()),
                                   rect.GetBottomLeft().y - footerPadding),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
-                SetPoints(wxPoint(rect.GetTopLeft().x + ((rect.GetWidth()/2)),
+                SetPoints(wxPoint(rect.GetTopLeft().x + ((rect.GetWidth() / 2)),
                                   rect.GetTopLeft().y + headerPadding),
-                          wxPoint(rect.GetBottomLeft().x + ((rect.GetWidth()/2)),
+                          wxPoint(rect.GetBottomLeft().x + ((rect.GetWidth() / 2)),
                                   rect.GetBottomLeft().y - footerPadding),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner ||
                      GetAnchoring() == Anchoring::BottomRightCorner)
                 {
-                SetPoints(wxPoint(rect.GetTopLeft().x + (rect.GetWidth() - protrudingBox.GetWidth()),
-                                  rect.GetTopLeft().y + headerPadding),
-                          wxPoint(rect.GetBottomLeft().x + (rect.GetWidth() - protrudingBox.GetWidth()),
-                                  rect.GetBottomLeft().y - footerPadding),
-                          dc);
+                SetPoints(
+                    wxPoint(rect.GetTopLeft().x + (rect.GetWidth() - protrudingBox.GetWidth()),
+                            rect.GetTopLeft().y + headerPadding),
+                    wxPoint(rect.GetBottomLeft().x + (rect.GetWidth() - protrudingBox.GetWidth()),
+                            rect.GetBottomLeft().y - footerPadding),
+                    dc);
                 }
             }
         else if (GetAxisType() == AxisType::BottomXAxis)
@@ -229,37 +243,43 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelLeftPadding, protrudingLabelRightPadding] =
                 calculateHorizontalLabelOverhang();
 
-            const wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(dc).GetSize().GetWidth() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelRightPadding :
-                protrudingLabelRightPadding;
-            const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelLeftPadding :
-                protrudingLabelLeftPadding;
-            if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
+            const wxCoord headerPadding =
+                GetHeader().GetText().length() ?
+                    GetHeader().GetBoundingBox(dc).GetSize().GetWidth() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelRightPadding :
+                    protrudingLabelRightPadding;
+            const wxCoord footerPadding =
+                GetFooter().GetText().length() ?
+                    GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelLeftPadding :
+                    protrudingLabelLeftPadding;
+            if (GetAnchoring() == Anchoring::TopLeftCorner ||
+                GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
-                SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                  rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
-                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                  rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
-                          dc);
+                SetPoints(
+                    wxPoint(rect.GetLeft() + footerPadding,
+                            rect.GetTop() + (boundingBox.GetHeight() - protrudingBox.GetHeight())),
+                    wxPoint(rect.GetLeft() + (rect.GetWidth() - headerPadding),
+                            rect.GetTop() + (boundingBox.GetHeight() - protrudingBox.GetHeight())),
+                    dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
-                SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                  rect.GetTopLeft().y+((rect.GetHeight()/2))),
-                          wxPoint(rect.GetRight()-headerPadding,
-                                  rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                SetPoints(wxPoint(rect.GetLeft() + footerPadding,
+                                  rect.GetTopLeft().y + ((rect.GetHeight() / 2))),
+                          wxPoint(rect.GetRight() - headerPadding,
+                                  rect.GetTopLeft().y + ((rect.GetHeight() / 2))),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner ||
-                     GetAnchoring() == Anchoring:: BottomRightCorner)
+                     GetAnchoring() == Anchoring::BottomRightCorner)
                 {
-                SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                  rect.GetBottom()-protrudingBox.GetHeight()),
-                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                  rect.GetBottom()-protrudingBox.GetHeight()),
+                SetPoints(wxPoint(rect.GetLeft() + footerPadding,
+                                  rect.GetBottom() - protrudingBox.GetHeight()),
+                          wxPoint(rect.GetLeft() + (rect.GetWidth() - headerPadding),
+                                  rect.GetBottom() - protrudingBox.GetHeight()),
                           dc);
                 }
             }
@@ -268,38 +288,44 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelLeftPadding, protrudingLabelRightPadding] =
                 calculateHorizontalLabelOverhang();
 
-            const wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(dc).GetSize().GetWidth() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) + protrudingLabelRightPadding :
-                protrudingLabelRightPadding;
-            const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelLeftPadding :
-                protrudingLabelLeftPadding;
+            const wxCoord headerPadding =
+                GetHeader().GetText().length() ?
+                    GetHeader().GetBoundingBox(dc).GetSize().GetWidth() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelRightPadding :
+                    protrudingLabelRightPadding;
+            const wxCoord footerPadding =
+                GetFooter().GetText().length() ?
+                    GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                        protrudingLabelLeftPadding :
+                    protrudingLabelLeftPadding;
             if (GetAnchoring() == Anchoring::TopLeftCorner ||
                 GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
-                SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                  rect.GetTop()+protrudingBox.GetHeight()),
-                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                  rect.GetTop()+protrudingBox.GetHeight()),
+                SetPoints(wxPoint(rect.GetLeft() + footerPadding,
+                                  rect.GetTop() + protrudingBox.GetHeight()),
+                          wxPoint(rect.GetLeft() + (rect.GetWidth() - headerPadding),
+                                  rect.GetTop() + protrudingBox.GetHeight()),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
-                SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                  rect.GetTopLeft().y+((rect.GetHeight()/2))),
-                          wxPoint(rect.GetRight()-headerPadding,
-                                   rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                SetPoints(wxPoint(rect.GetLeft() + footerPadding,
+                                  rect.GetTopLeft().y + ((rect.GetHeight() / 2))),
+                          wxPoint(rect.GetRight() - headerPadding,
+                                  rect.GetTopLeft().y + ((rect.GetHeight() / 2))),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner ||
                      GetAnchoring() == Anchoring::BottomRightCorner)
                 {
-                SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                  rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
-                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                  rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                SetPoints(wxPoint(rect.GetLeft() + footerPadding,
+                                  rect.GetBottom() -
+                                      (boundingBox.GetHeight() - protrudingBox.GetHeight())),
+                          wxPoint(rect.GetLeft() + (rect.GetWidth() - headerPadding),
+                                  rect.GetBottom() -
+                                      (boundingBox.GetHeight() - protrudingBox.GetHeight())),
                           dc);
                 }
             }
@@ -308,9 +334,13 @@ namespace Wisteria::GraphItems
         // Because axis label scaling dynamically changes to the best fit, we need to
         // clip titles within the size used here later.
         if (IsHorizontal())
-            { m_maxHeight = rect.GetHeight(); }
+            {
+            m_maxHeight = rect.GetHeight();
+            }
         else if (IsVertical())
-            { m_maxWidth = rect.GetWidth(); }
+            {
+            m_maxWidth = rect.GetWidth();
+            }
         }
 
     //-------------------------------------------
@@ -318,7 +348,9 @@ namespace Wisteria::GraphItems
         {
         wxRect boundingBox = GetBoundingBox(dc);
         if (GetAxisType() == AxisType::LeftYAxis)
-            { boundingBox.SetRight(GetTopPoint().x); }
+            {
+            boundingBox.SetRight(GetTopPoint().x);
+            }
         else if (GetAxisType() == AxisType::RightYAxis)
             {
             const auto diff = GetTopPoint().x - boundingBox.GetLeft();
@@ -329,10 +361,12 @@ namespace Wisteria::GraphItems
             {
             const auto diff = GetTopPoint().y - boundingBox.GetTop();
             boundingBox.SetTop(GetTopPoint().y);
-            boundingBox.SetHeight(boundingBox.GetHeight()-diff);
+            boundingBox.SetHeight(boundingBox.GetHeight() - diff);
             }
         else if (GetAxisType() == AxisType::TopXAxis)
-            { boundingBox.SetBottom(GetTopPoint().y); }
+            {
+            boundingBox.SetBottom(GetTopPoint().y);
+            }
         return boundingBox;
         }
 
@@ -350,33 +384,44 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                    { topLeftCorner.x -= firstLabel.GetBoundingBox(dc).GetWidth()-spaceToStart; }
+                    {
+                    topLeftCorner.x -= firstLabel.GetBoundingBox(dc).GetWidth() - spaceToStart;
+                    }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { topLeftCorner.x -= (firstLabel.GetBoundingBox(dc).GetWidth()/2)-spaceToStart; }
+                    {
+                    topLeftCorner.x -=
+                        (firstLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToStart;
+                    }
                 // FlushLeft needs no space on the left outer side
                 }
             else
                 {
-                topLeftCorner.x -= (firstLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToStart;
+                topLeftCorner.x -= (firstLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToStart;
                 }
             }
         // the last (far most right) axis label
         const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel();
         wxCoord lastLabelPhysicalPos{ 0 };
-        if (!std::isnan(lastLabelPosition) && GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
+        if (!std::isnan(lastLabelPosition) &&
+            GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
             {
             const auto spaceToEnd = GetRightPoint().x - lastLabelPhysicalPos;
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
-                    { bottomRightCorner.x += lastLabel.GetBoundingBox(dc).GetWidth()-spaceToEnd; }
+                    {
+                    bottomRightCorner.x += lastLabel.GetBoundingBox(dc).GetWidth() - spaceToEnd;
+                    }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { bottomRightCorner.x += (lastLabel.GetBoundingBox(dc).GetWidth()/2)-spaceToEnd; }
+                    {
+                    bottomRightCorner.x +=
+                        (lastLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToEnd;
+                    }
                 // FlushRight needs no space on the right outer side
                 }
             else
                 {
-                bottomRightCorner.x += (lastLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToEnd;
+                bottomRightCorner.x += (lastLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToEnd;
                 }
             }
         }
@@ -395,14 +440,20 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
-                    { bottomRightCorner.y += firstLabel.GetBoundingBox(dc).GetWidth()-spaceToStart; }
+                    {
+                    bottomRightCorner.y += firstLabel.GetBoundingBox(dc).GetWidth() - spaceToStart;
+                    }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { bottomRightCorner.y += (firstLabel.GetBoundingBox(dc).GetWidth()/2)-spaceToStart; }
+                    {
+                    bottomRightCorner.y +=
+                        (firstLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToStart;
+                    }
                 // FlushTop needs no space on the upper outside
                 }
             else
                 {
-                bottomRightCorner.y += (firstLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToStart;
+                bottomRightCorner.y +=
+                    (firstLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToStart;
                 }
             }
         // the last (far most top) axis label
@@ -415,14 +466,18 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                    { topLeftCorner.y -= lastLabel.GetBoundingBox(dc).GetWidth(); }
+                    {
+                    topLeftCorner.y -= lastLabel.GetBoundingBox(dc).GetWidth();
+                    }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { topLeftCorner.y -= lastLabel.GetBoundingBox(dc).GetWidth()/2; }
+                    {
+                    topLeftCorner.y -= lastLabel.GetBoundingBox(dc).GetWidth() / 2;
+                    }
                 // FlushBottom needs no space on the lower outer side
                 }
             else
                 {
-                topLeftCorner.y -= (lastLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToEnd;
+                topLeftCorner.y -= (lastLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToEnd;
                 }
             }
         }
@@ -431,9 +486,11 @@ namespace Wisteria::GraphItems
     wxRect Axis::GetBoundingBox(wxDC& dc) const
         {
         const auto textMeasurement = [this, &dc]()
-            {
+        {
             if (!IsShowingLabels())
-                { return 0; }
+                {
+                return 0;
+                }
             else
                 {
                 if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
@@ -447,21 +504,25 @@ namespace Wisteria::GraphItems
                     auto tallestLabel{ GetTallestTextLabel(dc) };
                     auto tallestLabelHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
                     if (GetFontBackgroundColor().IsOk())
-                        { tallestLabelHeight += std::max(2, GetTopPadding()+GetBottomPadding()); }
+                        {
+                        tallestLabelHeight += std::max(2, GetTopPadding() + GetBottomPadding());
+                        }
                     return tallestLabelHeight;
                     }
                 }
-            }();
+        }();
         wxPoint topLeftCorner, bottomRightCorner;
-        const wxCoord spaceBetweenAxisAndLabel = !IsShowingLabels() ?
-            0 : ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+        const wxCoord spaceBetweenAxisAndLabel =
+            !IsShowingLabels() ? 0 : ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
 
         if (GetAxisType() == AxisType::LeftYAxis)
             {
-            topLeftCorner = wxPoint(GetTopPoint().x -
-                (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel), GetTopPoint().y);
-            bottomRightCorner = wxPoint(GetBottomPoint().x +
-                (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
+            topLeftCorner =
+                wxPoint(GetTopPoint().x - (CalcTickMarkOuterWidth() + spaceBetweenAxisAndLabel),
+                        GetTopPoint().y);
+            bottomRightCorner = wxPoint(
+                GetBottomPoint().x + (CalcTickMarkInnerWidth() +
+                                      (HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
                 GetBottomPoint().y); // the line, tickmarks, and space after that
             // the axis label
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
@@ -483,11 +544,11 @@ namespace Wisteria::GraphItems
             if (GetBrackets().size())
                 {
                 topLeftCorner.x -= CalcBracketsSpaceRequired(dc) +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                   ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     bottomRightCorner.x += CalcBracketsSpaceRequired(dc) +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                           ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
@@ -504,35 +565,42 @@ namespace Wisteria::GraphItems
             {
             topLeftCorner = wxPoint(GetTopPoint().x, GetTopPoint().y);
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
-                { topLeftCorner.x -= textMeasurement; }
+                {
+                topLeftCorner.x -= textMeasurement;
+                }
             else
                 {
-                topLeftCorner.x -= (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
-                                    spaceBetweenAxisAndLabel : 0));
+                topLeftCorner.x -= (CalcTickMarkInnerWidth() +
+                                    (HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0));
                 }
 
-            bottomRightCorner = wxPoint(GetBottomPoint().x +
-                (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel),
-                                        GetBottomPoint().y); // the line, tickmarks, and space after that
-            bottomRightCorner.x += (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ?
-                                    0 :
-                                    IsStackingLabels() ? textMeasurement*2 : textMeasurement;
+            bottomRightCorner =
+                wxPoint(GetBottomPoint().x + (CalcTickMarkOuterWidth() + spaceBetweenAxisAndLabel),
+                        GetBottomPoint().y); // the line, tickmarks, and space after that
+            bottomRightCorner.x +=
+                (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ? 0 :
+                IsStackingLabels() ? textMeasurement * 2 :
+                                     textMeasurement;
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
-                { bottomRightCorner.x += textMeasurement/2; }
+                {
+                bottomRightCorner.x += textMeasurement / 2;
+                }
             if (HasDoubleSidedAxisLabels() &&
                 (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
-                { topLeftCorner.x -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
+                {
+                topLeftCorner.x -= IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
+                }
 
             CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
                 bottomRightCorner.x += CalcBracketsSpaceRequired(dc) +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     topLeftCorner.x -= CalcBracketsSpaceRequired(dc) +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
@@ -547,28 +615,30 @@ namespace Wisteria::GraphItems
             }
         else if (GetAxisType() == AxisType::BottomXAxis)
             {
-            topLeftCorner = wxPoint(GetTopPoint().x,
-                                    GetTopPoint().y -
-                                    (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
-                                        spaceBetweenAxisAndLabel : 0)));
-            bottomRightCorner = wxPoint(GetBottomPoint().x,
-                                        // include the line, tickmarks, and space after that
-                                        GetBottomPoint().y +
-                                            (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel));
-            bottomRightCorner.y += IsStackingLabels() ? textMeasurement*2 : textMeasurement;
+            topLeftCorner = wxPoint(
+                GetTopPoint().x,
+                GetTopPoint().y - (CalcTickMarkInnerWidth() +
+                                   (HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)));
+            bottomRightCorner =
+                wxPoint(GetBottomPoint().x,
+                        // include the line, tickmarks, and space after that
+                        GetBottomPoint().y + (CalcTickMarkOuterWidth() + spaceBetweenAxisAndLabel));
+            bottomRightCorner.y += IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
             if (HasDoubleSidedAxisLabels())
-                { topLeftCorner.y -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
+                {
+                topLeftCorner.y -= IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
+                }
 
             CalcHorizontalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
                 bottomRightCorner.y += CalcBracketsSpaceRequired(dc) +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     topLeftCorner.y -= CalcBracketsSpaceRequired(dc) +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
@@ -583,27 +653,31 @@ namespace Wisteria::GraphItems
             }
         else if (GetAxisType() == AxisType::TopXAxis)
             {
-            topLeftCorner = wxPoint(GetTopPoint().x,
-                                    GetTopPoint().y - (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel));
-            bottomRightCorner = wxPoint(GetBottomPoint().x,
-                                        GetBottomPoint().y +
-                                        (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
-                                            // the line, tickmarks, and space after that
-                                            spaceBetweenAxisAndLabel : 0)));
-            topLeftCorner.y -= IsStackingLabels() ? textMeasurement*2 : textMeasurement;
+            topLeftCorner = wxPoint(GetTopPoint().x, GetTopPoint().y - (CalcTickMarkOuterWidth() +
+                                                                        spaceBetweenAxisAndLabel));
+            bottomRightCorner =
+                wxPoint(GetBottomPoint().x,
+                        GetBottomPoint().y + (CalcTickMarkInnerWidth() +
+                                              (HasDoubleSidedAxisLabels() ?
+                                                   // the line, tickmarks, and space after that
+                                                   spaceBetweenAxisAndLabel :
+                                                   0)));
+            topLeftCorner.y -= IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
             if (HasDoubleSidedAxisLabels())
-                { bottomRightCorner.y += IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
+                {
+                bottomRightCorner.y += IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
+                }
 
             CalcHorizontalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
                 topLeftCorner.y -= CalcBracketsSpaceRequired(dc) +
-                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                   ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     bottomRightCorner.y += CalcBracketsSpaceRequired(dc) +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                           ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
@@ -621,9 +695,9 @@ namespace Wisteria::GraphItems
         // so simple vertical vs. horizontal logic is fine here)
         if (IsVertical())
             {
-            const auto adjustMarginForHeaderOrFooter = [this, &dc, &bottomRightCorner, &topLeftCorner]
-                (Label label, const bool isHeader)
-                {
+            const auto adjustMarginForHeaderOrFooter =
+                [this, &dc, &bottomRightCorner, &topLeftCorner](Label label, const bool isHeader)
+            {
                 label.SetAnchorPoint(isHeader ? GetTopPoint() : GetBottomPoint());
                 label.SetScaling(GetScaling());
                 label.SetAnchoring(Anchoring::Center);
@@ -631,36 +705,49 @@ namespace Wisteria::GraphItems
                 if (isHeader)
                     {
                     topLeftCorner.y -= labelBox.GetSize().GetHeight() +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 else
                     {
                     bottomRightCorner.y += labelBox.GetSize().GetHeight() +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                           ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
 
                 // move the label left or right, depending on its placement
                 if (label.GetRelativeAlignment() == RelativeAlignment::FlushRight)
-                    { labelBox.Offset(-(labelBox.GetWidth()/2), 0); }
+                    {
+                    labelBox.Offset(-(labelBox.GetWidth() / 2), 0);
+                    }
                 else if (label.GetRelativeAlignment() == RelativeAlignment::FlushLeft)
-                    { labelBox.Offset((labelBox.GetWidth()/2), 0); }
-                // see if the left or right hinges of this box goes outside of the current bounding box
+                    {
+                    labelBox.Offset((labelBox.GetWidth() / 2), 0);
+                    }
+                // see if the left or right hinges of this box goes outside of the
+                // current bounding box
                 if (labelBox.GetLeft() < topLeftCorner.x)
-                    { topLeftCorner.x = labelBox.GetLeft(); }
+                    {
+                    topLeftCorner.x = labelBox.GetLeft();
+                    }
                 if (labelBox.GetRight() > bottomRightCorner.x)
-                    { bottomRightCorner.x = labelBox.GetRight(); }
-                };
+                    {
+                    bottomRightCorner.x = labelBox.GetRight();
+                    }
+            };
 
             if (GetHeader().GetText().length())
-                { adjustMarginForHeaderOrFooter(Label(GetHeader()), true); }
+                {
+                adjustMarginForHeaderOrFooter(Label(GetHeader()), true);
+                }
             if (GetFooter().GetText().length())
-                { adjustMarginForHeaderOrFooter(Label(GetFooter()), false); }
+                {
+                adjustMarginForHeaderOrFooter(Label(GetFooter()), false);
+                }
             }
         else if (IsHorizontal())
             {
-            const auto adjustMarginForHeaderOrFooter = [this, &dc, &bottomRightCorner, &topLeftCorner]
-                (Label label, const bool isHeader)
-                {
+            const auto adjustMarginForHeaderOrFooter =
+                [this, &dc, &bottomRightCorner, &topLeftCorner](Label label, const bool isHeader)
+            {
                 label.SetAnchorPoint(isHeader ? GetRightPoint() : GetLeftPoint());
                 label.SetScaling(GetScaling());
                 label.SetAnchoring(Anchoring::Center);
@@ -669,47 +756,61 @@ namespace Wisteria::GraphItems
                     {
                     // push over the x to fit the header
                     bottomRightCorner.x += labelBox.GetSize().GetWidth() +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                           ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 else
                     {
                     // push over the x to fit the footer
                     topLeftCorner.x -= labelBox.GetSize().GetWidth() +
-                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                     }
                 // move the label up or down, depending on its placement
                 if (label.GetRelativeAlignment() == RelativeAlignment::FlushBottom)
-                    { labelBox.Offset(0, labelBox.GetHeight()/2); }
+                    {
+                    labelBox.Offset(0, labelBox.GetHeight() / 2);
+                    }
                 else if (label.GetRelativeAlignment() == RelativeAlignment::FlushTop)
-                    { labelBox.Offset(0, -(labelBox.GetHeight()/2)); }
+                    {
+                    labelBox.Offset(0, -(labelBox.GetHeight() / 2));
+                    }
                 // adjust y now
                 if (labelBox.GetY() < topLeftCorner.y)
-                    { topLeftCorner.y = labelBox.GetY(); }
-                if (labelBox.GetY()+ labelBox.GetHeight() > bottomRightCorner.y)
-                    { bottomRightCorner.y = labelBox.GetY()+ labelBox.GetHeight(); }
-                };
+                    {
+                    topLeftCorner.y = labelBox.GetY();
+                    }
+                if (labelBox.GetY() + labelBox.GetHeight() > bottomRightCorner.y)
+                    {
+                    bottomRightCorner.y = labelBox.GetY() + labelBox.GetHeight();
+                    }
+            };
 
             if (GetHeader().IsShown() && GetHeader().GetText().length())
-                { adjustMarginForHeaderOrFooter(Label(GetHeader()), true); }
+                {
+                adjustMarginForHeaderOrFooter(Label(GetHeader()), true);
+                }
             if (GetFooter().IsShown() && GetFooter().GetText().length())
-                { adjustMarginForHeaderOrFooter(Label(GetFooter()), false); }
+                {
+                adjustMarginForHeaderOrFooter(Label(GetFooter()), false);
+                }
             }
 
         wxRect adjustedRect(topLeftCorner, bottomRightCorner);
         // if an axis embedded on a canvas, we may need to shrink it back down to make
         // the titles fit because of how the axis labels and brackets dynamically size
         // (i.e., not using the parent scaling)
-        if (m_maxHeight.has_value() &&
-            m_maxHeight.value() < adjustedRect.GetHeight())
-            { adjustedRect.SetHeight(m_maxHeight.value()); }
-        if (m_maxWidth.has_value() &&
-            m_maxWidth.value() < adjustedRect.GetWidth())
-            { adjustedRect.SetWidth(m_maxWidth.value()); }
+        if (m_maxHeight.has_value() && m_maxHeight.value() < adjustedRect.GetHeight())
+            {
+            adjustedRect.SetHeight(m_maxHeight.value());
+            }
+        if (m_maxWidth.has_value() && m_maxWidth.value() < adjustedRect.GetWidth())
+            {
+            adjustedRect.SetWidth(m_maxWidth.value());
+            }
 
         return (GetOutlineSize().IsFullySpecified()) ?
-                adjustedRect.Inflate(ScaleToScreenAndCanvas(GetOutlineSize().GetWidth()),
-                                                            ScaleToScreenAndCanvas(GetOutlineSize().GetHeight())) :
-                adjustedRect;
+                   adjustedRect.Inflate(ScaleToScreenAndCanvas(GetOutlineSize().GetWidth()),
+                                        ScaleToScreenAndCanvas(GetOutlineSize().GetHeight())) :
+                   adjustedRect;
         }
 
     //-------------------------------------------
@@ -781,52 +882,53 @@ namespace Wisteria::GraphItems
             for (size_t i = 0; i < GetAxisPointsCount(); ++i, ++pos)
                 {
                 pos->SetPhysicalCoordinate(
-                    static_cast<double>(static_cast<double>(GetTopPoint().y)+
-                                            (static_cast<double>(GetBottomPoint().y)-GetTopPoint().y))
-                                        - static_cast<double>(GetLabelPhysicalOffset()*i));
+                    static_cast<double>(
+                        static_cast<double>(GetTopPoint().y) +
+                        (static_cast<double>(GetBottomPoint().y) - GetTopPoint().y)) -
+                    static_cast<double>(GetLabelPhysicalOffset() * i));
                 }
             // tick marks
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
             double i = start;
-            for (/*already initialized*/;
-                (i <= end);
-                i += GetTickMarkInterval())
+            for (/*already initialized*/; (i <= end); i += GetTickMarkInterval())
                 {
                 const bool MajorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
-                    MajorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
+                            MajorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
                 GetPhysicalCoordinate(tk.m_position, tk.m_physicalCoordinate);
                 GetTickMarks().push_back(std::move(tk));
                 }
             // custom tick marks
             for (auto& tick : GetCustomTickMarks())
-                { GetPhysicalCoordinate(tick.m_position, tick.m_physicalCoordinate); }
+                {
+                GetPhysicalCoordinate(tick.m_position, tick.m_physicalCoordinate);
+                }
             }
         else if (IsHorizontal())
             {
             auto pos = GetAxisPoints().begin();
             for (size_t i = 0; i < GetAxisPointsCount(); ++i, ++pos)
                 {
-                pos->SetPhysicalCoordinate(GetLeftPoint().x+(GetLabelPhysicalOffset()*i));
+                pos->SetPhysicalCoordinate(GetLeftPoint().x + (GetLabelPhysicalOffset() * i));
                 }
             // tick marks
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
             double i = start;
-            for (/*already initialized*/;
-                (i <= end);
-                i += GetTickMarkInterval())
+            for (/*already initialized*/; (i <= end); i += GetTickMarkInterval())
                 {
                 const bool MajorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
-                    MajorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
+                            MajorTickMark ? GetMajorTickMarkLength() : GetMinorTickMarkLength());
                 GetPhysicalCoordinate(tk.m_position, tk.m_physicalCoordinate);
                 GetTickMarks().push_back(std::move(tk));
                 }
             // custom tick marks
             for (auto& tick : GetCustomTickMarks())
-                { GetPhysicalCoordinate(tick.m_position, tick.m_physicalCoordinate); }
+                {
+                GetPhysicalCoordinate(tick.m_position, tick.m_physicalCoordinate);
+                }
             }
         }
 
@@ -835,15 +937,13 @@ namespace Wisteria::GraphItems
         {
         if (IsVertical())
             {
-            SetLabelPhysicalOffset(
-                safe_divide<double>(std::abs(GetBottomPoint().y-GetTopPoint().y),
-                                             (GetAxisPointsCount()-1)));
+            SetLabelPhysicalOffset(safe_divide<double>(
+                std::abs(GetBottomPoint().y - GetTopPoint().y), (GetAxisPointsCount() - 1)));
             }
         else if (IsHorizontal())
             {
-            SetLabelPhysicalOffset(
-                safe_divide<double>(std::abs(GetRightPoint().x-GetLeftPoint().x),
-                                             (GetAxisPointsCount()-1)));
+            SetLabelPhysicalOffset(safe_divide<double>(
+                std::abs(GetRightPoint().x - GetLeftPoint().x), (GetAxisPointsCount() - 1)));
             }
         }
 
@@ -851,7 +951,9 @@ namespace Wisteria::GraphItems
     wxRect Axis::Draw(wxDC& dc) const
         {
         if (!IsShown())
-            { return wxRect(); }
+            {
+            return wxRect();
+            }
 
         const wxRect axisRect = GetBoundingBox(dc);
 
@@ -861,9 +963,13 @@ namespace Wisteria::GraphItems
             // if adding a terminal arrow to the axis line and the line is thin, then make
             // it a little thicker to match the arrowhead
             if (GetCapStyle() == AxisCapStyle::Arrow && GetAxisLinePen().GetWidth() == 1)
-                { axisPen.SetWidth(ScaleToScreenAndCanvas(2)); }
+                {
+                axisPen.SetWidth(ScaleToScreenAndCanvas(2));
+                }
             else
-                { axisPen.SetWidth(ScaleToScreenAndCanvas(GetAxisLinePen().GetWidth())); }
+                {
+                axisPen.SetWidth(ScaleToScreenAndCanvas(GetAxisLinePen().GetWidth()));
+                }
             }
         if (IsGhosted())
             {
@@ -876,53 +982,51 @@ namespace Wisteria::GraphItems
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
-            for (auto tickIter = GetTickMarks().cbegin();
-                tickIter != GetTickMarks().cend();
-                ++tickIter)
+            for (auto tickIter = GetTickMarks().cbegin(); tickIter != GetTickMarks().cend();
+                 ++tickIter)
                 {
                 if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
-                        tickIter->m_physicalCoordinate);
+                                (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                                tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Outer)
                     {
                     dc.DrawLine(GetTopPoint().x - ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                        tickIter->m_physicalCoordinate,
-                        GetTopPoint().x, tickIter->m_physicalCoordinate);
+                                tickIter->m_physicalCoordinate, GetTopPoint().x,
+                                tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Crossed)
                     {
                     dc.DrawLine(GetTopPoint().x - ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                        tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
-                        tickIter->m_physicalCoordinate);
+                                tickIter->m_physicalCoordinate,
+                                (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                                tickIter->m_physicalCoordinate);
                     }
                 }
             // custom tick marks
             for (auto tickIter = GetCustomTickMarks().cbegin();
-                tickIter != GetCustomTickMarks().cend();
-                ++tickIter)
+                 tickIter != GetCustomTickMarks().cend(); ++tickIter)
                 {
                 if (tickIter->m_displayType == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
-                        tickIter->m_physicalCoordinate);
+                                (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                                tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                        tickIter->m_physicalCoordinate,
-                        GetTopPoint().x, tickIter->m_physicalCoordinate);
+                    dc.DrawLine(GetTopPoint().x - ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                                tickIter->m_physicalCoordinate, GetTopPoint().x,
+                                tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                        tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
-                        tickIter->m_physicalCoordinate);
+                    dc.DrawLine(GetTopPoint().x - ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                                tickIter->m_physicalCoordinate,
+                                (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                                tickIter->m_physicalCoordinate);
                     }
                 }
             }
@@ -931,52 +1035,55 @@ namespace Wisteria::GraphItems
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
-            for (auto tickIter = GetTickMarks().cbegin();
-                tickIter != GetTickMarks().cend();
-                ++tickIter)
+            for (auto tickIter = GetTickMarks().cbegin(); tickIter != GetTickMarks().cend();
+                 ++tickIter)
                 {
                 if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Inner)
                     {
-                    dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                    dc.DrawLine(
+                        GetTopPoint().x, tickIter->m_physicalCoordinate,
+                        ((GetTopPoint().x) - ScaleToScreenAndCanvas(tickIter->m_lineLength)),
                         tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                        tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x), tickIter->m_physicalCoordinate);
+                    dc.DrawLine((GetTopPoint().x) - ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                                tickIter->m_physicalCoordinate, (GetTopPoint().x),
+                                tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                    dc.DrawLine(
+                        (GetTopPoint().x) - ScaleToScreenAndCanvas(tickIter->m_lineLength),
                         tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        ((GetTopPoint().x) + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
                         tickIter->m_physicalCoordinate);
                     }
                 }
             // custom tick marks
             for (auto tickIter = GetCustomTickMarks().cbegin();
-                tickIter != GetCustomTickMarks().cend();
-                ++tickIter)
+                 tickIter != GetCustomTickMarks().cend(); ++tickIter)
                 {
                 if (tickIter->m_displayType == TickMark::DisplayType::Inner)
                     {
-                    dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                    dc.DrawLine(
+                        GetTopPoint().x, tickIter->m_physicalCoordinate,
+                        ((GetTopPoint().x) - ScaleToScreenAndCanvas(tickIter->m_lineLength)),
                         tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                    dc.DrawLine(
+                        GetTopPoint().x, tickIter->m_physicalCoordinate,
+                        ((GetTopPoint().x) + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
                         tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                    dc.DrawLine(
+                        (GetTopPoint().x) - ScaleToScreenAndCanvas(tickIter->m_lineLength),
                         tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        ((GetTopPoint().x) + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
                         tickIter->m_physicalCoordinate);
                     }
                 }
@@ -986,67 +1093,65 @@ namespace Wisteria::GraphItems
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
-            for (auto tickIter = GetTickMarks().cbegin();
-                tickIter != GetTickMarks().cend();
-                ++tickIter)
+            for (auto tickIter = GetTickMarks().cbegin(); tickIter != GetTickMarks().cend();
+                 ++tickIter)
                 {
                 if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)),
-                        tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) -
-                            ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                (GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)),
+                                tickIter->m_physicalCoordinate,
+                                ((GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) -
+                                 ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Outer)
                     {
                     dc.DrawLine(tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)),
-                        tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) +
-                            ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                (GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)),
+                                tickIter->m_physicalCoordinate,
+                                ((GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) +
+                                 ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Crossed)
                     {
                     dc.DrawLine(tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) -
-                            ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                        tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) +
-                            ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                (GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) -
+                                    ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                                tickIter->m_physicalCoordinate,
+                                ((GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) +
+                                 ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                     }
                 }
             // custom tick marks
             for (auto tickIter = GetCustomTickMarks().cbegin();
-                tickIter != GetCustomTickMarks().cend();
-                ++tickIter)
+                 tickIter != GetCustomTickMarks().cend(); ++tickIter)
                 {
                 if (tickIter->m_physicalCoordinate != -1)
                     {
                     if (tickIter->m_displayType == TickMark::DisplayType::Inner)
                         {
                         dc.DrawLine(tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)),
-                            tickIter->m_physicalCoordinate,
-                            ((GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) -
-                                ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                    (GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)),
+                                    tickIter->m_physicalCoordinate,
+                                    ((GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) -
+                                     ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                         }
                     else if (tickIter->m_displayType == TickMark::DisplayType::Outer)
                         {
                         dc.DrawLine(tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)),
-                            tickIter->m_physicalCoordinate,
-                            ((GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) +
-                                ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                    (GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)),
+                                    tickIter->m_physicalCoordinate,
+                                    ((GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) +
+                                     ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                         }
                     else if (tickIter->m_displayType == TickMark::DisplayType::Crossed)
                         {
                         dc.DrawLine(tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) -
-                                ScaleToScreenAndCanvas(tickIter->m_lineLength),
-                            tickIter->m_physicalCoordinate,
-                            ((GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)) +
-                                ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                    (GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) -
+                                        ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                                    tickIter->m_physicalCoordinate,
+                                    ((GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y)) +
+                                     ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                         }
                     }
                 }
@@ -1056,59 +1161,56 @@ namespace Wisteria::GraphItems
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
-            for (auto tickIter = GetTickMarks().cbegin();
-                tickIter != GetTickMarks().cend();
-                ++tickIter)
+            for (auto tickIter = GetTickMarks().cbegin(); tickIter != GetTickMarks().cend();
+                 ++tickIter)
                 {
                 if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Inner)
                     {
-                    dc.DrawLine(tickIter->m_physicalCoordinate,
-                        GetTopPoint().y,
-                        tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y+ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                    dc.DrawLine(tickIter->m_physicalCoordinate, GetTopPoint().y,
+                                tickIter->m_physicalCoordinate,
+                                (GetTopPoint().y + ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine(tickIter->m_physicalCoordinate,
-                        GetTopPoint().y,
-                        tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y-ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                    dc.DrawLine(tickIter->m_physicalCoordinate, GetTopPoint().y,
+                                tickIter->m_physicalCoordinate,
+                                (GetTopPoint().y - ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Crossed)
                     {
                     dc.DrawLine(tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
-                        tickIter->m_physicalCoordinate,
-                        (GetTopPoint().y-ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                                (GetTopPoint().y + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                                tickIter->m_physicalCoordinate,
+                                (GetTopPoint().y - ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                     }
                 }
             // custom tick marks
             for (auto tickIter = GetCustomTickMarks().cbegin();
-                tickIter != GetCustomTickMarks().cend();
-                ++tickIter)
+                 tickIter != GetCustomTickMarks().cend(); ++tickIter)
                 {
                 if (tickIter->m_physicalCoordinate != -1)
                     {
                     if (tickIter->m_displayType == TickMark::DisplayType::Inner)
                         {
-                        dc.DrawLine(tickIter->m_physicalCoordinate,
-                            GetTopPoint().y,
+                        dc.DrawLine(
+                            tickIter->m_physicalCoordinate, GetTopPoint().y,
                             tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y+ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                            (GetTopPoint().y + ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                         }
                     else if (tickIter->m_displayType == TickMark::DisplayType::Outer)
                         {
-                        dc.DrawLine(tickIter->m_physicalCoordinate,
-                            GetTopPoint().y,
+                        dc.DrawLine(
+                            tickIter->m_physicalCoordinate, GetTopPoint().y,
                             tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y-ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                            (GetTopPoint().y - ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                         }
                     else if (tickIter->m_displayType == TickMark::DisplayType::Crossed)
                         {
-                        dc.DrawLine(tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        dc.DrawLine(
                             tickIter->m_physicalCoordinate,
-                            (GetTopPoint().y-ScaleToScreenAndCanvas(tickIter->m_lineLength)));
+                            (GetTopPoint().y + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                            tickIter->m_physicalCoordinate,
+                            (GetTopPoint().y - ScaleToScreenAndCanvas(tickIter->m_lineLength)));
                         }
                     }
                 }
@@ -1120,19 +1222,24 @@ namespace Wisteria::GraphItems
             wxDCPenChanger dcPenCh(dc, axisPen);
             if (GetCapStyle() == AxisCapStyle::Arrow)
                 {
-                const auto arrowHeadSize = wxSize(ScaleToScreenAndCanvas(10*GetAxisLinePen().GetWidth()),
-                                                  ScaleToScreenAndCanvas(10*GetAxisLinePen().GetWidth()));
+                const auto arrowHeadSize =
+                    wxSize(ScaleToScreenAndCanvas(10 * GetAxisLinePen().GetWidth()),
+                           ScaleToScreenAndCanvas(10 * GetAxisLinePen().GetWidth()));
                 if (IsVertical())
                     {
-                    GraphItems::Polygon::DrawArrow(dc, GetBottomPoint(), GetTopPoint(), arrowHeadSize);
+                    GraphItems::Polygon::DrawArrow(dc, GetBottomPoint(), GetTopPoint(),
+                                                   arrowHeadSize);
                     }
                 else
                     {
-                    GraphItems::Polygon::DrawArrow(dc, GetLeftPoint(), GetRightPoint(), arrowHeadSize);
+                    GraphItems::Polygon::DrawArrow(dc, GetLeftPoint(), GetRightPoint(),
+                                                   arrowHeadSize);
                     }
                 }
             else
-                { dc.DrawLine(GetTopPoint(), GetBottomPoint()); }
+                {
+                dc.DrawLine(GetTopPoint(), GetBottomPoint());
+                }
             }
 
         // draw the header
@@ -1156,8 +1263,8 @@ namespace Wisteria::GraphItems
                 else if (header.GetRelativeAlignment() == RelativeAlignment::Centered)
                     {
                     header.SetAnchoring(Anchoring::Center);
-                    header.SetAnchorPoint(wxPoint(GetTopPoint().x,
-                                    axisRect.GetTop() + ((headerSize.GetHeight()/2))));
+                    header.SetAnchorPoint(wxPoint(
+                        GetTopPoint().x, axisRect.GetTop() + ((headerSize.GetHeight() / 2))));
                     }
                 }
             else if (IsHorizontal())
@@ -1175,8 +1282,8 @@ namespace Wisteria::GraphItems
                 else if (header.GetRelativeAlignment() == RelativeAlignment::Centered)
                     {
                     header.SetAnchoring(Anchoring::Center);
-                    header.SetAnchorPoint(wxPoint(GetTopPoint().x,
-                                          axisRect.GetTopRight().y+(axisRect.GetHeight()/2)));
+                    header.SetAnchorPoint(wxPoint(GetTopPoint().x, axisRect.GetTopRight().y +
+                                                                       (axisRect.GetHeight() / 2)));
                     }
                 }
             header.Draw(dc);
@@ -1203,8 +1310,8 @@ namespace Wisteria::GraphItems
                 else if (footer.GetRelativeAlignment() == RelativeAlignment::Centered)
                     {
                     footer.SetAnchoring(Anchoring::Center);
-                    footer.SetAnchorPoint(wxPoint(GetBottomPoint().x,
-                                    axisRect.GetBottom() - (footerSize.GetHeight()/2)));
+                    footer.SetAnchorPoint(wxPoint(
+                        GetBottomPoint().x, axisRect.GetBottom() - (footerSize.GetHeight() / 2)));
                     }
                 }
             else if (IsHorizontal())
@@ -1223,8 +1330,8 @@ namespace Wisteria::GraphItems
                     {
                     footer.SetAnchoring(Anchoring::Center);
                     footer.SetAnchorPoint(
-                        wxPoint(axisRect.GetX() +(footer.GetBoundingBox(dc).GetWidth()/2),
-                                axisRect.GetTopRight().y + (axisRect.GetHeight()/2)));
+                        wxPoint(axisRect.GetX() + (footer.GetBoundingBox(dc).GetWidth() / 2),
+                                axisRect.GetTopRight().y + (axisRect.GetHeight() / 2)));
                     }
                 }
             footer.Draw(dc);
@@ -1267,8 +1374,8 @@ namespace Wisteria::GraphItems
                     {
                     titleLabel.SetAnchoring(Anchoring::Center);
                     auto middlePoint = axisRect.GetTopLeft();
-                    middlePoint.y += axisRect.GetHeight()/2;
-                    middlePoint.x += titleLabel.GetBoundingBox(dc).GetWidth()/2;
+                    middlePoint.y += axisRect.GetHeight() / 2;
+                    middlePoint.x += titleLabel.GetBoundingBox(dc).GetWidth() / 2;
                     titleLabel.SetAnchorPoint(middlePoint);
                     }
                 else if (titleLabel.GetRelativeAlignment() == RelativeAlignment::FlushTop)
@@ -1290,8 +1397,8 @@ namespace Wisteria::GraphItems
                     {
                     titleLabel.SetAnchoring(Anchoring::Center);
                     auto middlePoint = axisRect.GetTopRight();
-                    middlePoint.y += axisRect.GetHeight()/2;
-                    middlePoint.x -= titleLabel.GetBoundingBox(dc).GetWidth()/2;
+                    middlePoint.y += axisRect.GetHeight() / 2;
+                    middlePoint.x -= titleLabel.GetBoundingBox(dc).GetWidth() / 2;
                     titleLabel.SetAnchorPoint(middlePoint);
                     }
                 else if (titleLabel.GetRelativeAlignment() == RelativeAlignment::FlushTop)
@@ -1311,8 +1418,8 @@ namespace Wisteria::GraphItems
                     {
                     titleLabel.SetAnchoring(Anchoring::Center);
                     auto middlePoint = axisRect.GetBottomLeft();
-                    middlePoint.x += axisRect.GetWidth()/2;
-                    middlePoint.y -= titleLabel.GetBoundingBox(dc).GetHeight()/2;
+                    middlePoint.x += axisRect.GetWidth() / 2;
+                    middlePoint.y -= titleLabel.GetBoundingBox(dc).GetHeight() / 2;
                     titleLabel.SetAnchorPoint(middlePoint);
                     }
                 else if (titleLabel.GetRelativeAlignment() == RelativeAlignment::FlushLeft)
@@ -1332,8 +1439,8 @@ namespace Wisteria::GraphItems
                     {
                     titleLabel.SetAnchoring(Anchoring::Center);
                     auto middlePoint = axisRect.GetTopLeft();
-                    middlePoint.x += axisRect.GetWidth()/2;
-                    middlePoint.y += titleLabel.GetBoundingBox(dc).GetHeight()/2;
+                    middlePoint.x += axisRect.GetWidth() / 2;
+                    middlePoint.y += titleLabel.GetBoundingBox(dc).GetHeight() / 2;
                     titleLabel.SetAnchorPoint(middlePoint);
                     }
                 else if (titleLabel.GetRelativeAlignment() == RelativeAlignment::FlushLeft)
@@ -1351,7 +1458,9 @@ namespace Wisteria::GraphItems
             {
             wxPen scaledPen = bracket.GetLinePen();
             if (scaledPen.IsOk())
-                { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
+                {
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                }
             wxDCPenChanger penCh(dc, scaledPen);
 
             // if not showing labels, don't include the space between the lines and the
@@ -1383,27 +1492,32 @@ namespace Wisteria::GraphItems
                         {
                         if (bracket.IsSingleLine())
                             {
-                            bracket.DrawConnectionLine(dc,
-                                // bracket needs to know what the scaling is, so this is how we do it
-                                ScaleToScreenAndCanvas(1),
-                                wxPoint(connectionX, position1),
+                            bracket.DrawConnectionLine(
+                                dc,
+                                // bracket needs to know what the scaling is,
+                                // so this is how we do it
+                                ScaleToScreenAndCanvas(1), wxPoint(connectionX, position1),
                                 wxPoint(connectionX -
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position1));
                             }
                         else if (bracket.IsStraightLines())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(connectionX, position1),
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(connectionX, position1),
                                 wxPoint(connectionX -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
-                            dc.DrawLine(connectionX -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
-                                        connectionX -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(connectionX, position3),
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position1));
+                            dc.DrawLine(
+                                connectionX - ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                position1,
+                                connectionX - ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                position3);
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(connectionX, position3),
                                 wxPoint(connectionX -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position3));
                             }
                         else
                             {
@@ -1414,9 +1528,10 @@ namespace Wisteria::GraphItems
                                         position1),
                                 wxPoint(connectionX, position3));
 
-                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                Scaling(GetScaling()).
-                                DPIScaling(GetDPIScaleFactor()));
+                            ShapeRenderer sh(GraphItemInfo()
+                                                 .Pen(bracket.GetLinePen())
+                                                 .Scaling(GetScaling())
+                                                 .DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBrace(styleAreaRect, dc, Side::Left);
                             }
                         }
@@ -1432,14 +1547,15 @@ namespace Wisteria::GraphItems
                         {
                         bracketLabel.SetAnchorPoint(
                             wxPoint(axisRect.GetLeft(),
-                            position2-safe_divide(bracketLabelSize.GetHeight(), 2)) );
+                                    position2 - safe_divide(bracketLabelSize.GetHeight(), 2)));
                         bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         }
                     else // AnchorWithLine
                         {
-                        bracketLabel.SetAnchorPoint(
-                            wxPoint(connectionX -
-                            (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + labelWidth/2), position2));
+                        bracketLabel.SetAnchorPoint(wxPoint(
+                            connectionX -
+                                (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + labelWidth / 2),
+                            position2));
                         }
                     bracketLabel.Draw(dc);
                     if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
@@ -1448,41 +1564,47 @@ namespace Wisteria::GraphItems
                             {
                             if (bracket.IsSingleLine())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position1));
                                 }
                             else if (bracket.IsStraightLines())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
-                                dc.DrawLine(
-                                    connectionXDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
-                                    connectionXDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position1));
+                                dc.DrawLine(connectionXDoubleSided +
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position1,
+                                            connectionXDoubleSided +
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position3);
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(connectionXDoubleSided, position3),
-                                    wxPoint(
-                                        connectionXDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                    wxPoint(connectionXDoubleSided +
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position3));
                                 }
                             else
                                 {
                                 // the entire rect where the curly braces are drawn
                                 const wxRect styleAreaRect(
-                                    wxPoint(connectionXDoubleSided,
-                                            position1),
+                                    wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided +
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
 
-                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                    Scaling(GetScaling()).
-                                    DPIScaling(GetDPIScaleFactor()));
+                                ShapeRenderer sh(GraphItemInfo()
+                                                     .Pen(bracket.GetLinePen())
+                                                     .Scaling(GetScaling())
+                                                     .DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBrace(styleAreaRect, dc, Side::Right);
                                 }
                             }
@@ -1491,15 +1613,15 @@ namespace Wisteria::GraphItems
                             {
                             bracketLabel.SetAnchorPoint(
                                 wxPoint(axisRect.GetRight(),
-                                position2-safe_divide(bracketLabelSize.GetHeight(), 2)) );
+                                        position2 - safe_divide(bracketLabelSize.GetHeight(), 2)));
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                             }
                         else // AnchorWithLine
                             {
                             bracketLabel.SetAnchorPoint(
-                                wxPoint(connectionXDoubleSided +
-                                    (labelWidth/2) + ScaleToScreenAndCanvas(bracket.GetLineSpacing()),
-                                position2));
+                                wxPoint(connectionXDoubleSided + (labelWidth / 2) +
+                                            ScaleToScreenAndCanvas(bracket.GetLineSpacing()),
+                                        position2));
                             }
                         bracketLabel.Draw(dc);
                         }
@@ -1507,15 +1629,17 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::RightYAxis)
                 {
-                auto labelWidth = !IsShowingLabels() ?
-                    0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
-                labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
+                auto labelWidth =
+                    !IsShowingLabels() ? 0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
+                labelWidth = IsStackingLabels() ? labelWidth * 2 : labelWidth;
                 // cppcheck-suppress duplicateAssignExpression
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
-                connectionX += (labelWidth + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
-                connectionXDoubleSided -= (labelWidth + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionX +=
+                    (labelWidth + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionXDoubleSided -=
+                    (labelWidth + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
 
                 wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1526,26 +1650,29 @@ namespace Wisteria::GraphItems
                         {
                         if (bracket.IsSingleLine())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(connectionX, position1),
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(connectionX, position1),
                                 wxPoint(connectionX +
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position1));
                             }
                         else if (bracket.IsStraightLines())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(connectionX, position1),
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(connectionX, position1),
                                 wxPoint(connectionX +
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position1));
                             dc.DrawLine(
-                                connectionX +
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
-                                connectionX +
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(connectionX, position3),
+                                connectionX + ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                position1,
+                                connectionX + ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                position3);
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(connectionX, position3),
                                 wxPoint(connectionX +
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position3));
                             }
                         else
                             {
@@ -1556,9 +1683,10 @@ namespace Wisteria::GraphItems
                                         position1),
                                 wxPoint(connectionX, position3));
 
-                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                Scaling(GetScaling()).
-                                DPIScaling(GetDPIScaleFactor()));
+                            ShapeRenderer sh(GraphItemInfo()
+                                                 .Pen(bracket.GetLinePen())
+                                                 .Scaling(GetScaling())
+                                                 .DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBrace(styleAreaRect, dc, Side::Right);
                             }
                         }
@@ -1572,15 +1700,17 @@ namespace Wisteria::GraphItems
                     if (bracket.GetPerpendicularLabelConnectionLinesAlignment() ==
                         AxisLabelAlignment::AlignWithBoundary)
                         {
-                        bracketLabel.SetAnchorPoint(wxPoint(axisRect.GetRight(),
-                            position2-safe_divide(bracketLabelSize.GetHeight(),2)) );
+                        bracketLabel.SetAnchorPoint(
+                            wxPoint(axisRect.GetRight(),
+                                    position2 - safe_divide(bracketLabelSize.GetHeight(), 2)));
                         bracketLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                         }
                     else // AnchorWithLine
                         {
                         bracketLabel.SetAnchorPoint(
-                            wxPoint(connectionX+(labelWidth/2) +
-                                ScaleToScreenAndCanvas(bracket.GetLineSpacing()), position2));
+                            wxPoint(connectionX + (labelWidth / 2) +
+                                        ScaleToScreenAndCanvas(bracket.GetLineSpacing()),
+                                    position2));
                         }
                     bracketLabel.Draw(dc);
                     if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
@@ -1589,40 +1719,47 @@ namespace Wisteria::GraphItems
                             {
                             if (bracket.IsSingleLine())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position1));
                                 }
                             else if (bracket.IsStraightLines())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
-                                dc.DrawLine(
-                                    connectionXDoubleSided -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
-                                    connectionXDoubleSided -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position1));
+                                dc.DrawLine(connectionXDoubleSided -
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position1,
+                                            connectionXDoubleSided -
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position3);
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(connectionXDoubleSided, position3),
                                     wxPoint(connectionXDoubleSided -
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position3));
                                 }
                             else
                                 {
                                 // the entire rect where the curly braces are drawn
                                 const wxRect styleAreaRect(
-                                    wxPoint(connectionXDoubleSided,
-                                            position1),
+                                    wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided -
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
 
-                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                    Scaling(GetScaling()).
-                                    DPIScaling(GetDPIScaleFactor()));
+                                ShapeRenderer sh(GraphItemInfo()
+                                                     .Pen(bracket.GetLinePen())
+                                                     .Scaling(GetScaling())
+                                                     .DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBrace(styleAreaRect, dc, Side::Left);
                                 }
                             }
@@ -1631,15 +1768,16 @@ namespace Wisteria::GraphItems
                             {
                             bracketLabel.SetAnchorPoint(
                                 wxPoint(axisRect.GetLeft(),
-                                        position2-safe_divide(bracketLabelSize.GetHeight(),2)) );
+                                        position2 - safe_divide(bracketLabelSize.GetHeight(), 2)));
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             }
                         else // AnchorWithLine
                             {
                             bracketLabel.SetAnchorPoint(
                                 wxPoint(connectionXDoubleSided -
-                                    (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + labelWidth/2),
-                                position2));
+                                            (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) +
+                                             labelWidth / 2),
+                                        position2));
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
                             }
                         bracketLabel.Draw(dc);
@@ -1648,15 +1786,17 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::BottomXAxis)
                 {
-                auto labelHeight = !IsShowingLabels() ?
-                    0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
-                labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
+                auto labelHeight =
+                    !IsShowingLabels() ? 0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
+                labelHeight = IsStackingLabels() ? labelHeight * 2 : labelHeight;
                 // cppcheck-suppress duplicateAssignExpression
                 long connectionY = GetTopPoint().y, connectionYDoubleSided = GetTopPoint().y;
-                connectionY += (labelHeight + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
-                connectionYDoubleSided -= (labelHeight + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionY +=
+                    (labelHeight + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionYDoubleSided -=
+                    (labelHeight + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
 
                 wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1667,38 +1807,41 @@ namespace Wisteria::GraphItems
                         {
                         if (bracket.IsSingleLine())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(position1, connectionY),
-                                wxPoint(position1,
-                                        connectionY +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(position1, connectionY),
+                                wxPoint(position1, connectionY + ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())));
                             }
                         else if (bracket.IsStraightLines())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(position1, connectionY +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1),
+                                wxPoint(position1, connectionY + ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())),
                                 wxPoint(position1, connectionY));
-                            dc.DrawLine(position1, connectionY +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
-                                        position3, connectionY +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(position3, connectionY +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                            dc.DrawLine(
+                                position1,
+                                connectionY + ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                position3,
+                                connectionY + ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1),
+                                wxPoint(position3, connectionY + ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())),
                                 wxPoint(position3, connectionY));
                             }
                         else
                             {
                             // the entire rect where the curly braces are drawn
                             const wxRect styleAreaRect(
-                                wxPoint(position1,connectionY),
-                                wxPoint(position3,
-                                        connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                wxPoint(position1, connectionY),
+                                wxPoint(position3, connectionY + ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())));
 
-                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                Scaling(GetScaling()).
-                                DPIScaling(GetDPIScaleFactor()));
+                            ShapeRenderer sh(GraphItemInfo()
+                                                 .Pen(bracket.GetLinePen())
+                                                 .Scaling(GetScaling())
+                                                 .DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBrace(styleAreaRect, dc, Side::Bottom);
                             }
                         }
@@ -1713,15 +1856,16 @@ namespace Wisteria::GraphItems
                         AxisLabelAlignment::AlignWithBoundary)
                         {
                         bracketLabel.SetAnchorPoint(
-                            wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(),2),
-                                    axisRect.GetBottom()) );
+                            wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(), 2),
+                                    axisRect.GetBottom()));
                         bracketLabel.SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
                         }
                     else // AnchorWithLine
                         {
                         bracketLabel.SetAnchorPoint(
-                            wxPoint(position2, connectionY +
-                                    ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + (labelHeight/2)));
+                            wxPoint(position2,
+                                    connectionY + ScaleToScreenAndCanvas(bracket.GetLineSpacing()) +
+                                        (labelHeight / 2)));
                         }
                     bracketLabel.Draw(dc);
 
@@ -1731,25 +1875,32 @@ namespace Wisteria::GraphItems
                             {
                             if (bracket.IsSingleLine())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position1, connectionYDoubleSided),
-                                    wxPoint(position1,
-                                            connectionYDoubleSided -
-                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                    wxPoint(position1, connectionYDoubleSided -
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())));
                                 }
                             else if (bracket.IsStraightLines())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position1, connectionYDoubleSided),
                                     wxPoint(position1, connectionYDoubleSided -
-                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                                dc.DrawLine(position1, connectionYDoubleSided -
-                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())));
+                                dc.DrawLine(position1,
+                                            connectionYDoubleSided -
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3,
-                                            connectionYDoubleSided - bracket.GetTickmarkLength() * GetScaling());
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                            connectionYDoubleSided -
+                                                bracket.GetTickmarkLength() * GetScaling());
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position3, connectionYDoubleSided -
-                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())),
                                     wxPoint(position3, connectionYDoubleSided));
                                 }
                             else
@@ -1757,13 +1908,14 @@ namespace Wisteria::GraphItems
                                 // the entire rect where the curly braces are drawn
                                 const wxRect styleAreaRect(
                                     wxPoint(position1, connectionYDoubleSided),
-                                    wxPoint(position3,
-                                            connectionYDoubleSided -
-                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                    wxPoint(position3, connectionYDoubleSided -
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())));
 
-                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                    Scaling(GetScaling()).
-                                    DPIScaling(GetDPIScaleFactor()));
+                                ShapeRenderer sh(GraphItemInfo()
+                                                     .Pen(bracket.GetLinePen())
+                                                     .Scaling(GetScaling())
+                                                     .DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBrace(styleAreaRect, dc, Side::Top);
                                 }
                             }
@@ -1771,15 +1923,16 @@ namespace Wisteria::GraphItems
                             AxisLabelAlignment::AlignWithBoundary)
                             {
                             bracketLabel.SetAnchorPoint(
-                                wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(),2),
-                                        axisRect.GetTop()) );
+                                wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(), 2),
+                                        axisRect.GetTop()));
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                             }
                         else // AnchorWithLine
                             {
-                            bracketLabel.SetAnchorPoint(
-                                wxPoint(position2, connectionYDoubleSided -
-                                        (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + (labelHeight/2))));
+                            bracketLabel.SetAnchorPoint(wxPoint(
+                                position2, connectionYDoubleSided -
+                                               (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) +
+                                                (labelHeight / 2))));
                             }
                         bracketLabel.Draw(dc);
                         }
@@ -1787,15 +1940,17 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::TopXAxis)
                 {
-                auto labelHeight = !IsShowingLabels() ?
-                    0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
-                labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
+                auto labelHeight =
+                    !IsShowingLabels() ? 0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
+                labelHeight = IsStackingLabels() ? labelHeight * 2 : labelHeight;
                 auto connectionY = GetTopPoint().y;
                 auto connectionYDoubleSided = GetTopPoint().y;
-                connectionY -= (labelHeight + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
-                connectionYDoubleSided += (labelHeight + CalcTickMarkOuterWidth() +
-                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionY -=
+                    (labelHeight + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
+                connectionYDoubleSided +=
+                    (labelHeight + CalcTickMarkOuterWidth() +
+                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) * spaceAreasNeeded));
 
                 wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1806,35 +1961,39 @@ namespace Wisteria::GraphItems
                         {
                         if (bracket.IsSingleLine())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(position1, connectionY),
-                                wxPoint(position1,
-                                        connectionY - ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(position1, connectionY),
+                                wxPoint(position1, connectionY - ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())));
                             }
                         else if (bracket.IsStraightLines())
                             {
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(position1, connectionY),
-                                wxPoint(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                            dc.DrawLine(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
-                                        position3, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
-                            bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                wxPoint(position3, connectionY),
-                                wxPoint(position3, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(position1, connectionY),
+                                wxPoint(position1, connectionY - ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())));
+                            dc.DrawLine(
+                                position1,
+                                connectionY - ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                position3,
+                                connectionY - ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
+                            bracket.DrawConnectionLine(
+                                dc, ScaleToScreenAndCanvas(1), wxPoint(position3, connectionY),
+                                wxPoint(position3, connectionY - ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())));
                             }
                         else
                             {
                             // the entire rect where the curly braces are drawn
                             const wxRect styleAreaRect(
-                                wxPoint(position1,
-                                        connectionY -
-                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
-                                wxPoint(position3,
-                                        connectionY));
+                                wxPoint(position1, connectionY - ScaleToScreenAndCanvas(
+                                                                     bracket.GetTickmarkLength())),
+                                wxPoint(position3, connectionY));
 
-                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                Scaling(GetScaling()).
-                                DPIScaling(GetDPIScaleFactor()));
+                            ShapeRenderer sh(GraphItemInfo()
+                                                 .Pen(bracket.GetLinePen())
+                                                 .Scaling(GetScaling())
+                                                 .DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBrace(styleAreaRect, dc, Side::Top);
                             }
                         }
@@ -1849,15 +2008,16 @@ namespace Wisteria::GraphItems
                         AxisLabelAlignment::AlignWithBoundary)
                         {
                         bracketLabel.SetAnchorPoint(
-                            wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(),2), axisRect.GetTop()) );
+                            wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(), 2),
+                                    axisRect.GetTop()));
                         bracketLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                         }
                     else // AnchorWithLine
                         {
-                        bracketLabel.SetAnchorPoint(
-                            wxPoint(position2,
-                                connectionY -
-                                (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + (labelHeight/2))));
+                        bracketLabel.SetAnchorPoint(wxPoint(
+                            position2,
+                            connectionY - (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) +
+                                           (labelHeight / 2))));
                         }
                     bracketLabel.Draw(dc);
 
@@ -1867,24 +2027,33 @@ namespace Wisteria::GraphItems
                             {
                             if (bracket.IsSingleLine())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position1, connectionYDoubleSided),
                                     wxPoint(position1, connectionYDoubleSided +
-                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())));
                                 }
                             else if (bracket.IsStraightLines())
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position1, connectionYDoubleSided),
                                     wxPoint(position1, connectionYDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                                dc.DrawLine(position1, connectionYDoubleSided +
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())));
+                                dc.DrawLine(
+                                    position1,
+                                    connectionYDoubleSided +
                                         ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
-                                        position3, connectionYDoubleSided +
+                                    position3,
+                                    connectionYDoubleSided +
                                         ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                bracket.DrawConnectionLine(
+                                    dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position3, connectionYDoubleSided +
-                                        ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())),
                                     wxPoint(position3, connectionYDoubleSided));
                                 }
                             else
@@ -1892,13 +2061,14 @@ namespace Wisteria::GraphItems
                                 // the entire rect where the curly braces are drawn
                                 const wxRect styleAreaRect(
                                     wxPoint(position1, connectionYDoubleSided),
-                                    wxPoint(position3,
-                                            connectionYDoubleSided +
-                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                    wxPoint(position3, connectionYDoubleSided +
+                                                           ScaleToScreenAndCanvas(
+                                                               bracket.GetTickmarkLength())));
 
-                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
-                                    Scaling(GetScaling()).
-                                    DPIScaling(GetDPIScaleFactor()));
+                                ShapeRenderer sh(GraphItemInfo()
+                                                     .Pen(bracket.GetLinePen())
+                                                     .Scaling(GetScaling())
+                                                     .DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBrace(styleAreaRect, dc, Side::Bottom);
                                 }
                             }
@@ -1906,16 +2076,16 @@ namespace Wisteria::GraphItems
                             AxisLabelAlignment::AlignWithBoundary)
                             {
                             bracketLabel.SetAnchorPoint(
-                                wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(),2),
-                                        axisRect.GetBottom()) );
+                                wxPoint(position2 - safe_divide(bracketLabelSize.GetWidth(), 2),
+                                        axisRect.GetBottom()));
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             }
                         else // AnchorWithLine
                             {
-                            bracketLabel.SetAnchorPoint(
-                                wxPoint(position2, connectionYDoubleSided +
-                                    ScaleToScreenAndCanvas(bracket.GetLineSpacing()) +
-                                    (labelHeight/2)));
+                            bracketLabel.SetAnchorPoint(wxPoint(
+                                position2, connectionYDoubleSided +
+                                               ScaleToScreenAndCanvas(bracket.GetLineSpacing()) +
+                                               (labelHeight / 2)));
                             }
                         bracketLabel.Draw(dc);
                         }
@@ -1927,19 +2097,20 @@ namespace Wisteria::GraphItems
         if (IsVertical() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
             {
             bool drawingInnerLabel{ true };
-            for (auto axisPtIter = GetAxisPoints().cbegin();
-                 axisPtIter != GetAxisPoints().cend();
+            for (auto axisPtIter = GetAxisPoints().cbegin(); axisPtIter != GetAxisPoints().cend();
                  ++axisPtIter)
                 {
                 if (IsPointDisplayingLabel(*axisPtIter))
                     {
                     Label axisLabel(GetDisplayableValue(*axisPtIter));
                     axisLabel.GetPen() = wxNullPen; // don't draw box around axis labels
-                    if constexpr(Settings::IsDebugFlagEnabled(
-                        DebugSettings::DrawBoundingBoxesOnSelection))
+                    if constexpr (Settings::IsDebugFlagEnabled(
+                                      DebugSettings::DrawBoundingBoxesOnSelection))
                         {
                         if (IsSelected())
-                            { axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT); }
+                            {
+                            axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT);
+                            }
                         }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
                     axisLabel.SetScaling(GetAxisLabelScaling());
@@ -1947,17 +2118,21 @@ namespace Wisteria::GraphItems
                     axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
                     axisLabel.GetFont() = GetFont();
                     axisLabel.SetTextAlignment(GetTextAlignment());
-                    axisLabel.SetPadding(GetTopPadding(), GetRightPadding(),
-                                         GetBottomPadding(), GetLeftPadding());
+                    axisLabel.SetPadding(GetTopPadding(), GetRightPadding(), GetBottomPadding(),
+                                         GetLeftPadding());
                     // outer labels hanging entirely off the plot should just be drawn
                     // with the standard padding
                     if (!(axisPtIter == GetAxisPoints().cbegin() &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
-                        !(axisPtIter == GetAxisPoints().cend()-1 &&
+                        !(axisPtIter == GetAxisPoints().cend() - 1 &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                        {
+                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+                        }
                     else
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                        {
+                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
+                        }
 
                     if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
                         {
@@ -1966,32 +2141,36 @@ namespace Wisteria::GraphItems
                         const wxCoord axisTextHeight = labelSize.GetHeight();
                         wxCoord x{ 0 }, y{ 0 };
                         // y will be the same for left and right Y axes
-                        y = (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::AlignWithBoundary &&
+                        y = (GetPerpendicularLabelAxisAlignment() ==
+                                 AxisLabelAlignment::AlignWithBoundary &&
                              !IsStackingLabels()) ?
                                 static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate()) -
-                                    safe_divide(axisTextHeight,2) :
+                                    safe_divide(axisTextHeight, 2) :
                                 static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
 
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
                             if (GetPerpendicularLabelAxisAlignment() ==
-                                AxisLabelAlignment::AlignWithBoundary && !IsStackingLabels())
+                                    AxisLabelAlignment::AlignWithBoundary &&
+                                !IsStackingLabels())
                                 {
                                 x = axisRect.GetLeft();
                                 if (GetBrackets().size())
                                     {
                                     x += CalcBracketsSpaceRequired(dc) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                     }
                                 if (titleLabel.IsShown() && titleLabel.GetText().length())
-                                    { x += titleLabel.GetBoundingBox(dc).GetWidth(); }
+                                    {
+                                    x += titleLabel.GetBoundingBox(dc).GetWidth();
+                                    }
                                 axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
                             else if (GetPerpendicularLabelAxisAlignment() ==
-                                AxisLabelAlignment::CenterOnAxisLine)
+                                     AxisLabelAlignment::CenterOnAxisLine)
                                 {
-                                x = axisRect.GetLeft()+(axisRect.GetWidth()/2);
+                                x = axisRect.GetLeft() + (axisRect.GetWidth() / 2);
                                 axisLabel.SetAnchoring(Anchoring::Center);
                                 axisLabel.SetTextAlignment(TextAlignment::Centered);
                                 }
@@ -1999,26 +2178,31 @@ namespace Wisteria::GraphItems
                                 {
                                 x = GetTopPoint().x -
                                     (safe_divide(axisTextWidth, 2) +
-                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
                                     CalcTickMarkOuterWidth();
                                 if (IsStackingLabels())
-                                    { x -= drawingInnerLabel ? 0 : axisTextWidth; }
+                                    {
+                                    x -= drawingInnerLabel ? 0 : axisTextWidth;
+                                    }
                                 axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                 }
                             axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels() &&
                                 // doesn't make sense to draw labels on top of each other
-                                GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine)
+                                GetPerpendicularLabelAxisAlignment() !=
+                                    AxisLabelAlignment::CenterOnAxisLine)
                                 {
                                 if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary && !IsStackingLabels())
+                                        AxisLabelAlignment::AlignWithBoundary &&
+                                    !IsStackingLabels())
                                     {
                                     x = axisRect.GetRight();
                                     if (GetBrackets().size())
                                         {
                                         x -= CalcBracketsSpaceRequired(dc) +
-                                            ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                             ScaleToScreenAndCanvas(
+                                                 GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
@@ -2029,7 +2213,9 @@ namespace Wisteria::GraphItems
                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                         CalcTickMarkInnerWidth();
                                     if (IsStackingLabels())
-                                        { x += drawingInnerLabel ? 0 : axisTextWidth; }
+                                        {
+                                        x += drawingInnerLabel ? 0 : axisTextWidth;
+                                        }
                                     axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                     }
                                 axisLabel.SetAnchorPoint(wxPoint(x, y));
@@ -2039,61 +2225,71 @@ namespace Wisteria::GraphItems
                         else if (GetAxisType() == AxisType::RightYAxis)
                             {
                             if (GetPerpendicularLabelAxisAlignment() ==
-                                AxisLabelAlignment::AlignWithBoundary && !IsStackingLabels())
+                                    AxisLabelAlignment::AlignWithBoundary &&
+                                !IsStackingLabels())
                                 {
                                 x = axisRect.GetRight();
                                 if (GetBrackets().size())
                                     {
                                     x -= CalcBracketsSpaceRequired(dc) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                                     }
                                 if (titleLabel.IsShown() && titleLabel.GetText().length())
-                                    { x -= titleLabel.GetBoundingBox(dc).GetWidth(); }
+                                    {
+                                    x -= titleLabel.GetBoundingBox(dc).GetWidth();
+                                    }
                                 axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                                 axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                 }
                             else if (GetPerpendicularLabelAxisAlignment() ==
-                                AxisLabelAlignment::CenterOnAxisLine)
+                                     AxisLabelAlignment::CenterOnAxisLine)
                                 {
-                                x = axisRect.GetLeft() + (axisRect.GetWidth()/2);
+                                x = axisRect.GetLeft() + (axisRect.GetWidth() / 2);
                                 axisLabel.SetAnchoring(Wisteria::Anchoring::Center);
                                 axisLabel.SetTextAlignment(TextAlignment::Centered);
                                 }
                             else // AnchorWithLine
                                 {
-                                x = GetTopPoint().x + (GetBottomPoint().x-GetTopPoint().x) +
+                                x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
                                     safe_divide(axisTextWidth, 2) +
                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                     CalcTickMarkOuterWidth();
                                 if (IsStackingLabels())
-                                    { x += drawingInnerLabel ? 0 : axisTextWidth; }
+                                    {
+                                    x += drawingInnerLabel ? 0 : axisTextWidth;
+                                    }
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
                             axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels() &&
-                                GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine)
+                                GetPerpendicularLabelAxisAlignment() !=
+                                    AxisLabelAlignment::CenterOnAxisLine)
                                 {
                                 if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary && !IsStackingLabels())
+                                        AxisLabelAlignment::AlignWithBoundary &&
+                                    !IsStackingLabels())
                                     {
                                     x = axisRect.GetLeft();
                                     if (GetBrackets().size())
                                         {
                                         x += CalcBracketsSpaceRequired(dc) +
-                                            ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                             ScaleToScreenAndCanvas(
+                                                 GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                                     axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                     }
                                 else // AnchorWithLine
                                     {
-                                    x = GetTopPoint().x + (GetBottomPoint().x-GetTopPoint().x) -
+                                    x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
                                         (safe_divide(axisTextWidth, 2) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                            CalcTickMarkInnerWidth());
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                         CalcTickMarkInnerWidth());
                                     if (IsStackingLabels())
-                                        { x -= drawingInnerLabel ? 0 : axisTextWidth; }
+                                        {
+                                        x -= drawingInnerLabel ? 0 : axisTextWidth;
+                                        }
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
                                 axisLabel.SetAnchorPoint(wxPoint(x, y));
@@ -2112,9 +2308,10 @@ namespace Wisteria::GraphItems
                         const wxCoord y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x = GetTopPoint().x -
-                                (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
-                                CalcTickMarkOuterWidth();
+                            wxCoord x =
+                                GetTopPoint().x -
+                                (ScaleToScreenAndCanvas(
+                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -2125,11 +2322,13 @@ namespace Wisteria::GraphItems
                                 }
                             else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                                 {
-                                x -= (axisTextHeight/2);
+                                x -= (axisTextHeight / 2);
                                 axisLabel.SetAnchoring(Anchoring::Center);
                                 }
                             if (IsStackingLabels())
-                                { x -= drawingInnerLabel ? 0 : axisTextHeight; }
+                                {
+                                x -= drawingInnerLabel ? 0 : axisTextHeight;
+                                }
                             axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
@@ -2139,20 +2338,26 @@ namespace Wisteria::GraphItems
                                     CalcTickMarkInnerWidth();
                                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
                                     GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                                    { x += axisTextHeight; }
+                                    {
+                                    x += axisTextHeight;
+                                    }
                                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                    { x += (axisTextHeight/2); }
+                                    {
+                                    x += (axisTextHeight / 2);
+                                    }
                                 if (IsStackingLabels())
-                                    { x += drawingInnerLabel ? 0 : axisTextHeight; }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                    {
+                                    x += drawingInnerLabel ? 0 : axisTextHeight;
+                                    }
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
                         else if (GetAxisType() == AxisType::RightYAxis)
                             {
-                            wxCoord x = GetTopPoint().x + (GetBottomPoint().x-GetTopPoint().x) +
-                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                CalcTickMarkOuterWidth();
+                            wxCoord x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
+                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                        CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
@@ -2163,25 +2368,33 @@ namespace Wisteria::GraphItems
                                 }
                             else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                                 {
-                                x += (axisTextHeight/2);
+                                x += (axisTextHeight / 2);
                                 axisLabel.SetAnchoring(Anchoring::Center);
                                 }
                             if (IsStackingLabels())
-                                { x += drawingInnerLabel ? 0 : axisTextHeight; }
+                                {
+                                x += drawingInnerLabel ? 0 : axisTextHeight;
+                                }
                             axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
-                                x = GetTopPoint().x+(GetBottomPoint().x - GetTopPoint().x) -
+                                x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
                                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                        CalcTickMarkInnerWidth());
+                                     CalcTickMarkInnerWidth());
                                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
                                     GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                                    { x -= axisTextHeight; }
+                                    {
+                                    x -= axisTextHeight;
+                                    }
                                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                    { x -= (axisTextHeight/2); }
+                                    {
+                                    x -= (axisTextHeight / 2);
+                                    }
                                 if (IsStackingLabels())
-                                    { x -= drawingInnerLabel ? 0 : axisTextHeight; }
+                                    {
+                                    x -= drawingInnerLabel ? 0 : axisTextHeight;
+                                    }
                                 axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
@@ -2195,19 +2408,20 @@ namespace Wisteria::GraphItems
         else if (IsHorizontal() && GetLabelDisplay() != AxisLabelDisplay::NoDisplay)
             {
             bool drawingInnerLabel{ true };
-            for (auto axisPtIter = GetAxisPoints().cbegin();
-                axisPtIter != GetAxisPoints().cend();
-                ++axisPtIter)
+            for (auto axisPtIter = GetAxisPoints().cbegin(); axisPtIter != GetAxisPoints().cend();
+                 ++axisPtIter)
                 {
                 if (IsPointDisplayingLabel(*axisPtIter))
                     {
                     Label axisLabel(GetDisplayableValue(*axisPtIter));
                     axisLabel.GetPen() = wxNullPen;
-                    if constexpr(Settings::IsDebugFlagEnabled(
-                        DebugSettings::DrawBoundingBoxesOnSelection))
+                    if constexpr (Settings::IsDebugFlagEnabled(
+                                      DebugSettings::DrawBoundingBoxesOnSelection))
                         {
                         if (IsSelected())
-                            { axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT); }
+                            {
+                            axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT);
+                            }
                         }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
                     axisLabel.SetScaling(GetAxisLabelScaling());
@@ -2215,26 +2429,30 @@ namespace Wisteria::GraphItems
                     axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
                     axisLabel.GetFont() = GetFont();
                     axisLabel.SetTextAlignment(GetTextAlignment());
-                    axisLabel.SetPadding(GetTopPadding(), GetRightPadding(),
-                                         GetBottomPadding(), GetLeftPadding());
+                    axisLabel.SetPadding(GetTopPadding(), GetRightPadding(), GetBottomPadding(),
+                                         GetLeftPadding());
                     // outer labels hanging entirely off the plot should just be drawn
                     // with the standard padding
                     if (!(axisPtIter == GetAxisPoints().cbegin() &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
-                        !(axisPtIter == GetAxisPoints().cend()-1 &&
+                        !(axisPtIter == GetAxisPoints().cend() - 1 &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                        {
+                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+                        }
                     else
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                        {
+                        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
+                        }
 
                     if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                         {
                         const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
                         const wxCoord axisTextHeight = labelSize.GetHeight();
                         const long x = axisPtIter->GetPhysicalCoordinate();
-                        long y = GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y) +
+                        long y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) +
                                  ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                            CalcTickMarkOuterWidth();
+                                 CalcTickMarkOuterWidth();
                         if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
                             {
                             axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
@@ -2245,43 +2463,58 @@ namespace Wisteria::GraphItems
                             }
                         else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                             {
-                            y += (axisTextHeight/2);
+                            y += (axisTextHeight / 2);
                             axisLabel.SetAnchoring(Anchoring::Center);
                             }
                         if (IsStackingLabels())
-                            { y += drawingInnerLabel ? 0 : axisTextHeight; }
+                            {
+                            y += drawingInnerLabel ? 0 : axisTextHeight;
+                            }
                         if (GetAxisType() == AxisType::BottomXAxis)
                             {
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
-                                y = GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y) -
+                                y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) -
                                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                        CalcTickMarkInnerWidth());
+                                     CalcTickMarkInnerWidth());
                                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft ||
                                     GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                                    { y -= axisTextHeight; }
+                                    {
+                                    y -= axisTextHeight;
+                                    }
                                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                    { y -= (axisTextHeight/2); }
+                                    {
+                                    y -= (axisTextHeight / 2);
+                                    }
                                 if (IsStackingLabels())
-                                    { y -= drawingInnerLabel ? 0 : axisTextHeight; }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                    {
+                                    y -= drawingInnerLabel ? 0 : axisTextHeight;
+                                    }
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
                         else if (GetAxisType() == AxisType::TopXAxis)
                             {
-                            y = GetTopPoint().y - ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
+                            y = GetTopPoint().y -
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
                                 CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft ||
                                 GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                                { y -= axisTextHeight; }
+                                {
+                                y -= axisTextHeight;
+                                }
                             else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                                { y -= (axisTextHeight/2); }
+                                {
+                                y -= (axisTextHeight / 2);
+                                }
                             if (IsStackingLabels())
-                                { y -= drawingInnerLabel ? 0 : axisTextHeight; }
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                {
+                                y -= drawingInnerLabel ? 0 : axisTextHeight;
+                                }
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2289,15 +2522,16 @@ namespace Wisteria::GraphItems
                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                     CalcTickMarkInnerWidth();
                                 if (IsStackingLabels())
-                                    { y += drawingInnerLabel ? 0 : axisTextHeight; }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                    {
+                                    y += drawingInnerLabel ? 0 : axisTextHeight;
+                                    }
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
                         drawingInnerLabel = !drawingInnerLabel;
                         }
-                    else if (GetAxisLabelOrientation() ==
-                        AxisLabelOrientation::Perpendicular)
+                    else if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
                         {
                         axisLabel.SetTextOrientation(Orientation::Vertical);
 
@@ -2307,10 +2541,11 @@ namespace Wisteria::GraphItems
 
                         long x{ 0 }, y{ 0 };
                         if (GetPerpendicularLabelAxisAlignment() ==
-                            AxisLabelAlignment::AlignWithBoundary &&
+                                AxisLabelAlignment::AlignWithBoundary &&
                             !IsStackingLabels())
                             {
-                            x = axisPtIter->GetPhysicalCoordinate() - safe_divide(axisTextHeight, 2);
+                            x = axisPtIter->GetPhysicalCoordinate() -
+                                safe_divide(axisTextHeight, 2);
                             y = axisRect.GetBottom();
                             if (GetBrackets().size())
                                 {
@@ -2327,26 +2562,27 @@ namespace Wisteria::GraphItems
                         else // AnchorWithLine
                             {
                             x = axisPtIter->GetPhysicalCoordinate();
-                            y = GetTopPoint().y + (GetBottomPoint().y-GetTopPoint().y) +
+                            y = GetTopPoint().y + (GetBottomPoint().y - GetTopPoint().y) +
                                 ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
                                 safe_divide(axisTextWidth, 2) + CalcTickMarkOuterWidth();
                             axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                             }
                         if (GetAxisType() == AxisType::BottomXAxis)
                             {
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
                                 if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary &&
+                                        AxisLabelAlignment::AlignWithBoundary &&
                                     !IsStackingLabels())
                                     {
                                     y = axisRect.GetTop();
                                     if (GetBrackets().size())
                                         {
                                         y += CalcBracketsSpaceRequired(dc) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                             ScaleToScreenAndCanvas(
+                                                 GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchorPoint(wxPoint(x, y));
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
@@ -2354,10 +2590,12 @@ namespace Wisteria::GraphItems
                                     }
                                 else // AnchorWithLine
                                     {
-                                    axisLabel.SetAnchorPoint(wxPoint(x,
-                                        GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y) -
-                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                            (axisTextWidth/2)+CalcTickMarkInnerWidth())) );
+                                    axisLabel.SetAnchorPoint(wxPoint(
+                                        x, GetTopPoint().y +
+                                               (GetBottomPoint().y - GetTopPoint().y) -
+                                               (ScaleToScreenAndCanvas(
+                                                    GetSpacingBetweenLabelsAndLine()) +
+                                                (axisTextWidth / 2) + CalcTickMarkInnerWidth())));
                                     axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                     }
                                 axisLabel.Draw(dc);
@@ -2366,15 +2604,19 @@ namespace Wisteria::GraphItems
                         else if (GetAxisType() == AxisType::TopXAxis)
                             {
                             if (GetPerpendicularLabelAxisAlignment() ==
-                                AxisLabelAlignment::AlignWithBoundary &&
+                                    AxisLabelAlignment::AlignWithBoundary &&
                                 !IsStackingLabels())
                                 {
                                 y = axisRect.GetTop();
                                 if (GetBrackets().size())
-                                    { y += CalcBracketsSpaceRequired(dc) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                                    {
+                                    y += CalcBracketsSpaceRequired(dc) +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                    }
                                 if (titleLabel.IsShown() && titleLabel.GetText().length())
-                                    { y += titleLabel.GetBoundingBox(dc).GetHeight(); }
+                                    {
+                                    y += titleLabel.GetBoundingBox(dc).GetHeight();
+                                    }
                                 axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                                 axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                 }
@@ -2385,18 +2627,20 @@ namespace Wisteria::GraphItems
                                      CalcTickMarkOuterWidth() + safe_divide(axisTextWidth, 2));
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x,y));
+                            axisLabel.SetAnchorPoint(wxPoint(x, y));
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
                                 if (GetPerpendicularLabelAxisAlignment() ==
-                                    AxisLabelAlignment::AlignWithBoundary && !IsStackingLabels())
+                                        AxisLabelAlignment::AlignWithBoundary &&
+                                    !IsStackingLabels())
                                     {
                                     y = axisRect.GetBottom();
                                     if (GetBrackets().size())
                                         {
                                         y -= CalcBracketsSpaceRequired(dc) +
-                                            ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                             ScaleToScreenAndCanvas(
+                                                 GetSpacingBetweenLabelsAndLine());
                                         }
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                                     axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
@@ -2408,7 +2652,7 @@ namespace Wisteria::GraphItems
                                         safe_divide(axisTextWidth, 2) + CalcTickMarkInnerWidth();
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x,y));
+                                axisLabel.SetAnchorPoint(wxPoint(x, y));
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2419,13 +2663,14 @@ namespace Wisteria::GraphItems
 
         // if axis is light, then it is probably being contrasted against an dark background,
         // so make the outline white in that case (black, otherwise)
-        const bool penIsLight{ (GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour().IsOk() &&
-                                Wisteria::Colors::ColorContrast::IsLight(GetAxisLinePen().GetColour())) };
+        const bool penIsLight{ (
+            GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour().IsOk() &&
+            Wisteria::Colors::ColorContrast::IsLight(GetAxisLinePen().GetColour())) };
         // draw the selection outline
         if (IsSelected())
             {
-            wxDCPenChanger pc(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK,
-                                        ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            wxDCPenChanger pc(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK, ScaleToScreenAndCanvas(2),
+                                        wxPENSTYLE_DOT));
             wxPoint pts[5];
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
             pts[4] = pts[0]; // close the square
@@ -2439,23 +2684,24 @@ namespace Wisteria::GraphItems
             wxPoint pts[5];
             // area rect was already inflated from GetBoundingBox()
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
-            pts[4] = pts[0];// close the square
+            pts[4] = pts[0]; // close the square
             dc.DrawLines(5, pts);
             }
 
         // highlight the selected protruding bounding box in debug mode
-        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
             {
             if (IsSelected())
                 {
                 wxPoint debugOutline[5];
                 GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
                 debugOutline[4] = debugOutline[0];
-                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                wxDCPenChanger pcDebug(
+                    dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
                 dc.DrawLines(std::size(debugOutline), debugOutline);
                 }
             }
-        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
             {
             if (IsSelected())
                 {
@@ -2509,24 +2755,27 @@ namespace Wisteria::GraphItems
     wxCoord Axis::CalcTickMarkOuterWidth() const
         {
         if (GetTickMarkDisplay() == TickMark::DisplayType::NoDisplay)
-            { return 0; }
+            {
+            return 0;
+            }
         wxCoord largestStandardTickMark{ 0 };
-        for (auto tickIter = GetTickMarks().cbegin();
-            tickIter != GetTickMarks().cend();
-            ++tickIter)
+        for (auto tickIter = GetTickMarks().cbegin(); tickIter != GetTickMarks().cend(); ++tickIter)
             {
             if (tickIter->m_displayType != TickMark::DisplayType::Inner)
-                { largestStandardTickMark = std::max<double>(largestStandardTickMark,
-                                                             ScaleToScreenAndCanvas(tickIter->m_lineLength)); }
+                {
+                largestStandardTickMark = std::max<double>(
+                    largestStandardTickMark, ScaleToScreenAndCanvas(tickIter->m_lineLength));
+                }
             }
         wxCoord largestCustomTickMark{ 0 };
-        for (auto tickIter = GetCustomTickMarks().cbegin();
-            tickIter != GetCustomTickMarks().cend();
-            ++tickIter)
+        for (auto tickIter = GetCustomTickMarks().cbegin(); tickIter != GetCustomTickMarks().cend();
+             ++tickIter)
             {
             if (tickIter->m_displayType != TickMark::DisplayType::Inner)
-                { largestCustomTickMark = std::max<double>(largestCustomTickMark,
-                                                           ScaleToScreenAndCanvas(tickIter->m_lineLength)); }
+                {
+                largestCustomTickMark = std::max<double>(
+                    largestCustomTickMark, ScaleToScreenAndCanvas(tickIter->m_lineLength));
+                }
             }
         return std::max(largestStandardTickMark, largestCustomTickMark);
         }
@@ -2535,24 +2784,27 @@ namespace Wisteria::GraphItems
     wxCoord Axis::CalcTickMarkInnerWidth() const
         {
         if (GetTickMarkDisplay() == TickMark::DisplayType::NoDisplay)
-            { return 0; }
+            {
+            return 0;
+            }
         wxCoord largestStandardTickMark{ 0 };
-        for (auto tickIter = GetTickMarks().cbegin();
-            tickIter != GetTickMarks().cend();
-            ++tickIter)
+        for (auto tickIter = GetTickMarks().cbegin(); tickIter != GetTickMarks().cend(); ++tickIter)
             {
             if (tickIter->m_displayType != TickMark::DisplayType::Outer)
-                { largestStandardTickMark = std::max<double>(largestStandardTickMark,
-                                                             ScaleToScreenAndCanvas(tickIter->m_lineLength)); }
+                {
+                largestStandardTickMark = std::max<double>(
+                    largestStandardTickMark, ScaleToScreenAndCanvas(tickIter->m_lineLength));
+                }
             }
         wxCoord largestCustomTickMark{ 0 };
-        for (auto tickIter = GetCustomTickMarks().cbegin();
-            tickIter != GetCustomTickMarks().cend();
-            ++tickIter)
+        for (auto tickIter = GetCustomTickMarks().cbegin(); tickIter != GetCustomTickMarks().cend();
+             ++tickIter)
             {
             if (tickIter->m_displayType != TickMark::DisplayType::Outer)
-                { largestCustomTickMark = std::max<double>(largestCustomTickMark,
-                                                           ScaleToScreenAndCanvas(tickIter->m_lineLength)); }
+                {
+                largestCustomTickMark = std::max<double>(
+                    largestCustomTickMark, ScaleToScreenAndCanvas(tickIter->m_lineLength));
+                }
             }
         return std::max(largestStandardTickMark, largestCustomTickMark);
         }
@@ -2562,26 +2814,32 @@ namespace Wisteria::GraphItems
         {
         assert(GetTopPoint().IsFullySpecified());
         assert(GetBottomPoint().IsFullySpecified());
-        const auto plotSize = IsVertical() ?
-            std::abs(GetTopPoint().y - GetBottomPoint().y) :
-            std::abs(GetBottomPoint().x - GetTopPoint().x);
+        const auto plotSize = IsVertical() ? std::abs(GetTopPoint().y - GetBottomPoint().y) :
+                                             std::abs(GetBottomPoint().x - GetTopPoint().x);
 
         long displayedLabelsCount{ 0 };
         for (const auto& axisPt : GetAxisPoints())
             {
             if (IsPointDisplayingLabel(axisPt))
-                { ++displayedLabelsCount; }
+                {
+                ++displayedLabelsCount;
+                }
             }
         if (displayedLabelsCount > 2 && GetAxisPoints().size() > 2 && IsShowingOuterLabels() &&
             GetAxisPoints().begin()->IsShown() &&
             GetDisplayableValue(*GetAxisPoints().begin()).GetText().length() &&
-            (GetAxisPoints().end()-1)->IsShown() &&
-            GetDisplayableValue(*(GetAxisPoints().end()-1)).GetText().length())
-            { --displayedLabelsCount; }
+            (GetAxisPoints().end() - 1)->IsShown() &&
+            GetDisplayableValue(*(GetAxisPoints().end() - 1)).GetText().length())
+            {
+            --displayedLabelsCount;
+            }
 
-        m_maxLabelWidth = safe_divide<wxCoord>(plotSize, displayedLabelsCount)-ScaleToScreenAndCanvas(2);
+        m_maxLabelWidth =
+            safe_divide<wxCoord>(plotSize, displayedLabelsCount) - ScaleToScreenAndCanvas(2);
         if (IsStackingLabels())
-            { m_maxLabelWidth *= 2; }
+            {
+            m_maxLabelWidth *= 2;
+            }
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
         }
 
@@ -2589,9 +2847,10 @@ namespace Wisteria::GraphItems
     double Axis::CalcBestScalingToFitLabels(wxDC& dc)
         {
         // no labels?
-        if (GetAxisPointsCount() == 0 ||
-            GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
-            { return GetScaling(); }
+        if (GetAxisPointsCount() == 0 || GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
+            {
+            return GetScaling();
+            }
 
         assert(GetTopPoint().IsFullySpecified());
         assert(GetBottomPoint().IsFullySpecified());
@@ -2615,7 +2874,9 @@ namespace Wisteria::GraphItems
             const auto longestWidth = longestLabel.GetBoundingBox(dc).GetWidth();
 
             if (longestWidth > m_maxLabelWidth)
-                { currentScaling *= safe_divide<double>(m_maxLabelWidth, longestWidth); }
+                {
+                currentScaling *= safe_divide<double>(m_maxLabelWidth, longestWidth);
+                }
             }
         else if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
             {
@@ -2623,7 +2884,9 @@ namespace Wisteria::GraphItems
             const auto tallestHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
 
             if (tallestHeight > m_maxLabelWidth)
-                { currentScaling *= safe_divide<double>(m_maxLabelWidth, tallestHeight); }
+                {
+                currentScaling *= safe_divide<double>(m_maxLabelWidth, tallestHeight);
+                }
             }
         else
             {
@@ -2645,16 +2908,19 @@ namespace Wisteria::GraphItems
 
         // nothing to stack if not showing labels
         if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
-            { return false; }
+            {
+            return false;
+            }
 
         // if we aren't auto stacking, then just return the stacking
         // method that the client specified earlier
         if (!IsAutoStackingEnabled())
-            { return IsStackingLabels(); }
+            {
+            return IsStackingLabels();
+            }
 
-        const auto axisWidth = IsVertical() ?
-            std::abs(GetTopPoint().y-GetBottomPoint().y) :
-            std::abs(GetBottomPoint().x-GetTopPoint().x);
+        const auto axisWidth = IsVertical() ? std::abs(GetTopPoint().y - GetBottomPoint().y) :
+                                              std::abs(GetBottomPoint().x - GetTopPoint().x);
 
         const bool isMeasuringByHeight =
             (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular);
@@ -2663,18 +2929,21 @@ namespace Wisteria::GraphItems
         for (const auto& axisPt : GetAxisPoints())
             {
             if (IsPointDisplayingLabel(axisPt))
-                { ++displayedLabelsCount; }
+                {
+                ++displayedLabelsCount;
+                }
             }
         // If outer labels are hanging outside of the plot area, then assume
         // half of both of these two labels don't need to be included in the
         // plot area's width; thus, remove necessary space for one label.
-        if (displayedLabelsCount > 2 && GetAxisPoints().size() > 2 &&
-            IsShowingOuterLabels() &&
+        if (displayedLabelsCount > 2 && GetAxisPoints().size() > 2 && IsShowingOuterLabels() &&
             GetAxisPoints().begin()->IsShown() &&
             GetDisplayableValue(*GetAxisPoints().begin()).GetText().length() &&
-            (GetAxisPoints().end()-1)->IsShown() &&
-             GetDisplayableValue(*(GetAxisPoints().end()-1)).GetText().length())
-            { --displayedLabelsCount; }
+            (GetAxisPoints().end() - 1)->IsShown() &&
+            GetDisplayableValue(*(GetAxisPoints().end() - 1)).GetText().length())
+            {
+            --displayedLabelsCount;
+            }
 
         // If any label is bigger than the width of the graph divided by the number of
         // displayed labels then stack them account for a little extra padding around
@@ -2684,35 +2953,40 @@ namespace Wisteria::GraphItems
         // won't cause Y axis label to be stacked, which can look odd--
         // only resort to that is they really are overlapping.
         const long maxTextSize = safe_divide<long>(axisWidth, displayedLabelsCount) -
-            (isMeasuringByHeight ? (2*GetScaling()) : 0);
+                                 (isMeasuringByHeight ? (2 * GetScaling()) : 0);
         if (maxTextSize <= 0)
-            { return false; }
+            {
+            return false;
+            }
 
         Label axisLabel(
-            GraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).
-            Font(GetFont()).DPIScaling(GetDPIScaleFactor()).
-            Padding(GetTopPadding(), GetRightPadding(),
-                    GetBottomPadding(), GetLeftPadding()) );
+            GraphItemInfo()
+                .Scaling(GetScaling())
+                .Pen(wxNullPen)
+                .Font(GetFont())
+                .DPIScaling(GetDPIScaleFactor())
+                .Padding(GetTopPadding(), GetRightPadding(), GetBottomPadding(), GetLeftPadding()));
         AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
 
-        for (auto pos = GetAxisPoints().cbegin();
-            pos != GetAxisPoints().cend();
-            ++pos)
+        for (auto pos = GetAxisPoints().cbegin(); pos != GetAxisPoints().cend(); ++pos)
             {
             if (IsPointDisplayingLabel(*pos))
                 {
                 axisLabel.SetText(GetDisplayableValue(*pos).GetText());
-                const wxSize labelSize =
-                    axisLabel.GetBoundingBox(dc).GetSize();
-                wxCoord axisTextWidth = isMeasuringByHeight ?
-                                        labelSize.GetHeight() : labelSize.GetWidth();
+                const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
+                wxCoord axisTextWidth =
+                    isMeasuringByHeight ? labelSize.GetHeight() : labelSize.GetWidth();
                 // with the first and last labels, the outer halves
                 // of them hang outside of the plot area
                 if (IsShowingOuterLabels() &&
-                    (pos == GetAxisPoints().cbegin() || pos == GetAxisPoints().cend()-1) )
-                    { axisTextWidth /= 2; }
+                    (pos == GetAxisPoints().cbegin() || pos == GetAxisPoints().cend() - 1))
+                    {
+                    axisTextWidth /= 2;
+                    }
                 if (axisTextWidth >= maxTextSize)
-                    { return true; }
+                    {
+                    return true;
+                    }
                 }
             }
         return false;
@@ -2724,37 +2998,36 @@ namespace Wisteria::GraphItems
         if (bracketType == BracketType::FiscalQuarterly)
             {
             assert((m_firstDay.IsValid() && m_lastDay.IsValid()) &&
-                L"Date interval should be set via SetRange() if adding FY brackets!");
+                   L"Date interval should be set via SetRange() if adding FY brackets!");
             if (m_firstDay.IsValid() && m_lastDay.IsValid())
                 {
                 ClearBrackets();
                 // FY is the next calendar year
-                int FY{ m_firstDay.GetYear()+1 };
+                int FY{ m_firstDay.GetYear() + 1 };
                 const auto [rangeStart, rangeEnd] = GetRange();
-                const auto Q1Length{ (m_fyQ2-m_fyQ1).GetDays() };
-                const auto Q2Length{ (m_fyQ3-m_fyQ2).GetDays() };
-                const auto Q3Length{ (m_fyQ4-m_fyQ3).GetDays() };
-                const auto Q4Length{ (wxDateTime(m_fyQ1).Add(
-                                          wxDateSpan(1))-m_fyQ4).GetDays() };
+                const auto Q1Length{ (m_fyQ2 - m_fyQ1).GetDays() };
+                const auto Q2Length{ (m_fyQ3 - m_fyQ2).GetDays() };
+                const auto Q3Length{ (m_fyQ4 - m_fyQ3).GetDays() };
+                const auto Q4Length{ (wxDateTime(m_fyQ1).Add(wxDateSpan(1)) - m_fyQ4).GetDays() };
                 long currentStart{ 0 };
                 while (currentStart <= rangeEnd)
                     {
-                    const wxString FYLabel{ std::to_wstring(FY).substr(2,2) };
-                    AddBracket(Axis::AxisBracket(currentStart,
-                        (currentStart+Q1Length)-1, currentStart+(Q1Length/2),
-                        wxString::Format(_(L"Q1FY%s"), FYLabel)));
+                    const wxString FYLabel{ std::to_wstring(FY).substr(2, 2) };
+                    AddBracket(Axis::AxisBracket(currentStart, (currentStart + Q1Length) - 1,
+                                                 currentStart + (Q1Length / 2),
+                                                 wxString::Format(_(L"Q1FY%s"), FYLabel)));
                     currentStart += Q1Length;
-                    AddBracket(Axis::AxisBracket(currentStart,
-                        (currentStart+Q2Length)-1, currentStart+(Q2Length/2),
-                        wxString::Format(_(L"Q2FY%s"), FYLabel)));
+                    AddBracket(Axis::AxisBracket(currentStart, (currentStart + Q2Length) - 1,
+                                                 currentStart + (Q2Length / 2),
+                                                 wxString::Format(_(L"Q2FY%s"), FYLabel)));
                     currentStart += Q2Length;
-                    AddBracket(Axis::AxisBracket(currentStart,
-                        (currentStart+Q3Length)-1, currentStart+(Q3Length/2),
-                        wxString::Format(_(L"Q3FY%s"), FYLabel)));
+                    AddBracket(Axis::AxisBracket(currentStart, (currentStart + Q3Length) - 1,
+                                                 currentStart + (Q3Length / 2),
+                                                 wxString::Format(_(L"Q3FY%s"), FYLabel)));
                     currentStart += Q3Length;
-                    AddBracket(Axis::AxisBracket(currentStart,
-                        (currentStart+Q4Length)-1, currentStart+(Q4Length/2),
-                        wxString::Format(_(L"Q4FY%s"), FYLabel)));
+                    AddBracket(Axis::AxisBracket(currentStart, (currentStart + Q4Length) - 1,
+                                                 currentStart + (Q4Length / 2),
+                                                 wxString::Format(_(L"Q4FY%s"), FYLabel)));
                     currentStart += Q4Length;
                     ++FY;
                     }
@@ -2767,22 +3040,23 @@ namespace Wisteria::GraphItems
         {
         const auto numberOfDays = endDate.Subtract(startDate).GetDays();
         SetRange(startDate, endDate,
-            (numberOfDays <= 10 ? DateInterval::Daily :
-                numberOfDays <= 70 ? DateInterval::Weekly :
-                numberOfDays <= 500 ? DateInterval::Monthly :
-                DateInterval::FiscalQuarterly),
-             FiscalYear::USBusiness);
+                 (numberOfDays <= 10  ? DateInterval::Daily :
+                  numberOfDays <= 70  ? DateInterval::Weekly :
+                  numberOfDays <= 500 ? DateInterval::Monthly :
+                                        DateInterval::FiscalQuarterly),
+                 FiscalYear::USBusiness);
         }
 
     //--------------------------------------
     void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                         const DateInterval displayInterval, const FiscalYear FYtype)
         {
-        assert(startDate.IsValid() && endDate.IsValid() &&
-            L"Invalid date used for axis range!");
+        assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
         // can't do much with this range if invalid, so have to ignore it
         if (!startDate.IsValid() || !endDate.IsValid())
-            { return; }
+            {
+            return;
+            }
 
         SetFiscalYearType(FYtype);
         m_firstDay = startDate;
@@ -2792,34 +3066,44 @@ namespace Wisteria::GraphItems
         // use the first day of the week based on the locale's calendar
         wxDateTime::WeekDay firstWeekDay;
         if (!wxDateTime::GetFirstWeekDay(&firstWeekDay))
-            { firstWeekDay = wxDateTime::WeekDay::Sun; }
+            {
+            firstWeekDay = wxDateTime::WeekDay::Sun;
+            }
 
         // move back the range to include today, if necessary,
         // if using smaller intervals
         if (GetDateDisplayInterval() != DateInterval::FiscalQuarterly)
-            { m_firstDay = std::min(wxDateTime::Now(), m_firstDay); }
+            {
+            m_firstDay = std::min(wxDateTime::Now(), m_firstDay);
+            }
 
         if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly)
             {
             wxDateTime fyEnd = m_fyQ4;
-            fyEnd.SetYear(m_firstDay.GetYear()+1);
+            fyEnd.SetYear(m_firstDay.GetYear() + 1);
             fyEnd.Add(wxDateSpan(0, 3, 0, 0));
             fyEnd.Subtract(wxDateSpan(0, 0, 0, 1));
 
             m_firstDay.SetDay(m_fyQ1.GetDay());
             // move back to the start of a fiscal year
             while (m_firstDay.GetMonth() != m_fyQ1.GetMonth())
-                { m_firstDay.Subtract(wxDateSpan(0, 1, 0, 0)); }
+                {
+                m_firstDay.Subtract(wxDateSpan(0, 1, 0, 0));
+                }
 
             // move to first day of next FY, then step back to last day of the current FY
             if (m_lastDay < fyEnd)
-                { m_lastDay = fyEnd; }
+                {
+                m_lastDay = fyEnd;
+                }
             }
         // adjust monthly intervals to land on the start of the months
         else if (GetDateDisplayInterval() == DateInterval::Monthly)
             {
             while (m_firstDay.GetDay() != 1)
-                { m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1)); }
+                {
+                m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1));
+                }
             m_lastDay.SetToLastMonthDay();
             m_lastDay.Add(wxDateSpan(0, 0, 0, 1));
             }
@@ -2827,16 +3111,20 @@ namespace Wisteria::GraphItems
         else if (GetDateDisplayInterval() == DateInterval::Weekly)
             {
             while (m_firstDay.GetWeekDay() != firstWeekDay)
-                { m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1)); }
+                {
+                m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1));
+                }
             // move to start of following week
             while (m_lastDay.GetWeekDay() != firstWeekDay)
-                { m_lastDay.Add(wxDateSpan(0, 0, 0, 1)); }
+                {
+                m_lastDay.Add(wxDateSpan(0, 0, 0, 1));
+                }
             }
 
         const auto numberOfDays = (m_lastDay - m_firstDay).GetDays();
 
         // quarterly intervals
-        if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly )
+        if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly)
             {
             SetRange(0, numberOfDays, 0, 1, 1);
             long currentDate = 0;
@@ -2852,10 +3140,10 @@ namespace Wisteria::GraphItems
                      (dateLabel.GetMonth() == m_fyQ3.GetMonth() &&
                       dateLabel.GetDay() == m_fyQ3.GetDay()) ||
                      (dateLabel.GetMonth() == m_fyQ4.GetMonth() &&
-                      dateLabel.GetDay() == m_fyQ4.GetDay())
-                    ))
-                    { SetCustomLabel(currentDate,
-                                     GraphItems::Label(dateLabel.FormatDate())); }
+                      dateLabel.GetDay() == m_fyQ4.GetDay())))
+                    {
+                    SetCustomLabel(currentDate, GraphItems::Label(dateLabel.FormatDate()));
+                    }
                 dateLabel.Add(wxDateSpan(0, 0, 0, 1));
                 ++currentDate;
                 }
@@ -2870,8 +3158,9 @@ namespace Wisteria::GraphItems
                 {
                 // only show first of the months
                 if (dateLabel.GetDay() == 1)
-                    { SetCustomLabel(currentDate,
-                                     GraphItems::Label(dateLabel.FormatDate())); }
+                    {
+                    SetCustomLabel(currentDate, GraphItems::Label(dateLabel.FormatDate()));
+                    }
                 dateLabel.Add(wxDateSpan(0, 0, 0, 1));
                 ++currentDate;
                 }
@@ -2892,11 +3181,12 @@ namespace Wisteria::GraphItems
             // add the rest
             while (currentDate <= numberOfDays)
                 {
-                SetCustomLabel(currentDate,
-                               GraphItems::Label(dateLabel.FormatDate()));
+                SetCustomLabel(currentDate, GraphItems::Label(dateLabel.FormatDate()));
                 currentDate += 7;
                 if (currentDate > numberOfDays)
-                    { break; }
+                    {
+                    break;
+                    }
                 dateLabel.Add(wxDateSpan(0, 0, 1, 0));
                 }
             }
@@ -2908,11 +3198,12 @@ namespace Wisteria::GraphItems
             wxDateTime dateLabel = m_firstDay;
             while (currentDate <= numberOfDays)
                 {
-                SetCustomLabel(currentDate,
-                               GraphItems::Label(dateLabel.FormatDate()));
+                SetCustomLabel(currentDate, GraphItems::Label(dateLabel.FormatDate()));
                 ++currentDate;
                 if (currentDate > numberOfDays)
-                    { break; }
+                    {
+                    break;
+                    }
                 dateLabel.Add(wxDateSpan(0, 0, 0, 1));
                 }
             }
@@ -2921,44 +3212,68 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
-    void Axis::SetRange(double rangeStart, double rangeEnd,
-                        uint8_t precision, bool includeExtraInterval /*= false*/)
+    void Axis::SetRange(double rangeStart, double rangeEnd, uint8_t precision,
+                        bool includeExtraInterval /*= false*/)
         {
         if (IsStartingAtZero())
-            { rangeStart = std::min<double>(0, rangeStart); }
+            {
+            rangeStart = std::min<double>(0, rangeStart);
+            }
 
-        double rangeSize = (rangeEnd-rangeStart);
+        double rangeSize = (rangeEnd - rangeStart);
         double intervalSize{ 0 };
         /* these divisions purposefully avoid double precision so
            that the axis intervals are neat (unless the range is 1).*/
         size_t rangeDivisionFactor = 1;
         if (rangeSize > 100'000'000)
-            { rangeDivisionFactor = 100'000'000; }
+            {
+            rangeDivisionFactor = 100'000'000;
+            }
         else if (rangeSize > 10'000'000)
-            { rangeDivisionFactor = 10'000'000; }
+            {
+            rangeDivisionFactor = 10'000'000;
+            }
         else if (rangeSize > 1'000'000)
-            { rangeDivisionFactor = 1'000'000; }
+            {
+            rangeDivisionFactor = 1'000'000;
+            }
         else if (rangeSize > 100'000)
-            { rangeDivisionFactor = 100'000; }
+            {
+            rangeDivisionFactor = 100'000;
+            }
         else if (rangeSize > 10'000)
-            { rangeDivisionFactor = 10'000; }
+            {
+            rangeDivisionFactor = 10'000;
+            }
         else if (rangeSize > 1'000)
-            { rangeDivisionFactor = 1'000; }
+            {
+            rangeDivisionFactor = 1'000;
+            }
         else if (rangeSize > 100)
-            { rangeDivisionFactor = 100; }
+            {
+            rangeDivisionFactor = 100;
+            }
         else if (rangeSize > 10)
-            { rangeDivisionFactor = 10; }
+            {
+            rangeDivisionFactor = 10;
+            }
         else
-            { rangeDivisionFactor = 1; }
+            {
+            rangeDivisionFactor = 1;
+            }
 
         // can't do anything with any empty range, so just leave the axis as is
         if (rangeSize <= 0)
-            { return; }
+            {
+            return;
+            }
         else if (rangeSize <= 1)
             {
             intervalSize = 0.2;
             if (precision == 0)
-                { precision = 1; }
+                {
+                precision = 1;
+                }
             }
         else
             {
@@ -2966,36 +3281,43 @@ namespace Wisteria::GraphItems
             if (rangeSize >= 100)
                 {
                 intervalSize = std::ceil(safe_divide<double>(rangeSize, rangeDivisionFactor)) *
-                            safe_divide<size_t>(rangeDivisionFactor, 10);
+                               safe_divide<size_t>(rangeDivisionFactor, 10);
                 }
             else if (rangeSize >= 20)
-                { intervalSize = 5; }
+                {
+                intervalSize = 5;
+                }
             else
-                { intervalSize = std::ceil(safe_divide<double>(rangeSize, 10)); }
+                {
+                intervalSize = std::ceil(safe_divide<double>(rangeSize, 10));
+                }
             // bump up the range to fit the data and also to have an even spread for the intervals
-            if (safe_modulus<size_t>(static_cast<size_t>(rangeSize),intervalSize))
+            if (safe_modulus<size_t>(static_cast<size_t>(rangeSize), intervalSize))
                 {
                 rangeSize = (rangeSize -
-                             (safe_modulus<size_t>(static_cast<size_t>(rangeSize),intervalSize))) +
-                             intervalSize;
+                             (safe_modulus<size_t>(static_cast<size_t>(rangeSize), intervalSize))) +
+                            intervalSize;
                 }
             }
         rangeSize += (includeExtraInterval) ? intervalSize : 0;
-        SetRange(rangeStart, (rangeStart+rangeSize), precision, intervalSize, 1);
+        SetRange(rangeStart, (rangeStart + rangeSize), precision, intervalSize, 1);
         }
 
     //--------------------------------------
-    void Axis::SetRange(double rangeStart, double rangeEnd,
-                        const uint8_t precision, double interval,
-                        const size_t displayInterval /*= 1*/)
+    void Axis::SetRange(double rangeStart, double rangeEnd, const uint8_t precision,
+                        double interval, const size_t displayInterval /*= 1*/)
         {
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
 
         if (IsStartingAtZero())
-            { rangeStart = std::min<double>(0, rangeStart); }
+            {
+            rangeStart = std::min<double>(0, rangeStart);
+            }
         assert(rangeEnd >= rangeStart);
         if (rangeEnd < rangeStart)
-            { return; }
+            {
+            return;
+            }
         m_displayPrecision = precision;
         SetInterval(interval);
         SetTickMarkInterval(interval);
@@ -3003,13 +3325,17 @@ namespace Wisteria::GraphItems
         if (rangeEnd == rangeStart)
             {
             if (interval == 0)
-                { interval = 1; }
+                {
+                interval = 1;
+                }
             rangeStart -= interval;
             rangeEnd += interval;
             }
         // in case the interval is a nonsensical value then make it the size of the range
         if (interval <= 0)
-            { interval = safe_divide<double>(rangeEnd-rangeStart,2); }
+            {
+            interval = safe_divide<double>(rangeEnd - rangeStart, 2);
+            }
         // reset everything
         m_axisLabels.clear();
 
@@ -3017,14 +3343,18 @@ namespace Wisteria::GraphItems
         if (IsReversed())
             {
             double lastValidPoint = rangeEnd;
-            for (double i = rangeEnd; i > (rangeStart-interval); i -= interval)
+            for (double i = rangeEnd; i > (rangeStart - interval); i -= interval)
                 {
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1) ? true : false;
                 if (currentDisplayInterval == 1)
-                    { currentDisplayInterval = displayInterval; }
+                    {
+                    currentDisplayInterval = displayInterval;
+                    }
                 else
-                    { --currentDisplayInterval; }
+                    {
+                    --currentDisplayInterval;
+                    }
                 // add it to the axis label collection
                 m_axisLabels.push_back(AxisPoint(i, wxEmptyString, display));
                 lastValidPoint = i;
@@ -3038,14 +3368,18 @@ namespace Wisteria::GraphItems
                We might step over it a bit (depending on how
                the intervals are set up), so a range like 1-70 might wind up being 1-71*/
             double lastValidPoint = rangeStart;
-            for (double i = rangeStart; i < (rangeEnd+interval); i += interval)
+            for (double i = rangeStart; i < (rangeEnd + interval); i += interval)
                 {
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1) ? true : false;
                 if (currentDisplayInterval == 1)
-                    { currentDisplayInterval = displayInterval; }
+                    {
+                    currentDisplayInterval = displayInterval;
+                    }
                 else
-                    { --currentDisplayInterval; }
+                    {
+                    --currentDisplayInterval;
+                    }
                 // add it to the axis label collection
                 m_axisLabels.push_back(AxisPoint(i, wxEmptyString, display));
                 lastValidPoint = i;
@@ -3076,9 +3410,9 @@ namespace Wisteria::GraphItems
                 {
                 if (GetNumberDisplay() == NumberDisplay::Value)
                     {
-                    axisPt.SetDisplayValue(
-                        wxNumberFormatter::ToString(axisPt.GetValue(), m_displayPrecision,
-                            wxNumberFormatter::Style::Style_WithThousandsSep));
+                    axisPt.SetDisplayValue(wxNumberFormatter::ToString(
+                        axisPt.GetValue(), m_displayPrecision,
+                        wxNumberFormatter::Style::Style_WithThousandsSep));
                     }
                 else // Percent
                     {
@@ -3114,8 +3448,8 @@ namespace Wisteria::GraphItems
     const Label& Axis::GetCustomLabel(const double value) const
         {
         const auto custLabelIter = m_customAxisLabels.find(value);
-        return (custLabelIter != m_customAxisLabels.cend() ) ?
-            custLabelIter->second : m_invalidLabel;
+        return (custLabelIter != m_customAxisLabels.cend()) ? custLabelIter->second :
+                                                              m_invalidLabel;
         }
 
     //--------------------------------------
@@ -3124,7 +3458,9 @@ namespace Wisteria::GraphItems
         for (const auto& customLabel : m_customAxisLabels)
             {
             if (label.CmpNoCase(customLabel.second.GetText()) == 0)
-                { return customLabel.first; }
+                {
+                return customLabel.first;
+                }
             }
         return std::nullopt;
         }
@@ -3132,38 +3468,44 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     bool Axis::PointHasLabel(const double value) const
         {
-        const auto labelIter = std::find(m_axisLabels.cbegin(),
-                                         m_axisLabels.cend(), value);
+        const auto labelIter = std::find(m_axisLabels.cbegin(), m_axisLabels.cend(), value);
         if (labelIter != m_axisLabels.cend() && labelIter->IsShown())
-            { return true; }
+            {
+            return true;
+            }
         const auto custLabelIter = m_customAxisLabels.find(value);
         if (custLabelIter != m_customAxisLabels.cend())
-            { return true; }
+            {
+            return true;
+            }
         return false;
         }
 
     //-------------------------------------------
     std::pair<Label, double> Axis::GetFirstDisplayedLabel() const
         {
-        for (auto axisPos = GetAxisPoints().cbegin();
-            axisPos != GetAxisPoints().cend();
-            ++axisPos)
+        for (auto axisPos = GetAxisPoints().cbegin(); axisPos != GetAxisPoints().cend(); ++axisPos)
             {
             if (IsPointDisplayingLabel(*axisPos))
                 {
-                Label axisLabel{
-                    GraphItemInfo(GetDisplayableValue(*axisPos).GetText()).
-                    Scaling(GetAxisLabelScaling()).
-                    Pen(wxNullPen).Font(GetFont()).DPIScaling(GetDPIScaleFactor()).
-                    Padding(GetTopPadding(), GetRightPadding(),
-                            GetBottomPadding(), GetLeftPadding()) };
+                Label axisLabel{ GraphItemInfo(GetDisplayableValue(*axisPos).GetText())
+                                     .Scaling(GetAxisLabelScaling())
+                                     .Pen(wxNullPen)
+                                     .Font(GetFont())
+                                     .DPIScaling(GetDPIScaleFactor())
+                                     .Padding(GetTopPadding(), GetRightPadding(),
+                                              GetBottomPadding(), GetLeftPadding()) };
                 // outer label hanging entirely off the plot should just be drawn
                 // with the standard padding
                 if (!(axisPos == GetAxisPoints().cbegin() &&
-                    GetParallelLabelAlignment() == RelativeAlignment::FlushRight))
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                      GetParallelLabelAlignment() == RelativeAlignment::FlushRight))
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+                    }
                 else
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
+                    }
                 return std::make_pair(axisLabel, axisPos->GetValue());
                 }
             }
@@ -3174,25 +3516,29 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     std::pair<Label, double> Axis::GetLastDisplayedLabel() const
         {
-        for (auto axisPos = GetAxisPoints().crbegin();
-            axisPos != GetAxisPoints().crend();
-            ++axisPos)
+        for (auto axisPos = GetAxisPoints().crbegin(); axisPos != GetAxisPoints().crend();
+             ++axisPos)
             {
             if (IsPointDisplayingLabel(*axisPos))
                 {
-                Label axisLabel{
-                    GraphItemInfo(GetDisplayableValue(*axisPos).GetText()).
-                    Scaling(GetAxisLabelScaling()).
-                    Pen(wxNullPen).Font(GetFont()).DPIScaling(GetDPIScaleFactor()).
-                    Padding(GetTopPadding(), GetRightPadding(),
-                            GetBottomPadding(), GetLeftPadding()) };
+                Label axisLabel{ GraphItemInfo(GetDisplayableValue(*axisPos).GetText())
+                                     .Scaling(GetAxisLabelScaling())
+                                     .Pen(wxNullPen)
+                                     .Font(GetFont())
+                                     .DPIScaling(GetDPIScaleFactor())
+                                     .Padding(GetTopPadding(), GetRightPadding(),
+                                              GetBottomPadding(), GetLeftPadding()) };
                 // outer label hanging entirely off the plot should just be drawn
                 // with the standard padding
                 if (!(axisPos == GetAxisPoints().crbegin() &&
-                    GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                      GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+                    }
                 else
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                    {
+                    AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false);
+                    }
                 return std::make_pair(axisLabel, axisPos->GetValue());
                 }
             }
@@ -3204,37 +3550,41 @@ namespace Wisteria::GraphItems
     std::optional<double> Axis::FindDatePosition(const wxDateTime& date) const noexcept
         {
         if (!m_firstDay.IsValid() || !date.IsValid())
-            { return std::nullopt; }
+            {
+            return std::nullopt;
+            }
         const auto daysDiff = date.GetDateOnly().Subtract(m_firstDay.GetDateOnly()).GetDays();
-        return is_within<double>(GetRange(), daysDiff) ?
-            std::optional<double>(daysDiff) : std::nullopt;
+        return is_within<double>(GetRange(), daysDiff) ? std::optional<double>(daysDiff) :
+                                                         std::nullopt;
         }
 
     //-------------------------------------------
     void Axis::AddUnevenAxisPoint(const double value, const wxString& label)
         {
         // bail if something at the provided axis value is already in here
-        if (std::find(m_axisLabels.cbegin(),
-                      m_axisLabels.cend(), AxisPoint(value,label)) != m_axisLabels.cend())
+        if (std::find(m_axisLabels.cbegin(), m_axisLabels.cend(), AxisPoint(value, label)) !=
+            m_axisLabels.cend())
             {
             wxLogVerbose(L"Value %f/%s in call to %s ignored; value already present on axis.",
                          value, label, __func__);
             return;
             }
         std::vector<AxisPoint>::iterator pos;
-        for (pos = m_axisLabels.begin();
-             pos != m_axisLabels.end();
-             ++pos)
+        for (pos = m_axisLabels.begin(); pos != m_axisLabels.end(); ++pos)
             {
             if (m_scaledReserved)
                 {
                 if (value > pos->GetValue())
-                    { break; }
+                    {
+                    break;
+                    }
                 }
             else
                 {
                 if (value < pos->GetValue())
-                    { break; }
+                    {
+                    break;
+                    }
                 }
             }
         Label lab(label);
@@ -3377,10 +3727,14 @@ namespace Wisteria::GraphItems
         {
         // reverse it if not already reversed and client is asking for it to be reversed
         if (reverse && !IsReversed())
-            { std::reverse(m_axisLabels.begin(), m_axisLabels.end()); }
+            {
+            std::reverse(m_axisLabels.begin(), m_axisLabels.end());
+            }
         // or reverse it if already reversed and client is asking for it to NOT be reversed
         else if (!reverse && IsReversed())
-            { std::reverse(m_axisLabels.begin(), m_axisLabels.end()); }
+            {
+            std::reverse(m_axisLabels.begin(), m_axisLabels.end());
+            }
         m_scaledReserved = reverse;
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
         }
@@ -3398,27 +3752,35 @@ namespace Wisteria::GraphItems
         {
         value = -1; // init to invalid value in case we have to return false
         if (GetAxisPointsCount() == 0)
-            { return false; }
+            {
+            return false;
+            }
         std::vector<AxisPoint>::const_iterator pos;
-        for (pos = GetAxisPoints().cbegin();
-            pos != GetAxisPoints().cend();
-            ++pos)
+        for (pos = GetAxisPoints().cbegin(); pos != GetAxisPoints().cend(); ++pos)
             {
             if (IsHorizontal())
                 {
                 if (coordinate <= pos->GetPhysicalCoordinate())
-                    { break; }
+                    {
+                    break;
+                    }
                 }
             else if (IsVertical())
                 {
                 if (coordinate >= pos->GetPhysicalCoordinate())
-                    { break; }
+                    {
+                    break;
+                    }
                 }
             else
-                { return false; }
+                {
+                return false;
+                }
             }
-        if (pos == GetAxisPoints().end() )
-            { return false; }
+        if (pos == GetAxisPoints().end())
+            {
+            return false;
+            }
         if (coordinate == pos->GetPhysicalCoordinate())
             {
             value = pos->GetValue();
@@ -3427,27 +3789,25 @@ namespace Wisteria::GraphItems
         // if this point is before the first axis line or
         // above the top axis line then it is out of range
         if (pos == GetAxisPoints().cbegin())
-            { return false; }
+            {
+            return false;
+            }
         decltype(GetAxisPoints().cbegin()) previousLine = pos;
         --previousLine;
         const double lowerLineValue = previousLine->GetPhysicalCoordinate();
         const double upperLineValue = pos->GetPhysicalCoordinate();
-        const double percentage = safe_divide<double>((coordinate-lowerLineValue),
-                                                      (upperLineValue-lowerLineValue));
+        const double percentage =
+            safe_divide<double>((coordinate - lowerLineValue), (upperLineValue - lowerLineValue));
         if (IsHorizontal())
             {
-            const double coordinateDifference =
-                    pos->GetValue() - previousLine->GetValue();
-            value = previousLine->GetValue() +
-                    (coordinateDifference*percentage);
+            const double coordinateDifference = pos->GetValue() - previousLine->GetValue();
+            value = previousLine->GetValue() + (coordinateDifference * percentage);
             return true;
             }
         else if (IsVertical())
             {
-            const double coordinateDifference =
-                previousLine->GetValue() - pos->GetValue();
-            value = previousLine->GetValue() -
-                    (coordinateDifference*percentage);
+            const double coordinateDifference = previousLine->GetValue() - pos->GetValue();
+            value = previousLine->GetValue() - (coordinateDifference * percentage);
             return true;
             }
         else
@@ -3462,28 +3822,30 @@ namespace Wisteria::GraphItems
         {
         result = -1; // init to invalid value in case we have to return false
         if (GetAxisPointsCount() == 0)
-            { return false; }
+            {
+            return false;
+            }
         std::vector<AxisPoint>::const_iterator pos{ GetAxisPoints().cend() };
         if (IsReversed())
             {
-            for (pos = GetAxisPoints().cbegin();
-                pos != GetAxisPoints().cend();
-                ++pos)
+            for (pos = GetAxisPoints().cbegin(); pos != GetAxisPoints().cend(); ++pos)
                 {
-                if (value >= pos->GetValue() ||
-                    compare_doubles(value, pos->GetValue()))
-                    { break; }
+                if (value >= pos->GetValue() || compare_doubles(value, pos->GetValue()))
+                    {
+                    break;
+                    }
                 }
             }
         else
             {
-            pos = std::lower_bound(GetAxisPoints().cbegin(),
-                                   GetAxisPoints().cend(), value,
-                [](const auto& lhv, const auto& rhv) noexcept
-                { return compare_doubles_less(lhv.GetValue(), rhv); });
+            pos = std::lower_bound(GetAxisPoints().cbegin(), GetAxisPoints().cend(), value,
+                                   [](const auto& lhv, const auto& rhv) noexcept
+                                   { return compare_doubles_less(lhv.GetValue(), rhv); });
             }
-        if (pos == GetAxisPoints().cend() )
-            { return false; }
+        if (pos == GetAxisPoints().cend())
+            {
+            return false;
+            }
         if (*pos == value)
             {
             result = pos->GetPhysicalCoordinate();
@@ -3492,28 +3854,27 @@ namespace Wisteria::GraphItems
         // if this point is before the first axis line or
         // above the top axis line, then it is out of range
         if (pos == GetAxisPoints().cbegin())
-            { return false; }
+            {
+            return false;
+            }
         decltype(GetAxisPoints().cbegin()) previousLine = pos;
         --previousLine;
         const double lowerLineValue = previousLine->GetValue();
         const double upperLineValue = pos->GetValue();
-        const double percentage = safe_divide<double>(
-            (value-lowerLineValue),
-            (upperLineValue-lowerLineValue));
+        const double percentage =
+            safe_divide<double>((value - lowerLineValue), (upperLineValue - lowerLineValue));
         if (IsHorizontal())
             {
-            const auto coordinateDifference = pos->GetPhysicalCoordinate() -
-                                              previousLine->GetPhysicalCoordinate();
-            result = previousLine->GetPhysicalCoordinate() +
-                     (coordinateDifference*percentage);
+            const auto coordinateDifference =
+                pos->GetPhysicalCoordinate() - previousLine->GetPhysicalCoordinate();
+            result = previousLine->GetPhysicalCoordinate() + (coordinateDifference * percentage);
             return true;
             }
         else if (IsVertical())
             {
-            const auto coordinateDifference = previousLine->GetPhysicalCoordinate() -
-                                              pos->GetPhysicalCoordinate();
-            result = previousLine->GetPhysicalCoordinate() -
-                     (coordinateDifference*percentage);
+            const auto coordinateDifference =
+                previousLine->GetPhysicalCoordinate() - pos->GetPhysicalCoordinate();
+            result = previousLine->GetPhysicalCoordinate() - (coordinateDifference * percentage);
             return true;
             }
         else
@@ -3529,13 +3890,11 @@ namespace Wisteria::GraphItems
         m_suggestedMaxLengthPerLine = suggestedMaxLengthPerLine;
         // reformat any existing labels
         for (auto custLabelIter = m_customAxisLabels.begin();
-             custLabelIter != m_customAxisLabels.end();
-             ++custLabelIter)
+             custLabelIter != m_customAxisLabels.end(); ++custLabelIter)
             {
             custLabelIter->second.SplitTextToFitLength(m_suggestedMaxLengthPerLine);
             }
-        for (auto axisPointPos = m_axisLabels.begin();
-             axisPointPos != m_axisLabels.begin();
+        for (auto axisPointPos = m_axisLabels.begin(); axisPointPos != m_axisLabels.begin();
              ++axisPointPos)
             {
             Label lab(axisPointPos->GetDisplayValue());
@@ -3549,20 +3908,20 @@ namespace Wisteria::GraphItems
         {
         // reformat any existing labels
         for (auto custLabelIter = m_customAxisLabels.begin();
-             custLabelIter != m_customAxisLabels.end();
-             ++custLabelIter)
+             custLabelIter != m_customAxisLabels.end(); ++custLabelIter)
             {
             if (custLabelIter->second.GetText().length() > suggestedMaxLength)
                 {
                 if (!custLabelIter->second.SplitTextAuto())
                     {
                     if (!custLabelIter->second.SplitTextByListItems())
-                        { custLabelIter->second.SplitTextByConjunctions(); }
+                        {
+                        custLabelIter->second.SplitTextByConjunctions();
+                        }
                     }
                 }
             }
-        for (auto axisPointPos = m_axisLabels.begin();
-             axisPointPos != m_axisLabels.begin();
+        for (auto axisPointPos = m_axisLabels.begin(); axisPointPos != m_axisLabels.begin();
              ++axisPointPos)
             {
             Label lab(axisPointPos->GetDisplayValue());
@@ -3571,7 +3930,9 @@ namespace Wisteria::GraphItems
                 if (!lab.SplitTextAuto())
                     {
                     if (!lab.SplitTextByListItems())
-                        { lab.SplitTextByConjunctions(); }
+                        {
+                        lab.SplitTextByConjunctions();
+                        }
                     }
                 }
             axisPointPos->SetDisplayValue(lab.GetText());
@@ -3585,7 +3946,9 @@ namespace Wisteria::GraphItems
         for (const auto& bracket : GetBrackets())
             {
             spacing = std::max(bracket.CalcSpaceRequired(dc, *this,
-                               IsHorizontal() ? Orientation::Horizontal : Orientation::Vertical), spacing);
+                                                         IsHorizontal() ? Orientation::Horizontal :
+                                                                          Orientation::Vertical),
+                               spacing);
             }
         return spacing;
         }
@@ -3600,13 +3963,14 @@ namespace Wisteria::GraphItems
 
     //-------------------------------------------
     void Axis::AddBrackets(const std::shared_ptr<const Data::Dataset>& data,
-        const wxString& labelColumn, const wxString& valueColumn)
+                           const wxString& labelColumn, const wxString& valueColumn)
         {
         const auto labelCol = data->GetCategoricalColumn(labelColumn);
         if (labelCol == data->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': label column not found for line plot."), labelColumn).ToUTF8());
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': label column not found for line plot."), labelColumn)
+                    .ToUTF8());
             }
 
         const auto valueDateCol = data->GetDateColumn(valueColumn);
@@ -3627,16 +3991,14 @@ namespace Wisteria::GraphItems
                     {
                     // add a bracket stretching from the lowest and highest
                     // values associated with the label
-                    const auto [minVal, maxVal] =
-                        std::minmax_element(bracketValues.first.cbegin(),
-                                            bracketValues.first.cend());
+                    const auto [minVal, maxVal] = std::minmax_element(bracketValues.first.cbegin(),
+                                                                      bracketValues.first.cend());
                     const auto pos1 = *minVal;
                     const auto pos2 = *maxVal;
                     if (!std::isnan(pos1) && !std::isnan(pos2))
                         {
-                        AddBracket(AxisBracket(pos1, pos2,
-                            safe_divide<double>(pos1 + pos2, 2),
-                            bracketLabel));
+                        AddBracket(AxisBracket(pos1, pos2, safe_divide<double>(pos1 + pos2, 2),
+                                               bracketLabel));
                         }
                     }
                 }
@@ -3656,12 +4018,10 @@ namespace Wisteria::GraphItems
                     {
                     // add a bracket stretching from the lowest and highest
                     // cat. codes (their underlying numeric values) associated with the label
-                    const auto [minVal, maxVal] =
-                        std::minmax_element(bracketValues.first.cbegin(),
-                                            bracketValues.first.cend());
-                    AddBracket(AxisBracket(*minVal, *maxVal,
-                        safe_divide<double>(*minVal + *maxVal, 2),
-                        bracketLabel));
+                    const auto [minVal, maxVal] = std::minmax_element(bracketValues.first.cbegin(),
+                                                                      bracketValues.first.cend());
+                    AddBracket(AxisBracket(
+                        *minVal, *maxVal, safe_divide<double>(*minVal + *maxVal, 2), bracketLabel));
                     }
                 }
             }
@@ -3680,16 +4040,15 @@ namespace Wisteria::GraphItems
                     {
                     // add a bracket stretching from the lowest and highest
                     // dates associated with the label
-                    const auto [minVal, maxVal] =
-                        std::minmax_element(bracketValues.first.cbegin(),
-                                            bracketValues.first.cend());
+                    const auto [minVal, maxVal] = std::minmax_element(bracketValues.first.cbegin(),
+                                                                      bracketValues.first.cend());
                     const auto pos1 = FindDatePosition(*minVal);
                     const auto pos2 = FindDatePosition(*maxVal);
                     if (pos1.has_value() && pos2.has_value())
                         {
                         AddBracket(AxisBracket(pos1.value(), pos2.value(),
-                            safe_divide<double>(pos1.value() + pos2.value(), 2),
-                            bracketLabel));
+                                               safe_divide<double>(pos1.value() + pos2.value(), 2),
+                                               bracketLabel));
                         }
                     }
                 }
@@ -3700,7 +4059,9 @@ namespace Wisteria::GraphItems
     bool Axis::SimplifyYearBrackets()
         {
         if (GetBrackets().size() < 2)
-            { return false; }
+            {
+            return false;
+            }
 
         wxRegEx re(LR"(^[A-Z]{0,2}([0-9]{2})[0-9]{2}[\-\x2013]([0-9]{2})?[0-9]{2}$)");
         wxString century;
@@ -3711,19 +4072,27 @@ namespace Wisteria::GraphItems
                 const auto currentCentury = re.GetMatch(bracket.GetLabel().GetText(), 1);
                 // first bracket, so set the overall century
                 if (century.empty())
-                    { century = currentCentury; }
+                    {
+                    century = currentCentury;
+                    }
                 // or if a latter bracket with a different century, then bail
                 else if (century != currentCentury)
-                    { return false; }
+                    {
+                    return false;
+                    }
                 if (re.GetMatchCount() > 1)
                     {
                     const auto secondCentury = re.GetMatch(bracket.GetLabel().GetText(), 2);
                     if (secondCentury.length() && secondCentury != currentCentury)
-                        { return false; }
+                        {
+                        return false;
+                        }
                     }
                 }
             else
-                { return false; }
+                {
+                return false;
+                }
             }
         wxRegEx reReplace(LR"([0-9]{2}([0-9]{2}))");
         wxRegEx rePrefix(LR"(^[A-Z]{2})");
@@ -3734,11 +4103,15 @@ namespace Wisteria::GraphItems
             reReplace.ReplaceAll(&label, LR"(\1)");
             // replace 'FY' or 'AY' with apostrophe in front of the first truncated number
             if (rePrefix.Matches(label))
-                { rePrefix.ReplaceFirst(&label, L"\'"); }
+                {
+                rePrefix.ReplaceFirst(&label, L"\'");
+                }
             // else if no prefix like "FY", then it's just a year sequence;
             // add apostrophe in front of the first truncated number
             else
-                { label.insert(0, 1, L'\''); }
+                {
+                label.insert(0, 1, L'\'');
+                }
             // if using hyphens, replace with en dashes to be fancier
             label.Replace(L"-", L"\x2013");
             GetBrackets()[i].GetLabel().SetText(label);
@@ -3755,7 +4128,9 @@ namespace Wisteria::GraphItems
     void Axis::SimplifyBrackets()
         {
         if (GetBrackets().size() < 2)
-            { return; }
+            {
+            return;
+            }
 
         SimplifyYearBrackets();
         }
@@ -3765,12 +4140,12 @@ namespace Wisteria::GraphItems
         {
         GraphItemBase::SetScaling(scaling);
         std::for_each(GetBrackets().begin(), GetBrackets().end(),
-            [this, scaling](auto& bracket)
-            {
-            bracket.GetLabel().SetScaling(scaling);
-            // also update the DPI scale factor for the label
-            bracket.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-            });
+                      [this, scaling](auto& bracket)
+                      {
+                          bracket.GetLabel().SetScaling(scaling);
+                          // also update the DPI scale factor for the label
+                          bracket.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
+                      });
         }
 
     //-------------------------------------------
@@ -3779,10 +4154,14 @@ namespace Wisteria::GraphItems
         m_displayInterval = interval;
         // first, reset the labels
         for (size_t i = 0; i < m_axisLabels.size(); ++i)
-            { m_axisLabels.at(i).Show(false); }
+            {
+            m_axisLabels.at(i).Show(false);
+            }
         // then turn them on, based on the specified interval
-        for (size_t i = 0+offset; i < m_axisLabels.size(); i += m_displayInterval)
-            { m_axisLabels.at(i).Show(true); }
+        for (size_t i = 0 + offset; i < m_axisLabels.size(); i += m_displayInterval)
+            {
+            m_axisLabels.at(i).Show(true);
+            }
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
         }
 
@@ -3790,26 +4169,34 @@ namespace Wisteria::GraphItems
     bool Axis::IsPointDisplayingLabel(const AxisPoint& point) const
         {
         if (!point.IsShown())
-            { return false; }
+            {
+            return false;
+            }
 
         // not showing any labels?
         if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
-            { return false; }
+            {
+            return false;
+            }
         else
             {
             const auto customLabel = m_customAxisLabels.find(point.GetValue());
             // is it set to show a custom label and has one?
             if (GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels)
-                { return (customLabel != m_customAxisLabels.cend()); }
+                {
+                return (customLabel != m_customAxisLabels.cend());
+                }
             // custom and/or underlying value and has one or the other?
             else if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues ||
-                GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues)
+                     GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues)
                 {
                 return (customLabel != m_customAxisLabels.cend() ||
                         point.GetDisplayValue().length());
                 }
             else // AxisLabelDisplay::DisplayValues
-                { return point.GetDisplayValue().length(); }
+                {
+                return point.GetDisplayValue().length();
+                }
             }
         }
 
@@ -3818,25 +4205,30 @@ namespace Wisteria::GraphItems
         {
         // just return a blank label
         if (!IsShowingLabels())
-            { return Label(GraphItemInfo().DPIScaling(GetDPIScaleFactor())); }
+            {
+            return Label(GraphItemInfo().DPIScaling(GetDPIScaleFactor()));
+            }
 
         const auto& customLabel = GetCustomLabel(pt.GetValue());
         if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues)
             {
-            return Label(
-                GraphItemInfo(customLabel.GetText() + L"    " + pt.GetDisplayValue()).
-                DPIScaling(GetDPIScaleFactor()));
+            return Label(GraphItemInfo(customLabel.GetText() + L"    " + pt.GetDisplayValue())
+                             .DPIScaling(GetDPIScaleFactor()));
             }
         else if (GetLabelDisplay() == AxisLabelDisplay::DisplayOnlyCustomLabels)
-            { return customLabel; }
+            {
+            return customLabel;
+            }
         else if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues)
             {
             return ((customLabel.IsOk() && customLabel.GetText().length()) ?
-                customLabel :
-                Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor())));
+                        customLabel :
+                        Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor())));
             }
         else // AxisLabelDisplay::DisplayValues
-            { return Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor())); }
+            {
+            return Label(GraphItemInfo(pt.GetDisplayValue()).DPIScaling(GetDPIScaleFactor()));
+            }
         }
 
     //-------------------------------------------
@@ -3887,10 +4279,12 @@ namespace Wisteria::GraphItems
         theLabel.SetFont(parentAxis.GetFont());
         const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
         wxCoord size = GetLineSpacing() * parentAxis.GetScaling() * parentAxis.GetDPIScaleFactor();
-        // If axis is vertical (e.g., a left Y axis), then the width of the bracket's text is what we are measuring
-        // since the bracket is to the left or right of the vertical axis. For a horizontal (e.g., bottom X) axis,
-        // then the bracket is underneath or above it, so the text's height is what we want.
-        size += (parentAxisOrientation == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
+        // If axis is vertical (e.g., a left Y axis), then the width of the bracket's text is what
+        // we are measuring since the bracket is to the left or right of the vertical axis. For a
+        // horizontal (e.g., bottom X) axis, then the bracket is underneath or above it, so the
+        // text's height is what we want.
+        size += (parentAxisOrientation == Orientation::Vertical) ? labelSize.GetWidth() :
+                                                                   labelSize.GetHeight();
         return size;
         }
 
@@ -3901,21 +4295,25 @@ namespace Wisteria::GraphItems
         {
         wxPen scaledPen = GetLinePen();
         if (scaledPen.IsOk())
-            { scaledPen.SetWidth(scaledPen.GetWidth() * scaling); }
+            {
+            scaledPen.SetWidth(scaledPen.GetWidth() * scaling);
+            }
         wxDCPenChanger penCh(dc, scaledPen);
 
         if (GetBracketLineStyle() == BracketLineStyle::Arrow)
             {
             GraphItems::Polygon::DrawArrow(dc, bracketPoint, axisPoint,
-                                            wxSize(10*scaling, 10*scaling));
+                                           wxSize(10 * scaling, 10 * scaling));
             }
         else if (GetBracketLineStyle() == BracketLineStyle::ReverseArrow)
             {
             GraphItems::Polygon::DrawArrow(dc, axisPoint, bracketPoint,
-                                            wxSize(10*scaling, 10*scaling));
+                                           wxSize(10 * scaling, 10 * scaling));
             }
         // OK for curly braces because it will be a single line
         else
-            { dc.DrawLine(axisPoint, bracketPoint); }
+            {
+            dc.DrawLine(axisPoint, bracketPoint);
+            }
         }
-    }
+    } // namespace Wisteria::GraphItems

@@ -1332,8 +1332,7 @@ namespace Wisteria
             object->SetOriginalCanvasScaling(object->GetScaling());
             }
         // resize the grid, if necessary
-        auto currentColumnCount =
-            (GetFixedObjects().empty() ? 0 : GetFixedObjects().at(0).size());
+        auto currentColumnCount = (GetFixedObjects().empty() ? 0 : GetFixedObjects().at(0).size());
         if (row >= GetFixedObjects().size())
             {
             SetFixedObjectsGridSize(row + 1, std::max(column + 1, currentColumnCount));
