@@ -3343,7 +3343,8 @@ namespace Wisteria::GraphItems
         if (IsReversed())
             {
             double lastValidPoint = rangeEnd;
-            for (double i = rangeEnd; i > (rangeStart - interval); i -= interval)
+            for (double i = rangeEnd; compare_doubles_greater(i, (rangeStart - interval));
+                 i -= interval)
                 {
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1) ? true : false;
