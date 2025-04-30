@@ -971,15 +971,34 @@ namespace lily_of_the_valley
             // Unicode values over 32,768 are signed (negative) in RTF syntax,
             // so convert it back to signed.
             if (param < 0)
-                { param += 65'536; }
+                {
+                param += 65'536;
+                }
             if (m_extraction_type == rtf_extraction_type::rtf_to_html && (param > 127))
                 {
                 const std::wstring encodedChar = L"&#" + std::to_wstring(param) + L";";
                 ecPrintString(encodedChar.c_str(), encodedChar.length());
                 }
             else
-                { ecPrintChar(static_cast<wchar_t>(param)); }
-            ++m_rtf_text; // will have a trailing '?' or '*' that we need to skip
+                {
+                ecPrintChar(static_cast<wchar_t>(param));
+                }
+            // Will have a trailing '?' or '*' that we need to skip.
+            // (It can either be hex encoded or a single character.)
+            // First, we step over the end of the current Unicode sequence
+            // to see how far we need to step. Afterwards, when we return from
+            // here, the caller will step one more time to step over the actual ? or *.
+            if (std::strncmp(std::next(m_rtf_text), "\\'3f", 4) == 0 ||
+                std::strncmp(std::next(m_rtf_text), "\\'3F", 4) == 0 ||
+                std::strncmp(std::next(m_rtf_text), "\\'2a", 4) == 0 ||
+                std::strncmp(std::next(m_rtf_text), "\\'2A", 4) == 0)
+                {
+                m_rtf_text += 4;
+                }
+            else
+                {
+                ++m_rtf_text;
+                }
             return;
             }
         // set the documents font to the current font (for RTF->HTML conversion)
