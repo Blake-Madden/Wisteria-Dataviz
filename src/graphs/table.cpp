@@ -35,7 +35,7 @@ namespace Wisteria::Graphs
                  m_valueFormat == TableCellFormat::GeneralChange)
             {
             m_precision = 0;
-            m_prefix = L"\x2014"; // emdash, will be changed dynamically later based on value
+            m_prefix = L"\u2014"; // em dash, will be changed dynamically later based on value
             m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
             }
         else if (m_valueFormat == TableCellFormat::Accounting)
@@ -645,7 +645,7 @@ namespace Wisteria::Graphs
                                                        std::pow(10, cell.GetPrecision())));
                             }
                         }
-                    // If NOT totalling (e.g., change percent), custom start and/or end column was
+                    // If NOT totaling (e.g., change percent), custom start and/or end column was
                     // requested and it is not a valid number, then insert NaN.
                     const bool onCustomStartRow{ aggInfo.m_cell1.has_value() &&
                                                  aggInfo.m_cell1.value() == currentRow };
@@ -754,7 +754,7 @@ namespace Wisteria::Graphs
                                                        std::pow(10, cell.GetPrecision())));
                             }
                         }
-                    // If NOT totalling (e.g., change percent), custom start and/or end column was
+                    // If NOT totaling (e.g., change percent), custom start and/or end column was
                     // requested and it is not a valid number, then insert NaN.
                     const bool onCustomStartColumn{ aggInfo.m_cell1.has_value() &&
                                                     aggInfo.m_cell1.value() == i };
@@ -1468,9 +1468,9 @@ namespace Wisteria::Graphs
                           cell.m_valueFormat == TableCellFormat::GeneralChange)) ?
                             // down and up arrow emojis
                             wxString((std::isnan(cell.GetDoubleValue()) ? L" " :
-                                      (cell.GetDoubleValue() == 0)      ? L"\x2014" :
-                                      cell.GetDoubleValue() < 0         ? L"\x25BC" :
-                                                                          L"\x25B2")) :
+                                      (cell.GetDoubleValue() == 0)      ? L"\u2014" :
+                                      cell.GetDoubleValue() < 0         ? L"\u25BC" :
+                                                                          L"\u25B2")) :
                             cell.GetPrefix();
                     const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE };
                     auto cellPrefixLabel = std::make_unique<Label>(
@@ -2016,16 +2016,16 @@ namespace Wisteria::Graphs
         // clang-format off
         static const std::map<uint8_t, std::wstring> footnoteChars =
             {
-            { 0, L"\x2070" },
-            { 1, L"\x00B9" },
-            { 2, L"\x00B2" },
-            { 3, L"\x00B3" },
-            { 4, L"\x2074" },
-            { 5, L"\x2075" },
-            { 6, L"\x2076" },
-            { 7, L"\x2077" },
-            { 8, L"\x2078" },
-            { 9, L"\x2079" }
+            { 0, L"\u2070" },
+            { 1, L"\u00B9" },
+            { 2, L"\u00B2" },
+            { 3, L"\u00B3" },
+            { 4, L"\u2074" },
+            { 5, L"\u2075" },
+            { 6, L"\u2076" },
+            { 7, L"\u2077" },
+            { 8, L"\u2078" },
+            { 9, L"\u2079" }
         };
         // clang-format on
 

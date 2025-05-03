@@ -94,7 +94,7 @@ void LogFile::DoLogTextAtLevel(wxLogLevel level, const wxString& msg)
         prefix = L"\U00002757 Error: ";
         break;
     case wxLOG_Warning:
-        prefix = L"\x26A0 Warning: ";
+        prefix = L"\u26A0 Warning: ";
         break;
     default:
         prefix.clear();
@@ -119,7 +119,7 @@ void LogFile::DoLogRecord(wxLogLevel level, const wxString& msg, const wxLogReco
         prefix = L"\U00002757 Error: ";
         break;
     case wxLOG_Warning:
-        prefix = L"\x26A0 Warning: ";
+        prefix = L"\u26A0 Warning: ";
         break;
     default:
         prefix.clear();

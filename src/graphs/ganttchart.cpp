@@ -252,8 +252,8 @@ namespace Wisteria::Graphs
                     {
                     br.GetLabel().SetText(
                         taskInfo.m_percentFinished == 100 ?
-                            // TRANSLATORS: \x2713 is a checkmark character
-                            _(L"\x2713 Complete") :
+                            // TRANSLATORS: \u2713 is a checkmark character
+                            _(L"\u2713 Complete") :
                             wxString::Format(_(L"%d%% complete"), taskInfo.m_percentFinished));
                     }
                 // move bar to actual starting date

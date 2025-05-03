@@ -322,7 +322,7 @@ namespace Wisteria::Graphs
 
                             auto streamRibbon{
                                 std::make_unique<GraphItems::Polygon>(
-                                GraphItemInfo(wxString::Format(L"%s \x2192 %s", group.m_label, downstreamGroup.first)).
+                                GraphItemInfo(wxString::Format(L"%s \u2192 %s", group.m_label, downstreamGroup.first)).
                                 Pen(wxNullPen).
                                 Brush(ColorContrast::ChangeOpacity(currentColor, 100)).
                                 Scaling(GetScaling()),

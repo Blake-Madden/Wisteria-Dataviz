@@ -305,7 +305,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         buildDate.ParseDate(__DATE__);
 
         Wisteria::GraphItems::Label copyrightInfo(
-            Wisteria::GraphItems::GraphItemInfo(wxString::Format(L"\x00A9%d %s. %s",
+            Wisteria::GraphItems::GraphItemInfo(wxString::Format(L"\u00A9%d %s. %s",
                                                                  buildDate.GetYear(), vendorName,
                                                                  _(L"All rights reserved.")))
                 .Pen(wxNullPen)

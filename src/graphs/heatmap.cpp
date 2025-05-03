@@ -83,7 +83,7 @@ namespace Wisteria::Graphs
                                               m_continuousColumn->GetValues().cend());
         m_range = cb.GetRange();
 
-        const wxString crossedOutSymbolForNaN{ L"\x274C" };
+        const wxString crossedOutSymbolForNaN{ L"\u274C" };
         if (IsUsingGrouping())
             {
             // see how many groups there are

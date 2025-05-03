@@ -137,7 +137,7 @@ namespace lily_of_the_valley
                 std::transform(currentString.begin(), currentString.end(), currentString.begin(),
                                [](auto& ch) noexcept {
                                    return (ch == L'\n' || ch == L'\r' || ch == L'\t' ||
-                                           ch == L'\x00A0') ?
+                                           ch == L'\u00A0') ?
                                               L' ' :
                                               ch;
                                });
