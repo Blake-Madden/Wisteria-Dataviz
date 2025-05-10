@@ -263,11 +263,13 @@ namespace Wisteria::UI
             @param vendorName The application's vendor.
             @param includeCopyright Whether to show a copyright label at the
                 bottom of the splashscreen.
+            @param copyrightPrefix A string to insert at the start of the copyright message.
             @returns The decorated splashscreen.*/
         [[nodiscard]]
         wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
                                     const wxString& appSubName, const wxString& vendorName,
-                                    const bool includeCopyright);
+                                    const bool includeCopyright,
+                                    const wxString& copyrightPrefix = wxString{});
 
       private:
         [[nodiscard]]
