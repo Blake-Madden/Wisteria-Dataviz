@@ -674,6 +674,7 @@ namespace Wisteria::UI
 
         wxCoord m_itemHeight{ 0 };
         std::optional<size_t> m_highlightedFolder{ std::nullopt };
+        std::optional<size_t> m_lastSelectedFolder{ std::nullopt };
         // the folder index, and the index of its subitem
         std::pair<std::optional<size_t>, std::optional<size_t>> m_folderWithHighlightedSubitem{
             std::make_pair(std::nullopt, std::nullopt)

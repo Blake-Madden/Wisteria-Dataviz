@@ -672,6 +672,10 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                 }
             break;
             }
+        else
+            {
+            m_highlightedFolder.reset();
+            }
         // If a parent item isn't being moused over, then see if its
         // expanded subitems are being moused over.
         // Otherwise, turn off the subitems' highlighting.
@@ -695,12 +699,15 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                         {
                         return;
                         }
-                    // if hovering over subitem, its parent was the last
+                    // If hovering over subitem, its parent was the last
                     // highlighted folder, and that folder (or one of its subitems)
-                    // is active, then don't repaint that folder
+                    // is active, then don't repaint that folder.
+                    // However, if that folder was clicked on and it is highlighted,
+                    // then we need to repait it.
                     if (previouslyHighlightedFolder.has_value() &&
                         previouslyHighlightedFolder.value() == i &&
-                        m_folders[i].IsActive())
+                        m_folders[i].IsActive() &&
+                        (!m_lastSelectedFolder || m_lastSelectedFolder.value() != i))
                         {
                         previouslyHighlightedRect.reset();
                         }
@@ -713,6 +720,8 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                 }
             }
         }
+
+    m_lastSelectedFolder.reset();
 
     // if nothing highlighted and nothing was highlighted before, then don't repaint
     if (!previouslyHighlightedRect && !m_highlightedRect)
@@ -927,6 +936,7 @@ bool SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         }
 
     ActivateFolder(item);
+    m_lastSelectedFolder = item;
 
     EnsureFolderVisible(item);
 
