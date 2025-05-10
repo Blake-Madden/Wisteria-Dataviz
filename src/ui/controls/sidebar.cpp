@@ -646,7 +646,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
 
-    const auto previouslyHighlightedRect = m_highlightedRect;
+    auto previouslyHighlightedRect = m_highlightedRect;
     const auto previouslyHighlightedFolder = m_highlightedFolder;
     const auto previouslyHighlightedSubitem = m_folderWithHighlightedSubitem;
     m_previouslyHighlightedItemsIsSelected =
@@ -654,7 +654,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
          previouslyHighlightedSubitem.first && previouslyHighlightedSubitem.second &&
          GetSelectedFolder().value() == previouslyHighlightedSubitem.first.value() &&
          GetFolder(GetSelectedFolder().value()).m_selectedItem ==
-            previouslyHighlightedSubitem.second.value());
+             previouslyHighlightedSubitem.second.value());
     ClearHighlightedItems();
 
     for (size_t i = 0; i < m_folders.size(); ++i)
@@ -692,15 +692,26 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                         previouslyHighlightedSubitem.second.has_value() &&
                         previouslyHighlightedSubitem.first.value() == i &&
                         previouslyHighlightedSubitem.second.value() == j)
-                        { return; }
+                        {
+                        return;
+                        }
+                    // if hovering over subitem, its parent was the last
+                    // highlighted folder, and that folder (or one of its subitems)
+                    // is active, then don't repaint that folder
+                    if (previouslyHighlightedFolder.has_value() &&
+                        previouslyHighlightedFolder.value() == i &&
+                        m_folders[i].IsActive())
+                        {
+                        previouslyHighlightedRect = std::nullopt;
+                        }
                     break;
                     }
                 else
                     {
                     m_folders[i].m_highlightedItem = std::nullopt;
+                    }
                 }
             }
-        }
         }
 
     // if nothing highlighted and nothing was highlighted before, then don't repaint
@@ -711,12 +722,12 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
 
     // refresh only the affected items, not the whole control
     wxRect refreshRect = (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected &&
-         m_highlightedRect && !m_highlightedIsSelected) ?
-            previouslyHighlightedRect.value().Union(m_highlightedRect.value()) :
-        (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected) ?
-            previouslyHighlightedRect.value() :
-        (m_highlightedRect && !m_highlightedIsSelected) ?
-            m_highlightedRect.value() :
+                          m_highlightedRect && !m_highlightedIsSelected) ?
+                             previouslyHighlightedRect.value().Union(m_highlightedRect.value()) :
+                         (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected) ?
+                             previouslyHighlightedRect.value() :
+                         (m_highlightedRect && !m_highlightedIsSelected) ?
+                             m_highlightedRect.value() :
                              wxRect{};
 
     if (refreshRect.IsEmpty())
@@ -915,6 +926,8 @@ bool SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         return false;
         }
 
+    ActivateFolder(item);
+
     EnsureFolderVisible(item);
 
     int x{ 0 }, y{ 0 };
@@ -1033,6 +1046,10 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
         std::nullopt;
 
     m_selectedFolder = folderIndex.value();
+    if (m_selectedFolder)
+        {
+        ActivateFolder(m_selectedFolder.value());
+        }
     const auto needsExpanding = !m_folders[GetSelectedFolder().value()].m_isExpanded;
     m_folders[GetSelectedFolder().value()].Expand();
     m_folders[GetSelectedFolder().value()].m_selectedItem = subItemIndex.value();
@@ -1098,6 +1115,7 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
         std::nullopt;
 
     m_selectedFolder = item;
+    ActivateFolder(item);
     const auto needsExpanding = !m_folders[GetSelectedFolder().value()].m_isExpanded;
     m_folders[GetSelectedFolder().value()].Expand();
     m_folders[GetSelectedFolder().value()].m_selectedItem = subItem;

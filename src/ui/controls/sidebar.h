@@ -133,10 +133,19 @@ namespace Wisteria::UI
 
             /// @returns @c true if the selected item in the sidebar is
             ///     one of this folder's children.
+            /// @warning Folders store the selected subitem even when it isn't active.
+            ///     To see if a folder is the currently selected one, use IsActive().
             [[nodiscard]]
             bool IsSubItemSelected() const noexcept
                 {
                 return (m_selectedItem.has_value() && m_selectedItem.value() < m_subItems.size());
+                }
+
+            /// @returns @c true if this is the active folder (i.e., most recently selected one).
+            [[nodiscard]]
+            bool IsActive() const noexcept
+                {
+                return m_isActive;
                 }
 
             /// @brief Sorts the folder's subitems alphabetically
@@ -159,6 +168,7 @@ namespace Wisteria::UI
             std::optional<size_t> m_highlightedItem{ std::nullopt };
             std::optional<size_t> m_selectedItem{ std::nullopt };
             bool m_isExpanded{ false };
+            bool m_isActive{ false };
             };
 
         /** @brief Collapses all of the items that have subitems.*/
@@ -584,6 +594,17 @@ namespace Wisteria::UI
         std::pair<size_t, size_t> CalculateItemRects();
 
       private:
+        void ActivateFolder(const size_t item)
+            {
+            for (auto& folder : m_folders)
+                {
+                folder.m_isActive = false;
+                }
+            if (item < GetFolderCount())
+                {
+                m_folders[item].m_isActive = true;
+                }
+            }
         /** @brief Gets the width (label, icon, and padding) of a given root item.
             @details The item's subitem width are factored into this (including their margins),
                 so the width of the widest subitem will be returned if wider than the root item.
