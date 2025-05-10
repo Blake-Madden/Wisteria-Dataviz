@@ -629,35 +629,15 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
     {
     // if mouse is not inside of window, then turn off any item mouse highlighting
     if (!GetScreenRect().Contains(wxGetMousePosition()))
-        { ClearHighlightedItems(); }
-
- #ifdef __WXMSW__
-    wxAutoBufferedPaintDC pdc(this);
-    pdc.Clear();
-    wxGraphicsContext* context{ nullptr };
-    auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-    if (renderer)
-        { context = renderer->CreateContext(pdc); }
-
-    if (context)
         {
-        wxGCDC dc(context);
-        PrepareDC(dc);
-        OnDraw(dc);
+        ClearHighlightedItems();
         }
-    else
-        {
-        wxGCDC dc(pdc);
-        PrepareDC(dc);
-        OnDraw(dc);
-        }
-#else
+
     wxAutoBufferedPaintDC pdc(this);
     pdc.Clear();
     wxGCDC dc(pdc);
     PrepareDC(dc);
     OnDraw(dc);
-#endif
     }
 
 //-------------------------------------------
