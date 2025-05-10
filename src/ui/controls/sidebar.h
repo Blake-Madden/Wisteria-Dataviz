@@ -213,8 +213,8 @@ namespace Wisteria::UI
         void DeleteAllFolders()
             {
             m_folders.clear();
-            m_highlightedFolder = std::nullopt;
-            m_selectedFolder = std::nullopt;
+            m_highlightedFolder.reset();
+            m_selectedFolder.reset();
             RecalcSizes();
             Refresh();
             }
@@ -224,10 +224,10 @@ namespace Wisteria::UI
         void DeleteFolder(const size_t index)
             {
             m_folders.erase(m_folders.begin() + index);
-            m_highlightedFolder = std::nullopt;
+            m_highlightedFolder.reset();
             if (m_folders.empty())
                 {
-                m_selectedFolder = std::nullopt;
+                m_selectedFolder.reset();
                 }
             else if (!m_selectedFolder.has_value() || m_selectedFolder.value() >= m_folders.size())
                 {

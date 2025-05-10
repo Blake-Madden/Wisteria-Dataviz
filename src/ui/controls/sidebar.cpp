@@ -370,11 +370,11 @@ bool SideBar::InsertSubItemById(const wxWindowID parentItemId, const wxString& l
 void SideBar::ClearHighlightedItems() noexcept
     {
     m_highlightedIsSelected = false;
-    m_highlightedRect = std::nullopt;
-    m_highlightedFolder = std::nullopt;
+    m_highlightedRect.reset();
+    m_highlightedFolder.reset();
     m_folderWithHighlightedSubitem = std::make_pair(std::nullopt, std::nullopt);
     for (auto& item : m_folders)
-        { item.m_highlightedItem = std::nullopt; }
+        { item.m_highlightedItem.reset(); }
     }
 
 //---------------------------------------------------
@@ -399,7 +399,7 @@ void SideBar::OnDraw(wxDC& dc)
             if (!firstFolderToDraw)
                 { firstFolderToDraw = i; }
             lastFolderToDraw = i;
-            lastSubitemInLastDrawnFolderToDraw = std::nullopt;
+            lastSubitemInLastDrawnFolderToDraw.reset();
             }
         for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
             {
@@ -664,7 +664,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             m_highlightedFolder = i;
             m_highlightedIsSelected = (m_selectedFolder && m_selectedFolder.value() == i);
             m_highlightedRect = m_folders[i].m_Rect;
-            m_folders[i].m_highlightedItem = std::nullopt;
+            m_folders[i].m_highlightedItem.reset();
             // mouse is over the same folder as before, don't bother repainting
             if (previouslyHighlightedFolder.has_value() && previouslyHighlightedFolder.value() == i)
                 {
@@ -702,13 +702,13 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                         previouslyHighlightedFolder.value() == i &&
                         m_folders[i].IsActive())
                         {
-                        previouslyHighlightedRect = std::nullopt;
+                        previouslyHighlightedRect.reset();
                         }
                     break;
                     }
                 else
                     {
-                    m_folders[i].m_highlightedItem = std::nullopt;
+                    m_folders[i].m_highlightedItem.reset();
                     }
                 }
             }
