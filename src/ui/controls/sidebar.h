@@ -82,8 +82,7 @@ namespace Wisteria::UI
             {
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const SideBarSubItem& that) const
+            bool operator<(const SideBarSubItem& that) const
                 {
                 return wxUILocale::GetCurrent().CompareStrings(m_label, that.m_label,
                                                                wxCompare_CaseInsensitive) < 0;
@@ -605,6 +604,7 @@ namespace Wisteria::UI
                 m_folders[item].m_isActive = true;
                 }
             }
+
         /** @brief Gets the width (label, icon, and padding) of a given root item.
             @details The item's subitem width are factored into this (including their margins),
                 so the width of the widest subitem will be returned if wider than the root item.
@@ -693,8 +693,7 @@ namespace Wisteria::UI
                 }
 
             [[nodiscard]]
-            bool
-            operator<(const SideBarStateInfo& that) const noexcept
+            bool operator<(const SideBarStateInfo& that) const noexcept
                 {
                 return m_id < that.m_id;
                 }
