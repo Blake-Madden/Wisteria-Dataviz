@@ -650,28 +650,26 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     const auto previouslyHighlightedFolder = m_highlightedFolder;
     const auto previouslyHighlightedSubitem = m_folderWithHighlightedSubitem;
     m_previouslyHighlightedItemsIsSelected =
-        (GetSelectedFolder() &&
-         GetFolder(GetSelectedFolder().value()).m_selectedItem &&
-         previouslyHighlightedSubitem.first &&
-         previouslyHighlightedSubitem.second &&
-         GetSelectedFolder().value() ==
-            previouslyHighlightedSubitem.first.value() &&
+        (GetSelectedFolder() && GetFolder(GetSelectedFolder().value()).m_selectedItem &&
+         previouslyHighlightedSubitem.first && previouslyHighlightedSubitem.second &&
+         GetSelectedFolder().value() == previouslyHighlightedSubitem.first.value() &&
          GetFolder(GetSelectedFolder().value()).m_selectedItem ==
             previouslyHighlightedSubitem.second.value());
     ClearHighlightedItems();
 
     for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        if (m_folders[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
+        if (m_folders[i].m_Rect.Contains(event.GetX() + x, event.GetY() + y))
             {
             m_highlightedFolder = i;
             m_highlightedIsSelected = (m_selectedFolder && m_selectedFolder.value() == i);
             m_highlightedRect = m_folders[i].m_Rect;
             m_folders[i].m_highlightedItem = std::nullopt;
             // mouse is over the same folder as before, don't bother repainting
-            if (previouslyHighlightedFolder.has_value() &&
-                previouslyHighlightedFolder.value() == i)
-                { return; }
+            if (previouslyHighlightedFolder.has_value() && previouslyHighlightedFolder.value() == i)
+                {
+                return;
+                }
             break;
             }
         // If a parent item isn't being moused over, then see if its
@@ -681,15 +679,12 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             {
             for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
                 {
-                if (m_folders[i].m_subItems[j].m_Rect.
-                    Contains(event.GetX()+x, event.GetY()+y))
+                if (m_folders[i].m_subItems[j].m_Rect.Contains(event.GetX() + x, event.GetY() + y))
                     {
                     m_folders[i].m_highlightedItem = j;
                     m_highlightedIsSelected =
-                        (m_selectedFolder &&
-                         m_selectedFolder.value() == i &&
-                         m_folders[i].m_selectedItem &&
-                         m_folders[i].m_selectedItem.value() == j);
+                        (m_selectedFolder && m_selectedFolder.value() == i &&
+                         m_folders[i].m_selectedItem && m_folders[i].m_selectedItem.value() == j);
                     m_highlightedRect = m_folders[i].m_subItems[j].m_Rect;
                     m_folderWithHighlightedSubitem = std::make_pair(i, j);
                     // mouse is over the same subitem as before, don't bother repainting
@@ -701,28 +696,33 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                     break;
                     }
                 else
-                    { m_folders[i].m_highlightedItem = std::nullopt; }
+                    {
+                    m_folders[i].m_highlightedItem = std::nullopt;
                 }
             }
+        }
         }
 
     // if nothing highlighted and nothing was highlighted before, then don't repaint
     if (!previouslyHighlightedRect && !m_highlightedRect)
-        { return; }
+        {
+        return;
+        }
 
     // refresh only the affected items, not the whole control
-    wxRect refreshRect =
-        (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected &&
+    wxRect refreshRect = (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected &&
          m_highlightedRect && !m_highlightedIsSelected) ?
             previouslyHighlightedRect.value().Union(m_highlightedRect.value()) :
         (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected) ?
             previouslyHighlightedRect.value() :
         (m_highlightedRect && !m_highlightedIsSelected) ?
             m_highlightedRect.value() :
-        wxRect();
+                             wxRect{};
 
     if (refreshRect.IsEmpty())
-        { return; }
+        {
+        return;
+        }
 
     refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
@@ -911,7 +911,9 @@ bool SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
                            const bool collapseIfExpanded /*= false*/)
     {
     if (item >= GetFolderCount())
-        { return false; }
+        {
+        return false;
+        }
 
     EnsureFolderVisible(item);
 
@@ -953,11 +955,11 @@ bool SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
-        cevent.SetString(m_folders[GetSelectedFolder().value()].m_label);
-        cevent.SetInt(m_folders[GetSelectedFolder().value()].m_id);
-        cevent.SetEventObject(this);
-        GetEventHandler()->ProcessEvent(cevent);
+        wxCommandEvent event(wxEVT_SIDEBAR_CLICK, GetId());
+        event.SetString(m_folders[GetSelectedFolder().value()].m_label);
+        event.SetInt(m_folders[GetSelectedFolder().value()].m_id);
+        event.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(event);
         }
 
     return true;
@@ -1039,7 +1041,7 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
     RecalcSizes();
 
     // get the rects of the selected (prior and current) selected items
-    const auto previosuslySelectedRect = previouslySelectedSubItem ?
+    const auto previouslySelectedRect = previouslySelectedSubItem ?
         m_folders[previouslySelectedFolder].m_subItems[previouslySelectedSubItem.value()].m_Rect :
         m_folders[previouslySelectedFolder].m_Rect;
 
@@ -1052,7 +1054,7 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
     wxRect refreshRect =
         (needsExpanding ?
          GetClientRect() :
-         previosuslySelectedRect.Union(currentlySelectedRect));
+         previouslySelectedRect.Union(currentlySelectedRect));
     refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     Refresh(true, &refreshRect);
@@ -1062,14 +1064,14 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
-        cevent.SetString(m_folders[GetSelectedFolder().value()].
+        wxCommandEvent event(wxEVT_SIDEBAR_CLICK, GetId());
+        event.SetString(m_folders[GetSelectedFolder().value()].
             m_subItems[subItemIndex.value()].m_label);
-        cevent.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
-        cevent.SetInt(m_folders[GetSelectedFolder().value()].
+        event.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
+        event.SetInt(m_folders[GetSelectedFolder().value()].
             m_subItems[subItemIndex.value()].m_id);
-        cevent.SetEventObject(this);
-        GetEventHandler()->ProcessEvent(cevent);
+        event.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(event);
         }
     return true;
     }
@@ -1104,7 +1106,7 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
     RecalcSizes();
 
     // get the rects of the selected (prior and current) selected items
-    const auto previosuslySelectedRect = previouslySelectedSubItem ?
+    const auto previouslySelectedRect = previouslySelectedSubItem ?
         m_folders[previouslySelectedFolder].m_subItems[previouslySelectedSubItem.value()].m_Rect :
         m_folders[previouslySelectedFolder].m_Rect;
 
@@ -1117,7 +1119,7 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
     wxRect refreshRect =
         (needsExpanding ?
          GetClientRect() :
-         previosuslySelectedRect.Union(currentlySelectedRect));
+         previouslySelectedRect.Union(currentlySelectedRect));
     refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     Refresh(true, &refreshRect);
@@ -1127,12 +1129,12 @@ bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
-        cevent.SetString(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_label);
-        cevent.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
-        cevent.SetInt(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_id);
-        cevent.SetEventObject(this);
-        GetEventHandler()->ProcessEvent(cevent);
+        wxCommandEvent event(wxEVT_SIDEBAR_CLICK, GetId());
+        event.SetString(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_label);
+        event.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
+        event.SetInt(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_id);
+        event.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(event);
         }
     return true;
     }
