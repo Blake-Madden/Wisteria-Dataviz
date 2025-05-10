@@ -221,8 +221,8 @@ namespace Wisteria::Graphs
         wxString GetNegativeLegendLabel() const final
             { return m_negativeLabel; }
 
-        wxString m_positiveLabel{ _(L"Pro") };
-        wxString m_negativeLabel{ _(L"Con") };
+        wxString m_positiveLabel{ /*TRANSLATORS: A favorable reason. */ _(L"Pro") };
+        wxString m_negativeLabel{ /*TRANSLATORS: A unfavorable reason. */ _(L"Con") };
         };
     }
 
