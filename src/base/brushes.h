@@ -105,7 +105,7 @@ namespace Wisteria::Brushes
             std::vector<wxBrush> m_brushes;
             };
         } // namespace Schemes
-    }     // namespace Wisteria::Brushes
+    } // namespace Wisteria::Brushes
 
 /** @}*/
 

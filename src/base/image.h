@@ -179,8 +179,11 @@ namespace Wisteria::GraphItems
             {
             return _(
                 L"Image Files (*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx)|"
-                 "*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|Bitmap (*.bmp)|*.bmp|"
-                 "JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|PNG (*.png)|*.png|GIF (*.gif)|*.gif|"
+                 "*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|"
+                 "Bitmap (*.bmp)|*.bmp|"
+                 "JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|"
+                 "PNG (*.png)|*.png|"
+                 "GIF (*.gif)|*.gif|"
                  "Targa (*.tga)|*.tga|TIFF (*.tif;*.tiff)|*.tif;*.tiff|PCX (*.pcx)|*.pcx");
             }
 

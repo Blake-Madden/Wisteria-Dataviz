@@ -56,17 +56,17 @@ namespace Wisteria::Colors
        */
     class ColorBrewer
         {
-    public:
-        /// @brief Converts RGBA values into a @c wxUint32 that can be used with @c wxColour::SetRGBA(). 
+      public:
+        /// @brief Converts RGBA values into a @c wxUint32 that can be
+        /// used with @c wxColour::SetRGBA().
         /// @param red The red channel.
         /// @param green The green channel.
         /// @param blue The blue channel.
         /// @param alpha The alpha channel.
-        /// @returns The value to pass to @c wxColour::SetRGBA(). 
+        /// @returns The value to pass to @c wxColour::SetRGBA().
         [[nodiscard]]
-        static constexpr wxUint32 RGBA(const unsigned char red,
-                                       const unsigned char green, const unsigned char blue,
-                                       const unsigned char alpha) noexcept
+        static constexpr wxUint32 RGBA(const unsigned char red, const unsigned char green,
+                                       const unsigned char blue, const unsigned char alpha) noexcept
             {
             wxUint32 color = 0;
             // note that channels go in reverse order
@@ -76,11 +76,13 @@ namespace Wisteria::Colors
             color |= static_cast<wxUint32>(red);
             return color;
             }
+
         /** @brief Creates a color from a Colors::Color value.
             @returns A color from a list of known colors.
             @param color The color ID to use.*/
         [[nodiscard]]
         static wxColour GetColor(const Colors::Color color);
+
         /** @brief Creates a color from a Colors::Color value and applies an opacity to it.
             @returns A color from a list of known colors.
             @param color The color ID to use.
@@ -101,14 +103,17 @@ namespace Wisteria::Colors
             m_colorSpectrum.clear();
             m_colorSpectrum.insert(m_colorSpectrum.begin(), start, end);
             }
+
         /** @brief Initializes the color scale to map to the range of values.
             @param colors The colors to map values to. The first color in the list
-             will map to the data's min value, and the last color will map to the data's max value.*/
+             will map to the data's min value, and the last color will map to the data's max
+           value.*/
         void SetColorScale(const std::initializer_list<wxColour>& colors)
             {
             m_colorSpectrum.clear();
             m_colorSpectrum.insert(m_colorSpectrum.begin(), colors.begin(), colors.end());
             }
+
         /** @brief Converts a range of numbers into a sequence of color values.
             @details The color values for each number represent where it falls on the color scale,
                 relative to the overall range of values.
@@ -162,13 +167,17 @@ namespace Wisteria::Colors
                 }
             return colors;
             }
+
         /** @brief Returns the calculated min and max of the values from the last
                 call to BrewColors().
             @returns The min and max of the values represented by the color scale.
             @sa BrewColors().*/
         [[nodiscard]]
         std::pair<double, double> GetRange() const noexcept
-            { return m_range; }
+            {
+            return m_range;
+            }
+
         /** @brief Converts a value from the range into a color laying on the
                 color scale mapped to that range.
             @details This should be called after a call to BrewColors(), which will
@@ -180,11 +189,13 @@ namespace Wisteria::Colors
             @warning The value passed here should be within the range of data previously
                 passed to BrewColors(); otherwise, it will re-adjust the color/value mapping
                 and invalidate previous calls to BrewColor(s).
-            @note This code is adapted from http://andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients.*/
+            @note This code is adapted from
+           http://andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients.*/
         [[nodiscard]]
         wxColour BrewColor(const double value) const;
-    private:
-        std::pair<double,double> m_range{ 0, 0 };
+
+      private:
+        std::pair<double, double> m_range{ 0, 0 };
         std::vector<wxColour> m_colorSpectrum;
         static const std::vector<wxUint32> m_colors;
         };
@@ -192,16 +203,20 @@ namespace Wisteria::Colors
     /// @brief Adjusts a color to contrast against another color.
     class ColorContrast
         {
-    public:
+      public:
         /// @brief Constructor.
         /// @param color The base color to contrast other colors against.
         explicit ColorContrast(const wxColour& color) : m_baseColor(color)
-            { assert(m_baseColor.IsOk() && L"Invalid base color passed to ColorContrast."); }
+            {
+            assert(m_baseColor.IsOk() && L"Invalid base color passed to ColorContrast.");
+            }
+
         /// @returns A variation of @c color that is adjusted to contrast against the base color
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
         [[nodiscard]]
         wxColour Contrast(const wxColour& color);
+
         /// @returns A variation of @c color with a different opacity.
         /// @param color The base color to apply an opacity to.
         /// @param opacity The opacity to use for the new color.
@@ -209,10 +224,10 @@ namespace Wisteria::Colors
         static wxColour ChangeOpacity(const wxColour& color, const uint8_t opacity)
             {
             assert(color.IsOk() && L"Invalid color passed to ChangeOpacity().");
-            return (color.IsOk() ?
-                    wxColor(color.Red(), color.Green(), color.Blue(), opacity) :
-                    color);
+            return (color.IsOk() ? wxColor(color.Red(), color.Green(), color.Blue(), opacity) :
+                                   color);
             }
+
         /// @brief Determines whether a color is dark.
         /// @details "Dark" is defined as luminance being less than 50% and
         ///     opacity higher than 32. For example, black having an opacity of 32
@@ -225,33 +240,38 @@ namespace Wisteria::Colors
         static bool IsDark(const wxColour& color)
             {
             assert(color.IsOk() && L"Invalid color passed to IsDark().");
-            return (color.IsOk() &&
-                    color.Alpha() > 32 &&
+            return (color.IsOk() && color.Alpha() > 32 &&
                     color.GetLuminance() < math_constants::half);
             }
+
         /// @brief Determines whether a color is light
         ///     (i.e., luminance is >= 50% and not heavily translucent).
         /// @param color The color to review.
         /// @returns @c true if the color's luminance is >= 50%.
         [[nodiscard]]
         static bool IsLight(const wxColour& color)
-            { return !IsDark(color); }
+            {
+            return !IsDark(color);
+            }
+
         /// @returns A darkened version of a color.
         /// @param color The base color to darken.
         /// @param minimumLuminance The minimum darkness of the color,
         ///     ranging from @c 0.0 to @c 1.0 (the lower, the darker).
         [[nodiscard]]
-        static wxColour Shade(wxColour color,
-            const double minimumLuminance = math_constants::half)
+        static wxColour Shade(wxColour color, const double minimumLuminance = math_constants::half)
             {
             assert(color.IsOk() && L"Invalid color passed to Shade().");
             int darkenValue{ 100 };
-            while (color.GetLuminance() > std::clamp(minimumLuminance, math_constants::empty,
-                                                     math_constants::full) &&
+            while (color.GetLuminance() >
+                       std::clamp(minimumLuminance, math_constants::empty, math_constants::full) &&
                    darkenValue > 0)
-                { color = color.ChangeLightness(--darkenValue); }
+                {
+                color = color.ChangeLightness(--darkenValue);
+                }
             return color;
             }
+
         /// @brief Returns a darker (shaded) or lighter (tinted) version of a color,
         ///     depending on how dark it is to begin with.
         ///     For example, black will be returned as dark gray,
@@ -265,16 +285,22 @@ namespace Wisteria::Colors
                                     const double shadeOrTintValue = math_constants::fifth)
             {
             return (IsDark(color) ?
-                color.ChangeLightness(100 + std::clamp(static_cast<int>(shadeOrTintValue*100), 0, 100)) :
-                color.ChangeLightness(100 - std::clamp(static_cast<int>(shadeOrTintValue*100), 0, 100)));
+                        color.ChangeLightness(
+                            100 + std::clamp(static_cast<int>(shadeOrTintValue * 100), 0, 100)) :
+                        color.ChangeLightness(
+                            100 - std::clamp(static_cast<int>(shadeOrTintValue * 100), 0, 100)));
             }
+
         /// @brief Returns either black or white, depending on which better contrasts
         ///     against the specified color.
         /// @param color The color to contrast against to see if white or black should go on it.
         /// @returns Black or white; whichever contrasts better against @c color.
         [[nodiscard]]
         static wxColour BlackOrWhiteContrast(const wxColour& color)
-            { return (IsDark(color) ? *wxWHITE : *wxBLACK); }
+            {
+            return (IsDark(color) ? *wxWHITE : *wxBLACK);
+            }
+
         /// @returns @c true if two colors' luminance values are close.
         /// @param color1 First color to compare.
         /// @param color2 Second color to compare.
@@ -287,9 +313,10 @@ namespace Wisteria::Colors
             {
             assert(color1.IsOk() && color2.IsOk() && L"Invalid color passed to AreColorsClose().");
             return (color1.IsOk() && color2.IsOk() &&
-                    (std::abs(color1.GetLuminance()-color2.GetLuminance())) <=
-                     std::clamp(delta, math_constants::empty, math_constants::full));
+                    (std::abs(color1.GetLuminance() - color2.GetLuminance())) <=
+                        std::clamp(delta, math_constants::empty, math_constants::full));
             }
+
         /// @brief Shades or tints a color if close to another color (e.g., a background color).
         /// @param mainColor The color to adjust (if necessary).
         /// @param secondaryColor The base color to compare against.
@@ -300,10 +327,11 @@ namespace Wisteria::Colors
         static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
                                            const wxColour& secondaryColor)
             {
-            return AreColorsClose(mainColor, secondaryColor) ?
-                ShadeOrTint(mainColor, .40f) : mainColor;
+            return AreColorsClose(mainColor, secondaryColor) ? ShadeOrTint(mainColor, .40f) :
+                                                               mainColor;
             }
-    private:
+
+      private:
         wxColour m_baseColor{ *wxWHITE };
         constexpr static double m_tolerance{ math_constants::half };
         };
@@ -316,31 +344,35 @@ namespace Wisteria::Colors
         /// @brief Base class for creating a color scheme.
         class ColorScheme
             {
-        public:
+          public:
             /** @brief Constructor.
                 @param colors The initializer list of colors to fill the scheme with.
                 @note A series of shaded or tinted versions of these colors will also
                     be added to this list of colors, essentially double the color count.*/
-            explicit ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors)
-                {}
+            explicit ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors) {}
+
             /** @brief Constructor.
                 @param colors The initializer list of colors to fill the scheme with.
                 @note A series of shaded or tinted versions of these colors will also
                     be added to this list of colors, essentially double the color count.*/
-            explicit ColorScheme(const std::vector<wxColour>& colors) : m_colors(colors)
-                {}
+            explicit ColorScheme(const std::vector<wxColour>& colors) : m_colors(colors) {}
+
             /// @private
-            explicit ColorScheme(std::vector<wxColour>&& colors) : m_colors(std::move(colors))
-                {}
+            explicit ColorScheme(std::vector<wxColour>&& colors) : m_colors(std::move(colors)) {}
+
             /** @brief Gets the list of colors from the scheme.
                 @returns The scheme's colors.*/
             [[nodiscard]]
             const std::vector<wxColour>& GetColors() const noexcept
-                { return m_colors; }
+                {
+                return m_colors;
+                }
+
             /** @brief Gets the color from a given index.
                 @param index The index into the color list to return.
-                    If index is outside of the color scheme but within double the size of the scheme,
-                    then scheme will "wrap around" and return a shaded or tinted version.
+                    If index is outside of the color scheme but within double the
+                    size of the scheme, then scheme will "wrap around" and
+                    return a shaded or tinted version.
                     If outside of twice the number of colors, then returns white.
 
                     For example, if you have 8 colors and pass in an index of 7,
@@ -361,6 +393,7 @@ namespace Wisteria::Colors
                                                             m_colors.at(index % m_colors.size())) :
                                                         *wxWHITE);
                 }
+
             /** @brief Gets the color from a given index and applies an opacity value to it.
                 @param index The index into the color list to return.
                 @param opacity The opacity to set the color.
@@ -371,6 +404,7 @@ namespace Wisteria::Colors
                 auto color = GetColor(index);
                 return wxColour(color.Red(), color.Green(), color.Blue(), opacity);
                 }
+
             /** @brief Gets the color from a given index.
                 @param index The index into the color scheme to return. If index is outside
                     number of colors, then it will recycle (i.e., wrap around).
@@ -385,6 +419,7 @@ namespace Wisteria::Colors
                 {
                 return (m_colors.empty() ? *wxWHITE : m_colors.at(index % m_colors.size()));
                 }
+
             /** @brief Adds a color to the scheme.
                 @param color The color to add.*/
             void AddColor(const wxColour color)
@@ -392,10 +427,11 @@ namespace Wisteria::Colors
                 assert(color.IsOk() && L"Invalid color passed to AddColor().");
                 m_colors.push_back(color);
                 }
+
             /// @brief Removes all colors from the collection.
-            void Clear() noexcept
-                { m_colors.clear(); }
-        protected:
+            void Clear() noexcept { m_colors.clear(); }
+
+          protected:
             /// @brief The colors in the scheme.
             std::vector<wxColour> m_colors;
             };
@@ -414,12 +450,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Dusk : public ColorScheme
             {
-        public:
-            Dusk() : ColorScheme({ wxColour(L"#003F5C"), wxColour(L"#2F4B7C"),
-                                   wxColour(L"#665191"), wxColour(L"#A05195"),
-                                   wxColour(L"#D45087"), wxColour(L"#F95D6A"),
-                                   wxColour(L"#FF7C43"), wxColour(L"#FFA600") })
-                {}
+          public:
+            Dusk()
+                : ColorScheme({ wxColour(L"#003F5C"), wxColour(L"#2F4B7C"), wxColour(L"#665191"),
+                                wxColour(L"#A05195"), wxColour(L"#D45087"), wxColour(L"#F95D6A"),
+                                wxColour(L"#FF7C43"), wxColour(L"#FFA600") })
+                {
+                }
             };
 
         /** @brief An Earth tones themed color scheme.
@@ -437,13 +474,15 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class EarthTones : public ColorScheme
             {
-        public:
-            EarthTones() : ColorScheme({ wxColour(186,150,155), wxColour(110,80,69),
-                                         wxColour(202,80,69), wxColour(102,131,145),
-                                         wxColour(154,131,97), wxColour(41,109,91),
-                                         wxColour(140,74,86), wxColour(238,221,130),
-                                         wxColour(176,48,96), wxColour(205,150,205) })
-                {}
+          public:
+            EarthTones()
+                : ColorScheme({ wxColour(186, 150, 155), wxColour(110, 80, 69),
+                                wxColour(202, 80, 69), wxColour(102, 131, 145),
+                                wxColour(154, 131, 97), wxColour(41, 109, 91),
+                                wxColour(140, 74, 86), wxColour(238, 221, 130),
+                                wxColour(176, 48, 96), wxColour(205, 150, 205) })
+                {
+                }
             };
 
         /** @brief A 1920s themed color scheme.
@@ -459,17 +498,18 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1920s : public ColorScheme
             {
-        public:
-            Decade1920s() : ColorScheme({
-                ColorBrewer::GetColor(Color::ChineseRed),
-                ColorBrewer::GetColor(Color::JazzAgeCoral),
-                ColorBrewer::GetColor(Color::Frostwork),
-                ColorBrewer::GetColor(Color::Alexandrite),
-                ColorBrewer::GetColor(Color::SalonRose),
-                ColorBrewer::GetColor(Color::StudioMauve),
-                ColorBrewer::GetColor(Color::BlueSky),
-                ColorBrewer::GetColor(Color::HunterGreen) })
-                {}
+          public:
+            Decade1920s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::ChineseRed),
+                                ColorBrewer::GetColor(Color::JazzAgeCoral),
+                                ColorBrewer::GetColor(Color::Frostwork),
+                                ColorBrewer::GetColor(Color::Alexandrite),
+                                ColorBrewer::GetColor(Color::SalonRose),
+                                ColorBrewer::GetColor(Color::StudioMauve),
+                                ColorBrewer::GetColor(Color::BlueSky),
+                                ColorBrewer::GetColor(Color::HunterGreen) })
+                {
+                }
             };
 
         /** @brief A 1940s themed color scheme.
@@ -485,17 +525,18 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1940s : public ColorScheme
             {
-        public:
-            Decade1940s() : ColorScheme({
-                ColorBrewer::GetColor(Color::VogueGreen),
-                ColorBrewer::GetColor(Color::CascadeGreen),
-                ColorBrewer::GetColor(Color::BelvedereCream),
-                ColorBrewer::GetColor(Color::Cream),
-                ColorBrewer::GetColor(Color::RoseTan),
-                ColorBrewer::GetColor(Color::PinkShadow),
-                ColorBrewer::GetColor(Color::Orchid),
-                ColorBrewer::GetColor(Color::Maroon) })
-                {}
+          public:
+            Decade1940s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::VogueGreen),
+                                ColorBrewer::GetColor(Color::CascadeGreen),
+                                ColorBrewer::GetColor(Color::BelvedereCream),
+                                ColorBrewer::GetColor(Color::Cream),
+                                ColorBrewer::GetColor(Color::RoseTan),
+                                ColorBrewer::GetColor(Color::PinkShadow),
+                                ColorBrewer::GetColor(Color::Orchid),
+                                ColorBrewer::GetColor(Color::Maroon) })
+                {
+                }
             };
 
         /** @brief A 1950s themed color scheme.
@@ -511,17 +552,18 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1950s : public ColorScheme
             {
-        public:
-            Decade1950s() : ColorScheme({
-                ColorBrewer::GetColor(Color::Lime),
-                ColorBrewer::GetColor(Color::RadiantLilac),
-                ColorBrewer::GetColor(Color::Turquoise),
-                ColorBrewer::GetColor(Color::Appleblossom),
-                ColorBrewer::GetColor(Color::ClassicFrenchGray),
-                ColorBrewer::GetColor(Color::SunbeamYellow),
-                ColorBrewer::GetColor(Color::PinkyBeige),
-                ColorBrewer::GetColor(Color::PinkFlamingo) })
-                {}
+          public:
+            Decade1950s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Lime),
+                                ColorBrewer::GetColor(Color::RadiantLilac),
+                                ColorBrewer::GetColor(Color::Turquoise),
+                                ColorBrewer::GetColor(Color::Appleblossom),
+                                ColorBrewer::GetColor(Color::ClassicFrenchGray),
+                                ColorBrewer::GetColor(Color::SunbeamYellow),
+                                ColorBrewer::GetColor(Color::PinkyBeige),
+                                ColorBrewer::GetColor(Color::PinkFlamingo) })
+                {
+                }
             };
 
         /** @brief A 1960s themed color scheme.
@@ -536,16 +578,17 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1960s : public ColorScheme
             {
-        public:
-            Decade1960s() : ColorScheme({
-                ColorBrewer::GetColor(Color::Navel),
-                ColorBrewer::GetColor(Color::Daisy),
-                ColorBrewer::GetColor(Color::ExuberantPink),
-                ColorBrewer::GetColor(Color::Frolic),
-                ColorBrewer::GetColor(Color::ForgetMeNot),
-                ColorBrewer::GetColor(Color::TricornBlack),
-                ColorBrewer::GetColor(Color::PureWhite) })
-                {}
+          public:
+            Decade1960s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Navel),
+                                ColorBrewer::GetColor(Color::Daisy),
+                                ColorBrewer::GetColor(Color::ExuberantPink),
+                                ColorBrewer::GetColor(Color::Frolic),
+                                ColorBrewer::GetColor(Color::ForgetMeNot),
+                                ColorBrewer::GetColor(Color::TricornBlack),
+                                ColorBrewer::GetColor(Color::PureWhite) })
+                {
+                }
             };
 
         /** @brief A 1970s themed color scheme.
@@ -562,18 +605,19 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1970s : public ColorScheme
             {
-        public:
-            Decade1970s() : ColorScheme({
-                ColorBrewer::GetColor(Color::Avocado),
-                ColorBrewer::GetColor(Color::AmberWave),
-                ColorBrewer::GetColor(Color::FolksyGold),
-                ColorBrewer::GetColor(Color::JuteBrown),
-                ColorBrewer::GetColor(Color::PracticalBeige),
-                ColorBrewer::GetColor(Color::Afternoon),
-                ColorBrewer::GetColor(Color::EdgyGold),
-                ColorBrewer::GetColor(Color::HarvestGold),
-                ColorBrewer::GetColor(Color::Mustard) })
-                {}
+          public:
+            Decade1970s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Avocado),
+                                ColorBrewer::GetColor(Color::AmberWave),
+                                ColorBrewer::GetColor(Color::FolksyGold),
+                                ColorBrewer::GetColor(Color::JuteBrown),
+                                ColorBrewer::GetColor(Color::PracticalBeige),
+                                ColorBrewer::GetColor(Color::Afternoon),
+                                ColorBrewer::GetColor(Color::EdgyGold),
+                                ColorBrewer::GetColor(Color::HarvestGold),
+                                ColorBrewer::GetColor(Color::Mustard) })
+                {
+                }
             };
 
         /** @brief A 1980s themed color scheme.
@@ -588,16 +632,17 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1980s : public ColorScheme
             {
-        public:
-            Decade1980s() : ColorScheme({
-                ColorBrewer::GetColor(Color::DressyRose),
-                ColorBrewer::GetColor(Color::Cream),
-                ColorBrewer::GetColor(Color::FavoriteJeans),
-                ColorBrewer::GetColor(Color::Cream),
-                ColorBrewer::GetColor(Color::FlatteringPeach),
-                ColorBrewer::GetColor(Color::CooledBlue),
-                ColorBrewer::GetColor(Color::RosyOutlook) })
-                {}
+          public:
+            Decade1980s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::DressyRose),
+                                ColorBrewer::GetColor(Color::Cream),
+                                ColorBrewer::GetColor(Color::FavoriteJeans),
+                                ColorBrewer::GetColor(Color::Cream),
+                                ColorBrewer::GetColor(Color::FlatteringPeach),
+                                ColorBrewer::GetColor(Color::CooledBlue),
+                                ColorBrewer::GetColor(Color::RosyOutlook) })
+                {
+                }
             };
 
         /** @brief A 1990s themed color scheme.
@@ -614,18 +659,19 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade1990s : public ColorScheme
             {
-        public:
-            Decade1990s() : ColorScheme({
-                ColorBrewer::GetColor(Color::SmokySalmon),
-                ColorBrewer::GetColor(Color::BungalowBeige),
-                ColorBrewer::GetColor(Color::Fireweed),
-                ColorBrewer::GetColor(Color::DoverWhite),
-                ColorBrewer::GetColor(Color::UrbanPutty),
-                ColorBrewer::GetColor(Color::SvelteSage),
-                ColorBrewer::GetColor(Color::BasketBeige),
-                ColorBrewer::GetColor(Color::WholeWheat),
-                ColorBrewer::GetColor(Color::SpicedCider) })
-                {}
+          public:
+            Decade1990s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::SmokySalmon),
+                                ColorBrewer::GetColor(Color::BungalowBeige),
+                                ColorBrewer::GetColor(Color::Fireweed),
+                                ColorBrewer::GetColor(Color::DoverWhite),
+                                ColorBrewer::GetColor(Color::UrbanPutty),
+                                ColorBrewer::GetColor(Color::SvelteSage),
+                                ColorBrewer::GetColor(Color::BasketBeige),
+                                ColorBrewer::GetColor(Color::WholeWheat),
+                                ColorBrewer::GetColor(Color::SpicedCider) })
+                {
+                }
             };
 
         /** @brief A 2000s themed color scheme.
@@ -641,17 +687,18 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Decade2000s : public ColorScheme
             {
-        public:
-            Decade2000s() : ColorScheme({
-                ColorBrewer::GetColor(Color::HickorySmoke),
-                ColorBrewer::GetColor(Color::Latte),
-                ColorBrewer::GetColor(Color::Khaki),
-                ColorBrewer::GetColor(Color::OrigamiWhite),
-                ColorBrewer::GetColor(Color::Aquitaine),
-                ColorBrewer::GetColor(Color::Seashell),
-                ColorBrewer::GetColor(Color::Tradewind),
-                ColorBrewer::GetColor(Color::Watery) })
-                {}
+          public:
+            Decade2000s()
+                : ColorScheme({ ColorBrewer::GetColor(Color::HickorySmoke),
+                                ColorBrewer::GetColor(Color::Latte),
+                                ColorBrewer::GetColor(Color::Khaki),
+                                ColorBrewer::GetColor(Color::OrigamiWhite),
+                                ColorBrewer::GetColor(Color::Aquitaine),
+                                ColorBrewer::GetColor(Color::Seashell),
+                                ColorBrewer::GetColor(Color::Tradewind),
+                                ColorBrewer::GetColor(Color::Watery) })
+                {
+                }
             };
 
         /** @brief An %October themed color scheme, including traditional
@@ -666,15 +713,15 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class October : public ColorScheme
             {
-        public:
-            October() : ColorScheme({
-                ColorBrewer::GetColor(Color::Orange),
-                ColorBrewer::GetColor(Color::Black),
-                ColorBrewer::GetColor(Color::Yellow),
-                ColorBrewer::GetColor(Color::Brown),
-                ColorBrewer::GetColor(Color::Crimson),
-                ColorBrewer::GetColor(Color::OctoberMist) })
-                {}
+          public:
+            October()
+                : ColorScheme(
+                      { ColorBrewer::GetColor(Color::Orange), ColorBrewer::GetColor(Color::Black),
+                        ColorBrewer::GetColor(Color::Yellow), ColorBrewer::GetColor(Color::Brown),
+                        ColorBrewer::GetColor(Color::Crimson),
+                        ColorBrewer::GetColor(Color::OctoberMist) })
+                {
+                }
             };
 
         /** @brief %Slytherin's house color scheme.
@@ -687,14 +734,15 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Slytherin : public ColorScheme
             {
-        public:
-            Slytherin() : ColorScheme({
-                ColorBrewer::GetColor(Color::Slytherin1),
-                ColorBrewer::GetColor(Color::Slytherin2),
-                ColorBrewer::GetColor(Color::Slytherin3),
-                ColorBrewer::GetColor(Color::Slytherin4),
-                ColorBrewer::GetColor(Color::Black) })
-                {}
+          public:
+            Slytherin()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Slytherin1),
+                                ColorBrewer::GetColor(Color::Slytherin2),
+                                ColorBrewer::GetColor(Color::Slytherin3),
+                                ColorBrewer::GetColor(Color::Slytherin4),
+                                ColorBrewer::GetColor(Color::Black) })
+                {
+                }
             };
 
         /** @brief %Campfire color scheme.
@@ -706,13 +754,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Campfire : public ColorScheme
             {
-        public:
-            Campfire() : ColorScheme({
-                ColorBrewer::GetColor(Color::Firework),
-                ColorBrewer::GetColor(Color::Oceanic),
-                ColorBrewer::GetColor(Color::Onyx),
-                ColorBrewer::GetColor(Color::Taupe) })
-                {}
+          public:
+            Campfire()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Firework),
+                                ColorBrewer::GetColor(Color::Oceanic),
+                                ColorBrewer::GetColor(Color::Onyx),
+                                ColorBrewer::GetColor(Color::Taupe) })
+                {
+                }
             };
 
         /** @brief %Coffee shop color scheme.
@@ -724,13 +773,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class CoffeeShop : public ColorScheme
             {
-        public:
-            CoffeeShop() : ColorScheme({
-                ColorBrewer::GetColor(Color::Ceramic),
-                ColorBrewer::GetColor(Color::Coffee),
-                ColorBrewer::GetColor(Color::Latte),
-                ColorBrewer::GetColor(Color::Slate) })
-                {}
+          public:
+            CoffeeShop()
+                : ColorScheme(
+                      { ColorBrewer::GetColor(Color::Ceramic), ColorBrewer::GetColor(Color::Coffee),
+                        ColorBrewer::GetColor(Color::Latte), ColorBrewer::GetColor(Color::Slate) })
+                {
+                }
             };
 
         /** @brief Arctic color scheme.
@@ -742,13 +791,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class ArcticChill : public ColorScheme
             {
-        public:
-            ArcticChill() : ColorScheme({
-                ColorBrewer::GetColor(Color::GlacierBlue),
-                ColorBrewer::GetColor(Color::Ice),
-                ColorBrewer::GetColor(Color::Overcast),
-                ColorBrewer::GetColor(Color::WarmGray) })
-                {}
+          public:
+            ArcticChill()
+                : ColorScheme({ ColorBrewer::GetColor(Color::GlacierBlue),
+                                ColorBrewer::GetColor(Color::Ice),
+                                ColorBrewer::GetColor(Color::Overcast),
+                                ColorBrewer::GetColor(Color::WarmGray) })
+                {
+                }
             };
 
         /** @brief School inspired color scheme (i.e., pencil and eraser colors).
@@ -760,13 +810,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class BackToSchool : public ColorScheme
             {
-        public:
-            BackToSchool() : ColorScheme({
-                ColorBrewer::GetColor(Color::Orange),
-                ColorBrewer::GetColor(Color::PencilYellow),
-                ColorBrewer::GetColor(Color::PinkEraser),
-                ColorBrewer::GetColor(Color::Wood) })
-                {}
+          public:
+            BackToSchool()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Orange),
+                                ColorBrewer::GetColor(Color::PencilYellow),
+                                ColorBrewer::GetColor(Color::PinkEraser),
+                                ColorBrewer::GetColor(Color::Wood) })
+                {
+                }
             };
 
         /** @brief %Colors from a box of chocolates.
@@ -778,13 +829,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class BoxOfChocolates : public ColorScheme
             {
-        public:
-            BoxOfChocolates() : ColorScheme({
-                ColorBrewer::GetColor(Color::Chocolate),
-                wxColour(L"#301B28"),
-                ColorBrewer::GetColor(Color::Frosting),
-                ColorBrewer::GetColor(Color::Toffee) })
-                {}
+          public:
+            BoxOfChocolates()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Chocolate), wxColour(L"#301B28"),
+                                ColorBrewer::GetColor(Color::Frosting),
+                                ColorBrewer::GetColor(Color::Toffee) })
+                {
+                }
             };
 
         /** @brief %Cosmopolitan color scheme.
@@ -796,13 +847,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Cosmopolitan : public ColorScheme
             {
-        public:
-            Cosmopolitan() : ColorScheme({
-                wxColour(L"#8593AE"),
-                ColorBrewer::GetColor(Color::Blush),
-                ColorBrewer::GetColor(Color::Pewter),
-                ColorBrewer::GetColor(Color::Steel) })
-                {}
+          public:
+            Cosmopolitan()
+                : ColorScheme({ wxColour(L"#8593AE"), ColorBrewer::GetColor(Color::Blush),
+                                ColorBrewer::GetColor(Color::Pewter),
+                                ColorBrewer::GetColor(Color::Steel) })
+                {
+                }
             };
 
         /** @brief Day & night color scheme.
@@ -814,13 +865,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class DayAndNight : public ColorScheme
             {
-        public:
-            DayAndNight() : ColorScheme({
-                ColorBrewer::GetColor(Color::Blueberry),
-                ColorBrewer::GetColor(Color::Daffodil),
-                wxColour(L"#011A27"),
-                ColorBrewer::GetColor(Color::Tangerine) })
-                {}
+          public:
+            DayAndNight()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Blueberry),
+                                ColorBrewer::GetColor(Color::Daffodil), wxColour(L"#011A27"),
+                                ColorBrewer::GetColor(Color::Tangerine) })
+                {
+                }
             };
 
         /** @brief %Colors from a bouquet of flowers.
@@ -832,13 +883,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class FreshFlowers : public ColorScheme
             {
-        public:
-            FreshFlowers() : ColorScheme({
-                ColorBrewer::GetColor(Color::Aquamarine),
-                wxColour(L"#E6D72A"),
-                ColorBrewer::GetColor(Color::PinkTulip),
-                ColorBrewer::GetColor(Color::Turquoise) })
-                {}
+          public:
+            FreshFlowers()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Aquamarine), wxColour(L"#E6D72A"),
+                                ColorBrewer::GetColor(Color::PinkTulip),
+                                ColorBrewer::GetColor(Color::Turquoise) })
+                {
+                }
             };
 
         /** @brief Icecream color scheme.
@@ -850,13 +901,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class IceCream : public ColorScheme
             {
-        public:
-            IceCream() : ColorScheme({
-                ColorBrewer::GetColor(Color::Caramel),
-                ColorBrewer::GetColor(Color::Cayenne),
-                ColorBrewer::GetColor(Color::Cinnamon),
-                ColorBrewer::GetColor(Color::Cream) })
-                {}
+          public:
+            IceCream()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Caramel),
+                                ColorBrewer::GetColor(Color::Cayenne),
+                                ColorBrewer::GetColor(Color::Cinnamon),
+                                ColorBrewer::GetColor(Color::Cream) })
+                {
+                }
             };
 
         /** @brief Downtown color scheme.
@@ -868,13 +920,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class UrbanOasis : public ColorScheme
             {
-        public:
-            UrbanOasis() : ColorScheme({
-                ColorBrewer::GetColor(Color::Bark),
-                ColorBrewer::GetColor(Color::Brownstone),
-                ColorBrewer::GetColor(Color::Leaves),
-                ColorBrewer::GetColor(Color::Marble) })
-                {}
+          public:
+            UrbanOasis()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Bark),
+                                ColorBrewer::GetColor(Color::Brownstone),
+                                ColorBrewer::GetColor(Color::Leaves),
+                                ColorBrewer::GetColor(Color::Marble) })
+                {
+                }
             };
 
         /** @brief %Colors from a typewriter.
@@ -886,13 +939,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Typewriter : public ColorScheme
             {
-        public:
-            Typewriter() : ColorScheme({
-                wxColour(L"#080706"),
-                ColorBrewer::GetColor(Color::GoldLeaf),
-                ColorBrewer::GetColor(Color::Paper),
-                ColorBrewer::GetColor(Color::Silver) })
-                {}
+          public:
+            Typewriter()
+                : ColorScheme({ wxColour(L"#080706"), ColorBrewer::GetColor(Color::GoldLeaf),
+                                ColorBrewer::GetColor(Color::Paper),
+                                ColorBrewer::GetColor(Color::Silver) })
+                {
+                }
             };
 
         /** @brief Surfing color scheme.
@@ -904,13 +957,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class TastyWaves : public ColorScheme
             {
-        public:
-            TastyWaves() : ColorScheme({
-                wxColour(L"#003B46"),
-                ColorBrewer::GetColor(Color::LightSeafoam),
-                ColorBrewer::GetColor(Color::Ocean),
-                ColorBrewer::GetColor(Color::Wave) })
-                {}
+          public:
+            TastyWaves()
+                : ColorScheme({ wxColour(L"#003B46"), ColorBrewer::GetColor(Color::LightSeafoam),
+                                ColorBrewer::GetColor(Color::Ocean),
+                                ColorBrewer::GetColor(Color::Wave) })
+                {
+                }
             };
 
         /** @brief Springtime color scheme.
@@ -922,13 +975,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Spring : public ColorScheme
             {
-        public:
-            Spring() : ColorScheme({
-                ColorBrewer::GetColor(Color::Petal),
-                ColorBrewer::GetColor(Color::Poppy),
-                ColorBrewer::GetColor(Color::SpringGreen),
-                ColorBrewer::GetColor(Color::Stem) })
-                {}
+          public:
+            Spring()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Petal),
+                                ColorBrewer::GetColor(Color::Poppy),
+                                ColorBrewer::GetColor(Color::SpringGreen),
+                                ColorBrewer::GetColor(Color::Stem) })
+                {
+                }
             };
 
         /** @brief Shabby chic color scheme.
@@ -940,13 +994,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class ShabbyChic : public ColorScheme
             {
-        public:
-            ShabbyChic() : ColorScheme({
-                wxColour(L"#CDAB81"),
-                ColorBrewer::GetColor(Color::Metal),
-                ColorBrewer::GetColor(Color::Newsprint),
-                ColorBrewer::GetColor(Color::Pewter) })
-                {}
+          public:
+            ShabbyChic()
+                : ColorScheme({ wxColour(L"#CDAB81"), ColorBrewer::GetColor(Color::Metal),
+                                ColorBrewer::GetColor(Color::Newsprint),
+                                ColorBrewer::GetColor(Color::Pewter) })
+                {
+                }
             };
 
         /** @brief Thunderstorm color scheme.
@@ -958,13 +1012,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class RollingThunder : public ColorScheme
             {
-        public:
-            RollingThunder() : ColorScheme({
-                ColorBrewer::GetColor(Color::Meadow),
-                ColorBrewer::GetColor(Color::Moss),
-                ColorBrewer::GetColor(Color::ThunderCloud),
-                ColorBrewer::GetColor(Color::Waterfall) })
-                {}
+          public:
+            RollingThunder()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Meadow),
+                                ColorBrewer::GetColor(Color::Moss),
+                                ColorBrewer::GetColor(Color::ThunderCloud),
+                                ColorBrewer::GetColor(Color::Waterfall) })
+                {
+                }
             };
 
         /** @brief Vegetable colors.
@@ -976,13 +1031,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class ProduceSection : public ColorScheme
             {
-        public:
-            ProduceSection() : ColorScheme({
-                wxColour(L"#31A9B8"),
-                ColorBrewer::GetColor(Color::Avocado),
-                ColorBrewer::GetColor(Color::RedTomato),
-                ColorBrewer::GetColor(Color::YellowPepper) })
-                {}
+          public:
+            ProduceSection()
+                : ColorScheme({ wxColour(L"#31A9B8"), ColorBrewer::GetColor(Color::Avocado),
+                                ColorBrewer::GetColor(Color::RedTomato),
+                                ColorBrewer::GetColor(Color::YellowPepper) })
+                {
+                }
             };
 
         /** @brief %Nautical color scheme.
@@ -994,13 +1049,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Nautical : public ColorScheme
             {
-        public:
-            Nautical() : ColorScheme({
-                ColorBrewer::GetColor(Color::CandyApple),
-                ColorBrewer::GetColor(Color::Ivory),
-                ColorBrewer::GetColor(Color::Navy),
-                ColorBrewer::GetColor(Color::PeacockBlue) })
-                {}
+          public:
+            Nautical()
+                : ColorScheme({ ColorBrewer::GetColor(Color::CandyApple),
+                                ColorBrewer::GetColor(Color::Ivory),
+                                ColorBrewer::GetColor(Color::Navy),
+                                ColorBrewer::GetColor(Color::PeacockBlue) })
+                {
+                }
             };
 
         /** @brief Meadow sunset color scheme.
@@ -1012,13 +1068,14 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class MeadowSunset : public ColorScheme
             {
-        public:
-            MeadowSunset() : ColorScheme({
-                ColorBrewer::GetColor(Color::Grass),
-                ColorBrewer::GetColor(Color::Sky),
-                ColorBrewer::GetColor(Color::Sunflower),
-                ColorBrewer::GetColor(Color::Sunset) })
-                {}
+          public:
+            MeadowSunset()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Grass),
+                                ColorBrewer::GetColor(Color::Sky),
+                                ColorBrewer::GetColor(Color::Sunflower),
+                                ColorBrewer::GetColor(Color::Sunset) })
+                {
+                }
             };
 
         /** @brief Semesters color scheme, representing fall, spring, and summer.
@@ -1030,12 +1087,13 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Semesters : public ColorScheme
             {
-        public:
-            Semesters() : ColorScheme({
-                ColorBrewer::GetColor(Color::Pumpkin),
-                ColorBrewer::GetColor(Color::SpringGreen),
-                ColorBrewer::GetColor(Color::Sunflower) })
-                {}
+          public:
+            Semesters()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Pumpkin),
+                                ColorBrewer::GetColor(Color::SpringGreen),
+                                ColorBrewer::GetColor(Color::Sunflower) })
+                {
+                }
             };
 
         /** @brief Seasons color scheme, representing fall, winter, spring, and summer.
@@ -1047,16 +1105,18 @@ namespace Wisteria::Colors
              \endhtmlonly*/
         class Seasons : public ColorScheme
             {
-        public:
-            Seasons() : ColorScheme({
-                ColorBrewer::GetColor(Color::Pumpkin),
-                ColorBrewer::GetColor(Color::Ice),
-                ColorBrewer::GetColor(Color::SpringGreen),
-                ColorBrewer::GetColor(Color::Sunflower) })
-                {}
+          public:
+            Seasons()
+                : ColorScheme({ ColorBrewer::GetColor(Color::Pumpkin),
+                                ColorBrewer::GetColor(Color::Ice),
+                                ColorBrewer::GetColor(Color::SpringGreen),
+                                ColorBrewer::GetColor(Color::Sunflower) })
+                {
+                }
             };
-        }
-    }
+        } // namespace Schemes
+    } // namespace Wisteria::Colors
+
 /** @}*/
 
 #endif // WISTERIA_COLORBREWER_H

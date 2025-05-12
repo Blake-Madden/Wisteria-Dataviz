@@ -33,8 +33,7 @@ namespace Wisteria
 
         /// @private
         [[nodiscard]]
-        bool
-        operator<(const TableLink& that) const noexcept
+        bool operator<(const TableLink& that) const noexcept
             {
             return m_Id < that.m_Id;
             }
@@ -62,10 +61,10 @@ namespace Wisteria
                     ->GetTableSize()
                     .first;
             const auto maxColumnCount =
-                std::max_element(m_tables.cbegin(), m_tables.cend(),
-                                 [](const auto& lhv, const auto& rhv) noexcept {
-                                     return lhv->GetTableSize().second < rhv->GetTableSize().second;
-                                 })
+                std::max_element(
+                    m_tables.cbegin(), m_tables.cend(),
+                    [](const auto& lhv, const auto& rhv) noexcept
+                    { return lhv->GetTableSize().second < rhv->GetTableSize().second; })
                     ->get()
                     ->GetTableSize()
                     .second;
