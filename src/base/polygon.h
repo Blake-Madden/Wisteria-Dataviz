@@ -46,6 +46,7 @@ namespace Wisteria::GraphItems
         When canvas bound, the points of the polygon exclusively control where and how large
         the polygon is drawn.*/
     // clang-format on
+
     class Polygon final : public GraphItemBase
         {
         friend class Graphs::Graph2D;
@@ -302,7 +303,7 @@ namespace Wisteria::GraphItems
                 downscale the rectangle to half its original size.
             @returns The downscaled rectangle.*/
         [[nodiscard]]
-        inline static wxRect DownScaleRect(const wxRect& theRect, const double scaling)
+        static wxRect DownScaleRect(const wxRect& theRect, const double scaling)
             {
             return wxRect(wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
                                  safe_divide<double>(theRect.GetHeight(), scaling)));
@@ -333,7 +334,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxPoint PairToPoint(const std::pair<double, double>& coordPair) noexcept
             {
-            return wxPoint(coordPair.first, coordPair.second);
+            return { static_cast<int>(coordPair.first), static_cast<int>(coordPair.second) };
             }
 
         /** @brief Converts a @c wxPoint to a pair of doubles.
@@ -361,7 +362,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
             {
-            return GetPolygonBoundingBox(&m_scaledPoints[0], m_scaledPoints.size());
+            return GetPolygonBoundingBox(m_scaledPoints.data(), m_scaledPoints.size());
             }
 
         /** @brief Moves the polygon by the specified x and y values.

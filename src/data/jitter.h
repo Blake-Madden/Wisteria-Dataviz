@@ -134,22 +134,22 @@ namespace Wisteria::Data
         void ResetJitterData() noexcept { m_plottedPoints.clear(); }
 
         /** @brief Jitters a point.
-            @param[in,out] pt The point to be jittered (along the non-dominant axis).
+            @param[in,out] point The point to be jittered (along the non-dominant axis).
             @returns Whether the point was jittered.
             @note This will accumulate the points passed into it to keep track
                 of the offset of where points should be jittered to.
                 When finished with jittering points, call ResetJitterData()
                 (or SetJitterWidth()) before performing another series of calls to this function.*/
-        bool JitterPoint(wxPoint& pt)
+        bool JitterPoint(wxPoint& point)
             {
             if (m_dominantAxis == AxisType::LeftYAxis || m_dominantAxis == AxisType::RightYAxis)
                 {
-                const auto plottedPointInfo = m_plottedPoints.insert(pt.y);
+                const auto plottedPointInfo = m_plottedPoints.insert(point.y);
                 // only jitter if there is already another point on the axis line
                 if (plottedPointInfo->second > 1)
                     {
                     // if an even number of points, jitter to the left
-                    pt.x +=
+                    point.x +=
                         is_even(plottedPointInfo->second) ?
                             -static_cast<wxCoord>(
                                 safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
@@ -164,25 +164,22 @@ namespace Wisteria::Data
                     }
                 return false;
                 }
-            else
+            const auto plottedPointInfo = m_plottedPoints.insert(point.x);
+            if (plottedPointInfo->second > 1)
                 {
-                const auto plottedPointInfo = m_plottedPoints.insert(pt.x);
-                if (plottedPointInfo->second > 1)
-                    {
-                    pt.y +=
-                        is_even(plottedPointInfo->second) ?
-                            -static_cast<wxCoord>(
-                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
-                                                   1, m_numberOfPointsOnEachSide)) :
-                            static_cast<wxCoord>(
-                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                                std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
-                                                   1, m_numberOfPointsOnEachSide));
-                    return true;
-                    }
-                return false;
+                point.y +=
+                    is_even(plottedPointInfo->second) ?
+                        -static_cast<wxCoord>(
+                            safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
+                                                1, m_numberOfPointsOnEachSide)) :
+                        static_cast<wxCoord>(
+                            safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
+                                                1, m_numberOfPointsOnEachSide));
+                return true;
                 }
+            return false;
             }
 
       private:

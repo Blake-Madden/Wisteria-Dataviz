@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_PIVOT_H__
-#define __WISTERIA_PIVOT_H__
+#ifndef WISTERIA_PIVOT_H
+#define WISTERIA_PIVOT_H
 
 #include "dataset.h"
 
@@ -23,10 +23,10 @@ namespace Wisteria::Data
         friend class Pivot;
 
       public:
-        PivotedWiderRow(const wxString& id,
+        PivotedWiderRow(wxString identifier,
                         std::vector<std::pair<wxString, CategoricalOrIdDataType>>& idColumns,
                         std::map<wxString, double, wxStringLessNoCase>& pivotedColumns)
-            : m_Id(id), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
+            : m_id(std::move(identifier)), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
             {
             }
 
@@ -35,7 +35,7 @@ namespace Wisteria::Data
         bool
         operator<(const PivotedWiderRow& that) const
             {
-            return m_Id.CmpNoCase(that.m_Id) < 0;
+            return m_id.CmpNoCase(that.m_id) < 0;
             }
 
         /// @brief Combines rows with the same ID(s), adding new pivoted
@@ -47,7 +47,7 @@ namespace Wisteria::Data
 
       private:
         // ID hash, which is the ID column(s) names combined into one string
-        wxString m_Id;
+        wxString m_id;
         // ID columns, used for grouping and comparing rows
         // (these should remain in the same order that the client specifies)
         std::vector<std::pair<wxString, CategoricalOrIdDataType>> m_idColumns;
@@ -91,7 +91,7 @@ namespace Wisteria::Data
             @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset>
+        static std::shared_ptr<Dataset>
         PivotWider(const std::shared_ptr<const Dataset>& dataset,
                    const std::vector<wxString>& IdColumns, const wxString& namesFromColumn,
                    const std::vector<wxString>& valuesFromColumns, const wxString& namesSep = L"_",
@@ -129,7 +129,7 @@ namespace Wisteria::Data
             @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
-        std::shared_ptr<Dataset>
+        static std::shared_ptr<Dataset>
         PivotLonger(const std::shared_ptr<const Dataset>& dataset,
                     const std::vector<wxString>& columnsToKeep,
                     const std::vector<wxString>& fromColumns, const std::vector<wxString>& namesTo,
@@ -139,4 +139,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_PIVOT_H__
+#endif // WISTERIA_PIVOT_H

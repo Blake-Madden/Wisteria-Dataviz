@@ -72,11 +72,11 @@ namespace Wisteria::Data
                     {
                     // using a string table and a number was passed in,
                     // so treat it as a group ID
-                    if (const auto IdVal{ std::get_if<GroupIdType>(&value) };
-                        m_categoricalColumn->HasValidStringTableEntries() && IdVal != nullptr)
+                    if (const auto* const idVal{ std::get_if<GroupIdType>(&value) };
+                        m_categoricalColumn->HasValidStringTableEntries() && idVal != nullptr)
                         {
-                        m_groupIdValues.push_back(*IdVal);
-                        if (m_categoricalColumn->GetStringTable().find(*IdVal) ==
+                        m_groupIdValues.push_back(*idVal);
+                        if (m_categoricalColumn->GetStringTable().find(*idVal) ==
                             m_categoricalColumn->GetStringTable().cend())
                             {
                             throw std::runtime_error(
@@ -86,14 +86,14 @@ namespace Wisteria::Data
                         }
                     // no real string table, so column may be filled with discrete values instead,
                     // treat numbers as such
-                    else if (const auto doubleVal{ std::get_if<double>(&value) };
+                    else if (const auto* const doubleVal{ std::get_if<double>(&value) };
                              !m_categoricalColumn->HasValidStringTableEntries() &&
                              doubleVal != nullptr)
                         {
                         m_doubleValues.push_back(*doubleVal);
                         }
                     // using string table and a string was passed in
-                    else if (const auto strVal{ std::get_if<wxString>(&value) };
+                    else if (const auto* const strVal{ std::get_if<wxString>(&value) };
                              m_categoricalColumn->HasValidStringTableEntries() && strVal != nullptr)
                         {
                         const auto code = m_categoricalColumn->GetIDFromLabel(*strVal);
@@ -109,7 +109,7 @@ namespace Wisteria::Data
                                                  *strVal, m_categoricalColumn->GetName()));
                             }
                         }
-                    else if (const auto strVal2{ std::get_if<wxString>(&value) };
+                    else if (const auto* const strVal2{ std::get_if<wxString>(&value) };
                              !m_categoricalColumn->HasValidStringTableEntries() &&
                              strVal2 != nullptr)
                         {
@@ -137,11 +137,13 @@ namespace Wisteria::Data
                 // if using other operators, then we need to use string comparisons later
                 else
                     {
-                    if (const auto IdVal{ std::get_if<GroupIdType>(&value) }; IdVal != nullptr)
+                    if (const auto* const idVal{ std::get_if<GroupIdType>(&value) };
+                        idVal != nullptr)
                         {
-                        m_stringValues.push_back(m_categoricalColumn->GetLabelFromID(*IdVal));
+                        m_stringValues.push_back(m_categoricalColumn->GetLabelFromID(*idVal));
                         }
-                    else if (const auto strVal{ std::get_if<wxString>(&value) }; strVal != nullptr)
+                    else if (const auto* const strVal{ std::get_if<wxString>(&value) };
+                             strVal != nullptr)
                         {
                         m_stringValues.push_back(*strVal);
                         }
@@ -158,11 +160,13 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto doubleVal{ std::get_if<double>(&value) }; doubleVal != nullptr)
+                if (const auto* const doubleVal{ std::get_if<double>(&value) };
+                    doubleVal != nullptr)
                     {
                     m_doubleValues.push_back(*doubleVal);
                     }
-                else if (const auto strVal{ std::get_if<wxString>(&value) }; strVal != nullptr)
+                else if (const auto* const strVal{ std::get_if<wxString>(&value) };
+                         strVal != nullptr)
                     {
                     double convertedVal{ 0.0 };
                     if (strVal->ToDouble(&convertedVal))
@@ -187,16 +191,18 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto dateVal{ std::get_if<wxDateTime>(&value) }; dateVal != nullptr)
+                if (const auto* const dateVal{ std::get_if<wxDateTime>(&value) };
+                    dateVal != nullptr)
                     {
                     m_dateTimeValues.push_back(*dateVal);
                     }
-                else if (const auto strVal{ std::get_if<wxString>(&value) }; strVal != nullptr)
+                else if (const auto* const strVal{ std::get_if<wxString>(&value) };
+                         strVal != nullptr)
                     {
-                    wxDateTime dt;
-                    if (dt.ParseDateTime(*strVal) || dt.ParseDate(*strVal))
+                    wxDateTime dtime;
+                    if (dtime.ParseDateTime(*strVal) || dtime.ParseDate(*strVal))
                         {
-                        m_dateTimeValues.push_back(dt);
+                        m_dateTimeValues.push_back(dtime);
                         }
                     else
                         {
@@ -216,7 +222,7 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto val{ std::get_if<wxString>(&value) }; val != nullptr)
+                if (const auto* const val{ std::get_if<wxString>(&value) }; val != nullptr)
                     {
                     m_stringValues.push_back(*val);
                     }
@@ -235,7 +241,7 @@ namespace Wisteria::Data
         if (m_columnType == ColumnType::Categorical)
             {
             // categorical is using discrete values instead of a string table
-            if (m_doubleValues.size())
+            if (!m_doubleValues.empty())
                 {
                 const auto& dVal = m_categoricalColumn->GetValue(rowPosition);
                 for (const auto& val : m_doubleValues)
@@ -317,15 +323,15 @@ namespace Wisteria::Data
         else if (m_columnType == ColumnType::Date)
             {
             const auto& dtVal = m_dateColumn->GetValue(rowPosition);
-            for (const auto& dt : m_dateTimeValues)
+            for (const auto& dTime : m_dateTimeValues)
                 {
-                if (m_comparisonType == Comparison::Equals            ? dtVal == dt :
-                    m_comparisonType == Comparison::NotEquals         ? dtVal != dt :
-                    m_comparisonType == Comparison::LessThan          ? dtVal < dt :
-                    m_comparisonType == Comparison::LessThanOrEqualTo ? dtVal <= dt :
-                    m_comparisonType == Comparison::GreaterThan       ? dtVal > dt :
+                if (m_comparisonType == Comparison::Equals            ? dtVal == dTime :
+                    m_comparisonType == Comparison::NotEquals         ? dtVal != dTime :
+                    m_comparisonType == Comparison::LessThan          ? dtVal < dTime :
+                    m_comparisonType == Comparison::LessThanOrEqualTo ? dtVal <= dTime :
+                    m_comparisonType == Comparison::GreaterThan       ? dtVal > dTime :
                                                                         // GreaterThanOrEqualTo
-                                                                        dtVal >= dt)
+                                                                        dtVal >= dTime)
                     {
                     return true;
                     }
@@ -362,14 +368,14 @@ namespace Wisteria::Data
 
         SetSourceData(fromDataset);
 
-        ColumnFilter cf(GetSource(), columnFilter);
+        const ColumnFilter cfilter(GetSource(), columnFilter);
 
         while (HasMoreRows())
             {
             const auto nextRow = GetNextRowPosition();
             if (nextRow.has_value())
                 {
-                if (cf.MeetsCriterion(nextRow.value()))
+                if (cfilter.MeetsCriterion(nextRow.value()))
                     {
                     CopyNextRow();
                     }
@@ -400,9 +406,10 @@ namespace Wisteria::Data
         SetSourceData(fromDataset);
 
         std::vector<ColumnFilter> cFilters;
-        for (const auto& cf : columnFilters)
+        cFilters.reserve(columnFilters.size());
+        for (const auto& cfilter : columnFilters)
             {
-            cFilters.push_back({ GetSource(), cf });
+            cFilters.emplace_back(GetSource(), cfilter);
             }
 
         while (HasMoreRows())
@@ -411,9 +418,9 @@ namespace Wisteria::Data
             if (nextRow.has_value())
                 {
                 bool hadMatch{ false };
-                for (const auto& cf : cFilters)
+                for (const auto& cfilter : cFilters)
                     {
-                    if (cf.MeetsCriterion(nextRow.value()))
+                    if (cfilter.MeetsCriterion(nextRow.value()))
                         {
                         hadMatch = true;
                         break;
@@ -451,9 +458,10 @@ namespace Wisteria::Data
         SetSourceData(fromDataset);
 
         std::vector<ColumnFilter> cFilters;
-        for (const auto& cf : columnFilters)
+        cFilters.reserve(columnFilters.size());
+        for (const auto& cfilter : columnFilters)
             {
-            cFilters.push_back({ GetSource(), cf });
+            cFilters.emplace_back(GetSource(), cfilter);
             }
 
         while (HasMoreRows())
@@ -462,10 +470,10 @@ namespace Wisteria::Data
             if (nextRow.has_value())
                 {
                 bool allMatched{ true };
-                for (const auto& cf : cFilters)
+                for (const auto& cfilter : cFilters)
                     {
                     // if any criterion doesn't match, then bail
-                    if (!cf.MeetsCriterion(nextRow.value()))
+                    if (!cfilter.MeetsCriterion(nextRow.value()))
                         {
                         allMatched = false;
                         break;
@@ -504,10 +512,10 @@ namespace Wisteria::Data
 
         SetSourceData(fromDataset);
 
-        ColumnFilter startFilter(GetSource(),
-                                 ColumnFilterInfo{ column, Comparison::Equals, { startRowLabel } });
-        ColumnFilter endFilter(GetSource(),
-                               ColumnFilterInfo{ column, Comparison::Equals, { endRowLabel } });
+        const ColumnFilter startFilter(
+            GetSource(), ColumnFilterInfo{ column, Comparison::Equals, { startRowLabel } });
+        const ColumnFilter endFilter(
+            GetSource(), ColumnFilterInfo{ column, Comparison::Equals, { endRowLabel } });
 
         // get to the starting point
         bool foundStartRow{ false };
@@ -529,10 +537,7 @@ namespace Wisteria::Data
                     foundStartRow = true;
                     break;
                     }
-                else
-                    {
-                    SkipNextRow();
-                    }
+                SkipNextRow();
                 }
             // shouldn't happen
             else

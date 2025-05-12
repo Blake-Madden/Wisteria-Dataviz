@@ -12,7 +12,7 @@ namespace Wisteria::Data
     {
     //----------------------------------------------------------------
     void TextClassifier::SetClassifierData(
-        std::shared_ptr<const Data::Dataset> classifierData, const wxString& categoryColumnName,
+        const std::shared_ptr<const Data::Dataset>& classifierData, const wxString& categoryColumnName,
         const std::optional<wxString>& subCategoryColumnName, const wxString& patternsColumnName,
         const std::optional<wxString>& negationPatternsColumnName)
         {
@@ -74,14 +74,14 @@ namespace Wisteria::Data
             {
             // make sure the regex is OK before loading it for later
             const wxString reValue = patternCol->GetLabelFromID(patternCol->GetValue(i));
-            wxRegEx re(reValue);
+            const wxRegEx reg(reValue);
 
             const wxString negatingReValue =
                 (negationPatternCol != classifierData->GetCategoricalColumns().cend()) ?
                     negationPatternCol->GetLabelFromID(negationPatternCol->GetValue(i)) :
                     wxString();
 
-            if (reValue.length() && re.IsValid())
+            if (!reValue.empty() && reg.IsValid())
                 {
                 m_categoryPatternsMap.insert(
                     std::make_pair(categoryCol->GetValue(i),
@@ -90,7 +90,7 @@ namespace Wisteria::Data
                     std::make_pair(std::make_shared<wxRegEx>(reValue),
                                    // empty string can be seen as valid, so an uninitialized wxRegEx
                                    // if there is no string
-                                   negatingReValue.length() ?
+                                   !negatingReValue.empty() ?
                                        std::make_shared<wxRegEx>(negatingReValue) :
                                        std::make_shared<wxRegEx>()));
                 }
@@ -104,7 +104,7 @@ namespace Wisteria::Data
 
     //----------------------------------------------------------------
     std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
-    TextClassifier::ClassifyData(std::shared_ptr<const Data::Dataset> contentData,
+    TextClassifier::ClassifyData(const std::shared_ptr<const Data::Dataset>& contentData,
                                  const wxString& contentColumnName)
         {
         // nothing patterns or categories loaded from previous call to SetClassifierData()?
@@ -145,13 +145,13 @@ namespace Wisteria::Data
                 {
                 // ...by comparing it against each regex in every category
                 bool categoryRegexMatched{ false };
-                for (const auto& re : regexes.first)
+                for (const auto& reg : regexes.first)
                     {
-                    if (re.first->IsValid() &&
-                        re.first->Matches(
+                    if (reg.first->IsValid() &&
+                        reg.first->Matches(
                             contentColumn->GetLabelFromID(contentColumn->GetValue(i))) &&
                         // either no negating regex or it doesn't match it
-                        (!re.second->IsValid() || !re.second->Matches(contentColumn->GetLabelFromID(
+                        (!reg.second->IsValid() || !reg.second->Matches(contentColumn->GetLabelFromID(
                                                       contentColumn->GetValue(i)))))
                         {
                         categoryRegexMatched = true;

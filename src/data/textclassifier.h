@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_TEXT_CLASSIFIER_H__
-#define __WISTERIA_TEXT_CLASSIFIER_H__
+#ifndef WISTERIA_TEXT_CLASSIFIER_H
+#define WISTERIA_TEXT_CLASSIFIER_H
 
 #include "../util/frequencymap.h"
 #include "dataset.h"
@@ -125,7 +125,7 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
+        void SetClassifierData(const std::shared_ptr<const Data::Dataset>& classifierData,
                                const wxString& categoryColumnName,
                                const std::optional<wxString>& subCategoryColumnName,
                                const wxString& patternsColumnName,
@@ -153,7 +153,7 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
         std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
-        ClassifyData(std::shared_ptr<const Data::Dataset> contentData,
+        ClassifyData(const std::shared_ptr<const Data::Dataset>& contentData,
                      const wxString& contentColumnName);
 
       private:
@@ -171,4 +171,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_TEXT_CLASSIFIER_H__
+#endif // WISTERIA_TEXT_CLASSIFIER_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_POINTS_H__
-#define __WISTERIA_POINTS_H__
+#ifndef WISTERIA_POINTS_H
+#define WISTERIA_POINTS_H
 
 #include "graphitems.h"
 
@@ -298,4 +298,4 @@ namespace Wisteria::GraphItems
 
     /** @}*/
 
-#endif //__WISTERIA_POINTS_H__
+#endif // WISTERIA_POINTS_H

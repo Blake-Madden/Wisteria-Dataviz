@@ -234,7 +234,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
                                                    const wxString& appSubName,
                                                    const wxString& vendorName,
                                                    const bool includeCopyright,
-                                                   const wxString& copyrightPrefix = wxString{})
+                                                   const wxString& copyrightPrefix /*= wxString{}*/)
     {
     const int ftSize = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
     const auto backscreenHeight = bitmap.GetHeight() * math_constants::fifth;
@@ -306,9 +306,9 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         buildDate.ParseDate(__DATE__);
 
         Wisteria::GraphItems::Label copyrightInfo(
-            Wisteria::GraphItems::GraphItemInfo(wxString::Format(L"%s\u00A9%d %s. %s", copyrightPrefix,
-                                                                 buildDate.GetYear(), vendorName,
-                                                                 _(L"All rights reserved.")))
+            Wisteria::GraphItems::GraphItemInfo(
+                wxString::Format(L"%s\u00A9%d %s. %s", copyrightPrefix, buildDate.GetYear(),
+                                 vendorName, _(L"All rights reserved.")))
                 .Pen(wxNullPen)
                 .Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
                              false, GraphItems::Label::GetFirstAvailableMonospaceFont()))

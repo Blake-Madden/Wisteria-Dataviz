@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_EXCEL_H__
-#define __WISTERIA_EXCEL_H__
+#ifndef WISTERIA_EXCEL_H
+#define WISTERIA_EXCEL_H
 
 #include "../import/xlsx_extract_text.h"
 #include "../util/memorymappedfile.h"
@@ -63,4 +63,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_EXCEL_H__
+#endif // WISTERIA_EXCEL_H

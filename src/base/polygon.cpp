@@ -81,10 +81,10 @@ namespace Wisteria::GraphItems
             return false;
             }
 
-        constexpr double __DOUBLE_EPSILON__{ .01f };
-        constexpr bool bound{ true };
+        constexpr double DOUBLE_EPSILON{ .01f };
+        constexpr bool BOUND{ true };
         // cross points count of x
-        int __count{ 0 };
+        int crossPointsCount{ 0 };
 
         // neighbour bound vertices
         wxPoint p1, p2;
@@ -98,7 +98,7 @@ namespace Wisteria::GraphItems
             // point is a vertex
             if (p == p1)
                 {
-                return bound;
+                return BOUND;
                 }
 
             // right vertex
@@ -121,7 +121,7 @@ namespace Wisteria::GraphItems
                     // overlies on a horizontal ray
                     if (p1.y == p2.y && p.x >= std::min(p1.x, p2.x))
                         {
-                        return bound;
+                        return BOUND;
                         }
 
                     // ray is vertical
@@ -130,13 +130,10 @@ namespace Wisteria::GraphItems
                         // overlies on a ray
                         if (p1.x == p.x)
                             {
-                            return bound;
+                            return BOUND;
                             }
                         // before ray
-                        else
-                            {
-                            ++__count;
-                            }
+                        ++crossPointsCount;
                         }
 
                     // cross point on the left side
@@ -146,15 +143,15 @@ namespace Wisteria::GraphItems
                         const auto xinters = ((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
 
                         // overlies on a ray
-                        if (std::fabs(p.x - xinters) < __DOUBLE_EPSILON__)
+                        if (std::fabs(p.x - xinters) < DOUBLE_EPSILON)
                             {
-                            return bound;
+                            return BOUND;
                             }
 
                         // before ray
                         if (p.x < xinters)
                             {
-                            ++__count;
+                            ++crossPointsCount;
                             }
                         }
                     }
@@ -171,11 +168,11 @@ namespace Wisteria::GraphItems
                     // p.y lies between p1.y & p3.y
                     if (p.y >= std::min(p1.y, p3.y) && p.y <= std::max(p1.y, p3.y))
                         {
-                        ++__count;
+                        ++crossPointsCount;
                         }
                     else
                         {
-                        __count += 2;
+                        crossPointsCount += 2;
                         }
                     }
                 }
@@ -185,7 +182,7 @@ namespace Wisteria::GraphItems
             }
 
         // EVEN
-        if (__count % 2 == 0)
+        if (crossPointsCount % 2 == 0)
             {
             return false;
             }
@@ -202,7 +199,7 @@ namespace Wisteria::GraphItems
         assert(N > 0 && polygon);
         if (N == 0 || polygon == nullptr)
             {
-            return wxRect();
+            return {};
             }
 
         wxCoord minX(polygon[0].x), maxX(polygon[0].x), minY(polygon[0].y), maxY(polygon[0].y);
@@ -213,16 +210,16 @@ namespace Wisteria::GraphItems
             minY = std::min(polygon[i].y, minY);
             maxY = std::max(polygon[i].y, maxY);
             }
-        return wxRect(wxPoint(minX, minY), wxPoint(maxX, maxY));
+        return { wxPoint(minX, minY), wxPoint(maxX, maxY) };
         }
 
     //-------------------------------------------
     wxRect Polygon::GetPolygonBoundingBox(const std::vector<wxPoint>& polygon)
         {
-        assert(polygon.size());
+        assert(!polygon.empty());
         if (polygon.empty())
             {
-            return wxRect();
+            return {};
             }
 
         wxCoord minX(polygon[0].x), maxX(polygon[0].x), minY(polygon[0].y), maxY(polygon[0].y);
@@ -233,7 +230,7 @@ namespace Wisteria::GraphItems
             minY = std::min(pt.y, minY);
             maxY = std::max(pt.y, maxY);
             }
-        return wxRect(wxPoint(minX, minY), wxPoint(maxX, maxY));
+        return { wxPoint(minX, minY), wxPoint(maxX, maxY) };
         }
 
     //-------------------------------------------
@@ -244,22 +241,22 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        for (auto ptPos = m_scaledPoints.begin(); ptPos != m_scaledPoints.end(); ++ptPos)
+        for (auto& scaledPoint : m_scaledPoints)
             {
-            *ptPos = (*ptPos * GetScaling());
+            scaledPoint = (scaledPoint * GetScaling());
             } // grow
         }
 
     //-------------------------------------------
     bool Polygon::HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const
         {
-        return IsInsidePolygon(pt, &m_scaledPoints[0], m_scaledPoints.size());
+        return IsInsidePolygon(pt, m_scaledPoints.data(), m_scaledPoints.size());
         }
 
     //-------------------------------------------
     void Polygon::GetRectPoints(const wxRect& rect, wxPoint* points)
         {
-        if (!points)
+        if (points == nullptr)
             {
             return;
             }
@@ -272,9 +269,9 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxRect Polygon::GetRectFromPoints(const wxPoint* points)
         {
-        if (!points)
+        if (points == nullptr)
             {
-            return wxRect();
+            return {};
             }
         decltype(points[0].x) lowestX{ points[0].x }, lowestY{ points[0].y },
             highestX{ points[0].x }, highestY{ points[0].y };
@@ -285,7 +282,7 @@ namespace Wisteria::GraphItems
             highestX = std::max(highestX, points[i].x);
             highestY = std::max(highestY, points[i].y);
             }
-        return wxRect(wxPoint(lowestX, lowestY), wxPoint(highestX, highestY));
+        return { wxPoint(lowestX, lowestY), wxPoint(highestX, highestY) };
         }
 
     //-------------------------------------------
@@ -293,7 +290,7 @@ namespace Wisteria::GraphItems
         {
         if (!IsShown())
             {
-            return wxRect();
+            return {};
             }
         if (IsInDragState())
             {
@@ -311,9 +308,9 @@ namespace Wisteria::GraphItems
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
         const bool penIsLight{ (scaledPen.GetColour().IsOk() &&
                                 Wisteria::Colors::ColorContrast::IsLight(scaledPen.GetColour())) };
-        wxDCPenChanger pc(dc, IsSelected() ? wxPen(penIsLight ? *wxWHITE : *wxBLACK,
-                                                   2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
-                                             scaledPen);
+        const wxDCPenChanger pc(dc, IsSelected() ? wxPen(penIsLight ? *wxWHITE : *wxBLACK,
+                                                         2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                                   scaledPen);
 
         // don't use manual outline drawing unless one side is explicitly turned off
         const bool usingCustomOutline = (!GetGraphItemInfo().IsShowingTopOutline() ||
@@ -332,10 +329,10 @@ namespace Wisteria::GraphItems
             (GetShape() != PolygonShape::WaterColorRectangle) &&
             (GetShape() != PolygonShape::ThickWaterColorRectangle))
             {
-            wxDCBrushChanger bc(dc, GetBackgroundFill().GetColor1());
+            const wxDCBrushChanger bc(dc, GetBackgroundFill().GetColor1());
             if (GetBackgroundFill().IsGradient())
                 {
-                const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
+                const auto theRect{ GetRectFromPoints(m_scaledPoints.data()) };
                 // Optimized for rectangle.
                 // Also, this enables the draw commands of the gradient to be
                 // translated into SVG properly.
@@ -350,8 +347,9 @@ namespace Wisteria::GraphItems
                              GetBackgroundFill().GetDirection() == FillDirection::East  ? wxEAST :
                              GetBackgroundFill().GetDirection() == FillDirection::West  ? wxWEST :
                                                                                           wxSOUTH));
-                        wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
-                        wxDCPenChanger pc2(dc, (usingCustomOutline ? wxNullPen : dc.GetPen()));
+                        const wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
+                        const wxDCPenChanger pc2(dc,
+                                                 (usingCustomOutline ? wxNullPen : dc.GetPen()));
                         dc.DrawRectangle(theRect);
                         }
                     // draw the outline
@@ -398,7 +396,7 @@ namespace Wisteria::GraphItems
                 // a spline doesn't use a fill color, so just draw it
                 else if (GetShape() == PolygonShape::Spline)
                     {
-                    dc.DrawSpline(m_scaledPoints.size(), &m_scaledPoints[0]);
+                    dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
                     }
                 // irregular polygon
                 else
@@ -407,7 +405,7 @@ namespace Wisteria::GraphItems
                         {
                         wxGraphicsContext* gc = dynamic_cast<wxGCDC&>(dc).GetGraphicsContext();
                         assert(gc && L"Failed to get graphics context from polygon renderer!");
-                        if (gc)
+                        if (gc != nullptr)
                             {
                             wxPoint start;
                             wxPoint stop;
@@ -442,18 +440,18 @@ namespace Wisteria::GraphItems
                             gc->SetBrush(gc->CreateLinearGradientBrush(
                                 start.x, start.y, stop.x, stop.y, GetBackgroundFill().GetColor1(),
                                 GetBackgroundFill().GetColor2()));
-                            dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]);
+                            dc.DrawPolygon(m_scaledPoints.size(), m_scaledPoints.data());
                             }
                         }
                     else
                         {
-                        dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]);
+                        dc.DrawPolygon(m_scaledPoints.size(), m_scaledPoints.data());
                         }
                     }
                 }
             else
                 {
-                dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]);
+                dc.DrawPolygon(m_scaledPoints.size(), m_scaledPoints.data());
                 }
             }
 
@@ -462,12 +460,12 @@ namespace Wisteria::GraphItems
         // like a hatched brush on top of white background.
         if (GetBrush().IsOk() || (IsSelected() && GetSelectionBrush().IsOk()))
             {
-            wxDCBrushChanger bc(dc, (IsSelected() && GetSelectionBrush().IsOk()) ?
-                                        GetSelectionBrush() :
-                                        GetBrush());
+            const wxDCBrushChanger bc(dc, (IsSelected() && GetSelectionBrush().IsOk()) ?
+                                              GetSelectionBrush() :
+                                              GetBrush());
             if (GetShape() == PolygonShape::Spline)
                 {
-                dc.DrawSpline(m_scaledPoints.size(), &m_scaledPoints[0]);
+                dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
                 }
             else if (GetShape() == PolygonShape::Rectangle &&
                      GetBoxCorners() == BoxCorners::Rounded)
@@ -478,7 +476,7 @@ namespace Wisteria::GraphItems
                 {
                     // draw brush area
                     {
-                    wxDCPenChanger pc2(dc, (usingCustomOutline ? wxNullPen : dc.GetPen()));
+                    const wxDCPenChanger pc2(dc, (usingCustomOutline ? wxNullPen : dc.GetPen()));
                     dc.DrawRectangle(boundingBox);
                     }
                 // draw the outline
@@ -505,12 +503,12 @@ namespace Wisteria::GraphItems
             else if (GetShape() == PolygonShape::CurvyRectangle && m_scaledPoints.size() == 10)
                 {
                 GraphicsContextFallback gcf{ &dc, boundingBox };
-                auto gc = gcf.GetGraphicsContext();
+                auto* gc = gcf.GetGraphicsContext();
                 assert(gc && L"Failed to get graphics context for curvy rectangle!");
                 // If drawing commands can't be used, then switch to drawing as
-                // a regular polypon. These shapes often overlap each other (e.g., Sankey diagram),
+                // a regular polygon. These shapes often overlap each other (e.g., Sankey diagram),
                 // so using bitmaps won't work.
-                if (gc && !gcf.IsFallingBackToBitmap())
+                if (gc != nullptr && !gcf.IsFallingBackToBitmap())
                     {
                     // save current transform matrix state
                     gc->PushState();
@@ -535,37 +533,39 @@ namespace Wisteria::GraphItems
                     }
                 else
                     {
-                    dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]);
+                    dc.DrawPolygon(m_scaledPoints.size(), m_scaledPoints.data());
                     }
                 }
             else if (GetShape() == PolygonShape::WaterColorRectangle)
                 {
-                GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::WaterColorRectangle,
-                                     boundingBox.GetSize());
+                const GraphItems::Shape sh(GetGraphItemInfo(),
+                                           Icons::IconShape::WaterColorRectangle,
+                                           boundingBox.GetSize());
                 sh.Draw(boundingBox, dc);
                 }
             else if (GetShape() == PolygonShape::ThickWaterColorRectangle)
                 {
-                GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::ThickWaterColorRectangle,
-                                     boundingBox.GetSize());
+                const GraphItems::Shape sh(GetGraphItemInfo(),
+                                           Icons::IconShape::ThickWaterColorRectangle,
+                                           boundingBox.GetSize());
                 sh.Draw(boundingBox, dc);
                 }
             else
                 {
-                dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]);
+                dc.DrawPolygon(m_scaledPoints.size(), m_scaledPoints.data());
                 }
             }
         // just drawing an outline (hasn't already be drawn with a background color above)
         else if (!GetBackgroundFill().IsOk())
             {
-            wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+            const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
             if (GetShape() == PolygonShape::Spline)
                 {
-                dc.DrawSpline(m_scaledPoints.size(), &m_scaledPoints[0]);
+                dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
                 }
             else
                 {
-                dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]);
+                dc.DrawPolygon(m_scaledPoints.size(), m_scaledPoints.data());
                 }
             }
 
@@ -575,11 +575,11 @@ namespace Wisteria::GraphItems
             if (IsSelected())
                 {
                 std::array<wxPoint, 5> debugOutline;
-                GetRectPoints(boundingBox, &debugOutline[0]);
+                GetRectPoints(boundingBox, debugOutline.data());
                 debugOutline[4] = debugOutline[0];
-                wxDCPenChanger pcDebug(
+                const wxDCPenChanger pcDebug(
                     dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
-                dc.DrawLines(debugOutline.size(), &debugOutline[0]);
+                dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
 
@@ -599,8 +599,8 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        const float dx = static_cast<float>(pt2.x - pt1.x);
-        const float dy = static_cast<float>(pt2.y - pt1.y);
+        const auto dx = static_cast<float>(pt2.x - pt1.x);
+        const auto dy = static_cast<float>(pt2.y - pt1.y);
         const auto length = std::sqrt(dx * dx + dy * dy);
 
         // ux,uy is a unit vector parallel to the line.
@@ -632,19 +632,19 @@ namespace Wisteria::GraphItems
 
         dc.DrawLine(pt1, wxPoint(pt2.x + xAdjustment, pt2.y));
         // fill the arrowhead with the same color as the line
-        wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
+        const wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
         // need to turn off the pen because a thicker pen will cause an odd-looking
         // effect when the two lines converge at the tip of the arrowhead
-        wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
-        dc.DrawPolygon(arrowHead.size(), &arrowHead[0]);
+        const wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
+        dc.DrawPolygon(arrowHead.size(), arrowHead.data());
         }
 
     //-------------------------------------------
     void Polygon::Offset(const int xToMove, const int yToMove)
         {
-        for (auto pos = m_points.begin(); pos != m_points.end(); ++pos)
+        for (auto& point : m_points)
             {
-            *pos += wxPoint(xToMove, yToMove);
+            point += wxPoint(xToMove, yToMove);
             }
         }
 
@@ -658,6 +658,5 @@ namespace Wisteria::GraphItems
             return;
             }
         wxFAIL_MSG(L"SetBoundingBox() not currently supported!");
-        return;
         }
     } // namespace Wisteria::GraphItems

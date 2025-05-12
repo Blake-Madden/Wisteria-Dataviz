@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CLONE_H__
-#define __WISTERIA_CLONE_H__
+#ifndef WISTERIA_CLONE_H
+#define WISTERIA_CLONE_H
 
 #include "dataset.h"
 
@@ -102,4 +102,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_CLONE_H__
+#endif // WISTERIA_CLONE_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_JOIN_H__
-#define __WISTERIA_JOIN_H__
+#ifndef WISTERIA_JOIN_H
+#define WISTERIA_JOIN_H
 
 #include "dataset.h"
 
@@ -72,4 +72,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_JOIN_H__
+#endif // WISTERIA_JOIN_H

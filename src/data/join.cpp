@@ -19,8 +19,8 @@ namespace Wisteria::Data
         {
         assert(leftDataset && L"Invalid left dataset when left joining!");
         assert(rightDataset && L"Invalid right dataset when left joining!");
-        assert(byColumns.size() && L"No 'by' keys provided when left joining!");
-        assert(suffix.length() && L"Suffix should not be empty when left joining!");
+        assert(!byColumns.empty() && L"No 'by' keys provided when left joining!");
+        assert(!suffix.empty() && L"Suffix should not be empty when left joining!");
 
         if (leftDataset == nullptr)
             {
@@ -130,7 +130,7 @@ namespace Wisteria::Data
                 {
                 newCol->FillWithMissingData();
                 }
-            outCatColNamesMap.push_back(std::make_pair(catCol.GetName(), mergeColName));
+            outCatColNamesMap.emplace_back(catCol.GetName(), mergeColName);
             }
         // add continuous
         for (const auto& continuousCol : rightDataset->GetContinuousColumns())
@@ -139,8 +139,7 @@ namespace Wisteria::Data
                                               continuousCol.GetName() + suffix :
                                               continuousCol.GetName();
             mergedData->AddContinuousColumn(mergeColName);
-            outContinuousColNamesMap.push_back(
-                std::make_pair(continuousCol.GetName(), mergeColName));
+            outContinuousColNamesMap.emplace_back(continuousCol.GetName(), mergeColName);
             }
         // add datetime
         for (const auto& dateCol : rightDataset->GetDateColumns())
@@ -149,7 +148,7 @@ namespace Wisteria::Data
                                               dateCol.GetName() + suffix :
                                               dateCol.GetName();
             mergedData->AddDateColumn(mergeColName);
-            outDateColNamesMap.push_back(std::make_pair(dateCol.GetName(), mergeColName));
+            outDateColNamesMap.emplace_back(dateCol.GetName(), mergeColName);
             }
 
         // map the 'by' columns
@@ -181,7 +180,7 @@ namespace Wisteria::Data
                 if (const auto rightCatCol = rightDataset->GetCategoricalColumn(byColumn.second);
                     rightCatCol != rightDataset->GetCategoricalColumns().cend())
                     {
-                    byCatColsMap.push_back(std::make_pair(rightCatCol, mergeCatCol));
+                    byCatColsMap.emplace_back(rightCatCol, mergeCatCol);
                     }
                 else
                     {
@@ -233,7 +232,7 @@ namespace Wisteria::Data
                         outCol)
                         .ToUTF8());
                 }
-            outCatColsMap.push_back(std::make_pair(rCol, mCol));
+            outCatColsMap.emplace_back(rCol, mCol);
             }
         for (const auto& [srcCol, outCol] : outContinuousColNamesMap)
             {
@@ -261,7 +260,7 @@ namespace Wisteria::Data
                         outCol)
                         .ToUTF8());
                 }
-            outContinuousColsMap.push_back(std::make_pair(rCol, mCol));
+            outContinuousColsMap.emplace_back(rCol, mCol);
             }
         for (const auto& [srcCol, outCol] : outDateColNamesMap)
             {
@@ -289,7 +288,7 @@ namespace Wisteria::Data
                         outCol)
                         .ToUTF8());
                 }
-            outDateColsMap.push_back(std::make_pair(rCol, mCol));
+            outDateColsMap.emplace_back(rCol, mCol);
             }
 
         // merge the data
@@ -303,13 +302,13 @@ namespace Wisteria::Data
                 currentKeyInfo.clear();
                 warningLogged = false;
                 // matching on ID columns
-                if (byIdColumnsMap.first && byIdColumnsMap.second &&
+                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr &&
                     byIdColumnsMap.first->GetValue(rightDataRow)
                             .CmpNoCase(byIdColumnsMap.second->GetValue(mergeRow)) != 0)
                     {
                     continue;
                     }
-                if (byIdColumnsMap.first && byIdColumnsMap.second)
+                if (byIdColumnsMap.first != nullptr && byIdColumnsMap.second != nullptr)
                     {
                     currentKeyInfo.append(byIdColumnsMap.first->GetName())
                         .append(L": ")
@@ -337,9 +336,9 @@ namespace Wisteria::Data
                 // we have a match, so copy over data
                 if (allKeysMatch)
                     {
-                    if (outIdColumnsMap.first && outIdColumnsMap.second)
+                    if (outIdColumnsMap.first != nullptr && outIdColumnsMap.second != nullptr)
                         {
-                        if (outIdColumnsMap.second->GetValue(mergeRow).length())
+                        if (!outIdColumnsMap.second->GetValue(mergeRow).empty())
                             {
                             wxLogWarning(L"'%s': duplicate matching row from right dataset when "
                                          L"performing left join. "

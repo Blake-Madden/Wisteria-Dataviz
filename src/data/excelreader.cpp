@@ -8,8 +8,6 @@
 
 #include "excelreader.h"
 
-using namespace lily_of_the_valley;
-
 namespace Wisteria::Data
     {
     //---------------------------------------------------
@@ -17,8 +15,8 @@ namespace Wisteria::Data
         {
         m_filePath = filePath;
         MemoryMappedFile sourceFile(m_filePath, true, true);
-        ZipCatalog archive(static_cast<const char*>(sourceFile.GetStream()),
-                           sourceFile.GetMapSize());
+        const ZipCatalog archive(static_cast<const char*>(sourceFile.GetStream()),
+                                 sourceFile.GetMapSize());
 
         // load the worksheet names
         std::wstring zipFileText = archive.ReadTextFile(L"xl/workbook.xml");
@@ -38,11 +36,12 @@ namespace Wisteria::Data
                                         const wchar_t delimiter)
         {
         MemoryMappedFile sourceFile(m_filePath, true, true);
-        ZipCatalog archive(static_cast<const char*>(sourceFile.GetStream()),
-                           sourceFile.GetMapSize());
+        const ZipCatalog archive(static_cast<const char*>(sourceFile.GetStream()),
+                                 sourceFile.GetMapSize());
 
         // find the sheet by name
-        if (const auto worksheetName{ std::get_if<wxString>(&worksheet) }; worksheetName != nullptr)
+        if (const auto* const worksheetName{ std::get_if<wxString>(&worksheet) };
+            worksheetName != nullptr)
             {
             const auto sheetPos = std::find(m_xlsxTextExtractor.get_worksheet_names().cbegin(),
                                             m_xlsxTextExtractor.get_worksheet_names().cend(),
@@ -53,22 +52,19 @@ namespace Wisteria::Data
                     L"xl/worksheets/sheet%zu.xml",
                     (sheetPos - m_xlsxTextExtractor.get_worksheet_names().cbegin()) + 1));
 
-                xlsx_extract_text::worksheet wkData;
+                lily_of_the_valley::xlsx_extract_text::worksheet wkData;
 
                 m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
-                return xlsx_extract_text::get_worksheet_text(wkData, delimiter);
+                return lily_of_the_valley::xlsx_extract_text::get_worksheet_text(wkData, delimiter);
                 }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"'%s': Unable to find worksheet in Excel workbook."),
-                                     *worksheetName)
-                        .ToUTF8());
-                }
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': Unable to find worksheet in Excel workbook."),
+                                 *worksheetName)
+                    .ToUTF8());
             }
         // ...or index (1-based)
-        else if (const auto worksheetIndex{ std::get_if<size_t>(&worksheet) };
-                 worksheetIndex != nullptr)
+        if (const auto* const worksheetIndex{ std::get_if<size_t>(&worksheet) };
+            worksheetIndex != nullptr)
             {
             if (*worksheetIndex > 0 &&
                 *worksheetIndex <= m_xlsxTextExtractor.get_worksheet_names().size())
@@ -76,23 +72,16 @@ namespace Wisteria::Data
                 const std::wstring sheetFile = archive.ReadTextFile(
                     wxString::Format(L"xl/worksheets/sheet%zu.xml", *worksheetIndex));
 
-                xlsx_extract_text::worksheet wkData;
+                lily_of_the_valley::xlsx_extract_text::worksheet wkData;
 
                 m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
-                return xlsx_extract_text::get_worksheet_text(wkData, delimiter);
+                return lily_of_the_valley::xlsx_extract_text::get_worksheet_text(wkData, delimiter);
                 }
-            else
-                {
-                throw std::runtime_error(
-                    wxString::Format(
-                        _(L"Worksheet '%zu': worksheet out of range in Excel workbook."),
-                        *worksheetIndex)
-                        .ToUTF8());
-                }
+            throw std::runtime_error(
+                wxString::Format(_(L"Worksheet '%zu': worksheet out of range in Excel workbook."),
+                                 *worksheetIndex)
+                    .ToUTF8());
             }
-        else
-            {
-            throw std::runtime_error(_(L"Unknown value specified for Excel worksheet.").ToUTF8());
-            }
+        throw std::runtime_error(_(L"Unknown value specified for Excel worksheet.").ToUTF8());
         }
     } // namespace Wisteria::Data

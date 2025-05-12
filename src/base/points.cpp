@@ -11,9 +11,6 @@
 #include "polygon.h"
 #include "shapes.h"
 
-using namespace Wisteria::Colors;
-using namespace Wisteria::Icons;
-
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
@@ -52,7 +49,7 @@ namespace Wisteria::GraphItems
                         GetSelectedIds().erase(unselectedItem);
                         }
                     // if last point was unselected, then mark the entire collection as unselected
-                    if (!GetSelectedIds().size())
+                    if (GetSelectedIds().empty())
                         {
                         GraphItemBase::SetSelected(false);
                         }
@@ -154,7 +151,7 @@ namespace Wisteria::GraphItems
             if (point.IsSelected() && point.IsShowingLabelWhenSelected() &&
                 !point.GetText().empty())
                 {
-                const wxRect ItemBoundingBox(point.GetBoundingBox(dc));
+                const wxRect itemBoundingBox(point.GetBoundingBox(dc));
                 GraphItems::Label selectionLabel(
                     GraphItemInfo(point.GetText())
                         .Scaling(scaling)
@@ -162,9 +159,9 @@ namespace Wisteria::GraphItems
                         .DPIScaling(GetDPIScaleFactor())
                         .Padding(2, 2, 2, 2)
                         .FontBackgroundColor(*wxWHITE)
-                        .AnchorPoint(ItemBoundingBox.GetTopLeft() +
-                                     wxPoint(ItemBoundingBox.GetWidth() / 2,
-                                             ItemBoundingBox.GetHeight() / 2)));
+                        .AnchorPoint(itemBoundingBox.GetTopLeft() +
+                                     wxPoint(itemBoundingBox.GetWidth() / 2,
+                                             itemBoundingBox.GetHeight() / 2)));
                 const wxRect selectionLabelBox = selectionLabel.GetBoundingBox(dc);
                 // if going out of the bottom of the bounding box then move it up to fit
                 if (!boundingBox.IsEmpty() &&
@@ -209,7 +206,7 @@ namespace Wisteria::GraphItems
         {
         if (!IsShown() || GetPoints().empty())
             {
-            return wxRect();
+            return {};
             }
         if (IsInDragState())
             {
@@ -222,30 +219,31 @@ namespace Wisteria::GraphItems
             }
 
         // draw connection points
-        if (GetPen().IsOk() && m_points.size())
+        if (GetPen().IsOk() && !m_points.empty())
             {
             wxPen scaledPen(GetPen());
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
-            wxDCPenChanger pc(dc, scaledPen);
+            const wxDCPenChanger pc(dc, scaledPen);
 
             const auto okPointsCount =
                 std::count_if(m_points.cbegin(), m_points.cend(),
                               [](const auto pt) noexcept { return pt.IsOk(); });
             if (okPointsCount == 0)
                 {
-                return wxRect();
+                return {};
                 }
             // just one point, so no line to draw
             // (just draw point if shapes aren't being drawn; if points have a shape,
             // then it will be drawn later below)
-            else if (okPointsCount == 1)
+            if (okPointsCount == 1)
                 {
                 // find the valid point, draw it, then we're done
                 for (size_t i = 0; i < m_points.size(); ++i)
                     {
-                    if (m_points[i].IsOk() && m_points[i].m_shape == IconShape::Blank)
+                    if (m_points[i].IsOk() &&
+                        m_points[i].m_shape == Wisteria::Icons::IconShape::Blank)
                         {
-                        wxDCBrushChanger bc(dc, scaledPen.GetColour());
+                        const wxDCBrushChanger bc(dc, scaledPen.GetColour());
                         dc.DrawCircle(m_points[i].GetAnchorPoint(), m_points[i].GetRadius());
                         break;
                         }
@@ -268,7 +266,7 @@ namespace Wisteria::GraphItems
                             }
                         // or we are at the end of the points and there is a previous
                         // valid starting point in the segment
-                        else if (i == m_points.size() - 1)
+                        if (i == m_points.size() - 1)
                             {
                             currentSegment.push_back(m_points[i].GetAnchorPoint());
                             if (currentSegment.size() > 1)
@@ -317,13 +315,13 @@ namespace Wisteria::GraphItems
             }
         const bool areAllPointsSelected = (!m_singlePointSelection && IsSelected());
 
-        wxDCBrushChanger bc(dc, GetPoints().front().GetBrush());
+        const wxDCBrushChanger bc(dc, GetPoints().front().GetBrush());
         wxPen scaledPen{ GetPoints().front().GetPen() };
         if (scaledPen.IsOk())
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        wxDCPenChanger pc(dc, scaledPen);
+        const wxDCPenChanger pc(dc, scaledPen);
 
         for (const auto& point : GetPoints())
             {
@@ -352,7 +350,7 @@ namespace Wisteria::GraphItems
         {
         if (!IsShown() || !IsOk())
             {
-            return wxRect();
+            return {};
             }
         if (IsInDragState())
             {
@@ -386,7 +384,7 @@ namespace Wisteria::GraphItems
                 wxPoint debugOutline[5]{ { 0, 0 } };
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
                 debugOutline[4] = debugOutline[0];
-                wxDCPenChanger pcDebug(
+                const wxDCPenChanger pcDebug(
                     dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
                 dc.DrawLines(std::size(debugOutline), debugOutline);
                 }
@@ -410,9 +408,9 @@ namespace Wisteria::GraphItems
             }
         SetAnchorPoint(wxPoint(rect.GetLeft() + (rect.GetWidth() / 2),
                                rect.GetTop() + (rect.GetHeight() / 2)));
-        const double upscaleSizeWidth =
+        const auto upscaleSizeWidth =
             safe_divide<double>(rect.GetWidth(), GetBoundingBox(dc).GetWidth());
-        const double upscaleSizeHeight =
+        const auto upscaleSizeHeight =
             safe_divide<double>(rect.GetHeight(), GetBoundingBox(dc).GetHeight());
         const double upscaleBestFix = std::min(upscaleSizeWidth, upscaleSizeHeight);
         if (upscaleBestFix > 1)
@@ -426,7 +424,7 @@ namespace Wisteria::GraphItems
         {
         if (!IsOk())
             {
-            return wxRect();
+            return {};
             }
         wxPoint cp(GetAnchorPoint());
         if (IsFreeFloating())
@@ -438,8 +436,9 @@ namespace Wisteria::GraphItems
         cp -= wxSize(ScaleToScreenAndCanvas(GetRadius()), ScaleToScreenAndCanvas(GetRadius()));
         wxRect boundingBox(cp, wxSize((ScaleToScreenAndCanvas(GetRadius())) * 2,
                                       (ScaleToScreenAndCanvas(GetRadius())) * 2));
-        if (m_shape == IconShape::LocationMarker || m_shape == IconShape::GoRoadSign ||
-            m_shape == IconShape::WarningRoadSign)
+        if (m_shape == Wisteria::Icons::IconShape::LocationMarker ||
+            m_shape == Wisteria::Icons::IconShape::GoRoadSign ||
+            m_shape == Wisteria::Icons::IconShape::WarningRoadSign)
             {
             boundingBox.SetTop(boundingBox.GetTop() - boundingBox.GetHeight());
             boundingBox.SetHeight(boundingBox.GetHeight() * 1.5);

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_DATASET_H__
-#define __WISTERIA_DATASET_H__
+#ifndef WISTERIA_DATASET_H
+#define WISTERIA_DATASET_H
 
 #include "../base/enums.h"
 #include "../debug/debug_assert.h"
@@ -108,10 +108,7 @@ namespace Wisteria::Data
         /** @brief Constructor.
             @param title The title of the column.
                 This is useful for identifying the column in a dataset.*/
-        explicit Column(const wxString& title) : m_name(title) {}
-
-        /// @private
-        explicit Column(wxString&& title) : m_name(std::move(title)) {}
+        explicit Column(wxString title) : m_name(std::move(title)) {}
 
         /// @private
         Column() = default;
@@ -389,10 +386,7 @@ namespace Wisteria::Data
                 {
                 return foundLabel->second;
                 }
-            else
-                {
-                return std::to_wstring(code);
-                }
+            return std::to_wstring(code);
             }
 
         /** @brief Gets the underlying numeric code from the string table given the label,
@@ -416,7 +410,7 @@ namespace Wisteria::Data
         /** @returns The value at the given index as a string.
             @param index The index into the data to set.*/
         [[nodiscard]]
-        const wxString GetValueAsLabel(const size_t index) const
+        wxString GetValueAsLabel(const size_t index) const
             {
             return GetLabelFromID(GetValue(index));
             }
@@ -451,16 +445,13 @@ namespace Wisteria::Data
         [[nodiscard]]
         static GroupIdType GetNextKey(const StringTableType& stringTable)
             {
-            if (stringTable.size())
+            if (!stringTable.empty())
                 {
                 // cppcheck-suppress unassignedVariable
                 const auto& [key, value] = *stringTable.crbegin();
                 return key + 1;
                 }
-            else
-                {
-                return 0;
-                }
+            return 0;
             }
 
         /** @returns The next group ID that can be inserted into the string table.*/
@@ -475,7 +466,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         bool HasValidStringTableEntries() const
             {
-            return GetStringTable().size() > 0 && GetStringTable().cbegin()->second.length();
+            return !GetStringTable().empty() && !GetStringTable().cbegin()->second.empty();
             }
 
       private:
@@ -607,16 +598,16 @@ namespace Wisteria::Data
         /** @brief Sets the ID/name of the point.
             @param id The value for the ID.
             @returns A self reference.*/
-        RowInfo& Id(const wxString& id)
+        RowInfo& Id(const wxString& identifier)
             {
-            m_id = id;
+            m_id = identifier;
             return *this;
             }
 
         /// @private
-        RowInfo& Id(wxString&& id)
+        RowInfo& Id(wxString&& identifier)
             {
-            m_id = std::move(id);
+            m_id = std::move(identifier);
             return *this;
             }
 
@@ -1078,15 +1069,15 @@ namespace Wisteria::Data
                 }
             for (auto& column : m_categoricalColumns)
                 {
-                auto MDCode = column.FindMissingDataCode();
-                if (!MDCode.has_value())
+                auto mdCode = column.FindMissingDataCode();
+                if (!mdCode.has_value())
                     {
                     column.GetStringTable().insert(
                         std::make_pair(column.GetNextKey(), wxEmptyString));
-                    MDCode = column.FindMissingDataCode();
-                    assert(MDCode && L"Error creating MD label when resizing column!");
+                    mdCode = column.FindMissingDataCode();
+                    assert(mdCode && L"Error creating MD label when resizing column!");
                     }
-                column.Resize(rowCount, MDCode.value_or(0));
+                column.Resize(rowCount, mdCode.value_or(0));
                 }
             for (auto& column : m_continuousColumns)
                 {
@@ -1141,7 +1132,7 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddContinuousColumn(const wxString& columnName)
             {
-            assert(columnName.length() &&
+            assert(!columnName.empty() &&
                    L"Column name is empty in call to AddContinuousColumn()!");
             // see if already in the dataset
             auto foundColumn = GetContinuousColumn(columnName);
@@ -1180,7 +1171,7 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddDateColumn(const wxString& columnName)
             {
-            assert(columnName.length() && L"Date name is empty in call to AddDateColumn()!");
+            assert(!columnName.empty() && L"Date name is empty in call to AddDateColumn()!");
             // see if already in the dataset
             auto foundColumn = GetDateColumn(columnName);
             if (foundColumn != GetDateColumns().end())
@@ -1727,8 +1718,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         static wxString GetDataFileFilter()
             {
-            return _(
-                LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|"
+            return _(LR"(All Data Files (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|"
                   "Tab Delimited Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv|"
                   "Excel Files (*.xlsx)|*.xlsx)");
             }
@@ -1769,11 +1759,11 @@ namespace Wisteria::Data
         ContinuousColumnConstIterator
         GetContinuousColumn(const std::variant<wxString, size_t>& column) const noexcept
             {
-            if (const auto strVal{ std::get_if<wxString>(&column) }; strVal != nullptr)
+            if (const auto* const strVal{ std::get_if<wxString>(&column) }; strVal != nullptr)
                 {
                 return GetContinuousColumn(*strVal);
                 }
-            else if (const auto indexVal{ std::get_if<size_t>(&column) }; indexVal != nullptr)
+            if (const auto* const indexVal{ std::get_if<size_t>(&column) }; indexVal != nullptr)
                 {
                 if (*indexVal >= m_continuousColumns.size())
                     {
@@ -1849,4 +1839,4 @@ namespace Wisteria::Data
 
 /** @}*/
 
-#endif //__WISTERIA_DATASET_H__
+#endif // WISTERIA_DATASET_H

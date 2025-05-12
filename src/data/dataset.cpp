@@ -8,8 +8,6 @@
 
 #include "dataset.h"
 
-using namespace lily_of_the_valley;
-
 namespace Wisteria::Data
     {
     //----------------------------------------------
@@ -103,21 +101,21 @@ namespace Wisteria::Data
             }
 
         // prep target string table
-        GroupIdType mdCode{ 0 };
+        const GroupIdType mdCode{ 0 };
         targetVar->GetStringTable().clear();
-        targetVar->GetStringTable().insert(std::make_pair(mdCode, wxEmptyString));
+        targetVar->GetStringTable().insert(std::make_pair(mdCode, wxString{}));
         std::map<wxString, GroupIdType, wxStringLessNoCase> idMap;
-        for (const auto& re : replacementMap)
+        for (const auto& reg : replacementMap)
             {
             const auto nextId{ targetVar->GetNextKey() };
-            targetVar->GetStringTable().insert(std::make_pair(nextId, re.second));
-            const auto [insertPos, inserted] = idMap.insert(std::make_pair(re.second, nextId));
+            targetVar->GetStringTable().insert(std::make_pair(nextId, reg.second));
+            const auto [insertPos, inserted] = idMap.insert(std::make_pair(reg.second, nextId));
             if (!inserted)
                 {
                 throw std::runtime_error(
                     wxString::Format(
                         _(L"'%s': duplicate string replacement encountered for category mutation."),
-                        re.second)
+                        reg.second)
                         .ToUTF8());
                 }
             }
@@ -126,12 +124,12 @@ namespace Wisteria::Data
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             bool foundMatch{ false };
-            for (const auto& re : replacementMap)
+            for (const auto& reg : replacementMap)
                 {
                 const auto currentSrcLabel = srcVar->GetValueAsLabel(i);
-                if (re.first->Matches(currentSrcLabel))
+                if (reg.first->Matches(currentSrcLabel))
                     {
-                    const auto foundId = idMap.find(re.second);
+                    const auto foundId = idMap.find(reg.second);
                     if (foundId != idMap.cend())
                         {
                         targetVar->SetValue(i, foundId->second);
@@ -141,11 +139,11 @@ namespace Wisteria::Data
                         // shouldn't happen
                         wxFAIL_MSG(wxString::Format(
                             L"'%s': internal error finding mapped value for category mutation.",
-                            re.second));
+                            reg.second));
                         throw std::runtime_error(
                             wxString::Format(_(L"'%s': internal error finding mapped value for "
                                                "category mutation."),
-                                             re.second)
+                                             reg.second)
                                 .ToUTF8());
                         }
                     foundMatch = true;
@@ -198,10 +196,9 @@ namespace Wisteria::Data
 
         for (auto& strEntry : GetStringTable())
             {
-            if (const auto foundPos =
-                    std::find_if(labelsToKeep.cbegin(), labelsToKeep.cend(),
-                                 [&strEntry](const auto& labelToKeep)
-                                 { return strEntry.second.CmpNoCase(labelToKeep) == 0; });
+            if (const auto foundPos = std::find_if(
+                    labelsToKeep.cbegin(), labelsToKeep.cend(), [&strEntry](const auto& labelToKeep)
+                    { return strEntry.second.CmpNoCase(labelToKeep) == 0; });
                 foundPos == labelsToKeep.cend())
                 {
                 strEntry.second = otherLabel;
@@ -288,12 +285,12 @@ namespace Wisteria::Data
     //----------------------------------------------
     void ColumnWithStringTable::RecodeRE(const wxString& pattern, const wxString& replace)
         {
-        wxRegEx re(pattern);
-        if (re.IsValid())
+        const wxRegEx reg(pattern);
+        if (reg.IsValid())
             {
             for (auto& str : m_stringTable)
                 {
-                re.ReplaceAll(&str.second, replace);
+                reg.ReplaceAll(&str.second, replace);
                 }
             }
         else
@@ -368,7 +365,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
             }
-        wxRegEx columnRE(colNamePattern);
+        const wxRegEx columnRE(colNamePattern);
         if (!columnRE.IsValid())
             {
             throw std::runtime_error(
@@ -482,15 +479,15 @@ namespace Wisteria::Data
             {
             return true;
             }
-        else if (continuousCol != GetContinuousColumns().end())
+        if (continuousCol != GetContinuousColumns().end())
             {
             return true;
             }
-        else if (catCol != GetCategoricalColumns().end())
+        if (catCol != GetCategoricalColumns().end())
             {
             return true;
             }
-        else if (dateCol != GetDateColumns().end())
+        if (dateCol != GetDateColumns().end())
             {
             return true;
             }
@@ -521,15 +518,14 @@ namespace Wisteria::Data
         for (size_t i = 0; i < dataset->GetRowCount(); ++i)
             {
             currentRegex = regexColumn->GetLabelFromID(regexColumn->GetValue(i));
-            wxRegEx testRe(currentRegex);
+            const wxRegEx testRe{ currentRegex };
             if (currentRegex.empty() || !testRe.IsValid())
                 {
                 wxLogWarning(L"'%s': regular expression syntax error.", currentRegex);
                 continue;
                 }
-            reMap.push_back(
-                std::make_pair(std::make_unique<wxRegEx>(currentRegex),
-                               replaceColumn->GetLabelFromID(replaceColumn->GetValue(i))));
+            reMap.emplace_back(std::make_unique<wxRegEx>(currentRegex),
+                               replaceColumn->GetLabelFromID(replaceColumn->GetValue(i)));
             }
 
         return reMap;
@@ -542,40 +538,30 @@ namespace Wisteria::Data
             {
             return MDRecodeValue;
             }
-        else
+        const wchar_t* const start = input.c_str();
+        wchar_t* end{ nullptr };
+        const double val = wxStrtod_l(start, &end, wxCLocale);
+        // failed to even begin with a number
+        if (end == start)
             {
-            const wchar_t* const start = input.c_str();
-            wchar_t* end{ nullptr };
-            double val = wxStrtod_l(start, &end, wxCLocale);
-            // failed to even begin with a number
-            if (end == start)
-                {
-                return MDRecodeValue;
-                }
-            // if we read all the way to the null terminator, then conversion worked
-            else if (*end == 0)
-                {
-                return val;
-                }
-            // at least started with a number
-            else
-                {
-                // remove thousand separator and try that
-                wchar_t thousandsSep{ 32 };
-                if (wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousandsSep) &&
-                    *end == thousandsSep)
-                    {
-                    std::wstring strippedNumber{ input };
-                    string_util::remove_all(strippedNumber, thousandsSep);
-                    return ConvertToDouble(strippedNumber, MDRecodeValue);
-                    }
-                // a mix of numbers and text, give up
-                else
-                    {
-                    return MDRecodeValue;
-                    }
-                }
+            return MDRecodeValue;
             }
+        // if we read all the way to the null terminator, then conversion worked
+        if (*end == 0)
+            {
+            return val;
+            }
+        // at least started with a number,
+        // so remove thousand separator and try that
+        wchar_t thousandsSep{ 32 };
+        if (wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousandsSep) && *end == thousandsSep)
+            {
+            std::wstring strippedNumber{ input };
+            string_util::remove_all(strippedNumber, thousandsSep);
+            return ConvertToDouble(strippedNumber, MDRecodeValue);
+            }
+        // a mix of numbers and text, give up
+        return MDRecodeValue;
         }
 
     //----------------------------------------------
@@ -585,13 +571,10 @@ namespace Wisteria::Data
             {
             return mdCode;
             }
-        else
-            {
-            const wchar_t* const start = input.c_str();
-            wchar_t* end{ nullptr };
-            GroupIdType value = std::wcstoull(start, &end, 10);
-            return (start == end) ? 0 : value;
-            }
+        const wchar_t* const start = input.c_str();
+        wchar_t* end{ nullptr };
+        const GroupIdType value = std::wcstoull(start, &end, 10);
+        return (start == end) ? 0 : value;
         }
 
     //----------------------------------------------
@@ -603,42 +586,42 @@ namespace Wisteria::Data
             return wxInvalidDateTime;
             }
 
-        wxDateTime dt;
+        wxDateTime dTime;
         wxString::const_iterator end;
         switch (method)
             {
         case DateImportMethod::Automatic:
             // try reading as date & time, fall back to just date if that fails,
             // then try it as just a time (which use be set to today's date)
-            if (!dt.ParseDateTime(input, &end))
+            if (!dTime.ParseDateTime(input, &end))
                 {
-                if (!dt.ParseDate(input, &end))
+                if (!dTime.ParseDate(input, &end))
                     {
-                    dt.ParseTime(input, &end);
+                    dTime.ParseTime(input, &end);
                     }
                 }
             break;
         case DateImportMethod::IsoDate:
-            dt.ParseISODate(input);
+            dTime.ParseISODate(input);
             break;
         case DateImportMethod::IsoCombined:
-            dt.ParseISOCombined(input);
+            dTime.ParseISOCombined(input);
             break;
         case DateImportMethod::Rfc822:
-            dt.ParseRfc822Date(input, &end);
+            dTime.ParseRfc822Date(input, &end);
             break;
         case DateImportMethod::StrptimeFormatString:
-            dt.ParseFormat(input, formatStr, &end);
+            dTime.ParseFormat(input, formatStr, &end);
             break;
         case DateImportMethod::Time:
-            dt.ParseTime(input, &end);
+            dTime.ParseTime(input, &end);
             break;
             }
-        if (!dt.IsValid())
+        if (!dTime.IsValid())
             {
             wxLogWarning(L"'%s': error parsing date.", input);
             }
-        return dt;
+        return dTime;
         }
 
     //----------------------------------------------
@@ -741,14 +724,14 @@ namespace Wisteria::Data
             return std::make_pair(wxEmptyString, wxEmptyString);
             }
 
-        const auto MDCode =
+        const auto mdCode =
             ColumnWithStringTable::FindMissingDataCode(catColumnIterator->GetStringTable());
         std::set<wxString, wxStringLessNoCase> strings;
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
-            if ((!MDCode.has_value() || catColumnIterator->GetValue(i) != MDCode.value()) &&
+            if ((!mdCode.has_value() || catColumnIterator->GetValue(i) != mdCode.value()) &&
                 ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                 groupColumnIterator->GetValue(i) == groupId.value()))
+                 (groupId && groupColumnIterator->GetValue(i) == groupId.value())))
                 {
                 strings.insert(catColumnIterator->GetLabelFromID(catColumnIterator->GetValue(i)));
                 }
@@ -800,21 +783,21 @@ namespace Wisteria::Data
             }
 
         size_t validN{ 0 };
-        const auto MDCode =
+        const auto mdCode =
             ColumnWithStringTable::FindMissingDataCode(catColumnIterator->GetStringTable());
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (groupColumnIterator != GetCategoricalColumns().cend())
                 {
-                if (groupColumnIterator->GetValue(i) == groupId.value() &&
-                    (!MDCode.has_value() || catColumnIterator->GetValue(i) != MDCode.value()))
+                if (groupId && groupColumnIterator->GetValue(i) == groupId.value() &&
+                    (!mdCode.has_value() || catColumnIterator->GetValue(i) != mdCode.value()))
                     {
                     ++validN;
                     }
                 }
             else
                 {
-                if (!MDCode.has_value() || catColumnIterator->GetValue(i) != MDCode.value())
+                if (!mdCode.has_value() || catColumnIterator->GetValue(i) != mdCode.value())
                     {
                     ++validN;
                     }
@@ -870,7 +853,7 @@ namespace Wisteria::Data
             {
             if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
                 ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                 groupColumnIterator->GetValue(i) == groupId.value()))
+                 (groupId && groupColumnIterator->GetValue(i) == groupId.value())))
                 {
                 minValue = std::min(minValue, continuousColumnIterator->GetValue(i));
                 maxValue = std::max(maxValue, continuousColumnIterator->GetValue(i));
@@ -923,7 +906,7 @@ namespace Wisteria::Data
             {
             if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
                 ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                 groupColumnIterator->GetValue(i) == groupId.value()))
+                 (groupId && groupColumnIterator->GetValue(i) == groupId.value())))
                 {
                 totalVal += continuousColumnIterator->GetValue(i);
                 }
@@ -969,7 +952,7 @@ namespace Wisteria::Data
             {
             if (groupColumnIterator != GetCategoricalColumns().cend())
                 {
-                if (groupColumnIterator->GetValue(i) == groupId.value() &&
+                if (groupId && groupColumnIterator->GetValue(i) == groupId.value() &&
                     !std::isnan(continuousColumnIterator->GetValue(i)))
                     {
                     ++validN;
@@ -991,7 +974,7 @@ namespace Wisteria::Data
         {
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
-            if (GetIdColumn().GetValue(i).length())
+            if (!GetIdColumn().GetValue(i).empty())
                 {
                 return true;
                 }
@@ -1034,7 +1017,7 @@ namespace Wisteria::Data
                 }
             }
 
-        if (info.m_idColumn.length())
+        if (!info.m_idColumn.empty())
             {
             GetIdColumn().SetName(info.m_idColumn);
             }
@@ -1058,7 +1041,7 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::AddCategoricalColumn(const wxString& columnName)
         {
-        assert(columnName.length() && L"Column name is empty in call to AddCategoricalColumn()!");
+        assert(!columnName.empty() && L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);
         if (foundColumn != GetCategoricalColumns().end())
@@ -1070,7 +1053,7 @@ namespace Wisteria::Data
         m_categoricalColumns.back().SetName(columnName);
         // add a string table with an empty value and fill the data with that
         // if there are existing rows in the data
-        if (GetRowCount())
+        if (GetRowCount() != 0)
             {
             m_categoricalColumns.back().GetStringTable().insert(std::make_pair(0, wxString{}));
             m_categoricalColumns.back().Resize(GetRowCount(), 0);
@@ -1081,7 +1064,7 @@ namespace Wisteria::Data
     void Dataset::AddCategoricalColumn(const wxString& columnName,
                                        const ColumnWithStringTable::StringTableType& stringTable)
         {
-        assert(columnName.length() && L"Column name is empty in call to AddCategoricalColumn()!");
+        assert(!columnName.empty() && L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);
         if (foundColumn != GetCategoricalColumns().end())
@@ -1094,7 +1077,7 @@ namespace Wisteria::Data
         m_categoricalColumns.back().SetName(columnName);
         m_categoricalColumns.back().GetStringTable() = stringTable;
         // if we have existing rows and need to fill this column
-        if (GetRowCount())
+        if (GetRowCount() != 0)
             {
             if (stringTable.empty())
                 {
@@ -1172,11 +1155,11 @@ namespace Wisteria::Data
             }
         else
             {
-            wxFile fl(filePath);
-            if (!fl.IsOpened() || !fl.ReadAll(&fileText))
+            wxFile thefile(filePath);
+            if (!thefile.IsOpened() || !thefile.ReadAll(&fileText))
                 {
                 throw std::runtime_error(
-                    wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(fl.GetLastError()))
+                    wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(thefile.GetLastError()))
                         .ToUTF8());
                 }
             }
@@ -1195,7 +1178,7 @@ namespace Wisteria::Data
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
         importer.set_missing_data_codes(importInfo.m_mdCodes);
 
-        lily_of_the_valley::text_column<text_column_to_eol_parser> noReadColumn(
+        lily_of_the_valley::text_column<lily_of_the_valley::text_column_to_eol_parser> noReadColumn(
             lily_of_the_valley::text_column_to_eol_parser{ false });
         if (importInfo.m_skipRows > 0)
             {
@@ -1253,10 +1236,10 @@ namespace Wisteria::Data
             return columnInfo;
             }
 
-        wxLogNull nl;
-        wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
-        wxRegEx mdRegex(L"(?i)^(NA|N/A|NULL)$");
-        wxDateTime dt;
+        const wxLogNull suppressLogMessages;
+        const wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
+        const wxRegEx mdRegex(L"(?i)^(NA|N/A|NULL)$");
+        wxDateTime dTime;
         wxString::const_iterator end;
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
             {
@@ -1297,7 +1280,8 @@ namespace Wisteria::Data
                     }
                 // ConvertToDate() will also attempt to parse as time, so use
                 // strictly review as dates
-                else if (dt.ParseDateTime(currentCell, &end) || dt.ParseDate(currentCell, &end))
+                else if (dTime.ParseDateTime(currentCell, &end) ||
+                         dTime.ParseDate(currentCell, &end))
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
@@ -1313,11 +1297,11 @@ namespace Wisteria::Data
                     currentColumnType = ColumnImportType::String;
                     break;
                     }
-                else if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
-                         // numbers outside of 0-7 probably aren't a discrete code
-                         !is_within(std::make_pair(
-                                        0.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
-                                    parsedNumber))
+                if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
+                    // numbers outside of 0-7 probably aren't a discrete code
+                    !is_within(
+                        std::make_pair(0.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
+                        parsedNumber))
                     {
                     currentColumnType = ColumnImportType::Numeric;
                     }
@@ -1335,10 +1319,10 @@ namespace Wisteria::Data
                 currentColumnType = ColumnImportType::String;
                 }
             // silently ignore columns with no name (missing header)
-            if (preview.get_header_names().at(colIndex).length())
+            if (!preview.get_header_names().at(colIndex).empty())
                 {
-                columnInfo.push_back(std::make_pair(preview.get_header_names().at(colIndex).c_str(),
-                                                    currentColumnType));
+                columnInfo.emplace_back(preview.get_header_names().at(colIndex).c_str(),
+                                        currentColumnType);
                 }
             }
         return columnInfo;
@@ -1382,11 +1366,11 @@ namespace Wisteria::Data
         const wxString continuousColumnNames = concatColNames(GetContinuousColumns());
 
         wxString colNames =
-            (idName.length() ? idName + delimiter : wxString{}) +
-            (catColumnNames.length() ? catColumnNames + delimiter : wxString{}) +
-            (dateColumnNames.length() ? dateColumnNames + delimiter : wxString{}) +
-            (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString{});
-        if (colNames.length() && colNames[colNames.length() - 1] == delimiter)
+            (!idName.empty() ? idName + delimiter : wxString{}) +
+            (!catColumnNames.empty() ? catColumnNames + delimiter : wxString{}) +
+            (!dateColumnNames.empty() ? dateColumnNames + delimiter : wxString{}) +
+            (!continuousColumnNames.empty() ? continuousColumnNames + delimiter : wxString{});
+        if (!colNames.empty() && colNames[colNames.length() - 1] == delimiter)
             {
             colNames.RemoveLast();
             }
@@ -1429,18 +1413,18 @@ namespace Wisteria::Data
                                              wxNumberFormatter::Style::Style_NoTrailingZeroes)))
                     .append(1, delimiter);
                 }
-            if (currentRow.length() && currentRow[currentRow.length() - 1] == delimiter)
+            if (!currentRow.empty() && currentRow[currentRow.length() - 1] == delimiter)
                 {
                 currentRow.RemoveLast();
                 }
             fileContent.append(currentRow).append(1, L'\n');
             }
 
-        wxFile fl(filePath, wxFile::write);
-        if (!fl.IsOpened() || !fl.Write(fileContent))
+        wxFile theFile(filePath, wxFile::write);
+        if (!theFile.IsOpened() || !theFile.Write(fileContent))
             {
             throw std::runtime_error(
-                wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(fl.GetLastError()))
+                wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(theFile.GetLastError()))
                     .ToUTF8());
             }
         }
@@ -1470,7 +1454,7 @@ namespace Wisteria::Data
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
         importer.set_missing_data_codes(info.m_mdCodes);
 
-        lily_of_the_valley::text_column<text_column_to_eol_parser> noReadColumn(
+        lily_of_the_valley::text_column<lily_of_the_valley::text_column_to_eol_parser> noReadColumn(
             lily_of_the_valley::text_column_to_eol_parser{ false });
         if (info.m_skipRows > 0)
             {
@@ -1567,8 +1551,7 @@ namespace Wisteria::Data
                 dateColumn.m_columnName.empty() ?
                     preview.get_header_names().cend() :
                     std::find_if(preview.get_header_names().cbegin(),
-                                 preview.get_header_names().cend(),
-                                 [&dateColumn](const auto& item)
+                                 preview.get_header_names().cend(), [&dateColumn](const auto& item)
                                  { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter, false);
             dateColumnIndices.push_back(
@@ -1587,8 +1570,7 @@ namespace Wisteria::Data
                 catColumn.m_columnName.empty() ?
                     preview.get_header_names().cend() :
                     std::find_if(preview.get_header_names().cbegin(),
-                                 preview.get_header_names().cend(),
-                                 [&catColumn](const auto& item)
+                                 preview.get_header_names().cend(), [&catColumn](const auto& item)
                                  { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(catColumn.m_columnName, catColumnIter, false);
             catColumnIndices.push_back(
@@ -1671,11 +1653,11 @@ namespace Wisteria::Data
 
             // dates
             dateValues.clear();
-            for (size_t i = 0; i < dateColumnIndices.size(); ++i)
+            for (const auto& dataCol : dateColumnIndices)
                 {
-                if (dateColumnIndices.at(i))
+                if (dataCol)
                     {
-                    const auto& currentDateInfo{ dateColumnIndices.at(i).value() };
+                    const auto& currentDateInfo{ dataCol.value() };
                     dateValues.push_back(ConvertToDate(currentRow.at(currentDateInfo.m_index),
                                                        currentDateInfo.m_importMethod,
                                                        currentDateInfo.m_formatStr));
@@ -1687,19 +1669,19 @@ namespace Wisteria::Data
             catCodes.clear();
             for (size_t i = 0; i < catColumnIndices.size(); ++i)
                 {
-                if (catColumnIndices.at(i))
+                if (catColumnIndices[i])
                     {
-                    if (catColumnIndices.at(i).value().m_importMethod ==
+                    if (catColumnIndices[i].value().m_importMethod ==
                         CategoricalImportMethod::ReadAsStrings)
                         {
                         catCodes.push_back(categoricalVars.at(i).LoadCode(
-                            replaceStrings(currentRow.at(catColumnIndices.at(i).value().m_index))));
+                            replaceStrings(currentRow.at(catColumnIndices[i].value().m_index))));
                         }
                     else
                         {
                         catCodes.push_back(
-                            ConvertToGroupId(currentRow.at(catColumnIndices.at(i).value().m_index),
-                                             catColumnIndices.at(i).value().m_mdCode));
+                            ConvertToGroupId(currentRow.at(catColumnIndices[i].value().m_index),
+                                             catColumnIndices[i].value().m_mdCode));
                         }
                     }
                 }
@@ -1707,13 +1689,12 @@ namespace Wisteria::Data
 
             // continuous columns
             continuousValues.clear();
-            for (size_t i = 0; i < continuousColumnIndices.size(); ++i)
+            for (const auto& contCol : continuousColumnIndices)
                 {
-                if (continuousColumnIndices.at(i))
+                if (contCol)
                     {
-                    continuousValues.push_back(
-                        ConvertToDouble(currentRow.at(continuousColumnIndices.at(i).value()),
-                                        info.m_continuousMDRecodeValue));
+                    continuousValues.push_back(ConvertToDouble(currentRow.at(contCol.value()),
+                                                               info.m_continuousMDRecodeValue));
                     }
                 }
             currentItem.Continuous(continuousValues);
@@ -1762,11 +1743,11 @@ namespace Wisteria::Data
                              const wchar_t delimiter)
         {
         wxString fileText;
-        wxFile fl(filePath);
-        if (!fl.IsOpened() || !fl.ReadAll(&fileText))
+        wxFile theFile(filePath);
+        if (!theFile.IsOpened() || !theFile.ReadAll(&fileText))
             {
             throw std::runtime_error(
-                wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(fl.GetLastError()))
+                wxString::Format(L"'%s':\n%s", filePath, wxSysErrorMsg(theFile.GetLastError()))
                     .ToUTF8());
             }
         fileText.Trim(true).Trim(false);
@@ -1783,23 +1764,20 @@ namespace Wisteria::Data
             {
             return &GetIdColumn();
             }
-        else if (auto foundCatVar = GetCategoricalColumn(colName);
-                 foundCatVar != GetCategoricalColumns().end())
+        if (auto foundCatVar = GetCategoricalColumn(colName);
+            foundCatVar != GetCategoricalColumns().end())
             {
             return foundCatVar;
             }
-        else if (auto foundContinuousVar = GetContinuousColumn(colName);
-                 foundContinuousVar != GetContinuousColumns().end())
+        if (auto foundContinuousVar = GetContinuousColumn(colName);
+            foundContinuousVar != GetContinuousColumns().end())
             {
             return foundContinuousVar;
             }
-        else if (auto foundDateVar = GetDateColumn(colName); foundDateVar != GetDateColumns().end())
+        if (auto foundDateVar = GetDateColumn(colName); foundDateVar != GetDateColumns().end())
             {
             return foundDateVar;
             }
-        else
-            {
-            return std::nullopt;
-            }
+        return std::nullopt;
         }
     } // namespace Wisteria::Data
