@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_BOX_PLOT_H__
-#define __WISTERIA_BOX_PLOT_H__
+#ifndef WISTERIA_BOX_PLOT_H
+#define WISTERIA_BOX_PLOT_H
 
 #include "../data/jitter.h"
 #include "graph2d.h"
@@ -205,8 +205,7 @@ namespace Wisteria::Graphs
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const BoxAndWhisker& that) const noexcept
+            bool operator<(const BoxAndWhisker& that) const noexcept
                 {
                 return wxUILocale::GetCurrent().CompareStrings(
                            m_groupColumn->GetLabelFromID(m_groupId),
@@ -314,7 +313,7 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
             @param brushes The brushes to paint the boxes with.
-            @param colors The base color scheme to paint under the boxes's brushes.\n
+            @param colors The base color scheme to paint under the boxes' brushes.\n
                 This will only have a noticeable effect if the brush is non-solid (e.g., hatched).
             @param shapes The shape scheme to use for the points.\n
                 Leave as null to use the standard shapes.*/
@@ -569,4 +568,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_BOX_PLOT_H__
+#endif // WISTERIA_BOX_PLOT_H

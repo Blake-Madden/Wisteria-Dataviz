@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_LINES_H__
-#define __WISTERIA_LINES_H__
+#ifndef WISTERIA_LINES_H
+#define WISTERIA_LINES_H
 
 #include "graphitems.h"
 #include <vector>
@@ -113,4 +113,4 @@ namespace Wisteria::GraphItems
 
 /** @}*/
 
-#endif //__WISTERIA_LINES_H__
+#endif // WISTERIA_LINES_H

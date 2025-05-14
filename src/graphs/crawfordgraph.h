@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __CRAWFORD_GRAPH_H__
-#define __CRAWFORD_GRAPH_H__
+#ifndef CRAWFORD_GRAPH_H
+#define CRAWFORD_GRAPH_H
 
 #include "groupgraph2d.h"
 
@@ -86,4 +86,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__CRAWFORD_GRAPH_H__
+#endif // CRAWFORD_GRAPH_H

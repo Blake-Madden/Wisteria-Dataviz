@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __CANDLESTICK_PLOT_H__
-#define __CANDLESTICK_PLOT_H__
+#ifndef CANDLESTICK_PLOT_H
+#define CANDLESTICK_PLOT_H
 
 #include "graph2d.h"
 
@@ -118,9 +118,10 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& dateColumnName,
-                     const wxString& openColumnName, const wxString& highColumnName,
-                     const wxString& lowColumnName, const wxString& closeColumnName);
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const wxString& dateColumnName, const wxString& openColumnName,
+                     const wxString& highColumnName, const wxString& lowColumnName,
+                     const wxString& closeColumnName);
 
         /// @name Display Functions
         /// @brief Functions relating to the display of the plot.
@@ -183,4 +184,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__CANDLESTICK_PLOT_H__
+#endif // CANDLESTICK_PLOT_H

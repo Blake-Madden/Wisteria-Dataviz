@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_COMMON_AXIS_BUILDER_H__
-#define __WISTERIA_COMMON_AXIS_BUILDER_H__
+#ifndef WISTERIA_COMMON_AXIS_BUILDER_H
+#define WISTERIA_COMMON_AXIS_BUILDER_H
 
 #include "../graphs/graph2d.h"
 #include "axis.h"
@@ -107,4 +107,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_COMMON_AXIS_BUILDER_H__
+#endif // WISTERIA_COMMON_AXIS_BUILDER_H

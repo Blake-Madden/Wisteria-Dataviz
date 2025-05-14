@@ -125,7 +125,7 @@ namespace Wisteria::Graphs
         const wxString& scoreColumnName,
         const wxString& syllablesPerWordColumnName,
         std::optional<const wxString> groupColumnName /*= std::nullopt*/,
-        bool includeSyllaleRulerDocumentGroups /*= false*/)
+        bool includeSyllableRulerDocumentGroups /*= false*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -189,7 +189,7 @@ namespace Wisteria::Graphs
 
             auto& syllableRuler{ GetCustomAxes()[2] };
             syllableRuler.ClearBrackets();
-            if (includeSyllaleRulerDocumentGroups &&
+            if (includeSyllableRulerDocumentGroups &&
                 data->HasValidIdData() && // needed for labels
                 data->GetRowCount() > 1 &&
                 data->GetRowCount() <= 50)

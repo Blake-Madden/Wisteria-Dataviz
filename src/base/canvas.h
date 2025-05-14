@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CANVAS_H__
-#define __WISTERIA_CANVAS_H__
+#ifndef WISTERIA_CANVAS_H
+#define WISTERIA_CANVAS_H
 
 #include "../ui/dialogs/imageexportdlg.h"
 #include "../ui/dialogs/radioboxdlg.h"
@@ -1022,4 +1022,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_CANVAS_H__
+#endif // WISTERIA_CANVAS_H

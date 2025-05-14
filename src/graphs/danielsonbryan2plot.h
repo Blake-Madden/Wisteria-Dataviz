@@ -9,11 +9,11 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __DB2_PLOT_H__
-#define __DB2_PLOT_H__
+#ifndef DB2_PLOT_H
+#define DB2_PLOT_H
 
-#include "groupgraph2d.h"
 #include "../data/jitter.h"
+#include "groupgraph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -42,21 +42,22 @@ namespace Wisteria::Graphs
          - Blank group labels will be lumped into a "[NO GROUP]" category.
 
         @par Citation:
-            Danielson, Wayne A., and Sam Dunn Bryan. “Computer Automation of Two Readability Formulas.”
-            *Journalism Quarterly*, vol. 40, 1963, pp. 201-06.*/
+            Danielson, Wayne A., and Sam Dunn Bryan. “Computer Automation of Two Readability
+                Formulas.” *Journalism Quarterly*, vol. 40, 1963, pp. 201-06.*/
     class DanielsonBryan2Plot final : public GroupGraph2D
         {
         wxDECLARE_DYNAMIC_CLASS(DanielsonBryan2Plot);
         DanielsonBryan2Plot() = default;
 
-    public:
-         /** @brief Constructor.
-             @param canvas The parent canvas to render on.
-             @param colors The color scheme to apply to the points.
-                Leave as null to use the default theme.
-             @param shapes The shape scheme to use for the points.
-                Leave as null to use the standard shapes.*/
-        explicit DanielsonBryan2Plot(Wisteria::Canvas* canvas,
+      public:
+        /** @brief Constructor.
+            @param canvas The parent canvas to render on.
+            @param colors The color scheme to apply to the points.
+               Leave as null to use the default theme.
+            @param shapes The shape scheme to use for the points.
+               Leave as null to use the standard shapes.*/
+        explicit DanielsonBryan2Plot(
+            Wisteria::Canvas* canvas,
             std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
@@ -73,15 +74,16 @@ namespace Wisteria::Graphs
         void SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
                      const wxString& scoreColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt);
-    private:
+
+      private:
         void RecalcSizes(wxDC& dc) final;
         void AdjustAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__DB2_PLOT_H__
+#endif // DB2_PLOT_H

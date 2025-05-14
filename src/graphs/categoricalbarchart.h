@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CATEGORICAL_BARCHART_H__
-#define __WISTERIA_CATEGORICAL_BARCHART_H__
+#ifndef WISTERIA_CATEGORICAL_BARCHART_H
+#define WISTERIA_CATEGORICAL_BARCHART_H
 
 #include "barchart.h"
 
@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
         
          | Regular         | Grouped
          | :-------------- | :--------------------------------
-         | @image html CatagorizedBarChart.svg width=90% | @image html GroupedCatagorizedBarChart.svg width=90%
+         | @image html CategorizedBarChart.svg width=90% | @image html GroupedCategorizedBarChart.svg width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset, where a categorical column is split into levels
@@ -126,8 +126,8 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& categoricalColumnName,
-                     const std::optional<const wxString> weightColumnName = std::nullopt,
-                     const std::optional<const wxString> groupColumnName = std::nullopt,
+                     const std::optional<const wxString>& weightColumnName = std::nullopt,
+                     const std::optional<const wxString>& groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
     private:
         struct CatBarBlock
@@ -171,4 +171,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_CATEGORICAL_BARCHART_H__
+#endif // WISTERIA_CATEGORICAL_BARCHART_H

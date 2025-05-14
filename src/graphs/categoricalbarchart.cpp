@@ -12,7 +12,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graphs::BarChart)
 
-using namespace Wisteria::GraphItems;
+    using namespace Wisteria::GraphItems;
 using namespace Wisteria::Icons;
 using namespace Wisteria::Icons::Schemes;
 
@@ -21,12 +21,12 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void CategoricalBarChart::SetData(
         std::shared_ptr<const Data::Dataset> data, const wxString& categoricalColumnName,
-        const std::optional<const wxString> weightColumnName /*= std::nullopt*/,
-        const std::optional<const wxString> groupColumnName /*= std::nullopt*/,
+        const std::optional<const wxString>& weightColumnName /*= std::nullopt*/,
+        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/,
         const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/)
         {
         // point to (new) data and reset
-        SetDataset(data);
+        SetDataset(std::move(data));
         ResetGrouping();
         m_useWeightColumn = weightColumnName.has_value();
         m_useIDColumnForBars = false;
@@ -201,8 +201,7 @@ namespace Wisteria::Graphs
             GraphItems::Label blockLabel(blockLabelText);
 
             auto foundBar = std::find_if(
-                GetBars().begin(), GetBars().end(),
-                [&blockTable](const auto& bar) noexcept
+                GetBars().begin(), GetBars().end(), [&blockTable](const auto& bar) noexcept
                 { return compare_doubles(bar.GetAxisPosition(), blockTable.first.m_bin); });
             if (foundBar == GetBars().end())
                 {

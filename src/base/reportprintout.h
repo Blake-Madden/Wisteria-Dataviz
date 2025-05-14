@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_REPORT_PRINTOUT_H__
-#define __WISTERIA_REPORT_PRINTOUT_H__
+#ifndef WISTERIA_REPORT_PRINTOUT_H
+#define WISTERIA_REPORT_PRINTOUT_H
 
 #include "canvas.h"
 #include <vector>
@@ -149,4 +149,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_REPORT_PRINTOUT_H__
+#endif // WISTERIA_REPORT_PRINTOUT_H

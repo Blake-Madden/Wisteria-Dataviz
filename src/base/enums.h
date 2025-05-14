@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_ENUMS_H__
-#define __WISTERIA_ENUMS_H__
+#ifndef WISTERIA_ENUMS_H
+#define WISTERIA_ENUMS_H
 
 /// @brief Enumerations.
 namespace Wisteria
@@ -572,4 +572,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_ENUMS_H__
+#endif // WISTERIA_ENUMS_H

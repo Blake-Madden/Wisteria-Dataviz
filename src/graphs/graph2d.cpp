@@ -664,7 +664,7 @@ namespace Wisteria::Graphs
         AdjustPlotArea(dc);
 
         // fix overlapping custom axis bracket labels
-        constexpr double minBracketFontScale{ math_constants::half };
+        constexpr double MIN_BRACKET_FONT_SCALE{ math_constants::half };
         std::optional<double> smallestBracketFontScale{ std::nullopt };
         for (auto& customAxis : GetCustomAxes())
             {
@@ -692,11 +692,11 @@ namespace Wisteria::Graphs
                             const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
                             const auto percentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
                             customAxis.GetBrackets()[i].GetLabel().SetScaling(
-                                std::max(minBracketFontScale,
+                                std::max(MIN_BRACKET_FONT_SCALE,
                                     customAxis.GetBrackets()[i].GetLabel().GetScaling() *
                                         (1.0 - percentEclipsed)) );
                             smallestBracketFontScale =
-                                std::max(minBracketFontScale,
+                                std::max(MIN_BRACKET_FONT_SCALE,
                                     std::min(smallestBracketFontScale.value_or(
                                              customAxis.GetBrackets()[i].GetLabel().GetScaling()),
                                              customAxis.GetBrackets()[i].GetLabel().GetScaling()));
@@ -727,11 +727,11 @@ namespace Wisteria::Graphs
                             const auto widthEclipsed = bBox.GetRight() - nextBBox.GetLeft();
                             const auto percentEclipsed = safe_divide<double>(widthEclipsed, bBox.GetWidth());
                             customAxis.GetBrackets()[i].GetLabel().SetScaling(
-                                std::max(minBracketFontScale,
+                                std::max(MIN_BRACKET_FONT_SCALE,
                                     customAxis.GetBrackets()[i].GetLabel().GetScaling() *
                                         (1.0 - percentEclipsed)) );
                             smallestBracketFontScale =
-                                std::max(minBracketFontScale,
+                                std::max(MIN_BRACKET_FONT_SCALE,
                                     std::min(smallestBracketFontScale.value_or(
                                              customAxis.GetBrackets()[i].GetLabel().GetScaling()),
                                              customAxis.GetBrackets()[i].GetLabel().GetScaling()));

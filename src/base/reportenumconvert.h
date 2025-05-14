@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_ENUM_CONVERT_H__
-#define __WISTERIA_ENUM_CONVERT_H__
+#ifndef WISTERIA_ENUM_CONVERT_H
+#define WISTERIA_ENUM_CONVERT_H
 
 #include "../base/icons.h"
 #include "../base/shapes.h"
@@ -721,4 +721,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif // __WISTERIA_ENUM_CONVERT_H__
+#endif // WISTERIA_ENUM_CONVERT_H

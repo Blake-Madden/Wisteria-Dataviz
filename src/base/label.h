@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CANVASLABEL_H__
-#define __WISTERIA_CANVASLABEL_H__
+#ifndef WISTERIA_CANVASLABEL_H
+#define WISTERIA_CANVASLABEL_H
 
 #include "graphitems.h"
 #include <string_view>
@@ -500,4 +500,4 @@ namespace Wisteria::GraphItems
 
 /** @}*/
 
-#endif //__WISTERIA_CANVASLABEL_H__
+#endif // WISTERIA_CANVASLABEL_H

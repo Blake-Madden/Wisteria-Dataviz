@@ -16,7 +16,7 @@ using namespace Wisteria::Colors;
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    void CandlestickPlot::SetData(std::shared_ptr<const Data::Dataset> data,
+    void CandlestickPlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
                                   const wxString& dateColumnName, const wxString& openColumnName,
                                   const wxString& highColumnName, const wxString& lowColumnName,
                                   const wxString& closeColumnName)
@@ -89,12 +89,12 @@ namespace Wisteria::Graphs
                                     const wxString& openColumnName, const wxString& highColumnName,
                                     const wxString& lowColumnName, const wxString& closeColumnName)
         {
-        if (!m_ohlcs.size() || data == nullptr)
+        if (m_ohlcs.empty() || data == nullptr)
             {
             return;
             }
 
-        wxDateTime firstDay =
+        const wxDateTime firstDay =
             std::min_element(m_ohlcs.cbegin(), m_ohlcs.cend(),
                              [](const auto& ohlc1, const auto& ohlc2)
                              {
@@ -107,7 +107,7 @@ namespace Wisteria::Graphs
                                             ohlc1.m_date < ohlc2.m_date;
                              })
                 ->m_date;
-        wxDateTime lastDay =
+        const wxDateTime lastDay =
             std::max_element(m_ohlcs.cbegin(), m_ohlcs.cend(),
                              [](const auto& ohlc1, const auto& ohlc2)
                              {
@@ -177,7 +177,7 @@ namespace Wisteria::Graphs
                 continue;
                 }
 
-            wxString ohlcInfo = wxString::Format(
+            const wxString ohlcInfo = wxString::Format(
                 _(L"Date: %s\n"
                   "Opening: %s\n"
                   "High : %s\n"
@@ -229,7 +229,7 @@ namespace Wisteria::Graphs
                 auto candle = std::make_unique<GraphItems::Polygon>(
                     GraphItemInfo(ohlcInfo).Brush(
                         (ohlc.m_open <= ohlc.m_close ? m_gainBrush : m_lossBrush)),
-                    &points[0], std::size(points));
+                    points.data(), std::size(points));
 
                 // if candle is really thin, then remove the outline so that
                 // we can at least see the color

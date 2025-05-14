@@ -10,7 +10,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Graph2D)
 
-using namespace Wisteria;
+    using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Graphs;
 using namespace Wisteria::Icons;
@@ -22,17 +22,17 @@ void GroupGraph2D::SetGroupColumn(
     assert(GetDataset() && L"You must call SetDataset() before calling SetGroupColumn()!");
     if (GetDataset() == nullptr)
         {
-        throw std::runtime_error(wxString(
-            _(L"Dataset not set before calling SetGroupColumn().")).ToUTF8());
+        throw std::runtime_error(
+            wxString(_(L"Dataset not set before calling SetGroupColumn().")).ToUTF8());
         }
     const auto groupColIter = groupColumnName ?
-        GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
-        GetDataset()->GetCategoricalColumns().cend();
+                                  GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
+                                  GetDataset()->GetCategoricalColumns().cend();
     if (groupColumnName && groupColIter == GetDataset()->GetCategoricalColumns().cend())
         {
-        throw std::runtime_error(wxString::Format(
-            _(L"'%s': group column not found for graph."),
-            groupColumnName.value()).ToUTF8());
+        throw std::runtime_error(
+            wxString::Format(_(L"'%s': group column not found for graph."), groupColumnName.value())
+                .ToUTF8());
         }
     SetGroupColumn(groupColumnName ? &(*groupColIter) : nullptr);
     }
@@ -42,13 +42,17 @@ void GroupGraph2D::BuildGroupIdMap()
     {
     m_groupIds.clear();
     if (!IsUsingGrouping())
-        { return; }
+        {
+        return;
+        }
     // make reverse string table, sorted by label
     std::map<wxString, Data::GroupIdType, Data::wxStringLessNoCase> groups;
     if (GetGroupColumn()->GetStringTable().size())
         {
         for (const auto& [id, str] : GetGroupColumn()->GetStringTable())
-            { groups.insert(std::make_pair(str, id)); }
+            {
+            groups.insert(std::make_pair(str, id));
+            }
         }
     // if no string table, then it's just discrete values;
     // make a reverse "string table" from that
@@ -69,17 +73,19 @@ void GroupGraph2D::BuildGroupIdMap()
     }
 
 //----------------------------------------------------------------
-std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
-    const LegendOptions& options)
+std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOptions& options)
     {
     if (!IsUsingGrouping() || GetGroupCount() == 0)
-        { return nullptr; }
+        {
+        return nullptr;
+        }
 
-    auto legend = std::make_unique<GraphItems::Label>(
-        GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
-        DPIScaling(GetDPIScaleFactor()));
+    auto legend =
+        std::make_unique<GraphItems::Label>(GraphItemInfo()
+                                                .Padding(0, 0, 0, Label::GetMinLegendWidthDIPs())
+                                                .DPIScaling(GetDPIScaleFactor()));
 
-    constexpr std::wstring_view ellipsis{ L"\u2026" };
+    constexpr std::wstring_view ELLIPSIS{ L"\u2026" };
 
     wxString legendText;
     size_t lineCount{ 0 };
@@ -90,7 +96,9 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     // (do this so that the items are in alphabetically order)
     std::map<size_t, Data::GroupIdType> reverseGroupIds;
     for (const auto& groupId : GetGroupIds())
-        { reverseGroupIds.insert(std::make_pair(groupId.second, groupId.first)); }
+        {
+        reverseGroupIds.insert(std::make_pair(groupId.second, groupId.first));
+        }
     for (const auto& [schemeIndex, groupId] : reverseGroupIds)
         {
         // we'll put the missing data group at the bottom of the labels
@@ -101,38 +109,31 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             }
         if (Settings::GetMaxLegendItemCount() == lineCount)
             {
-            legendText.append(ellipsis.data());
+            legendText.append(ELLIPSIS.data());
             break;
             }
         wxString currentLabel = GetGroupColumn()->GetLabelFromID(groupId);
-        assert(Settings::GetMaxLegendTextLength() >= 1 &&
-            L"Max legend text length is zero?!");
+        assert(Settings::GetMaxLegendTextLength() >= 1 && L"Max legend text length is zero?!");
         if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
             Settings::GetMaxLegendTextLength() >= 1)
             {
-            currentLabel.erase(Settings::GetMaxLegendTextLength()-1);
-            currentLabel.append(ellipsis.data());
+            currentLabel.erase(Settings::GetMaxLegendTextLength() - 1);
+            currentLabel.append(ELLIPSIS.data());
             }
         legendText.append(currentLabel.c_str()).append(L"\n");
 
         assert((GetBrushScheme() || GetColorScheme()) &&
-            L"Legend needs either a brush scheme or color scheme!");
+               L"Legend needs either a brush scheme or color scheme!");
         // Graphs usually use the brush as the primary, but some may
         // only use the color scheme; fallback to that if necessary.
-        const wxBrush br = (GetBrushScheme() ?
-            GetBrushScheme()->GetBrush(schemeIndex) :
-            GetColorScheme() ?
-            wxBrush(GetColorScheme()->GetColor(schemeIndex)) :
-            *wxTRANSPARENT_BRUSH);
-        legend->GetLegendIcons().push_back(
-                LegendIcon((GetShapeScheme() ?
-                            GetShapeScheme()->GetShape(schemeIndex) :
-                            m_defaultLegendShape),
-                *wxBLACK_PEN,
-                br,
-                GetColorScheme() ?
-                    std::optional<wxColour>(GetColorScheme()->GetColor(schemeIndex)) :
-                    std::nullopt));
+        const wxBrush br = (GetBrushScheme() ? GetBrushScheme()->GetBrush(schemeIndex) :
+                            GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(schemeIndex)) :
+                                               *wxTRANSPARENT_BRUSH);
+        legend->GetLegendIcons().push_back(LegendIcon(
+            (GetShapeScheme() ? GetShapeScheme()->GetShape(schemeIndex) : m_defaultLegendShape),
+            *wxBLACK_PEN, br,
+            GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(schemeIndex)) :
+                               std::nullopt));
 
         ++lineCount;
         }
@@ -140,35 +141,30 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     // add MD label at the bottom if there are missing data
     if (GetGroupColumn()->ContainsMissingData())
         {
-        assert(mdCode.has_value() &&
-            L"Cat. column has MD, but string table has no MD code?!");
+        assert(mdCode.has_value() && L"Cat. column has MD, but string table has no MD code?!");
         if (mdCode.has_value())
             {
             legendText.append(_(L"[NO GROUP]")).append(L"\n");
 
             // Graphs usually use the brush as the primary, but some may
             // only use the color scheme; fallback to that if necessary.
-            const wxBrush br = (GetBrushScheme() ?
-                GetBrushScheme()->GetBrush(mdSchemeIndex) :
-                GetColorScheme() ?
-                wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
-                *wxTRANSPARENT_BRUSH);
+            const wxBrush brush =
+                (GetBrushScheme() ? GetBrushScheme()->GetBrush(mdSchemeIndex) :
+                 GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
+                                    *wxTRANSPARENT_BRUSH);
             legend->GetLegendIcons().push_back(
-                    LegendIcon((GetShapeScheme() ?
-                                GetShapeScheme()->GetShape(mdSchemeIndex) :
-                        m_defaultLegendShape),
-                    *wxBLACK_PEN,
-                    br,
-                    GetColorScheme() ?
-                        std::optional<wxColour>(GetColorScheme()->GetColor(mdSchemeIndex)) :
-                        std::nullopt));
+                LegendIcon((GetShapeScheme() ? GetShapeScheme()->GetShape(mdSchemeIndex) :
+                                               m_defaultLegendShape),
+                           *wxBLACK_PEN, brush,
+                           GetColorScheme() ?
+                               std::optional<wxColour>(GetColorScheme()->GetColor(mdSchemeIndex)) :
+                               std::nullopt));
             }
         }
 
     if (options.IsIncludingHeader())
         {
-        legendText.Prepend(
-            wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
+        legendText.Prepend(wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
         legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
         }
     legend->SetText(legendText.Trim());

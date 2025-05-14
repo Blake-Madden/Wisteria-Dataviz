@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_GANTT_H__
-#define __WISTERIA_GANTT_H__
+#ifndef WISTERIA_GANTT_H
+#define WISTERIA_GANTT_H
 
 #include "barchart.h"
 
@@ -107,6 +107,7 @@ namespace Wisteria::Graphs
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         @endcode*/
     // clang-format on
+
     class GanttChart final : public BarChart
         {
         wxDECLARE_DYNAMIC_CLASS(GanttChart);
@@ -349,4 +350,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_GANTT_H__
+#endif // WISTERIA_GANTT_H

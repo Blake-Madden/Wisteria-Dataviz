@@ -15,11 +15,11 @@ Basic
 
 | Categorized Bar Chart (Wisteria::Graphs::CategoricalBarChart) | Categorized, Grouped Bar Chart (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------- | :-------------- |
-| ![](docs/images/CatagorizedBarChart.svg) | ![](docs/images/GroupedCatagorizedBarChart.svg) |
+| ![](docs/images/CategorizedBarChart.svg) | ![](docs/images/GroupedCategorizedBarChart.svg) |
 
 | Categorized Bar Chart with Stipple Brush (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------------------------- |
-| ![](docs/images/CatagorizedBarChartStipple.svg) |
+| ![](docs/images/CategorizedBarChartStipple.svg) |
 
 | Categorized Bar Chart with Watercolor Effect (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------------------------- |

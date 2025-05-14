@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_SHAPES_H__
-#define __WISTERIA_SHAPES_H__
+#ifndef WISTERIA_SHAPES_H
+#define WISTERIA_SHAPES_H
 
 #include "changers.h"
 #include "colorbrewer.h"
@@ -611,4 +611,4 @@ namespace Wisteria::GraphItems
 
 /** @}*/
 
-#endif //__WISTERIA_SHAPES_H__
+#endif // WISTERIA_SHAPES_H

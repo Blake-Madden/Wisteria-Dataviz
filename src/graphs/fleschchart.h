@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FLESCH_CHART_H__
-#define __FLESCH_CHART_H__
+#ifndef FLESCH_CHART_H
+#define FLESCH_CHART_H
 
 #include "../data/jitter.h"
 #include "groupgraph2d.h"
@@ -47,14 +47,15 @@ namespace Wisteria::Graphs
         wxDECLARE_DYNAMIC_CLASS(FleschChart);
         FleschChart() = default;
 
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.
             @param colors The color scheme to apply to the points.
                Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
                Leave as null to use the standard shapes.*/
-        explicit FleschChart(Wisteria::Canvas* canvas,
+        explicit FleschChart(
+            Wisteria::Canvas* canvas,
             std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
@@ -67,7 +68,7 @@ namespace Wisteria::Graphs
             @param syllablesPerWordColumnName The column containing the
                 number of syllables per word (shown on right "ruler" on chart).
             @param groupColumnName The (optional) categorical column to use for grouping.
-            @param includeSyllaleRulerDocumentGroups Sets whether to include brackets along
+            @param includeSyllableRulerDocumentGroups Sets whether to include brackets along
                 the syllables-per-word ruler, showing the document names under each bracket.\n
                 This will only be applied if there are 1-50 documents on the
                 graph, and the document names must be in the dataset's ID column.
@@ -77,23 +78,25 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
-                     const wxString& wordsPerSentenceColumnName,
-                     const wxString& scoreColumnName,
+                     const wxString& wordsPerSentenceColumnName, const wxString& scoreColumnName,
                      const wxString& syllablesPerWordColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt,
-                     bool includeSyllaleRulerDocumentGroups = false);
+                     bool includeSyllableRulerDocumentGroups = false);
 
         /** @brief Sets whether to draw a line connecting the points between the rulers.
             @param show Whether to draw the line.
             @note This is useful to turn off if numerous documents are being plotted
                 and you are only needing to see the scores' clustering.*/
-        void ShowConnectionLine(const bool show) noexcept
-            { m_showConnectionLine = show; }
+        void ShowConnectionLine(const bool show) noexcept { m_showConnectionLine = show; }
+
         /// @returns @c true if points on the rulers are being connected by a line.
         [[nodiscard]]
         bool IsShowingConnectionLine() const noexcept
-            { return m_showConnectionLine; }
-    private:
+            {
+            return m_showConnectionLine;
+            }
+
+      private:
         void RecalcSizes(wxDC& dc) final;
 
         const Wisteria::Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
@@ -105,8 +108,8 @@ namespace Wisteria::Graphs
         Wisteria::Data::Jitter m_jitterSyllables{ Wisteria::AxisType::LeftYAxis };
         bool m_showConnectionLine{ true };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__FLESCH_CHART_H__
+#endif // FLESCH_CHART_H

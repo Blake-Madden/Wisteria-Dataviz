@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_FILLABLE_SHAPE_H__
-#define __WISTERIA_FILLABLE_SHAPE_H__
+#ifndef WISTERIA_FILLABLE_SHAPE_H
+#define WISTERIA_FILLABLE_SHAPE_H
 
 #include "image.h"
 #include "shapes.h"
@@ -65,4 +65,4 @@ namespace Wisteria::GraphItems
 
 /** @}*/
 
-#endif //__WISTERIA_FILLABLE_SHAPE_H__
+#endif // WISTERIA_FILLABLE_SHAPE_H
