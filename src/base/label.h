@@ -75,7 +75,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Constructor.
             @param text The text to display on the label.*/
-        explicit Label(const wxString& text) : GraphItemBase(1.0f, text)
+        explicit Label(const wxString& text) : GraphItemBase(1.0F, text)
             {
             GetGraphItemInfo().Outline(true, true, true, true);
             GetPen() = wxNullPen;
@@ -206,7 +206,7 @@ namespace Wisteria::GraphItems
             {
             // make sure this was cached properly
             assert(((GetText().empty() && m_longestLineLength == 0) ||
-                    (GetText().length() > 0 && m_longestLineLength > 0)) &&
+                    (!GetText().empty() && m_longestLineLength > 0)) &&
                    L"Longest line length in label was not calculated!");
             return m_longestLineLength;
             }
@@ -321,7 +321,7 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Set how the bounding box passed to SetBoundingBox() is used.
-            @details This behaviour is turned off by default (i.e., @c None),
+            @details This behavior is turned off by default (i.e., @c None),
                 so that calls to SetBoundingBox() will explicitly set the size.\n
                 This is mostly useful for legends being embedded on a canvas. Having this option
                 set will tell the canvas to re-measure the legend and only use the space that it

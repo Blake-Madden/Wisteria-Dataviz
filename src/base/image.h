@@ -25,7 +25,7 @@
 #include <wx/wx.h>
 #include <wx/xml/xml.h>
 #if __has_include(<omp.h>)
-#include <omp.h>
+    #include <omp.h>
 #endif
 #include "../easyexif/exif.h"
 #include "../math/mathematics.h"
@@ -177,14 +177,13 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxString GetImageFileFilter()
             {
-            return _(
-                L"Image Files (*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx)|"
-                 "*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|"
-                 "Bitmap (*.bmp)|*.bmp|"
-                 "JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|"
-                 "PNG (*.png)|*.png|"
-                 "GIF (*.gif)|*.gif|"
-                 "Targa (*.tga)|*.tga|TIFF (*.tif;*.tiff)|*.tif;*.tiff|PCX (*.pcx)|*.pcx");
+            return _(L"Image Files (*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx)|"
+                     "*.bmp;*.jpg;*.jpeg;*.jpe;*.png;*.gif;*.tga;*.tif;*.tiff;*.pcx|"
+                     "Bitmap (*.bmp)|*.bmp|"
+                     "JPEG (*.jpg;*.jpeg;*.jpe)|*.jpg;*.jpg;*.jpe|"
+                     "PNG (*.png)|*.png|"
+                     "GIF (*.gif)|*.gif|"
+                     "Targa (*.tga)|*.tga|TIFF (*.tif;*.tiff)|*.tif;*.tiff|PCX (*.pcx)|*.pcx");
             }
 
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).
@@ -251,13 +250,12 @@ namespace Wisteria::GraphItems
                 {
                 return wxNullImage;
                 }
-            const int imgWidth = std::accumulate(images.cbegin(), images.cend(), 0.0f,
+            const int imgWidth = std::accumulate(images.cbegin(), images.cend(), 0.0F,
                                                  [](const auto initVal, const auto& img) noexcept
                                                  { return initVal + img.GetWidth(); });
-            const auto maxHeightImg =
-                std::max_element(images.cbegin(), images.cend(),
-                                 [](const auto& img1, const auto& img2) noexcept
-                                 { return img1.GetHeight() < img2.GetHeight(); });
+            const auto maxHeightImg = std::max_element(
+                images.cbegin(), images.cend(), [](const auto& img1, const auto& img2) noexcept
+                { return img1.GetHeight() < img2.GetHeight(); });
             wxBitmap bmp(imgWidth, maxHeightImg->GetHeight());
 
             wxMemoryDC memDC(bmp);
@@ -289,13 +287,12 @@ namespace Wisteria::GraphItems
                 {
                 return wxNullImage;
                 }
-            const int imgHeight = std::accumulate(images.cbegin(), images.cend(), 0.0f,
+            const int imgHeight = std::accumulate(images.cbegin(), images.cend(), 0.0F,
                                                   [](const auto initVal, const auto& img) noexcept
                                                   { return initVal + img.GetHeight(); });
-            const auto maxWidthImg =
-                std::max_element(images.cbegin(), images.cend(),
-                                 [](const auto& img1, const auto& img2) noexcept
-                                 { return img1.GetWidth() < img2.GetWidth(); });
+            const auto maxWidthImg = std::max_element(
+                images.cbegin(), images.cend(), [](const auto& img1, const auto& img2) noexcept
+                { return img1.GetWidth() < img2.GetWidth(); });
             wxBitmap bmp(maxWidthImg->GetWidth(), imgHeight);
 
             wxMemoryDC memDC(bmp);
@@ -343,7 +340,7 @@ namespace Wisteria::GraphItems
             @param opacity The opacity of the color to fill the image with.
             @returns The color-filtered of the image.*/
         [[nodiscard]]
-        static wxImage CreateColorFilteredImage(const wxImage& image, const wxColour color,
+        static wxImage CreateColorFilteredImage(const wxImage& image, const wxColour& color,
                                                 const uint8_t opacity = 100);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
@@ -365,19 +362,19 @@ namespace Wisteria::GraphItems
             @param colorToPreserve Color which will not have its opacity altered.
                 This is useful for preserving highlights in an image.*/
         static void SetOpacity(wxImage& image, const uint8_t opacity,
-                               const wxColour colorToPreserve);
+                               const wxColour& colorToPreserve);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
             @param opacity The opacity to set the bitmap to.
             @param colorToPreserve Color which will not have its opacity altered.
                 This is useful for preserving highlights in an image.*/
         static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                               const wxColour colorToPreserve);
+                               const wxColour& colorToPreserve);
         /** @brief Set the specified color in an image to transparent.
             @details Any pixel of this color will be set to transparent in the alpha channel.
             @param image The image to edit.
             @param color The color to set to transparent.*/
-        static void SetColorTransparent(wxImage& image, const wxColour color);
+        static void SetColorTransparent(wxImage& image, const wxColour& color);
         /** @brief Changes each pixel of a given color with another one in a provided image,
                 and returns the altered image.
             @param image The original image.
@@ -385,8 +382,8 @@ namespace Wisteria::GraphItems
             @param destColor The color to replace it with.
             @returns The altered image.*/
         [[nodiscard]]
-        static wxImage ChangeColor(const wxImage& image, const wxColour srcColor,
-                                   const wxColour destColor);
+        static wxImage ChangeColor(const wxImage& image, const wxColour& srcColor,
+                                   const wxColour& destColor);
         /** @brief Applies an oil painting effect to an image.
             @param image The original image.
             @param radius 'For each pixel, a number of pixels around that pixel are taken into
@@ -557,7 +554,7 @@ namespace Wisteria::GraphItems
         /// @param sz The size to convert.
         /// @returns The @c wxSize object, wrapped into a `std::pair`.
         [[nodiscard]]
-        inline static auto wxSizeToPair(const wxSize sz) noexcept
+        static auto wxSizeToPair(const wxSize sz) noexcept
             {
             return std::make_pair(sz.GetWidth(), sz.GetHeight());
             }
@@ -583,9 +580,7 @@ namespace Wisteria::Images::Schemes
 
         /// @brief Constructor.
         /// @param images The initializer list of images to fill the scheme with.
-        explicit ImageScheme(const std::initializer_list<wxBitmapBundle>& images) : m_images(images)
-            {
-            }
+        ImageScheme(const std::initializer_list<wxBitmapBundle>& images) : m_images(images) {}
 
         /// @returns The list of images from the scheme.
         [[nodiscard]]

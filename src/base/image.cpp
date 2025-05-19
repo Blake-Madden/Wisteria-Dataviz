@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        image.cpp
-// Author:      Blake Madden (portions from Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata)
+// Author:      Blake Madden (portions from Bhumika Thatte, Raghavendra Sri,
+//                            Prasad R V, and Avijnata)
 // Copyright:   (c) 2005-2025 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause, CPOL-1.02
@@ -19,16 +20,24 @@ namespace Wisteria::GraphItems
         {
         wxXmlDocument doc;
         if (!doc.Load(filePath))
-            { return wxSize(32, 32); }
+            {
+            return { 32, 32 };
+            }
         wxXmlNode* docNode = doc.GetDocumentNode()->GetChildren();
         if (docNode == nullptr)
-            { return wxSize(32, 32); }
+            {
+            return { 32, 32 };
+            }
         wxString heightStr, widthStr, viewBoxStr;
         wxSize sz{ wxDefaultCoord, wxDefaultCoord };
         if (docNode->GetAttribute(L"width", &widthStr))
-            { widthStr.ToInt(&sz.x); }
+            {
+            widthStr.ToInt(&sz.x);
+            }
         if (docNode->GetAttribute(L"height", &heightStr))
-            { heightStr.ToInt(&sz.y); }
+            {
+            heightStr.ToInt(&sz.y);
+            }
         // if no width or height attributes
         if (!sz.IsFullySpecified())
             {
@@ -43,10 +52,14 @@ namespace Wisteria::GraphItems
                     heightStr.ToInt(&sz.y);
                     }
                 else
-                    { return wxSize(32, 32); }
+                    {
+                    return { 32, 32 };
+                    }
                 }
             else
-                { return wxSize(32, 32); }
+                {
+                return { 32, 32 };
+                }
             }
 
         return sz;
@@ -55,13 +68,14 @@ namespace Wisteria::GraphItems
     //----------------------------------------------------------
     wxImage Image::ShrinkImageToRect(const wxImage& img, const wxRect rect)
         {
-        if (rect.GetWidth() >= img.GetWidth() &&
-            rect.GetHeight() >= img.GetHeight())
-            { return img; }
+        if (rect.GetWidth() >= img.GetWidth() && rect.GetHeight() >= img.GetHeight())
+            {
+            return img;
+            }
 
-        const auto [width, height] = geometry::downscaled_size(
-            std::make_pair<double, double>(img.GetWidth(), img.GetHeight()),
-            wxSizeToPair(rect.GetSize()));
+        const auto [width, height] =
+            geometry::downscaled_size(std::pair<double, double>(img.GetWidth(), img.GetHeight()),
+                                      wxSizeToPair(rect.GetSize()));
         return img.Scale(std::ceil(width), std::ceil(height), wxIMAGE_QUALITY_HIGH);
         }
 
@@ -69,93 +83,85 @@ namespace Wisteria::GraphItems
     wxImage Image::CropImageToRect(const wxImage& img, const wxRect rect, const bool centerImage)
         {
         wxImage croppedImg;
-        if (img.IsOk() &&
-            img.GetWidth() >= rect.GetSize().GetWidth() &&
+        if (img.IsOk() && img.GetWidth() >= rect.GetSize().GetWidth() &&
             img.GetHeight() >= rect.GetSize().GetHeight())
             {
-            const auto heightRatio = safe_divide<double>(
-                img.GetHeight(),
-                rect.GetSize().GetHeight());
-            const auto weightRatio = safe_divide<double>(
-                img.GetWidth(),
-                rect.GetSize().GetWidth());
+            const auto heightRatio =
+                safe_divide<double>(img.GetHeight(), rect.GetSize().GetHeight());
+            const auto weightRatio = safe_divide<double>(img.GetWidth(), rect.GetSize().GetWidth());
             // height is proportionally larger, so fit by width and then crop
             // the height evenly on the top and bottom
             if (heightRatio >= weightRatio)
                 {
                 const auto scaledHeight = geometry::rescaled_height(
-                    std::make_pair(img.GetWidth(),
-                                   img.GetHeight()),
-                    rect.GetSize().GetWidth());
+                    std::make_pair(img.GetWidth(), img.GetHeight()), rect.GetSize().GetWidth());
                 croppedImg = img.Scale(rect.GetSize().GetWidth(), scaledHeight,
-                    wxImageResizeQuality::wxIMAGE_QUALITY_HIGH);
+                                       wxImageResizeQuality::wxIMAGE_QUALITY_HIGH);
 
-                const auto crop = croppedImg.GetHeight() -
-                    rect.GetSize().GetHeight();
+                const auto crop = croppedImg.GetHeight() - rect.GetSize().GetHeight();
                 croppedImg = croppedImg.GetSubImage(
                     wxRect(wxPoint(0, centerImage ? std::floor(safe_divide<double>(crop, 2)) : 0),
                            rect.GetSize()));
-                wxASSERT_LEVEL_2_MSG((croppedImg.GetSize().GetHeight() >=
-                    rect.GetSize().GetHeight()),
+                wxASSERT_LEVEL_2_MSG(
+                    (croppedImg.GetSize().GetHeight() >= rect.GetSize().GetHeight()),
                     wxString::Format(L"Common image not scaled height-wise large enough! %d vs %d",
-                        croppedImg.GetSize().GetHeight(),
-                        rect.GetSize().GetHeight()));
+                                     croppedImg.GetSize().GetHeight(), rect.GetSize().GetHeight()));
                 }
             else
                 {
                 const auto scaledWidth = geometry::rescaled_width(
-                    std::make_pair(img.GetWidth(),
-                                   img.GetHeight()),
-                    rect.GetSize().GetHeight());
+                    std::make_pair(img.GetWidth(), img.GetHeight()), rect.GetSize().GetHeight());
                 croppedImg = img.Scale(scaledWidth, rect.GetSize().GetHeight(),
-                    wxImageResizeQuality::wxIMAGE_QUALITY_HIGH);
+                                       wxImageResizeQuality::wxIMAGE_QUALITY_HIGH);
 
-                const auto crop = croppedImg.GetWidth() -
-                                  rect.GetSize().GetWidth();
+                const auto crop = croppedImg.GetWidth() - rect.GetSize().GetWidth();
                 croppedImg = croppedImg.GetSubImage(
                     wxRect(wxPoint(centerImage ? std::floor(safe_divide<double>(crop, 2)) : 0, 0),
                            rect.GetSize()));
-                wxASSERT_LEVEL_2_MSG((croppedImg.GetSize().GetWidth() >=
-                              rect.GetSize().GetWidth()),
-                             wxString::Format(L"Common image not scaled width-wise large enough! %d vs %d",
-                                              croppedImg.GetSize().GetWidth(),
-                                              rect.GetSize().GetWidth()));
+                wxASSERT_LEVEL_2_MSG(
+                    (croppedImg.GetSize().GetWidth() >= rect.GetSize().GetWidth()),
+                    wxString::Format(L"Common image not scaled width-wise large enough! %d vs %d",
+                                     croppedImg.GetSize().GetWidth(), rect.GetSize().GetWidth()));
                 }
             }
         return croppedImg;
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxImage& image, const uint8_t opacity,
-                           const wxColour colorToPreserve)
+    void Image::SetOpacity(wxImage& image, const uint8_t opacity, const wxColour& colorToPreserve)
         {
         if (!image.IsOk())
-            { return; }
+            {
+            return;
+            }
         if (!colorToPreserve.IsOk())
             {
             SetOpacity(image, opacity, true);
             return;
             }
-        const long pixelCount = image.GetWidth()*image.GetHeight();
+        const long pixelCount = image.GetWidth() * image.GetHeight();
 
         const auto redChannel = colorToPreserve.GetRed();
         const auto greenChannel = colorToPreserve.GetGreen();
         const auto blueChannel = colorToPreserve.GetBlue();
 
         if (!image.HasAlpha())
-            { image.InitAlpha(); }
+            {
+            image.InitAlpha();
+            }
         if (image.HasAlpha())
             {
-            auto alphaData = image.GetAlpha();
-            const auto rgbData = image.GetData();
-            if (alphaData)
+            auto* alphaData = image.GetAlpha();
+            const auto* const rgbData = image.GetData();
+            if (alphaData != nullptr)
                 {
                 for (long i = 0; i < pixelCount; ++i)
                     {
-                    if (!(rgbData[i*3] == redChannel &&
-                          rgbData[(i*3) + 1] == greenChannel &&
-                          rgbData[(i*3) + 2] == blueChannel))
-                        { alphaData[i] = opacity; } // cppcheck-suppress unreadVariable
+                    if (!(rgbData[i * 3] == redChannel && rgbData[(i * 3) + 1] == greenChannel &&
+                          rgbData[(i * 3) + 2] == blueChannel))
+                        {
+                        alphaData[i] = opacity;
+                        } // cppcheck-suppress unreadVariable
                     }
                 }
             }
@@ -166,30 +172,36 @@ namespace Wisteria::GraphItems
                            const bool preserveTransparentPixels)
         {
         if (!image.IsOk())
-            { return; }
-        const long pixelCount = image.GetWidth()*image.GetHeight();
+            {
+            return;
+            }
+        const long pixelCount = image.GetWidth() * image.GetHeight();
 
         if (!image.HasAlpha())
-            { image.InitAlpha(); }
+            {
+            image.InitAlpha();
+            }
         if (image.HasAlpha())
             {
             if (preserveTransparentPixels)
                 {
                 unsigned char* alphaData = image.GetAlpha();
-                if (alphaData)
+                if (alphaData != nullptr)
                     {
                     for (long i = 0; i < pixelCount; ++i)
                         {
                         if (alphaData[i] != 0)
-                            { alphaData[i] = opacity; }
+                            {
+                            alphaData[i] = opacity;
+                            }
                         }
                     }
                 }
             else
                 {
                 // must use malloc (not new) when setting alpha channel
-                unsigned char* alphaData = static_cast<unsigned char*>(malloc(pixelCount));
-                if (alphaData)
+                auto* alphaData = static_cast<unsigned char*>(malloc(pixelCount));
+                if (alphaData != nullptr)
                     {
                     std::memset(alphaData, opacity, pixelCount);
                     image.SetAlpha(alphaData);
@@ -203,51 +215,52 @@ namespace Wisteria::GraphItems
                                const float intensity /*= 20*/)
         {
         if (!image.IsOk())
-            { return wxNullImage; }
+            {
+            return wxNullImage;
+            }
 
-        wxImage outImg{ image.Copy()};
-        const auto imgInData = image.GetData();
-        const auto imgOutData = outImg.GetData();
+        wxImage outImg{ image.Copy() };
+        const auto* const imgInData = image.GetData();
+        auto* const imgOutData = outImg.GetData();
 
         // Border pixels (depends on radius) will become black.
         // On increasing radius boundary pixels should set as black.
         std::memset(imgOutData, 0, static_cast<size_t>(image.GetWidth() * image.GetHeight() * 3));
 
-        // If total bytes in a row of image is not divisible by four, 
+        // If total bytes in a row of image is not divisible by four,
         // blank bytes will be padded to the end of the row.
         // nBytesInARow bytes are the actual size of a row instead of nWidth * 3.
         // If width is 9, then actual bytes in a row will be 28, and not 27.
         const int nBytesInARow = std::ceil(image.GetWidth() * 3 / 4.0) * 4.0;
 
-        constexpr auto rgbBufferSize{ 256 };
+        constexpr auto RGB_BUFFER_SIZE{ 256 };
 
-        // Note that radius pixels are avoided from left, right, top, and bottom edges.
-        // Go to the next row of pixels...
-        #pragma omp parallel for
+// Note that radius pixels are avoided from left, right, top, and bottom edges.
+// Go to the next row of pixels...
+#pragma omp parallel for
         for (int nY = radius; nY < image.GetHeight() - radius; ++nY)
             {
             // ...and go across, pixel-by-pixel
             for (int nX = radius; nX < image.GetWidth() - radius; ++nX)
                 {
                 // Reset calculations of last pixel.
-                std::array<int, rgbBufferSize> nIntensityCount{ 0 };
-                std::array<int, rgbBufferSize> nSumR{ 0 };
-                std::array<int, rgbBufferSize> nSumG{ 0 };
-                std::array<int, rgbBufferSize> nSumB{ 0 };
+                std::array<int, RGB_BUFFER_SIZE> nIntensityCount{ 0 };
+                std::array<int, RGB_BUFFER_SIZE> nSumR{ 0 };
+                std::array<int, RGB_BUFFER_SIZE> nSumG{ 0 };
+                std::array<int, RGB_BUFFER_SIZE> nSumB{ 0 };
 
                 // Find intensities of nearest radius pixels in four direction.
-                for (int nY_O = -radius; nY_O <= radius; ++nY_O)
+                for (int nYO = -radius; nYO <= radius; ++nYO)
                     {
-                    for (int nX_O = -radius; nX_O <= radius; ++nX_O)
+                    for (int nXO = -radius; nXO <= radius; ++nXO)
                         {
-                        const int nR = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow];
-                        const int nG = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow + 1];
-                        const int nB = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow + 2];
+                        const int nR = imgInData[(nX + nXO) * 3 + (nY + nYO) * nBytesInARow];
+                        const int nG = imgInData[(nX + nXO) * 3 + (nY + nYO) * nBytesInARow + 1];
+                        const int nB = imgInData[(nX + nXO) * 3 + (nY + nYO) * nBytesInARow + 2];
 
                         // Find intensity of RGB value and apply intensity level.
-                        const int nCurIntensity =
-                            std::clamp<int>((((nR + nG + nB) / 3.0) * intensity) / 255,
-                                            0, (rgbBufferSize-1));
+                        const int nCurIntensity = std::clamp<int>(
+                            (((nR + nG + nB) / 3.0) * intensity) / 255, 0, (RGB_BUFFER_SIZE - 1));
                         ++nIntensityCount[nCurIntensity];
 
                         nSumR[nCurIntensity] += nR;
@@ -258,7 +271,7 @@ namespace Wisteria::GraphItems
 
                 int nCurMax{ 0 };
                 int nMaxIndex{ 0 };
-                for (int nI = 0; nI < rgbBufferSize; ++nI)
+                for (int nI = 0; nI < RGB_BUFFER_SIZE; ++nI)
                     {
                     if (nIntensityCount[nI] > nCurMax)
                         {
@@ -267,11 +280,11 @@ namespace Wisteria::GraphItems
                         }
                     }
 
-                assert(nMaxIndex >= 0 && nMaxIndex < rgbBufferSize &&
-                    L"Invalid buffer index in oil painting effect!");
+                assert(nMaxIndex >= 0 && nMaxIndex < RGB_BUFFER_SIZE &&
+                       L"Invalid buffer index in oil painting effect!");
                 assert(((nX) * 3 + (nY)*nBytesInARow + 2) <
-                    (image.GetWidth() * image.GetHeight() * 3) &&
-                    L"Invalid image data index in oil painting effect!");
+                           (image.GetWidth() * image.GetHeight() * 3) &&
+                       L"Invalid image data index in oil painting effect!");
 
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow] = nSumR[nMaxIndex] / nCurMax;
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow + 1] = nSumG[nMaxIndex] / nCurMax;
@@ -286,58 +299,66 @@ namespace Wisteria::GraphItems
     wxImage Image::ApplyEffect(const Wisteria::ImageEffect effect, const wxImage& img)
         {
         if (effect == Wisteria::ImageEffect::Grayscale)
-            { return img.ConvertToGreyscale(); }
-        else if (effect == Wisteria::ImageEffect::BlurHorizontal)
-            { return img.BlurHorizontal(10); }
-        else if (effect == Wisteria::ImageEffect::BlurVertical)
-            { return img.BlurVertical(10); }
-        else if (effect == Wisteria::ImageEffect::Sepia)
-            { return Wisteria::GraphItems::Image::Sepia(img); }
-        else if (effect == Wisteria::ImageEffect::FrostedGlass)
-            { return Wisteria::GraphItems::Image::FrostedGlass(img); }
-        else if (effect == Wisteria::ImageEffect::OilPainting)
-            { return Wisteria::GraphItems::Image::OilPainting(img); }
-        else
-            { return img; }
+            {
+            return img.ConvertToGreyscale();
+            }
+        if (effect == Wisteria::ImageEffect::BlurHorizontal)
+            {
+            return img.BlurHorizontal(10);
+            }
+        if (effect == Wisteria::ImageEffect::BlurVertical)
+            {
+            return img.BlurVertical(10);
+            }
+        if (effect == Wisteria::ImageEffect::Sepia)
+            {
+            return Wisteria::GraphItems::Image::Sepia(img);
+            }
+        if (effect == Wisteria::ImageEffect::FrostedGlass)
+            {
+            return Wisteria::GraphItems::Image::FrostedGlass(img);
+            }
+        if (effect == Wisteria::ImageEffect::OilPainting)
+            {
+            return Wisteria::GraphItems::Image::OilPainting(img);
+            }
+        return img;
         }
 
     //-------------------------------------------
     wxImage Image::FrostedGlass(const wxImage& image,
-        const Wisteria::Orientation orientation /*= Orientation::Both*/,
-        const uint8_t coarseness /*= 50*/)
+                                const Wisteria::Orientation orientation /*= Orientation::Both*/,
+                                const uint8_t coarseness /*= 50*/)
         {
         if (!image.IsOk())
-            { return wxNullImage; }
+            {
+            return wxNullImage;
+            }
 
-        wxImage outImg{ image.Copy()};
-        const auto imgInData = image.GetData();
-        const auto imgOutData = outImg.GetData();
-        [[maybe_unused]] const auto byteCount{ image.GetWidth() * image.GetHeight() * 3 };
+        wxImage outImg{ image.Copy() };
+        const auto* const imgInData = image.GetData();
+        auto* const imgOutData = outImg.GetData();
+        [[maybe_unused]]
+        const auto byteCount{ image.GetWidth() * image.GetHeight() * 3 };
 
         std::random_device dev;
         std::mt19937 twister(dev());
         std::uniform_real_distribution<> distro(0, 1);
 
         const auto findXInBound = [&image](const int x)
-            {
-            const int x1 = (x < 0) ?
-                0 :
-                (x >= image.GetWidth() * 3) ?
-                (image.GetWidth() * 3) - 1 :
-                x;
+        {
+            const int x1 = (x < 0)                     ? 0 :
+                           (x >= image.GetWidth() * 3) ? (image.GetWidth() * 3) - 1 :
+                                                         x;
 
             const auto stepBackToRedChannel = x1 % 3;
             return x1 - stepBackToRedChannel;
-            };
+        };
 
         const auto findYInBound = [&image](const int y)
-            {
-            return (y < 0) ?
-                0 :
-                (y >= image.GetHeight()) ?
-                image.GetHeight() - 1 :
-                y;
-            };
+        {
+            return (y < 0) ? 0 : (y >= image.GetHeight()) ? image.GetHeight() - 1 : y;
+        };
 
         // horizontal and bidirectional
         if (orientation == Orientation::Horizontal || orientation == Orientation::Both)
@@ -387,14 +408,12 @@ namespace Wisteria::GraphItems
             {
             for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3; columnCounter += 3)
                 {
-                const auto x =
-                    findXInBound(
-                        static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness));
+                const auto x = findXInBound(
+                    static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness));
                 for (auto rowCounter = 0; rowCounter < image.GetHeight(); ++rowCounter)
                     {
-                    const auto y =
-                        findYInBound(
-                            static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness));
+                    const auto y = findYInBound(
+                        static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness));
 
                     // Source pixel
                     auto w1 = image.GetWidth() * 3 * y + x;
@@ -420,11 +439,13 @@ namespace Wisteria::GraphItems
     wxImage Image::Sepia(const wxImage& image, const uint8_t magnitude /*= 50*/)
         {
         if (!image.IsOk())
-            { return wxNullImage; }
+            {
+            return wxNullImage;
+            }
 
-        wxImage outImg{ image.Copy()};
-        const auto imgInData = image.GetData();
-        const auto imgOutData = outImg.GetData();
+        wxImage outImg{ image.Copy() };
+        const auto* const imgInData = image.GetData();
+        auto* const imgOutData = outImg.GetData();
 
         const auto byteCount = image.GetWidth() * image.GetHeight() * 3;
         const double threshold = magnitude * 255.0 / 100.0;
@@ -442,28 +463,26 @@ namespace Wisteria::GraphItems
             const auto intensity = 0.3 * r + 0.6 * g + 0.1 * b;
 
             // Red
-            auto tone = (intensity > threshold) ?
-                255.0 :
-                intensity + 255.0 - threshold;
+            auto tone = (intensity > threshold) ? 255.0 : intensity + 255.0 - threshold;
             const auto dRed = tone;
 
             // Green
-            tone = (intensity > thres6By7) ?
-                255.0 :
-                intensity + 255.0 - thres6By7;
+            tone = (intensity > thres6By7) ? 255.0 : intensity + 255.0 - thres6By7;
             auto dGreen = tone;
 
             // Blue
-            tone = (intensity < thres6) ?
-                0 :
-                intensity - thres6;
+            tone = (intensity < thres6) ? 0 : intensity - thres6;
             auto dBlue = tone;
 
             tone = thres7;
             if (dGreen < tone)
+                {
                 dGreen = tone;
+                }
             if (dBlue < tone)
+                {
                 dBlue = tone;
+                }
 
             imgOutData[index] = dRed;
             imgOutData[index + 1] = dGreen;
@@ -474,26 +493,27 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxImage Image::ChangeColor(const wxImage& image, const wxColour srcColor,
-                               const wxColour destColor)
+    wxImage Image::ChangeColor(const wxImage& image, const wxColour& srcColor,
+                               const wxColour& destColor)
         {
         if (!image.IsOk())
-            { return wxNullImage; }
+            {
+            return wxNullImage;
+            }
 
-        wxImage img{ image.Copy()};
-        const size_t pixelRGBCount = static_cast<size_t>(img.GetWidth()*img.GetHeight())*3;
+        wxImage img{ image.Copy() };
+        const size_t pixelRGBCount = static_cast<size_t>(img.GetWidth() * img.GetHeight()) * 3;
         unsigned char* const rgbData = img.GetData();
-        if (rgbData)
+        if (rgbData != nullptr)
             {
             for (size_t i = 0; i < pixelRGBCount; i += 3)
                 {
-                if (rgbData[i] == srcColor.Red() &&
-                    rgbData[i+1] == srcColor.Green() &&
-                    rgbData[i+2] == srcColor.Blue())
+                if (rgbData[i] == srcColor.Red() && rgbData[i + 1] == srcColor.Green() &&
+                    rgbData[i + 2] == srcColor.Blue())
                     {
                     rgbData[i] = destColor.Red();
-                    rgbData[i+1] = destColor.Green();
-                    rgbData[i+2] = destColor.Blue();
+                    rgbData[i + 1] = destColor.Green();
+                    rgbData[i + 2] = destColor.Blue();
                     }
                 }
             }
@@ -504,27 +524,27 @@ namespace Wisteria::GraphItems
     wxImage Image::CreateSilhouette(const wxImage& image, const bool opaque /*= true*/)
         {
         if (!image.IsOk())
-            { return wxNullImage; }
-        wxImage Silhouette = image.ConvertToMono(0, 0, 0);
-        SetColorTransparent(Silhouette, *wxWHITE);
+            {
+            return wxNullImage;
+            }
+        wxImage silhouette = image.ConvertToMono(0, 0, 0);
+        SetColorTransparent(silhouette, *wxWHITE);
         if (!opaque)
             {
-            Silhouette = ChangeColor(Silhouette, *wxBLACK,
-                                     ColorBrewer::GetColor(Color::LightGray));
+            silhouette = ChangeColor(silhouette, *wxBLACK, ColorBrewer::GetColor(Color::LightGray));
             }
-        return Silhouette;
+        return silhouette;
         }
 
     //-------------------------------------------
-    wxImage Image::CreateColorFilteredImage(const wxImage& image,
-                                            const wxColour color,
+    wxImage Image::CreateColorFilteredImage(const wxImage& image, const wxColour& color,
                                             const uint8_t opacity /*= 100*/)
         {
         wxBitmap bmp(image);
         wxMemoryDC memDC(bmp);
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto* gc = wxGraphicsContext::Create(memDC);
         assert(gc && L"Failed to get graphics context for filtered image!");
-        if (gc)
+        if (gc != nullptr)
             {
             gc->SetBrush(wxBrush(Colors::ColorContrast::ChangeOpacity(color, opacity)));
             gc->DrawRectangle(0, 0, memDC.GetSize().GetWidth(), memDC.GetSize().GetHeight());
@@ -535,25 +555,31 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetColorTransparent(wxImage& image, const wxColour color)
+    void Image::SetColorTransparent(wxImage& image, const wxColour& color)
         {
         if (!image.IsOk())
-            { return; }
+            {
+            return;
+            }
         if (!image.HasAlpha())
-            { image.InitAlpha(); }
+            {
+            image.InitAlpha();
+            }
         if (image.HasAlpha())
             {
-            const size_t pixelRGBCount = static_cast<size_t>(image.GetWidth()*image.GetHeight())*3;
+            const size_t pixelRGBCount =
+                static_cast<size_t>(image.GetWidth() * image.GetHeight()) * 3;
             const unsigned char* rgbData = image.GetData();
             unsigned char* alphaData = image.GetAlpha();
-            if (rgbData && alphaData)
+            if (rgbData != nullptr && alphaData != nullptr)
                 {
                 for (size_t i = 0, j = 0; i < pixelRGBCount; i += 3, ++j)
                     {
-                    if (rgbData[i] == color.Red() &&
-                        rgbData[i+1] == color.Green() &&
-                        rgbData[i+2] == color.Blue())
-                        { alphaData[j] = 0; }
+                    if (rgbData[i] == color.Red() && rgbData[i + 1] == color.Green() &&
+                        rgbData[i + 2] == color.Blue())
+                        {
+                        alphaData[j] = 0;
+                        }
                     }
                 }
             }
@@ -564,7 +590,9 @@ namespace Wisteria::GraphItems
                            const bool preserveTransparentPixels /*= false*/)
         {
         if (!bmp.IsOk())
-            { return; }
+            {
+            return;
+            }
         wxImage bkImage = bmp.ConvertToImage();
         SetOpacity(bkImage, opacity, preserveTransparentPixels);
 
@@ -573,11 +601,12 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                           const wxColour colorToPreserve)
+    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity, const wxColour& colorToPreserve)
         {
         if (!bmp.IsOk())
-            { return; }
+            {
+            return;
+            }
         wxImage bkImage = bmp.ConvertToImage();
         SetOpacity(bkImage, opacity, colorToPreserve);
 
@@ -587,10 +616,13 @@ namespace Wisteria::GraphItems
 
     //-------------------------------------------
     wxImage Image::CreateStippledImage(wxImage stipple, const wxSize fillSize,
-            const Orientation direction, const bool includeShadow, const wxCoord shadowSize)
+                                       const Orientation direction, const bool includeShadow,
+                                       const wxCoord shadowSize)
         {
         if (!stipple.IsOk() || fillSize.GetHeight() < 4 || fillSize.GetWidth() < 4)
-            { return wxNullImage; }
+            {
+            return wxNullImage;
+            }
         wxBitmap background(fillSize);
         SetOpacity(background, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(background);
@@ -599,63 +631,73 @@ namespace Wisteria::GraphItems
         if (direction == Orientation::Horizontal)
             {
             if (!stipple.HasAlpha())
-                { stipple.InitAlpha(); }
+                {
+                stipple.InitAlpha();
+                }
 
             const wxSize canvasSize = includeShadow ?
-                wxSize(background.GetSize().GetWidth(),
-                       background.GetSize().GetHeight()-shadowSize) :
-                background.GetSize();
+                                          wxSize(background.GetSize().GetWidth(),
+                                                 background.GetSize().GetHeight() - shadowSize) :
+                                          background.GetSize();
 
             const auto adjustedHeight = std::min(canvasSize.GetHeight(), stipple.GetHeight());
-            auto adjustedWidth = geometry::rescaled_width(wxSizeToPair(stipple.GetSize()),
-                                                          adjustedHeight);
+            auto adjustedWidth =
+                geometry::rescaled_width(wxSizeToPair(stipple.GetSize()), adjustedHeight);
 
-            const wxBitmap scaledStipple = stipple.Scale(adjustedWidth,
-                                                         adjustedHeight, wxIMAGE_QUALITY_HIGH);
+            const wxBitmap scaledStipple =
+                stipple.Scale(adjustedWidth, adjustedHeight, wxIMAGE_QUALITY_HIGH);
             const wxBitmap scaledStippleShadow =
                 CreateSilhouette(scaledStipple.ConvertToImage(), false);
 
             // center, if needed
-            const wxCoord yOffset = (adjustedHeight >= canvasSize.GetHeight()) ?
-                0 : (safe_divide<wxCoord>(canvasSize.GetHeight() - adjustedHeight, 2));
+            const wxCoord yOffset =
+                (adjustedHeight >= canvasSize.GetHeight()) ?
+                    0 :
+                    (safe_divide<wxCoord>(canvasSize.GetHeight() - adjustedHeight, 2));
 
-            for (int i = 0; i < canvasSize.GetWidth(); i += scaledStipple.GetWidth()+1)
+            for (int i = 0; i < canvasSize.GetWidth(); i += scaledStipple.GetWidth() + 1)
                 {
                 if (includeShadow)
-                    { memDC.DrawBitmap(scaledStippleShadow, i, yOffset + shadowSize); }
+                    {
+                    memDC.DrawBitmap(scaledStippleShadow, i, yOffset + shadowSize);
+                    }
                 memDC.DrawBitmap(scaledStipple, i, yOffset);
                 }
             }
         else
             {
             if (!stipple.HasAlpha())
-                { stipple.InitAlpha(); }
+                {
+                stipple.InitAlpha();
+                }
 
             const wxSize canvasSize = includeShadow ?
-                wxSize(background.GetSize().GetWidth()-shadowSize, background.GetSize().GetHeight()) :
-                background.GetSize();
+                                          wxSize(background.GetSize().GetWidth() - shadowSize,
+                                                 background.GetSize().GetHeight()) :
+                                          background.GetSize();
 
             const auto adjustedWidth = std::min(canvasSize.GetWidth(), stipple.GetWidth());
-            auto adjustedHeight = geometry::rescaled_height(wxSizeToPair(stipple.GetSize()),
-                                                            adjustedWidth);
-            const wxBitmap scaledStipple = stipple.Scale(adjustedWidth,
-                                                         adjustedHeight, wxIMAGE_QUALITY_HIGH);
-            wxBitmap scaledStippleShadow = CreateSilhouette(scaledStipple.ConvertToImage(), false);
+            auto adjustedHeight =
+                geometry::rescaled_height(wxSizeToPair(stipple.GetSize()), adjustedWidth);
+            const wxBitmap scaledStipple =
+                stipple.Scale(adjustedWidth, adjustedHeight, wxIMAGE_QUALITY_HIGH);
+            const wxBitmap scaledStippleShadow =
+                CreateSilhouette(scaledStipple.ConvertToImage(), false);
 
             // center image if not as wide as the background
-            const wxCoord xOffset = (adjustedWidth >= canvasSize.GetWidth()) ?
-                0 : (safe_divide<wxCoord>(canvasSize.GetWidth() - adjustedWidth, 2));
+            const wxCoord xOffset =
+                (adjustedWidth >= canvasSize.GetWidth()) ?
+                    0 :
+                    (safe_divide<wxCoord>(canvasSize.GetWidth() - adjustedWidth, 2));
 
-            for (int i = canvasSize.GetHeight();
-                 i > 0;
-                 i -= scaledStipple.GetHeight()+1)
+            for (int i = canvasSize.GetHeight(); i > 0; i -= scaledStipple.GetHeight() + 1)
                 {
                 if (includeShadow)
                     {
-                    memDC.DrawBitmap(scaledStippleShadow, xOffset+shadowSize,
+                    memDC.DrawBitmap(scaledStippleShadow, xOffset + shadowSize,
                                      i - scaledStipple.GetHeight() + 1);
                     }
-                memDC.DrawBitmap(scaledStipple, xOffset, i-scaledStipple.GetHeight()+1);
+                memDC.DrawBitmap(scaledStipple, xOffset, i - scaledStipple.GetHeight() + 1);
                 }
             }
 
@@ -667,26 +709,26 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Image::SetWidth(const wxCoord width)
         {
-        m_size = wxSize(width, geometry::rescaled_height(
-            std::make_pair<double, double>(m_originalImg.GetWidth(),
-                                           m_originalImg.GetHeight()), width));
+        m_size = wxSize(
+            width, geometry::rescaled_height(std::pair<double, double>(m_originalImg.GetWidth(),
+                                                                       m_originalImg.GetHeight()),
+                                             width));
         m_frameSize = m_size;
         }
 
     //-------------------------------------------
     void Image::SetHeight(const wxCoord height)
         {
-        m_size = wxSize(geometry::rescaled_width(
-            std::make_pair<double, double>(m_originalImg.GetWidth(),
-                                           m_originalImg.GetHeight()), height), height);
+        m_size =
+            wxSize(geometry::rescaled_width(std::pair<double, double>(m_originalImg.GetWidth(),
+                                                                      m_originalImg.GetHeight()),
+                                            height),
+                   height);
         m_frameSize = m_size;
         }
 
     //-------------------------------------------
-    void Image::SetSize(const wxSize sz)
-        {
-        m_size = m_frameSize = sz;
-        }
+    void Image::SetSize(const wxSize sz) { m_size = m_frameSize = sz; }
 
     //-------------------------------------------
     wxSize Image::SetBestSize(const wxSize suggestedSz)
@@ -699,9 +741,9 @@ namespace Wisteria::GraphItems
     wxSize Image::GetBestSize(const wxSize suggestedSz) const
         {
         const auto [width, height] = geometry::downscaled_size(
-            std::make_pair<double, double>(m_originalImg.GetWidth(), m_originalImg.GetHeight()),
+            std::pair<double, double>(m_originalImg.GetWidth(), m_originalImg.GetHeight()),
             wxSizeToPair(suggestedSz));
-        return wxSize(std::ceil(width), std::ceil(height));
+        return { static_cast<int>(std::ceil(width)), static_cast<int>(std::ceil(height)) };
         }
 
     //-------------------------------------------
@@ -712,101 +754,123 @@ namespace Wisteria::GraphItems
             originalSz.GetHeight() <= suggestedSz.GetHeight())
             {
             const auto [width, height] = geometry::upscaled_size(
-                std::make_pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
+                std::pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
                 wxSizeToPair(suggestedSz));
-            return wxSize(std::ceil(width), std::ceil(height));
+            return { static_cast<int>(std::ceil(width)), static_cast<int>(std::ceil(height)) };
             }
         // if larger, then downscale
-        else if (originalSz.GetWidth() >= suggestedSz.GetWidth() &&
+        if (originalSz.GetWidth() >= suggestedSz.GetWidth() &&
             originalSz.GetHeight() >= suggestedSz.GetHeight())
             {
             const auto [width, height] = geometry::downscaled_size(
-                std::make_pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
+                std::pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
                 wxSizeToPair(suggestedSz));
-            return wxSize(std::ceil(width), std::ceil(height));
+            return { static_cast<int>(std::ceil(width)), static_cast<int>(std::ceil(height)) };
             }
-        else
-            { return originalSz; }
+        return originalSz;
         }
 
     //-------------------------------------------
     void Image::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                                [[maybe_unused]] const double parentScaling)
         {
-        assert(!IsFreeFloating() &&
-               L"SetBoundingBox() should only be called on fixed objects!");
+        assert(!IsFreeFloating() && L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
-            { return; }
+            {
+            return;
+            }
         if (GetAnchoring() == Anchoring::Center)
             {
-            SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
-                           rect.GetTop()+(rect.GetHeight()/2)));
+            SetAnchorPoint(wxPoint(rect.GetLeft() + (rect.GetWidth() / 2),
+                                   rect.GetTop() + (rect.GetHeight() / 2)));
             }
         else if (GetAnchoring() == Anchoring::TopLeftCorner)
-            { SetAnchorPoint(rect.GetTopLeft()); }
+            {
+            SetAnchorPoint(rect.GetTopLeft());
+            }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
-            { SetAnchorPoint(rect.GetTopRight()); }
+            {
+            SetAnchorPoint(rect.GetTopRight());
+            }
         else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-            { SetAnchorPoint(rect.GetBottomLeft()); }
+            {
+            SetAnchorPoint(rect.GetBottomLeft());
+            }
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
-            { SetAnchorPoint(rect.GetBottomRight()); }
+            {
+            SetAnchorPoint(rect.GetBottomRight());
+            }
         // adjust the height to fit the bounding box
         if (GetResizeMethod() == ResizeMethod::DownscaleOrUpscale)
             {
             m_size = wxSize(geometry::rescaled_width(
-                std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(),
-                                               m_originalImg.GetSize().GetHeight()),
-                rect.GetHeight()), rect.GetHeight());
+                                std::pair<double, double>(m_originalImg.GetSize().GetWidth(),
+                                                          m_originalImg.GetSize().GetHeight()),
+                                rect.GetHeight()),
+                            rect.GetHeight());
             // height adjusted to the rect, but if it is too wide now then we need to
             // adjust the width to the rect and rescale the height to this new width
             if (m_size.GetWidth() > rect.GetWidth())
                 {
-                m_size = wxSize(rect.GetWidth(), geometry::rescaled_height(
-                    std::make_pair<double, double>(m_size.GetWidth(),m_size.GetHeight()),
-                                                   rect.GetWidth()));
+                m_size =
+                    wxSize(rect.GetWidth(),
+                           geometry::rescaled_height(
+                               std::pair<double, double>(m_size.GetWidth(), m_size.GetHeight()),
+                               rect.GetWidth()));
                 }
             }
         else if (GetResizeMethod() == ResizeMethod::DownscaleOnly)
             {
             auto downSize = geometry::downscaled_size(
-                    std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetHeight()),
-                    std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
+                std::pair<double, double>(m_originalImg.GetSize().GetWidth(),
+                                          m_originalImg.GetHeight()),
+                std::pair<double, double>(rect.GetWidth(), rect.GetHeight()));
             m_size = wxSize(downSize.first, downSize.second);
             }
         else if (GetResizeMethod() == ResizeMethod::UpscaleOnly)
             {
             auto downSize = geometry::upscaled_size(
-                    std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetHeight()),
-                    std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
+                std::pair<double, double>(m_originalImg.GetSize().GetWidth(),
+                                          m_originalImg.GetHeight()),
+                std::pair<double, double>(rect.GetWidth(), rect.GetHeight()));
             m_size = wxSize(downSize.first, downSize.second);
             }
-        m_size *= safe_divide<double>(1.0f, GetScaling());
-        m_frameSize = rect.GetSize()*safe_divide<double>(1.0f, GetScaling());
+        m_size *= safe_divide<double>(1.0F, GetScaling());
+        m_frameSize = rect.GetSize() * safe_divide<double>(1.0F, GetScaling());
         }
 
     //-------------------------------------------
     wxRect Image::GetBoundingBox([[maybe_unused]] wxDC& dc) const
         {
-        const wxCoord width(m_frameSize.GetWidth()*GetScaling());
-        const wxCoord height(m_frameSize.GetHeight()*GetScaling());
+        const wxCoord width(m_frameSize.GetWidth() * GetScaling());
+        const wxCoord height(m_frameSize.GetHeight() * GetScaling());
         wxRect boundingBox;
 
         if (GetAnchoring() == Anchoring::Center)
             {
-            boundingBox = wxRect(GetAnchorPoint()-wxPoint(width/2,height/2),
-                                 GetAnchorPoint()+wxPoint(width/2,height/2));
+            boundingBox = wxRect(GetAnchorPoint() - wxPoint(width / 2, height / 2),
+                                 GetAnchorPoint() + wxPoint(width / 2, height / 2));
             }
         else if (GetAnchoring() == Anchoring::TopLeftCorner)
-            { boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height)); }
+            {
+            boundingBox = wxRect(GetAnchorPoint(), wxSize(width, height));
+            }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
-            { boundingBox = wxRect(GetAnchorPoint()-wxSize(width,0), wxSize(width,height)); }
+            {
+            boundingBox = wxRect(GetAnchorPoint() - wxSize(width, 0), wxSize(width, height));
+            }
         else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-            { boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height), wxSize(width,height)); }
+            {
+            boundingBox = wxRect(GetAnchorPoint() - wxPoint(0, height), wxSize(width, height));
+            }
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
-            { boundingBox = wxRect(GetAnchorPoint()-wxSize(width,height), wxSize(width,height)); }
+            {
+            boundingBox = wxRect(GetAnchorPoint() - wxSize(width, height), wxSize(width, height));
+            }
         if (IsFreeFloating())
             {
-            boundingBox.Offset((boundingBox.GetLeftTop()*GetScaling())-boundingBox.GetLeftTop());
+            boundingBox.Offset((boundingBox.GetLeftTop() * GetScaling()) -
+                               boundingBox.GetLeftTop());
             }
         return boundingBox;
         }
@@ -819,8 +883,9 @@ namespace Wisteria::GraphItems
             {
             const wxSize svgSize = GetSVGSize(filePath);
 
-            return wxBitmapBundle::FromSVGFile(filePath, svgSize).
-                GetBitmap(svgSize).ConvertToImage();
+            return wxBitmapBundle::FromSVGFile(filePath, svgSize)
+                .GetBitmap(svgSize)
+                .ConvertToImage();
             }
 
         // otherwise, load as a raster image file
@@ -828,17 +893,19 @@ namespace Wisteria::GraphItems
             {
             MemoryMappedFile mappedImg(filePath, true, true);
             if (!mappedImg.IsOk())
-                { return wxNullImage; }
+                {
+                return wxNullImage;
+                }
 
             wxMemoryInputStream stream(static_cast<const char*>(mappedImg.GetStream()),
-                                                                mappedImg.GetMapSize());
+                                       mappedImg.GetMapSize());
             wxImage image(stream);
             // parse EXIF
             if (image.IsOk() && image.GetType() == wxBITMAP_TYPE_JPEG)
                 {
                 easyexif::EXIFInfo result;
                 if (result.parseFrom(static_cast<const unsigned char*>(mappedImg.GetStream()),
-                                                                       mappedImg.GetMapSize()) == 0)
+                                     mappedImg.GetMapSize()) == 0)
                     {
                     // correct the orientation (if necessary)
                     switch (result.Orientation)
@@ -863,14 +930,14 @@ namespace Wisteria::GraphItems
         // weird exception that auto-buffering won't help, so explain it to the user
         catch (const MemoryMappedFileCloudFileError&)
             {
-            wxLogWarning(
-                wxString::Format(L"%s: unable to open file from Cloud service.",
-                    filePath),
-                L"Error", wxOK|wxICON_EXCLAMATION);
+            wxLogWarning(wxString::Format(L"%s: unable to open file from Cloud service.", filePath),
+                         L"Error", wxOK | wxICON_EXCLAMATION);
             return wxNullImage;
             }
         catch (...)
-            { return wxNullImage; }
+            {
+            return wxNullImage;
+            }
         }
 
     //-------------------------------------------
@@ -878,28 +945,43 @@ namespace Wisteria::GraphItems
         {
         ext = (ext.find(L'.') == std::wstring::npos) ? ext : wxFileName(ext).GetExt();
         wxBitmapType imageType = wxBITMAP_TYPE_ANY;
-        if (ext.CmpNoCase(L"jpg") == 0 ||
-            ext.CmpNoCase(L"jpeg") == 0 ||
-            ext.CmpNoCase(L"jpe") == 0)
-            { imageType = wxBITMAP_TYPE_JPEG; }
+        if (ext.CmpNoCase(L"jpg") == 0 || ext.CmpNoCase(L"jpeg") == 0 || ext.CmpNoCase(L"jpe") == 0)
+            {
+            imageType = wxBITMAP_TYPE_JPEG;
+            }
         else if (ext.CmpNoCase(L"gif") == 0)
-            { imageType = wxBITMAP_TYPE_GIF; }
+            {
+            imageType = wxBITMAP_TYPE_GIF;
+            }
         else if (ext.CmpNoCase(L"png") == 0)
-            { imageType = wxBITMAP_TYPE_PNG; }
+            {
+            imageType = wxBITMAP_TYPE_PNG;
+            }
         else if (ext.CmpNoCase(L"bmp") == 0)
-            { imageType = wxBITMAP_TYPE_BMP; }
-        else if (ext.CmpNoCase(L"tif") == 0 ||
-                 ext.CmpNoCase(L"tiff") == 0)
-            { imageType = wxBITMAP_TYPE_TIF; }
+            {
+            imageType = wxBITMAP_TYPE_BMP;
+            }
+        else if (ext.CmpNoCase(L"tif") == 0 || ext.CmpNoCase(L"tiff") == 0)
+            {
+            imageType = wxBITMAP_TYPE_TIF;
+            }
         else if (ext.CmpNoCase(L"pcx") == 0)
-            { imageType = wxBITMAP_TYPE_PCX; }
+            {
+            imageType = wxBITMAP_TYPE_PCX;
+            }
         else if (ext.CmpNoCase(L"tga") == 0)
-            { imageType = wxBITMAP_TYPE_TGA; }
+            {
+            imageType = wxBITMAP_TYPE_TGA;
+            }
         // no enum value for this, but need to set it to something
         else if (ext.CmpNoCase(L"svg") == 0)
-            { imageType = wxBITMAP_TYPE_ANY; }
+            {
+            imageType = wxBITMAP_TYPE_ANY;
+            }
         else
-            { imageType = wxBITMAP_TYPE_PNG; }
+            {
+            imageType = wxBITMAP_TYPE_PNG;
+            }
         return imageType;
         }
 
@@ -907,22 +989,27 @@ namespace Wisteria::GraphItems
     wxRect Image::Draw(wxDC& dc) const
         {
         if (!IsShown() || !IsOk() || !m_img.IsOk())
-            { return wxRect(); }
+            {
+            return {};
+            }
         if (IsInDragState())
-            { return GetBoundingBox(dc); }
+            {
+            return GetBoundingBox(dc);
+            }
 
         if (GetClippingRect())
-            { dc.SetClippingRegion(GetClippingRect().value()); }
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
 
         // if the size or scaling has changed, then rescale from
         // the original image to maintain fidelity
-        const wxSize scaledSize(GetImageSize().GetWidth()*GetScaling(),
-                                GetImageSize().GetHeight()*GetScaling());
+        const wxSize scaledSize(GetImageSize().GetWidth() * GetScaling(),
+                                GetImageSize().GetHeight() * GetScaling());
         m_img = m_originalImg;
         if (m_img.GetSize() != scaledSize)
             {
-            m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(),
-                          wxIMAGE_QUALITY_HIGH);
+            m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
 
         SetOpacity(m_img, m_opacity, true);
@@ -932,22 +1019,20 @@ namespace Wisteria::GraphItems
         if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
             GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
-            wxDCPenChanger pc(dc, wxPen(GetShadowColour(), ScaleToScreenAndCanvas(1)));
-            wxDCBrushChanger bc(dc, wxBrush(GetShadowColour()));
+            const wxDCPenChanger pc(dc, wxPen(GetShadowColour(), ScaleToScreenAndCanvas(1)));
+            const wxDCBrushChanger bc(dc, wxBrush(GetShadowColour()));
             const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
                 {
                 wxPoint shadowPts[7];
-                shadowPts[0] = GetBoundingBox(dc).GetLeftBottom() +
-                               wxPoint(scaledShadowOffset,0);
+                shadowPts[0] = GetBoundingBox(dc).GetLeftBottom() + wxPoint(scaledShadowOffset, 0);
                 shadowPts[1] = GetBoundingBox(dc).GetLeftBottom() +
-                               wxPoint(scaledShadowOffset,scaledShadowOffset);
+                               wxPoint(scaledShadowOffset, scaledShadowOffset);
                 shadowPts[2] = GetBoundingBox(dc).GetRightBottom() +
-                               wxPoint(scaledShadowOffset,scaledShadowOffset);
+                               wxPoint(scaledShadowOffset, scaledShadowOffset);
                 shadowPts[3] = GetBoundingBox(dc).GetRightTop() +
-                               wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[4] = GetBoundingBox(dc).GetRightTop() +
-                               wxPoint(0,scaledShadowOffset);
+                               wxPoint(scaledShadowOffset, scaledShadowOffset);
+                shadowPts[4] = GetBoundingBox(dc).GetRightTop() + wxPoint(0, scaledShadowOffset);
                 shadowPts[5] = GetBoundingBox(dc).GetRightBottom();
                 shadowPts[6] = shadowPts[0]; // close polygon
                 dc.DrawPolygon(std::size(shadowPts), shadowPts);
@@ -955,12 +1040,10 @@ namespace Wisteria::GraphItems
             else if (GetShadowType() == ShadowType::RightSideShadow)
                 {
                 wxPoint shadowPts[4];
-                shadowPts[0] = GetBoundingBox(dc).GetRightBottom() +
-                               wxPoint(scaledShadowOffset,0);
+                shadowPts[0] = GetBoundingBox(dc).GetRightBottom() + wxPoint(scaledShadowOffset, 0);
                 shadowPts[1] = GetBoundingBox(dc).GetRightTop() +
-                               wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox(dc).GetRightTop() +
-                               wxPoint(0,scaledShadowOffset);
+                               wxPoint(scaledShadowOffset, scaledShadowOffset);
+                shadowPts[2] = GetBoundingBox(dc).GetRightTop() + wxPoint(0, scaledShadowOffset);
                 shadowPts[3] = GetBoundingBox(dc).GetRightBottom();
                 dc.DrawPolygon(std::size(shadowPts), shadowPts);
                 }
@@ -971,30 +1054,32 @@ namespace Wisteria::GraphItems
         // horizontal page alignment
         if ((GetFrameSize() == GetImageSize()) ||
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned))
-            { /*noop*/ }
+            { /*noop*/
+            }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
             imgTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
-                safe_divide<double>(GetImageSize().GetWidth() * GetScaling(), 2);
+                                  safe_divide<double>(GetImageSize().GetWidth() * GetScaling(), 2);
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
-            imgTopLeftCorner.x += GetBoundingBox(dc).GetWidth() -
-               GetImageSize().GetWidth() * GetScaling();
+            imgTopLeftCorner.x +=
+                GetBoundingBox(dc).GetWidth() - GetImageSize().GetWidth() * GetScaling();
             }
         // vertical page alignment
         if ((GetFrameSize() == GetImageSize()) ||
             (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned))
-            { /*noop*/ }
+            { /*noop*/
+            }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
             imgTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
-                safe_divide<double>(GetImageSize().GetHeight() * GetScaling(), 2);
+                                  safe_divide<double>(GetImageSize().GetHeight() * GetScaling(), 2);
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
-            imgTopLeftCorner.y += GetBoundingBox(dc).GetHeight() -
-               (GetImageSize().GetHeight() * GetScaling());
+            imgTopLeftCorner.y +=
+                GetBoundingBox(dc).GetHeight() - (GetImageSize().GetHeight() * GetScaling());
             }
 
         dc.DrawBitmap(wxBitmap(m_img), imgTopLeftCorner, true);
@@ -1007,19 +1092,22 @@ namespace Wisteria::GraphItems
             {
             wxPen scaledPen(GetPen());
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
-            wxDCPenChanger pc(dc, IsSelected() ?
-                wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) : scaledPen);
+            const wxDCPenChanger pc(
+                dc, IsSelected() ? wxPen(*wxBLACK, 2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                   scaledPen);
             dc.DrawLines(std::size(pts), pts);
             }
         // just draw selection outline if regular pen isn't in use
         else if (IsSelected())
             {
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
             dc.DrawLines(std::size(pts), pts);
             }
 
         if (GetClippingRect())
-            { dc.DestroyClippingRegion(); }
+            {
+            dc.DestroyClippingRegion();
+            }
         return GetBoundingBox(dc);
         }
-    }
+    } // namespace Wisteria::GraphItems

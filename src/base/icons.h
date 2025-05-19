@@ -125,16 +125,17 @@ namespace Wisteria::Icons
 
         /** @brief Constructs legend icon.
             @param img The image to draw as an icon.*/
-        explicit LegendIcon(const wxImage& img) : m_shape(IconShape::Image), m_img(img) {}
+        explicit LegendIcon(wxImage img) : m_shape(IconShape::Image), m_img(std::move(img)) {}
 
         /** @brief Constructor.
             @param icon The icon type.
             @param pen The pen to outline the icon with.
             @param brush The brush to paint with.
             @param color A color to show under the brush (if it is a hatch pattern, for example).*/
-        LegendIcon(const IconShape icon, const wxPen& pen, const wxBrush& brush,
+        LegendIcon(const IconShape icon, wxPen pen, wxBrush brush,
                    std::optional<wxColour> color = std::nullopt)
-            : m_shape(icon), m_pen(pen), m_brush(brush), m_baseColor(color), m_img(wxNullImage)
+            : m_shape(icon), m_pen(std::move(pen)), m_brush(std::move(brush)),
+              m_baseColor(std::move(color)), m_img(wxNullImage)
             {
             }
 
@@ -179,9 +180,7 @@ namespace Wisteria::Icons
 
             /// @brief Constructor.
             /// @param shapes The initializer list of shapes to fill the scheme with.
-            explicit IconScheme(const std::initializer_list<IconShape>& shapes) : m_shapes(shapes)
-                {
-                }
+            IconScheme(const std::initializer_list<IconShape>& shapes) : m_shapes(shapes) {}
 
             /// @brief Constructor.
             /// @param shapes The list of shapes to fill the scheme with.

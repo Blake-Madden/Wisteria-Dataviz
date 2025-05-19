@@ -201,7 +201,7 @@ namespace Wisteria::UI
              wxString::Format(L"%0.1f", GetValue())))
             {
             // if user deleted contents of control,
-            // then set the cell in the listcontrol to empty string as well
+            // then set the cell in the list control to empty string as well
             m_owner->SetItemText(m_editedRow, m_editedColumn,
                                  wxString::Format(L"%0.1f", GetValue()));
             m_owner->Refresh();
@@ -259,7 +259,7 @@ namespace Wisteria::UI
              wxString::Format(L"%0.1f", GetValue())))
             {
             // if user deleted contents of control,
-            // then set the cell in the listcontrol to empty string as well
+            // then set the cell in the list control to empty string as well
             m_owner->SetItemText(m_editedRow, m_editedColumn,
                                  std::isnan(GetValue()) ? wxString{} :
                                                           wxString::Format(L"%0.1f", GetValue()));
@@ -2538,6 +2538,8 @@ namespace Wisteria::UI
         choices.Add(_DT(L"LaTeX"));
         descriptions.Add(wxString::Format(
             L"<span style='font-weight:bold;'>%s</span><br />%s", _DT(L"<tt>LaTeX</tt>"),
+            // TRANSLATORS: Do no translate "<tt>longtable{}</tt>" or <tt>LaTeX</tt>;
+            // "longtable" is a LaTeX command that is not translated.
             _(L"This format will write the list in a <tt>longtable{}</tt> environment that can be "
               "included in a larger <tt>LaTeX</tt> document.")));
         RadioBoxDlg exportTypesDlg(this, _(L"Select List Format"), wxString{}, _(L"List formats:"),
