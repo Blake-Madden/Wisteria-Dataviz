@@ -12,10 +12,11 @@ jobs:
   
       - name: Install wxwidgets
         run: |
-             brew install cmake tbb libomp
+             brew install cmake tbb
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets
              cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF \
+               -DwxUSE_SYS_LIBS=OFF \
                -D"CMAKE_OSX_ARCHITECTURES:STRING=arm64;x86_64" \
                -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
              cmake --build . --target install -j4
