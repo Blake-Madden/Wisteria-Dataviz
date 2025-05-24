@@ -219,10 +219,13 @@ namespace Wisteria::Graphs
             for (const auto& obsLabel : blockTable.second.first)
                 { blockLabel.append(obsLabel).append(L"\n"); }
             blockLabel.Trim();
-            // if observations are added to the selection label, but not all of them, then add ellipsis
+            // if observations are added to the selection label, but not all of them,
+            // then add ellipsis
             if (blockTable.second.first.size() < blockTable.second.second &&
                 blockTable.second.first.size() > 1)
-                { blockLabel += L"..."; }
+                {
+                blockLabel += /* TRANSLATORS: Label truncation. */ _(L"...");
+                }
 
             auto foundBar = std::find_if(GetBars().begin(), GetBars().end(),
                 [&blockTable](const auto& bar)
@@ -497,7 +500,9 @@ namespace Wisteria::Graphs
                 blockLabel.Trim();
                 if (block.second.second.size() < block.second.first &&
                     block.second.second.size() > 1)
-                    { blockLabel += L"..."; }
+                    {
+                    blockLabel += /* TRANSLATORS: Label truncation. */ _(L"...");
+                    }
 
                 const wxString blockTag = (IsUsingGrouping() ?
                     GetGroupColumn()->GetLabelFromID(block.first) :

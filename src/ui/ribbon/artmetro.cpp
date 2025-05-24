@@ -596,7 +596,7 @@ void RibbonMetroArtProvider::DrawPanelBackground(wxDC& dc, wxRibbonPanel* wnd, c
         if (label_size.GetWidth() > label_rect.GetWidth())
             {
             // Test if there is enough length for 3 letters and ...
-            wxString new_label = label.substr(0, 3) + L"...";
+            wxString new_label = label.substr(0, 3) + _DT(L"...");
             label_size = dc.GetTextExtent(new_label);
             if (label_size.GetWidth() > label_rect.GetWidth())
                 {
@@ -610,7 +610,7 @@ void RibbonMetroArtProvider::DrawPanelBackground(wxDC& dc, wxRibbonPanel* wnd, c
                 // Display as many characters as possible and append ...
                 for (size_t len = label.Len() - 1; len >= 3; --len)
                     {
-                    new_label = label.substr(0, len) + L"...";
+                    new_label = label.substr(0, len) + _DT(L"...");
                     label_size = dc.GetTextExtent(new_label);
                     if (label_size.GetWidth() <= label_rect.GetWidth())
                         {
