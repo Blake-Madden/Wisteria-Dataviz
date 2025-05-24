@@ -231,7 +231,8 @@ namespace Wisteria::GraphItems
             { IconShape::Factory, &ShapeRenderer::DrawFactory },
             { IconShape::House, &ShapeRenderer::DrawHouse },
             { IconShape::Barn, &ShapeRenderer::DrawBarn },
-            { IconShape::Farm, &ShapeRenderer::DrawFarm }
+            { IconShape::Farm, &ShapeRenderer::DrawFarm },
+            { IconShape::Dollar, &ShapeRenderer::DrawDollar }
         };
 
         // connect the rendering function to the shape
@@ -955,7 +956,9 @@ namespace Wisteria::GraphItems
             wxRegion barnRegion{ barnPoints.size(), &barnPoints[0] };
             gc->Clip(barnRegion);
             wxCoord currentY{ barnRect.GetTop() };
+            // clang-format off
             wxCLANG_WARNING_SUPPRESS(unused-but-set-variable);
+            // clang-format on
             int currentLine{ 0 };
             while (currentY < barnRect.GetBottom())
                 {
@@ -963,7 +966,9 @@ namespace Wisteria::GraphItems
                 currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2);
                 ++currentLine;
                 }
+            // clang-format off
             wxCLANG_WARNING_RESTORE(unused-but-set-variable);
+            // clang-format on
             gc->ResetClip();
             if (!originalClipRect.IsEmpty())
                 {
@@ -1090,7 +1095,9 @@ namespace Wisteria::GraphItems
                            ladderRect.y + ladderRect.GetHeight());
 
             int currentY{ ladderRect.GetTop() };
+            // clang-format off
             wxCLANG_WARNING_SUPPRESS(unused-but-set-variable);
+            // clang-format on
             int currentLine{ 0 };
             while (currentY < ladderRect.GetBottom())
                 {
@@ -1098,7 +1105,9 @@ namespace Wisteria::GraphItems
                 currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
                 ++currentLine;
                 }
+            // clang-format off
             wxCLANG_WARNING_RESTORE(unused-but-set-variable);
+            // clang-format on
             // top of silo
             wxGraphicsPath siloLidPath = gc->CreatePath();
 
@@ -1290,6 +1299,146 @@ namespace Wisteria::GraphItems
             drawRect.Offset(0, previousBottom - drawRect.GetBottom());
             drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::PastelOrange),
                       Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange));
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawDollar(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        wxDCFontChanger fc(dc);
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(1));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for dollar icon!");
+        if (gc != nullptr)
+            {
+            gc->SetBrush(wxColour{ L"#D8D4B4" });
+            gc->SetPen(wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(0.25)) });
+
+            // background of bill
+            wxRect billRect{ drawRect };
+            billRect.SetHeight(billRect.GetHeight() * math_constants::half);
+            billRect.Offset(0, drawRect.GetHeight() / 4);
+            gc->DrawRectangle(billRect.GetX(), billRect.GetY(), billRect.GetWidth(),
+                              billRect.GetHeight());
+
+            // portrait
+            //---------
+            wxRect innerBillRect{ billRect };
+            innerBillRect.Deflate(ScaleToScreenAndCanvas(2));
+
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxColour{ L"#3E3E3C" });
+            wxRect portraitRect{ innerBillRect };
+            portraitRect.SetWidth(portraitRect.GetWidth() * math_constants::third);
+            portraitRect.Offset(billRect.GetWidth() * math_constants::quarter, 0);
+            double clipX{ 0 }, clipY{ 0 }, clipW{ 0 }, clipH{ 0 };
+            gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
+            const wxRect originalClipRect(clipX, clipY, clipW, clipH);
+            gc->Clip(portraitRect.GetX(), portraitRect.GetY(), portraitRect.GetWidth(),
+                     portraitRect.GetHeight());
+            // body
+            gc->DrawEllipse(portraitRect.GetX(),
+                            portraitRect.GetY() + portraitRect.GetHeight() * 0.6,
+                            portraitRect.GetWidth(), portraitRect.GetHeight());
+
+            // face
+            gc->SetPen(wxColour{ L"#3E3E3C" });
+            gc->SetBrush(wxColour{ L"#ADADAD" });
+            const wxRect faceRect{
+                static_cast<int>(portraitRect.GetX() + (portraitRect.GetWidth() / 3)),
+                static_cast<int>(portraitRect.GetY() + portraitRect.GetHeight() * 0.275),
+                portraitRect.GetWidth() / 2, portraitRect.GetHeight() / 2
+            };
+            gc->DrawEllipse(faceRect.GetX(), faceRect.GetY(), faceRect.GetWidth(),
+                            faceRect.GetHeight());
+
+            // hair
+            gc->SetPen(wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack),
+                                  billRect.GetHeight() / 10 });
+            wxRect hairRect{ faceRect };
+            hairRect.Deflate(ScaleToScreenAndCanvas(0.75));
+            hairRect.Offset(-ScaleToScreenAndCanvas(0.5), -ScaleToScreenAndCanvas(0.5));
+
+            wxGraphicsPath hairPath = gc->CreatePath();
+
+            hairPath.MoveToPoint(wxPoint(GetXPosFromLeft(hairRect, math_constants::whole),
+                                         GetYPosFromTop(hairRect, 0.0)));
+            // left side
+            hairPath.AddQuadCurveToPoint(GetXPosFromLeft(faceRect, 0), GetYPosFromTop(faceRect, 0),
+                                         GetXPosFromLeft(faceRect, 0.0),
+                                         GetYPosFromTop(faceRect, math_constants::whole));
+            gc->StrokePath(hairPath);
+
+            gc->ResetClip();
+            gc->Clip(originalClipRect.GetX(), originalClipRect.GetY(), originalClipRect.GetWidth(),
+                     originalClipRect.GetHeight());
+
+            // border frame
+            gc->SetPen(wxPenInfo{ wxColour{ L"#525B54" }, billRect.GetHeight() / 10 }.Cap(
+                wxPenCap::wxCAP_BUTT));
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            gc->DrawRectangle(innerBillRect.GetX(), innerBillRect.GetY(), innerBillRect.GetWidth(),
+                              innerBillRect.GetHeight());
+
+            // left seal
+            gc->SetPen(wxPenInfo{ *wxBLACK, billRect.GetHeight() / 20 });
+            gc->SetBrush(wxColour{ L"#525B54" });
+            gc->DrawEllipse(GetXPosFromLeft(innerBillRect, 0.1),
+                            GetYPosFromTop(innerBillRect, math_constants::third),
+                            innerBillRect.GetHeight() / 3, innerBillRect.GetHeight() / 3);
+
+            // right seal
+            wxRect rightSealRect{
+                static_cast<wxCoord>(GetXPosFromLeft(
+                    innerBillRect,
+                    0.9 - safe_divide<double>(safe_divide<double>(innerBillRect.GetHeight(), 3),
+                                              innerBillRect.GetWidth()))),
+                static_cast<wxCoord>(GetYPosFromTop(innerBillRect, math_constants::third)),
+                innerBillRect.GetHeight() / 3, innerBillRect.GetHeight() / 3
+            };
+
+            gc->SetPen(wxPenInfo{ wxColour{ L"#689E80" }, billRect.GetHeight() / 20 });
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            gc->DrawEllipse(rightSealRect.GetX(), rightSealRect.GetY(), rightSealRect.GetWidth(),
+                            rightSealRect.GetHeight());
+
+            rightSealRect.Inflate(innerBillRect.GetHeight() / 5);
+            auto fontSize =
+                Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
+            gc->SetFont(wxFontInfo{ static_cast<double>(fontSize) }, wxColour{ L"#525B54" });
+            gc->DrawText(L"100", rightSealRect.GetX(),
+                         innerBillRect.GetY() +
+                             (innerBillRect.GetHeight() - rightSealRect.GetHeight()));
+
+            // security strip
+            wxRect securityStripRect{ billRect };
+            securityStripRect.SetWidth(securityStripRect.GetWidth() * 0.05);
+            securityStripRect.SetLeft(portraitRect.GetRight());
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            const auto stripBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 0.0),
+                GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(billRect, 2.0),
+                Colors::ColorBrewer::GetColor(Colors::Color::Blue, 150),
+                Colors::ColorBrewer::GetColor(Colors::Color::Gray, 150));
+            gc->SetBrush(stripBrush);
+            gc->DrawRectangle(securityStripRect.GetX(), securityStripRect.GetY(),
+                              securityStripRect.GetWidth(), securityStripRect.GetHeight());
+
+            // orange 100 in the bottom corner
+            rightSealRect.SetLeft(billRect.GetRight() - rightSealRect.GetWidth());
+            rightSealRect.SetTop(rightSealRect.GetBottom());
+            rightSealRect.SetBottom(billRect.GetBottom());
+            fontSize = Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
+            gc->SetFont(wxFontInfo{ static_cast<double>(fontSize) }.Bold(),
+                        Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200));
+            gc->DrawText(L"100", rightSealRect.GetX(), rightSealRect.GetY());
             }
         }
 

@@ -106,7 +106,8 @@ namespace Wisteria::Icons
         Factory,                  /*!< A factory.*/
         House,                    /*!< A house.*/
         Barn,                     /*!< A barn.*/
-        Farm                      /*!< A barn and grain silo.*/
+        Farm,                     /*!< A barn and grain silo.*/
+        Dollar                    /*!< A US dollar bill.*/
         };
 
     /// @brief Item to draw on a legend.
