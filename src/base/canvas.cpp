@@ -186,26 +186,26 @@ namespace Wisteria
             _(L"A lossless-compressed image format. "
               "The image can be compressed to a smaller size without any loss of quality."));
         choices.Add(L"JPG");
-        descriptions.Add(openTag + _(L"Joint Photographic Experts Group") + closeTag +
+        descriptions.Add(openTag + _DT(L"Joint Photographic Experts Group") + closeTag +
                          _(L"A lossy-compressed image format. Some image quality may be lost, "
                            "compared to other formats such as PNG."));
         choices.Add(L"BMP");
-        descriptions.Add(openTag + _(L"Bitmap") + closeTag +
+        descriptions.Add(openTag + _DT(L"Bitmap") + closeTag +
                          _(L"An uncompressed raster (i.e., pixel based) image format."));
         choices.Add(L"TIFF");
-        descriptions.Add(openTag + _(L"Tagged Image File Format") + closeTag +
+        descriptions.Add(openTag + _DT(L"Tagged Image File Format") + closeTag +
                          _(L"This format can either be compressed or uncompressed "
                            "and offers both lossy and lossless compression. "
                            "This format is generally preferred for desktop publishing."));
         choices.Add(L"TARGA");
-        descriptions.Add(openTag + _(L"Truevision Advanced Raster Graphics Adapter") + closeTag +
+        descriptions.Add(openTag + _DT(L"Truevision Advanced Raster Graphics Adapter") + closeTag +
                          _(L"A raster (i.e., pixel based) image format."));
         choices.Add(L"GIF");
-        descriptions.Add(openTag + _(L"Graphics Interchange Format") + closeTag +
+        descriptions.Add(openTag + _DT(L"Graphics Interchange Format") + closeTag +
                          _(L"A raster (i.e., pixel based) image format. "
                            "Note that this image format is limited to 256 colors."));
         choices.Add(L"SVG");
-        descriptions.Add(openTag + _(L"Scalable Vector Graphics") + closeTag +
+        descriptions.Add(openTag + _DT(L"Scalable Vector Graphics") + closeTag +
                          _(L"A format that uses vector (rather than raster) drawing. "
                            "Vector-based images can be scaled to much larger sizes, "
                            "without the loss of quality that raster images would experience."));
