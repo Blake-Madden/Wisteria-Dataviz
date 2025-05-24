@@ -1,7 +1,7 @@
 ﻿/** @addtogroup Exporting
     @brief Classes for formatting and exporting text.
     @date 2005-2025
-    @copyright Oleander Software, Ltd.
+    @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
      it under the terms of the 3-Clause BSD License.
