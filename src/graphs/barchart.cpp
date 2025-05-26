@@ -1158,7 +1158,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                         AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
                                             Wisteria::GraphItems::GraphItemInfo()
                                                 .Pen(wxNullPen)
-                                                .Brush(GraphItemBase::GetShadowColour()),
+                                                .Brush(GraphItemBase::GetShadowColor()),
                                             shadowPts, std::size(shadowPts)));
                                         }
                                     }
@@ -1657,7 +1657,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                         AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
                                             Wisteria::GraphItems::GraphItemInfo()
                                                 .Pen(wxNullPen)
-                                                .Brush(GraphItemBase::GetShadowColour()),
+                                                .Brush(GraphItemBase::GetShadowColor()),
                                             shadowPts, std::size(shadowPts)));
                                         }
                                     }

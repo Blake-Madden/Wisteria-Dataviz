@@ -11,17 +11,11 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D)
 
-using namespace Wisteria::Colors;
-using namespace Wisteria::Colors::Schemes;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    WordCloud::WordCloud(Wisteria::Canvas* canvas,
-                         std::shared_ptr<ColorScheme> colors /*= nullptr*/)
+    WordCloud::WordCloud(Wisteria::Canvas * canvas,
+                         const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : Graph2D(canvas)
         {
         SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
@@ -35,12 +29,11 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void WordCloud::SetData(std::shared_ptr<const Data::Dataset> data,
-                            const wxString& wordColumnName,
-                            const std::optional<const wxString> weightColumnName /*= std::nullopt*/,
-                            const size_t minFreq /*= 1*/,
-                            const std::optional<size_t> maxFreq /*= std::nullopt*/,
-                            const std::optional<size_t> maxWords /*= std::nullopt*/)
+    void WordCloud::SetData(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& wordColumnName,
+        const std::optional<const wxString>& weightColumnName /*= std::nullopt*/,
+        const size_t minFreq /*= 1*/, const std::optional<size_t> maxFreq /*= std::nullopt*/,
+        const std::optional<size_t> maxWords /*= std::nullopt*/)
         {
         SetDataset(data);
         GetSelectedIds().clear();
@@ -92,9 +85,9 @@ namespace Wisteria::Graphs
                   { return lhv.m_frequency > rhv.m_frequency; });
 
         // remove words that don't meet the minimum frequency
-        auto wordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
-                                               [minFreq](const auto& item) noexcept
-                                               { return item.m_frequency < minFreq; });
+        auto wordsToRemoveStart =
+            std::find_if(m_words.cbegin(), m_words.cend(), [minFreq](const auto& item) noexcept
+                         { return item.m_frequency < minFreq; });
         if (wordsToRemoveStart != m_words.cend())
             {
             m_words.erase(wordsToRemoveStart, m_words.end());
@@ -109,10 +102,9 @@ namespace Wisteria::Graphs
         if (maxFreq)
             {
             // remove words that exceed the maximum frequency
-            auto maxWordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
-                                                      [maxFreq](const auto& item) noexcept {
-                                                          return item.m_frequency > maxFreq.value();
-                                                      });
+            auto maxWordsToRemoveStart =
+                std::find_if(m_words.cbegin(), m_words.cend(), [maxFreq](const auto& item)
+                             { return item.m_frequency > maxFreq.value(); });
             if (maxWordsToRemoveStart != m_words.cend())
                 {
                 m_words.erase(maxWordsToRemoveStart, m_words.end());
@@ -128,13 +120,12 @@ namespace Wisteria::Graphs
         const auto grandTotal = std::accumulate(m_words.cbegin(), m_words.cend(), 0.0,
                                                 [](const auto& val, const auto word) noexcept
                                                 { return word.m_frequency + val; });
-        std::for_each(m_words.begin(), m_words.end(),
-                      [&grandTotal](auto& val) noexcept
+        std::for_each(m_words.begin(), m_words.end(), [&grandTotal](auto& val) noexcept
                       { val.m_frequency = safe_divide(val.m_frequency, grandTotal); });
         }
 
     //----------------------------------------------------------------
-    void WordCloud::RecalcSizes(wxDC& dc)
+    void WordCloud::RecalcSizes(wxDC & dc)
         {
         // if no data then bail
         if (m_words.empty())
@@ -152,11 +143,12 @@ namespace Wisteria::Graphs
         int maxWidth{ 0 }, maxHeight{ 0 };
         for (const auto& word : m_words)
             {
-            wxRect suggestedRect(wxPoint(0, origin.y),
-                                 wxSize(GetPlotAreaBoundingBox().GetWidth(),
-                                        GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
+            const wxRect suggestedRect(
+                wxPoint(0, origin.y),
+                wxSize(GetPlotAreaBoundingBox().GetWidth(),
+                       GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
             auto currentLabel = std::make_unique<GraphItems::Label>(
-                GraphItemInfo(word.m_word)
+                GraphItems::GraphItemInfo(word.m_word)
                     .Pen(wxNullPen)
                     .DPIScaling(GetDPIScaleFactor())
                     .Anchoring(Anchoring::TopLeftCorner)
@@ -175,7 +167,7 @@ namespace Wisteria::Graphs
             }
 
         // a cloud polygon
-        std::vector<wxPoint> polygon{
+        const std::vector<wxPoint> polygon{
             // top
             wxPoint{ GetPlotAreaBoundingBox().GetLeftTop() +
                      wxPoint(GetPlotAreaBoundingBox().GetWidth() * math_constants::quarter, 0) },
@@ -206,12 +198,12 @@ namespace Wisteria::Graphs
                              (GetPlotAreaBoundingBox().GetHeight() * math_constants::eighth)) },
         };
 
-        const auto polyArea = Polygon::GetPolygonArea(polygon) * math_constants::half;
-        const auto polygonBoundingBox = Polygon::GetPolygonBoundingBox(polygon);
+        const auto polyArea = GraphItems::Polygon::GetPolygonArea(polygon) * math_constants::half;
+        const auto polygonBoundingBox = GraphItems::Polygon::GetPolygonBoundingBox(polygon);
 
-        const double getWidthRescale =
-            safe_divide<double>(Polygon::GetPolygonWidth(polygon), maxWidth);
-        const double getHeightRescale =
+        const auto getWidthRescale =
+            safe_divide<double>(GraphItems::Polygon::GetPolygonWidth(polygon), maxWidth);
+        const auto getHeightRescale =
             safe_divide<double>(polygonBoundingBox.GetHeight(), maxHeight);
         const double rescaleValue =
             std::min({ getWidthRescale, getHeightRescale,
@@ -225,20 +217,21 @@ namespace Wisteria::Graphs
 
         // sort remaining labels by width, largest-to-smallest
         std::sort(
-            labels.begin(), labels.end(),
-            [&dc](const auto& lhv, const auto& rhv) noexcept
+            labels.begin(), labels.end(), [&dc](const auto& lhv, const auto& rhv) noexcept
             { return lhv->GetBoundingBox(dc).GetWidth() > rhv->GetBoundingBox(dc).GetWidth(); });
 
         TryPlaceLabelsInPolygon(labels, dc, polygon);
         }
 
     //----------------------------------------------------------------
-    void WordCloud::TryPlaceLabelsInPolygon(std::vector<std::unique_ptr<GraphItems::Label>>& labels,
-                                            wxDC& dc, const std::vector<wxPoint>& polygon)
+    void WordCloud::TryPlaceLabelsInPolygon(std::vector<std::unique_ptr<GraphItems::Label>> &
+                                                labels,
+                                            wxDC & dc, const std::vector<wxPoint>& polygon)
         {
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
-            AddObject(std::make_unique<GraphItems::Polygon>(GraphItemInfo().Pen(*wxBLUE), polygon));
+            AddObject(std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo().Pen(*wxBLUE), polygon));
             }
 
         std::vector<wxRect> drawnRects;
@@ -301,7 +294,7 @@ namespace Wisteria::Graphs
                     }
                 }
 
-            if (Polygon::IsRectInsidePolygon(bBox, polygon))
+            if (GraphItems::Polygon::IsRectInsidePolygon(bBox, polygon))
                 {
                 // place it and add it to be rendered
                 drawnRects.push_back(bBox);
@@ -310,13 +303,10 @@ namespace Wisteria::Graphs
 
                 return true;
                 }
-            else
-                {
-                return false;
-                }
+            return false;
         };
 
-        auto polyBoundingBox{ Polygon::GetPolygonBoundingBox(polygon) };
+        auto polyBoundingBox{ GraphItems::Polygon::GetPolygonBoundingBox(polygon) };
 
         std::uniform_int_distribution<> xPosDistro(
             polyBoundingBox.GetLeft(), polyBoundingBox.GetLeft() + polyBoundingBox.GetWidth());
@@ -326,7 +316,7 @@ namespace Wisteria::Graphs
         wxPoint lastForcedPt{ polyBoundingBox.GetTopLeft() };
         for (auto labelPos = labels.begin(); labelPos < labels.end(); /*in loop*/)
             {
-            bool sucessfullyPlaced{ false };
+            bool successfullyPlaced{ false };
             // the less words that have been drawn so far, the more aggressively we should try to
             // fit the current word as it will be a wider then the remaining words
             const size_t placementAttempts = (drawnRects.size() <= 5)     ? 100 :
@@ -340,14 +330,14 @@ namespace Wisteria::Graphs
                                   wxPoint{ xPosDistro(m_mt), yPosDistro(m_mt) }))
                     {
                     labelPos = labels.erase(labelPos);
-                    sucessfullyPlaced = true;
+                    successfullyPlaced = true;
                     break;
                     }
                 }
             // If the first (and implicitly widest) label didn't get placed in the rect,
             // then force it to be drawn in the center. This will help with ensuring that
             // more frequently occurring words are shown.
-            if (!sucessfullyPlaced && drawnRects.empty())
+            if (!successfullyPlaced && drawnRects.empty())
                 {
                 auto bBox = (*labelPos)->GetBoundingBox(dc);
                 // if it can fit, then center it
@@ -374,7 +364,7 @@ namespace Wisteria::Graphs
                 }
             // not the first, but one of the top ten widest labels couldn't be placed,
             // so try to force it in the first empty spot, going left-to-right (going downward)
-            else if (!sucessfullyPlaced && drawnRects.size() <= 10)
+            else if (!successfullyPlaced && drawnRects.size() <= 10)
                 {
                 auto bBox = (*labelPos)->GetBoundingBox(dc);
                 while (true)
@@ -391,14 +381,12 @@ namespace Wisteria::Graphs
                     if (tryPlaceLabel(*labelPos, polyBoundingBox, lastForcedPt))
                         {
                         labelPos = labels.erase(labelPos);
-                        sucessfullyPlaced = true;
+                        successfullyPlaced = true;
                         lastForcedPt = bBox.GetTopLeft();
                         break;
                         }
-                    else
-                        {
-                        ++lastForcedPt.x;
-                        }
+                    ++lastForcedPt.x;
+
                     // we are out of space vertically, just give up finally
                     if (lastForcedPt.y + bBox.GetHeight() > polyBoundingBox.GetBottom())
                         {
@@ -406,13 +394,13 @@ namespace Wisteria::Graphs
                         }
                     }
                 // wasn't erased, so skip over it
-                if (!sucessfullyPlaced)
+                if (!successfullyPlaced)
                     {
                     ++labelPos;
                     }
                 }
             // wasn't erased, so skip over it
-            else if (!sucessfullyPlaced)
+            else if (!successfullyPlaced)
                 {
                 ++labelPos;
                 }

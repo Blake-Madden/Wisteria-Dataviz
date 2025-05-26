@@ -596,7 +596,7 @@ namespace Wisteria::Data
             }
 
         /** @brief Sets the ID/name of the point.
-            @param id The value for the ID.
+            @param identifier The value for the ID.
             @returns A self reference.*/
         RowInfo& Id(const wxString& identifier)
             {

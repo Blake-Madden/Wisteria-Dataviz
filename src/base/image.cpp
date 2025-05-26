@@ -1019,8 +1019,8 @@ namespace Wisteria::GraphItems
         if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
             GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
-            const wxDCPenChanger pc(dc, wxPen(GetShadowColour(), ScaleToScreenAndCanvas(1)));
-            const wxDCBrushChanger bc(dc, wxBrush(GetShadowColour()));
+            const wxDCPenChanger pc(dc, wxPen(GetShadowColor(), ScaleToScreenAndCanvas(1)));
+            const wxDCBrushChanger bc(dc, wxBrush(GetShadowColor()));
             const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
                 {

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_WORDCLOUD_H__
-#define __WISTERIA_WORDCLOUD_H__
+#ifndef WISTERIA_WORDCLOUD_H
+#define WISTERIA_WORDCLOUD_H
 
 #include "graph2d.h"
 
@@ -43,7 +43,7 @@ namespace Wisteria::Graphs
             @param canvas The canvas that the plot is plotted on.
             @param colors The color scheme to apply to the words.*/
         explicit WordCloud(Wisteria::Canvas* canvas,
-                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
+                           const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr);
         /** @brief Sets the data for the word cloud.
             @param data The data.
             @param wordColumnName The column containing the words.
@@ -65,8 +65,9 @@ namespace Wisteria::Graphs
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& wordColumnName,
-                     const std::optional<const wxString> weightColumnName = std::nullopt,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const wxString& wordColumnName,
+                     const std::optional<const wxString>& weightColumnName = std::nullopt,
                      const size_t minFreq = 1, const std::optional<size_t> maxFreq = std::nullopt,
                      const std::optional<size_t> maxWords = std::nullopt);
 
@@ -82,7 +83,7 @@ namespace Wisteria::Graphs
         void TryPlaceLabelsInPolygon(std::vector<std::unique_ptr<GraphItems::Label>>& labels,
                                      wxDC& dc, const std::vector<wxPoint>& polygon);
 
-        void AdjustRectToDrawArea(wxRect& rect, const wxRect& drawArea) const
+        static void AdjustRectToDrawArea(wxRect& rect, const wxRect& drawArea)
             {
             if (rect.GetRight() > drawArea.GetRight())
                 {
@@ -107,4 +108,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_HEATMAP_H__
+#endif // WISTERIA_WORDCLOUD_H

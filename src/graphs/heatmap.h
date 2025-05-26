@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_HEATMAP_H__
-#define __WISTERIA_HEATMAP_H__
+#ifndef WISTERIA_HEATMAP_H
+#define WISTERIA_HEATMAP_H
 
 #include "groupgraph2d.h"
 
@@ -235,4 +235,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_HEATMAP_H__
+#endif // WISTERIA_HEATMAP_H

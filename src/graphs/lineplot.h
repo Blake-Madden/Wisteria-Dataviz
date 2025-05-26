@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_LINE_PLOT_H__
-#define __WISTERIA_LINE_PLOT_H__
+#ifndef WISTERIA_LINE_PLOT_H
+#define WISTERIA_LINE_PLOT_H
 
 #include "groupgraph2d.h"
 
@@ -545,4 +545,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_LINE_PLOT_H__
+#endif // WISTERIA_LINE_PLOT_H

@@ -10,31 +10,26 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::GroupGraph2D)
 
-using namespace Wisteria;
-using namespace Wisteria::Graphs;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    FleschChart::FleschChart(Wisteria::Canvas* canvas,
-            std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/) :
-        GroupGraph2D(canvas)
+    FleschChart::FleschChart(
+        Wisteria::Canvas * canvas,
+        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
+        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
+        : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors :
-            Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
         SetShapeScheme(shapes != nullptr ? shapes :
-            std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
-                Wisteria::Icons::Schemes::StandardShapes()));
+                                           std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
+                                               Wisteria::Icons::Schemes::StandardShapes()));
 
         if (GetCanvas() != nullptr)
             {
             GetCanvas()->SetLabel(_(L"Flesch Readability Chart"));
             GetCanvas()->SetName(_(L"Flesch Readability Chart"));
             }
-        GetTitle() = GraphItems::Label(GraphItemInfo(_(L"How Easy?")).Pen(wxNullPen));
+        GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo(_(L"How Easy?")).Pen(wxNullPen));
 
         // Set up the X axis
         GetBottomXAxis().SetRange(0, 4, 0, 1, 1);
@@ -49,14 +44,14 @@ namespace Wisteria::Graphs
         GetLeftYAxis().Show(false);
         GetRightYAxis().Show(false);
 
-        // words per sentence ruler
+            // words per sentence ruler
             {
-            Axis sentenceRuler(Wisteria::AxisType::LeftYAxis);
+            GraphItems::Axis sentenceRuler(Wisteria::AxisType::LeftYAxis);
             sentenceRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             sentenceRuler.SetCustomXPosition(0.5f);
             sentenceRuler.SetCustomYPosition(50);
             sentenceRuler.SetRange(5, 40, 0, 5, 1);
-            sentenceRuler.SetTickMarkDisplay(Axis::TickMark::DisplayType::Crossed);
+            sentenceRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
             sentenceRuler.SetTickMarkInterval(1);
             sentenceRuler.SetDoubleSidedAxisLabels(true);
             sentenceRuler.ReverseScale(true);
@@ -67,32 +62,40 @@ namespace Wisteria::Graphs
             AddCustomAxis(sentenceRuler);
             }
 
-        // readability score ruler
+            // readability score ruler
             {
-            Axis scoreRuler(Wisteria::AxisType::LeftYAxis);
+            GraphItems::Axis scoreRuler(Wisteria::AxisType::LeftYAxis);
             scoreRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             scoreRuler.SetCustomXPosition(2);
             scoreRuler.SetCustomYPosition(75);
             scoreRuler.SetRange(0, 100, 0, 5, 1);
-            scoreRuler.SetTickMarkDisplay(Axis::TickMark::DisplayType::Crossed);
+            scoreRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
             scoreRuler.SetTickMarkInterval(1);
             scoreRuler.SetDoubleSidedAxisLabels(true);
-            scoreRuler.AddBracket(Axis::AxisBracket(100, 90, 95, _(L"Very Easy"),
-                ColorBrewer::GetColor(Color::BondiBlue)));
-            scoreRuler.AddBracket(Axis::AxisBracket(89, 80, 85, _(L"Easy"),
-                ColorBrewer::GetColor(Color::BondiBlue)));
-            scoreRuler.AddBracket(Axis::AxisBracket(79, 70, 75, _(L"Fairly Easy"),
-                ColorBrewer::GetColor(Color::BondiBlue)));
-            scoreRuler.AddBracket(Axis::AxisBracket(69, 60, 65, _(L"Standard"),
-                ColorBrewer::GetColor(Color::Black)));
-            scoreRuler.AddBracket(Axis::AxisBracket(59, 50, 55, _(L"Fairly Difficult"),
-                ColorBrewer::GetColor(Color::RedTomato)));
-            scoreRuler.AddBracket(Axis::AxisBracket(49, 30, 40, _(L"Difficult"),
-                ColorBrewer::GetColor(Color::RedTomato)));
-            scoreRuler.AddBracket(Axis::AxisBracket(29, 0, 15, _(L"Very Difficult"),
-                ColorBrewer::GetColor(Color::RedTomato)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                100, 90, 95, _(L"Very Easy"),
+                Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                89, 80, 85, _(L"Easy"), Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                79, 70, 75, _(L"Fairly Easy"),
+                Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                69, 60, 65, _(L"Standard"), Colors::ColorBrewer::GetColor(Colors::Color::Black)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                59, 50, 55, _(L"Fairly Difficult"),
+                Colors::ColorBrewer::GetColor(Colors::Color::RedTomato)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                49, 30, 40, _(L"Difficult"),
+                Colors::ColorBrewer::GetColor(Colors::Color::RedTomato)));
+            scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                29, 0, 15, _(L"Very Difficult"),
+                Colors::ColorBrewer::GetColor(Colors::Color::RedTomato)));
             for (auto& bracket : scoreRuler.GetBrackets())
-                { bracket.GetLabel().SetFontColor(ColorBrewer::GetColor(Color::Black)); }
+                {
+                bracket.GetLabel().SetFontColor(
+                    Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                }
             scoreRuler.GetHeader().SetText(_(L"READABILITY\nSCORE"));
             scoreRuler.GetHeader().GetPen() = wxNullPen;
             scoreRuler.GetHeader().SetTextAlignment(TextAlignment::Centered);
@@ -100,14 +103,14 @@ namespace Wisteria::Graphs
             AddCustomAxis(scoreRuler);
             }
 
-        // syllables per 100 words ruler
+            // syllables per 100 words ruler
             {
-            Axis syllableRuler(Wisteria::AxisType::RightYAxis);
+            GraphItems::Axis syllableRuler(Wisteria::AxisType::RightYAxis);
             syllableRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             syllableRuler.SetCustomXPosition(3.5f);
             syllableRuler.SetCustomYPosition(100);
             syllableRuler.SetRange(120, 200, 0, 5, 1);
-            syllableRuler.SetTickMarkDisplay(Axis::TickMark::DisplayType::Crossed);
+            syllableRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
             syllableRuler.SetTickMarkInterval(1);
             syllableRuler.SetDoubleSidedAxisLabels(true);
             syllableRuler.ReverseScale(true);
@@ -121,11 +124,11 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void FleschChart::SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
-        const wxString& wordsPerSentenceColumnName,
-        const wxString& scoreColumnName,
-        const wxString& syllablesPerWordColumnName,
-        std::optional<const wxString> groupColumnName /*= std::nullopt*/,
-        bool includeSyllableRulerDocumentGroups /*= false*/)
+                              const wxString& wordsPerSentenceColumnName,
+                              const wxString& scoreColumnName,
+                              const wxString& syllablesPerWordColumnName,
+                              std::optional<const wxString> groupColumnName /*= std::nullopt*/,
+                              bool includeSyllableRulerDocumentGroups /*= false*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -136,63 +139,68 @@ namespace Wisteria::Graphs
         GetSelectedIds().clear();
 
         if (GetDataset() == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
-            { BuildGroupIdMap(); }
+            {
+            BuildGroupIdMap();
+            }
 
-        m_wordsPerSentenceColumn =
-            GetContinuousColumnRequired(wordsPerSentenceColumnName);
-        m_scoresColumn =
-            GetContinuousColumnRequired(scoreColumnName);
-        m_syllablesPerWordColumn =
-            GetContinuousColumnRequired(syllablesPerWordColumnName);
+        m_wordsPerSentenceColumn = GetContinuousColumnRequired(wordsPerSentenceColumnName);
+        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
+        m_syllablesPerWordColumn = GetContinuousColumnRequired(syllablesPerWordColumnName);
 
-        // words
+            // words
             {
             frequency_set<double> jitterPoints;
             for (const auto& wordsPerSentence : m_wordsPerSentenceColumn->GetValues())
                 {
                 if (std::isnan(wordsPerSentence))
-                    { continue; }
+                    {
+                    continue;
+                    }
 
                 jitterPoints.insert(std::clamp<double>(wordsPerSentence, 5, 40));
                 }
             m_jitterWords.CalcSpread(jitterPoints);
             }
-        // scores
+            // scores
             {
             frequency_set<double> jitterPoints;
             for (const auto& score : m_scoresColumn->GetValues())
                 {
                 if (std::isnan(score))
-                    { continue; }
+                    {
+                    continue;
+                    }
 
                 jitterPoints.insert(std::clamp<size_t>(score, 0, 100));
                 }
             m_jitterScores.CalcSpread(jitterPoints);
             }
-        // syllables
+            // syllables
             {
             frequency_set<double> jitterPoints;
             for (const auto& syllablesPerWord : m_syllablesPerWordColumn->GetValues())
                 {
                 if (std::isnan(syllablesPerWord))
-                    { continue; }
+                    {
+                    continue;
+                    }
 
-                jitterPoints.insert(std::clamp<double>(syllablesPerWord*100, 120, 200));
+                jitterPoints.insert(std::clamp<double>(syllablesPerWord * 100, 120, 200));
                 }
             m_jitterSyllables.CalcSpread(jitterPoints);
 
             auto& syllableRuler{ GetCustomAxes()[2] };
             syllableRuler.ClearBrackets();
-            if (includeSyllableRulerDocumentGroups &&
-                data->HasValidIdData() && // needed for labels
-                data->GetRowCount() > 1 &&
-                data->GetRowCount() <= 50)
+            if (includeSyllableRulerDocumentGroups && data->HasValidIdData() && // needed for labels
+                data->GetRowCount() > 1 && data->GetRowCount() <= 50)
                 {
                 struct rulerBucket
                     {
@@ -200,6 +208,7 @@ namespace Wisteria::Graphs
                     double m_end{ 0 };
                     wxString m_label;
                     };
+
                 rulerBucket bucket1{ 120.0, 139.0, wxString{} };
                 rulerBucket bucket2{ 140.0, 159.0, wxString{} };
                 rulerBucket bucket3{ 160.0, 179.0, wxString{} };
@@ -208,30 +217,31 @@ namespace Wisteria::Graphs
                 for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                     {
                     if (std::isnan(m_syllablesPerWordColumn->GetValue(i)))
-                        { continue; }
-                    const auto currentValue{
-                        std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i) * 100, 120, 200)
-                        };
+                        {
+                        continue;
+                        }
+                    const auto currentValue{ std::clamp<size_t>(
+                        m_syllablesPerWordColumn->GetValue(i) * 100, 120, 200) };
 
                     if (currentValue >= bucket1.m_start && currentValue <= bucket1.m_end)
                         {
-                        bucket1.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
-                            append(L'\n');
+                        bucket1.m_label.append(GetDataset()->GetIdColumn().GetValue(i))
+                            .append(L'\n');
                         }
                     else if (currentValue >= bucket2.m_start && currentValue <= bucket2.m_end)
                         {
-                        bucket2.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
-                            append(L'\n');
+                        bucket2.m_label.append(GetDataset()->GetIdColumn().GetValue(i))
+                            .append(L'\n');
                         }
                     else if (currentValue >= bucket3.m_start && currentValue <= bucket3.m_end)
                         {
-                        bucket3.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
-                            append(L'\n');
+                        bucket3.m_label.append(GetDataset()->GetIdColumn().GetValue(i))
+                            .append(L'\n');
                         }
                     else if (currentValue >= bucket4.m_start && currentValue <= bucket4.m_end)
                         {
-                        bucket4.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
-                            append(L'\n');
+                        bucket4.m_label.append(GetDataset()->GetIdColumn().GetValue(i))
+                            .append(L'\n');
                         }
                     }
                 bucket1.m_label.Trim();
@@ -240,22 +250,26 @@ namespace Wisteria::Graphs
                 bucket4.m_label.Trim();
 
                 syllableRuler.MirrorBracketsWhenDoubleSided(false);
-                syllableRuler.AddBracket(Axis::AxisBracket(bucket1.m_start, bucket1.m_end,
+                syllableRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                    bucket1.m_start, bucket1.m_end,
                     bucket1.m_start + ((bucket1.m_end - bucket1.m_start) * math_constants::half),
                     bucket1.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
-                syllableRuler.AddBracket(Axis::AxisBracket(bucket2.m_start, bucket2.m_end,
+                syllableRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                    bucket2.m_start, bucket2.m_end,
                     bucket2.m_start + ((bucket2.m_end - bucket2.m_start) * math_constants::half),
                     bucket2.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
-                syllableRuler.AddBracket(Axis::AxisBracket(bucket3.m_start, bucket3.m_end,
+                syllableRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                    bucket3.m_start, bucket3.m_end,
                     bucket3.m_start + ((bucket3.m_end - bucket3.m_start) * math_constants::half),
                     bucket3.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
-                syllableRuler.AddBracket(Axis::AxisBracket(bucket4.m_start, bucket4.m_end,
+                syllableRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                    bucket4.m_start, bucket4.m_end,
                     bucket4.m_start + ((bucket4.m_end - bucket4.m_start) * math_constants::half),
                     bucket4.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
@@ -265,7 +279,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void FleschChart::RecalcSizes(wxDC& dc)
+    void FleschChart::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);
 
@@ -278,27 +292,35 @@ namespace Wisteria::Graphs
 
         // add instruction label
         auto legend = std::make_unique<GraphItems::Label>(
-                GraphItemInfo(_(L"HOW TO USE THIS CHART\n"
-                    "       Take a pencil or ruler and connect your\n"
-                    "\U0000201CWords per Sentence\U0000201D figure (left) with your\n"
-                    "\U0000201CSyllables per 100 Words\U0000201D figure (right).  The\n"
-                    "intersection of the pencil or ruler with the\n"
-                    "center line shows your \U0000201CReading Ease\U0000201D score.")).
-                Pen(*wxBLACK_PEN).FontBackgroundColor(*wxWHITE).
-                Scaling(GetScaling()).
-                Font(wxFont(GetBottomXAxis().GetFont()).MakeSmaller()).
-                LabelAlignment(TextAlignment::JustifiedAtWord).Padding(5, 5, 5, 5).
-                AnchorPoint(wxPoint(GetPlotAreaBoundingBox().GetX() + ScaleToScreenAndCanvas(10),
-                                    GetPlotAreaBoundingBox().GetY())) );
-        legend->GetHeaderInfo().Enable(true).
-            LabelAlignment(TextAlignment::Centered).
-            GetFont().MakeBold().MakeSmaller();
+            GraphItems::GraphItemInfo(
+                _(L"HOW TO USE THIS CHART\n"
+                  "       Take a pencil or ruler and connect your\n"
+                  "\U0000201CWords per Sentence\U0000201D figure (left) with your\n"
+                  "\U0000201CSyllables per 100 Words\U0000201D figure (right).  The\n"
+                  "intersection of the pencil or ruler with the\n"
+                  "center line shows your \U0000201CReading Ease\U0000201D score."))
+                .Pen(*wxBLACK_PEN)
+                .FontBackgroundColor(*wxWHITE)
+                .Scaling(GetScaling())
+                .Font(wxFont(GetBottomXAxis().GetFont()).MakeSmaller())
+                .LabelAlignment(TextAlignment::JustifiedAtWord)
+                .Padding(5, 5, 5, 5)
+                .AnchorPoint(wxPoint(GetPlotAreaBoundingBox().GetX() + ScaleToScreenAndCanvas(10),
+                                     GetPlotAreaBoundingBox().GetY())));
+        legend->GetHeaderInfo()
+            .Enable(true)
+            .LabelAlignment(TextAlignment::Centered)
+            .GetFont()
+            .MakeBold()
+            .MakeSmaller();
         legend->SetBoxCorners(BoxCorners::Straight);
         legend->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         AddObject(std::move(legend));
 
         if (GetDataset() == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         // plot the points
         const auto& wordsRuler{ GetCustomAxes()[0] };
@@ -319,7 +341,9 @@ namespace Wisteria::Graphs
             if (std::isnan(m_wordsPerSentenceColumn->GetValue(i)) ||
                 std::isnan(m_scoresColumn->GetValue(i)) ||
                 std::isnan(m_syllablesPerWordColumn->GetValue(i)))
-                { continue; }
+                {
+                continue;
+                }
 
             const auto wordsPerSentence =
                 std::clamp<size_t>(m_wordsPerSentenceColumn->GetValue(i), 5, 40);
@@ -345,7 +369,7 @@ namespace Wisteria::Graphs
                 if (IsShowingConnectionLine())
                     {
                     const wxPoint linePts[4] = { pt1, pt2, pt2, pt3 };
-                    wxColour lineColor{ ColorContrast::ShadeOrTintIfClose(
+                    wxColour lineColor{ Colors::ColorContrast::ShadeOrTintIfClose(
                         Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BondiBlue),
                         GetPlotOrCanvasColor()) };
                     if (GetDataset()->GetRowCount() > 10)
@@ -354,50 +378,53 @@ namespace Wisteria::Graphs
                         }
                     const wxPen linePen{ lineColor };
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(linePen).Scaling(GetScaling()),
-                        linePts, 2));
+                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), linePts,
+                        2));
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(linePen).Scaling(GetScaling()),
-                        linePts + 2, 2));
+                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), linePts + 2,
+                        2));
                     }
 
                 // Convert group ID into color scheme index
                 // (index is ordered by labels alphabetically).
                 // Note that this will be zero if grouping is not in use.
-                const size_t colorIndex = IsUsingGrouping() ?
-                    GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
-                    0;
+                const size_t colorIndex =
+                    IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
+                                        0;
 
                 // points on the rulers
                 points->AddPoint(
-                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                                .AnchorPoint(pt1)
-                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                    GetPlotOrCanvasColor()))
-                                .Scaling(GetScaling())
-                                .Brush(GetColorScheme()->GetColor(colorIndex)),
-                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    GraphItems::Point2D(
+                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                            .AnchorPoint(pt1)
+                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()))
+                            .Scaling(GetScaling())
+                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
                 points->AddPoint(
-                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                                .AnchorPoint(pt2)
-                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                    GetPlotOrCanvasColor()))
-                                .Scaling(GetScaling())
-                                .Brush(GetColorScheme()->GetColor(colorIndex)),
-                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    GraphItems::Point2D(
+                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                            .AnchorPoint(pt2)
+                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()))
+                            .Scaling(GetScaling())
+                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
                 points->AddPoint(
-                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                                .AnchorPoint(pt3)
-                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                    GetPlotOrCanvasColor()))
-                                .Scaling(GetScaling())
-                                .Brush(GetColorScheme()->GetColor(colorIndex)),
-                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    GraphItems::Point2D(
+                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                            .AnchorPoint(pt3)
+                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()))
+                            .Scaling(GetScaling())
+                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
                 }
             }
         AddObject(std::move(points));
         }
-    }
+    } // namespace Wisteria::Graphs

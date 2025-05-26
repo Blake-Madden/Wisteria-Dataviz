@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_PROCONROADMAP_H__
-#define __WISTERIA_PROCONROADMAP_H__
+#ifndef WISTERIA_PROCONROADMAP_H
+#define WISTERIA_PROCONROADMAP_H
 
 #include "roadmap.h"
 
@@ -228,4 +228,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_PROCONROADMAP_H__
+#endif // WISTERIA_PROCONROADMAP_H

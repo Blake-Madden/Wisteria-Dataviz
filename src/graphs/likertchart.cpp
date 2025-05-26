@@ -10,17 +10,11 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarChart)
 
-    using namespace Wisteria::Colors;
-using namespace Wisteria::Data;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //-----------------------------------
-    LikertChart::LikertSurveyQuestionFormat
-    LikertChart::MakeFormatCategorized(const LikertSurveyQuestionFormat format) noexcept
+    LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatCategorized(
+        const LikertSurveyQuestionFormat format) noexcept
         {
         return (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
@@ -44,8 +38,8 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    LikertChart::LikertSurveyQuestionFormat
-    LikertChart::MakeFormatUncategorized(const LikertSurveyQuestionFormat format) noexcept
+    LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatUncategorized(
+        const LikertSurveyQuestionFormat format) noexcept
         {
         return (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
@@ -79,7 +73,7 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    void LikertChart::SetLabels(std::shared_ptr<Data::Dataset>& data,
+    void LikertChart::SetLabels(std::shared_ptr<Data::Dataset> & data,
                                 const std::vector<wxString>& questionColumns,
                                 const Data::ColumnWithStringTable::StringTableType& codes)
         {
@@ -98,10 +92,9 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    LikertChart::LikertSurveyQuestionFormat
-    LikertChart::Simplify(std::shared_ptr<Data::Dataset>& data,
-                          const std::vector<wxString>& questionColumns,
-                          LikertSurveyQuestionFormat currentFormat)
+    LikertChart::LikertSurveyQuestionFormat LikertChart::Simplify(
+        std::shared_ptr<Data::Dataset> & data, const std::vector<wxString>& questionColumns,
+        LikertSurveyQuestionFormat currentFormat)
         {
         // 7 -> 3
         if (currentFormat == LikertSurveyQuestionFormat::SevenPoint ||
@@ -158,7 +151,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse4PointsTo2(
-        std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
+        std::shared_ptr<Data::Dataset> & data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         assert(condensedCodes.size() == 3 && L"String table should have 3 values!");
@@ -191,7 +184,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse6PointsTo2(
-        std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
+        std::shared_ptr<Data::Dataset> & data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         assert(condensedCodes.size() == 3 && L"String table should have 3 values!");
@@ -226,7 +219,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse5PointsTo3(
-        std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
+        std::shared_ptr<Data::Dataset> & data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         assert(condensedCodes.size() == 4 && L"String table should have 4 values!");
@@ -261,7 +254,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse7PointsTo3(
-        std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
+        std::shared_ptr<Data::Dataset> & data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         assert(condensedCodes.size() == 4 && L"String table should have 4 values!");
@@ -297,8 +290,8 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    Data::ColumnWithStringTable::StringTableType
-    LikertChart::CreateLabels(const LikertChart::LikertSurveyQuestionFormat& type)
+    Data::ColumnWithStringTable::StringTableType LikertChart::CreateLabels(
+        const LikertChart::LikertSurveyQuestionFormat& type)
         {
         switch (type)
             {
@@ -355,10 +348,9 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    LikertChart::LikertSurveyQuestionFormat
-    LikertChart::DeduceScale(const std::shared_ptr<Data::Dataset>& data,
-                             const std::vector<wxString>& questionColumns,
-                             std::optional<wxString> groupColumnName /*= std::nullopt*/)
+    LikertChart::LikertSurveyQuestionFormat LikertChart::DeduceScale(
+        const std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
+        std::optional<wxString> groupColumnName /*= std::nullopt*/)
         {
         Data::GroupIdType maxVal{ 0 };
         for (const auto& catColumnName : questionColumns)
@@ -415,7 +407,7 @@ namespace Wisteria::Graphs
     std::unique_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendOptions& options)
         {
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItemInfo()
+            GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
                 .LabelAlignment(TextAlignment::FlushLeft)
                 .DPIScaling(GetDPIScaleFactor()));
@@ -430,9 +422,9 @@ namespace Wisteria::Graphs
             if (m_neutralMaxSize > 0)
                 {
                 legend->GetLegendIcons() = {
-                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNeutralColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor())
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNeutralColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNegativeColor())
                 };
                 legend->SetText(GetPositiveLabel(1) + L"\n" + GetNeutralLabel() + L"\n" +
                                 GetNegativeLabel(1));
@@ -440,8 +432,8 @@ namespace Wisteria::Graphs
             else
                 {
                 legend->GetLegendIcons() = {
-                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor())
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNegativeColor())
                 };
                 legend->SetText(GetPositiveLabel(1) + L"\n" + GetNegativeLabel(1));
                 }
@@ -454,13 +446,13 @@ namespace Wisteria::Graphs
             if (m_neutralMaxSize > 0)
                 {
                 legend->GetLegendIcons() = {
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNeutralColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetNegativeColor()))
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNeutralColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor()))
                 };
                 legend->SetText(GetPositiveLabel(2) + L"\n" + GetPositiveLabel(1) + L"\n" +
                                 GetNeutralLabel() + L"\n" + GetNegativeLabel(2) + L"\n" +
@@ -469,12 +461,12 @@ namespace Wisteria::Graphs
             else
                 {
                 legend->GetLegendIcons() = {
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetNegativeColor()))
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor()))
                 };
                 legend->SetText(GetPositiveLabel(2) + L"\n" + GetPositiveLabel(1) + L"\n" +
                                 GetNegativeLabel(2) + L"\n" + GetNegativeLabel(1));
@@ -488,17 +480,17 @@ namespace Wisteria::Graphs
             if (m_neutralMaxSize > 0)
                 {
                 legend->GetLegendIcons() = {
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNeutralColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetNegativeColor())),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNeutralColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor())),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
                 };
                 legend->SetText(GetPositiveLabel(3) + L"\n" + GetPositiveLabel(2) + L"\n" +
                                 GetPositiveLabel(1) + L"\n" + GetNeutralLabel() + L"\n" +
@@ -508,16 +500,16 @@ namespace Wisteria::Graphs
             else
                 {
                 legend->GetLegendIcons() = {
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetNegativeColor())),
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                               ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor())),
+                    Icons::LegendIcon(Icons::IconShape::Square, *wxBLACK,
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
                 };
                 legend->SetText(GetPositiveLabel(3) + L"\n" + GetPositiveLabel(2) + L"\n" +
                                 GetPositiveLabel(1) + L"\n" + GetNegativeLabel(3) + L"\n" +
@@ -531,7 +523,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    LikertChart::LikertChart(Canvas* canvas, const LikertSurveyQuestionFormat type,
+    LikertChart::LikertChart(Canvas * canvas, const LikertSurveyQuestionFormat type,
                              std::optional<wxColour> negativeColor /*= std::nullopt*/,
                              std::optional<wxColour> positiveColor /*= std::nullopt*/,
                              std::optional<wxColour> neutralColor /*= std::nullopt*/,
@@ -550,12 +542,14 @@ namespace Wisteria::Graphs
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
             {
-            GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            GetBarAxis().GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             }
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetScalingAxis().GetAxisLinePen().IsOk())
             {
-            GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            GetScalingAxis().GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             }
         MirrorXAxis(true);
         MirrorYAxis(true);
@@ -696,10 +690,10 @@ namespace Wisteria::Graphs
         assert(IsCategorized() &&
                L"Categorized data being passed into non-categorized Likert chart!");
 
-        m_maxResondants = std::max(m_maxResondants, responses.GetRowCount());
+        m_maxRespondents = std::max(m_maxRespondents, responses.GetRowCount());
 
         // the group IDs and their frequencies in the data
-        std::map<GroupIdType, frequency_set<double>> fMap;
+        std::map<Data::GroupIdType, frequency_set<double>> fMap;
         for (size_t i = 0; i < groups.GetRowCount(); ++i)
             {
             auto foundPos = fMap.find(groups.GetValue(i));
@@ -715,7 +709,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        const auto findCount = [&fMap](const GroupIdType group, const double code) -> size_t
+        const auto findCount = [&fMap](const Data::GroupIdType group, const double code) -> size_t
         {
             const auto groupPos = fMap.find(group);
             if (groupPos != fMap.cend())
@@ -729,7 +723,7 @@ namespace Wisteria::Graphs
                 }
         };
 
-        const auto findNACount = [&fMap](const GroupIdType group) -> size_t
+        const auto findNACount = [&fMap](const Data::GroupIdType group) -> size_t
         {
             const auto groupPos = fMap.find(group);
             if (groupPos != fMap.cend())
@@ -859,7 +853,7 @@ namespace Wisteria::Graphs
         assert(!IsCategorized() &&
                L"Non-categorized data being loaded into categorized Likert chart!");
 
-        m_maxResondants = std::max(m_maxResondants, responses.GetRowCount());
+        m_maxRespondents = std::max(m_maxRespondents, responses.GetRowCount());
 
         frequency_set<double> fSet;
         for (const auto& value : responses.GetValues())
@@ -1062,31 +1056,34 @@ namespace Wisteria::Graphs
         Bar currentBar(
             GetBarSlotCount() + 1,
             { // the question
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
-                                        m_questionBlockSize - m_responseCountBlockSize :
-                                        m_questionBlockSize)
-                           .Brush(wxTransparentColor)
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(GraphItemInfo(question.m_question)
-                                            .Font(GetBarAxis().GetFont())
-                                            .LabelFitting(LabelFit::SplitTextToFit)
-                                            .FontColor(*wxBLACK)
-                                            .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Tag(GetQuestionBlockLabel())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ?
+                                   m_questionBlockSize - m_responseCountBlockSize :
+                                   m_questionBlockSize)
+                      .Brush(wxTransparentColor)
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(GraphItems::GraphItemInfo(question.m_question)
+                                                   .Font(GetBarAxis().GetFont())
+                                                   .LabelFitting(LabelFit::SplitTextToFit)
+                                                   .FontColor(*wxBLACK)
+                                                   .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Tag(GetQuestionBlockLabel())),
               // response count
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .Brush(wxTransparentColor)
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(
-                               GraphItemInfo(wxString::Format(
-                                                 L"(%s)", wxNumberFormatter::ToString(
-                                                              question.m_responses, 0,
-                                                              Settings::GetDefaultNumberFormat())))
-                                   .Font(GetBarAxis().GetFont())
-                                   .FontColor(*wxBLACK)
-                                   .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Show(IsShowingResponseCounts())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .Brush(wxTransparentColor)
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
+                              wxString::Format(L"(%s)", wxNumberFormatter::ToString(
+                                                            question.m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                              .Font(GetBarAxis().GetFont())
+                              .FontColor(*wxBLACK)
+                              .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Show(IsShowingResponseCounts())),
               // space in front of negative block
               BarBlock(BarBlockInfo(m_negativeBlockSize - question.m_negativeRate).Show(false)),
               // negative block
@@ -1094,9 +1091,10 @@ namespace Wisteria::Graphs
                   BarBlockInfo(question.m_negativeRate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetNegativeColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_negativeRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1106,12 +1104,13 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
                               .
                           // if block and background are light, then don't auto-frame;
                           // this will make it so that an outlining won't obscure smaller blocks
-                          LabelFitting((ColorContrast::IsLight(GetNegativeColor()) &&
-                                        ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                          LabelFitting((Colors::ColorContrast::IsLight(GetNegativeColor()) &&
+                                        Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
                                            LabelFit::DisplayAsIs :
                                            LabelFit::DisplayAsIsAutoFrame)
                               .ChildAlignment(RelativeAlignment::FlushRight)))),
@@ -1120,9 +1119,10 @@ namespace Wisteria::Graphs
                   BarBlockInfo(question.m_positiveRate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetPositiveColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_positiveRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1132,11 +1132,13 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
-                              .LabelFitting((ColorContrast::IsLight(GetPositiveColor()) &&
-                                             ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                LabelFit::DisplayAsIs :
-                                                LabelFit::DisplayAsIsAutoFrame)
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                              .LabelFitting(
+                                  (Colors::ColorContrast::IsLight(GetPositiveColor()) &&
+                                   Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                      LabelFit::DisplayAsIs :
+                                      LabelFit::DisplayAsIsAutoFrame)
                               .ChildAlignment(RelativeAlignment::FlushLeft)))),
               // block after positive
               BarBlock(BarBlockInfo(m_positiveBlockSize - question.m_positiveRate).Show(false)),
@@ -1145,9 +1147,10 @@ namespace Wisteria::Graphs
                   BarBlockInfo(question.m_neutralRate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetNeutralColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_neutralRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1157,11 +1160,13 @@ namespace Wisteria::Graphs
                                           0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
-                              .LabelFitting((ColorContrast::IsLight(GetNeutralColor()) &&
-                                             ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                LabelFit::DisplayAsIs :
-                                                LabelFit::DisplayAsIsAutoFrame)
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
+                              .LabelFitting(
+                                  (Colors::ColorContrast::IsLight(GetNeutralColor()) &&
+                                   Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                      LabelFit::DisplayAsIs :
+                                      LabelFit::DisplayAsIsAutoFrame)
                               .ChildAlignment(RelativeAlignment::FlushLeft)))
                       .Tag(GetNeutralBlockLabel())),
               // block after neutral
@@ -1171,46 +1176,49 @@ namespace Wisteria::Graphs
               // no response block
               BarBlock(
                   BarBlockInfo(question.m_naRate)
-                      .OutlinePen(ColorContrast::ShadeOrTint(
-                          ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
+                      .OutlinePen(Colors::ColorContrast::ShadeOrTint(
+                          Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
                       .Brush(GetNoResponseColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_naRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
-                                          question.m_naRate,
-                                          0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                                          question.m_naRate, 0,
+                                          wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
-                              .LabelFitting((ColorContrast::IsLight(GetNoResponseColor()) &&
-                                             ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                LabelFit::DisplayAsIs :
-                                                LabelFit::DisplayAsIsAutoFrame)
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
+                              .LabelFitting(
+                                  (Colors::ColorContrast::IsLight(GetNoResponseColor()) &&
+                                   Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                      LabelFit::DisplayAsIs :
+                                      LabelFit::DisplayAsIsAutoFrame)
                               .ChildAlignment(RelativeAlignment::FlushLeft)))
                       .Tag(L"NA_BLOCK")) },
             // empty info for the bar itself
-            wxString{}, Label(), GetBarEffect(), GetBarOpacity());
+            wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         // Scale bars down to 90% so that we have spaces between bars.
         // This is how you can include spaces between bars when custom bar widths are being used.
         if (IsSettingBarSizesToRespondentSize())
             {
-            currentBar.SetCustomWidth((safe_divide<double>(question.m_responses, m_maxResondants)) *
-                                      .9f);
+            currentBar.SetCustomWidth(
+                (safe_divide<double>(question.m_responses, m_maxRespondents)) * .9f);
             }
         SetBarBlockFullWidth(currentBar, GetQuestionBlockLabel());
         AddBar(currentBar);
         }
 
     //----------------------------------------------------------------
-    void
-    LikertChart::AddSurveyQuestionBar(const LikertCategorizedThreePointSurveyQuestion& question)
+    void LikertChart::AddSurveyQuestionBar(
+        const LikertCategorizedThreePointSurveyQuestion& question)
         {
         for (const auto& group : question.m_threePointCategories)
             {
@@ -1229,41 +1237,45 @@ namespace Wisteria::Graphs
             safe_divide<double>(question.m_threePointCategories.size(), 2) + GetBarSlotCount() +
                 0.5f,
             { // main question
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
-                                        m_questionBlockSize - m_responseCountBlockSize :
-                                        m_questionBlockSize)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(GraphItemInfo(question.m_question)
-                                            .Font(GetBarAxis().GetFont())
-                                            .LabelFitting(LabelFit::SplitTextToFit)
-                                            .FontColor(*wxBLACK)
-                                            .ChildAlignment(RelativeAlignment::FlushLeft)))
-                           .Tag(GetQuestionBlockLabel())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ?
+                                   m_questionBlockSize - m_responseCountBlockSize :
+                                   m_questionBlockSize)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(GraphItems::GraphItemInfo(question.m_question)
+                                                   .Font(GetBarAxis().GetFont())
+                                                   .LabelFitting(LabelFit::SplitTextToFit)
+                                                   .FontColor(*wxBLACK)
+                                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
+                      .Tag(GetQuestionBlockLabel())),
               // overall response count
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(
-                               GraphItemInfo(wxString::Format(
-                                                 L"(%s)", wxNumberFormatter::ToString(
-                                                              question.m_responses, 0,
-                                                              Settings::GetDefaultNumberFormat())))
-                                   .Font(GetBarAxis().GetFont())
-                                   .FontColor(*wxBLACK)
-                                   .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Show(IsShowingResponseCounts())) },
-            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
+                              wxString::Format(L"(%s)", wxNumberFormatter::ToString(
+                                                            question.m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                              .Font(GetBarAxis().GetFont())
+                              .FontColor(*wxBLACK)
+                              .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Show(IsShowingResponseCounts())) },
+            wxEmptyString, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_threePointCategories.size());
         AddBar(questionBar);
 
-        size_t maxCategoryResponese{ 0 };
+        size_t maxCategoryResponse{ 0 };
         for (const auto& category : question.m_threePointCategories)
             {
-            maxCategoryResponese = std::max(maxCategoryResponese, category.m_responses);
+            maxCategoryResponse = std::max(maxCategoryResponse, category.m_responses);
             }
 
         // blocks are filled bottom-to-top, so go in reverse order so that the group sorting
@@ -1280,29 +1292,32 @@ namespace Wisteria::Graphs
                                             m_categoryBlockSize - m_responseCountBlockSize :
                                             m_categoryBlockSize)
                                .Brush(wxTransparentColor)
-                               .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                               .SelectionLabel(GraphItems::Label(
+                                   GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                                .OutlinePen(*wxTRANSPARENT_PEN)
-                               .Decal(Label(GraphItemInfo(category->m_question)
-                                                .Font(GetBarAxis().GetFont())
-                                                .LabelFitting(LabelFit::SplitTextToFit)
-                                                .FontColor(*wxBLACK)
-                                                .ChildAlignment(RelativeAlignment::FlushLeft)))
+                               .Decal(GraphItems::Label(
+                                   GraphItems::GraphItemInfo(category->m_question)
+                                       .Font(GetBarAxis().GetFont())
+                                       .LabelFitting(LabelFit::SplitTextToFit)
+                                       .FontColor(*wxBLACK)
+                                       .ChildAlignment(RelativeAlignment::FlushLeft)))
                                .Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
-                  BarBlock(
-                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                          .Brush(wxTransparentColor)
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Decal(Label(
-                              GraphItemInfo(wxString::Format(
-                                                L"(%s)", wxNumberFormatter::ToString(
-                                                             category->m_responses, 0,
-                                                             Settings::GetDefaultNumberFormat())))
-                                  .Font(GetBarAxis().GetFont())
-                                  .FontColor(*wxBLACK)
-                                  .ChildAlignment(RelativeAlignment::FlushRight)))
-                          .Show(IsShowingResponseCounts())),
+                  BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                               .Brush(wxTransparentColor)
+                               .SelectionLabel(GraphItems::Label(
+                                   GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                               .OutlinePen(*wxTRANSPARENT_PEN)
+                               .Decal(GraphItems::Label(
+                                   GraphItems::GraphItemInfo(
+                                       wxString::Format(L"(%s)",
+                                                        wxNumberFormatter::ToString(
+                                                            category->m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                                       .Font(GetBarAxis().GetFont())
+                                       .FontColor(*wxBLACK)
+                                       .ChildAlignment(RelativeAlignment::FlushRight)))
+                               .Show(IsShowingResponseCounts())),
                   // space in front of negative block
                   BarBlock(
                       BarBlockInfo(m_negativeBlockSize - (category->m_negativeRate)).Show(false)),
@@ -1311,9 +1326,10 @@ namespace Wisteria::Graphs
                       BarBlockInfo(category->m_negativeRate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNegativeColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negativeRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1323,21 +1339,23 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
-                                  .LabelFitting((ColorContrast::IsLight(GetNegativeColor()) &&
-                                                 ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                    LabelFit::DisplayAsIs :
-                                                    LabelFit::DisplayAsIsAutoFrame)
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNegativeColor()))
+                                  .LabelFitting(
+                                      (Colors::ColorContrast::IsLight(GetNegativeColor()) &&
+                                       Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                          LabelFit::DisplayAsIs :
+                                          LabelFit::DisplayAsIsAutoFrame)
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // positive block
                   BarBlock(
                       BarBlockInfo(category->m_positiveRate)
                           .Brush(GetPositiveColor())
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positiveRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1347,12 +1365,13 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
-                                  .LabelFitting((ColorContrast::IsLight(GetPositiveColor()) &&
-                                                 ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                    LabelFit::DisplayAsIs :
-                                                    LabelFit::DisplayAsIsAutoFrame)
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetPositiveColor()))
+                                  .LabelFitting(
+                                      (Colors::ColorContrast::IsLight(GetPositiveColor()) &&
+                                       Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                          LabelFit::DisplayAsIs :
+                                          LabelFit::DisplayAsIsAutoFrame)
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // block after positive
                   BarBlock(
@@ -1362,9 +1381,10 @@ namespace Wisteria::Graphs
                       BarBlockInfo(category->m_neutralRate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNeutralColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(GraphItems::Label(
+                              GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_neutralRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1374,11 +1394,13 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
-                                  .LabelFitting((ColorContrast::IsLight(GetNeutralColor()) &&
-                                                 ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                    LabelFit::DisplayAsIs :
-                                                    LabelFit::DisplayAsIsAutoFrame)
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNeutralColor()))
+                                  .LabelFitting(
+                                      (Colors::ColorContrast::IsLight(GetNeutralColor()) &&
+                                       Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                          LabelFit::DisplayAsIs :
+                                          LabelFit::DisplayAsIsAutoFrame)
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(GetNeutralBlockLabel())),
                   // block after neutral
@@ -1388,12 +1410,14 @@ namespace Wisteria::Graphs
                   // no response block
                   BarBlock(
                       BarBlockInfo(category->m_naRate)
-                          .OutlinePen(ColorContrast::ShadeOrTint(
-                              ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
+                          .OutlinePen(Colors::ColorContrast::ShadeOrTint(
+                              Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                              .8))
                           .Brush(GetNoResponseColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(GraphItems::Label(
+                              GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_naRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1403,22 +1427,23 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
-                                  .LabelFitting((ColorContrast::IsLight(GetNoResponseColor()) &&
-                                                 ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                                    LabelFit::DisplayAsIs :
-                                                    LabelFit::DisplayAsIsAutoFrame)
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNoResponseColor()))
+                                  .LabelFitting(
+                                      (Colors::ColorContrast::IsLight(GetNoResponseColor()) &&
+                                       Colors::ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                          LabelFit::DisplayAsIs :
+                                          LabelFit::DisplayAsIsAutoFrame)
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(L"NA_BLOCK")) },
                 // empty info for the bar itself
-                wxString{}, Label(), GetBarEffect(), GetBarOpacity());
+                wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
                 {
                 currentBar.SetCustomWidth(
-                    safe_divide<double>(category->m_responses, maxCategoryResponese));
+                    safe_divide<double>(category->m_responses, maxCategoryResponse));
                 }
             SetBarBlockFullWidth(currentBar, GetCategoryBlockLabel());
             AddBar(currentBar);
@@ -1431,32 +1456,36 @@ namespace Wisteria::Graphs
         Bar currentBar(
             GetBarSlotCount() + 1,
             { // the question
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
-                                        m_questionBlockSize - m_responseCountBlockSize :
-                                        m_questionBlockSize)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(GraphItemInfo(question.m_question)
-                                            .Font(GetBarAxis().GetFont())
-                                            .LabelFitting(LabelFit::SplitTextToFit)
-                                            .FontColor(*wxBLACK)
-                                            .ChildAlignment(RelativeAlignment::FlushLeft)))
-                           .Tag(GetQuestionBlockLabel())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ?
+                                   m_questionBlockSize - m_responseCountBlockSize :
+                                   m_questionBlockSize)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(GraphItems::GraphItemInfo(question.m_question)
+                                                   .Font(GetBarAxis().GetFont())
+                                                   .LabelFitting(LabelFit::SplitTextToFit)
+                                                   .FontColor(*wxBLACK)
+                                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
+                      .Tag(GetQuestionBlockLabel())),
               // response count
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(
-                               GraphItemInfo(wxString::Format(
-                                                 L"(%s)", wxNumberFormatter::ToString(
-                                                              question.m_responses, 0,
-                                                              Settings::GetDefaultNumberFormat())))
-                                   .Font(GetBarAxis().GetFont())
-                                   .FontColor(*wxBLACK)
-                                   .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Show(IsShowingResponseCounts())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
+                              wxString::Format(L"(%s)", wxNumberFormatter::ToString(
+                                                            question.m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                              .Font(GetBarAxis().GetFont())
+                              .FontColor(*wxBLACK)
+                              .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Show(IsShowingResponseCounts())),
               // space in front of negative block
               BarBlock(BarBlockInfo(m_negativeBlockSize -
                                     (question.m_negative1Rate + question.m_negative2Rate))
@@ -1465,10 +1494,11 @@ namespace Wisteria::Graphs
               BarBlock(
                   BarBlockInfo(question.m_negative1Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Brush(ColorContrast::ShadeOrTint(GetNegativeColor()))
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor()))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative1Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1478,16 +1508,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
                               .ChildAlignment(RelativeAlignment::FlushRight)))),
               // negative block
               BarBlock(
                   BarBlockInfo(question.m_negative2Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetNegativeColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative2Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1497,16 +1529,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
                               .ChildAlignment(RelativeAlignment::FlushRight)))),
               // positive block
               BarBlock(
                   BarBlockInfo(question.m_positive1Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Brush(ColorContrast::ShadeOrTint(GetPositiveColor()))
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor()))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive1Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1516,16 +1550,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))),
               // strong positive block
               BarBlock(
                   BarBlockInfo(question.m_positive2Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetPositiveColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive2Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1535,7 +1571,8 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))),
               // block after positive
               BarBlock(BarBlockInfo(m_positiveBlockSize -
@@ -1545,10 +1582,11 @@ namespace Wisteria::Graphs
               BarBlock(
                   BarBlockInfo(question.m_neutralRate)
                       .Brush(GetNeutralColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_neutralRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1558,7 +1596,8 @@ namespace Wisteria::Graphs
                                           0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))
                       .Tag(GetNeutralBlockLabel())),
               // block after neutral
@@ -1568,32 +1607,34 @@ namespace Wisteria::Graphs
               // no response block
               BarBlock(
                   BarBlockInfo(question.m_naRate)
-                      .OutlinePen(ColorContrast::ShadeOrTint(
-                          ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
+                      .OutlinePen(Colors::ColorContrast::ShadeOrTint(
+                          Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
                       .Brush(GetNoResponseColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_naRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
-                                          question.m_naRate,
-                                          0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                                          question.m_naRate, 0,
+                                          wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))
                       .Tag(L"NA_BLOCK")) },
             // empty info for the bar itself
-            wxString{}, Label(), GetBarEffect(), GetBarOpacity());
+            wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         if (IsSettingBarSizesToRespondentSize())
             {
-            currentBar.SetCustomWidth((safe_divide<double>(question.m_responses, m_maxResondants)) *
-                                      .9f);
+            currentBar.SetCustomWidth(
+                (safe_divide<double>(question.m_responses, m_maxRespondents)) * .9f);
             }
         SetBarBlockFullWidth(currentBar, GetQuestionBlockLabel());
         AddBar(currentBar);
@@ -1619,41 +1660,45 @@ namespace Wisteria::Graphs
             safe_divide<double>(question.m_fivePointCategories.size(), 2) + GetBarSlotCount() +
                 0.5f,
             { // main question
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
-                                        m_questionBlockSize - m_responseCountBlockSize :
-                                        m_questionBlockSize)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(GraphItemInfo(question.m_question)
-                                            .Font(GetBarAxis().GetFont())
-                                            .LabelFitting(LabelFit::SplitTextToFit)
-                                            .FontColor(*wxBLACK)
-                                            .ChildAlignment(RelativeAlignment::FlushLeft)))
-                           .Tag(GetQuestionBlockLabel())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ?
+                                   m_questionBlockSize - m_responseCountBlockSize :
+                                   m_questionBlockSize)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(GraphItems::GraphItemInfo(question.m_question)
+                                                   .Font(GetBarAxis().GetFont())
+                                                   .LabelFitting(LabelFit::SplitTextToFit)
+                                                   .FontColor(*wxBLACK)
+                                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
+                      .Tag(GetQuestionBlockLabel())),
               // overall response count
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(
-                               GraphItemInfo(wxString::Format(
-                                                 L"(%s)", wxNumberFormatter::ToString(
-                                                              question.m_responses, 0,
-                                                              Settings::GetDefaultNumberFormat())))
-                                   .Font(GetBarAxis().GetFont())
-                                   .FontColor(*wxBLACK)
-                                   .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Show(IsShowingResponseCounts())) },
-            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
+                              wxString::Format(L"(%s)", wxNumberFormatter::ToString(
+                                                            question.m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                              .Font(GetBarAxis().GetFont())
+                              .FontColor(*wxBLACK)
+                              .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Show(IsShowingResponseCounts())) },
+            wxEmptyString, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_fivePointCategories.size());
         AddBar(questionBar);
 
-        size_t maxCategoryResponese{ 0 };
+        size_t maxCategoryResponse{ 0 };
         for (const auto& category : question.m_fivePointCategories)
             {
-            maxCategoryResponese = std::max(maxCategoryResponese, category.m_responses);
+            maxCategoryResponse = std::max(maxCategoryResponse, category.m_responses);
             }
 
         // blocks are filled bottom-to-top, so go in reverse order so that the group sorting
@@ -1670,28 +1715,31 @@ namespace Wisteria::Graphs
                                             m_categoryBlockSize - m_responseCountBlockSize :
                                             m_categoryBlockSize)
                                .Brush(wxTransparentColor)
-                               .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                               .SelectionLabel(GraphItems::Label(
+                                   GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                                .OutlinePen(*wxTRANSPARENT_PEN)
-                               .Decal(Label(GraphItemInfo(category->m_question)
-                                                .Font(GetBarAxis().GetFont())
-                                                .LabelFitting(LabelFit::SplitTextToFit)
-                                                .ChildAlignment(RelativeAlignment::FlushLeft)))
+                               .Decal(GraphItems::Label(
+                                   GraphItems::GraphItemInfo(category->m_question)
+                                       .Font(GetBarAxis().GetFont())
+                                       .LabelFitting(LabelFit::SplitTextToFit)
+                                       .ChildAlignment(RelativeAlignment::FlushLeft)))
                                .Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
-                  BarBlock(
-                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                          .Brush(wxTransparentColor)
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Decal(Label(
-                              GraphItemInfo(wxString::Format(
-                                                L"(%s)", wxNumberFormatter::ToString(
-                                                             category->m_responses, 0,
-                                                             Settings::GetDefaultNumberFormat())))
-                                  .Font(GetBarAxis().GetFont())
-                                  .FontColor(*wxBLACK)
-                                  .ChildAlignment(RelativeAlignment::FlushRight)))
-                          .Show(IsShowingResponseCounts())),
+                  BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                               .Brush(wxTransparentColor)
+                               .SelectionLabel(GraphItems::Label(
+                                   GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                               .OutlinePen(*wxTRANSPARENT_PEN)
+                               .Decal(GraphItems::Label(
+                                   GraphItems::GraphItemInfo(
+                                       wxString::Format(L"(%s)",
+                                                        wxNumberFormatter::ToString(
+                                                            category->m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                                       .Font(GetBarAxis().GetFont())
+                                       .FontColor(*wxBLACK)
+                                       .ChildAlignment(RelativeAlignment::FlushRight)))
+                               .Show(IsShowingResponseCounts())),
                   // space in front of negative block
                   BarBlock(BarBlockInfo(m_negativeBlockSize -
                                         (category->m_negative1Rate + category->m_negative2Rate))
@@ -1700,10 +1748,11 @@ namespace Wisteria::Graphs
                   BarBlock(
                       BarBlockInfo(category->m_negative1Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Brush(ColorContrast::ShadeOrTint(GetNegativeColor()))
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor()))
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative1Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1713,19 +1762,20 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNegativeColor()))
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // negative block
                   BarBlock(
                       BarBlockInfo(category->m_negative2Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNegativeColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative2Rate > 0) ?
-                                       wxString::Format(
+                                      wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
@@ -1733,17 +1783,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNegativeColor()))
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // positive block
                   BarBlock(
                       BarBlockInfo(category->m_positive1Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Brush(ColorContrast::ShadeOrTint(GetPositiveColor()))
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor()))
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive1Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1753,17 +1804,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetPositiveColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // strong positive block
                   BarBlock(
                       BarBlockInfo(category->m_positive2Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetPositiveColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive2Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1773,8 +1825,8 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetPositiveColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // block after positive
                   BarBlock(BarBlockInfo(m_positiveBlockSize -
@@ -1785,9 +1837,10 @@ namespace Wisteria::Graphs
                       BarBlockInfo(category->m_neutralRate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNeutralColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(GraphItems::Label(
+                              GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_neutralRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1797,7 +1850,8 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNeutralColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(GetNeutralBlockLabel())),
                   // block after neutral
@@ -1807,12 +1861,14 @@ namespace Wisteria::Graphs
                   // no response block
                   BarBlock(
                       BarBlockInfo(category->m_naRate)
-                          .OutlinePen(ColorContrast::ShadeOrTint(
-                              ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
+                          .OutlinePen(Colors::ColorContrast::ShadeOrTint(
+                              Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                              .8))
                           .Brush(GetNoResponseColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(GraphItems::Label(
+                              GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_naRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1822,18 +1878,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNoResponseColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(L"NA_BLOCK")) },
                 // empty info for the bar itself
-                wxString{}, Label(), GetBarEffect(), GetBarOpacity());
+                wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
                 {
                 currentBar.SetCustomWidth(
-                    safe_divide<double>(category->m_responses, maxCategoryResponese));
+                    safe_divide<double>(category->m_responses, maxCategoryResponse));
                 }
             SetBarBlockFullWidth(currentBar, GetCategoryBlockLabel());
             AddBar(currentBar);
@@ -1846,32 +1902,36 @@ namespace Wisteria::Graphs
         Bar currentBar(
             GetBarSlotCount() + 1,
             { // the question
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
-                                        m_questionBlockSize - m_responseCountBlockSize :
-                                        m_questionBlockSize)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(GraphItemInfo(question.m_question)
-                                            .Font(GetBarAxis().GetFont())
-                                            .LabelFitting(LabelFit::SplitTextToFit)
-                                            .FontColor(*wxBLACK)
-                                            .ChildAlignment(RelativeAlignment::FlushLeft)))
-                           .Tag(GetQuestionBlockLabel())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ?
+                                   m_questionBlockSize - m_responseCountBlockSize :
+                                   m_questionBlockSize)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(GraphItems::GraphItemInfo(question.m_question)
+                                                   .Font(GetBarAxis().GetFont())
+                                                   .LabelFitting(LabelFit::SplitTextToFit)
+                                                   .FontColor(*wxBLACK)
+                                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
+                      .Tag(GetQuestionBlockLabel())),
               // response count
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(
-                               GraphItemInfo(wxString::Format(
-                                                 L"(%s)", wxNumberFormatter::ToString(
-                                                              question.m_responses, 0,
-                                                              Settings::GetDefaultNumberFormat())))
-                                   .Font(GetBarAxis().GetFont())
-                                   .FontColor(*wxBLACK)
-                                   .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Show(IsShowingResponseCounts())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
+                              wxString::Format(L"(%s)", wxNumberFormatter::ToString(
+                                                            question.m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                              .Font(GetBarAxis().GetFont())
+                              .FontColor(*wxBLACK)
+                              .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Show(IsShowingResponseCounts())),
               // space in front of negative block
               BarBlock(BarBlockInfo(m_negativeBlockSize -
                                     (question.m_negative1Rate + question.m_negative2Rate +
@@ -1881,10 +1941,11 @@ namespace Wisteria::Graphs
               BarBlock(
                   BarBlockInfo(question.m_negative1Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Brush(ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative1Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1894,16 +1955,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
                               .ChildAlignment(RelativeAlignment::FlushRight)))),
               // negative block
               BarBlock(
                   BarBlockInfo(question.m_negative2Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Brush(ColorContrast::ShadeOrTint(GetNegativeColor()))
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor()))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative2Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1913,16 +1976,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
                               .ChildAlignment(RelativeAlignment::FlushRight)))),
               // somewhat negative block
               BarBlock(
                   BarBlockInfo(question.m_negative3Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetNegativeColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_negative3Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1932,16 +1997,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
                               .ChildAlignment(RelativeAlignment::FlushRight)))),
               // somewhat positive block
               BarBlock(
                   BarBlockInfo(question.m_positive1Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetPositiveColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive1Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1951,16 +2018,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))),
               // positive block
               BarBlock(
                   BarBlockInfo(question.m_positive2Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Brush(ColorContrast::ShadeOrTint(GetPositiveColor()))
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor()))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive2Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1970,16 +2039,18 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))),
               // strong positive block
               BarBlock(
                   BarBlockInfo(question.m_positive3Rate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
-                      .Brush(ColorContrast::ShadeOrTint(GetPositiveColor(), .40f))
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40f))
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_positive3Rate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -1989,7 +2060,8 @@ namespace Wisteria::Graphs
                                           wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))),
               // block after positive
               BarBlock(BarBlockInfo(m_positiveBlockSize -
@@ -2001,9 +2073,10 @@ namespace Wisteria::Graphs
                   BarBlockInfo(question.m_neutralRate)
                       .OutlinePen(*wxTRANSPARENT_PEN)
                       .Brush(GetNeutralColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_neutralRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2013,7 +2086,8 @@ namespace Wisteria::Graphs
                                           0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))
                       .Tag(GetNeutralBlockLabel())),
               // block after neutral
@@ -2023,40 +2097,42 @@ namespace Wisteria::Graphs
               // no response block
               BarBlock(
                   BarBlockInfo(question.m_naRate)
-                      .OutlinePen(ColorContrast::ShadeOrTint(
-                          ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
+                      .OutlinePen(Colors::ColorContrast::ShadeOrTint(
+                          Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8))
                       .Brush(GetNoResponseColor())
-                      .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                      .Decal(Label(
-                          GraphItemInfo(
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
                               (IsShowingPercentages() && question.m_naRate > 0) ?
                                   wxString::Format(
                                       // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                       _("%s%%"),
                                       wxNumberFormatter::ToString(
-                                          question.m_naRate,
-                                          0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                                          question.m_naRate, 0,
+                                          wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                   wxString{})
                               .Font(GetBarAxis().GetFont())
-                              .FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
+                              .FontColor(
+                                  Colors::ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
                               .ChildAlignment(RelativeAlignment::FlushLeft)))
                       .Tag(L"NA_BLOCK")) },
             // empty info for the bar itself
-            wxString{}, Label(), GetBarEffect(), GetBarOpacity());
+            wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         if (IsSettingBarSizesToRespondentSize())
             {
-            currentBar.SetCustomWidth((safe_divide<double>(question.m_responses, m_maxResondants)) *
-                                      .9f);
+            currentBar.SetCustomWidth(
+                (safe_divide<double>(question.m_responses, m_maxRespondents)) * .9f);
             }
         SetBarBlockFullWidth(currentBar, GetQuestionBlockLabel());
         AddBar(currentBar);
         }
 
     //----------------------------------------------------------------
-    void
-    LikertChart::AddSurveyQuestionBar(const LikertCategorizedSevenPointSurveyQuestion& question)
+    void LikertChart::AddSurveyQuestionBar(
+        const LikertCategorizedSevenPointSurveyQuestion& question)
         {
         for (const auto& group : question.m_sevenPointCategories)
             {
@@ -2075,41 +2151,45 @@ namespace Wisteria::Graphs
             safe_divide<double>(question.m_sevenPointCategories.size(), 2) + GetBarSlotCount() +
                 0.5f,
             { // main question
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
-                                        m_questionBlockSize - m_responseCountBlockSize :
-                                        m_questionBlockSize)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(GraphItemInfo(question.m_question)
-                                            .Font(GetBarAxis().GetFont())
-                                            .LabelFitting(LabelFit::SplitTextToFit)
-                                            .FontColor(*wxBLACK)
-                                            .ChildAlignment(RelativeAlignment::FlushLeft)))
-                           .Tag(GetQuestionBlockLabel())),
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ?
+                                   m_questionBlockSize - m_responseCountBlockSize :
+                                   m_questionBlockSize)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(GraphItems::GraphItemInfo(question.m_question)
+                                                   .Font(GetBarAxis().GetFont())
+                                                   .LabelFitting(LabelFit::SplitTextToFit)
+                                                   .FontColor(*wxBLACK)
+                                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
+                      .Tag(GetQuestionBlockLabel())),
               // overall response count
-              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                           .Brush(wxTransparentColor)
-                           .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                           .OutlinePen(*wxTRANSPARENT_PEN)
-                           .Decal(Label(
-                               GraphItemInfo(wxString::Format(
-                                                 L"(%s)", wxNumberFormatter::ToString(
-                                                              question.m_responses, 0,
-                                                              Settings::GetDefaultNumberFormat())))
-                                   .Font(GetBarAxis().GetFont())
-                                   .FontColor(*wxBLACK)
-                                   .ChildAlignment(RelativeAlignment::FlushRight)))
-                           .Show(IsShowingResponseCounts())) },
-            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+              BarBlock(
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      .Brush(wxTransparentColor)
+                      .SelectionLabel(
+                          GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                      .OutlinePen(*wxTRANSPARENT_PEN)
+                      .Decal(GraphItems::Label(
+                          GraphItems::GraphItemInfo(
+                              wxString::Format(L"(%s)", wxNumberFormatter::ToString(
+                                                            question.m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                              .Font(GetBarAxis().GetFont())
+                              .FontColor(*wxBLACK)
+                              .ChildAlignment(RelativeAlignment::FlushRight)))
+                      .Show(IsShowingResponseCounts())) },
+            wxEmptyString, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_sevenPointCategories.size());
         AddBar(questionBar);
 
-        size_t maxCategoryResponese{ 0 };
+        size_t maxCategoryResponse{ 0 };
         for (const auto& category : question.m_sevenPointCategories)
             {
-            maxCategoryResponese = std::max(maxCategoryResponese, category.m_responses);
+            maxCategoryResponse = std::max(maxCategoryResponse, category.m_responses);
             }
 
         // blocks are filled bottom-to-top, so go in reverse order so that the group sorting
@@ -2126,29 +2206,32 @@ namespace Wisteria::Graphs
                                             m_categoryBlockSize - m_responseCountBlockSize :
                                             m_categoryBlockSize)
                                .Brush(wxTransparentColor)
-                               .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                               .SelectionLabel(GraphItems::Label(
+                                   GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                                .OutlinePen(*wxTRANSPARENT_PEN)
-                               .Decal(Label(GraphItemInfo(category->m_question)
-                                                .Font(GetBarAxis().GetFont())
-                                                .LabelFitting(LabelFit::SplitTextToFit)
-                                                .FontColor(*wxBLACK)
-                                                .ChildAlignment(RelativeAlignment::FlushLeft)))
+                               .Decal(GraphItems::Label(
+                                   GraphItems::GraphItemInfo(category->m_question)
+                                       .Font(GetBarAxis().GetFont())
+                                       .LabelFitting(LabelFit::SplitTextToFit)
+                                       .FontColor(*wxBLACK)
+                                       .ChildAlignment(RelativeAlignment::FlushLeft)))
                                .Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
-                  BarBlock(
-                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
-                          .Brush(wxTransparentColor)
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Decal(Label(
-                              GraphItemInfo(wxString::Format(
-                                                L"(%s)", wxNumberFormatter::ToString(
-                                                             category->m_responses, 0,
-                                                             Settings::GetDefaultNumberFormat())))
-                                  .Font(GetBarAxis().GetFont())
-                                  .FontColor(*wxBLACK)
-                                  .ChildAlignment(RelativeAlignment::FlushRight)))
-                          .Show(IsShowingResponseCounts())),
+                  BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                               .Brush(wxTransparentColor)
+                               .SelectionLabel(GraphItems::Label(
+                                   GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                               .OutlinePen(*wxTRANSPARENT_PEN)
+                               .Decal(GraphItems::Label(
+                                   GraphItems::GraphItemInfo(
+                                       wxString::Format(L"(%s)",
+                                                        wxNumberFormatter::ToString(
+                                                            category->m_responses, 0,
+                                                            Settings::GetDefaultNumberFormat())))
+                                       .Font(GetBarAxis().GetFont())
+                                       .FontColor(*wxBLACK)
+                                       .ChildAlignment(RelativeAlignment::FlushRight)))
+                               .Show(IsShowingResponseCounts())),
                   // space in front of negative block
                   BarBlock(BarBlockInfo(m_negativeBlockSize -
                                         (category->m_negative1Rate + category->m_negative2Rate +
@@ -2158,10 +2241,11 @@ namespace Wisteria::Graphs
                   BarBlock(
                       BarBlockInfo(category->m_negative1Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Brush(ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative1Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2171,17 +2255,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNegativeColor()))
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // negative block
                   BarBlock(
                       BarBlockInfo(category->m_negative2Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Brush(ColorContrast::ShadeOrTint(GetNegativeColor()))
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor()))
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative2Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2191,17 +2276,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNegativeColor()))
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // somewhat negative block
                   BarBlock(
                       BarBlockInfo(category->m_negative3Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNegativeColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_negative3Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2211,17 +2297,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNegativeColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNegativeColor()))
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // somewhat positive block
                   BarBlock(
                       BarBlockInfo(category->m_positive1Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetPositiveColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive1Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2231,17 +2318,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetPositiveColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // positive block
                   BarBlock(
                       BarBlockInfo(category->m_positive2Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Brush(ColorContrast::ShadeOrTint(GetPositiveColor()))
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor()))
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive2Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2251,17 +2339,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetPositiveColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // strong positive block
                   BarBlock(
                       BarBlockInfo(category->m_positive3Rate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
-                          .Brush(ColorContrast::ShadeOrTint(GetPositiveColor(), 0.40f))
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), 0.40f))
+                          .SelectionLabel(
+                              GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_positive3Rate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2271,8 +2360,8 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetPositiveColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetPositiveColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // block after positive
                   BarBlock(BarBlockInfo(m_positiveBlockSize -
@@ -2284,9 +2373,10 @@ namespace Wisteria::Graphs
                       BarBlockInfo(category->m_neutralRate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNeutralColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(GraphItems::Label(
+                              GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_neutralRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2296,7 +2386,8 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNeutralColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(GetNeutralBlockLabel())),
                   // block after neutral
@@ -2306,12 +2397,14 @@ namespace Wisteria::Graphs
                   // no response block
                   BarBlock(
                       BarBlockInfo(category->m_naRate)
-                          .OutlinePen(ColorContrast::ShadeOrTint(
-                              ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), 0.8))
+                          .OutlinePen(Colors::ColorContrast::ShadeOrTint(
+                              Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                              0.8))
                           .Brush(GetNoResponseColor())
-                          .SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
-                          .Decal(Label(
-                              GraphItemInfo(
+                          .SelectionLabel(GraphItems::Label(
+                              GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
+                          .Decal(GraphItems::Label(
+                              GraphItems::GraphItemInfo(
                                   (IsShowingPercentages() && category->m_naRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
@@ -2321,18 +2414,18 @@ namespace Wisteria::Graphs
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
-                                  .FontColor(
-                                      ColorContrast::BlackOrWhiteContrast(GetNoResponseColor()))
+                                  .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(
+                                      GetNoResponseColor()))
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(L"NA_BLOCK")) },
                 // empty info for the bar itself
-                wxString{}, Label(), GetBarEffect(), GetBarOpacity());
+                wxString{}, GraphItems::Label{}, GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
                 {
                 currentBar.SetCustomWidth(
-                    safe_divide<double>(category->m_responses, maxCategoryResponese));
+                    safe_divide<double>(category->m_responses, maxCategoryResponse));
                 }
             SetBarBlockFullWidth(currentBar, GetCategoryBlockLabel());
             AddBar(currentBar);
@@ -2364,7 +2457,7 @@ namespace Wisteria::Graphs
 
             if (firstBar != GetBars().cend() && secondBar != GetBars().cend())
                 {
-                GetLeftYAxis().AddBracket(Axis::AxisBracket(
+                GetLeftYAxis().AddBracket(GraphItems::Axis::AxisBracket(
                     firstBar->GetAxisPosition(), secondBar->GetAxisPosition(),
                     safe_divide(firstBar->GetAxisPosition() + secondBar->GetAxisPosition(), 2.0),
                     bracket.m_title));
@@ -2373,7 +2466,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void LikertChart::RecalcSizes(wxDC& dc)
+    void LikertChart::RecalcSizes(wxDC & dc)
         {
         m_responseBarCount = 0;
 
@@ -2382,12 +2475,14 @@ namespace Wisteria::Graphs
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
             {
-            GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            GetBarAxis().GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             }
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetScalingAxis().GetAxisLinePen().IsOk())
             {
-            GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            GetScalingAxis().GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             }
         // load the questions and responses
         if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
@@ -2452,18 +2547,19 @@ namespace Wisteria::Graphs
 
         if (m_neutralMaxSize > 0)
             {
-            Axis neutralDividerLine(AxisType::RightYAxis);
+            GraphItems::Axis neutralDividerLine(AxisType::RightYAxis);
             neutralDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize +
                                                   m_negativeBlockSize + m_positiveBlockSize);
             neutralDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-            neutralDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            neutralDividerLine.GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             neutralDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
                 neutralDividerLine.GetHeader().SetText(GetNeutralLabel() + L"\U0001F816");
                 neutralDividerLine.GetHeader().GetFont().MakeBold();
                 neutralDividerLine.GetHeader().SetFontColor(
-                    ColorContrast::Shade(GetNeutralColor()));
+                    Colors::ColorContrast::Shade(GetNeutralColor()));
                 neutralDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushLeft);
                 neutralDividerLine.GetHeader().SetLeftPadding(5);
                 neutralDividerLine.GetHeader().GetPen() = wxNullPen;
@@ -2496,12 +2592,13 @@ namespace Wisteria::Graphs
 
         if (m_naMaxSize > 0)
             {
-            Axis naDividerLine(AxisType::RightYAxis);
+            GraphItems::Axis naDividerLine(AxisType::RightYAxis);
             naDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize +
                                              m_negativeBlockSize + m_positiveBlockSize +
                                              m_neutralBlockSize);
             naDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-            naDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            naDividerLine.GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             naDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
@@ -2521,10 +2618,10 @@ namespace Wisteria::Graphs
                 {
                 for (;;)
                     {
-                    auto foundPos = std::find_if(bar.GetBlocks().cbegin(), bar.GetBlocks().cend(),
-                                                 [](const auto& block) noexcept {
-                                                     return block.GetTag() == wxString(L"NA_BLOCK");
-                                                 });
+                    auto foundPos =
+                        std::find_if(bar.GetBlocks().cbegin(), bar.GetBlocks().cend(),
+                                     [](const auto& block) noexcept
+                                     { return block.GetTag() == wxString(L"NA_BLOCK"); });
                     if (foundPos != bar.GetBlocks().cend())
                         {
                         bar.GetBlocks().erase(foundPos);
@@ -2537,11 +2634,12 @@ namespace Wisteria::Graphs
                 }
             }
 
-        Axis agreeDividerLine(AxisType::RightYAxis);
+        GraphItems::Axis agreeDividerLine(AxisType::RightYAxis);
         agreeDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize +
                                             m_negativeBlockSize);
         agreeDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-        agreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+        agreeDividerLine.GetAxisLinePen().SetColour(
+            Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
         agreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
@@ -2549,16 +2647,18 @@ namespace Wisteria::Graphs
             agreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushLeft);
             agreeDividerLine.GetHeader().GetPen() = wxNullPen;
             agreeDividerLine.GetHeader().GetFont().MakeBold();
-            agreeDividerLine.GetHeader().SetFontColor(ColorContrast::Shade(GetPositiveColor()));
+            agreeDividerLine.GetHeader().SetFontColor(
+                Colors::ColorContrast::Shade(GetPositiveColor()));
             agreeDividerLine.GetHeader().SetLeftPadding(5);
             }
         AddCustomAxis(agreeDividerLine);
 
-        Axis disagreeDividerLine(AxisType::LeftYAxis);
+        GraphItems::Axis disagreeDividerLine(AxisType::LeftYAxis);
         disagreeDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize +
                                                m_negativeBlockSize);
         disagreeDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-        disagreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+        disagreeDividerLine.GetAxisLinePen().SetColour(
+            Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
         disagreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
@@ -2566,23 +2666,26 @@ namespace Wisteria::Graphs
             disagreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushRight);
             disagreeDividerLine.GetHeader().GetPen() = wxNullPen;
             disagreeDividerLine.GetHeader().GetFont().MakeBold();
-            disagreeDividerLine.GetHeader().SetFontColor(ColorContrast::Shade(GetNegativeColor()));
+            disagreeDividerLine.GetHeader().SetFontColor(
+                Colors::ColorContrast::Shade(GetNegativeColor()));
             disagreeDividerLine.GetHeader().SetRightPadding(5);
             }
         AddCustomAxis(disagreeDividerLine);
 
-        Axis questionDividerBar(AxisType::LeftYAxis);
+        GraphItems::Axis questionDividerBar(AxisType::LeftYAxis);
         questionDividerBar.SetCustomXPosition(m_questionBlockSize);
         questionDividerBar.SetCustomYPosition(GetBarAxis().GetRange().second);
-        questionDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+        questionDividerBar.GetAxisLinePen().SetColour(
+            Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
         AddCustomAxis(questionDividerBar);
 
         if (m_categoryBlockSize > 0)
             {
-            Axis categoryDividerBar(AxisType::LeftYAxis);
+            GraphItems::Axis categoryDividerBar(AxisType::LeftYAxis);
             categoryDividerBar.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize);
             categoryDividerBar.SetCustomYPosition(GetBarAxis().GetRange().second);
-            categoryDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            categoryDividerBar.GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             AddCustomAxis(categoryDividerBar);
             }
 
@@ -2623,7 +2726,7 @@ namespace Wisteria::Graphs
         // lines between the bars, to make the plot look like a grid
         for (size_t i = 0; i < GetBarSlotCount(); ++i)
             {
-            Axis dividerHorizontalBar(AxisType::BottomXAxis);
+            GraphItems::Axis dividerHorizontalBar(AxisType::BottomXAxis);
             dividerHorizontalBar.SetCustomXPosition(GetScalingAxis().GetRange().second);
             dividerHorizontalBar.SetCustomYPosition(i + 1.5);
             if (fullDividerLines.size() &&
@@ -2632,7 +2735,8 @@ namespace Wisteria::Graphs
                 {
                 dividerHorizontalBar.SetOffsetFromParentAxis(m_questionBlockSize);
                 }
-            dividerHorizontalBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
+            dividerHorizontalBar.GetAxisLinePen().SetColour(
+                Colors::ColorBrewer::GetColor(Colors::Color::AshGrey));
             AddCustomAxis(dividerHorizontalBar);
             }
 

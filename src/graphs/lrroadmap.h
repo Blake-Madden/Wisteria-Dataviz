@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_LRROADMAP_H__
-#define __WISTERIA_LRROADMAP_H__
+#ifndef WISTERIA_LRROADMAP_H
+#define WISTERIA_LRROADMAP_H
 
 #include "roadmap.h"
 
@@ -116,13 +116,13 @@ namespace Wisteria::Graphs
             @param data The data to use for the graph.
             @param predictorColumnName The column containing the independent variables'
                 (i.e., predictors) names.
-            @param coefficentColumnName The column containing the predictors'
+            @param coefficientColumnName The column containing the predictors'
                 correlation coefficients.
             @param pValueColumnName The (optional) column containing the predictors' p-values.
             @param pLevel If a p-value column is supplied, only predictors with p-values lower than
                 this will be included. (Predictors with missing p-values will be excluded.)\n
                 The recommendations are usually @c 0.05 or @c 0.01 (most strict).
-            @param preditorsToIncludes Which types of IVs (e.g., negative influencers) to include.\n
+            @param predictorsToIncludes Which types of IVs (e.g., negative influencers) to include.\n
                 This is a bitmask that can include multiple flags.
                     The default is to include all IVs.
             @param dvName The name of the dependent variable from the original analysis.\n
@@ -133,10 +133,10 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to @c
                 wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& predictorColumnName,
-                     const wxString& coefficentColumnName,
+                     const wxString& coefficientColumnName,
                      const std::optional<wxString>& pValueColumnName = std::nullopt,
                      const std::optional<double> pLevel = std::nullopt,
-                     const std::optional<Influence> preditorsToIncludes = std::nullopt,
+                     const std::optional<Influence> predictorsToIncludes = std::nullopt,
                      const std::optional<wxString> dvName = std::nullopt);
 
         /// @brief Adds a caption explaining how to interpret the graph.
@@ -161,4 +161,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_LRROADMAP_H__
+#endif // WISTERIA_LRROADMAP_H

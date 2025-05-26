@@ -10,15 +10,11 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::GroupGraph2D)
 
-using namespace Wisteria;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Graphs;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     ///----------------------------------------------------------------
     CrawfordGraph::CrawfordGraph(
-        Wisteria::Canvas* canvas,
+        Wisteria::Canvas * canvas,
         std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
@@ -33,8 +29,9 @@ namespace Wisteria::Graphs
             GetCanvas()->SetLabel(_(L"Crawford Graph"));
             GetCanvas()->SetName(_(L"Crawford Graph"));
             }
-        GetTitle() = GraphItems::Label(
-            GraphItemInfo(_(L"SPANISH READABILITY GRAPH")).Scaling(GetScaling()).Pen(wxNullPen));
+        GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo(_(L"SPANISH READABILITY GRAPH"))
+                                           .Scaling(GetScaling())
+                                           .Pen(wxNullPen));
         GetLeftYAxis().GetTitle().SetText(_(L"Number of Syllables per 100 Words"));
         GetBottomXAxis().GetTitle().SetText(_(L"Approximate Grade Level of Reading Difficulty"));
 
@@ -78,7 +75,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void CrawfordGraph::RecalcSizes(wxDC& dc)
+    void CrawfordGraph::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);
 
@@ -86,7 +83,7 @@ namespace Wisteria::Graphs
         if (GetPhysicalCoordinates(2.0, 218, pt))
             {
             auto sentenceLabel = std::make_unique<GraphItems::Label>(
-                GraphItemInfo(_(L"Number of Sentences\nper 100 Words"))
+                GraphItems::GraphItemInfo(_(L"Number of Sentences\nper 100 Words"))
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
                     .AnchorPoint(pt));
@@ -104,7 +101,7 @@ namespace Wisteria::Graphs
             if (GetPhysicalCoordinates(xValue, yValue, textPt))
                 {
                 AddObject(std::make_unique<GraphItems::Label>(
-                    GraphItemInfo()
+                    GraphItems::GraphItemInfo()
                         .Scaling(GetScaling())
                         .Pen(wxNullPen)
                         .Padding(0, 0, 0, 0)

@@ -1,6 +1,6 @@
 /** @addtogroup Graphics
     @brief Graphing classes.
-    @date 2005-2023
+    @date 2005-2025
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_GRAPH_ITEMS_H__
-#define __WISTERIA_GRAPH_ITEMS_H__
+#ifndef WISTERIA_GRAPH_ITEMS_H
+#define WISTERIA_GRAPH_ITEMS_H
 
 #include "../math/mathematics.h"
 #include "../util/donttranslate.h"
@@ -992,7 +992,7 @@ namespace Wisteria
 
             /// @returns The color to draw the shadow of the object.
             [[nodiscard]]
-            static wxColour GetShadowColour()
+            static wxColour GetShadowColor()
                 {
                 return wxColour(84, 84, 84, 175);
                 }
@@ -2131,4 +2131,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_GRAPH_ITEMS_H__
+#endif // WISTERIA_GRAPH_ITEMS_H

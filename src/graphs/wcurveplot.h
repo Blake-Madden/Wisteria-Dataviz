@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_W_CURVE_PLOT_H__
-#define __WISTERIA_W_CURVE_PLOT_H__
+#ifndef WISTERIA_W_CURVE_PLOT_H
+#define WISTERIA_W_CURVE_PLOT_H
 
 #include "lineplot.h"
 
@@ -130,9 +130,9 @@ namespace Wisteria::Graphs
                 Set to a new line scheme filled with @c wxPenStyle::wxTRANSPARENT
                 to not show any lines.*/
         explicit WCurvePlot(Canvas* canvas,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Icons::Schemes::IconScheme > shapes = nullptr,
-            std::shared_ptr<LineStyleScheme> linePenStyles = nullptr);
+            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Icons::Schemes::IconScheme>& shapes = nullptr,
+            const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr);
         /** @brief Sets the data.
             @details Along with the X and Y points, separate lines will be created based on
                 the grouping column in the data. The group ID assigned to each line will also
@@ -178,4 +178,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_W_CURVE_PLOT_H__
+#endif // WISTERIA_W_CURVE_PLOT_H

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Name:        functionbrowserdlg.cpp
 // Author:      Blake Madden
-// Copyright:   (c) 2005-2023 Blake Madden
+// Copyright:   (c) 2005-2025 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
@@ -230,8 +230,7 @@ namespace Wisteria::UI
                          _(L"Invalid Selection"), wxOK | wxICON_INFORMATION);
             return;
             }
-        if (m_editWindow != nullptr &&
-            m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
+        if (m_editWindow != nullptr && m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
             {
             lily_of_the_valley::html_extract_text filter_html;
             wxString functionStr =
@@ -315,8 +314,8 @@ namespace Wisteria::UI
 
         wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        m_funcBrowserControl =
-            new FunctionBrowserCtrl(this, editor, wxID_ANY, firstWindowCaption, secondWindowCaption);
+        m_funcBrowserControl = new FunctionBrowserCtrl(this, editor, wxID_ANY, firstWindowCaption,
+                                                       secondWindowCaption);
         mainSizer->Add(m_funcBrowserControl, wxSizerFlags{ 1 }.Expand());
 
         // Close and Insert buttons
@@ -346,8 +345,8 @@ namespace Wisteria::UI
         // connect events
         Bind(
             wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent& event)
-            { m_funcBrowserControl->InsertFunction(); },
+            [this]([[maybe_unused]]
+                   wxCommandEvent& event) { m_funcBrowserControl->InsertFunction(); },
             FunctionBrowserDlg::ID_INSERT_BUTTON);
 
         return true;

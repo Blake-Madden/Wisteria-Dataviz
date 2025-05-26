@@ -11,21 +11,16 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGraph2D)
 
-using namespace Wisteria::Colors;
-using namespace Wisteria::Colors::Schemes;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    HeatMap::HeatMap(Wisteria::Canvas* canvas, std::shared_ptr<ColorScheme> colors /*= nullptr*/)
+    HeatMap::HeatMap(Wisteria::Canvas * canvas,
+                     std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ?
-                           colors :
-                           std::make_unique<ColorScheme>(ColorScheme{ *wxWHITE, *wxBLACK }));
+        SetColorScheme(colors != nullptr ? colors :
+                                           std::make_unique<Colors::Schemes::ColorScheme>(
+                                               Colors::Schemes::ColorScheme{ *wxWHITE, *wxBLACK }));
 
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);
@@ -76,7 +71,7 @@ namespace Wisteria::Graphs
         m_reversedColorSpectrum = GetColorScheme()->GetColors();
         std::reverse(m_reversedColorSpectrum.begin(), m_reversedColorSpectrum.end());
 
-        ColorBrewer cb;
+        Colors::ColorBrewer cb;
         cb.SetColorScale(GetColorScheme()->GetColors().cbegin(),
                          GetColorScheme()->GetColors().cend());
         const auto cellColors = cb.BrewColors(m_continuousColumn->GetValues().cbegin(),
@@ -197,7 +192,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void HeatMap::RecalcSizes(wxDC& dc)
+    void HeatMap::RecalcSizes(wxDC & dc)
         {
         // if no data then bail
         if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_matrix.empty())
@@ -220,8 +215,10 @@ namespace Wisteria::Graphs
         bool groupHeaderLabelMultiline{ false };
 
         // find the width of the longest group label
-        GraphItems::Label measuringLabel(
-            GraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()));
+        GraphItems::Label measuringLabel(GraphItems::GraphItemInfo()
+                                             .Scaling(GetScaling())
+                                             .Pen(wxNullPen)
+                                             .DPIScaling(GetDPIScaleFactor()));
         wxCoord widestLabelWidth{ 0 };
         wxString widestStr;
         if (IsUsingGrouping())
@@ -254,10 +251,10 @@ namespace Wisteria::Graphs
             // Free some space for the group labels above each column (even if one column).
             // First, label might be too long, so get best fitting font and measure again.
             GraphItems::Label groupHeaderLabelTemplate(
-                GraphItemInfo(wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
-                                               // largest possible range
-                                               GetDataset()->GetRowCount(),
-                                               GetDataset()->GetRowCount()))
+                GraphItems::GraphItemInfo(wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
+                                                           // largest possible range
+                                                           GetDataset()->GetRowCount(),
+                                                           GetDataset()->GetRowCount()))
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
                     .DPIScaling(GetDPIScaleFactor())
@@ -266,7 +263,7 @@ namespace Wisteria::Graphs
             // try to keep the axis font size, but use smaller font if necessary
             groupHeaderLabelFont.SetPointSize(
                 std::min(groupHeaderLabelFont.GetPointSize(),
-                         Label::CalcFontSizeToFitBoundingBox(
+                         GraphItems::Label::CalcFontSizeToFitBoundingBox(
                              dc, groupHeaderLabelFont,
                              drawArea /* really just needing the width measurement */,
                              groupHeaderLabelTemplate.GetText())));
@@ -289,10 +286,10 @@ namespace Wisteria::Graphs
                     // readjust font size now that it is multiline and can be larger now
                     groupHeaderLabelFont.SetPointSize(std::max(
                         GetBottomXAxis().GetFont().GetPointSize(),
-                        Label::CalcFontSizeToFitBoundingBox(
+                        GraphItems::Label::CalcFontSizeToFitBoundingBox(
                             dc, groupHeaderLabelFont,
                             GraphItems::Polygon::DownScaleRect(
-                                wxRect(wxSize(groupHeaderLabelHeight, drawArea.GetWidth())),
+                                wxRect{ wxSize(groupHeaderLabelHeight, drawArea.GetWidth()) },
                                 GetScaling()),
                             groupHeaderLabelTemplate.GetText())));
                     }
@@ -322,14 +319,14 @@ namespace Wisteria::Graphs
         // get the best font size to fit the row labels
         wxFont groupLabelFont{ GetBottomXAxis().GetFont() };
         groupLabelFont.SetPointSize( // fit font as best possible
-            Label::CalcFontSizeToFitBoundingBox(
+            GraphItems::Label::CalcFontSizeToFitBoundingBox(
                 dc, groupLabelFont,
                 wxSize(widestLabelWidth - ScaleToScreenAndCanvas(labelRightPadding), boxWidth),
                 widestStr));
         // and the labels on the boxes
         wxFont boxLabelFont{ GetBottomXAxis().GetFont() };
         boxLabelFont.SetPointSize( // fit font as best possible
-            Label::CalcFontSizeToFitBoundingBox(
+            GraphItems::Label::CalcFontSizeToFitBoundingBox(
                 dc, boxLabelFont, wxSize(boxWidth, boxWidth),
                 wxNumberFormatter::ToString(m_range.second /* largest value in the range*/, 1,
                                             Settings::GetDefaultNumberFormat())));
@@ -337,7 +334,7 @@ namespace Wisteria::Graphs
         // draw the boxes in a grid, row x column
         wxPoint pts[4];
         size_t currentRow{ 0 }, currentColumn{ 0 };
-        size_t currentGroupdStart{ 0 };
+        size_t currentGroupStart{ 0 };
         // go through the row's columns
         const wxString groupHeaderFormatString =
             (groupHeaderLabelMultiline ? L"%s\n%zu-%zu" : L"%s %zu-%zu");
@@ -351,17 +348,17 @@ namespace Wisteria::Graphs
                 // If only one group in column, then don't show that as a range;
                 // otherwise, show as a range.
                 const wxString headerString =
-                    (currentGroupdStart + 1 ==
-                     std::min<size_t>(maxRowsWhenGrouping + currentGroupdStart, m_matrix.size())) ?
+                    (currentGroupStart + 1 ==
+                     std::min<size_t>(maxRowsWhenGrouping + currentGroupStart, m_matrix.size())) ?
                         wxString::Format(singleGroupHeaderFormatString, GetGroupHeaderPrefix(),
-                                         currentGroupdStart + 1) :
+                                         currentGroupStart + 1) :
                         wxString::Format(groupHeaderFormatString, GetGroupHeaderPrefix(),
-                                         currentGroupdStart + 1,
-                                         std::min<size_t>(maxRowsWhenGrouping + currentGroupdStart,
+                                         currentGroupStart + 1,
+                                         std::min<size_t>(maxRowsWhenGrouping + currentGroupStart,
                                                           m_matrix.size()));
 
                 auto columnHeader =
-                    std::make_unique<GraphItems::Label>(GraphItemInfo(headerString)
+                    std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(headerString)
                                                             .Scaling(GetScaling())
                                                             .Pen(wxNullPen)
                                                             .Font(groupHeaderLabelFont)
@@ -400,15 +397,16 @@ namespace Wisteria::Graphs
                 AddObject(std::move(box));
                 // show the value of the cell, centered on it
                 AddObject(std::make_unique<GraphItems::Label>(
-                    GraphItemInfo(cell.m_valueLabel)
+                    GraphItems::GraphItemInfo(cell.m_valueLabel)
                         .Font(boxLabelFont)
                         .Pen(wxNullPen)
                         .Selectable(false)
                         .FontColor(
                             // contrast colors, unless this cell is NaN
-                            (cell.m_color.IsOk() ? ColorContrast::BlackOrWhiteContrast(cellColor) :
-                                                   // if NaN, then set 'X' to red
-                                 ColorContrast::ShadeOrTintIfClose(*wxRED, cellColor)))
+                            (cell.m_color.IsOk() ?
+                                 Colors::ColorContrast::BlackOrWhiteContrast(cellColor) :
+                                 // if NaN, then set 'X' to red
+                                 Colors::ColorContrast::ShadeOrTintIfClose(*wxRED, cellColor)))
                         .Anchoring(Anchoring::Center)
                         .AnchorPoint(wxPoint(boxRect.GetLeft() + (boxRect.GetWidth() / 2),
                                              boxRect.GetTop() + (boxRect.GetHeight() / 2)))));
@@ -418,7 +416,7 @@ namespace Wisteria::Graphs
                 {
                 // add a group label
                 auto groupRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItemInfo(GetGroupColumn()->GetLabelFromID(currentGroupdStart))
+                    GraphItems::GraphItemInfo(GetGroupColumn()->GetLabelFromID(currentGroupStart))
                         .Anchoring(Anchoring::TopLeftCorner)
                         .
                     // font is already scaled, so leave the label's scaling at 1.0
@@ -433,13 +431,13 @@ namespace Wisteria::Graphs
                 AddObject(std::move(groupRowLabel));
                 }
 
-            ++currentGroupdStart;
+            ++currentGroupStart;
             ++currentRow;
             currentColumn = 0;
             if (IsUsingGrouping() && m_groupColumnCount > 1 &&
                 currentRow + 1 > maxRowsWhenGrouping &&
                 // don't add another column if this is the last row
-                currentGroupdStart != m_matrix.size())
+                currentGroupStart != m_matrix.size())
                 {
                 currentRow = 0;
                 drawArea.Offset(wxPoint(drawArea.GetWidth() + padding + groupLabelWidth, 0));
@@ -459,12 +457,10 @@ namespace Wisteria::Graphs
         std::copy_if(m_continuousColumn->GetValues().cbegin(),
                      m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
                      [](auto x) { return std::isfinite(x); });
-        const auto minValue =
-            *std::min_element(validData.cbegin(), validData.cend());
-        const auto maxValue =
-            *std::max_element(validData.cbegin(), validData.cend());
+        const auto minValue = *std::min_element(validData.cbegin(), validData.cend());
+        const auto maxValue = *std::max_element(validData.cbegin(), validData.cend());
         auto legend = std::make_unique<GraphItems::Label>(
-            GraphItemInfo(
+            GraphItems::GraphItemInfo(
                 // add spaces on the empty lines to work around SVG exporting
                 // stripping out the blank lines
                 wxString::Format(
@@ -481,7 +477,7 @@ namespace Wisteria::Graphs
                             legend->GetText());
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
-        legend->GetLegendIcons().push_back(LegendIcon(m_reversedColorSpectrum));
+        legend->GetLegendIcons().push_back(Icons::LegendIcon(m_reversedColorSpectrum));
 
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());

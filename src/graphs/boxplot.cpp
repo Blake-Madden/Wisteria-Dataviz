@@ -529,7 +529,7 @@ namespace Wisteria::Graphs
                             };
                         AddObject(std::make_unique<GraphItems::Polygon>(
                             GraphItemInfo().Pen(wxNullPen).
-                            Brush(GraphItemBase::GetShadowColour()),
+                            Brush(GraphItemBase::GetShadowColor()),
                             shadowPts, std::size(shadowPts)));
                         }
                     wxColour boxColor = (GetColorScheme() ?

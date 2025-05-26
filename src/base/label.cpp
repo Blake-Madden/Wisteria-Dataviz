@@ -991,8 +991,8 @@ namespace Wisteria::GraphItems
         // draw the shadow (only if box is outlined)
         if (GetShadowType() != ShadowType::NoDisplay && GetPen().IsOk() && !IsSelected())
             {
-            const DCPenChangerIfDifferent pcBg(dc, GetShadowColour());
-            const DCBrushChangerIfDifferent bcBg(dc, GetShadowColour());
+            const DCPenChangerIfDifferent pcBg(dc, GetShadowColor());
+            const DCBrushChangerIfDifferent bcBg(dc, GetShadowColor());
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
                 dc.DrawRoundedRectangle(

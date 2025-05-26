@@ -10,15 +10,11 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graphs::GroupGraph2D)
 
-using namespace Wisteria;
-using namespace Wisteria::Graphs;
-using namespace Wisteria::GraphItems;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     DanielsonBryan2Plot::DanielsonBryan2Plot(
-        Wisteria::Canvas* canvas,
+        Wisteria::Canvas * canvas,
         std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
@@ -44,10 +40,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void
-    DanielsonBryan2Plot::SetData(std::shared_ptr<const Data::Dataset> data,
-                                 const wxString& scoreColumnName,
-                                 std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+    void DanielsonBryan2Plot::SetData(
+        std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
+        std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -93,7 +88,7 @@ namespace Wisteria::Graphs
         GetCustomAxes().clear();
 
             {
-            Axis leftRuler(Wisteria::AxisType::LeftYAxis);
+            GraphItems::Axis leftRuler(Wisteria::AxisType::LeftYAxis);
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(.7f);
@@ -102,13 +97,13 @@ namespace Wisteria::Graphs
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
-            leftRuler.AddBracket(Axis::AxisBracket(2, 2, 2, L"  0-29"));
-            leftRuler.AddBracket(Axis::AxisBracket(3, 3, 3, L"30-49"));
-            leftRuler.AddBracket(Axis::AxisBracket(4, 4, 4, L"50-59"));
-            leftRuler.AddBracket(Axis::AxisBracket(5, 5, 5, L"60-69"));
-            leftRuler.AddBracket(Axis::AxisBracket(6, 6, 6, L"70-79"));
-            leftRuler.AddBracket(Axis::AxisBracket(7, 7, 7, L"80-89"));
-            leftRuler.AddBracket(Axis::AxisBracket(8, 8, 8, L"90-100"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(2, 2, 2, L"  0-29"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(3, 3, 3, L"30-49"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(4, 4, 4, L"50-59"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(5, 5, 5, L"60-69"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(6, 6, 6, L"70-79"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(7, 7, 7, L"80-89"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(8, 8, 8, L"90-100"));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.SetTickmarkLength(0);
@@ -120,7 +115,7 @@ namespace Wisteria::Graphs
             }
 
             {
-            Axis middleRuler(Wisteria::AxisType::LeftYAxis);
+            GraphItems::Axis middleRuler(Wisteria::AxisType::LeftYAxis);
             middleRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             middleRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             middleRuler.SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::CenterOnAxisLine);
@@ -141,7 +136,7 @@ namespace Wisteria::Graphs
             }
 
             {
-            Axis rightRuler(Wisteria::AxisType::RightYAxis);
+            GraphItems::Axis rightRuler(Wisteria::AxisType::RightYAxis);
             rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             rightRuler.SetCustomXPosition(0.8);
@@ -150,14 +145,20 @@ namespace Wisteria::Graphs
             rightRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             rightRuler.SetId(100);
             rightRuler.GetAxisLinePen() = wxNullPen;
-            rightRuler.AddBracket(Axis::AxisBracket(2, 2, 2, _(L"very difficult, college level")));
-            rightRuler.AddBracket(Axis::AxisBracket(3, 3, 3, _(L"difficult, high school level")));
             rightRuler.AddBracket(
-                Axis::AxisBracket(4, 4, 4, _(L"fairly difficult, junior high school level")));
-            rightRuler.AddBracket(Axis::AxisBracket(5, 5, 5, _(L"standard, sixth-grade level")));
-            rightRuler.AddBracket(Axis::AxisBracket(6, 6, 6, _(L"fairly easy, fifth-grade level")));
-            rightRuler.AddBracket(Axis::AxisBracket(7, 7, 7, _(L"easy, fourth-grade level")));
-            rightRuler.AddBracket(Axis::AxisBracket(8, 8, 8, _(L"very easy, third-grade level")));
+                GraphItems::Axis::AxisBracket(2, 2, 2, _(L"very difficult, college level")));
+            rightRuler.AddBracket(
+                GraphItems::Axis::AxisBracket(3, 3, 3, _(L"difficult, high school level")));
+            rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                4, 4, 4, _(L"fairly difficult, junior high school level")));
+            rightRuler.AddBracket(
+                GraphItems::Axis::AxisBracket(5, 5, 5, _(L"standard, sixth-grade level")));
+            rightRuler.AddBracket(
+                GraphItems::Axis::AxisBracket(6, 6, 6, _(L"fairly easy, fifth-grade level")));
+            rightRuler.AddBracket(
+                GraphItems::Axis::AxisBracket(7, 7, 7, _(L"easy, fourth-grade level")));
+            rightRuler.AddBracket(
+                GraphItems::Axis::AxisBracket(8, 8, 8, _(L"very easy, third-grade level")));
             for (auto& bracket : rightRuler.GetBrackets())
                 {
                 bracket.SetTickmarkLength(0);
@@ -168,7 +169,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void DanielsonBryan2Plot::RecalcSizes(wxDC& dc)
+    void DanielsonBryan2Plot::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);
 
@@ -221,12 +222,13 @@ namespace Wisteria::Graphs
                 m_jitter.JitterPoint(pt);
                 // points on the middle ruler
                 points->AddPoint(
-                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                                .AnchorPoint(pt)
-                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                    GetPlotOrCanvasColor()))
-                                .Brush(GetColorScheme()->GetColor(colorIndex)),
-                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                    GraphItems::Point2D(
+                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                            .AnchorPoint(pt)
+                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()))
+                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
                 }
             }

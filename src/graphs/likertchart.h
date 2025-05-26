@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_LIKERT_H__
-#define __WISTERIA_LIKERT_H__
+#ifndef WISTERIA_LIKERT_H
+#define WISTERIA_LIKERT_H
 
 #include "barchart.h"
 
@@ -221,8 +221,7 @@ namespace Wisteria::Graphs
             /// @private
             /// @note This is using locale-sensitive sorting.
             [[nodiscard]]
-            bool
-            operator<(const LikertThreePointSurveyQuestion& that) const
+            bool operator<(const LikertThreePointSurveyQuestion& that) const
                 {
                 return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question,
                                                                 wxCompare_CaseInsensitive) < 0);
@@ -312,8 +311,7 @@ namespace Wisteria::Graphs
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const LikertFivePointSurveyQuestion& that) const
+            bool operator<(const LikertFivePointSurveyQuestion& that) const
                 {
                 return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question,
                                                                 wxCompare_CaseInsensitive) < 0);
@@ -409,8 +407,7 @@ namespace Wisteria::Graphs
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const LikertSevenPointSurveyQuestion& that) const
+            bool operator<(const LikertSevenPointSurveyQuestion& that) const
                 {
                 return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question,
                                                                 wxCompare_CaseInsensitive) < 0);
@@ -1264,7 +1261,7 @@ namespace Wisteria::Graphs
         double m_naMaxSize{ 0 };
 
         size_t m_responseBarCount{ 0 };
-        size_t m_maxResondants{ 0 };
+        size_t m_maxRespondents{ 0 };
 
         bool m_showResponseCounts{ false };
         bool m_showPercentages{ true };
@@ -1299,4 +1296,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_LIKERT_H__
+#endif // WISTERIA_LIKERT_H

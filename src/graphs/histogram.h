@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_HISTOGRAM_H__
-#define __WISTERIA_HISTOGRAM_H__
+#ifndef WISTERIA_HISTOGRAM_H
+#define WISTERIA_HISTOGRAM_H
 
 #include "barchart.h"
 
@@ -30,8 +30,8 @@ namespace Wisteria::Graphs
 
          When sorting data into binned ranges (the default behavior), the number of bins is
          determined using the Sturges method (if the number of observations is less than 200).
-         If N is 200 or more, then Scott's choice is used. The number of bins can be manually specified
-         as well if you prefer.
+         If N is 200 or more, then Scott's choice is used.
+         The number of bins can be manually specified as well if you prefer.
 
          Along with range-based bins, bins can also be created for each unique value from the data.
          This is useful for getting aggregated counts of the discrete categories within a column.
@@ -71,7 +71,7 @@ namespace Wisteria::Graphs
          auto plot = std::make_shared<Histogram>(canvas,
             std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()) );
 
-         plot->SetData(mtcarsData, L"mpg", 
+         plot->SetData(mtcarsData, L"mpg",
                       // grouping variable, we won't use one here
                       std::nullopt,
                       // make the ranges integral integers
@@ -146,19 +146,19 @@ namespace Wisteria::Graphs
         wxDECLARE_DYNAMIC_CLASS(Histogram);
         Histogram() = default;
 
-    public:
+      public:
         /// @brief Methods for sorting data into bins.
         enum class BinningMethod
             {
-            BinUniqueValues,      /*!< Each unique value gets its own bin.*/
-            BinByRange,           /*!< Values are categorized into ranges
-                                       (this is the norm for histograms, expect this method
-                                       retains the values' floating-point precision when
-                                       creating the bin size and range).*/
-            BinByIntegerRange,    /*!< Values are categorized into ranges, where the bin size
-                                       and range are integral.
-                                       This is usually the norm, classifying data by
-                                       floating-point precision categories isn't common.*/
+            BinUniqueValues,   /*!< Each unique value gets its own bin.*/
+            BinByRange,        /*!< Values are categorized into ranges
+                                    (this is the norm for histograms, expect this method
+                                    retains the values' floating-point precision when
+                                    creating the bin size and range).*/
+            BinByIntegerRange, /*!< Values are categorized into ranges, where the bin size
+                                    and range are integral.
+                                    This is usually the norm, classifying data by
+                                    floating-point precision categories isn't common.*/
             /// @private
             BINNING_METHOD_COUNT
             };
@@ -166,12 +166,12 @@ namespace Wisteria::Graphs
         /// @brief How the bars are being positioned on the axis.
         enum class IntervalDisplay
             {
-            Cutpoints,            /*!< In range mode, places the bars in between axis lines so that
-                                       the range of the bins are shown on the sides of the bars.*/
-            Midpoints,            /*!< Places the bars on top of the axis lines
-                                       so that a custom bin range label (for integer range mode)
-                                       or a midpoint label (non-integer mode)
-                                       is shown at the bottom of the bar.*/
+            Cutpoints, /*!< In range mode, places the bars in between axis lines so that
+                            the range of the bins are shown on the sides of the bars.*/
+            Midpoints, /*!< Places the bars on top of the axis lines
+                            so that a custom bin range label (for integer range mode)
+                            or a midpoint label (non-integer mode)
+                            is shown at the bottom of the bar.*/
             /// @private
             INTERVAL_METHOD_COUNT
             };
@@ -188,12 +188,15 @@ namespace Wisteria::Graphs
             size_t m_schemeIndex{ 0 };
             // The name of the group for a subblock in a bar (from the secondary group column)
             wxString m_groupName;
+
             /// @private
             [[nodiscard]]
             bool operator<(const BinBlock& that) const
                 {
                 if (m_bin != that.m_bin)
-                    { return m_bin < that.m_bin; }
+                    {
+                    return m_bin < that.m_bin;
+                    }
                 // if in the same bar, then compare by label alphabetically
                 return m_groupName.CmpNoCase(that.m_groupName) < 0;
                 }
@@ -203,16 +206,18 @@ namespace Wisteria::Graphs
             @param canvas The canvas to draw the chart on.
             @param brushes The brush scheme, which will contain the color and brush patterns
                 to render the bars with.
-            @param colors The color scheme to apply to the bars underneath the bars' brush patterns.\n
-                This is useful if using a hatched brush, as this color will be solid
-                and show underneath it. Leave as null just to use the brush scheme.*/
+            @param colors The color scheme to apply to the bars underneath the
+                bars' brush patterns.\n
+                This is useful if using a hatched brush, as this color will be solid and show
+                underneath it. Leave as null just to use the brush scheme.*/
         explicit Histogram(Wisteria::Canvas* canvas,
                            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
-                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
-            Wisteria::Graphs::BarChart(canvas)
+                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr)
+            : Wisteria::Graphs::BarChart(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
-                std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()));
+                                                std::make_shared<Brushes::Schemes::BrushScheme>(
+                                                    *Settings::GetDefaultColorScheme()));
             SetColorScheme(colors);
             GetBarAxis().GetGridlinePen() = wxNullPen;
             // doesn't make sense to show these on a histogram
@@ -270,7 +275,7 @@ namespace Wisteria::Graphs
                 re-plot the data.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
-                     const std::optional<const wxString> groupColumnName = std::nullopt,
+                     const std::optional<const wxString>& groupColumnName = std::nullopt,
                      const BinningMethod bMethod = BinningMethod::BinByIntegerRange,
                      const RoundingMethod rounding = RoundingMethod::NoRounding,
                      const IntervalDisplay iDisplay = IntervalDisplay::Cutpoints,
@@ -278,7 +283,7 @@ namespace Wisteria::Graphs
                      const bool showFullRangeOfValues = true,
                      const std::optional<double> startBinsValue = std::nullopt,
                      const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges =
-                        std::make_pair(std::nullopt, std::nullopt),
+                         std::make_pair(std::nullopt, std::nullopt),
                      const bool neatIntervals = false);
 
         /** @brief Gets the number of bins/cells in the histogram with data in them.
@@ -290,33 +295,49 @@ namespace Wisteria::Graphs
             @returns The number of bins in the histogram with values in them.*/
         [[nodiscard]]
         size_t GetBinsWithValuesCount() const noexcept
-            { return m_binCount; }
+            {
+            return m_binCount;
+            }
 
-         /// @returns @c true if a place for each bin is included on the axis,
+        /// @returns @c true if a place for each bin is included on the axis,
         ///     even if they have no items.
         /// @sa ShowFullRangeOfValues().
         [[nodiscard]]
         bool IsShowingFullRangeOfValues() const noexcept
-            { return m_displayFullRangeOfValues; }
+            {
+            return m_displayFullRangeOfValues;
+            }
+
         /// @returns The method being used to sort the data into bins.
         [[nodiscard]]
         BinningMethod GetBinningMethod() const noexcept
-            { return m_binningMethod; }
+            {
+            return m_binningMethod;
+            }
+
         /// @returns The rounding method used for binning.
         [[nodiscard]]
         RoundingMethod GetRoundingMethod() const noexcept
-            { return m_roundingMethod; }
+            {
+            return m_roundingMethod;
+            }
+
         /// @returns How the bars are being positioned on the axis.
         /// @sa SetIntervalDisplay().
         [[nodiscard]]
         IntervalDisplay GetIntervalDisplay() const noexcept
-            { return m_intervalDisplay; }
+            {
+            return m_intervalDisplay;
+            }
+
         /// @returns Where the first bin starts.
         /// @note This is NaN by default, which will instruct the bins to
         ///     start at where the data begins.
         [[nodiscard]]
         std::optional<double> GetBinsStart() const noexcept
-            { return m_startBinsValue; }
+            {
+            return m_startBinsValue;
+            }
 
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if your are showing unique values for the categories
@@ -327,15 +348,19 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         bool IsSortable() const noexcept final
             {
-            return BarChart::IsSortable() &&
-                   GetBinningMethod() == BinningMethod::BinUniqueValues &&
+            return BarChart::IsSortable() && GetBinningMethod() == BinningMethod::BinUniqueValues &&
                    !IsShowingFullRangeOfValues();
             }
-    private:
-        /// @returns The maximum number of bins that the histogram will create when binning the data.
+
+      private:
+        /// @returns The maximum number of bins that the histogram will create when
+        ///     binning the data.
         [[nodiscard]]
         size_t GetMaxNumberOfBins() const noexcept
-            { return m_maxBinCount; }
+            {
+            return m_maxBinCount;
+            }
+
         /** Specifies whether the axis should display each step
                 (even if no bin is associated with a step) or if it should display steps that
                 have categories on them.\n
@@ -344,21 +369,25 @@ namespace Wisteria::Graphs
                 This is only used if you are categorizing by unique (non-integer) values.
             @param display @c true to display the full range of values.*/
         void ShowFullRangeOfValues(const bool display = true) noexcept
-            { m_displayFullRangeOfValues = display; }
+            {
+            m_displayFullRangeOfValues = display;
+            }
+
         /// @brief Specifies how to categorize and classify the data.
         /// @param bMethod The binning method to use.
         /// @note Column sorting will be disabled if binning method isn't unique values,
         ///     moving the columns around into a different order would look wrong if they
         ///     are supposed to be lined up in a range.
-        void SetBinningMethod(const BinningMethod bMethod) noexcept
-            { m_binningMethod = bMethod; }
+        void SetBinningMethod(const BinningMethod bMethod) noexcept { m_binningMethod = bMethod; }
 
         /// @brief Specifies how to classify floating-precision values.
         /// @param rounding The rounding method to use for binning.
         void SetRoundingMethod(const RoundingMethod rounding) noexcept
-            { m_roundingMethod = rounding; }
+            {
+            m_roundingMethod = rounding;
+            }
 
-         /// @returns The number of unique values.
+        /// @returns The number of unique values.
         [[nodiscard]]
         size_t CalcUniqueValuesCount() const;
         /** @brief Creates a bin for each unique value in the data.
@@ -378,8 +407,7 @@ namespace Wisteria::Graphs
         double ConvertToSortableValue(const double& value) const;
 
         [[nodiscard]]
-        wxString GetCustomBarLabelOrValue(
-                               const double& value, const size_t precision = 0);
+        wxString GetCustomBarLabelOrValue(const double& value, const size_t precision = 0);
 
         /// @brief Calculates the number of bins to use based on the data.
         [[nodiscard]]
@@ -397,8 +425,8 @@ namespace Wisteria::Graphs
         bool m_neatRanges{ false };
         std::optional<double> m_startBinsValue{ std::nullopt };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_HISTOGRAM_H__
+#endif // WISTERIA_HISTOGRAM_H

@@ -10,15 +10,11 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::GroupGraph2D)
 
-using namespace Wisteria;
-using namespace Wisteria::Graphs;
-using namespace Wisteria::GraphItems;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     LixGaugeGerman::LixGaugeGerman(
-        Wisteria::Canvas* canvas,
+        Wisteria::Canvas * canvas,
         std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
@@ -113,7 +109,7 @@ namespace Wisteria::Graphs
         GetCustomAxes().clear();
 
             {
-            Axis leftRuler(AxisType::LeftYAxis);
+            GraphItems::Axis leftRuler(AxisType::LeftYAxis);
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(0.9f);
@@ -123,28 +119,28 @@ namespace Wisteria::Graphs
             leftRuler.ReverseScale(true);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
-            leftRuler.AddBracket(Axis::AxisBracket(
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 25, 25, 25,
                 IsUsingEnglishLabels() ? _(L"very easy text") : wxString(_DT("Sehr leichter Text")),
                 wxColour(66, 51, 251)));
-            leftRuler.AddBracket(Axis::AxisBracket(
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 35, 35, 35,
                 IsUsingEnglishLabels() ? _(L"easy text") : wxString(_DT("Leichter Text")),
                 wxColour(163, 182, 250)));
-            leftRuler.AddBracket(Axis::AxisBracket(45, 45, 45,
-                                                   IsUsingEnglishLabels() ?
-                                                       _(L"average text") :
-                                                       wxString(_DT("Durchschnittlicher Text")),
-                                                   wxColour(239, 173, 186)));
-            leftRuler.AddBracket(Axis::AxisBracket(
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                45, 45, 45,
+                IsUsingEnglishLabels() ? _(L"average text") :
+                                         wxString(_DT("Durchschnittlicher Text")),
+                wxColour(239, 173, 186)));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 55, 55, 55,
                 IsUsingEnglishLabels() ? _(L"difficult text") : wxString(_DT("Schwieriger Text")),
                 wxColour(237, 27, 37)));
-            leftRuler.AddBracket(Axis::AxisBracket(65, 65, 65,
-                                                   IsUsingEnglishLabels() ?
-                                                       _(L"very difficult text") :
-                                                       wxString(_DT("Sehr schwieriger Text")),
-                                                   wxColour(250, 0, 0)));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                65, 65, 65,
+                IsUsingEnglishLabels() ? _(L"very difficult text") :
+                                         wxString(_DT("Sehr schwieriger Text")),
+                wxColour(250, 0, 0)));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetWidth(2);
@@ -159,7 +155,7 @@ namespace Wisteria::Graphs
             }
 
             {
-            Axis middleRuler(Wisteria::AxisType::LeftYAxis);
+            GraphItems::Axis middleRuler(Wisteria::AxisType::LeftYAxis);
             middleRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             middleRuler.SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::CenterOnAxisLine);
             middleRuler.GetAxisLinePen() = wxNullPen;
@@ -173,7 +169,7 @@ namespace Wisteria::Graphs
             }
 
             {
-            Axis rightRuler(Wisteria::AxisType::RightYAxis);
+            GraphItems::Axis rightRuler(Wisteria::AxisType::RightYAxis);
             rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             rightRuler.SetCustomXPosition(1.1f);
@@ -183,28 +179,28 @@ namespace Wisteria::Graphs
             rightRuler.ReverseScale(true);
             rightRuler.SetId(102);
             rightRuler.GetAxisLinePen() = wxNullPen;
-            rightRuler.AddBracket(
-                Axis::AxisBracket(30, 30, 30,
-                                  IsUsingEnglishLabels() ?
-                                      _(L"children and youth\nliterature (for ages 8-16)") :
-                                      wxString(DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher",
-                                                             DTExplanation::DirectQuote)),
-                                  wxColour(138, 163, 249)));
-            rightRuler.AddBracket(Axis::AxisBracket(
+            rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                30, 30, 30,
+                IsUsingEnglishLabels() ?
+                    _(L"children and youth\nliterature (for ages 8-16)") :
+                    wxString(DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher",
+                                           DTExplanation::DirectQuote)),
+                wxColour(138, 163, 249)));
+            rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 40, 40, 40,
                 IsUsingEnglishLabels() ? _(L"bellestristic texts (prose\nfiction for adults)") :
                                          wxString(DONTTRANSLATE(L"Belletristik")),
                 wxColour(207, 217, 252)));
-            rightRuler.AddBracket(Axis::AxisBracket(
+            rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 50, 50, 50,
                 IsUsingEnglishLabels() ? _(L"informational (non fiction)\ntexts (Sachliteratur)") :
                                          wxString(DONTTRANSLATE(L"Sachliteratur")),
                 wxColour(245, 126, 133)));
-            rightRuler.AddBracket(Axis::AxisBracket(60, 60, 60,
-                                                    IsUsingEnglishLabels() ?
-                                                        _(L"technical texts\n(Fachliteratur)") :
-                                                        wxString(DONTTRANSLATE(L"Fachliteratur")),
-                                                    wxColour(237, 10, 10)));
+            rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
+                60, 60, 60,
+                IsUsingEnglishLabels() ? _(L"technical texts\n(Fachliteratur)") :
+                                         wxString(DONTTRANSLATE(L"Fachliteratur")),
+                wxColour(237, 10, 10)));
             for (auto& bracket : rightRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetWidth(2);
@@ -224,7 +220,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void LixGaugeGerman::RecalcSizes(wxDC& dc)
+    void LixGaugeGerman::RecalcSizes(wxDC & dc)
         {
         AdjustAxes();
 

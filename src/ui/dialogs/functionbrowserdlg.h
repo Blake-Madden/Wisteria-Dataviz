@@ -1,6 +1,6 @@
 /** @addtogroup UI
     @brief User interface classes.
-    @date 2005-2023
+    @date 2005-2025
     @copyright Blake Madden
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FUNCTION_BROWSER_DLG_H__
-#define __FUNCTION_BROWSER_DLG_H__
+#ifndef FUNCTION_BROWSER_DLG_H
+#define FUNCTION_BROWSER_DLG_H
 
 #include "../../import/html_encode.h"
 #include "../../import/html_extract_text.h"
@@ -287,4 +287,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__FUNCTION_BROWSER_DLG_H__
+#endif // FUNCTION_BROWSER_DLG_H

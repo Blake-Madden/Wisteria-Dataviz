@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __SANKEY_DIAGRAM_H__
-#define __SANKEY_DIAGRAM_H__
+#ifndef SANKEY_DIAGRAM_H
+#define SANKEY_DIAGRAM_H
 
 #include "../util/frequencymap.h"
 #include "graph2d.h"
@@ -100,6 +100,7 @@ namespace Wisteria::Graphs
         @endcode
     */
     // clang-format on
+
     class SankeyDiagram : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(SankeyDiagram);
@@ -260,15 +261,13 @@ namespace Wisteria::Graphs
                 }
 
             [[nodiscard]]
-            bool
-            operator<(const SankeyGroup& that) const
+            bool operator<(const SankeyGroup& that) const
                 {
                 return m_label.CmpNoCase(that.m_label) < 0;
                 }
 
             [[nodiscard]]
-            bool
-            operator==(const SankeyGroup& that) const
+            bool operator==(const SankeyGroup& that) const
                 {
                 return m_label.CmpNoCase(that.m_label) == 0;
                 }
@@ -314,4 +313,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif // __SANKEY_DIAGRAM_H__
+#endif // SANKEY_DIAGRAM_H

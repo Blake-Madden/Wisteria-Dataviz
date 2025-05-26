@@ -10,22 +10,17 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePlot)
 
-    using namespace Wisteria;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-using namespace Wisteria::Colors::Schemes;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    WCurvePlot::WCurvePlot(Canvas* canvas, std::shared_ptr<ColorScheme> colors /*= nullptr*/,
-                           std::shared_ptr<IconScheme> shapes /*= nullptr*/,
-                           std::shared_ptr<LineStyleScheme> linePenStyles /*= nullptr*/)
+    WCurvePlot::WCurvePlot(
+        Canvas * canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
+        const std::shared_ptr<Icons::Schemes::IconScheme>& shapes /*= nullptr*/,
+        const std::shared_ptr<LineStyleScheme>& linePenStyles /*= nullptr*/)
         : LinePlot(canvas, colors,
                    shapes != nullptr ? shapes :
-                                       std::make_unique<IconScheme>(IconScheme{ IconShape::Blank }),
+                                       std::make_unique<Icons::Schemes::IconScheme>(
+                                           Icons::Schemes::IconScheme{ Icons::IconShape::Blank }),
                    linePenStyles != nullptr ?
                        linePenStyles :
                        std::make_unique<LineStyleScheme>(
@@ -64,8 +59,8 @@ namespace Wisteria::Graphs
                                   1);
 
         GetTopXAxis().CopySettings(GetBottomXAxis());
-        GetTopXAxis().SetFontBackgroundColor(ColorBrewer::GetColor(Color::Black));
-        GetTopXAxis().SetFontColor(ColorBrewer::GetColor(Color::White));
+        GetTopXAxis().SetFontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+        GetTopXAxis().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::White));
         GetTopXAxis().SetTextAlignment(TextAlignment::FlushLeft);
         GetTopXAxis().SetParallelLabelAlignment(RelativeAlignment::FlushLeft);
         GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -98,7 +93,7 @@ namespace Wisteria::Graphs
             }
         for (size_t i = topRangeStart; i < topRangeEnd; i += GetTopXAxis().GetInterval())
             {
-            GetTopXAxis().SetCustomLabel(i, Label(FormatTimeLabel(i)));
+            GetTopXAxis().SetCustomLabel(i, GraphItems::Label(FormatTimeLabel(i)));
             }
         }
 

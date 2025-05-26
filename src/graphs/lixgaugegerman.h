@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LIX_GAUGE_GERMAN_H__
-#define __LIX_GAUGE_GERMAN_H__
+#ifndef LIX_GAUGE_GERMAN_H
+#define LIX_GAUGE_GERMAN_H
 
 #include "../data/jitter.h"
 #include "../math/mathematics.h"
@@ -103,4 +103,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__LIX_GAUGE_GERMAN_H__
+#endif // LIX_GAUGE_GERMAN_H

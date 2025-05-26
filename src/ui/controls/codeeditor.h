@@ -68,15 +68,14 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param parent The parent window.
             @param lang Sets the language used in this editor.\n
-                @c wxSTC_LEX_LUA, @wxSTC_LEX_HTML, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE
+                @c wxSTC_LEX_LUA, @ wxSTC_LEX_HTML, @c wxSTC_LEX_CPP, and @c wxSTC_LEX_CPPNOCASE
                 are currently supported.
             @param id The ID for this editor.
             @param pos The position.
             @param size The size of the editor.
             @param style The window style for this editor.
             @param name The class name for this window.*/
-        explicit CodeEditor(wxWindow* parent, const int lang,
-                            wxWindowID id = wxID_ANY,
+        explicit CodeEditor(wxWindow* parent, const int lang, wxWindowID id = wxID_ANY,
                             const wxPoint& pos = wxDefaultPosition,
                             const wxSize& size = wxDefaultSize, long style = 0,
                             const wxString& name = L"CodeEditor");
@@ -215,7 +214,6 @@ namespace Wisteria::UI
             {
             return m_fileFilter;
             }
-
 
         /// @brief Can be useful when calling find event from parent container.
         /// @private

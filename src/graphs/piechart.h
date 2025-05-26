@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_PIE_CHART_H__
-#define __WISTERIA_PIE_CHART_H__
+#ifndef WISTERIA_PIE_CHART_H
+#define WISTERIA_PIE_CHART_H
 
 #include "graph2d.h"
 #include <map>
@@ -1101,4 +1101,4 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_PIE_CHART_H__
+#endif // WISTERIA_PIE_CHART_H
