@@ -267,7 +267,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 m_jitter.JitterPoint(pt);
                 // points on the middle ruler
                 points->AddPoint(
-                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                    GraphItems::Point2D(
+                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
                                 .AnchorPoint(pt)
                                 .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                     GetPlotOrCanvasColor()))
