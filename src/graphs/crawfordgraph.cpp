@@ -308,7 +308,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             if (GetPhysicalCoordinates(currentScore, currentSyllableCount, pt))
                 {
                 points->AddPoint(
-                    Point2D(GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
+                    GraphItems::Point2D(
+                        GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
                                 .AnchorPoint(pt)
                                 .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                     GetPlotOrCanvasColor()))
