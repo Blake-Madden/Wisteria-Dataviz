@@ -67,3 +67,4 @@ cpp.hint
 *.out
 *.app
 *.manifest
+/wxWidgets_lib
