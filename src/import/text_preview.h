@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXT_PREVIEW_H__
-#define __TEXT_PREVIEW_H__
+#ifndef TEXT_PREVIEW_H
+#define TEXT_PREVIEW_H
 
 #include "text_functional.h"
 #include "text_matrix.h"
@@ -64,10 +64,10 @@ namespace lily_of_the_valley
                 --skipRows;
                 }
 
-            standard_delimited_character_column deliminatedColumn(
+            standard_delimited_character_column delaminatedColumn(
                 text_column_delimited_character_parser{ headerRowDelimiter });
             text_row<std::wstring> headerRow(1);
-            headerRow.add_column(deliminatedColumn);
+            headerRow.add_column(delaminatedColumn);
             headerRow.set_values(&m_header_names);
             headerRow.allow_column_resizing(true);
             headerRow.read(text);
@@ -164,4 +164,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__TEXT_PREVIEW_H__
+#endif // TEXT_PREVIEW_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXT_MATRIX_H__
-#define __TEXT_MATRIX_H__
+#ifndef TEXT_MATRIX_H
+#define TEXT_MATRIX_H
 
 #include "text_column.h"
 #include "text_row.h"
@@ -347,4 +347,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__TEXT_MATRIX_H__
+#endif // TEXT_MATRIX_H

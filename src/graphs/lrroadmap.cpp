@@ -39,6 +39,7 @@ namespace Wisteria::Graphs
         if (predictorColumn == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
+                // TRANSLATORS: "IV" means independent variable.
                 wxString::Format(_(L"'%s': IV name column not found for roadmap."),
                                  predictorColumnName)
                     .ToUTF8());

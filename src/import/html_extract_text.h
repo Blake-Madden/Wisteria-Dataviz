@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __HTML_EXTRACT_TEXT_H__
-#define __HTML_EXTRACT_TEXT_H__
+#ifndef HTML_EXTRACT_TEXT_H
+#define HTML_EXTRACT_TEXT_H
 
 #include "extract_text.h"
 #include <algorithm>
@@ -463,10 +463,10 @@ namespace html_utilities
                 the position of the query comment in it (if there is one).
                 Also will add a slash to the URL if need.
             @param[in,out] url The URL to parse.
-            @param[out] query_postion The position in the URL of the query
+            @param[out] query_position The position in the URL of the query
                 (e.g., PHP command).*/
         [[nodiscard]]
-        static size_t find_last_directory(std::wstring& url, size_t& query_postion);
+        static size_t find_last_directory(std::wstring& url, size_t& query_position);
         /** @brief Parses an URL into a full domain (domain, subdomain, and protocol),
                 a domain, and subdomain.
             @param url The URL to parse.
@@ -870,4 +870,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__HTML_EXTRACT_TEXT_H__
+#endif // HTML_EXTRACT_TEXT_H

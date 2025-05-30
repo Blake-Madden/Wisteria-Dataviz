@@ -86,7 +86,7 @@ namespace Wisteria::GraphItems
         // cross points count of x
         int crossPointsCount{ 0 };
 
-        // neighbour bound vertices
+        // neighbor bound vertices
         wxPoint p1, p2;
 
         // left vertex

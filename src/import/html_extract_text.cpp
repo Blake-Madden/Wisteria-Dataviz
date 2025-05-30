@@ -3205,17 +3205,17 @@ namespace html_utilities
         }
 
     //------------------------------------------------------------------
-    size_t html_url_format::find_last_directory(std::wstring& url, size_t& query_postion)
+    size_t html_url_format::find_last_directory(std::wstring& url, size_t& query_position)
         {
         // if this is a queried page then see where the command is at
-        query_postion = url.rfind(L'?');
+        query_position = url.rfind(L'?');
         size_t last_slash = url.rfind(L'/');
 
         // if this page is queried then backtrack to the '/' right before the query
-        if ((query_postion != std::wstring::npos) && (last_slash != std::wstring::npos) &&
-            (query_postion > 0) && (last_slash > 0) && (last_slash > query_postion))
+        if ((query_position != std::wstring::npos) && (last_slash != std::wstring::npos) &&
+            (query_position > 0) && (last_slash > 0) && (last_slash > query_position))
             {
-            last_slash = url.rfind(L'/', query_postion - 1);
+            last_slash = url.rfind(L'/', query_position - 1);
             }
         // see if the slash is just the one after "http:/" or if there no none at all
         if ((last_slash != std::wstring::npos && (last_slash > 0) &&

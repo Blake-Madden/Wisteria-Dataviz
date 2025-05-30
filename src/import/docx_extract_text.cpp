@@ -25,43 +25,43 @@ namespace lily_of_the_valley
 
         const wchar_t* const textEnd = html_text + text_length;
 
-        const wchar_t* const officMetaStart = find_element(html_text, textEnd, OFFICE_META, true);
-        if (!officMetaStart)
+        const wchar_t* const officeMetaStart = find_element(html_text, textEnd, OFFICE_META, true);
+        if (!officeMetaStart)
             {
             return;
             }
 
         html_extract_text parseHtml;
 
-        m_title = read_element_as_string(officMetaStart, textEnd, TITLE);
+        m_title = read_element_as_string(officeMetaStart, textEnd, TITLE);
         auto metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
         if (metaVal)
             {
             m_title.assign(metaVal);
             }
 
-        m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT);
+        m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT);
         metaVal = parseHtml(m_subject.c_str(), m_subject.length(), true, false);
         if (metaVal)
             {
             m_subject.assign(metaVal);
             }
 
-        m_description = read_element_as_string(officMetaStart, textEnd, DESCRIPTION);
+        m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION);
         metaVal = parseHtml(m_description.c_str(), m_description.length(), true, false);
         if (metaVal)
             {
             m_description.assign(metaVal);
             }
 
-        m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS);
+        m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS);
         metaVal = parseHtml(m_keywords.c_str(), m_keywords.length(), true, false);
         if (metaVal)
             {
             m_keywords.assign(metaVal);
             }
 
-        m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR);
+        m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR);
         metaVal = parseHtml(m_author.c_str(), m_author.length(), true, false);
         if (metaVal)
             {

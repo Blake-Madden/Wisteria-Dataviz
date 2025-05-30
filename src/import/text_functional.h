@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXT_FUNCTIONAL_H__
-#define __TEXT_FUNCTIONAL_H__
+#ifndef TEXT_FUNCTIONAL_H
+#define TEXT_FUNCTIONAL_H
 
 #include <algorithm>
 #include <cstdint>
@@ -206,4 +206,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__TEXT_FUNCTIONAL_H__
+#endif // TEXT_FUNCTIONAL_H

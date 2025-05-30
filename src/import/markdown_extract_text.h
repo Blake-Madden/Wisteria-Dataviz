@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __MARKDOWN_TEXT_EXTRACT_H__
-#define __MARKDOWN_TEXT_EXTRACT_H__
+#ifndef MARKDOWN_TEXT_EXTRACT_H
+#define MARKDOWN_TEXT_EXTRACT_H
 
 #include "html_extract_text.h"
 #include <regex>
@@ -92,4 +92,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__MARKDOWN_TEXT_EXTRACT_H__
+#endif // MARKDOWN_TEXT_EXTRACT_H

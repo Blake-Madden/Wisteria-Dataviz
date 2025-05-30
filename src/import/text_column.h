@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXT_COLUMN_H__
-#define __TEXT_COLUMN_H__
+#ifndef TEXT_COLUMN_H
+#define TEXT_COLUMN_H
 
 #include "text_functional.h"
 
@@ -303,4 +303,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__TEXT_COLUMN_H__
+#endif // TEXT_COLUMN_H

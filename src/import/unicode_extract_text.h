@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __UNICODE_EXTRACT_TEXT_H__
-#define __UNICODE_EXTRACT_TEXT_H__
+#ifndef UNICODE_EXTRACT_TEXT_H
+#define UNICODE_EXTRACT_TEXT_H
 
 #include "extract_text.h"
 #include <cstdint>
@@ -197,4 +197,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__UNICODE_EXTRACT_TEXT_H__
+#endif // UNICODE_EXTRACT_TEXT_H

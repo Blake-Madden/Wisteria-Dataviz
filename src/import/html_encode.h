@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __HTML_ENCODE_H__
-#define __HTML_ENCODE_H__
+#ifndef HTML_ENCODE_H
+#define HTML_ENCODE_H
 
 #include "../util/string_util.h"
 #include "html_extract_text.h"
@@ -411,7 +411,7 @@ namespace lily_of_the_valley
         /// @brief Removes any attributes in the `<body>` element.
         /// @param[in,out] HtmlText The HTML to strip.
         /// @todo needs unit test.
-        static void strip_body_atributes(std::wstring& HtmlText)
+        static void strip_body_attributes(std::wstring& HtmlText)
             {
             auto start = HtmlText.find(L"<body ");
             if (start != std::wstring::npos)
@@ -430,4 +430,4 @@ namespace lily_of_the_valley
 
 /** @} */
 
-#endif //__HTML_ENCODE_H__
+#endif // HTML_ENCODE_H

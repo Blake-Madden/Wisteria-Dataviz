@@ -77,7 +77,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         i = begin - ps_buffer;
         }
 
-    size_t open_paran_count{ 0 }, close_paran_count{ 0 };
+    size_t open_paren_count{ 0 }, close_paren_count{ 0 };
 
     bool umlautMode{ false };
     bool graveMode{ false };
@@ -88,7 +88,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         switch (*std::next(ps_buffer, i))
             {
         case '%':
-            if (open_paran_count > close_paran_count)
+            if (open_paren_count > close_paren_count)
                 {
                 add_character(*std::next(ps_buffer, i));
                 }
@@ -123,13 +123,13 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 }
             break;
         case '(':
-            if (open_paran_count++ > close_paran_count)
+            if (open_paren_count++ > close_paren_count)
                 {
                 add_character(*std::next(ps_buffer, i));
                 }
             break;
         case ')':
-            if (open_paran_count > ++close_paran_count)
+            if (open_paren_count > ++close_paren_count)
                 {
                 add_character(*std::next(ps_buffer, i));
                 }
@@ -217,7 +217,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 }
             break;
         case '\\':
-            if (open_paran_count > close_paran_count)
+            if (open_paren_count > close_paren_count)
                 {
                 ++i;
                 char* stopPoint{ nullptr };
@@ -337,7 +337,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 }
             break;
         default:
-            if (open_paran_count > close_paran_count)
+            if (open_paren_count > close_paren_count)
                 {
                 // previous \177 flag indicates next character should be umlauted
                 if (umlautMode)

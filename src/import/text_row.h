@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXT_ROW_H__
-#define __TEXT_ROW_H__
+#ifndef TEXT_ROW_H
+#define TEXT_ROW_H
 
 #include "text_column.h"
 #include <cassert>
@@ -56,7 +56,7 @@ namespace lily_of_the_valley
         /// @param allow Set to @c true to treat consecutive delimiters as one.
         void treat_consecutive_delimitors_as_one(const bool allow = true) noexcept
             {
-            m_treat_consecutive_delimitors_as_one = allow;
+            m_treat_consecutive_delimiters_as_one = allow;
             }
 
         /// @brief Sets whether the row may have an unknown number of columns before parsing.
@@ -297,7 +297,7 @@ namespace lily_of_the_valley
                             return nullptr;
                             }
                         // skip the delimiter(s)
-                        if (m_treat_consecutive_delimitors_as_one)
+                        if (m_treat_consecutive_delimiters_as_one)
                             {
                             while (currentColumnIter->get_parser().is_delimiter(currentPosition[0]))
                                 {
@@ -427,7 +427,7 @@ namespace lily_of_the_valley
                             return nullptr;
                             }
                         // skip the delimiter(s)
-                        if (m_treat_consecutive_delimitors_as_one)
+                        if (m_treat_consecutive_delimiters_as_one)
                             {
                             while (currentColumnIter->get_parser().is_delimiter(currentPosition[0]))
                                 {
@@ -556,7 +556,7 @@ namespace lily_of_the_valley
                             return nullptr;
                             }
                         // skip the delimiter(s)
-                        if (m_treat_consecutive_delimitors_as_one)
+                        if (m_treat_consecutive_delimiters_as_one)
                             {
                             while (currentColumnIter->get_parser().is_delimiter(currentPosition[0]))
                                 {
@@ -858,7 +858,7 @@ namespace lily_of_the_valley
             m_delimited_multiple_character_columns;
         is_end_of_line is_eol;
         std::optional<size_t> m_repeat_count{ std::nullopt };
-        bool m_treat_consecutive_delimitors_as_one{ false };
+        bool m_treat_consecutive_delimiters_as_one{ false };
         bool m_allow_column_values_resizing{ false };
         /* this will be false if all column parsers are set to skip their text
            (and in essence, skip this row)*/
@@ -869,4 +869,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__TEXT_ROW_H__
+#endif // TEXT_ROW_H

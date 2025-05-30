@@ -270,7 +270,7 @@ bool HtmlTableWindow::Save(const wxFileName& path)
     wxFile file(path.GetFullPath(), wxFile::write);
     assert(GetParser());
     std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
-    lily_of_the_valley::html_format::strip_body_atributes(htmlText);
+    lily_of_the_valley::html_format::strip_body_attributes(htmlText);
     lily_of_the_valley::html_format::strip_hyperlinks(htmlText);
     lily_of_the_valley::html_format::set_title(htmlText, GetLabel().ToStdWstring());
     lily_of_the_valley::html_format::set_encoding(htmlText);
