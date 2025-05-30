@@ -3,7 +3,7 @@
 # Purpose:     Build script for Wisteria Dataviz library and demo project
 # Author:      Blake Madden
 # Created:     2022-01-17
-# Copyright:   (c) 2005-2024 Blake Madden
+# Copyright:   (c) 2005-2025 Blake Madden
 # License:     3-Clause BSD license
 #############################################################################
 
@@ -32,7 +32,7 @@ endif()
 project(Wisteria)
 
 # Build the documentation
-########################
+#########################
 find_package(Doxygen)
 if(TARGET doxygen-docs)
     if(NOT DOXYGEN_FOUND)
@@ -45,23 +45,6 @@ add_custom_target(doxygen-docs
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
             COMMENT "Generating API documentation with Doxygen"
             VERBATIM)
-
-# Add wxWidgets to the build
-include(cmake/folders.cmake)
-
-set(wxBUILD_SHARED OFF)
-set(wxUSE_WEBVIEW_EDGE OFF)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(__WXDEBUG__ 0)
-    set(wxBUILD_OPTIMISE ON)
-    set(BUILD_STRIPPED_RELEASE ON)
-endif()
-find_directory("wxWidgets" wxWidgets_BASEDIR)
-add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
-
-set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
-
-message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 
 if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
@@ -82,12 +65,28 @@ if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     endif()
 endif()
 
+# Add wxWidgets to the build
+include(cmake/folders.cmake)
+
+set(wxBUILD_SHARED OFF)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(__WXDEBUG__ 0)
+    set(wxBUILD_OPTIMISE ON)
+    set(BUILD_STRIPPED_RELEASE ON)
+endif()
+find_directory("wxWidgets" wxWidgets_BASEDIR)
+add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
+
+set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
+
+message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
+
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 # Build Wisteria library
 ########################
-# (run "tools/Build CMake Files List.R" to update this)
+# (run "tools/build_cmake_files_list.R" to update this)
 include(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
 set(WISTIER_LIB wisteria)
 add_library(${WISTIER_LIB} STATIC ${WISTERIA_SRC})
