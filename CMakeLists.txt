@@ -127,7 +127,9 @@ elseif(MINGW OR MSYS)
 elseif(APPLE)
     target_compile_definitions(${WISTIER_LIB} PUBLIC __WXOSX__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
-    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+    # TODO: add -Werror eventually.
+    # Don't use -Werror for now because of warning from wxWidgets.
+    target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(UNIX)
     target_compile_definitions(${WISTIER_LIB} PUBLIC __WXGTK__
