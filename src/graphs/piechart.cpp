@@ -96,17 +96,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                     {
                     break;
                     }
-                    const auto currentFontSize = pieSliceLabel->GetFont().GetFractionalPointSize();
-                    pieSliceLabel->GetFont().Scale(.95f);
-                    // either too small for our taste or couldn't be scaled down anymore
-                    if ((pieSliceLabel->GetFont().GetFractionalPointSize() * GetScaling()) <= 6 ||
-                        compare_doubles(pieSliceLabel->GetFont().GetFractionalPointSize(),
-                                        currentFontSize))
-                        {
-                        middleLabelIsTooSmall = true;
-                        break;
-                        }
+                const auto currentFontSize = pieSliceLabel->GetFont().GetFractionalPointSize();
+                pieSliceLabel->GetFont().Scale(.95f);
+                // either too small for our taste or couldn't be scaled down anymore
+                if ((pieSliceLabel->GetFont().GetFractionalPointSize() * GetScaling()) <= 6 ||
+                    compare_doubles(pieSliceLabel->GetFont().GetFractionalPointSize(),
+                                    currentFontSize))
+                    {
+                    middleLabelIsTooSmall = true;
+                    break;
                     }
+                }
             return middleLabelIsTooSmall ? nullptr : std::move(pieSliceLabel);
         };
 
@@ -140,8 +140,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                 }
             return scaledPieLabel;
             }
-            return scaledPieLabel;
-            }
+        return scaledPieLabel;
+        }
 
     //----------------------------------------------------------------
     std::unique_ptr<Label> PieSlice::CreateOuterLabel(const BinLabelDisplay labelDisplay)
@@ -486,8 +486,8 @@ namespace Wisteria::Graphs
             {
             GetOuterPie().emplace_back((useContinuousGroup1Column ?
                                             std::to_wstring(group.first) :
-                                                        groupColumn1->GetLabelFromID(group.first)),
-                           group.second, safe_divide(group.second, totalValue));
+                                            groupColumn1->GetLabelFromID(group.first)),
+                                       group.second, safe_divide(group.second, totalValue));
             }
         std::sort(GetOuterPie().begin(), GetOuterPie().end());
 
@@ -544,9 +544,9 @@ namespace Wisteria::Graphs
                     {
                     currentOuterSliceSlices.emplace_back(
                         (useContinuousGroup2Column ?
-                                        std::to_wstring(innerGroup.first) :
-                                        groupColumn2->GetLabelFromID(innerGroup.first)),
-                                   innerGroup.second, safe_divide(innerGroup.second, totalValue));
+                             std::to_wstring(innerGroup.first) :
+                             groupColumn2->GetLabelFromID(innerGroup.first)),
+                        innerGroup.second, safe_divide(innerGroup.second, totalValue));
                     }
                 std::sort(currentOuterSliceSlices.begin(), currentOuterSliceSlices.end());
                 innerPie.insert(
@@ -941,8 +941,8 @@ namespace Wisteria::Graphs
             if (sliceColor && GetColorScheme())
                 {
                 sliceColor = (currentParentSliceIndex == innerPie.m_parentSliceIndex) ?
-                        Colors::ColorContrast::ShadeOrTint(sliceColor.value(), .1) :
-                        Colors::ColorContrast::ShadeOrTint(
+                                 Colors::ColorContrast::ShadeOrTint(sliceColor.value(), .1) :
+                                 Colors::ColorContrast::ShadeOrTint(
                                      GetColorScheme()->GetColor(innerPie.m_parentSliceIndex), 0.1);
                 sliceColorToUse =
                     (innerPie.IsGhosted() ?
@@ -2183,7 +2183,6 @@ namespace Wisteria::Graphs
         legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator, *wxBLACK_PEN,
                                               *wxBLACK_BRUSH);
 
-        size_t lineCount{ 0 };
         size_t currentParentSliceIndex{ 0 };
         std::optional<wxColour> sliceColor{
             GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(0)) : std::nullopt
@@ -2191,7 +2190,7 @@ namespace Wisteria::Graphs
         auto sliceBrush{ GetBrushScheme()->GetBrush(0) };
         for (size_t i = 0; i < GetInnerPie().size(); ++i)
             {
-            if (Settings::GetMaxLegendItemCount() == lineCount)
+            if (Settings::GetMaxLegendItemCount() == i)
                 {
                 legendText.append(L"\u2026");
                 // cppcheck-suppress unreadVariable
@@ -2271,10 +2270,9 @@ namespace Wisteria::Graphs
                 .DPIScaling(GetDPIScaleFactor()));
 
         wxString legendText;
-        size_t lineCount{ 0 };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
-            if (Settings::GetMaxLegendItemCount() == lineCount)
+            if (Settings::GetMaxLegendItemCount() == i)
                 {
                 legendText.append(L"\u2026");
                 break;
