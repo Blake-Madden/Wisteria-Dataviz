@@ -8,8 +8,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __SAFE_MATH_H__
-#define __SAFE_MATH_H__
+#ifndef SAFE_MATH_H
+#define SAFE_MATH_H
 
 #include <cassert>
 #include <cmath>
@@ -162,8 +162,7 @@ class double_less
         @param right The right value.
         @returns @c true if @c left is less than @c right.*/
     [[nodiscard]]
-    inline bool
-    operator()(const double& left, const double& right) const noexcept
+    inline bool operator()(const double& left, const double& right) const noexcept
         {
         return compare_doubles_less(left, right);
         }
@@ -194,4 +193,4 @@ constexpr int bool_to_int(const bool boolVal) noexcept
 
 /** @}*/
 
-#endif //__SAFE_MATH_H__
+#endif // SAFE_MATH_H

@@ -10,19 +10,15 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarChart)
 
-    using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    GanttChart::GanttChart(Wisteria::Canvas* canvas,
-                           std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/)
+    GanttChart::GanttChart(
+        Wisteria::Canvas * canvas,
+        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/)
         : BarChart(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
         SetBarOrientation(Orientation::Horizontal);
         GetRightYAxis().Show(false);
         GetScalingAxis().Show(false);
@@ -35,14 +31,14 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void GanttChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                             const DateInterval interval, const FiscalYear FYType,
-                             const wxString& taskColumnName, const wxString& startDateColumnName,
-                             const wxString& endDateColumnName,
-                             std::optional<const wxString> resourceColumnName /*= std::nullopt*/,
-                             std::optional<const wxString> descriptionColumnName /*= std::nullopt*/,
-                             std::optional<const wxString> completionColumnName /*= std::nullopt*/,
-                             std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+    void GanttChart::SetData(
+        const std::shared_ptr<const Data::Dataset>& data, const DateInterval interval,
+        const FiscalYear FYType, const wxString& taskColumnName,
+        const wxString& startDateColumnName, const wxString& endDateColumnName,
+        const std::optional<const wxString>& resourceColumnName /*= std::nullopt*/,
+        const std::optional<const wxString>& descriptionColumnName /*= std::nullopt*/,
+        const std::optional<const wxString>& completionColumnName /*= std::nullopt*/,
+        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
         {
         // point to (new) data and reset
         SetDataset(data);
@@ -127,12 +123,12 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void GanttChart::Calculate()
         {
-        if (!m_tasks.size())
+        if (m_tasks.empty())
             {
             return;
             }
 
-        wxDateTime firstDay =
+        const wxDateTime firstDay =
             std::min_element(m_tasks.cbegin(), m_tasks.cend(),
                              [](const auto& task1, const auto& task2)
                              {
@@ -145,7 +141,7 @@ namespace Wisteria::Graphs
                                             task1.m_start < task2.m_start;
                              })
                 ->m_start;
-        wxDateTime lastDay =
+        const wxDateTime lastDay =
             std::max_element(m_tasks.cbegin(), m_tasks.cend(),
                              [](const auto& task1, const auto& task2)
                              {
@@ -186,7 +182,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void GanttChart::RecalcSizes(wxDC& dc)
+    void GanttChart::RecalcSizes(wxDC & dc)
         {
         ClearBars(false);
 
@@ -213,7 +209,8 @@ namespace Wisteria::Graphs
                     GetBars().size(),
                     { { BarBlock(
                           BarBlockInfo(daysFinished)
-                              .Brush(wxBrush(ColorContrast::BlackOrWhiteContrast(taskInfo.m_color),
+                              .Brush(wxBrush(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                                 taskInfo.m_color),
                                              wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH))
                               .Color(taskInfo.m_color)
                               .SelectionLabel(GraphItems::Label(
@@ -301,14 +298,14 @@ namespace Wisteria::Graphs
                     }
                 decalStr.Trim();
 
-                br.GetBlocks().front().SetDecal(
-                    GraphItems::Label(GraphItemInfo(decalStr)
-                                          .ChildAlignment(RelativeAlignment::FlushLeft)
-                                          .FontColor(ColorContrast::BlackOrWhiteContrast(
-                                              br.GetBlocks().front().GetBrush().GetColour()))));
+                br.GetBlocks().front().SetDecal(GraphItems::Label(
+                    GraphItems::GraphItemInfo(decalStr)
+                        .ChildAlignment(RelativeAlignment::FlushLeft)
+                        .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            br.GetBlocks().front().GetBrush().GetColour()))));
                 br.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(
                     m_maxDescriptionLength);
-                if (taskInfo.m_img.IsOk() && taskInfo.m_name.length())
+                if (taskInfo.m_img.IsOk() && !taskInfo.m_name.empty())
                     {
                     // see how tall the name label is and scale the image to that size
                     br.GetAxisLabel().SetScaling(GetScaling());
@@ -370,11 +367,11 @@ namespace Wisteria::Graphs
                 decalStr.Trim();
 
                 arrowBar.GetBlocks().front().SetDecal(
-                    GraphItems::Label(GraphItemInfo(decalStr).FontColor(
-                        ColorContrast::BlackOrWhiteContrast(taskInfo.m_color))));
+                    GraphItems::Label(GraphItems::GraphItemInfo(decalStr).FontColor(
+                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(taskInfo.m_color))));
                 arrowBar.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(
                     m_maxDescriptionLength);
-                if (taskInfo.m_img.IsOk() && taskInfo.m_name.length())
+                if (taskInfo.m_img.IsOk() && !taskInfo.m_name.empty())
                     {
                     // see how tall the name label is and scale the image to that size
                     arrowBar.GetAxisLabel().SetScaling(GetScaling());

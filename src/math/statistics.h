@@ -33,10 +33,9 @@ namespace statistics
     [[nodiscard]]
     inline size_t valid_n(const std::vector<double>& data) noexcept
         {
-        return static_cast<size_t>(std::accumulate(data.cbegin(), data.cend(), 0.0,
-                                                   [](const auto initVal, const auto val) noexcept {
-                                                       return initVal + (std::isnan(val) ? 0 : 1);
-                                                   }));
+        return static_cast<size_t>(std::accumulate(
+            data.cbegin(), data.cend(), 0.0, [](const auto initVal, const auto val) noexcept
+            { return initVal + (std::isnan(val) ? 0 : 1); }));
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
@@ -146,10 +145,9 @@ namespace statistics
     inline double mean(const std::vector<double>& data)
         {
         const auto N = valid_n(data);
-        const double summation =
-            std::accumulate(data.cbegin(), data.cend(), 0.0,
-                            [](const double initVal, const double val) noexcept
-                            { return initVal + (std::isnan(val) ? 0.0 : val); });
+        const double summation = std::accumulate(
+            data.cbegin(), data.cend(), 0.0, [](const double initVal, const double val) noexcept
+            { return initVal + (std::isnan(val) ? 0.0 : val); });
         if (N == 0)
             {
             throw std::invalid_argument("No observations in mean calculation.");
@@ -468,12 +466,10 @@ namespace statistics
         /// @returns A pointer/iterator to the next outlier,
         ///     or end of the container if no more outliers.
         [[nodiscard]]
-        std::vector<double>::const_iterator
-        operator()() noexcept
+        std::vector<double>::const_iterator operator()() noexcept
             {
             m_current_position =
-                std::find_if(m_current_position, m_end,
-                             [this](const auto& val) noexcept
+                std::find_if(m_current_position, m_end, [this](const auto& val) noexcept
                              { return !is_within<double>(std::make_pair(lo, uo), val); });
             return (m_end == m_current_position) ? m_end : m_current_position++;
             }
@@ -572,7 +568,8 @@ namespace statistics
         const long long n_dot_0 = n10 + n00;
         const long long n1_dot = n11 + n10;
         const long long n0_dot = n01 + n00;
-        [[maybe_unused]] const long long n = n1_dot + n0_dot;
+        [[maybe_unused]]
+        const long long n = n1_dot + n0_dot;
         const double pc = safe_divide<double>((n11 * n00) - (n10 * n01),
                                               std::sqrt(n1_dot * n0_dot * n_dot_0 * n_dot_1));
         assert(is_within<double>(pc, -1, 1) &&

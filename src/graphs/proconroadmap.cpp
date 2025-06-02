@@ -10,19 +10,14 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roadmap)
 
-    using namespace Wisteria;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    void ProConRoadmap::SetData(std::shared_ptr<const Data::Dataset> data,
-                                const wxString& positiveColumnName,
-                                const std::optional<wxString>& positiveValueColumnName,
-                                const wxString& negativeColumnName,
-                                const std::optional<wxString>& negativeValueColumnName,
-                                const std::optional<size_t>& minimumCountForItem)
+    void ProConRoadmap::SetData(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& positiveColumnName,
+        const std::optional<wxString>& positiveValueColumnName, const wxString& negativeColumnName,
+        const std::optional<wxString>& negativeValueColumnName,
+        const std::optional<size_t>& minimumCountForItem)
         {
         if (data == nullptr)
             {
@@ -79,7 +74,7 @@ namespace Wisteria::Graphs
             // valid aggregate count (if aggregate value is in use)
             if (!(positiveValueColumnName.has_value() &&
                   std::isnan(positiveValueColumn->GetValue(i))) &&
-                positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)).length())
+                !positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)).empty())
                 {
                 influencers.insert(positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)),
                                    (positiveValueColumnName.has_value() ?
@@ -90,7 +85,7 @@ namespace Wisteria::Graphs
                 }
             if (!(negativeValueColumnName.has_value() &&
                   std::isnan(negativeValueColumn->GetValue(i))) &&
-                negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)).length())
+                !negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)).empty())
                 {
                 influencers.insert(negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)),
                                    // force negative influencers to be negative

@@ -171,7 +171,7 @@ namespace Wisteria::Graphs
           public:
             /// @brief Constructor.
             /// @param name The name of the influencer.
-            explicit RoadStopInfo(const wxString& name) : m_name(name) {}
+            explicit RoadStopInfo(wxString name) : m_name(std::move(name)) {}
 
             /// @brief Sets the name of the influencer.
             /// @param name The name to display.

@@ -154,7 +154,7 @@ namespace Wisteria::Graphs
             canvas->GetDefaultCanvasHeightDIPs() * 2);
          // also, fit it to the entire page when printing (preferably in portrait)
          canvas->FitToPageWhenPrinting(true);
-         
+
         @endcode
     */
     class ProConRoadmap final : public Roadmap
@@ -162,7 +162,7 @@ namespace Wisteria::Graphs
         wxDECLARE_DYNAMIC_CLASS(ProConRoadmap);
         ProConRoadmap() = default;
 
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/
         explicit ProConRoadmap(Canvas* canvas) : Roadmap(canvas)
@@ -193,7 +193,7 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& positiveColumnName,
                      const std::optional<wxString>& positiveValueColumnName,
                      const wxString& negativeColumnName,
@@ -205,26 +205,31 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the legend label for positive influencers.
             @param label The label to display.*/
-        void SetPositiveLegendLabel(const wxString& label)
-            { m_positiveLabel = label; }
+        void SetPositiveLegendLabel(const wxString& label) { m_positiveLabel = label; }
+
         /** @brief Sets the legend label for negative influencers.
             @param label The label to display.*/
-        void SetNegativeLegendLabel(const wxString& label)
-            { m_negativeLabel = label; }
-    private:
+        void SetNegativeLegendLabel(const wxString& label) { m_negativeLabel = label; }
+
+      private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
         wxString GetPositiveLegendLabel() const final
-            { return m_positiveLabel; }
+            {
+            return m_positiveLabel;
+            }
+
         /// @returns The negative label used for the legend.
         [[nodiscard]]
         wxString GetNegativeLegendLabel() const final
-            { return m_negativeLabel; }
+            {
+            return m_negativeLabel;
+            }
 
         wxString m_positiveLabel{ /*TRANSLATORS: A favorable reason. */ _(L"Pro") };
-        wxString m_negativeLabel{ /*TRANSLATORS: A unfavorable reason. */ _(L"Con") };
+        wxString m_negativeLabel{ /*TRANSLATORS: An unfavorable reason. */ _(L"Con") };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

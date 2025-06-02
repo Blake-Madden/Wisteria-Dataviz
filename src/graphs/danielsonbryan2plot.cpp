@@ -19,8 +19,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
-        SetShapeScheme(shapes != nullptr ? shapes :
+        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
+        SetShapeScheme(shapes != nullptr ? std::move(shapes) :
                                            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
         if (GetCanvas() != nullptr)
@@ -44,7 +44,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
         std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
-        SetDataset(data);
+        SetDataset(std::move(data));
         ResetGrouping();
         m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();
@@ -55,7 +55,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             return;
             }
 
-        SetGroupColumn(groupColumnName);
+        SetGroupColumn(std::move(groupColumnName));
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())

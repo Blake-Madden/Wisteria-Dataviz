@@ -37,7 +37,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                           std::optional<const wxString> groupColumnName /*= std::nullopt*/,
                           std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
-        SetDataset(data);
+        SetDataset(std::move(data));
         ResetGrouping();
         GetSelectedIds().clear();
 
@@ -46,7 +46,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             return;
             }
 
-        SetGroupColumn(groupColumnName);
+        SetGroupColumn(std::move(groupColumnName));
         m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
@@ -205,7 +205,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         const auto maxRowsWhenGrouping =
             std::ceil(safe_divide<double>(m_matrix.size(), m_groupColumnCount));
 
-        constexpr wxCoord labelRightPadding{ 4 };
+        constexpr wxCoord LABEL_RIGHT_PADDING{ 4 };
 
         // size the boxes to fit in the area available
         wxRect drawArea = GetPlotAreaBoundingBox();
@@ -234,7 +234,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), widestLabelWidth);
                 }
             }
-        const bool hasGroupLabels{ IsUsingGrouping() && GetGroupColumn()->GetStringTable().size() };
+        const bool hasGroupLabels{ IsUsingGrouping() &&
+                                   !GetGroupColumn()->GetStringTable().empty() };
         const auto groupLabelWidth{ hasGroupLabels ? widestLabelWidth : 0 };
         if (IsUsingGrouping() && m_matrix.size() > 1)
             {
@@ -258,7 +259,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     .Scaling(GetScaling())
                     .Pen(wxNullPen)
                     .DPIScaling(GetDPIScaleFactor())
-                    .Padding(0, 0, labelRightPadding, 0)
+                    .Padding(0, 0, LABEL_RIGHT_PADDING, 0)
                     .Font(groupHeaderLabelFont));
             // try to keep the axis font size, but use smaller font if necessary
             groupHeaderLabelFont.SetPointSize(
@@ -321,7 +322,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         groupLabelFont.SetPointSize( // fit font as best possible
             GraphItems::Label::CalcFontSizeToFitBoundingBox(
                 dc, groupLabelFont,
-                wxSize(widestLabelWidth - ScaleToScreenAndCanvas(labelRightPadding), boxWidth),
+                wxSize(widestLabelWidth - ScaleToScreenAndCanvas(LABEL_RIGHT_PADDING), boxWidth),
                 widestStr));
         // and the labels on the boxes
         wxFont boxLabelFont{ GetBottomXAxis().GetFont() };
@@ -424,7 +425,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                         .AnchorPoint(wxPoint(drawArea.GetTopLeft().x - groupLabelWidth,
                                              drawArea.GetTopLeft().y + (currentRow * boxWidth)))
                         .Pen(wxNullPen)
-                        .Padding(0, labelRightPadding, 0, 0)
+                        .Padding(0, LABEL_RIGHT_PADDING, 0, 0)
                         .LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
                 groupRowLabel->SetMinimumUserSizeDIPs(DownscaleFromScreenAndCanvas(groupLabelWidth),
                                                       DownscaleFromScreenAndCanvas(boxWidth));

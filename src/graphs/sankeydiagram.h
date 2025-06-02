@@ -114,7 +114,7 @@ namespace Wisteria::Graphs
                                std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr)
             : Graph2D(canvas)
             {
-            SetBrushScheme(brushes != nullptr ? brushes :
+            SetBrushScheme(brushes != nullptr ? std::move(brushes) :
                                                 std::make_shared<Brushes::Schemes::BrushScheme>(
                                                     Wisteria::Colors::Schemes::IceCream{}));
 
@@ -154,8 +154,8 @@ namespace Wisteria::Graphs
                 @c toWeightColumnName was not (or vice versa).\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& fromColumnName,
-                     const wxString& toColumnName,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const wxString& fromColumnName, const wxString& toColumnName,
                      const std::optional<wxString>& fromWeightColumnName,
                      const std::optional<wxString>& toWeightColumnName,
                      const std::optional<wxString>& fromSortColumnName);
@@ -236,8 +236,9 @@ namespace Wisteria::Graphs
 
             explicit SankeyGroup(wxString label) : m_label(std::move(label)) {}
 
-            SankeyGroup(wxString label, const double freq, const DownStreamGroups& downStreamGroups)
-                : m_label(std::move(label)), m_frequency(freq), m_downStreamGroups(downStreamGroups)
+            SankeyGroup(wxString label, const double freq, DownStreamGroups downStreamGroups)
+                : m_label(std::move(label)), m_frequency(freq),
+                  m_downStreamGroups(std::move(downStreamGroups))
                 {
                 }
 

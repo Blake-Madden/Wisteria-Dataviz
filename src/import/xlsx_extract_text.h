@@ -44,8 +44,7 @@ namespace lily_of_the_valley
             @returns @c true and the string if another item is found,
                 @c false and empty string otherwise.*/
         [[nodiscard]]
-        const std::pair<bool, std::wstring>
-        operator()();
+        std::pair<bool, std::wstring> operator()();
 
       private:
         /// @brief Sets the internal text pointer to null.
@@ -88,18 +87,18 @@ namespace lily_of_the_valley
             }
 
         /// The maximum number of rows an Excel file can have
-        constexpr static size_t ExcelMaxRows = 1'048'576; // 1024 * 1024;
+        constexpr static size_t EXCEL_MAX_ROWS = 1'048'576; // 1024 * 1024;
         /// The maximum number of columns an Excel file can have
-        constexpr static size_t ExcelMaxColumns = 16'384; // 1024 * 16;
+        constexpr static size_t EXCEL_MAX_COLUMNS = 16'384; // 1024 * 16;
 
         /// A cell in an Excel file, which stores the position of the cell and
         ///     if a string then index into the Excel file's string table
-        ///     (which would be invalid_index [-1] if a numeric value).
+        ///     (which would be INVALID_INDEX [-1] if a numeric value).
         class worksheet_cell
             {
           public:
             /// @private
-            constexpr static size_t invalid_index = static_cast<size_t>(-1);
+            constexpr static size_t INVALID_INDEX = static_cast<size_t>(-1);
             /// @private
             worksheet_cell() = default;
 
@@ -112,8 +111,8 @@ namespace lily_of_the_valley
                 @param row The (1-based) row index of the cell.
                 @param value The cell's value.*/
             worksheet_cell(const size_t column, const size_t row,
-                           const std::wstring& value = std::wstring{}) noexcept
-                : m_column_position(column), m_row_position(row), m_value(value)
+                           std::wstring value = std::wstring{}) noexcept
+                : m_column_position(column), m_row_position(row), m_value(std::move(value))
                 {
                 }
 
@@ -121,8 +120,7 @@ namespace lily_of_the_valley
             /// @param that The other cell to compare against.\n
             ///     If they are in the same column, then their rows are compared.
             [[nodiscard]]
-            bool
-            operator<(const worksheet_cell& that) const noexcept
+            bool operator<(const worksheet_cell& that) const noexcept
                 {
                 return (m_column_position < that.m_column_position) ?
                            true :
@@ -134,8 +132,7 @@ namespace lily_of_the_valley
             /// @returns @c true if @c that cell is at the same column and row as this.
             /// @param that The other cell to compare against.
             [[nodiscard]]
-            bool
-            operator==(const worksheet_cell& that) const noexcept
+            bool operator==(const worksheet_cell& that) const noexcept
                 {
                 return (m_column_position == that.m_column_position) &&
                        (m_row_position == that.m_row_position);
@@ -144,8 +141,7 @@ namespace lily_of_the_valley
             /// @returns @c true if @c that cell is at a different place from this one.
             /// @param that The other cell to compare against.
             [[nodiscard]]
-            bool
-            operator!=(const worksheet_cell& that) const noexcept
+            bool operator!=(const worksheet_cell& that) const noexcept
                 {
                 return (m_column_position != that.m_column_position) ||
                        (m_row_position != that.m_row_position);
@@ -191,9 +187,9 @@ namespace lily_of_the_valley
 
           private:
             // 1-indexed, 'A' is column 1
-            size_t m_column_position{ invalid_index };
+            size_t m_column_position{ INVALID_INDEX };
             // 1-indexed, rows are referenced this way in the Excel file
-            size_t m_row_position{ invalid_index };
+            size_t m_row_position{ INVALID_INDEX };
             // the string value in the cell
             std::wstring m_value;
             };
@@ -202,12 +198,12 @@ namespace lily_of_the_valley
         /// @private
         struct column_info
             {
-            constexpr static size_t invalid_position = static_cast<size_t>(-1);
+            constexpr static size_t INVALID_POSITION = static_cast<size_t>(-1);
             column_info() = default;
 
             explicit column_info(size_t position) noexcept : m_position(position) {}
 
-            size_t m_position{ invalid_position };
+            size_t m_position{ INVALID_POSITION };
             };
 
         /// A row of cells.
@@ -265,7 +261,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static size_t get_cell_count(const worksheet& wrk)
             {
-            return (wrk.size() > 0) ?
+            return (!wrk.empty()) ?
                        wrk.size() /* row count*/ * wrk[0].size() /* column count of first row*/ :
                        0;
             }

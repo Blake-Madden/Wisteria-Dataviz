@@ -14,7 +14,7 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
                                                             int noTemplates, bool sortDocs)
     {
     wxArrayString strings;
-    wxDocTemplate** data = new wxDocTemplate*[noTemplates];
+    auto** data = new wxDocTemplate*[noTemplates];
     int i{ 0 };
     int n{ 0 };
 
@@ -82,7 +82,7 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
         // wxGetSingleChoiceData is used in the default implementation of this function,
         // but we are overriding it here to use a more advanced selection dialog
         wxArrayString docNames;
-        wxArrayString docDescriptions;
+        const wxArrayString docDescriptions;
         for (i = 0; i < noTemplates; i++)
             {
             docNames.Add(data[i]->GetDescription());
@@ -95,7 +95,7 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
                 {
                 return wxTheApp->GetTopWindow();
                 }
-            else if (GetCurrentDocument() != nullptr &&
+            if (GetCurrentDocument() != nullptr &&
                      GetCurrentDocument()->GetDocumentWindow() != nullptr)
                 {
                 return GetCurrentDocument()->GetDocumentWindow();
@@ -122,10 +122,10 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
 wxIMPLEMENT_CLASS(Wisteria::UI::BaseMainFrame, wxDocParentFrame);
 
 //----------------------------------------------------------
-void Wisteria::UI::BaseMainFrame::DisplayHelp(const wxString& topic /*= wxEmptyString*/)
+void Wisteria::UI::BaseMainFrame::DisplayHelp(const wxString& topic /*= wxEmptyString*/) const
     {
     const wxString helpPath =
-        topic.length() ? GetHelpDirectory() + wxFileName::GetPathSeparator() + topic :
+        !topic.empty() ? GetHelpDirectory() + wxFileName::GetPathSeparator() + topic :
                          GetHelpDirectory() + wxFileName::GetPathSeparator() + L"index.html";
     wxLaunchDefaultBrowser(wxFileName::FileNameToURL(helpPath));
     }
@@ -149,8 +149,8 @@ void Wisteria::UI::BaseMainFrame::InitControls(wxRibbonBar* ribbon)
     {
     m_ribbon = ribbon;
 
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    if (m_ribbon)
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+    if (m_ribbon != nullptr)
         {
         mainSizer->Add(m_ribbon, wxSizerFlags{}.Expand());
         }
@@ -159,11 +159,11 @@ void Wisteria::UI::BaseMainFrame::InitControls(wxRibbonBar* ribbon)
 
 //-------------------------------------------------------
 Wisteria::UI::BaseMainFrame::BaseMainFrame(wxDocManager* manager, wxFrame* frame,
-                                           const wxArrayString& defaultFileExtentions,
+                                           wxArrayString defaultFileExtensions,
                                            const wxString& title, const wxPoint& pos,
                                            const wxSize& size, long style)
-    : wxDocParentFrame(manager, frame, wxID_ANY, title, pos, size, style), m_ribbon(nullptr),
-      m_printData(nullptr), m_defaultFileExtentions(defaultFileExtentions)
+    : wxDocParentFrame(manager, frame, wxID_ANY, title, pos, size, style),
+      m_defaultFileExtentions(std::move(defaultFileExtensions))
     {
     // set up drag 'n' drop
     SetDropTarget(new DropFiles(this));
@@ -184,7 +184,7 @@ Wisteria::UI::BaseMainFrame::BaseMainFrame(wxDocManager* manager, wxFrame* frame
 wxDocument* Wisteria::UI::BaseMainFrame::OpenFile(const wxString& path)
     {
     wxDocument* doc = m_docManager->CreateDocument(path, wxDOC_SILENT);
-    if (!doc)
+    if (doc == nullptr)
         {
         m_docManager->OnOpenFileFailure();
         }
@@ -209,7 +209,7 @@ bool Wisteria::UI::DropFiles::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_un
     {
     for (size_t n = 0; n < filenames.GetCount(); ++n)
         {
-        wxFileName filename(filenames[n]);
+        const wxFileName filename(filenames[n]);
         for (size_t i = 0; i < m_frame->GetDefaultFileExtentions().GetCount(); ++i)
             {
             if (filename.GetExt().CmpNoCase(m_frame->GetDefaultFileExtentions()[i]) == 0)

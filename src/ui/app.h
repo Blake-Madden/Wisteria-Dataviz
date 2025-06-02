@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __BASEAPP_H__
-#define __BASEAPP_H__
+#ifndef WISTERIA_BASEAPP_H
+#define WISTERIA_BASEAPP_H
 
 #include "../debug/debug_profile.h"
 #include "../math/safe_math.h"
@@ -137,7 +137,7 @@ namespace Wisteria::UI
         wxWindow* GetParentingWindow();
 
         /// @brief Sets a descriptive name for the application's document type.
-        /// @param documentTypeName The descriptives.
+        /// @param documentTypeName The descriptions.
         void SetDocumentTypeName(const wxString& documentTypeName)
             {
             m_documentTypeName = documentTypeName;
@@ -214,17 +214,14 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxPrintData* GetPrintData()
             {
-            if (GetMainFrame())
+            if (GetMainFrame() != nullptr)
                 {
                 return &GetMainFrame()
                             ->GetDocumentManager()
                             ->GetPageSetupDialogData()
                             .GetPrintData();
                 }
-            else
-                {
-                return nullptr;
-                }
+            return nullptr;
             }
 
         /// @returns The path to a file in the application's resource directory,
@@ -276,7 +273,7 @@ namespace Wisteria::UI
         wxString FindResourceFileWithAppInfo(const wxString& folder, const wxString& subFile) const;
         [[nodiscard]]
         wxString FindResourceDirectoryWithAppInfo(const wxString& folder,
-                                                  const wxString& subFile) const;
+                                                  const wxString& subFolder) const;
 
         wxDocManager* m_docManager{ nullptr };
         Wisteria::UI::BaseMainFrame* m_mainFrame{ nullptr };
@@ -296,4 +293,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__BASEAPP_H__
+#endif // WISTERIA_BASEAPP_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __BASEMAINFRAME_H__
-#define __BASEMAINFRAME_H__
+#ifndef BASEMAINFRAME_H
+#define BASEMAINFRAME_H
 
 #include <wx/bitmap.h>
 #include <wx/dc.h>
@@ -41,7 +41,7 @@ namespace Wisteria::UI
         /// @private
         [[nodiscard]]
         wxDocTemplate* SelectDocumentType(wxDocTemplate** templates, int noTemplates,
-                                          bool sortDocs = false);
+                                          bool sortDocs = false) override;
         };
 
     /// @brief Single-document application parent frame with built-in ribbon,
@@ -51,7 +51,7 @@ namespace Wisteria::UI
     ///     \n
     ///     Regarding the help system, this is designed for a folder containing "raw" help files,
     ///     such as a folder of HTML files and images. This folder path is defined by calling
-    ///     SetHelpDirectory(), and then the default behaviour is to launch HTML files from
+    ///     SetHelpDirectory(), and then the default behavior is to launch HTML files from
     ///     that folder. Help events (by default) will launch the file "index.html" from the
     ///     help folder into a browser, and DisplayHelp() will open a provided topic (by name)
     ///     from the same folder.
@@ -61,15 +61,15 @@ namespace Wisteria::UI
         /// @brief Constructor.
         /// @param manager The document manager.
         /// @param frame The parent application frame.
-        /// @param defaultFileExtentions The file types supported by the app.
+        /// @param defaultFileExtensions The file types supported by the app.
         ///     If more than one file extension, then a selection dialog is shown when the
         ///     client fires a new document event.
         /// @param title The title of the frame.
         /// @param pos The position of the frame.
         /// @param size The size of the frame.
         /// @param style The window style.
-        BaseMainFrame(wxDocManager* manager, wxFrame* frame,
-                      const wxArrayString& defaultFileExtentions, const wxString& title,
+        BaseMainFrame(wxDocManager* manager, wxFrame* frame, wxArrayString defaultFileExtensions,
+                      const wxString& title,
                       const wxPoint& pos, const wxSize& size, long style);
         /// @private
         BaseMainFrame(const BaseMainFrame&) = delete;
@@ -87,7 +87,7 @@ namespace Wisteria::UI
         /// @brief Opens the default help topic ("index.html" in the defined help folder).
         /// @param topic The name of the file to display.
         /// @sa SetHelpDirectory().
-        void DisplayHelp(const wxString& topic = wxEmptyString);
+        void DisplayHelp(const wxString& topic = wxEmptyString) const;
 
         /// @private
         wxDocument* OpenFile(const wxString& path);
@@ -181,4 +181,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__BASEMAINFRAME_H__
+#endif // BASEMAINFRAME_H

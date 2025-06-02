@@ -122,9 +122,10 @@ namespace Wisteria::Graphs
             @param pLevel If a p-value column is supplied, only predictors with p-values lower than
                 this will be included. (Predictors with missing p-values will be excluded.)\n
                 The recommendations are usually @c 0.05 or @c 0.01 (most strict).
-            @param predictorsToIncludes Which types of IVs (e.g., negative influencers) to include.\n
+            @param predictorsToIncludes Which types of IVs (e.g., negative influencers) to
+                include.\n
                 This is a bitmask that can include multiple flags.
-                    The default is to include all IVs.
+                The default is to include all IVs.
             @param dvName The name of the dependent variable from the original analysis.\n
                 This will be used on the legend and default caption.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
@@ -132,12 +133,12 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to @c
                 wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& predictorColumnName,
-                     const wxString& coefficientColumnName,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const wxString& predictorColumnName, const wxString& coefficientColumnName,
                      const std::optional<wxString>& pValueColumnName = std::nullopt,
                      const std::optional<double> pLevel = std::nullopt,
                      const std::optional<Influence> predictorsToIncludes = std::nullopt,
-                     const std::optional<wxString> dvName = std::nullopt);
+                     const std::optional<wxString>& dvName = std::nullopt);
 
         /// @brief Adds a caption explaining how to interpret the graph.
         void AddDefaultCaption() final;

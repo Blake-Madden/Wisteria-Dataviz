@@ -65,7 +65,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         std::unique_ptr<Wisteria::GraphItems::Label>
         CreateMiddleLabel(wxDC& dc, const double pieProportion, const BinLabelDisplay labelDisplay,
-                          const std::shared_ptr<const TextReplace> abbreviate = nullptr);
+                          const std::shared_ptr<const TextReplace>& abbreviate = nullptr);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
             @param labelDisplay What to display on the label.
@@ -134,7 +134,7 @@ namespace Wisteria::GraphItems
         bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
             {
             auto points = GetPolygon();
-            return Polygon::IsInsidePolygon(pt, &points[0], points.size());
+            return Polygon::IsInsidePolygon(pt, points.data(), points.size());
             }
 
         void Offset(const int x, const int y) final { m_pieArea.Offset(x, y); }
@@ -339,9 +339,9 @@ namespace Wisteria::Graphs
             /// @param percent The percent of the pie that this slice consumes.
             /// @param parentSliceIndex The position along the outer pie of this slice's
             ///     parent slice (only applies only to the inner pie).
-            explicit SliceInfo(const wxString& groupLabel, const double value = 0,
+            explicit SliceInfo(wxString groupLabel, const double value = 0,
                                const double percent = 0, size_t parentSliceIndex = 0)
-                : m_groupLabel(groupLabel), m_value(value), m_percent(percent),
+                : m_groupLabel(std::move(groupLabel)), m_value(value), m_percent(percent),
                   m_parentSliceIndex(parentSliceIndex)
                 {
                 }
@@ -538,7 +538,7 @@ namespace Wisteria::Graphs
                 for outer labels. If outer labels are too long to fit, set label placement
                 to LabelPlacement::Flush.
             @sa SetLabelPlacement().*/
-        void SetMidPointAbbreviation(const std::shared_ptr<const TextReplace> abbreviate)
+        void SetMidPointAbbreviation(const std::shared_ptr<const TextReplace>& abbreviate)
             {
             m_abbreviate = abbreviate;
             }
@@ -985,7 +985,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the donut hole color.
         /// @param color The background color of the donut hole.
-        void SetDonutHoleColor(const wxColour color) noexcept
+        void SetDonutHoleColor(const wxColour& color) noexcept
             {
             if (color.IsOk())
                 {
@@ -1006,14 +1006,9 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final
             {
-            if (options.GetRingPerimeter() == Perimeter::Inner)
-                {
-                return CreateInnerPieLegend(options.GetPlacementHint());
-                }
-            else
-                {
-                return CreateOuterPieLegend(options.GetPlacementHint());
-                }
+            return (options.GetRingPerimeter() == Perimeter::Inner) ?
+                CreateInnerPieLegend(options.GetPlacementHint()) :
+                CreateOuterPieLegend(options.GetPlacementHint());
             }
 
         /** @brief Builds and returns a legend for the outer pie

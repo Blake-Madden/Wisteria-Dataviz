@@ -60,7 +60,7 @@ namespace Wisteria::Graphs
         // the scale for the location markers (in DIPs);
         // 4 is probably the best looking small points, and 20 is a large enough
         // while still being reasonable
-        std::pair<double, double> pointSizesRange = { 4, 20 };
+        const std::pair<double, double> pointSizesRange = { 4, 20 };
 
         wxCoord xPt{ 0 }, yPt{ 0 };
         std::vector<wxPoint> pts;
@@ -74,7 +74,7 @@ namespace Wisteria::Graphs
         // start of the road (bottom)
         if (GetBottomXAxis().GetPhysicalCoordinate(middleX, xPt))
             {
-            pts.push_back({ xPt, GetBoundingBox(dc).GetBottom() });
+            pts.emplace_back(xPt, GetBoundingBox(dc).GetBottom());
             }
 
         // the curves in the road
@@ -87,7 +87,7 @@ namespace Wisteria::Graphs
                     xPt) &&
                 GetLeftYAxis().GetPhysicalCoordinate(i + 1, yPt))
                 {
-                pts.push_back({ xPt, yPt });
+                pts.emplace_back(xPt, yPt);
                 }
 
             // the location marker:
@@ -153,7 +153,7 @@ namespace Wisteria::Graphs
         // end of the road (top)
         if (GetBottomXAxis().GetPhysicalCoordinate(middleX, xPt))
             {
-            pts.push_back({ xPt, GetBoundingBox(dc).GetTop() });
+            pts.emplace_back(xPt, GetBoundingBox(dc).GetTop());
             }
 
         // the road pavement
@@ -204,8 +204,8 @@ namespace Wisteria::Graphs
             // of the lane separator to make it look like two lines
             if (m_laneSeparatorStyle == LaneSeparatorStyle::DoubleLine)
                 {
-                wxPen lineSepPen = wxPen(m_roadPen.GetColour(),
-                                         m_laneSeparatorPen.GetWidth() * math_constants::third);
+                const wxPen lineSepPen = wxPen(
+                    m_roadPen.GetColour(), m_laneSeparatorPen.GetWidth() * math_constants::third);
                 auto laneSepRoadLine = std::make_unique<GraphItems::Points2D>(lineSepPen);
                 laneSepRoadLine->SetDPIScaleFactor(GetDPIScaleFactor());
                 laneSepRoadLine->GetClippingRect() = GetPlotAreaBoundingBox();
@@ -238,7 +238,7 @@ namespace Wisteria::Graphs
             rightTextArea.SetRight(GetPlotAreaBoundingBox().GetRight());
             }
 
-        constexpr double smallestLabelScalingAllowable{ 0.5 };
+        constexpr double SMALLEST_LABEL_SCALING_ALLOWABLE{ 0.5 };
         for (auto& locationLabel : locationLabels)
             {
             auto largerRect =
@@ -255,10 +255,10 @@ namespace Wisteria::Graphs
                 locationLabel->SetScaling(
                     locationLabel->GetScaling() *
                     // don't go any smaller than half scale
-                    std::max(inverseProportion, smallestLabelScalingAllowable));
+                    std::max(inverseProportion, SMALLEST_LABEL_SCALING_ALLOWABLE));
                 }
             smallestLabelScaling = std::min(smallestLabelScaling, locationLabel->GetScaling());
-            if (compare_doubles(smallestLabelScaling, smallestLabelScalingAllowable))
+            if (compare_doubles(smallestLabelScaling, SMALLEST_LABEL_SCALING_ALLOWABLE))
                 {
                 break;
                 }
@@ -285,10 +285,10 @@ namespace Wisteria::Graphs
                 .DPIScaling(GetDPIScaleFactor()));
 
         wxString legendText = GetPositiveLegendLabel() + L"\n" + GetNegativeLegendLabel();
-        legend->GetLegendIcons().push_back(
-            Icons::LegendIcon(GetPositiveIcon().first, *wxBLACK, GetPositiveIcon().second));
-        legend->GetLegendIcons().push_back(
-            Icons::LegendIcon(GetNegativeIcon().first, *wxBLACK, GetNegativeIcon().second));
+        legend->GetLegendIcons().emplace_back(GetPositiveIcon().first, *wxBLACK,
+                                              GetPositiveIcon().second);
+        legend->GetLegendIcons().emplace_back(GetNegativeIcon().first, *wxBLACK,
+                                              GetNegativeIcon().second);
 
         if (options.IsIncludingHeader())
             {

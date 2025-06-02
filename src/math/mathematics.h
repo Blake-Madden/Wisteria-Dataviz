@@ -8,8 +8,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __MATHEMATICS_H__
-#define __MATHEMATICS_H__
+#ifndef WISTERIA_MATHEMATICS_H
+#define WISTERIA_MATHEMATICS_H
 
 #include "../debug/debug_assert.h"
 #include "safe_math.h"
@@ -116,8 +116,7 @@ class within
     /** @returns @c true if @c value is within the valid range of values.
         @param value The value to review.*/
     [[nodiscard]]
-    inline bool
-    operator()(T value) const noexcept
+    inline bool operator()(T value) const noexcept
         {
         return is_within(std::make_pair(m_range_begin, m_range_end), value);
         }
@@ -159,8 +158,7 @@ class comparable_first_pair
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared.*/
     [[nodiscard]]
-    bool
-    operator<(const comparable_first_pair<T1, T2>& that) const noexcept
+    bool operator<(const comparable_first_pair<T1, T2>& that) const noexcept
         {
         return first < that.first;
         }
@@ -170,8 +168,7 @@ class comparable_first_pair
         @note The first items of the pairs are what are compared. The second items can be different.
             This is a key difference from `std::pair`.*/
     [[nodiscard]]
-    bool
-    operator==(const comparable_first_pair<T1, T2>& that) const noexcept
+    bool operator==(const comparable_first_pair<T1, T2>& that) const noexcept
         {
         return first == that.first;
         }
@@ -457,8 +454,7 @@ class floor_value
     /// @returns The floored value of @c value.
     /// @param value The value to floor.
     [[nodiscard]]
-    inline T
-    operator()(const T& value) const noexcept
+    inline T operator()(const T& value) const noexcept
         {
         return std::floor(value);
         }
@@ -501,8 +497,7 @@ class even
     /// @returns Whether @c val is even.
     /// @param val The value to analyze.
     [[nodiscard]]
-    inline bool
-    operator()(const T& val) const noexcept
+    inline bool operator()(const T& val) const noexcept
         {
         return is_even(val);
         }
@@ -977,4 +972,4 @@ namespace geometry
 
 /** @}*/
 
-#endif //__MATHEMATICS_H__
+#endif // WISTERIA_MATHEMATICS_H

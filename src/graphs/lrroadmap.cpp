@@ -10,20 +10,16 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap)
 
-    using namespace Wisteria;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    void LRRoadmap::SetData(std::shared_ptr<const Data::Dataset> data,
+    void LRRoadmap::SetData(const std::shared_ptr<const Data::Dataset>& data,
                             const wxString& predictorColumnName,
                             const wxString& coefficientColumnName,
                             const std::optional<wxString>& pValueColumnName /*= std::nullopt*/,
                             const std::optional<double> pLevel /*= std::nullopt*/,
                             const std::optional<Influence> predictorsToIncludes /*= std::nullopt*/,
-                            const std::optional<wxString> dvName /*= std::nullopt*/)
+                            const std::optional<wxString>& dvName /*= std::nullopt*/)
         {
         if (data == nullptr)
             {
@@ -80,43 +76,39 @@ namespace Wisteria::Graphs
                 {
                 return false;
                 }
-            else if (pLevel.has_value() && !std::isnan(pLevel.value()) && pValue.has_value() &&
-                     (std::isnan(pValue.value()) || pValue >= pLevel.value()))
+            if (pLevel.has_value() && !std::isnan(pLevel.value()) && pValue.has_value() &&
+                (std::isnan(pValue.value()) || pValue >= pLevel.value()))
                 {
                 return false;
                 }
             // default to all included
-            else if (!predictorsToIncludes.has_value())
+            if (!predictorsToIncludes.has_value())
                 {
                 return true;
                 }
-            else if ((predictorsToIncludes.value() & Influence::InfluenceAll) ==
-                     Influence::InfluenceAll)
+            if ((predictorsToIncludes.value() & Influence::InfluenceAll) == Influence::InfluenceAll)
                 {
                 return true;
                 }
-            else if ((predictorsToIncludes.value() & Influence::InfluenceNegative) ==
-                         Influence::InfluenceNegative &&
-                     value < 0)
+            if ((predictorsToIncludes.value() & Influence::InfluenceNegative) ==
+                    Influence::InfluenceNegative &&
+                value < 0)
                 {
                 return true;
                 }
-            else if ((predictorsToIncludes.value() & Influence::InfluenceNeutral) ==
-                         Influence::InfluenceNeutral &&
-                     value == 0)
+            if ((predictorsToIncludes.value() & Influence::InfluenceNeutral) ==
+                    Influence::InfluenceNeutral &&
+                value == 0)
                 {
                 return true;
                 }
-            else if ((predictorsToIncludes.value() & Influence::InfluencePositive) ==
-                         Influence::InfluencePositive &&
-                     value > 0)
+            if ((predictorsToIncludes.value() & Influence::InfluencePositive) ==
+                    Influence::InfluencePositive &&
+                value > 0)
                 {
                 return true;
                 }
-            else
-                {
-                return false;
-                }
+            return false;
         };
 
         for (size_t i = 0; i < data->GetRowCount(); ++i)

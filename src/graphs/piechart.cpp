@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        wcurveplot.cpp
+// Name:        piechart.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2025 Blake Madden
 // License:     3-Clause BSD license
@@ -15,7 +15,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     std::unique_ptr<Label> PieSlice::CreateMiddleLabel(
         wxDC & dc, const double pieProportion, const BinLabelDisplay labelDisplay,
-        const std::shared_ptr<const TextReplace> abbreviate /*= nullptr*/)
+        const std::shared_ptr<const TextReplace>& abbreviate /*= nullptr*/)
         {
         const auto arcMiddle = GetMiddleOfArc(pieProportion);
         auto pieLabel = std::make_unique<Label>(GetGraphItemInfo());
@@ -86,15 +86,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
             for (;;)
                 {
                 auto labelBox = pieSliceLabel->GetBoundingBox(dc);
-                if (Polygon::IsInsidePolygon(labelBox.GetTopLeft(), &points[0], points.size()) &&
-                    Polygon::IsInsidePolygon(labelBox.GetBottomLeft(), &points[0], points.size()) &&
-                    Polygon::IsInsidePolygon(labelBox.GetTopRight(), &points[0], points.size()) &&
-                    Polygon::IsInsidePolygon(labelBox.GetBottomRight(), &points[0], points.size()))
+                if (Polygon::IsInsidePolygon(labelBox.GetTopLeft(), points.data(), points.size()) &&
+                    Polygon::IsInsidePolygon(labelBox.GetBottomLeft(), points.data(),
+                                             points.size()) &&
+                    Polygon::IsInsidePolygon(labelBox.GetTopRight(), points.data(),
+                                             points.size()) &&
+                    Polygon::IsInsidePolygon(labelBox.GetBottomRight(), points.data(),
+                                             points.size()))
                     {
                     break;
                     }
-                else
-                    {
                     const auto currentFontSize = pieSliceLabel->GetFont().GetFractionalPointSize();
                     pieSliceLabel->GetFont().Scale(.95f);
                     // either too small for our taste or couldn't be scaled down anymore
@@ -106,7 +107,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                         break;
                         }
                     }
-                }
             return middleLabelIsTooSmall ? nullptr : std::move(pieSliceLabel);
         };
 
@@ -140,11 +140,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                 }
             return scaledPieLabel;
             }
-        else
-            {
             return scaledPieLabel;
             }
-        }
 
     //----------------------------------------------------------------
     std::unique_ptr<Label> PieSlice::CreateOuterLabel(const BinLabelDisplay labelDisplay)
@@ -294,8 +291,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         points.push_back(Polygon::PairToPoint(endSweep));
 
         // center of pie
-        points.push_back(wxPoint(m_pieArea.GetLeft() + (m_pieArea.GetWidth() / 2),
-                                 m_pieArea.GetTop() + (m_pieArea.GetHeight() / 2)));
+        points.emplace_back(m_pieArea.GetLeft() + (m_pieArea.GetWidth() / 2),
+                            m_pieArea.GetTop() + (m_pieArea.GetHeight() / 2));
 
         return points;
         }
@@ -321,17 +318,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                                                  *wxTRANSPARENT_PEN);
             scaledArcPen.SetWidth(ScaleToScreenAndCanvas(scaledArcPen.GetWidth()));
 
-            wxDCPenChanger pc(dc, scaledArcPen);
+            const wxDCPenChanger pc(dc, scaledArcPen);
 
             // if a base color is in use, draw under a (possibly) hatched brush
             if (GetGraphItemInfo().GetBaseColor().has_value())
                 {
-                wxDCBrushChanger bCh(dc, GetGraphItemInfo().GetBaseColor().value());
+                const wxDCBrushChanger bCh(dc, GetGraphItemInfo().GetBaseColor().value());
                 dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(), m_startAngle,
                                    m_endAngle);
                 }
 
-            wxDCBrushChanger bCh(dc, GetBrush().IsOk() ? GetBrush() : dc.GetBrush());
+            const wxDCBrushChanger bCh(dc, GetBrush().IsOk() ? GetBrush() : dc.GetBrush());
             dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(), m_startAngle,
                                m_endAngle);
             }
@@ -341,7 +338,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         arcStart.first += m_pieArea.GetTopLeft().x;
         arcStart.second += m_pieArea.GetTopLeft().y;
             {
-            wxDCPenChanger pc(dc, scaledPen);
+            const wxDCPenChanger pc(dc, scaledPen);
             dc.DrawLine(centerPoint, wxPoint(arcStart.first, arcStart.second));
             }
         // line from the pie center to the end of the arc
@@ -350,22 +347,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         arcEnd.first += m_pieArea.GetTopLeft().x;
         arcEnd.second += m_pieArea.GetTopLeft().y;
             {
-            wxDCPenChanger pc(dc, scaledPen);
+            const wxDCPenChanger pc(dc, scaledPen);
             dc.DrawLine(centerPoint, wxPoint(arcEnd.first, arcEnd.second));
             }
 
         if (IsSelected())
             {
             auto points = GetPolygon();
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-            dc.DrawLines(points.size(), &points[0]);
+            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            dc.DrawLines(points.size(), points.data());
             // highlight the selected protruding bounding box in debug mode
             if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
                 wxPoint debugOutline[5];
                 GraphItems::Polygon::GetRectPoints(m_pieArea, debugOutline);
                 debugOutline[4] = debugOutline[0];
-                wxDCPenChanger pcDebug(
+                const wxDCPenChanger pcDebug(
                     dc, wxPen(*wxGREEN, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
                 dc.DrawLines(std::size(debugOutline), debugOutline);
                 }
@@ -383,10 +380,10 @@ namespace Wisteria::Graphs
                        std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/)
         : Graph2D(canvas)
         {
-        SetBrushScheme(brushes != nullptr ? brushes :
+        SetBrushScheme(brushes != nullptr ? std::move(brushes) :
                                             std::make_unique<Brushes::Schemes::BrushScheme>(
                                                 *Settings::GetDefaultColorScheme()));
-        SetColorScheme(colors);
+        SetColorScheme(std::move(colors));
 
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
@@ -487,10 +484,10 @@ namespace Wisteria::Graphs
         // create slices with their percentages of the overall total
         for (const auto& group : outerGroups)
             {
-            GetOuterPie().push_back(
-                SliceInfo{ (useContinuousGroup1Column ? std::to_wstring(group.first) :
+            GetOuterPie().emplace_back((useContinuousGroup1Column ?
+                                            std::to_wstring(group.first) :
                                                         groupColumn1->GetLabelFromID(group.first)),
-                           group.second, safe_divide(group.second, totalValue) });
+                           group.second, safe_divide(group.second, totalValue));
             }
         std::sort(GetOuterPie().begin(), GetOuterPie().end());
 
@@ -500,8 +497,7 @@ namespace Wisteria::Graphs
             {
             std::map<Data::GroupIdType, SliceAndCounts> innerGroups;
             totalValue = 0;
-            auto searchValue =
-                std::make_pair<Data::GroupIdType, SliceAndCounts>(0, SliceAndCounts{});
+            auto searchValue = std::pair<Data::GroupIdType, SliceAndCounts>(0, SliceAndCounts{});
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
                 if (useAggregateColumn && std::isnan(weightColumn->GetValue(i)))
@@ -546,11 +542,11 @@ namespace Wisteria::Graphs
                 // the slices with the current outer ring group
                 for (const auto& innerGroup : innerGroupOuterRing.second)
                     {
-                    currentOuterSliceSlices.push_back(
-                        SliceInfo{ (useContinuousGroup2Column ?
+                    currentOuterSliceSlices.emplace_back(
+                        (useContinuousGroup2Column ?
                                         std::to_wstring(innerGroup.first) :
                                         groupColumn2->GetLabelFromID(innerGroup.first)),
-                                   innerGroup.second, safe_divide(innerGroup.second, totalValue) });
+                                   innerGroup.second, safe_divide(innerGroup.second, totalValue));
                     }
                 std::sort(currentOuterSliceSlices.begin(), currentOuterSliceSlices.end());
                 innerPie.insert(
@@ -802,7 +798,7 @@ namespace Wisteria::Graphs
         int smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
-            std::optional<wxColour> sliceColor =
+            const std::optional<wxColour> sliceColor =
                 GetColorScheme() ? std::optional<wxColour>(
                                        GetOuterPie().at(i).IsGhosted() ?
                                            Colors::ColorContrast::ChangeOpacity(
@@ -825,7 +821,7 @@ namespace Wisteria::Graphs
                 pieDrawArea, startAngle, startAngle + (GetOuterPie().at(i).m_percent * 360),
                 GetOuterPie().at(i).m_value, GetOuterPie().at(i).m_percent);
             pSlice->SetMidPointLabelDisplay(GetOuterPie().at(i).GetMidPointLabelDisplay());
-            if (GetOuterPie().at(i).GetDescription().length())
+            if (!GetOuterPie().at(i).GetDescription().empty())
                 {
                 pSlice->SetText(GetOuterPie().at(i).GetGroupLabel() + L"\n" +
                                 GetOuterPie().at(i).GetDescription());
@@ -873,14 +869,14 @@ namespace Wisteria::Graphs
                 }
 
             double sliceProportion = 1 - (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
-            if (GetInnerPie().size())
+            if (!GetInnerPie().empty())
                 {
                 sliceProportion /= 2;
                 }
 
             sliceProportion = (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0) +
                               safe_divide<double>(sliceProportion, 2) +
-                              (GetInnerPie().size() ? sliceProportion : 0);
+                              (!GetInnerPie().empty() ? sliceProportion : 0);
             const auto labelDisplay =
                 pSlice->GetMidPointLabelDisplay().value_or(GetOuterPieMidPointLabelDisplay());
             if (labelDisplay != BinLabelDisplay::NoDisplay)
@@ -929,7 +925,7 @@ namespace Wisteria::Graphs
                                      (pieDrawArea.height - innerDrawArea.height) / 2));
 
         // how much (percentage) of the inner ring area the donut hole consumes
-        const double donutHoleInnerProportion = safe_divide<double>(
+        const auto donutHoleInnerProportion = safe_divide<double>(
             (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), sliceProportion);
 
         // outline of inner slices' sides, which will be half as thick as the
@@ -939,69 +935,62 @@ namespace Wisteria::Graphs
 
         // note that we do NOT clear outerLabels or its smallest font size,
         // both rings use these
-        for (size_t i = 0; i < GetInnerPie().size(); ++i)
+        for (auto& innerPie : GetInnerPie())
             {
             std::optional<wxColour> sliceColorToUse{ sliceColor };
             if (sliceColor && GetColorScheme())
                 {
-                sliceColor =
-                    (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                sliceColor = (currentParentSliceIndex == innerPie.m_parentSliceIndex) ?
                         Colors::ColorContrast::ShadeOrTint(sliceColor.value(), .1) :
                         Colors::ColorContrast::ShadeOrTint(
-                            GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex),
-                            0.1);
+                                     GetColorScheme()->GetColor(innerPie.m_parentSliceIndex), 0.1);
                 sliceColorToUse =
-                    (GetInnerPie().at(i).IsGhosted() ?
+                    (innerPie.IsGhosted() ?
                          // inner slices should be twice as translucent as outer slices since
                          // the outer slices will slightly show through it
                          Colors::ColorContrast::ChangeOpacity(sliceColor.value(),
                                                               GetGhostOpacity() / 2) :
                          sliceColor);
                 }
-            sliceBrush = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+            sliceBrush = (currentParentSliceIndex == innerPie.m_parentSliceIndex) ?
                              sliceBrush :
-                             GetBrushScheme()->GetBrush(GetInnerPie().at(i).m_parentSliceIndex);
+                             GetBrushScheme()->GetBrush(innerPie.m_parentSliceIndex);
             sliceBrush.SetColour(
-                (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                (currentParentSliceIndex == innerPie.m_parentSliceIndex) ?
                     Colors::ColorContrast::ShadeOrTint(sliceBrush.GetColour(), 0.1) :
                     Colors::ColorContrast::ShadeOrTint(
-                        GetBrushScheme()
-                            ->GetBrush(GetInnerPie().at(i).m_parentSliceIndex)
-                            .GetColour(),
-                        0.1));
+                        GetBrushScheme()->GetBrush(innerPie.m_parentSliceIndex).GetColour(), 0.1));
             wxBrush sliceBrushToUse{ sliceBrush };
             sliceBrushToUse.SetColour(
-                GetInnerPie().at(i).IsGhosted() ?
+                innerPie.IsGhosted() ?
                     // inner slices should be twice as translucent as outer slices since
                     // the outer slices will slightly show through it
                     Colors::ColorContrast::ChangeOpacity(sliceBrush.GetColour(),
                                                          GetGhostOpacity() / 2) :
                     sliceBrush.GetColour());
 
-            currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
+            currentParentSliceIndex = innerPie.m_parentSliceIndex;
 
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
-                GraphItems::GraphItemInfo(GetInnerPie().at(i).GetGroupLabel())
+                GraphItems::GraphItemInfo(innerPie.GetGroupLabel())
                     .Brush(sliceBrushToUse)
                     .BaseColor(sliceColorToUse)
                     .DPIScaling(GetDPIScaleFactor())
                     .Scaling(GetScaling())
                     .Pen(sliceLine),
-                innerDrawArea, startAngle, startAngle + (GetInnerPie().at(i).m_percent * 360),
-                GetInnerPie().at(i).m_value, GetInnerPie().at(i).m_percent);
-            pSlice->SetMidPointLabelDisplay(GetInnerPie().at(i).GetMidPointLabelDisplay());
+                innerDrawArea, startAngle, startAngle + (innerPie.m_percent * 360),
+                innerPie.m_value, innerPie.m_percent);
+            pSlice->SetMidPointLabelDisplay(innerPie.GetMidPointLabelDisplay());
             pSlice->GetArcPen() = GetPen();
-            if (GetInnerPie().at(i).GetDescription().length())
+            if (!innerPie.GetDescription().empty())
                 {
-                pSlice->SetText(GetInnerPie().at(i).GetGroupLabel() + L"\n" +
-                                GetInnerPie().at(i).GetDescription());
+                pSlice->SetText(innerPie.GetGroupLabel() + L"\n" + innerPie.GetDescription());
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
                 // use the parent slice color for the header, font color for the body
                 if (IsUsingColorLabels())
                     {
-                    pSlice->SetFontColor(GetBrushScheme()
-                                             ->GetBrush(GetInnerPie().at(i).m_parentSliceIndex)
-                                             .GetColour());
+                    pSlice->SetFontColor(
+                        GetBrushScheme()->GetBrush(innerPie.m_parentSliceIndex).GetColour());
                     }
                 pSlice->SetFontColor(
                     Colors::ColorContrast::ShadeOrTint(pSlice->GetFontColor(), 0.4));
@@ -1012,9 +1001,8 @@ namespace Wisteria::Graphs
                     {
                     // parent color if using color labels, the inner slice's color
                     // may be too washed out to be legible
-                    pSlice->SetFontColor(GetBrushScheme()
-                                             ->GetBrush(GetInnerPie().at(i).m_parentSliceIndex)
-                                             .GetColour());
+                    pSlice->SetFontColor(
+                        GetBrushScheme()->GetBrush(innerPie.m_parentSliceIndex).GetColour());
                     }
                 pSlice->GetFont().MakeBold();
                 }
@@ -1023,15 +1011,14 @@ namespace Wisteria::Graphs
             // (i.e., it is being showcased), then keep as a solid color. Trying to have
             // part of an image translucent and other parts of it opaque will not be obvious
             // and would also be difficult to do technically.
-            const bool parentIsGhosted =
-                GetOuterPie().at(GetInnerPie().at(i).m_parentSliceIndex).IsGhosted();
+            const bool parentIsGhosted = GetOuterPie().at(innerPie.m_parentSliceIndex).IsGhosted();
             if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
-                (!parentIsGhosted || GetInnerPie().at(i).IsGhosted()))
+                (!parentIsGhosted || innerPie.IsGhosted()))
                 {
                 pSlice->GetBrush() = *wxTRANSPARENT_BRUSH;
                 }
 
-            if (GetInnerPie().at(i).m_showText)
+            if (innerPie.m_showText)
                 {
                 createLabelAndConnectionLine(pSlice, true);
                 }
@@ -1056,7 +1043,7 @@ namespace Wisteria::Graphs
                 }
 
             queueObjectForOffsetting(std::move(pSlice));
-            startAngle += GetInnerPie().at(i).m_percent * 360;
+            startAngle += innerPie.m_percent * 360;
             }
 
         // sort top quadrant labels (top-to-bottom)
@@ -1105,7 +1092,7 @@ namespace Wisteria::Graphs
                 outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
                 // Does the top label overlap the one below it?
                 // If so, push it all the way up to the top.
-                if (i == 0 && nextLabel)
+                if (i == 0 && nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetLeft());
@@ -1116,7 +1103,7 @@ namespace Wisteria::Graphs
                         outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
                         }
                     }
-                else if (nextLabel)
+                else if (nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetLeft());
@@ -1189,7 +1176,7 @@ namespace Wisteria::Graphs
                 outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
                 // Does the bottom label overlap the one above it?
                 // If so, push it all the way down to the bottom.
-                if (i == 0 && nextLabel)
+                if (i == 0 && nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetLeft());
@@ -1290,7 +1277,7 @@ namespace Wisteria::Graphs
                 outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
                 // Does the top label overlap the one below it?
                 // If so, push it all the way up to the top.
-                if (i == 0 && nextLabel)
+                if (i == 0 && nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetRight() - nextLabelBox.GetWidth());
@@ -1301,7 +1288,7 @@ namespace Wisteria::Graphs
                         outerLabel->SetAnchoring(Anchoring::TopRightCorner);
                         }
                     }
-                else if (nextLabel)
+                else if (nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetRight() - nextLabelBox.GetWidth());
@@ -1372,7 +1359,7 @@ namespace Wisteria::Graphs
                 outerLabel->SetAnchoring(Anchoring::TopRightCorner);
                 // Does the bottom label overlap the one above it?
                 // If so, push it all the way down to the bottom.
-                if (i == 0 && nextLabel)
+                if (i == 0 && nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetRight() - nextLabelBox.GetWidth());
@@ -1383,7 +1370,7 @@ namespace Wisteria::Graphs
                         outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
                         }
                     }
-                else if (nextLabel)
+                else if (nextLabel != nullptr)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
                     nextLabelBox.SetX(fullDrawArea.GetRight() - nextLabelBox.GetWidth());
@@ -1459,7 +1446,7 @@ namespace Wisteria::Graphs
             donutHole->SetRadius(donutHole->DownscaleFromScreenAndCanvas(holeRadius));
 
             queueObjectForOffsetting(std::move(donutHole));
-            if (GetDonutHoleLabel().GetText().length())
+            if (!GetDonutHoleLabel().GetText().empty())
                 {
                 auto donutHoleLabel = std::make_unique<GraphItems::Label>(GetDonutHoleLabel());
                 donutHoleLabel->GetGraphItemInfo()
@@ -1610,7 +1597,7 @@ namespace Wisteria::Graphs
             }
 
         // see if there is a note to show in an empty gutter (if there is one)
-        if (GetLeftMarginNote().GetText().length())
+        if (!GetLeftMarginNote().GetText().empty())
             {
             const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
             const auto marginRect = wxRect(GetPlotAreaBoundingBox().GetTopLeft(),
@@ -1629,7 +1616,7 @@ namespace Wisteria::Graphs
 
             AddObject(std::move(gutterLabel));
             }
-        if (GetRightMarginNote().GetText().length())
+        if (!GetRightMarginNote().GetText().empty())
             {
             const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
             const auto marginRect =
@@ -1756,7 +1743,7 @@ namespace Wisteria::Graphs
                 continue;
                 }
             // find largest percentage within the subgroup of slices
-            const auto maxPie = *std::max_element(
+            const auto* const maxPie = *std::max_element(
                 innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
                 [](const auto& lhv, const auto& rhv) noexcept
                 { return compare_doubles_less(lhv->m_percent, rhv->m_percent); });
@@ -1824,7 +1811,7 @@ namespace Wisteria::Graphs
                 continue;
                 }
             // find smallest percentage within the subgroup of slices
-            const auto minPie = *std::min_element(
+            const auto* const minPie = *std::min_element(
                 innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
                 [](const auto& lhv, const auto& rhv) noexcept
                 { return compare_doubles_less(lhv->m_percent, rhv->m_percent); });
@@ -2189,12 +2176,12 @@ namespace Wisteria::Graphs
         wxString legendText{ GetOuterPie().at(0).GetGroupLabel() + L"\n \n" };
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
-        legend->GetLegendIcons().push_back(Icons::LegendIcon(
+        legend->GetLegendIcons().emplace_back(
             Icons::IconShape::HorizontalLine, *wxBLACK_PEN, GetBrushScheme()->GetBrush(0),
             GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(0)) :
-                               std::nullopt));
-        legend->GetLegendIcons().push_back(
-            Icons::LegendIcon(Icons::IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
+                               std::nullopt);
+        legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator, *wxBLACK_PEN,
+                                              *wxBLACK_BRUSH);
 
         size_t lineCount{ 0 };
         size_t currentParentSliceIndex{ 0 };
@@ -2250,17 +2237,17 @@ namespace Wisteria::Graphs
                     .append(L"\n \n");
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
-                legend->GetLegendIcons().push_back(Icons::LegendIcon(
-                    Icons::IconShape::HorizontalLine, *wxBLACK_PEN, *wxBLACK_BRUSH));
-                legend->GetLegendIcons().push_back(Icons::LegendIcon(
-                    Icons::IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
+                legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
+                                                      *wxBLACK_PEN, *wxBLACK_BRUSH);
+                legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator,
+                                                      *wxBLACK_PEN, *wxBLACK_BRUSH);
                 }
 
             // add icon and text (after group separator, if needed)
             legendText.append(currentLabel.c_str()).append(L"\n");
             ++currentLine;
-            legend->GetLegendIcons().push_back(Icons::LegendIcon(
-                Icons::IconShape::TriangleRight, *wxBLACK_PEN, sliceBrush, sliceColor));
+            legend->GetLegendIcons().emplace_back(Icons::IconShape::TriangleRight, *wxBLACK_PEN,
+                                                  sliceBrush, sliceColor);
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
@@ -2301,10 +2288,10 @@ namespace Wisteria::Graphs
                 currentLabel.append(L"\u2026");
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
-            legend->GetLegendIcons().push_back(Icons::LegendIcon(
+            legend->GetLegendIcons().emplace_back(
                 Icons::IconShape::TriangleRight, *wxBLACK_PEN, GetBrushScheme()->GetBrush(i),
                 GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(i)) :
-                                   std::nullopt));
+                                   std::nullopt);
             }
         legend->SetText(legendText.Trim());
 

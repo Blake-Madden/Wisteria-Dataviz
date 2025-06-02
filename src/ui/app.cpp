@@ -20,8 +20,6 @@
 #include <wx/stc/stc.h>
 #include <wx/xml/xml.h>
 
-using namespace Wisteria;
-
 /// @brief Temporarily turn off AppName being appended to @c wxStandardPaths calls.
 /// @private
 class NoAppInfoAppend
@@ -105,7 +103,7 @@ bool Wisteria::UI::BaseApp::OnInit()
         wxLogMessage(L"Graphics Renderer: %s", wxGraphicsRenderer::GetDefaultRenderer()->GetName());
         }
 #ifdef __WXMSW__
-    if (wxGraphicsRenderer::GetDirect2DRenderer())
+    if (wxGraphicsRenderer::GetDirect2DRenderer() != nullptr)
         {
         wxLogMessage(L"Direct2D Rendering: available; will attempt to use Direct2D");
         }
@@ -128,7 +126,7 @@ bool Wisteria::UI::BaseApp::OnInit()
                  wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
     wxLogMessage(L"Screen Size: %d wide, %d tall", wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
                  wxSystemSettings::GetMetric(wxSYS_SCREEN_Y));
-    if (wxSystemSettings::GetAppearance().GetName().length())
+    if (!wxSystemSettings::GetAppearance().GetName().empty())
         {
         wxLogMessage(L"System Theme: %s", wxSystemSettings::GetAppearance().GetName());
         }
@@ -214,7 +212,7 @@ int Wisteria::UI::BaseApp::OnExit()
         OutputDebugString(wxString{ memMsg + L"\n" }.wc_str());
         }
     #elif defined(__UNIX__)
-    rusage usage;
+    rusage usage{};
     memset(&usage, 0, sizeof(rusage));
     if (getrusage(RUSAGE_SELF, &usage) == 0)
         {
@@ -261,8 +259,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 
         // draw translucent backscreens on image so that text written on it can be read
         {
-        wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
+        const wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
         gcdc.DrawRectangle(wxRect(0, 0, canvasBmp.GetWidth(), backscreenHeight));
         gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetWidth(), backscreenHeight);
         if (includeCopyright)
@@ -340,7 +338,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 //----------------------------------------------------------
 void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
     {
-    wxDebugReportCompress* report = new wxDebugReportCompress;
+    auto* report = new wxDebugReportCompress;
 
     // add all standard files: currently this means just a minidump and an
     // XML file with system info and stack trace
@@ -427,7 +425,7 @@ wxString Wisteria::UI::BaseApp::FindResourceFile(const wxString& subFile) const
         return foundFile;
         }
 
-    NoAppInfoAppend noAppInfo;
+    const NoAppInfoAppend noAppInfo;
 
     // all users' data dir + file
     foundFile = FindResourceFileWithAppInfo(wxStandardPaths::Get().GetConfigDir(), subFile);
@@ -500,7 +498,7 @@ wxString Wisteria::UI::BaseApp::FindResourceDirectory(const wxString& subDir) co
         return foundFolder;
         }
 
-    NoAppInfoAppend noAppInfo;
+    const NoAppInfoAppend noAppInfo;
 
     // all users' data dir + subfolder
     foundFolder = FindResourceDirectoryWithAppInfo(wxStandardPaths::Get().GetConfigDir(), subDir);
@@ -642,7 +640,7 @@ wxWindow* Wisteria::UI::BaseApp::GetParentingWindow()
         {
         return GetMainFrame();
         }
-    else if (GetDocManager() != nullptr)
+    if (GetDocManager() != nullptr)
         {
         // active document window
         if (GetDocManager()->GetCurrentDocument() != nullptr &&
