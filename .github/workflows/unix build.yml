@@ -13,7 +13,7 @@ jobs:
       - name: install wxwidgets
         run: |
              export DISPLAY=:0.0
-             sudo apt install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev libglib2.0-dev
+             sudo apt-get update && sudo apt-get xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets
              cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
