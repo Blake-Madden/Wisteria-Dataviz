@@ -654,7 +654,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                          { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })
                             ->GetAxisPosition() :
                         0.0;
-                AddBar(Bar{ maxAxisPos + GetScalingAxis().GetTickMarkInterval(),
+                AddBar(Bar{ maxAxisPos + GetBarAxis().GetTickMarkInterval(),
                             { BarBlock{} },
                             label,
                             Wisteria::GraphItems::Label{ label },
@@ -664,7 +664,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
         // resort in case bars were added
         std::sort(GetBars().begin(), GetBars().end(), [](const auto& lhv, const auto& rhv) noexcept
-                  { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
+            { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
         // if not all labels were provided, then get the other bar labels that weren't
         // provided and sort those, pushing them all beneath the provided bars
         if (labels.size() != GetBars().size())
