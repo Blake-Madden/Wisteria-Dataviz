@@ -64,7 +64,6 @@ SET(WISTERIA_SRC
     src/ui/controls/formattedtextctrl.cpp
     src/ui/controls/htmltablewin.cpp
     src/ui/controls/htmltablewinprintout.cpp
-    src/ui/controls/infobarex.cpp
     src/ui/controls/listctrlex.cpp
     src/ui/controls/listctrlexdataprovider.cpp
     src/ui/controls/searchpanel.cpp
