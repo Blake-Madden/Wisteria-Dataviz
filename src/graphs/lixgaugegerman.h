@@ -76,7 +76,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
                      const wxString& scoreColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt);
+                     const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /// @returns @c true if English labels are being used for the brackets.\n
         ///     Otherwise, the German labels from the original article are shown.

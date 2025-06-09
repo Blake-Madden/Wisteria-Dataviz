@@ -16,6 +16,7 @@
 #include "label.h"
 #include "polygon.h"
 #include "shapes.h"
+#include <cstdint>
 #include <map>
 #include <vector>
 #include <wx/wx.h>

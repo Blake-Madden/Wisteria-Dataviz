@@ -42,7 +42,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
     //----------------------------------------------------------------
     void LixGaugeGerman::SetData(std::shared_ptr<const Data::Dataset> data,
                                  const wxString& scoreColumnName,
-                                 std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+                                 const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -269,11 +269,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 points->AddPoint(
                     GraphItems::Point2D(
                         GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                                .AnchorPoint(pt)
-                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                    GetPlotOrCanvasColor()))
-                                .Brush(GetColorScheme()->GetColor(colorIndex)),
-                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                            .AnchorPoint(pt)
+                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()))
+                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
                 }
             }
