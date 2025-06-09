@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __OPACITY_DLG_H__
-#define __OPACITY_DLG_H__
+#ifndef OPACITY_DLG_H
+#define OPACITY_DLG_H
 
 #include "../controls/thumbnail.h"
 #include <wx/dialog.h>
@@ -63,4 +63,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__OPACITY_DLG_H__
+#endif // OPACITY_DLG_H

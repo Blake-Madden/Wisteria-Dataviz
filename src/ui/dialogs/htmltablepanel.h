@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WXHTML_PANEL_H__
-#define __WXHTML_PANEL_H__
+#ifndef WXHTML_PANEL_H
+#define WXHTML_PANEL_H
 
 #include "../controls/htmltablewin.h"
 
@@ -47,4 +47,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__WXHTML_PANEL_H__
+#endif // WXHTML_PANEL_H

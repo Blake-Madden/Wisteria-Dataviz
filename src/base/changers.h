@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CHANGERS_H__
-#define __WISTERIA_CHANGERS_H__
+#ifndef WISTERIA_CHANGERS_H
+#define WISTERIA_CHANGERS_H
 
 #include <wx/dcgraph.h>
 #include <wx/gdicmn.h>
@@ -174,4 +174,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_CHANGERS_H__
+#endif // WISTERIA_CHANGERS_H

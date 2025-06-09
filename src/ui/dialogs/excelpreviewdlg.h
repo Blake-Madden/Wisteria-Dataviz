@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __EXCEL_PREVIEW_DIALOG_H__
-#define __EXCEL_PREVIEW_DIALOG_H__
+#ifndef EXCEL_PREVIEW_DIALOG_H
+#define EXCEL_PREVIEW_DIALOG_H
 
 #include "../../import/xlsx_extract_text.h"
 #include "dialogwithhelp.h"
@@ -178,4 +178,4 @@ namespace Wisteria::UI
 
     /** @}*/
 
-#endif // __EXCEL_PREVIEW_DIALOG_H__
+#endif // EXCEL_PREVIEW_DIALOG_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WARNING_MESSAGES_DLG_H__
-#define __WARNING_MESSAGES_DLG_H__
+#ifndef WARNING_MESSAGES_DLG_H
+#define WARNING_MESSAGES_DLG_H
 
 #include "dialogwithhelp.h"
 #include <wx/string.h>
@@ -77,4 +77,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__WARNING_MESSAGES_DLG_H__
+#endif // WARNING_MESSAGES_DLG_H

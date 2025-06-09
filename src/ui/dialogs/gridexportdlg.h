@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __GRIDEXPORT_DLG_H__
-#define __GRIDEXPORT_DLG_H__
+#ifndef GRIDEXPORT_DLG_H
+#define GRIDEXPORT_DLG_H
 
 #include "dialogwithhelp.h"
 #include <wx/spinctrl.h>
@@ -186,4 +186,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__GRIDEXPORT_DLG_H__
+#endif // GRIDEXPORT_DLG_H

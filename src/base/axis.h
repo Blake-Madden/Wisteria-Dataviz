@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_AXIS_H__
-#define __WISTERIA_AXIS_H__
+#ifndef WISTERIA_AXIS_H
+#define WISTERIA_AXIS_H
 
 #include "../data/dataset.h"
 #include "label.h"
@@ -95,7 +95,7 @@ namespace Wisteria::GraphItems
         /// @param label The label to describe what the line represents.
         /// @param pen The pen to use for the line.
         ReferenceLine(const AxisType axisType, const double axisPosition, wxString label,
-                      const wxPen pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH))
+                      const wxPen& pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH))
             : m_axisType(axisType), m_axisPosition(axisPosition), m_label(std::move(label)),
               m_pen(pen), m_compKey(m_label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
             {
@@ -104,8 +104,7 @@ namespace Wisteria::GraphItems
         /// @private
         /// @brief Compare on axis position.
         [[nodiscard]]
-        bool
-        operator<(const ReferenceLine& that) const noexcept
+        bool operator<(const ReferenceLine& that) const noexcept
             {
             return (m_axisPosition < that.m_axisPosition);
             }
@@ -139,7 +138,7 @@ namespace Wisteria::GraphItems
         /// @param refAreaStyle The visual style of the reference area.
         ReferenceArea(const AxisType axisType, const double axisPosition1,
                       const double axisPosition2, const wxString& label,
-                      const wxPen pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH),
+                      const wxPen& pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH),
                       const ReferenceAreaStyle refAreaStyle = ReferenceAreaStyle::Solid)
             : ReferenceLine(axisType, axisPosition1, label, pen), m_refAreaStyle(refAreaStyle),
               m_axisPosition2(axisPosition2)
@@ -226,7 +225,7 @@ namespace Wisteria::GraphItems
                     The color of the pen will be applied to the label as well.\n
                 @param lineStyle The style to use for the bracket's lines.*/
             AxisBracket(const double pos1, const double pos2, const double labelPos,
-                        const wxString& label, const wxPen pen = wxPenInfo(*wxBLACK, 2),
+                        const wxString& label, const wxPen& pen = wxPenInfo(*wxBLACK, 2),
                         const BracketLineStyle lineStyle = BracketLineStyle::CurlyBraces)
                 : m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
                   m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(pen),
@@ -503,48 +502,42 @@ namespace Wisteria::GraphItems
 
             /// @private
             [[nodiscard]]
-            bool
-            operator==(const AxisPoint& that) const noexcept
+            bool operator==(const AxisPoint& that) const noexcept
                 {
                 return compare_doubles(m_value, that.m_value);
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator==(const double value) const noexcept
+            bool operator==(const double value) const noexcept
                 {
                 return compare_doubles(m_value, value);
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator!=(const AxisPoint& that) const noexcept
+            bool operator!=(const AxisPoint& that) const noexcept
                 {
                 return !compare_doubles(m_value, that.m_value);
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator!=(const double value) const noexcept
+            bool operator!=(const double value) const noexcept
                 {
                 return !compare_doubles(m_value, value);
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const AxisPoint& that) const noexcept
+            bool operator<(const AxisPoint& that) const noexcept
                 {
                 return compare_doubles_less(m_value, that.m_value);
                 }
 
             /// @private
             [[nodiscard]]
-            bool
-            operator<(const double value) const noexcept
+            bool operator<(const double value) const noexcept
                 {
                 return compare_doubles_less(m_value, value);
                 }
@@ -593,7 +586,7 @@ namespace Wisteria::GraphItems
         /// @private
         Axis(const Axis& that) = default;
         /// @private
-        Axis(Axis&& that) = default;
+        Axis(Axis&& that) noexcept = default;
         /// @private
         Axis() = delete;
 
@@ -702,7 +695,7 @@ namespace Wisteria::GraphItems
             @param startDate The start date of the range.
             @param endDate The end date of the range.
             @param displayInterval The date interval to display along the axis.
-            @param FYtype If @c displayInterval is fiscal-year based, then this is the type of
+            @param fyType If @c displayInterval is fiscal-year based, then this is the type of
                 fiscal year to use; otherwise, it will be ignored.
             @note The date interval and fiscal year type specified can affect the
                 starting and ending points of the dates. For example, using FY quarters will cause
@@ -712,7 +705,7 @@ namespace Wisteria::GraphItems
                 axis values (which may be something like 0-365 if the date range is a year).
             @sa GetRangeDates().*/
         void SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
-                      const DateInterval displayInterval, const FiscalYear FYtype);
+                      const DateInterval displayInterval, const FiscalYear fyType);
         /** @brief Sets the range of data for the axis, using a series of dates.
             @param startDate The start date of the range.
             @param endDate The end date of the range.
@@ -971,7 +964,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         RelativeAlignment GetParallelLabelAlignment() const noexcept
             {
-            return m_labelAlignmet;
+            return m_labelAlignment;
             }
 
         /** @brief How the labels are aligned with its respective axis point.
@@ -981,7 +974,7 @@ namespace Wisteria::GraphItems
                 axis labels are aligned, call SetTextAlignment().*/
         void SetParallelLabelAlignment(const RelativeAlignment alignment) noexcept
             {
-            m_labelAlignmet = alignment;
+            m_labelAlignment = alignment;
             }
 
         /** @brief Sets whether the first and last axis labels should be shown
@@ -990,7 +983,7 @@ namespace Wisteria::GraphItems
             @param display Whether or not outer labels should be displayed.*/
         void ShowOuterLabels(bool display = true) noexcept
             {
-            if (m_axisLabels.size())
+            if (!m_axisLabels.empty())
                 {
                 m_axisLabels.front().Show(display);
                 m_axisLabels.back().Show(display);
@@ -1003,7 +996,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         bool IsShowingOuterLabels() const noexcept
             {
-            return m_axisLabels.size() ? m_axisLabels.front().IsShown() : true;
+            return !m_axisLabels.empty() ? m_axisLabels.front().IsShown() : true;
             }
 
         /// @returns @c true if the labels are being stacked.
@@ -1213,7 +1206,7 @@ namespace Wisteria::GraphItems
         void AddCustomTickMark(const TickMark::DisplayType displayType, const double position,
                                const double length)
             {
-            m_customTickMarks.push_back(TickMark(displayType, position, length));
+            m_customTickMarks.emplace_back(displayType, position, length);
             }
 
         /// @returns The interval of the tick marks being shown.
@@ -1300,13 +1293,13 @@ namespace Wisteria::GraphItems
             return m_ghost;
             }
 
-        /// @brief Sets the axis line and tickmarkds to be translucent.
+        /// @brief Sets the axis line and tickmarks to be translucent.
         /// @param ghost @c true to make the lines translucent.
         /// @note Titles, headers, footers, labels, and brackets will not be affected.
         void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
 
         /// @brief If colors in the axes are the same as @c bkColor, then set them
-        ///     to black or white, contrasting against @c bkColor. 
+        ///     to black or white, contrasting against @c bkColor.
         /// @param bkColor The background color to contrast against.
         void ContrastAgainstColor(const wxColour& bkColor)
             {
@@ -1790,13 +1783,10 @@ namespace Wisteria::GraphItems
                     GetAxisLinePen().IsOk() ? GetAxisLinePen().GetWidth() : 1));
                 return lineRect;
                 }
-            else
-                {
-                auto lineRect = wxRect(GetLeftPoint(), GetRightPoint());
-                lineRect.SetHeight(ScaleToScreenAndCanvas(
-                    GetAxisLinePen().IsOk() ? GetAxisLinePen().GetWidth() : 1));
-                return lineRect;
-                }
+            auto lineRect = wxRect(GetLeftPoint(), GetRightPoint());
+            lineRect.SetHeight(
+                ScaleToScreenAndCanvas(GetAxisLinePen().IsOk() ? GetAxisLinePen().GetWidth() : 1));
+            return lineRect;
             }
 
         /** @brief Sets the interval of the tick marks.
@@ -1830,8 +1820,7 @@ namespace Wisteria::GraphItems
 
         /// @brief If labels have a background color, then make their boxes wide enough
         ///     to fill the entire place available to them.
-        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel,
-                                                   const bool useMaxWidth) const;
+        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, const bool useMaxWidth) const;
 
         /** @brief Retrieves the value along the axis from a physical
                 (relative to parent plot) coordinate.
@@ -1913,7 +1902,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxPoint GetTopPoint() const
             {
-            return wxPoint(GetPoints().first.x, GetPoints().first.y);
+            return { GetPoints().first.x, GetPoints().first.y };
             }
 
         /// @returns The bottom physical (relative to the parent canvas) point of the axis line
@@ -1923,7 +1912,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxPoint GetBottomPoint() const
             {
-            return wxPoint(GetPoints().second.x, GetPoints().second.y);
+            return { GetPoints().second.x, GetPoints().second.y };
             }
 
         /// @returns The left physical (relative to the parent canvas) point of the axis line
@@ -1933,7 +1922,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxPoint GetLeftPoint() const
             {
-            return wxPoint(GetPoints().first.x, GetPoints().first.y);
+            return { GetPoints().first.x, GetPoints().first.y };
             }
 
         /// @returns The right physical (relative to the parent canvas) point of the axis line
@@ -1943,7 +1932,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxPoint GetRightPoint() const
             {
-            return wxPoint(GetPoints().second.x, GetPoints().second.y);
+            return { GetPoints().second.x, GetPoints().second.y };
             }
 
         /// @brief Get the first label (and its axis position) that is being displayed.
@@ -1993,7 +1982,7 @@ namespace Wisteria::GraphItems
 
         /// @returns The space between axis labels and the main axis line.
         [[nodiscard]]
-        wxCoord GetSpacingBetweenLabelsAndLine() const noexcept
+        static wxCoord GetSpacingBetweenLabelsAndLine() noexcept
             {
             return 5;
             }
@@ -2073,7 +2062,7 @@ namespace Wisteria::GraphItems
         AxisLabelDisplay m_labelDisplay{ AxisLabelDisplay::DisplayCustomLabelsOrValues };
         AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
         NumberDisplay m_numberLabelDisplay{ NumberDisplay::Value };
-        RelativeAlignment m_labelAlignmet{ RelativeAlignment::Centered };
+        RelativeAlignment m_labelAlignment{ RelativeAlignment::Centered };
         AxisCapStyle m_capStyle{ AxisCapStyle::NoCap };
         bool m_stackLabelsToFit{ false };
         bool m_enableAutoStacking{ true };
@@ -2127,4 +2116,4 @@ namespace Wisteria::GraphItems
 
 /** @}*/
 
-#endif //__WISTERIA_AXIS_H__
+#endif // WISTERIA_AXIS_H

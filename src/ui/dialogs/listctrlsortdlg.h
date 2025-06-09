@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LISTCTRL_SORT_DLG_H__
-#define __LISTCTRL_SORT_DLG_H__
+#ifndef LISTCTRL_SORT_DLG_H
+#define LISTCTRL_SORT_DLG_H
 
 #include "../../base/graphitems.h"
 #include "../controls/listctrlex.h"
@@ -94,4 +94,4 @@ namespace Wisteria::UI
 
     /** @}*/
 
-#endif //__LISTCTRL_SORT_DLG_H__
+#endif // LISTCTRL_SORT_DLG_H

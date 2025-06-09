@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LIST_DIALOG_H__
-#define __LIST_DIALOG_H__
+#ifndef LIST_DIALOG_H
+#define LIST_DIALOG_H
 
 #include "../../util/logfile.h"
 #include "../controls/listctrlex.h"
@@ -66,7 +66,7 @@ namespace Wisteria::UI
       public:
         /** @brief Constructor.
             @param values The values to fill into the list.
-            @param usecheckBoxes @c true to show checkboxes in the list control.
+            @param useCheckBoxes @c true to show checkboxes in the list control.
             @param parent The parent window.
             @param bkColor The dialog's background color.
             @param hoverColor The list control's hover color.
@@ -78,11 +78,11 @@ namespace Wisteria::UI
             @param pos The dialog's position.
             @param size The dialog's size.
             @param style The dialog's style.*/
-        ListDlg(wxWindow* parent, const wxArrayString& values, const bool usecheckBoxes,
+        ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
                 const wxColour bkColor, const wxColour hoverColor, const wxColour foreColor,
                 const long buttonStyle = LD_NO_BUTTONS, wxWindowID id = wxID_ANY,
                 const wxString& caption = wxString{}, const wxString& label = wxString{},
-                const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(600, 250),
+                const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize{ 600, 250 },
                 long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         /** @brief Constructor that won't show the checkbox.
             @param parent The parent window.
@@ -170,7 +170,7 @@ namespace Wisteria::UI
 
         /// @brief If an active log is connected, reads its content into this dialog.
         /// @sa SetActiveLog().
-        void Readlog()
+        void ReadLog()
             {
             wxCommandEvent event;
             OnReadLog(event);
@@ -215,7 +215,7 @@ namespace Wisteria::UI
         void OnRealTimeTimer([[maybe_unused]] wxTimerEvent& event);
         void OnRealTimeUpdate([[maybe_unused]] wxRibbonButtonBarEvent& event);
 
-        bool m_usecheckBoxes{ true };
+        bool m_useCheckBoxes{ true };
         long m_buttonStyle{ 0 };
         wxString m_label;
         wxColour m_hoverColor;
@@ -245,4 +245,4 @@ namespace Wisteria::UI
 
     /** @}*/
 
-#endif //__LIST_DIALOG_H__
+#endif // LIST_DIALOG_H

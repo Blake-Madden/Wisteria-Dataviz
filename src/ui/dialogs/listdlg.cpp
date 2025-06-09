@@ -34,7 +34,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnSave(wxRibbonButtonBarEvent& event)
         {
-        if (m_usecheckBoxes)
+        if (m_useCheckBoxes)
             {
             wxFAIL_MSG(L"Save not supported for checklist control");
             }
@@ -47,7 +47,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnPrint(wxRibbonButtonBarEvent& event)
         {
-        if (m_usecheckBoxes)
+        if (m_useCheckBoxes)
             {
             wxFAIL_MSG(L"Print not supported for checklist control");
             }
@@ -60,7 +60,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnSelectAll([[maybe_unused]] wxRibbonButtonBarEvent& event)
         {
-        if (m_usecheckBoxes && m_checkList)
+        if (m_useCheckBoxes && m_checkList)
             {
             for (size_t i = 0; i < m_checkList->GetCount(); ++i)
                 {
@@ -76,7 +76,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnCopy([[maybe_unused]] wxRibbonButtonBarEvent& event)
         {
-        if (m_usecheckBoxes && m_checkList)
+        if (m_useCheckBoxes && m_checkList)
             {
             wxString selectedText;
             wxString currentSelectedItem;
@@ -116,7 +116,7 @@ namespace Wisteria::UI
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
-        : m_usecheckBoxes(usecheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
+        : m_useCheckBoxes(usecheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
           m_hoverColor(hoverColor), m_values(values), m_realTimeTimer(this)
         {
         GetData()->SetValues(values);
@@ -141,7 +141,7 @@ namespace Wisteria::UI
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
-        : m_usecheckBoxes(false), m_buttonStyle(buttonStyle), m_label(label),
+        : m_useCheckBoxes(false), m_buttonStyle(buttonStyle), m_label(label),
           m_hoverColor(hoverColor), m_realTimeTimer(this)
         {
         SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
@@ -336,7 +336,7 @@ namespace Wisteria::UI
             m_ribbon->Realise();
             }
 
-        if (m_usecheckBoxes)
+        if (m_useCheckBoxes)
             {
             for (size_t i = 0; i < m_values.GetCount(); ++i)
                 {
@@ -567,7 +567,7 @@ namespace Wisteria::UI
         SetFocusIgnoringChildren();
 
         // record what is checked or selected
-        if (m_usecheckBoxes)
+        if (m_useCheckBoxes)
             {
             wxString currentSelectedItem;
             for (size_t i = 0; i < m_checkList->GetCount(); ++i)

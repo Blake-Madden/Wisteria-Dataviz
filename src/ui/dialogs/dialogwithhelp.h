@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WXDIALOG_WITH_HELP_H__
-#define __WXDIALOG_WITH_HELP_H__
+#ifndef WXDIALOG_WITH_HELP_H
+#define WXDIALOG_WITH_HELP_H
 
 #include <wx/dialog.h>
 #include <wx/filename.h>
@@ -92,4 +92,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__WXDIALOG_WITH_HELP_H__
+#endif // WXDIALOG_WITH_HELP_H

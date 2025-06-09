@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __IMAGEMERGE_DLG_H__
-#define __IMAGEMERGE_DLG_H__
+#ifndef IMAGEMERGE_DLG_H
+#define IMAGEMERGE_DLG_H
 
 #include "../controls/listctrlex.h"
 #include "../controls/thumbnail.h"
@@ -86,4 +86,4 @@ namespace Wisteria::UI
 
     /** @}*/
 
-#endif //__IMAGEMERGE_DLG_H__
+#endif // IMAGEMERGE_DLG_H

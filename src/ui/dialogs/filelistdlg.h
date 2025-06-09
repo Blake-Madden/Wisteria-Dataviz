@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FILELIST_DLG_H__
-#define __FILELIST_DLG_H__
+#ifndef FILELIST_DLG_H
+#define FILELIST_DLG_H
 
 #include "../controls/listctrlex.h"
 #include "../controls/thumbnail.h"
@@ -96,4 +96,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__FILELIST_DLG_H__
+#endif // FILELIST_DLG_H

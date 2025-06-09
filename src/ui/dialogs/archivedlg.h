@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __ARCHIVE_DLG_H__
-#define __ARCHIVE_DLG_H__
+#ifndef ARCHIVE_DLG_H
+#define ARCHIVE_DLG_H
 
 #include "dialogwithhelp.h"
 #include <wx/artprov.h>
@@ -92,4 +92,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__ARCHIVE_DLG_H__
+#endif // ARCHIVE_DLG_H

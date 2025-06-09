@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LISTCTRL_ITEM_VIEW_DLG_H__
-#define __LISTCTRL_ITEM_VIEW_DLG_H__
+#ifndef LISTCTRL_ITEM_VIEW_DLG_H
+#define LISTCTRL_ITEM_VIEW_DLG_H
 
 #include <vector>
 #include <wx/artprov.h>
@@ -143,4 +143,4 @@ namespace Wisteria::UI
 
     /** @}*/
 
-#endif //__LISTCTRL_ITEM_VIEW_DLG_H__
+#endif // LISTCTRL_ITEM_VIEW_DLG_H

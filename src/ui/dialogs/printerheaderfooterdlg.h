@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __PRINTERHEADERFOOTER_DLG_H__
-#define __PRINTERHEADERFOOTER_DLG_H__
+#ifndef PRINTERHEADERFOOTER_DLG_H
+#define PRINTERHEADERFOOTER_DLG_H
 
 #include "../../util/donttranslate.h"
 #include "dialogwithhelp.h"
@@ -136,4 +136,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__PRINTERHEADERFOOTER_DLG_H__
+#endif // PRINTERHEADERFOOTER_DLG_H

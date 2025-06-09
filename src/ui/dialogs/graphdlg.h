@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __GRAPH_DLG_H__
-#define __GRAPH_DLG_H__
+#ifndef WISTERIA_GRAPH_DLG_H
+#define WISTERIA_GRAPH_DLG_H
 
 #include "../../base/canvas.h"
 #include <vector>
@@ -150,4 +150,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__GRAPH_DLG_H__
+#endif // WISTERIA_GRAPH_DLG_H

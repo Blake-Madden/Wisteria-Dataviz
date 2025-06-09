@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __VARIABLE_SELECT_DLG_H__
-#define __VARIABLE_SELECT_DLG_H__
+#ifndef VARIABLE_SELECT_DLG_H
+#define VARIABLE_SELECT_DLG_H
 
 #include "../../data/dataset.h"
 #include <wx/artprov.h>
@@ -159,4 +159,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__VARIABLE_SELECT_DLG_H__
+#endif // VARIABLE_SELECT_DLG_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __IMAGEEXPORT_DLG_H__
-#define __IMAGEEXPORT_DLG_H__
+#ifndef IMAGEEXPORT_DLG_H
+#define IMAGEEXPORT_DLG_H
 
 #include "../../math/mathematics.h"
 #include "../../util/donttranslate.h"
@@ -172,4 +172,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__IMAGEEXPORT_DLG_H__
+#endif // IMAGEEXPORT_DLG_H

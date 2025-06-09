@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __RADIOCHOICE_DIALOG_H__
-#define __RADIOCHOICE_DIALOG_H__
+#ifndef RADIOCHOICE_DIALOG_H
+#define RADIOCHOICE_DIALOG_H
 
 #include "../../math/safe_math.h"
 #include "dialogwithhelp.h"
@@ -122,4 +122,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__RADIOCHOICE_DIALOG_H__
+#endif // RADIOCHOICE_DIALOG_H
