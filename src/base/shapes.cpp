@@ -1310,7 +1310,7 @@ namespace Wisteria::GraphItems
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
         wxDCFontChanger fc(dc);
 
-        wxRect drawRect{ rect };
+        wxRect2DDouble drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
 
         GraphicsContextFallback gcf{ &dc, rect };
@@ -1319,97 +1319,96 @@ namespace Wisteria::GraphItems
         if (gc != nullptr)
             {
             gc->SetBrush(wxColour{ L"#D8D4B4" });
-            gc->SetPen(wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(0.25)) });
+            gc->SetPen(wxPen{ *wxBLACK,
+                              static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
 
             // background of bill
-            wxRect billRect{ drawRect };
+            wxRect2DDouble billRect{ drawRect };
             billRect.SetHeight(billRect.GetHeight() * math_constants::half);
-            billRect.Offset(0, drawRect.GetHeight() / 4);
-            gc->DrawRectangle(billRect.GetX(), billRect.GetY(), billRect.GetWidth(),
-                              billRect.GetHeight());
+            billRect.Offset(0, drawRect.GetHeight() * math_constants::quarter);
+            gc->DrawRectangle(billRect);
 
             // portrait
             //---------
-            wxRect innerBillRect{ billRect };
+            wxRect2DDouble innerBillRect{ billRect };
             innerBillRect.Deflate(ScaleToScreenAndCanvas(2));
 
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->SetBrush(wxColour{ L"#3E3E3C" });
-            wxRect portraitRect{ innerBillRect };
+            wxRect2DDouble portraitRect{ innerBillRect };
             portraitRect.SetWidth(portraitRect.GetWidth() * math_constants::third);
             portraitRect.Offset(billRect.GetWidth() * math_constants::quarter, 0);
-            double clipX{ 0 }, clipY{ 0 }, clipW{ 0 }, clipH{ 0 };
-            gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
-            const wxRect originalClipRect(clipX, clipY, clipW, clipH);
+            auto clipBox = gc->GetClipBox();
+            const auto originalClipRect(clipBox);
             gc->Clip(portraitRect.GetX(), portraitRect.GetY(), portraitRect.GetWidth(),
                      portraitRect.GetHeight());
             // body
-            gc->DrawEllipse(portraitRect.GetX(),
+            gc->DrawEllipse(portraitRect.GetX() +
+                                (portraitRect.GetWidth() * math_constants::quarter),
                             portraitRect.GetY() + portraitRect.GetHeight() * 0.6,
-                            portraitRect.GetWidth(), portraitRect.GetHeight());
+                            portraitRect.GetWidth() * 0.6, portraitRect.GetHeight());
 
             // face
             gc->SetPen(wxColour{ L"#3E3E3C" });
             gc->SetBrush(wxColour{ L"#ADADAD" });
-            const wxRect faceRect{
-                static_cast<int>(portraitRect.GetX() + (portraitRect.GetWidth() / 3)),
-                static_cast<int>(portraitRect.GetY() + portraitRect.GetHeight() * 0.275),
-                portraitRect.GetWidth() / 2, portraitRect.GetHeight() / 2
-            };
-            gc->DrawEllipse(faceRect.GetX(), faceRect.GetY(), faceRect.GetWidth(),
-                            faceRect.GetHeight());
+            const wxRect2DDouble faceRect{ portraitRect.GetX() +
+                                               (portraitRect.GetWidth() * math_constants::third),
+                                           portraitRect.GetY() + portraitRect.GetHeight() * 0.275,
+                                           portraitRect.GetWidth() * math_constants::half,
+                                           portraitRect.GetHeight() * math_constants::half };
+            gc->DrawEllipse(faceRect);
 
             // hair
-            gc->SetPen(wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack),
-                                  billRect.GetHeight() / 10 });
-            wxRect hairRect{ faceRect };
-            hairRect.Deflate(ScaleToScreenAndCanvas(0.75));
-            hairRect.Offset(-ScaleToScreenAndCanvas(0.5), -ScaleToScreenAndCanvas(0.5));
+            gc->SetPen(wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::ClassicFrenchGray),
+                                  static_cast<int>(billRect.GetHeight() * 0.13) });
+            wxRect2DDouble hairRect{ faceRect };
+            hairRect.Deflate(ScaleToScreenAndCanvas(math_constants::three_fourths));
+            hairRect.Offset(-ScaleToScreenAndCanvas(math_constants::half),
+                            -ScaleToScreenAndCanvas(math_constants::half));
 
             wxGraphicsPath hairPath = gc->CreatePath();
 
-            hairPath.MoveToPoint(wxPoint(GetXPosFromLeft(hairRect, math_constants::whole),
-                                         GetYPosFromTop(hairRect, 0.0)));
-            // left side
+            hairPath.MoveToPoint({ GetXPosFromLeft(hairRect, math_constants::whole),
+                                   GetYPosFromTop(hairRect, 0.0) });
             hairPath.AddQuadCurveToPoint(GetXPosFromLeft(faceRect, 0), GetYPosFromTop(faceRect, 0),
                                          GetXPosFromLeft(faceRect, 0.0),
-                                         GetYPosFromTop(faceRect, math_constants::whole));
+                                         GetYPosFromTop(faceRect, math_constants::three_quarters));
             gc->StrokePath(hairPath);
 
             gc->ResetClip();
-            gc->Clip(originalClipRect.GetX(), originalClipRect.GetY(), originalClipRect.GetWidth(),
-                     originalClipRect.GetHeight());
+            gc->Clip(originalClipRect);
 
             // border frame
-            gc->SetPen(wxPenInfo{ wxColour{ L"#525B54" }, billRect.GetHeight() / 10 }.Cap(
-                wxPenCap::wxCAP_BUTT));
+            gc->SetPen(wxPenInfo{ wxColour{ L"#525B54" },
+                                  static_cast<int>(billRect.GetHeight() * math_constants::tenth) }
+                           .Cap(wxPenCap::wxCAP_BUTT));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
-            gc->DrawRectangle(innerBillRect.GetX(), innerBillRect.GetY(), innerBillRect.GetWidth(),
-                              innerBillRect.GetHeight());
+            gc->DrawRectangle(innerBillRect);
 
             // left seal
-            gc->SetPen(wxPenInfo{ *wxBLACK, billRect.GetHeight() / 20 });
+            gc->SetPen(wxPenInfo{ *wxBLACK, static_cast<int>(billRect.GetHeight() * 0.05) });
             gc->SetBrush(wxColour{ L"#525B54" });
-            gc->DrawEllipse(GetXPosFromLeft(innerBillRect, 0.1),
+            gc->DrawEllipse(GetXPosFromLeft(innerBillRect, math_constants::tenth),
                             GetYPosFromTop(innerBillRect, math_constants::third),
-                            innerBillRect.GetHeight() / 3, innerBillRect.GetHeight() / 3);
+                            innerBillRect.GetHeight() * math_constants::third,
+                            innerBillRect.GetHeight() * math_constants::third);
 
             // right seal
-            wxRect rightSealRect{
-                static_cast<wxCoord>(GetXPosFromLeft(
-                    innerBillRect,
-                    0.9 - safe_divide<double>(safe_divide<double>(innerBillRect.GetHeight(), 3),
-                                              innerBillRect.GetWidth()))),
-                static_cast<wxCoord>(GetYPosFromTop(innerBillRect, math_constants::third)),
-                innerBillRect.GetHeight() / 3, innerBillRect.GetHeight() / 3
+            wxRect2DDouble rightSealRect{
+                GetXPosFromLeft(innerBillRect, 0.9 - safe_divide<double>(innerBillRect.GetHeight() *
+                                                                             math_constants::third,
+                                                                         innerBillRect.GetWidth())),
+                GetYPosFromTop(innerBillRect, math_constants::third),
+                innerBillRect.GetHeight() * math_constants::third,
+                innerBillRect.GetHeight() * math_constants::third
             };
 
-            gc->SetPen(wxPenInfo{ wxColour{ L"#689E80" }, billRect.GetHeight() / 20 });
+            gc->SetPen(
+                wxPenInfo{ wxColour{ L"#689E80" }, static_cast<int>(billRect.GetHeight() * 0.05) });
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
-            gc->DrawEllipse(rightSealRect.GetX(), rightSealRect.GetY(), rightSealRect.GetWidth(),
-                            rightSealRect.GetHeight());
+            gc->DrawEllipse(rightSealRect);
 
-            rightSealRect.Inflate(innerBillRect.GetHeight() / 5);
+            rightSealRect.Inflate(innerBillRect.GetHeight() * math_constants::fifth);
             auto fontSize =
                 Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
             gc->SetFont(wxFontInfo{ static_cast<double>(fontSize) }, wxColour{ L"#525B54" });
@@ -1418,9 +1417,9 @@ namespace Wisteria::GraphItems
                              (innerBillRect.GetHeight() - rightSealRect.GetHeight()));
 
             // security strip
-            wxRect securityStripRect{ billRect };
+            wxRect2DDouble securityStripRect{ billRect };
             securityStripRect.SetWidth(securityStripRect.GetWidth() * 0.05);
-            securityStripRect.SetLeft(portraitRect.GetRight());
+            securityStripRect.MoveLeftTo(portraitRect.GetRight());
             gc->SetPen(*wxTRANSPARENT_PEN);
             const auto stripBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 0.0),
@@ -1428,11 +1427,10 @@ namespace Wisteria::GraphItems
                 Colors::ColorBrewer::GetColor(Colors::Color::Blue, 150),
                 Colors::ColorBrewer::GetColor(Colors::Color::Gray, 150));
             gc->SetBrush(stripBrush);
-            gc->DrawRectangle(securityStripRect.GetX(), securityStripRect.GetY(),
-                              securityStripRect.GetWidth(), securityStripRect.GetHeight());
+            gc->DrawRectangle(securityStripRect);
 
             // orange 100 in the bottom corner
-            rightSealRect.SetLeft(billRect.GetRight() - rightSealRect.GetWidth());
+            rightSealRect.MoveLeftTo(billRect.GetRight() - rightSealRect.GetWidth());
             rightSealRect.SetTop(rightSealRect.GetBottom());
             rightSealRect.SetBottom(billRect.GetBottom());
             fontSize = Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");

@@ -82,7 +82,8 @@ namespace Wisteria::Graphs
             @param canvas The canvas to draw the chart on.
             @param brushes The brush scheme, which will contain the color and brush patterns
                 to render the bars with.
-            @param colors The color scheme to apply to the bars underneath the bars' brush patterns.\n
+            @param colors The color scheme to apply to the bars underneath the bars'
+                brush patterns.\n
                 This is useful if using a hatched brush, as this color will be solid
                 and show underneath it. Leave as null just to use the brush scheme.*/
         explicit CategoricalBarChart(Wisteria::Canvas* canvas,

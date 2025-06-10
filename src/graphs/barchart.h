@@ -78,7 +78,7 @@ namespace Wisteria::Graphs
             },
             wxString{}, Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
-        plot->IncludeSpacesBetweenBars();
+         plot->IncludeSpacesBetweenBars();
 
          // only show the labels on the axis
          plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -1319,7 +1319,7 @@ namespace Wisteria::Graphs
         ///    there are missing bars along the bar axis, so this (by default) will use
         ///    the number of axis labels that would appear under each place where a bar would go.\n
         ///    (Note that the outer labels are not counted, just the labels under the bars.)
-        /// @note The default behaviour assumes that labels are appearing beneath the middle of
+        /// @note The default behavior assumes that labels are appearing beneath the middle of
         ///    each bar (instead of cutpoints, like in histograms), so override this if relying
         ///    on bar axis labels won't work.\n
         ///    This should be overridden if bar axis labelling is being done in a different way,

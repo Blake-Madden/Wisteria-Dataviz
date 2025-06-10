@@ -435,9 +435,25 @@ namespace Wisteria::GraphItems
             return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + m_xOffsetPercentage));
             }
 
+        /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
+        /// @note @c percentFromLeft can be negative if using it for Bezier control points
+        ///     that need to go a little outside of the rect.
+        [[nodiscard]]
+        double GetXPosFromLeft(const wxRect2DDouble rect, const double percentFromLeft) const
+            {
+            return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + m_xOffsetPercentage));
+            }
+
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]]
         double GetYPosFromTop(const wxRect rect, const double percentFromTop) const
+            {
+            return rect.GetTop() + (rect.GetHeight() * (percentFromTop + m_yOffsetPercentage));
+            }
+
+        /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
+        [[nodiscard]]
+        double GetYPosFromTop(const wxRect2DDouble rect, const double percentFromTop) const
             {
             return rect.GetTop() + (rect.GetHeight() * (percentFromTop + m_yOffsetPercentage));
             }
