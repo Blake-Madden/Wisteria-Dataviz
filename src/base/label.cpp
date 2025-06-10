@@ -1985,8 +1985,9 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------------------
-    int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
-                                            const wxString& text)
+    double Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
+                                               const wxRect2DDouble& boundingBox,
+                                               const wxString& text)
         {
         // start with the smallest possible font and work our way up.
         wxFont resizedFont(ft);
@@ -2001,22 +2002,22 @@ namespace Wisteria::GraphItems
             // down below when we try to see if the point size can't be increased anymore.
             // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one
             // operation), whereas we want to test each point size to find the perfect one.
-            resizedFont.SetPointSize(resizedFont.GetPointSize() + 1);
+            resizedFont.SetPointSize(resizedFont.GetFractionalPointSize() + 1.0);
             // bail if the font can't be made any larger
-            if (resizedFont.GetPointSize() == dc.GetFont().GetPointSize())
+            if (resizedFont.GetFractionalPointSize() == dc.GetFont().GetFractionalPointSize())
                 {
-                return resizedFont.GetPointSize();
+                return resizedFont.GetFractionalPointSize();
                 }
             const DCFontChangerIfDifferent fc2(dc, resizedFont);
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
 
             if (textWidth > boundingBox.GetWidth() || textHeight > boundingBox.GetHeight())
                 {
-                resizedFont.SetPointSize(std::max(1, resizedFont.GetPointSize() - 1));
+                resizedFont.SetPointSize(std::max(1.0, resizedFont.GetFractionalPointSize() - 1));
                 break;
                 }
             }
-        return resizedFont.GetPointSize();
+        return resizedFont.GetFractionalPointSize();
         }
 
     //--------------------------------------------------

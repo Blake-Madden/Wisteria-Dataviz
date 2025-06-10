@@ -368,6 +368,17 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static int CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
                                         const double angleInDegrees, const wxString& text);
+
+        /// @private
+        /// @internal Deprecated overload.
+        [[nodiscard]]
+        static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
+                                                const wxRect& boundingBox, const wxString& text)
+            {
+            return static_cast<int>(std::floor(
+                CalcFontSizeToFitBoundingBox(dc, ft, wxRect2DDouble{ boundingBox }, text)));
+            }
+
         /** @returns The font size that would fit for a given string within a given bounding box.
             @param dc The device context that the text is being drawn on.
             @param ft The font this is being drawn with.
@@ -379,8 +390,10 @@ namespace Wisteria::GraphItems
                 setting its point size to this should also set its scaling to @c 1.0
                 (not the parent's)*/
         [[nodiscard]]
-        static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
-                                                const wxRect& boundingBox, const wxString& text);
+        static double CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
+                                                   const wxRect2DDouble& boundingBox,
+                                                   const wxString& text);
+
         /** @returns The first available font (face name) found from the given list,
                 or the system default if none are found.
             @param possibleFontNames The list of font names to choose from.*/
