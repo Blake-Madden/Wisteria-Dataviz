@@ -6,7 +6,7 @@ jobs:
     name: macos-build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
   
@@ -14,16 +14,9 @@ jobs:
         run: |
              brew install cmake tbb
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-             cd wxWidgets
-             cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF \
-               -DwxUSE_SYS_LIBS=OFF \
-               -D"CMAKE_OSX_ARCHITECTURES:STRING=arm64;x86_64" \
-               -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
-             cmake --build . --target install -j4
  
       - name: Build
         run: |
-             cd ${{ github.workspace }}
              cmake ./
              cmake --build . -j4
 
