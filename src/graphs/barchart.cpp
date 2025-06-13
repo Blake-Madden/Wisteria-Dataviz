@@ -57,9 +57,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                 // BinValueAndPercentage
                 wxString::Format(
-                /* TRANSLATORS: Bar length, percentage of overall length,
-                   and percent symbol (%%).
-                   '%%' can be changed or moved. */
+                    /* TRANSLATORS: Bar length, percentage of overall length,
+                       and percent symbol (%%).
+                       '%%' can be changed or moved. */
                     _(L"%s (%s%%)"),
                     wxNumberFormatter::ToString(bar.GetLength(), 0,
                                                 Settings::GetDefaultNumberFormat()),
@@ -664,7 +664,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
         // resort in case bars were added
         std::sort(GetBars().begin(), GetBars().end(), [](const auto& lhv, const auto& rhv) noexcept
-            { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
+                  { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
         // if not all labels were provided, then get the other bar labels that weren't
         // provided and sort those, pushing them all beneath the provided bars
         if (labels.size() != GetBars().size())
