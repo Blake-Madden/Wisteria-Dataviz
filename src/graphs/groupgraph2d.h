@@ -17,7 +17,7 @@
 namespace Wisteria::Graphs
     {
     /** @brief A graph that may have grouping used in it.
-        @details SetGroupColumn() & GetGroupColumn() are provided to connect to a grouping
+        @details SetGroupColumn() and GetGroupColumn() are provided to connect to a grouping
             column when setting the data, which can used by calling UseGrouping().\n
             This class will handle mapping the group codes in alphabetical order
             to the brush and color schemes (also provided in this class). It will also
@@ -62,15 +62,16 @@ namespace Wisteria::Graphs
 
       protected:
         /** @private
-            @brief Builds a list of group IDs, sorted their respective strings' alphabetical order.
+            @brief Builds a list of group IDs, sorted by their respective strings'
+                alphabetical order.
             @details The map's key is the group ID, and the value is its index in the map.\n
                 This value is useful for mapping group IDs to an index in the various schemes
                 (e.g., color scheme).\n
                 The ordering of this map can also be used to build a legend, where the
-                group IDs are sorted in their respective label's alphabetical order.
-            @warning Ensure that SetGroupColumn() has been passed a valid column before calling this
-                and call `UseGrouping(true)` This should normally be done in a call to
-                `SetData()` in derived classes.*/
+                group IDs are sorted in their respective labels' alphabetical order.
+            @warning Ensure that SetGroupColumn() has been passed a valid column before
+                calling this. This should normally be done in a call to `SetData()`
+                in derived classes.*/
         void BuildGroupIdMap();
 
         /** @private
