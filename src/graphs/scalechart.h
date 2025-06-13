@@ -41,6 +41,7 @@ namespace Wisteria::Graphs
          | week 1 | 52    | Anna  |
          | week 2 | 50    | Anna  |
          | week 1 | 62    | Joe   |
+         ...
 
         @par Missing Data:
          - Values that are missing data will not be plotted.

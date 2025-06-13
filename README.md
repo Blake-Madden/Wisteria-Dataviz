@@ -144,22 +144,15 @@ Building
 Windows
 -----------------------------
 
-Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher:
+Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher:
 
 - Open *Visual Studio* and select *Clone a Repository*
   - Enter [https://github.com/wxWidgets/wxWidgets.git](https://github.com/wxWidgets/wxWidgets.git) and clone it
-- Once the wxWidgets folder is cloned and opened in *Visual Studio*:
-  - Open **Project** > **CMake Settings for wxWidgets**
-    - Uncheck **wxBUILD_SHARED**
-    - Set **wxBUILD_OPTIMISE** to "ON"
-    - Set the configuration type to "Release"
-    - Save your changes
-  - Select **Build** > **Install wxWidgets** (builds and then copies the header, lib, and cmake files to the prefix folder)
 
 Next, download and build *Wisteria*:
 
 - Open *Visual Studio* and select *Clone a Repository*
-  - Enter [https://github.com/Blake-Madden/Wisteria-Dataviz.git](https://github.com/Blake-Madden/Wisteria-Dataviz.git) and clone it
+  - Enter [https://github.com/Blake-Madden/Wisteria-Dataviz.git](https://github.com/Blake-Madden/Wisteria-Dataviz.git) and clone it.
     Note that this project's folder should be at the save level as the *wxWidgets* folder.
 - Open this project's *CMake* file in *Visual Studio*:
   - Open **Project** > **CMake Settings for Wisteria**
@@ -178,16 +171,11 @@ Install the following from your repository manager (or build from source):
 - *Threading Building Blocks* (libtbb) and its development files
 - *Doxygen* (if building the API documentation)
 
-Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
 same folder level as this project:
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-cd wxWidgets
-cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF \
-    -DwxBUILD_OPTIMISE=ON -DwxBUILD_STRIPPED_RELEASE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install -j4 --config Release
-cd ..
 ```
 
 Next, download *Wisteria* and build the library, demo, and documentation:
@@ -209,18 +197,11 @@ Install the following using brew (or build from source):
 - *XCode*
 - *Doxygen* (if building the API documentation)
 
-Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
 same folder level as this project:
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-cd wxWidgets
-cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF \
-    -D"CMAKE_OSX_ARCHITECTURES:STRING=arm64;x86_64" \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 \
-    -DwxBUILD_OPTIMISE=ON -DwxBUILD_STRIPPED_RELEASE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install -j4 --config Release
-cd ..
 ```
 
 Next, download *Wisteria* and build the library, demo, and documentation:

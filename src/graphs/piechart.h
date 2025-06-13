@@ -177,6 +177,12 @@ namespace Wisteria::Graphs
             | :-------------- | :-------------------------------- |
             | @image html DonutChart.svg width=90% | @image html DonutChartSubgrouped.svg width=90% |
 
+        @note The pie slices will be ordered alphabetically and drawn counter-clockwise, starting
+            at 3 o'clock.\n
+            This order will also be used for the brush, color, or image scheme that
+            is being used to paint each slice. In other words, the first image from your image scheme
+            will be used for the slice with the first alphabetically sorted label.
+
         @par %Data:
             This plot accepts a Data::Dataset where a continuous column is the aggregate counts,
             and a grouping column is the groups that the values are aggregated into.
