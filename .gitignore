@@ -17,6 +17,9 @@
 /docs/syntax-manual/WisteriaSyntaxReferenceManual.tex
 /tools/ColorCode.txt
 /tools/ColorReportMap.txt
+/wxWidgets_lib
+/docs/syntax-manual/.gitignore
+/docs/syntax-manual/site_libs
 
 # Compiler helper files
 CMakeSettings.json
@@ -67,4 +70,3 @@ cpp.hint
 *.out
 *.app
 *.manifest
-/wxWidgets_lib

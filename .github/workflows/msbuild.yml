@@ -18,9 +18,9 @@ jobs:
       with:
           submodules: 'recursive'
 
-    - name: get wxwidgets
+    - name: Download wxWidgets
       run: |
-        git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+           git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
