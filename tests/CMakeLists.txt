@@ -60,8 +60,8 @@ add_executable(${CMAKE_PROJECT_NAME} ${TEST_SRC_FILES} ${LIB_SRC_FILES})
 
 # Link required libraries to the executable
 if(WIN32)
-    target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION)
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus /fsanitize=address)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus)
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Catch2::Catch2WithMain)
 elseif(UNIX)
     target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST)
