@@ -1827,7 +1827,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                             {
                             decalLabel->SetBoundingBox(decalRect, dc, GetScaling());
-                            decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                            decalLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
                             }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
                             {
