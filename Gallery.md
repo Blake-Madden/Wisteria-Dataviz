@@ -90,6 +90,13 @@ Survey Data
 | :-------------- |
 | ![](docs/images/SWOTRoadmap.svg) |
 
+Education
+-----------------------------
+
+| Scale Chart (Wisteria::Graphs::ScaleChart) |
+| :-------------- |
+| ![](docs/images/ScaleChart.svg) |
+
 Social Sciences
 -----------------------------
 

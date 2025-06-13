@@ -30,6 +30,7 @@
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
 #include "../src/graphs/sankeydiagram.h"
+#include "../src/graphs/scalechart.h"
 #include "../src/graphs/table.h"
 #include "../src/graphs/wcurveplot.h"
 #include "../src/graphs/wordcloud.h"
@@ -89,7 +90,8 @@ class MyApp final : public wxApp
         ID_NEW_WORD_CLOUD,
         ID_NEW_TABLE,
         ID_PRINT_ALL,
-        ID_TEXT_CLASSIFIER
+        ID_TEXT_CLASSIFIER,
+        ID_NEW_SCALE_CHART
         };
     };
 

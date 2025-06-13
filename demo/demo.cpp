@@ -139,6 +139,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_7POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HEATMAP);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HEATMAP_GROUPED);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SCALE_CHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_MULTIPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_MULTIPLOT_COMMON_AXIS);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_TABLE);
@@ -183,6 +184,9 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"));
     fileMenu->Append(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"));
     fileMenu->Append(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"));
+    fileMenu->AppendSeparator();
+
+    fileMenu->Append(MyApp::ID_NEW_SCALE_CHART, _(L"Scale Chart"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"));
@@ -509,6 +513,139 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->ShowAllPoints(true);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
+    // scale chart
+    else if (event.GetId() == MyApp::ID_NEW_SCALE_CHART)
+        {
+        subframe->SetTitle(_(L"scale chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+        auto testScoresData = std::make_shared<Data::Dataset>();
+        try
+            {
+            testScoresData->ImportCSV(
+                appDir + L"/datasets/Student Scores.csv",
+                ImportInfo()
+                    .ContinuousColumns({ L"test_score" })
+                    .IdColumn(L"Week")
+                    .CategoricalColumns({ { L"NAME", CategoricalImportMethod::ReadAsStrings } }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<ScaleChart>(subframe->m_canvas);
+        plot->AddScale(
+            std::vector<BarChart::BarBlock>{
+                BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(59)
+                                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
+                                        .Decal(GraphItems::Label(
+                                            GraphItems::GraphItemInfo{ L"F (fail)" }.LabelFitting(
+                                                LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) } },
+            L"Grades");
+        plot->AddScale(
+            std::vector<BarChart::BarBlock>{
+                BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(59)
+                                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
+                                        .Decal(GraphItems::Label(
+                                            GraphItems::GraphItemInfo{ L"F (fail)" }.LabelFitting(
+                                                LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+            },
+            L"Grades");
+        plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0, L"Grade Level");
+        plot->SetData(testScoresData, L"TEST_SCORE", L"NAME");
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+
+        auto legend{ plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
+            LegendCanvasPlacementHint::RightOfGraph)) };
+        subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
+
+        // after changing legend's text, recalculate how much of the
+        // canvas it should consume
+        subframe->m_canvas->CalcRowDimensions();
         }
     // Heatmap
     else if (event.GetId() == MyApp::ID_NEW_HEATMAP)
@@ -2296,6 +2433,11 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap-grouped.svg", iconSize),
                      _(L"Heat Map (Grouped)"));
+    toolBar->AddSeparator();
+
+    toolBar->AddTool(MyApp::ID_NEW_SCALE_CHART, _(L"Scale Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/scale.svg", iconSize),
+                     _(L"Scale Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"),

@@ -49,6 +49,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/proconroadmap.cpp
     ../../src/graphs/roadmap.cpp
     ../../src/graphs/sankeydiagram.cpp
+    ../../src/graphs/scalechart.cpp
     ../../src/graphs/table.cpp
     ../../src/graphs/wcurveplot.cpp
     ../../src/graphs/wordcloud.cpp
@@ -65,7 +66,6 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/formattedtextctrl.cpp
     ../../src/ui/controls/htmltablewin.cpp
     ../../src/ui/controls/htmltablewinprintout.cpp
-    ../../src/ui/controls/infobarex.cpp
     ../../src/ui/controls/listctrlex.cpp
     ../../src/ui/controls/listctrlexdataprovider.cpp
     ../../src/ui/controls/searchpanel.cpp
