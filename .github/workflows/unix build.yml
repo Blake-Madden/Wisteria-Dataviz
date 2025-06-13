@@ -18,7 +18,6 @@ jobs:
 
       - name: build
         run: |
-             cd Wisteria-Dataviz
              cmake ./
              cmake --build . -j4
 
