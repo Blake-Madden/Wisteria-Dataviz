@@ -9,19 +9,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      
-      - name: install wxwidgets
+
+      - name: get wxwidgets
         run: |
              export DISPLAY=:0.0
              sudo apt-get update && sudo apt-get install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-             cd wxWidgets
-             cmake . -DCMAKE_INSTALL_PREFIX=./wxlib -DwxBUILD_SHARED=OFF
-             cmake --build . --target install -j4
 
       - name: build
         run: |
-             cd ..
              cd Wisteria-Dataviz
              cmake ./
              cmake --build . -j4
