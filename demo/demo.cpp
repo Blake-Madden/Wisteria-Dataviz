@@ -440,7 +440,7 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     wxArrayString devs;
     devs.Add(_DT(L"Blake Madden"));
     aboutInfo.SetDevelopers(devs);
-    aboutInfo.SetName(_(L"Wisteria Dataviz Library Demo"));
+    aboutInfo.SetName(Wisteria::GetLibraryVersionInfo().ToString());
     aboutInfo.SetDescription(_(L"Demonstration of Wisteria Dataviz, "
                                "a wxWidgets-based data visualization library."));
 
