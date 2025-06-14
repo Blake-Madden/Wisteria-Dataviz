@@ -19,6 +19,8 @@
 
 namespace Wisteria
     {
+    // clang-format off
+    wxGCC_WARNING_SUPPRESS(unused-function)
     [[nodiscard]]
     static wxVersionInfo GetLibraryVersionInfo()
         {
@@ -26,51 +28,53 @@ namespace Wisteria
                              _WISTERIA_VERSION_PATCH, _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME,
                              _WISTERIA_COPYRIGHT);
         }
+    wxGCC_WARNING_RESTORE(unused-function)
+        // clang-format on
 
-    /** @brief Debug settings used throughout the library.
-        @details This is a bitmask which can be used to control multiple flags.\n
-            The following preprocessors can be defined to control which settings are enabled.
+        /** @brief Debug settings used throughout the library.
+            @details This is a bitmask which can be used to control multiple flags.\n
+                The following preprocessors can be defined to control which settings are enabled.
 
-        - @c DEBUG_LOG_INFO: enables @ LogExtraInfo.
-        - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
-        - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
-        - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawInformationOnSelection and @ DrawExtraInformation.
-        - @c DEBUG_EXPERIMENTAL_CODE enables @ IncludeExperimentalCode.
-        - @c DEBUG_FILE_IO enables @ AllowFileIO.
+            - @c DEBUG_LOG_INFO: enables @ LogExtraInfo.
+            - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
+            - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
+            - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawInformationOnSelection and @
+           DrawExtraInformation.
+            - @c DEBUG_EXPERIMENTAL_CODE enables @ IncludeExperimentalCode.
+            - @c DEBUG_FILE_IO enables @ AllowFileIO.
 
-            By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES, @c DEBUG_FILE_IO,
-            and @c DEBUG_LOG_INFO are enabled. Otherwise, all debugging features are disabled.
+                By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES, @c DEBUG_FILE_IO,
+                and @c DEBUG_LOG_INFO are enabled. Otherwise, all debugging features are disabled.
 
-            Note that these are %Wisteria specific debugging features (e.g., bounding boxes
-            being rendered). If running in debug mode, other debugging features (e.g., asserts)
-            will still be in effect.
+                Note that these are %Wisteria specific debugging features (e.g., bounding boxes
+                being rendered). If running in debug mode, other debugging features (e.g., asserts)
+                will still be in effect.
 
-        @internal Developer Note: this is used as a bitmask, don't strongly type it.*/
-    enum DebugSettings
-        {
-        /** @brief No %Wisteria-specific debugging should be enabled.*/
-        DebugNone = 0,
-        /** @brief Draw a bounding box around objects when they are selected.*/
-        DrawBoundingBoxesOnSelection = (1 << 0),
-        /** @brief Write additional information on the screen when an object is selected
-                (e.g., the scaling value).*/
-        DrawInformationOnSelection = (1 << 1),
-        /** @brief Draw more verbose information, even when objects aren't selected.\n
-                This is only recommended when designing a new graph type.*/
-        DrawExtraInformation = (1 << 2),
-        /** @brief Run experimental code.\n
-                Code being used to test a new graph type during the design stage should
-                be wrapped in @c IncludeExperimentalCode blocks.\n
-                This is a preferred replacement for `#ifdef 0` code blocks as this
-                can easily be enabled/disabled globally
-                (based on how @c DEBUG_EXPERIMENTAL_CODE is defined).*/
-        IncludeExperimentalCode = (1 << 3),
-        /** @brief Allows various file output options that should not be available in
-                production releases. For example, allowing configuration files to
-                export dataset silently for debugging purposes.*/
-        AllowFileIO = (1 << 4),
-        /** @brief Logs various information for additional messages.*/
-        LogExtraInfo = (1 << 5)
+            @internal Developer Note: this is used as a bitmask, don't strongly type it.*/
+        enum DebugSettings {
+            /** @brief No %Wisteria-specific debugging should be enabled.*/
+            DebugNone = 0,
+            /** @brief Draw a bounding box around objects when they are selected.*/
+            DrawBoundingBoxesOnSelection = (1 << 0),
+            /** @brief Write additional information on the screen when an object is selected
+                    (e.g., the scaling value).*/
+            DrawInformationOnSelection = (1 << 1),
+            /** @brief Draw more verbose information, even when objects aren't selected.\n
+                    This is only recommended when designing a new graph type.*/
+            DrawExtraInformation = (1 << 2),
+            /** @brief Run experimental code.\n
+                    Code being used to test a new graph type during the design stage should
+                    be wrapped in @c IncludeExperimentalCode blocks.\n
+                    This is a preferred replacement for `#ifdef 0` code blocks as this
+                    can easily be enabled/disabled globally
+                    (based on how @c DEBUG_EXPERIMENTAL_CODE is defined).*/
+            IncludeExperimentalCode = (1 << 3),
+            /** @brief Allows various file output options that should not be available in
+                    production releases. For example, allowing configuration files to
+                    export dataset silently for debugging purposes.*/
+            AllowFileIO = (1 << 4),
+            /** @brief Logs various information for additional messages.*/
+            LogExtraInfo = (1 << 5)
         };
 
 #if wxDEBUG_LEVEL >= 2
