@@ -19,12 +19,12 @@
 
 namespace Wisteria
     {
-    static [[nodiscard]]
-    wxVersionInfo GetLibraryVersionInfo()
+    [[nodiscard]]
+    static wxVersionInfo GetLibraryVersionInfo()
         {
-        return wxVersionInfo(_WISTERIA_APP_NAME, _WISTERIA_VERSION_MAJOR,
-                             _WISTERIA_VERSION_MINOR, _WISTERIA_VERSION_PATCH,
-                             _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME, _WISTERIA_COPYRIGHT);
+        return wxVersionInfo(_WISTERIA_APP_NAME, _WISTERIA_VERSION_MAJOR, _WISTERIA_VERSION_MINOR,
+                             _WISTERIA_VERSION_PATCH, _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME,
+                             _WISTERIA_COPYRIGHT);
         }
 
     /** @brief Debug settings used throughout the library.
