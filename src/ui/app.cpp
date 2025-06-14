@@ -120,6 +120,7 @@ bool Wisteria::UI::BaseApp::OnInit()
     wxLogMessage(L"PNG Library: %s", wxPNGHandler::GetLibraryVersionInfo().GetVersionString());
     wxLogMessage(L"TIFF Library: %s", wxTIFFHandler::GetLibraryVersionInfo().GetVersionString());
     wxLogMessage(L"RegEx Library: %s", wxRegEx::GetLibraryVersionInfo().GetVersionString());
+    wxLogMessage(L"Wisteria-Dataviz: %s", Wisteria::GetLibraryVersionInfo().GetVersionString());
 
     wxLogMessage(L"Default System Font: %s, %d pt.",
                  wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
