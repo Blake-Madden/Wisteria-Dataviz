@@ -13,10 +13,20 @@
 #define __WISTERIA_SETTINGS_H__
 
 #include "colorbrewer.h"
+#include "version.h"
 #include <wx/numformatter.h>
+#include <wx/version.h>
 
 namespace Wisteria
     {
+    static [[nodiscard]]
+    wxVersionInfo GetLibraryVersionInfo()
+        {
+        return wxVersionInfo(_WISTERIA_APP_NAME, _WISTERIA_VERSION_MAJOR,
+                             _WISTERIA_VERSION_MINOR, _WISTERIA_VERSION_PATCH,
+                             _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME, _WISTERIA_COPYRIGHT);
+        }
+
     /** @brief Debug settings used throughout the library.
         @details This is a bitmask which can be used to control multiple flags.\n
             The following preprocessors can be defined to control which settings are enabled.

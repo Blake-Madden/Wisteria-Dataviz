@@ -29,7 +29,23 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
-project(Wisteria)
+project(Wisteria VERSION 1.0.1.0 DESCRIPTION "Wisteria-Dataviz")
+
+set(FULL_VERSION ${Wisteria_VERSION_MAJOR}.${Wisteria_VERSION_MINOR}.${Wisteria_VERSION_PATCH}.${Wisteria_VERSION_TWEAK})
+# Build a displayable version string that only includes the necessary parts
+set(FULL_DISPLAY_VERSION ${Wisteria_VERSION_MAJOR})
+if(NOT ${Wisteria_VERSION_MINOR} EQUAL 0 OR NOT ${Wisteria_VERSION_PATCH} EQUAL 0 OR NOT ${Wisteria_VERSION_TWEAK} EQUAL 0)
+    string(APPEND FULL_DISPLAY_VERSION ".${Wisteria_VERSION_MINOR}")
+endif()
+if(NOT ${Wisteria_VERSION_PATCH} EQUAL 0 OR NOT ${Wisteria_VERSION_TWEAK} EQUAL 0)
+    string(APPEND FULL_DISPLAY_VERSION ".${Wisteria_VERSION_PATCH}")
+endif()
+if(NOT ${Wisteria_VERSION_TWEAK} EQUAL 0)
+    string(APPEND FULL_DISPLAY_VERSION ".${Wisteria_VERSION_TWEAK}")
+endif()
+
+string(TIMESTAMP BUILD_YEAR "%Y")
+set(WISTERIA_COPYRIGHT "Copyright (c) 2005-${BUILD_YEAR} Blake Madden")
 
 # Build the documentation
 #########################
@@ -80,6 +96,9 @@ add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
 set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
 
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/base/version.h")
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
