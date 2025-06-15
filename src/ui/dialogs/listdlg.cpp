@@ -520,7 +520,7 @@ namespace Wisteria::UI
             if (m_sourceFileLastModified.IsValid() && previousModTime.IsValid() &&
                 previousModTime < m_sourceFileLastModified)
                 {
-                Readlog();
+                ReadLog();
                 }
             }
         RestartRealtimeUpdate();
