@@ -542,7 +542,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(59)
                                         .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
                                         .Decal(GraphItems::Label(
-                                            GraphItems::GraphItemInfo{ L"F (fail)" }.LabelFitting(
+                                            GraphItems::GraphItemInfo{ _(L"F (fail)") }.LabelFitting(
                                                 LabelFit::ScaleFontToFit))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
@@ -570,7 +570,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(59)
                                         .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
                                         .Decal(GraphItems::Label(
-                                            GraphItems::GraphItemInfo{ L"F (fail)" }.LabelFitting(
+                                            GraphItems::GraphItemInfo{ _(L"F (fail)") }.LabelFitting(
                                                 LabelFit::ScaleFontToFit))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
@@ -634,7 +634,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                             LabelFit::ScaleFontToFit))) },
             },
             L"Grades");
-        plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0, L"Grade Level");
+        plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0, _(L"Grade Level"));
         plot->SetData(testScoresData, L"TEST_SCORE", L"NAME");
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
