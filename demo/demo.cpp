@@ -564,6 +564,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                         .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
                             LabelFit::ScaleFontToFit))) } },
+            std::nullopt,
             L"Grades");
         plot->AddScale(
             std::vector<BarChart::BarBlock>{
@@ -633,9 +634,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
                             LabelFit::ScaleFontToFit))) },
             },
+            std::nullopt,
             L"Grades");
-        plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0, _(L"Grade Level"));
+        plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0);
         plot->SetData(testScoresData, L"TEST_SCORE", L"NAME");
+        plot->SetDataColumnHeader(_(L"Test Scores"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 

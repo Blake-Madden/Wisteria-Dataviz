@@ -77,29 +77,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             jitterPoints.insert(std::clamp<double>(datum, 0, 100));
             }
         m_jitter.CalcSpread(jitterPoints);
-
-        GetOppositeBarAxis().SetCustomLabel(2, GraphItems::Label{ scoreColumnName });
         }
 
     //----------------------------------------------------------------
-    void ScaleChart::SetMainScaleValues(const std::vector<double>& values, uint8_t precision,
-                                        const wxString& header)
+    void ScaleChart::SetMainScaleValues(const std::vector<double>& values, uint8_t precision)
         {
         m_scaleValues = values;
         m_precision = precision;
-        if (!header.empty() && !GetBars().empty())
-            {
-            GetOppositeBarAxis().SetCustomLabel(GetBars()[0].GetAxisPosition(),
-                                                GraphItems::Label{ header });
-            }
         }
 
     //----------------------------------------------------------------
     void ScaleChart::AddScale(std::vector<BarChart::BarBlock> blocks,
+                              const std::optional<double> scalingAxisStart /*= std::nullopt*/,
                               const wxString& header /*= wxString{}*/)
         {
-        const Bar theBar{ static_cast<double>(GetBars().size() + 1), blocks, wxString{},
-                          Wisteria::GraphItems::Label{}, Wisteria::BoxEffect::Solid };
+        Bar theBar{ static_cast<double>(GetBars().size() + 1), blocks, wxString{},
+                    Wisteria::GraphItems::Label{}, Wisteria::BoxEffect::Solid };
+        if (scalingAxisStart)
+            {
+            theBar.SetCustomScalingAxisStartPosition(scalingAxisStart.value());
+            }
         AddBar(theBar, theBar.GetLength() >
                            GetScalingAxis().GetRange().second - GetScalingAxis().GetRange().first);
         if (!header.empty())

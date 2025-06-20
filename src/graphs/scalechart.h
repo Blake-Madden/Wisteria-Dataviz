@@ -102,6 +102,7 @@ namespace Wisteria::Graphs
                         .Decal(
                         GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
                             LabelFit::ScaleFontToFit))) } },
+            std::nullopt,
             _(L"Grades"));
           plot->AddScale(
             std::vector<BarChart::BarBlock>{
@@ -171,15 +172,18 @@ namespace Wisteria::Graphs
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
                             LabelFit::ScaleFontToFit))) },
             },
+            std::nullopt,
             _(L"Grades"));
-          plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0, _(L"Grade Level"));
+          plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0);
+          plot->SetMainScaleColumnHeader(_(L"Grade Level"));
           plot->SetData(testScoresData, L"TEST_SCORE", L"NAME");
+          plot->SetDataColumnHeader(_(L"Test Scores"));
 
           canvas->SetFixedObject(0, 0, plot);
          @endcode*/
     // clang-format on
 
-    class ScaleChart final : public Wisteria::Graphs::BarChart
+    class ScaleChart : public Wisteria::Graphs::BarChart
         {
         wxDECLARE_DYNAMIC_CLASS(ScaleChart);
         ScaleChart() = default;
@@ -200,24 +204,12 @@ namespace Wisteria::Graphs
                 positioned at their given value.
             @param values The series of values to show.
             @param precision The precision to display the numbers with.
-            @param header The header to display above the scale.
             @note The default scaling axis is 0-100 (but can be changed by calling
                 `GetScalingAxis().SetRange()`). Values provided that don't fall
                 within this range will be ignored.
+            @sa SetMainScaleColumnHeader().
          */
-        void SetMainScaleValues(const std::vector<double>& values, uint8_t precision,
-                                const wxString& header);
-
-        /** @brief Adds a color-block scale along the right side of the scores
-                and numeric scale.
-            @param blocks A series of stackable block to represent a scale.
-                Along with color, this should contain a decal label.
-            @param header The header to display above the scale.
-            @warning The default scaling axis is 0-100. If you intend to change that,
-                then do that by calling `GetScalingAxis().SetRange()` before any calls
-                to this function.
-         */
-        void AddScale(std::vector<BarChart::BarBlock> blocks, const wxString& header = wxString{});
+        void SetMainScaleValues(const std::vector<double>& values, uint8_t precision);
 
         /** @brief Sets the data.
             @param data The data to use.
@@ -226,11 +218,52 @@ namespace Wisteria::Graphs
             @param groupColumnName The (optional) categorical column to use for grouping.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
+            @sa SetDataColumnHeader().
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
                      const std::optional<const wxString>& groupColumnName = std::nullopt);
+
+        /** @brief Adds a color-block scale along the right side of the scores
+                and numeric scale.
+            @param blocks A series of stackable block to represent a scale.
+                Along with color, this should contain a decal label.
+            @param scalingAxisStart Where along the scaling axis the bar should start.\n
+                This is optional, and the default will be to start where the axis starts.
+            @warning The default scaling axis is 0-100. If you intend to change that,
+                then do that by calling `GetScalingAxis().SetRange()` before any calls
+                to this function.
+         */
+        void AddScale(std::vector<BarChart::BarBlock> blocks,
+                      const std::optional<double> scalingAxisStart = std::nullopt,
+                      const wxString& header = wxString{});
+
+        /** @brief Sets the header over the main scale column.
+            @param header The label to use.
+            @sa SetMainScaleValues().
+         */
+        void SetMainScaleColumnHeader(const wxString& header)
+            {
+            if (!header.empty() && !GetBars().empty())
+                {
+                GetOppositeBarAxis().SetCustomLabel(GetBars()[0].GetAxisPosition(),
+                                                    GraphItems::Label{ header });
+                }
+            }
+
+        /** @brief Sets the header over the scores (plotted from SetData()).
+            @param header The label to use.
+            @sa SetData().
+         */
+        void SetDataColumnHeader(const wxString& header)
+            {
+            if (!header.empty() && GetBars().size() > 1)
+                {
+                GetOppositeBarAxis().SetCustomLabel(GetBars()[1].GetAxisPosition(),
+                                                    GraphItems::Label{ header });
+                }
+            }
 
       private:
         void RecalcSizes(wxDC& dc);
