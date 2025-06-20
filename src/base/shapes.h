@@ -403,10 +403,10 @@ namespace Wisteria::GraphItems
             Cold
             };
 
-        void DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour color) const;
+        void DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour& color) const;
         void DrawThermometer(const wxRect rect, wxDC& dc, const Temperature temp) const;
-        void DrawApple(const wxRect rect, wxDC& dc, const wxColour color) const;
-        void DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const;
+        void DrawApple(const wxRect rect, wxDC& dc, const wxColour& color) const;
+        static void DrawAsterisk(wxRect rect, wxGraphicsContext* gc);
         void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
         ///     sets the brush, then runs the rendering lambda again.
@@ -460,14 +460,14 @@ namespace Wisteria::GraphItems
 
         /// @brief Mirrors percentages passed to GetXPosFromLeft() or GetYPosFromTop().
         [[nodiscard]]
-        constexpr double Mirror(const double percent) const noexcept
+        static constexpr double Mirror(const double percent) noexcept
             {
             return 1.0 - percent;
             }
 
         /// @returns The midpoint of a rect.
         [[nodiscard]]
-        wxPoint GetMidPoint(const wxRect rect) const
+        static wxPoint GetMidPoint(const wxRect rect)
             {
             return rect.GetLeftTop() + wxPoint(rect.GetWidth() / 2, rect.GetHeight() / 2);
             }
@@ -475,7 +475,7 @@ namespace Wisteria::GraphItems
         /// @returns The radius of the largest circle that can fit in a rect.
         /// @note This is floored to be conservative.
         [[nodiscard]]
-        double GetRadius(const wxRect rect) const
+        static double GetRadius(const wxRect rect)
             {
             return std::floor(safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2));
             }
@@ -513,7 +513,7 @@ namespace Wisteria::GraphItems
         ///     that if being drawn as a fillable shape, the "ghosted" portion of the
         ///     shape will appear as expected.
         [[nodiscard]]
-        wxColour ApplyParentColorOpacity(const wxColour col) const
+        wxColour ApplyParentColorOpacity(const wxColour& col) const
             {
             return Colors::ColorContrast::ChangeOpacity(
                 col, GetGraphItemInfo().GetBrush().GetColour().GetAlpha());
@@ -588,11 +588,11 @@ namespace Wisteria::GraphItems
             return m_renderer;
             }
 
-      protected:
-        /// @private
-        wxSize m_shapeSizeDIPs{ 0, 0 };
-        /// @private
-        wxSize m_sizeDIPs{ 0, 0 };
+        [[nodiscard]]
+        wxSize GetShapeSizeDIPS() const noexcept
+            {
+            return m_shapeSizeDIPs;
+            }
 
       private:
         [[nodiscard]]
@@ -621,6 +621,9 @@ namespace Wisteria::GraphItems
             {
             return GetBoundingBox(dc).Contains(pt);
             }
+
+        wxSize m_shapeSizeDIPs{ 0, 0 };
+        wxSize m_sizeDIPs{ 0, 0 };
 
         Icons::IconShape m_shape{ Icons::IconShape::Square };
         mutable ShapeRenderer m_renderer;

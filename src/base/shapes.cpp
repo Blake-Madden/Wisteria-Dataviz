@@ -21,8 +21,6 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     GraphicsContextFallback::GraphicsContextFallback(wxDC* dc, const wxRect rect)
         {
-        m_gc = nullptr;
-        m_drawingToBitmap = false; // reset
         assert(dc && L"Invalid DC for graphics context!");
         if (dc == nullptr)
             {
@@ -149,13 +147,13 @@ namespace Wisteria::GraphItems
         // draw the outline
         if (IsSelected())
             {
-            wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(GetBoundingBox(dc));
             if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
-                wxDCPenChanger pcDebug(dc,
-                                       wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                const wxDCPenChanger pcDebug(
+                    dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 dc.DrawRectangle(drawRect);
                 }
             }
@@ -295,10 +293,10 @@ namespace Wisteria::GraphItems
         {
         if (GetGraphItemInfo().GetBaseColor())
             {
-            DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBaseColor().value());
+            const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBaseColor().value());
             fn();
             }
-        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+        const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
         fn();
         }
 
@@ -307,8 +305,8 @@ namespace Wisteria::GraphItems
                                          const wxString& text, wxDC& dc) const
         {
         const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
-        wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
-        wxDCBrushChanger bc(dc, brush);
+        const wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
+        const wxDCBrushChanger bc(dc, brush);
 
         const auto radius = GetRadius(rect);
         const auto circleCenter = GetMidPoint(rect);
@@ -339,11 +337,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for sun icon!");
         if (gc != nullptr)
             {
@@ -352,8 +350,9 @@ namespace Wisteria::GraphItems
             auto sunBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, 0), GetXPosFromLeft(rect, 1.5),
                 GetYPosFromTop(rect, 1.5),
-                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::Sunglow)),
-                ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SunsetOrange)));
+                ApplyParentColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::Sunglow)),
+                ApplyParentColorOpacity(
+                    Wisteria::Colors::ColorBrewer::GetColor(Color::SunsetOrange)));
             gc->SetBrush(sunBrush);
 
             const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
@@ -366,21 +365,24 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const auto centerPt = rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for flower icon!");
         if (gc != nullptr)
             {
-            gc->SetPen(wxPen(ColorContrast::Shade(ColorBrewer::GetColor(Color::Wisteria)),
-                             ScaleToScreenAndCanvas(1)));
-            gc->SetBrush(ApplyParentColorOpacity(ColorBrewer::GetColor(Color::Wisteria)));
+            gc->SetPen(wxPen(
+                ColorContrast::Shade(Wisteria::Colors::ColorBrewer::GetColor(Color::Wisteria)),
+                ScaleToScreenAndCanvas(1)));
+            gc->SetBrush(
+                ApplyParentColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::Wisteria)));
             // a line going from the middle of the left side to the middle of the right
-            wxRect petalRect(centerPt, wxSize(rect.GetWidth() / 2 - ScaleToScreenAndCanvas(1),
+            wxRect petalRect(centerPt, wxSize((rect.GetWidth() * math_constants::half) -
+                                                  ScaleToScreenAndCanvas(1),
                                               rect.GetHeight() / 6));
             petalRect.Offset(wxPoint(0, -(petalRect.GetHeight() / 2)));
 
@@ -405,7 +407,8 @@ namespace Wisteria::GraphItems
             // restore transform matrix
             gc->PopState();
             // draw the middle of flower
-            gc->SetBrush(ApplyParentColorOpacity(ColorBrewer::GetColor(Color::GoldenYellow)));
+            gc->SetBrush(ApplyParentColorOpacity(
+                Wisteria::Colors::ColorBrewer::GetColor(Color::GoldenYellow)));
             const wxRect flowerRect = wxRect(rect).Deflate(rect.GetWidth() / 3);
             gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
                             flowerRect.GetWidth(), flowerRect.GetHeight());
@@ -421,7 +424,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         wxRect drawRect{ rect };
 
@@ -453,7 +456,7 @@ namespace Wisteria::GraphItems
                                        rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
                                            math_constants::half :
                                            math_constants::full)) };
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
@@ -488,7 +491,7 @@ namespace Wisteria::GraphItems
             // stem
             {
                 {
-                wxDCBrushChanger bc(dc, *wxWHITE);
+                const wxDCBrushChanger bc(dc, *wxWHITE);
                 dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
                 drawRect.Deflate(static_cast<int>(ScaleToScreenAndCanvas(1.5)));
                 }
@@ -499,13 +502,14 @@ namespace Wisteria::GraphItems
                     {
                     mercuryRect.SetHeight(mercuryRect.GetHeight() * math_constants::third);
                     mercuryRect.Offset(0, drawRect.GetHeight() * math_constants::two_thirds);
-                    wxDCBrushChanger bc(dc, Colors::ColorBrewer::GetColor(Colors::Color::Ice));
+                    const wxDCBrushChanger bc(
+                        dc, Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::Ice));
                     dc.DrawRectangle(mercuryRect);
                     }
                 else
                     {
-                    wxDCBrushChanger bc(dc,
-                                        Colors::ColorBrewer::GetColor(Colors::Color::TractorRed));
+                    const wxDCBrushChanger bc(
+                        dc, Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::TractorRed));
                     dc.DrawRectangle(mercuryRect);
                     }
                 }
@@ -513,13 +517,13 @@ namespace Wisteria::GraphItems
 
         if (temp == Temperature::Hot)
             {
-            scaledPen.SetColour(Colors::ColorBrewer::GetColor(Colors::Color::LightGray));
+            scaledPen.SetColour(Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::LightGray));
             }
-        DCPenChangerIfDifferent pc2(dc, scaledPen);
+        const DCPenChangerIfDifferent pc2(dc, scaledPen);
         // measuring lines along stem
         wxRect clipRect{ rect };
         clipRect.SetHeight(clipRect.GetHeight() * 0.90);
-        wxDCClipper clip{ dc, clipRect };
+        const wxDCClipper clip{ dc, clipRect };
         int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
         int currentLine{ 0 };
         while (currentY < drawRect.GetBottom())
@@ -551,21 +555,21 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRedApple(const wxRect rect, wxDC& dc) const
         {
-        DrawApple(rect, dc, ColorBrewer::GetColor(Color::CandyApple));
+        DrawApple(rect, dc, Wisteria::Colors::ColorBrewer::GetColor(Color::CandyApple));
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawGrannySmithApple(const wxRect rect, wxDC& dc) const
         {
-        DrawApple(rect, dc, ColorBrewer::GetColor(Color::GrannySmithApple));
+        DrawApple(rect, dc, Wisteria::Colors::ColorBrewer::GetColor(Color::GrannySmithApple));
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawApple(const wxRect rect, wxDC& dc, const wxColour color) const
+    void ShapeRenderer::DrawApple(const wxRect rect, wxDC& dc, const wxColour& color) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -573,7 +577,7 @@ namespace Wisteria::GraphItems
                              0);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for apple!");
         if (gc != nullptr)
             {
@@ -623,7 +627,7 @@ namespace Wisteria::GraphItems
             gc->StrokePath(shinePath);
 
             // leaf
-            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::JungleGreen));
+            gc->SetBrush(Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::JungleGreen));
             gc->SetPen(*wxTRANSPARENT_PEN);
 
             wxGraphicsPath leafPath = gc->CreatePath();
@@ -646,18 +650,19 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawOffice(const wxRect rect, wxDC& dc) const
         {
-        DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite));
+        DrawBaseBuilding(rect, dc,
+                         Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite));
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawHouse(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for house!");
         if (gc != nullptr)
             {
@@ -673,13 +678,14 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(chimneyRect, math_constants::full),
                 GetYPosFromTop(chimneyRect, math_constants::half),
                 ApplyParentColorOpacity(ColorContrast::ShadeOrTint(
-                    Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
+                    Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
                 ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
             gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
                               chimneyRect.GetHeight());
 
             // house body
-            DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::PastelYellow));
+            DrawBaseBuilding(rect, dc,
+                             Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::PastelYellow));
 
             // roof
             wxRect roofRect{ rect };
@@ -713,11 +719,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFactory(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for factory!");
         if (gc != nullptr)
             {
@@ -795,17 +801,17 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour color) const
+    void ShapeRenderer::DrawBaseBuilding(const wxRect rect, wxDC& dc, const wxColour& color) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for building!");
         if (gc != nullptr)
             {
@@ -893,14 +899,14 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBarn(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for barn!");
         if (gc != nullptr)
             {
@@ -915,7 +921,7 @@ namespace Wisteria::GraphItems
                     Colors::ColorBrewer::GetColor(Color::FireEngineRed))),
                 ApplyParentColorOpacity(Colors::ColorBrewer::GetColor(Color::FireEngineRed))));
 
-            wxRect barnRect{ drawRect };
+            const wxRect barnRect{ drawRect };
             const std::vector<wxPoint> barnPoints = {
                 barnRect.GetBottomLeft(),
                 wxPoint(GetXPosFromLeft(barnRect, 0),
@@ -953,7 +959,7 @@ namespace Wisteria::GraphItems
             double clipX{ 0 }, clipY{ 0 }, clipW{ 0 }, clipH{ 0 };
             gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
             const wxRect originalClipRect(clipX, clipY, clipW, clipH);
-            wxRegion barnRegion{ barnPoints.size(), &barnPoints[0] };
+            const wxRegion barnRegion{ barnPoints.size(), barnPoints.data() };
             gc->Clip(barnRegion);
             wxCoord currentY{ barnRect.GetTop() };
             // clang-format off
@@ -1050,14 +1056,14 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFarm(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for farm!");
         if (gc != nullptr)
             {
@@ -1135,8 +1141,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawHeart(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1144,7 +1150,7 @@ namespace Wisteria::GraphItems
                              0);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for heart!");
         if (gc != nullptr)
             {
@@ -1230,19 +1236,19 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFlame(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for flame!");
         if (gc != nullptr)
             {
-            const auto drawFlame =
-                [&gc, this](const wxRect drawingRect, const wxColour color1, const wxColour color2)
+            const auto drawFlame = [&gc, this](const wxRect& drawingRect, const wxColour& color1,
+                                               const wxColour& color2)
             {
                 gc->SetBrush(gc->CreateLinearGradientBrush(
                     GetXPosFromLeft(drawingRect, math_constants::half),
@@ -1306,15 +1312,15 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawDollar(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
-        wxDCFontChanger fc(dc);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCFontChanger fc(dc);
 
         wxRect2DDouble drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for dollar icon!");
         if (gc != nullptr)
             {
@@ -1411,7 +1417,7 @@ namespace Wisteria::GraphItems
             rightSealRect.Inflate(innerBillRect.GetHeight() * math_constants::fifth);
             auto fontSize =
                 Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
-            gc->SetFont(wxFontInfo{ static_cast<double>(fontSize) }, wxColour{ L"#525B54" });
+            gc->SetFont(wxFontInfo{ fontSize }, wxColour{ L"#525B54" });
             gc->DrawText(L"100", rightSealRect.GetX(),
                          innerBillRect.GetY() +
                              (innerBillRect.GetHeight() - rightSealRect.GetHeight()));
@@ -1434,7 +1440,7 @@ namespace Wisteria::GraphItems
             rightSealRect.SetTop(rightSealRect.GetBottom());
             rightSealRect.SetBottom(billRect.GetBottom());
             fontSize = Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
-            gc->SetFont(wxFontInfo{ static_cast<double>(fontSize) }.Bold(),
+            gc->SetFont(wxFontInfo{ fontSize }.Bold(),
                         Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200));
             gc->DrawText(L"100", rightSealRect.GetX(), rightSealRect.GetY());
             }
@@ -1443,11 +1449,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRuler(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(
-                                       rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                                           math_constants::half :
-                                           math_constants::full)) };
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const wxPen scaledPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(
+                                             rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                                                 math_constants::half :
+                                                 math_constants::full)) };
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1474,7 +1480,7 @@ namespace Wisteria::GraphItems
             ColorContrast::Shade(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
                                  math_constants::three_fourths),
             wxWEST);
-        wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+        const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(drawRect);
 
         int currentY{ drawRect.GetTop() + static_cast<int>(ScaleToScreenAndCanvas(2)) };
@@ -1501,7 +1507,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawRectangle(rect); });
         }
 
@@ -1513,7 +1519,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawCircle(GetMidPoint(rect), GetRadius(rect)); });
         }
 
@@ -1542,7 +1548,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 11> points = {
             // the needle
@@ -1569,15 +1575,15 @@ namespace Wisteria::GraphItems
                     GetYPosFromTop(rect, math_constants::half)),
         };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawBook(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pcReset(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bcReset(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pcReset(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bcReset(dc, *wxBLACK_BRUSH);
 
         const std::array<wxPoint, 4> bookCover = {
             wxPoint(GetXPosFromLeft(rect, 0.1), GetYPosFromTop(rect, math_constants::half)),
@@ -1630,26 +1636,26 @@ namespace Wisteria::GraphItems
 
         wxPen scaledPenMain(*wxRED, ScaleToScreenAndCanvas(1));
         scaledPenMain.SetCap(wxPenCap::wxCAP_BUTT);
-        DCPenChangerIfDifferent pcMain(dc, scaledPenMain);
+        const DCPenChangerIfDifferent pcMain(dc, scaledPenMain);
 
             // draw the bottom of the book
             {
             wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
-            DCPenChangerIfDifferent pc(dc, scaledPen);
+            const DCPenChangerIfDifferent pc(dc, scaledPen);
             DrawWithBaseColorAndBrush(
-                dc, [&]() { dc.DrawPolygon(bookCoverBottom.size(), &bookCoverBottom[0]); });
+                dc, [&]() { dc.DrawPolygon(bookCoverBottom.size(), bookCoverBottom.data()); });
             // a highlight along the bottom edge
             scaledPen.SetColour(
                 ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
-            DCPenChangerIfDifferent pc2(dc, scaledPen);
+            const DCPenChangerIfDifferent pc2(dc, scaledPen);
             dc.DrawLine(bookCoverBottom[0], bookCoverBottom[3]);
 
             // gold trim on edges of book
             scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
             scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
-            DCPenChangerIfDifferent pc3(dc, scaledPen);
+            const DCPenChangerIfDifferent pc3(dc, scaledPen);
             auto topCornerLeft = geometry::point_along_line(
                 std::make_pair(bookCoverBottom[1].x, bookCoverBottom[1].y),
                 std::make_pair(bookCoverBottom[2].x, bookCoverBottom[2].y), .9);
@@ -1670,57 +1676,57 @@ namespace Wisteria::GraphItems
                 wxPoint(bottomCornerLeft.first, bottomCornerLeft.second), bookCoverBottom[3],
                 wxPoint(bottomCornerRight.first, bottomCornerRight.second)
             };
-            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
-            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
+            dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
 
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
-            DCPenChangerIfDifferent pc4(dc, scaledPen);
-            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
-            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            const DCPenChangerIfDifferent pc4(dc, scaledPen);
+            dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
+            dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
             }
 
             // draw the spine
             {
             wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
-            DCPenChangerIfDifferent pc(dc, scaledPen);
-            DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(spine.size(), &spine[0]); });
+            const DCPenChangerIfDifferent pc(dc, scaledPen);
+            DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(spine.size(), spine.data()); });
             // a highlight along the edge
             scaledPen.SetColour(
                 ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
-            DCPenChangerIfDifferent pc2(dc, scaledPen);
+            const DCPenChangerIfDifferent pc2(dc, scaledPen);
             dc.DrawLine(spine[0], spine[3]);
             }
 
             // draw the pages
             {
-            DCBrushChangerIfDifferent bc(
+            const DCBrushChangerIfDifferent bc(
                 dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::AntiqueWhite)));
-            DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
-            dc.DrawPolygon(pagesFront.size(), &pagesFront[0]);
+            const DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
+            dc.DrawPolygon(pagesFront.size(), pagesFront.data());
             }
 
             {
-            DCBrushChangerIfDifferent bc(
+            const DCBrushChangerIfDifferent bc(
                 dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::LightGray)));
-            DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
-            dc.DrawPolygon(pagesSide.size(), &pagesSide[0]);
+            const DCPenChangerIfDifferent pc(dc, *wxTRANSPARENT_PEN);
+            dc.DrawPolygon(pagesSide.size(), pagesSide.data());
             }
 
             // draw the cover
             {
             wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
-            DCPenChangerIfDifferent pc(dc, scaledPen);
-            DrawWithBaseColorAndBrush(dc,
-                                      [&]() { dc.DrawPolygon(bookCover.size(), &bookCover[0]); });
+            const DCPenChangerIfDifferent pc(dc, scaledPen);
+            DrawWithBaseColorAndBrush(dc, [&]()
+                                      { dc.DrawPolygon(bookCover.size(), bookCover.data()); });
             // a highlight along the bottom edge
             scaledPen.SetColour(
                 ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
-            DCPenChangerIfDifferent pc2(dc, scaledPen);
+            const DCPenChangerIfDifferent pc2(dc, scaledPen);
             dc.DrawLine(bookCover[0], bookCover[3]);
 
                 // gold leaf on cover of book
@@ -1742,14 +1748,14 @@ namespace Wisteria::GraphItems
                 };
                 scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
                 scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
-                DCPenChangerIfDifferent pc3(dc, scaledPen);
-                dc.DrawLines(goldLeafPointsPt.size(), &goldLeafPointsPt[0]);
+                const DCPenChangerIfDifferent pc3(dc, scaledPen);
+                dc.DrawLines(goldLeafPointsPt.size(), goldLeafPointsPt.data());
                 }
 
             // gold trim on edges of book
             scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
             scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
-            DCPenChangerIfDifferent pc3(dc, scaledPen);
+            const DCPenChangerIfDifferent pc3(dc, scaledPen);
             auto topCornerLeft =
                 geometry::point_along_line(std::make_pair(bookCover[1].x, bookCover[1].y),
                                            std::make_pair(bookCover[2].x, bookCover[2].y), .9);
@@ -1770,24 +1776,24 @@ namespace Wisteria::GraphItems
                 wxPoint(bottomCornerLeft.first, bottomCornerLeft.second), bookCover[3],
                 wxPoint(bottomCornerRight.first, bottomCornerRight.second)
             };
-            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
-            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
+            dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
 
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::quarter));
             scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
-            DCPenChangerIfDifferent pc4(dc, scaledPen);
-            dc.DrawLines(topLeftGoldLeaf.size(), &topLeftGoldLeaf[0]);
-            dc.DrawLines(bottomLeftGoldLeaf.size(), &bottomLeftGoldLeaf[0]);
+            const DCPenChangerIfDifferent pc4(dc, scaledPen);
+            dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
+            dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
             }
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawIVBag(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen{ *wxBLACK,
-                         static_cast<int>(ScaleToScreenAndCanvas(
-                             rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 0.5 : 1.0)) };
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const wxPen scaledPen{ *wxBLACK,
+                               static_cast<int>(ScaleToScreenAndCanvas(
+                                   rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 0.5 : 1.0)) };
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -1804,13 +1810,13 @@ namespace Wisteria::GraphItems
 
             // outside of bag
             {
-            wxDCBrushChanger bc(dc, *wxWHITE);
+            const wxDCBrushChanger bc(dc, *wxWHITE);
             dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
             }
 
             // IV line going from bag
             {
-            wxDCPenChanger pc2(
+            const wxDCPenChanger pc2(
                 dc, wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
                            static_cast<int>(drawRect.GetWidth() * math_constants::fifth) });
             wxPoint lineTop{ rect.GetLeftTop() };
@@ -1821,12 +1827,12 @@ namespace Wisteria::GraphItems
             wxRect lineRect{ rect };
             lineRect.SetHeight(lineRect.GetHeight() * math_constants::half);
             lineRect.Offset(0, lineRect.GetHeight());
-            wxDCClipper clip(dc, lineRect);
+            const wxDCClipper clip(dc, lineRect);
             dc.DrawLine(lineTop, lineBottom);
                 {
-                wxDCPenChanger pc3(dc,
-                                   wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::RedTomato),
-                                          static_cast<int>(drawRect.GetWidth() * 0.15) });
+                const wxDCPenChanger pc3(
+                    dc, wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::RedTomato),
+                               static_cast<int>(drawRect.GetWidth() * 0.15) });
                 dc.DrawLine(lineTop, lineBottom);
                 }
             }
@@ -1834,11 +1840,11 @@ namespace Wisteria::GraphItems
         // fill the bag with blood
         drawRect.Deflate(static_cast<wxCoord>(ScaleToScreenAndCanvas(1.5)));
             {
-            wxDCBrushChanger bc(dc, Colors::ColorBrewer::GetColor(Colors::Color::RedTomato));
+            const wxDCBrushChanger bc(dc, Colors::ColorBrewer::GetColor(Colors::Color::RedTomato));
             wxRect liquidRect{ drawRect };
             liquidRect.SetHeight(liquidRect.GetHeight() * math_constants::half);
             liquidRect.Offset(0, liquidRect.GetHeight());
-            wxDCClipper clip(dc, liquidRect);
+            const wxDCClipper clip(dc, liquidRect);
             dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
             }
 
@@ -1869,7 +1875,7 @@ namespace Wisteria::GraphItems
 
         wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
                         std::min(1.0, ScaleToScreenAndCanvas(math_constants::half)));
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 4> hatTop = {
             wxPoint(GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::third)),
@@ -1899,24 +1905,24 @@ namespace Wisteria::GraphItems
         };
 
             {
-            wxBrush shadowedBrush(ApplyParentColorOpacity(*wxBLACK));
-            DCBrushChangerIfDifferent bc(dc, shadowedBrush);
-            dc.DrawPolygon(hatStem.size(), &hatStem[0]);
+            const wxBrush shadowedBrush(ApplyParentColorOpacity(*wxBLACK));
+            const DCBrushChangerIfDifferent bc(dc, shadowedBrush);
+            dc.DrawPolygon(hatStem.size(), hatStem.data());
             }
 
             {
-            DCBrushChangerIfDifferent bc(
+            const DCBrushChangerIfDifferent bc(
                 dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Colors::Color::SmokyBlack)));
-            dc.DrawPolygon(hatTop.size(), &hatTop[0]);
+            dc.DrawPolygon(hatTop.size(), hatTop.data());
             }
 
         scaledPen.SetColour(
             ApplyParentColorOpacity(ColorBrewer::GetColor(Colors::Color::HarvestGold)));
-        DCPenChangerIfDifferent pc2(dc, scaledPen);
-        DCBrushChangerIfDifferent bc(
+        const DCPenChangerIfDifferent pc2(dc, scaledPen);
+        const DCBrushChangerIfDifferent bc(
             dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Colors::Color::HarvestGold)));
-        wxPoint hatTopMidPoint(GetXPosFromLeft(rect, math_constants::half),
-                               GetYPosFromTop(rect, math_constants::third));
+        const wxPoint hatTopMidPoint(GetXPosFromLeft(rect, math_constants::half),
+                                     GetYPosFromTop(rect, math_constants::third));
 
         // button holding the thread to the top of the hat
         const auto threadWidth{ std::ceil(safe_divide<double>(rect.GetWidth(), 32)) };
@@ -1927,7 +1933,7 @@ namespace Wisteria::GraphItems
 
         // thread dangling over the hat
         scaledPen.SetWidth(threadWidth);
-        DCPenChangerIfDifferent pc3(dc, scaledPen);
+        const DCPenChangerIfDifferent pc3(dc, scaledPen);
         dc.DrawLine(hatTopMidPoint, wxPoint(GetXPosFromLeft(rect, .98),
                                             GetYPosFromTop(rect, math_constants::third)));
         dc.DrawLine(
@@ -1942,13 +1948,13 @@ namespace Wisteria::GraphItems
             wxPoint(GetXPosFromLeft(rect, .94),
                     GetYPosFromTop(rect, math_constants::two_thirds + .1))
         };
-        dc.DrawPolygon(tassel.size(), &tassel[0]);
+        dc.DrawPolygon(tassel.size(), tassel.data());
 
         scaledPen.SetColour(ApplyParentColorOpacity(
             ColorContrast::Shade(ColorBrewer::GetColor(Colors::Color::Silver))));
         scaledPen.SetCap(wxPenCap::wxCAP_BUTT);
         scaledPen.SetWidth(scaledPen.GetWidth() + ScaleToScreenAndCanvas(1.5));
-        DCPenChangerIfDifferent pc4(dc, scaledPen);
+        const DCPenChangerIfDifferent pc4(dc, scaledPen);
         dc.DrawLine(
             wxPoint(GetXPosFromLeft(rect, .98),
                     GetYPosFromTop(rect, math_constants::two_thirds - .05)),
@@ -1965,7 +1971,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -1976,11 +1982,11 @@ namespace Wisteria::GraphItems
 
         std::for_each(points.begin(), points.end(), [&iconRadius, this](auto& pt)
                       { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius / 2)); });
-        dc.DrawLines(points.size(), &points[0]);
+        dc.DrawLines(points.size(), points.data());
 
         std::for_each(points.begin(), points.end(),
                       [this](auto& pt) { pt.y += ScaleToScreenAndCanvas(4); });
-        dc.DrawLines(points.size(), &points[0]);
+        dc.DrawLines(points.size(), points.data());
         }
 
     //---------------------------------------------------
@@ -1991,7 +1997,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2002,11 +2008,11 @@ namespace Wisteria::GraphItems
 
         std::for_each(points.begin(), points.end(), [&iconRadius, this](auto& pt)
                       { pt.y += ScaleToScreenAndCanvas(-2 + (iconRadius / 2)); });
-        dc.DrawLines(points.size(), &points[0]);
+        dc.DrawLines(points.size(), points.data());
 
         std::for_each(points.begin(), points.end(),
                       [this](auto& pt) { pt.y += ScaleToScreenAndCanvas(4); });
-        dc.DrawLines(points.size(), &points[0]);
+        dc.DrawLines(points.size(), points.data());
         }
 
     //---------------------------------------------------
@@ -2017,7 +2023,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2027,18 +2033,18 @@ namespace Wisteria::GraphItems
                                                 midPoint + wxPoint(0, iconRadius),
                                                 midPoint + wxPoint(-iconRadius, 0) };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawImage(const wxRect rect, wxDC& dc) const
         {
-        if (m_iconImage && m_iconImage->IsOk())
+        if (m_iconImage != nullptr && m_iconImage->IsOk())
             {
             const auto downScaledSize = geometry::downscaled_size(
-                std::make_pair<double, double>(m_iconImage->GetDefaultSize().GetWidth(),
-                                               m_iconImage->GetDefaultSize().GetHeight()),
-                std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
+                std::pair<double, double>(m_iconImage->GetDefaultSize().GetWidth(),
+                                          m_iconImage->GetDefaultSize().GetHeight()),
+                std::pair<double, double>(rect.GetWidth(), rect.GetHeight()));
             const wxBitmap scaledImg =
                 m_iconImage->GetBitmap(wxSize(downScaledSize.first, downScaledSize.second));
             dc.DrawBitmap(scaledImg, rect.GetTopLeft());
@@ -2049,13 +2055,13 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const wxRect dcRect(rect);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for geo marker!");
         if (gc != nullptr)
             {
@@ -2107,29 +2113,31 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc) const
         {
-        wxDCBrushChanger bc(dc,
-                            ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
+        const wxDCBrushChanger bc(
+            dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
 
         const auto iconRadius = GetRadius(rect);
 
             // sign post
             {
-            const wxPoint pt[2] = { rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, iconRadius),
-                                    // bottom
-                                    rect.GetBottomLeft() + wxSize(rect.GetWidth() / 2, 0) };
+            const std::array<wxPoint, 2> pt = {
+                rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, iconRadius),
+                // bottom
+                rect.GetBottomLeft() + wxSize(rect.GetWidth() / 2, 0)
+            };
             const auto signPostWidth =
                 std::min<int>(ScaleToScreenAndCanvas(3), (rect.GetWidth() / 15));
                 // dark gray outline of sign post
                 {
-                wxDCPenChanger pc(dc,
-                                  wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
-                                                  signPostWidth + ScaleToScreenAndCanvas(1))
-                                            .Cap(wxPenCap::wxCAP_BUTT)));
+                const wxDCPenChanger pc(
+                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                  .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
                 // actual sign post
                 {
-                wxDCPenChanger pc(
+                const wxDCPenChanger pc(
                     dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray), signPostWidth)
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
@@ -2141,7 +2149,7 @@ namespace Wisteria::GraphItems
                 wxRect(rect.GetLeftTop(),
                        wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::two_thirds));
             DrawCircularSign(signRect, ColorBrewer::GetColor(Color::KellyGreen),
-                             // TRANSLATORS: A GO sign, as in OK to proceed
+                             // TRANSLATORS: A GO sign, as in OK to proceed.
                              _(L"GO"), dc);
             }
         }
@@ -2151,7 +2159,7 @@ namespace Wisteria::GraphItems
         {
             // sign posts
             {
-            wxPoint pt[2] = { rect.GetTopLeft(), rect.GetBottomLeft() };
+            std::array<wxPoint, 2> pt = { rect.GetTopLeft(), rect.GetBottomLeft() };
             const auto signPostWidth =
                 std::min<int>(ScaleToScreenAndCanvas(8), (rect.GetWidth() / 5));
             pt[0].x += signPostWidth / 2;
@@ -2162,14 +2170,14 @@ namespace Wisteria::GraphItems
                 // white outline of sign post used to contrast black sign post
                 // against a possibly dark background
                 {
-                wxDCPenChanger pc(
+                const wxDCPenChanger pc(
                     dc, wxPen(wxPenInfo(*wxWHITE, signPostWidth + ScaleToScreenAndCanvas(1))
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
                 // actual sign post
                 {
-                wxDCPenChanger pc(
+                const wxDCPenChanger pc(
                     dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray), signPostWidth)
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
@@ -2205,33 +2213,34 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc) const
         {
-        wxDCBrushChanger bc(dc,
-                            ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
+        const wxDCBrushChanger bc(
+            dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
 
         const auto iconRadius = GetRadius(rect);
 
             // sign post
             {
-            wxPoint pt[2] = { rect.GetTopLeft() +
-                                  // top of post is in the middle of the sign
-                                  // so that pen cap doesn't appear above sign
-                                  wxSize(rect.GetWidth() / 2, iconRadius),
-                              // bottom
-                              rect.GetBottomLeft() + wxSize(rect.GetWidth() / 2, 0) };
+            const std::array<wxPoint, 2> pt = { rect.GetTopLeft() +
+                                                    // top of post is in the middle of the sign
+                                                    // so that pen cap doesn't appear above sign
+                                                    wxSize(rect.GetWidth() / 2, iconRadius),
+                                                // bottom
+                                                rect.GetBottomLeft() +
+                                                    wxSize(rect.GetWidth() / 2, 0) };
             const auto signPostWidth =
                 std::min<int>(ScaleToScreenAndCanvas(3), (rect.GetWidth() / 15));
                 // dark gray outline of sign post used to contrast black sign post
                 // against a possibly dark background
                 {
-                wxDCPenChanger pc(dc,
-                                  wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
-                                                  signPostWidth + ScaleToScreenAndCanvas(1))
-                                            .Cap(wxPenCap::wxCAP_BUTT)));
+                const wxDCPenChanger pc(
+                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                  .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
                 // actual sign post
                 {
-                wxDCPenChanger pc(
+                const wxDCPenChanger pc(
                     dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray), signPostWidth)
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
@@ -2240,7 +2249,7 @@ namespace Wisteria::GraphItems
             // sign
             {
             const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
+            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
             const auto signHeight = rect.GetHeight() * math_constants::third;
             const auto signRadius = std::min(signHeight, iconRadius);
             const auto circleCenter = rect.GetLeftTop() + wxSize(rect.GetWidth() / 2, signRadius);
@@ -2248,7 +2257,7 @@ namespace Wisteria::GraphItems
                                                     circleCenter + wxPoint(signRadius, 0),
                                                     circleCenter + wxPoint(0, signRadius),
                                                     circleCenter + wxPoint(-signRadius, 0) };
-            dc.DrawPolygon(points.size(), &points[0]);
+            dc.DrawPolygon(points.size(), points.data());
             // ! label
             Label bangLabel(GraphItemInfo(L"!")
                                 .Pen(wxNullPen)
@@ -2276,7 +2285,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(
             dc,
             [&]()
@@ -2293,8 +2302,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawCar(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect dcRect(rect);
         dcRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -2310,7 +2319,7 @@ namespace Wisteria::GraphItems
             }
 
         GraphicsContextFallback gcf{ &dc, dcRect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for car icon!");
         if (gc != nullptr)
             {
@@ -2441,8 +2450,8 @@ namespace Wisteria::GraphItems
             headlightsRect.Offset(upperBodyRect.GetWidth() - headlightsRect.GetWidth(),
                                   upperBodyRect.GetHeight() * .25);
             gc->SetBrush(gc->CreateLinearGradientBrush(
-                headlightsRect.GetLeft(), headlightsRect.GetTop() / 2, headlightsRect.GetRight(),
-                headlightsRect.GetTop() / 2,
+                headlightsRect.GetLeft(), headlightsRect.GetTop() * math_constants::half,
+                headlightsRect.GetRight(), headlightsRect.GetTop() * math_constants::half,
                 ApplyParentColorOpacity(ColorBrewer::GetColor(Color::OrangeYellow)),
                 ApplyParentColorOpacity(ColorBrewer::GetColor(Color::AntiqueWhite))));
             gc->DrawRectangle(headlightsRect.GetX(), headlightsRect.GetY(),
@@ -2473,11 +2482,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawTire(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for tire icon!");
         DrawTire(rect, gc);
         }
@@ -2532,7 +2541,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2544,7 +2553,7 @@ namespace Wisteria::GraphItems
                                                 midPoint + wxPoint(iconRadius, 0),
                                                 midPoint + wxPoint(iconRadius / 2, -iconRadius) };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
@@ -2555,7 +2564,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2564,7 +2573,7 @@ namespace Wisteria::GraphItems
                                                 midPoint + wxPoint(-iconRadius, iconRadius),
                                                 midPoint + wxPoint(iconRadius, iconRadius) };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
@@ -2575,8 +2584,8 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
-        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2585,7 +2594,7 @@ namespace Wisteria::GraphItems
                                                 midPoint + wxPoint(-iconRadius, -iconRadius),
                                                 midPoint + wxPoint(iconRadius, -iconRadius) };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
@@ -2596,8 +2605,8 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
-        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2606,7 +2615,7 @@ namespace Wisteria::GraphItems
                                                 midPoint + wxPoint(-iconRadius, iconRadius),
                                                 midPoint + wxPoint(-iconRadius, -iconRadius) };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
@@ -2617,8 +2626,8 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
-        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2627,7 +2636,7 @@ namespace Wisteria::GraphItems
                                                 midPoint + wxPoint(iconRadius, iconRadius),
                                                 midPoint + wxPoint(iconRadius, -iconRadius) };
 
-        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), points.data()); });
         }
 
     //---------------------------------------------------
@@ -2635,30 +2644,30 @@ namespace Wisteria::GraphItems
         {
         wxRect dcRect{ rect };
         dcRect.Deflate(ScaleToScreenAndCanvas(2));
-        wxPoint centerPt(GetXPosFromLeft(dcRect, math_constants::half),
-                         GetYPosFromTop(dcRect, math_constants::half));
+        const wxPoint centerPt(GetXPosFromLeft(dcRect, math_constants::half),
+                               GetYPosFromTop(dcRect, math_constants::half));
         // draw the frame
-        DCPenChangerIfDifferent pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
+        const DCPenChangerIfDifferent pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
         dc.DrawCircle(centerPt, dcRect.GetWidth() * math_constants::half);
 
         // draw the minutes
         wxRect intervalsRect{ rect };
         intervalsRect.Deflate(dcRect.GetWidth() * math_constants::fifth);
-        DCPenChangerIfDifferent pc2(dc,
-                                    wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+        const DCPenChangerIfDifferent pc2(
+            dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
         dc.DrawCircle(centerPt, intervalsRect.GetWidth() * math_constants::half);
 
         // draw the arms (at 4:30)
         wxRect armsRect{ rect };
         armsRect.Deflate(dcRect.GetWidth() * math_constants::quarter);
-        DCPenChangerIfDifferent pc3(dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(2)));
+        const DCPenChangerIfDifferent pc3(dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(2)));
         dc.DrawLine(centerPt, wxPoint(centerPt.x + armsRect.GetWidth() * math_constants::quarter,
                                       armsRect.GetBottom() -
                                           (armsRect.GetHeight() * math_constants::quarter)));
         dc.DrawLine(centerPt, wxPoint(centerPt.x, armsRect.GetBottom()));
 
         // seconds hand
-        DCPenChangerIfDifferent pc4(dc, wxPenInfo(*wxRED, ScaleToScreenAndCanvas(1)));
+        const DCPenChangerIfDifferent pc4(dc, wxPenInfo(*wxRED, ScaleToScreenAndCanvas(1)));
         dc.DrawLine(wxPoint(centerPt.x + (armsRect.GetWidth() * math_constants::tenth), centerPt.y),
                     wxPoint(centerPt.x - (armsRect.GetWidth() * math_constants::half), centerPt.y));
         }
@@ -2667,11 +2676,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawAsterisk(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for asterisk icon!");
 
         wxPen scaledPen = GetGraphItemInfo().GetPen();
@@ -2685,7 +2694,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawAsterisk(wxRect rect, wxGraphicsContext* gc) const
+    void ShapeRenderer::DrawAsterisk(wxRect rect, wxGraphicsContext* gc)
         {
         if (gc != nullptr)
             {
@@ -2727,7 +2736,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -2747,8 +2756,8 @@ namespace Wisteria::GraphItems
             // for a line icon, make it a minimum of 2 pixels wide
             scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
             }
-        DCPenChangerIfDifferent pc(dc, scaledPen);
-        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+        const DCPenChangerIfDifferent pc(dc, scaledPen);
+        const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight() / 2)),
                     wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight() / 2)));
         }
@@ -2772,9 +2781,9 @@ namespace Wisteria::GraphItems
         dc.GradientFillLinear(dcRect, ColorBrewer::GetColor(Colors::Color::WarmGray), *wxBLACK,
                               wxEAST);
 
-        wxDCPenChanger pc(dc,
-                          wxPen(ColorBrewer::GetColor(Colors::Color::YellowPepper), frameWidth));
-        wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+        const wxDCPenChanger pc(
+            dc, wxPen(ColorBrewer::GetColor(Colors::Color::YellowPepper), frameWidth));
+        const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(dcRect);
 
         // draw "ABC" on the board
@@ -2795,7 +2804,7 @@ namespace Wisteria::GraphItems
         boardText.Draw(dc);
 
         // draw a piece of chalk
-        wxDCPenChanger pc2(dc, wxPenInfo(*wxWHITE, frameWidth / 2).Cap(wxCAP_BUTT));
+        const wxDCPenChanger pc2(dc, wxPenInfo(*wxWHITE, frameWidth / 2).Cap(wxCAP_BUTT));
         wxPoint chalkRight{ dcRect.GetBottomRight() };
         chalkRight.y -= frameWidth - (frameWidth / 4);
         chalkRight.x -= ScaleToScreenAndCanvas(2);
@@ -2817,7 +2826,7 @@ namespace Wisteria::GraphItems
             size_t currentLine{ 0 };
             while (textLeft.y < textRect.GetBottom())
                 {
-                wxDCPenChanger pc3(
+                const wxDCPenChanger pc3(
                     dc, wxPen(ColorBrewer::GetColor(Colors::Color::SmokyBlack),
                               ScaleToScreenAndCanvas(
                                   rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? 1 : .5),
@@ -2839,9 +2848,9 @@ namespace Wisteria::GraphItems
                 }
         };
 
-        wxDCPenChanger pc(
+        const wxDCPenChanger pc(
             dc, wxPen(ColorBrewer::GetColor(Colors::Color::DarkGray), ScaleToScreenAndCanvas(1)));
-        wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
+        const wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
 
         wxRect frontPageRect{ rect };
         frontPageRect.Deflate(frontPageRect.GetSize() * .1);
@@ -2856,7 +2865,7 @@ namespace Wisteria::GraphItems
             auto bottomRect{ backPage };
             bottomRect.SetHeight(bottomRect.GetHeight() * math_constants::half);
             bottomRect.Offset(0, backPage.GetHeight() - bottomRect.GetHeight());
-            wxDCClipper clip(dc, bottomRect);
+            const wxDCClipper clip(dc, bottomRect);
             dc.DrawRoundedRectangle(backPage, ScaleToScreenAndCanvas(3));
             }
             // draw the upper half of the backpage
@@ -2865,20 +2874,20 @@ namespace Wisteria::GraphItems
             topRect.SetHeight(topRect.GetHeight() *
                               // avoid a gap in the lines
                               (math_constants::half + .05));
-            wxDCClipper clip(dc, topRect);
+            const wxDCClipper clip(dc, topRect);
             dc.DrawRectangle(backPage);
             }
             // draw the font page
             {
             auto topRect{ frontPageRect };
             topRect.SetHeight(topRect.GetHeight() * .9);
-            wxDCClipper clip(dc, topRect);
+            const wxDCClipper clip(dc, topRect);
             dc.DrawRectangle(frontPageRect);
             }
 
         // headline
-        wxDCPenChanger pc2(dc, wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray),
-                                     ScaleToScreenAndCanvas(math_constants::half)));
+        const wxDCPenChanger pc2(dc, wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray),
+                                           ScaleToScreenAndCanvas(math_constants::half)));
         auto headlineBox{ frontPageRect };
         headlineBox.SetHeight(headlineBox.GetHeight() * math_constants::third);
         headlineBox.Deflate(ScaleToScreenAndCanvas(2));
@@ -2915,7 +2924,8 @@ namespace Wisteria::GraphItems
         // column separator
         wxPoint columnTop(pictureBox.GetTopRight());
         columnTop.x += ScaleToScreenAndCanvas(1);
-        wxPoint columnBottom(columnTop.x, frontPageRect.GetBottom() - ScaleToScreenAndCanvas(2));
+        const wxPoint columnBottom(columnTop.x,
+                                   frontPageRect.GetBottom() - ScaleToScreenAndCanvas(2));
         dc.DrawLine(columnTop, columnBottom);
 
         // text on the right side
@@ -2934,11 +2944,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc != nullptr)
             {
@@ -2997,11 +3007,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawSnowflake(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc != nullptr)
             {
@@ -3013,13 +3023,13 @@ namespace Wisteria::GraphItems
             const auto centerPt =
                 rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-            constexpr auto penCapWiggleRoom = 0.05;
+            constexpr auto PEN_CAP_WIGGLE_ROOM = 0.05;
 
             // a line going from the middle of the left side to the middle of the right
             const std::array<wxPoint2DDouble, 2> points = {
-                wxPoint(GetXPosFromLeft(rect, penCapWiggleRoom),
+                wxPoint(GetXPosFromLeft(rect, PEN_CAP_WIGGLE_ROOM),
                         GetYPosFromTop(rect, math_constants::half)),
-                wxPoint(GetXPosFromLeft(rect, math_constants::full - penCapWiggleRoom),
+                wxPoint(GetXPosFromLeft(rect, math_constants::full - PEN_CAP_WIGGLE_ROOM),
                         GetYPosFromTop(rect, math_constants::half))
             };
             // save current transform matrix state
@@ -3044,7 +3054,7 @@ namespace Wisteria::GraphItems
                                     math_constants::three_fourths + math_constants::twentieth) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half) - centerPt.y,
-                    GetXPosFromLeft(rect, math_constants::full - (penCapWiggleRoom * 2)) -
+                    GetXPosFromLeft(rect, math_constants::full - (PEN_CAP_WIGGLE_ROOM * 2)) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half - math_constants::tenth) -
                         centerPt.y);
@@ -3053,7 +3063,7 @@ namespace Wisteria::GraphItems
                                     math_constants::three_fourths + math_constants::twentieth) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half) - centerPt.y,
-                    GetXPosFromLeft(rect, math_constants::full - (penCapWiggleRoom * 2)) -
+                    GetXPosFromLeft(rect, math_constants::full - (PEN_CAP_WIGGLE_ROOM * 2)) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half + math_constants::tenth) -
                         centerPt.y);
@@ -3063,7 +3073,7 @@ namespace Wisteria::GraphItems
                     GetXPosFromLeft(rect, math_constants::three_fourths - math_constants::tenth) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half) - centerPt.y,
-                    GetXPosFromLeft(rect, math_constants::full - penCapWiggleRoom -
+                    GetXPosFromLeft(rect, math_constants::full - PEN_CAP_WIGGLE_ROOM -
                                               math_constants::fifth) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half - math_constants::tenth) -
@@ -3072,7 +3082,7 @@ namespace Wisteria::GraphItems
                     GetXPosFromLeft(rect, math_constants::three_fourths - math_constants::tenth) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half) - centerPt.y,
-                    GetXPosFromLeft(rect, math_constants::full - penCapWiggleRoom -
+                    GetXPosFromLeft(rect, math_constants::full - PEN_CAP_WIGGLE_ROOM -
                                               math_constants::fifth) -
                         centerPt.x,
                     GetYPosFromTop(rect, math_constants::half + math_constants::tenth) -
@@ -3096,11 +3106,11 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawWaterColorRectangle(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for water color effect!");
         if (gc != nullptr)
             {
@@ -3250,14 +3260,14 @@ namespace Wisteria::GraphItems
         assert(GetGraphItemInfo().GetPen().IsOk() &&
                L"Pen should be set in Shape for curly braces!");
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
 
         wxRect drawRect(rect);
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for curly braces!");
-        if (gc && (side == Side::Left || side == Side::Right))
+        if (gc != nullptr && (side == Side::Left || side == Side::Right))
             {
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
@@ -3310,7 +3320,7 @@ namespace Wisteria::GraphItems
                 gc->StrokePath(lowerCurlPath);
                 }
             }
-        else if (gc && (side == Side::Bottom || side == Side::Top))
+        else if (gc != nullptr && (side == Side::Bottom || side == Side::Top))
             {
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
@@ -3369,8 +3379,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawMan(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect dcRect(rect);
         // adjust to center it horizontally inside of square area
@@ -3383,7 +3393,7 @@ namespace Wisteria::GraphItems
             }
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for male outline!");
         if (gc != nullptr)
             {
@@ -3411,129 +3421,131 @@ namespace Wisteria::GraphItems
             outlinePath.MoveToPoint(
                 wxPoint(GetXPosFromLeft(bodyRect, math_constants::half), bodyRect.GetTop()));
 
-            constexpr auto collarWidth{ 0.3 };
-            constexpr auto shoulderWidth{ 0.1 };
-            constexpr auto shoulderHeight{ 0.1 };
-            constexpr auto armLength{ 0.3 };
-            constexpr auto armWidth{ 0.15 };
-            constexpr auto armpitWidth{ 0.05 };
-            constexpr auto crotchWidth{ 0.05 };
-            constexpr auto sideLength{ 0.9 };
-            constexpr auto lengthBetweenArmAndLegs{ 0.05 };
-            constexpr auto legWidth{ 0.175 };
-            constexpr auto yControlPointOffset{ 0.05 };
+            constexpr auto COLLAR_WIDTH{ 0.3 };
+            constexpr auto SHOULDER_WIDTH{ 0.1 };
+            constexpr auto SHOULDER_HEIGHT{ 0.1 };
+            constexpr auto ARM_LENGTH{ 0.3 };
+            constexpr auto ARM_WIDTH{ 0.15 };
+            constexpr auto ARMPIT_WIDTH{ 0.05 };
+            constexpr auto CROTCH_WIDTH{ 0.05 };
+            constexpr auto SIDE_LENGTH{ 0.9 };
+            constexpr auto LENGTH_BETWEEN_ARM_AND_LEGS{ 0.05 };
+            constexpr auto LEG_WIDTH{ 0.175 };
+            constexpr auto Y_CONTROL_POINT_OFFSET{ 0.05 };
             // left collar and shoulder
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half - collarWidth),
+                GetXPosFromLeft(bodyRect, math_constants::half - COLLAR_WIDTH),
                 GetYPosFromTop(bodyRect, 0));
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH)),
                 GetYPosFromTop(bodyRect, 0),
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left arm (left side)
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              (armWidth * math_constants::half)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              (ARM_WIDTH * math_constants::half)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH + Y_CONTROL_POINT_OFFSET),
                 GetXPosFromLeft(bodyRect,
-                                (math_constants::half - collarWidth - shoulderWidth) + armWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                                (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) + ARM_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // inside of left arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect,
-                                (math_constants::half - collarWidth - shoulderWidth) + armWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                                (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) + ARM_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left armpit
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left side, down to left foot
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth),
-                GetYPosFromTop(bodyRect, sideLength));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SIDE_LENGTH));
             // left foot
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth +
-                                              (legWidth * math_constants::half)),
-                GetYPosFromTop(bodyRect, sideLength + yControlPointOffset),
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth + legWidth),
-                GetYPosFromTop(bodyRect, sideLength));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH +
+                                              (LEG_WIDTH * math_constants::half)),
+                GetYPosFromTop(bodyRect, SIDE_LENGTH + Y_CONTROL_POINT_OFFSET),
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH + LEG_WIDTH),
+                GetYPosFromTop(bodyRect, SIDE_LENGTH));
             // inside of left leg
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth + legWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + lengthBetweenArmAndLegs));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH + LEG_WIDTH),
+                GetYPosFromTop(bodyRect,
+                               SHOULDER_HEIGHT + ARM_LENGTH + LENGTH_BETWEEN_ARM_AND_LEGS));
             // left half of crotch
-            outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + lengthBetweenArmAndLegs));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH +
+                                                                    LENGTH_BETWEEN_ARM_AND_LEGS));
 
             // right half of crotch
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect,
-                                math_constants::half + (crotchWidth * math_constants::half)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + lengthBetweenArmAndLegs));
+                                math_constants::half + (CROTCH_WIDTH * math_constants::half)),
+                GetYPosFromTop(bodyRect,
+                               SHOULDER_HEIGHT + ARM_LENGTH + LENGTH_BETWEEN_ARM_AND_LEGS));
             // inside of right leg
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect,
-                                math_constants::half + (crotchWidth * math_constants::half)),
-                GetYPosFromTop(bodyRect, sideLength));
+                                math_constants::half + (CROTCH_WIDTH * math_constants::half)),
+                GetYPosFromTop(bodyRect, SIDE_LENGTH));
             // right foot
             outlinePath.AddQuadCurveToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) +
-                                              (legWidth * math_constants::half)),
-                GetYPosFromTop(bodyRect, sideLength + yControlPointOffset),
+                                              (CROTCH_WIDTH * math_constants::half) +
+                                              (LEG_WIDTH * math_constants::half)),
+                GetYPosFromTop(bodyRect, SIDE_LENGTH + Y_CONTROL_POINT_OFFSET),
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth),
-                GetYPosFromTop(bodyRect, sideLength));
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH),
+                GetYPosFromTop(bodyRect, SIDE_LENGTH));
             // right side, up to armpit
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // right armpit
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth +
-                                              armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
+                                              ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // inside of right arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth +
-                                              armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
+                                              ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // right hand
             outlinePath.AddQuadCurveToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth +
-                                              armpitWidth + (armWidth * math_constants::half)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
+                                              ARMPIT_WIDTH + (ARM_WIDTH * math_constants::half)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH + Y_CONTROL_POINT_OFFSET),
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth +
-                                              armpitWidth + armWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
+                                              ARMPIT_WIDTH + ARM_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // right arm (right side)
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
-                                              (crotchWidth * math_constants::half) + legWidth +
-                                              armpitWidth + armWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                                              (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
+                                              ARMPIT_WIDTH + ARM_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // right shoulder and collar
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half + collarWidth + shoulderWidth)),
+                GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH)),
                 GetYPosFromTop(bodyRect, 0),
-                GetXPosFromLeft(bodyRect, (math_constants::half + collarWidth)),
+                GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH)),
                 GetYPosFromTop(bodyRect, 0));
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
                                        GetYPosFromTop(bodyRect, 0));
@@ -3547,8 +3559,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -3564,7 +3576,7 @@ namespace Wisteria::GraphItems
             }
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for female outline!");
         if (gc != nullptr)
             {
@@ -3592,60 +3604,65 @@ namespace Wisteria::GraphItems
             outlinePath.MoveToPoint(
                 wxPoint(GetXPosFromLeft(bodyRect, math_constants::half), bodyRect.GetTop()));
 
-            constexpr auto collarWidth{ 0.25 };
-            constexpr auto collarShortWidth{ 0.15 };
-            constexpr auto shoulderWidth{ 0.1 };
-            constexpr auto shoulderHeight{ 0.1 };
-            constexpr auto armLength{ 0.25 };
-            constexpr auto armShortLength{ 0.225 };
-            constexpr auto armWidth{ 0.1 };
-            constexpr auto armpitWidth{ 0.05 };
-            constexpr auto waistWidth{ 0.125 };
-            constexpr auto thoraxHeight{ 0.2 };
-            constexpr auto legWidth{ 0.125 };
-            constexpr auto dressWidth{ 0.3 };
-            constexpr auto dressBottom{ 0.675 };
-            constexpr auto ankleWidth{ 0.075 };
-            constexpr auto yControlPointOffset{ 0.05 };
-            constexpr auto xControlPointRightShoulderOffset{ 0.125 };
-            constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth *
-                                                            math_constants::quarter };
+            constexpr auto COLLAR_WIDTH{ 0.25 };
+            constexpr auto COLLAR_SHORT_WIDTH{ 0.15 };
+            constexpr auto SHOULDER_WIDTH{ 0.1 };
+            constexpr auto SHOULDER_HEIGHT{ 0.1 };
+            constexpr auto ARM_LENGTH{ 0.25 };
+            constexpr auto ARM_SHORT_LENGTH{ 0.225 };
+            constexpr auto ARM_WIDTH{ 0.1 };
+            constexpr auto ARMPIT_WIDTH{ 0.05 };
+            constexpr auto WAIST_WIDTH{ 0.125 };
+            constexpr auto THORAX_HEIGHT{ 0.2 };
+            constexpr auto LEG_WIDTH{ 0.125 };
+            constexpr auto DRESS_WIDTH{ 0.3 };
+            constexpr auto DRESS_BOTTOM{ 0.675 };
+            constexpr auto ANKLE_WIDTH{ 0.075 };
+            constexpr auto Y_CONTROL_POINT_OFFSET{ 0.05 };
+            constexpr auto X_CONTROL_POINT_RIGHT_SHOULDER_OFFSET{ 0.125 };
+            constexpr auto X_CONTROL_POINT_LEFT_SHOULDER_OFFSET{ SHOULDER_WIDTH *
+                                                                 math_constants::quarter };
             // left collar and shoulder
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
+                GetXPosFromLeft(bodyRect, math_constants::half - COLLAR_SHORT_WIDTH),
                 GetYPosFromTop(bodyRect, 0));
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth -
-                                           xControlPointLeftShoulderOffset)),
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH -
+                                           X_CONTROL_POINT_LEFT_SHOULDER_OFFSET)),
                 GetYPosFromTop(bodyRect, 0),
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left arm (left side)
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, 0),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, 0),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_SHORT_LENGTH));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (armWidth * math_constants::quarter)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
-                GetXPosFromLeft(bodyRect, armWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect, (ARM_WIDTH * math_constants::quarter)),
+                GetYPosFromTop(bodyRect,
+                               SHOULDER_HEIGHT + ARM_SHORT_LENGTH + Y_CONTROL_POINT_OFFSET),
+                GetXPosFromLeft(bodyRect, ARM_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // inside of left arm
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left armpit to waist
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half - WAIST_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT));
             // left waist to bottom of dress
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - dressWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half - DRESS_WIDTH),
+                GetYPosFromTop(bodyRect, DRESS_BOTTOM));
             // dress bottom to leg
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - LEG_WIDTH),
+                                       GetYPosFromTop(bodyRect, DRESS_BOTTOM));
             // left leg to ankle
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half - ANKLE_WIDTH),
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle to middle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
                                        GetYPosFromTop(bodyRect, 0.9));
@@ -3653,42 +3670,46 @@ namespace Wisteria::GraphItems
             // right side
             //-----------
             // ankle
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half + ANKLE_WIDTH),
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle up right leg
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + LEG_WIDTH),
+                                       GetYPosFromTop(bodyRect, DRESS_BOTTOM));
             // dress bottom
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + dressWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half + DRESS_WIDTH),
+                GetYPosFromTop(bodyRect, DRESS_BOTTOM));
             // bottom of dress to right waist
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half + WAIST_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT));
             // waist to right armpit
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half + collarWidth + shoulderWidth) -
-                                              armWidth - armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) -
+                                              ARM_WIDTH - ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // inside of right arm
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - armWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - ARM_WIDTH),
+                                       GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // right hand
             outlinePath.AddQuadCurveToPoint(
                 GetXPosFromLeft(bodyRect,
-                                math_constants::full - (armWidth * math_constants::quarter)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                                math_constants::full - (ARM_WIDTH * math_constants::quarter)),
+                GetYPosFromTop(bodyRect,
+                               SHOULDER_HEIGHT + ARM_SHORT_LENGTH + Y_CONTROL_POINT_OFFSET),
                 GetXPosFromLeft(bodyRect, math_constants::full),
-                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_SHORT_LENGTH));
             // right arm (right side)
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half + collarWidth + shoulderWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // shoulder and right collar
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half + collarShortWidth +
-                                              xControlPointRightShoulderOffset),
+                GetXPosFromLeft(bodyRect, math_constants::half + COLLAR_SHORT_WIDTH +
+                                              X_CONTROL_POINT_RIGHT_SHOULDER_OFFSET),
                 GetYPosFromTop(bodyRect, 0),
-                GetXPosFromLeft(bodyRect, math_constants::half + collarShortWidth),
+                GetXPosFromLeft(bodyRect, math_constants::half + COLLAR_SHORT_WIDTH),
                 GetYPosFromTop(bodyRect, 0));
             // collar
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
@@ -3703,8 +3724,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBusinessWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        const wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        const wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect drawRect{ rect };
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
@@ -3720,7 +3741,7 @@ namespace Wisteria::GraphItems
             }
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto gc = gcf.GetGraphicsContext();
+        auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for female outline!");
         if (gc != nullptr)
             {
@@ -3748,67 +3769,69 @@ namespace Wisteria::GraphItems
             outlinePath.MoveToPoint(
                 wxPoint(GetXPosFromLeft(bodyRect, math_constants::half), bodyRect.GetTop()));
 
-            constexpr auto collarWidth{ 0.25 };
-            constexpr auto collarShortWidth{ 0.15 };
-            constexpr auto shoulderWidth{ 0.06 };
-            constexpr auto shoulderHeight{ 0.1 };
-            constexpr auto armLength{ 0.25 };
-            constexpr auto armWidth{ 0.06 };
-            constexpr auto armpitWidth{ 0.05 };
-            constexpr auto waistWidth{ 0.125 };
-            constexpr auto thoraxHeight{ 0.2 };
-            constexpr auto legWidth{ 0.125 };
-            constexpr auto skirtWidth{ legWidth + 0.05 };
-            constexpr auto hipWidth{ skirtWidth * 1.6 };
-            constexpr auto skirtBottom{ 0.675 };
-            constexpr auto ankleWidth{ 0.075 };
-            constexpr auto yControlPointOffset{ 0.025 };
-            constexpr auto xControlPointRightShoulderOffset{ 0.15 };
-            constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth };
+            constexpr auto COLLAR_WIDTH{ 0.25 };
+            constexpr auto COLLAR_SHORT_WIDTH{ 0.15 };
+            constexpr auto SHOULDER_WIDTH{ 0.06 };
+            constexpr auto SHOULDER_HEIGHT{ 0.1 };
+            constexpr auto ARM_LENGTH{ 0.25 };
+            constexpr auto ARM_WIDTH{ 0.06 };
+            constexpr auto ARMPIT_WIDTH{ 0.05 };
+            constexpr auto WAIST_WIDTH{ 0.125 };
+            constexpr auto THORAX_HEIGHT{ 0.2 };
+            constexpr auto LEG_WIDTH{ 0.125 };
+            constexpr auto SKIRT_WIDTH{ LEG_WIDTH + 0.05 };
+            constexpr auto HIP_WIDTH{ SKIRT_WIDTH * 1.6 };
+            constexpr auto SKIRT_BOTTOM{ 0.675 };
+            constexpr auto ANKLE_WIDTH{ 0.075 };
+            constexpr auto Y_CONTROL_POINT_OFFSET{ 0.025 };
+            constexpr auto X_CONTROL_POINT_RIGHT_SHOULDER_OFFSET{ 0.15 };
+            constexpr auto X_CONTROL_POINT_LEFT_SHOULDER_OFFSET{ SHOULDER_WIDTH };
             // left collar and shoulder
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
+                GetXPosFromLeft(bodyRect, math_constants::half - COLLAR_SHORT_WIDTH),
                 GetYPosFromTop(bodyRect, 0));
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth -
-                                           xControlPointLeftShoulderOffset)),
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH -
+                                           X_CONTROL_POINT_LEFT_SHOULDER_OFFSET)),
                 GetYPosFromTop(bodyRect, 0),
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left arm (left side)
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect,
-                                (math_constants::half - collarWidth - shoulderWidth) + (armWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              (ARM_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH + Y_CONTROL_POINT_OFFSET),
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // inside of left arm
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth) +
-                                              armWidth + armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
+                                              ARM_WIDTH + ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // left armpit to waist
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half - WAIST_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT));
             // left waist to bottom of dress
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half - hipWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
-                                             (skirtBottom - (shoulderHeight + thoraxHeight)) *
+                GetXPosFromLeft(bodyRect, math_constants::half - HIP_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT +
+                                             (SKIRT_BOTTOM - (SHOULDER_HEIGHT + THORAX_HEIGHT)) *
                                                  math_constants::quarter),
-                GetXPosFromLeft(bodyRect, math_constants::half - skirtWidth),
-                GetYPosFromTop(bodyRect, skirtBottom));
+                GetXPosFromLeft(bodyRect, math_constants::half - SKIRT_WIDTH),
+                GetYPosFromTop(bodyRect, SKIRT_BOTTOM));
             // dress bottom to leg
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - LEG_WIDTH),
+                                       GetYPosFromTop(bodyRect, SKIRT_BOTTOM));
             // left leg to ankle
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half - ANKLE_WIDTH),
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle to middle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
                                        GetYPosFromTop(bodyRect, 0.9));
@@ -3816,49 +3839,51 @@ namespace Wisteria::GraphItems
             // right side
             //-----------
             // ankle
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half + ANKLE_WIDTH),
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle up right leg
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + LEG_WIDTH),
+                                       GetYPosFromTop(bodyRect, SKIRT_BOTTOM));
             // dress bottom
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + skirtWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+            outlinePath.AddLineToPoint(
+                GetXPosFromLeft(bodyRect, math_constants::half + SKIRT_WIDTH),
+                GetYPosFromTop(bodyRect, SKIRT_BOTTOM));
             // bottom of dress to right waist
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half + hipWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
-                                             (skirtBottom - (shoulderHeight + thoraxHeight)) *
+                GetXPosFromLeft(bodyRect, math_constants::half + HIP_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT +
+                                             (SKIRT_BOTTOM - (SHOULDER_HEIGHT + THORAX_HEIGHT)) *
                                                  math_constants::quarter),
-                GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+                GetXPosFromLeft(bodyRect, math_constants::half + WAIST_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT));
             // waist to right armpit
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half + collarWidth + shoulderWidth) -
-                                              armWidth - armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) -
+                                              ARM_WIDTH - ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // inside of right arm
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, (math_constants::half + collarWidth + shoulderWidth) -
-                                              armWidth - armpitWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) -
+                                              ARM_WIDTH - ARMPIT_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // right hand
             outlinePath.AddQuadCurveToPoint(
                 GetXPosFromLeft(bodyRect,
-                                (math_constants::half + collarWidth + shoulderWidth) - armWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
-                GetXPosFromLeft(bodyRect, (math_constants::half + collarWidth + shoulderWidth)),
-                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                                (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) - ARM_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH + Y_CONTROL_POINT_OFFSET),
+                GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH)),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // right arm (right side)
             outlinePath.AddLineToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half + collarWidth + shoulderWidth),
-                GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect, math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH),
+                GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
             // shoulder and right collar
             outlinePath.AddQuadCurveToPoint(
-                GetXPosFromLeft(bodyRect, math_constants::half + collarShortWidth +
-                                              xControlPointRightShoulderOffset),
+                GetXPosFromLeft(bodyRect, math_constants::half + COLLAR_SHORT_WIDTH +
+                                              X_CONTROL_POINT_RIGHT_SHOULDER_OFFSET),
                 GetYPosFromTop(bodyRect, 0),
-                GetXPosFromLeft(bodyRect, math_constants::half + collarShortWidth),
+                GetXPosFromLeft(bodyRect, math_constants::half + COLLAR_SHORT_WIDTH),
                 GetYPosFromTop(bodyRect, 0));
             // collar
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),

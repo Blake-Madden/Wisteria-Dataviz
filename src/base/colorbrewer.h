@@ -91,7 +91,7 @@ namespace Wisteria::Colors
         static wxColour GetColor(const Colors::Color color, const uint8_t opacity)
             {
             auto foundColor = GetColor(color);
-            return wxColour(foundColor.Red(), foundColor.Green(), foundColor.Blue(), opacity);
+            return { foundColor.Red(), foundColor.Green(), foundColor.Blue(), opacity };
             }
 
         /** @brief Initializes the color scale to map to the range of values.
@@ -206,7 +206,7 @@ namespace Wisteria::Colors
       public:
         /// @brief Constructor.
         /// @param color The base color to contrast other colors against.
-        explicit ColorContrast(const wxColour& color) : m_baseColor(color)
+        explicit ColorContrast(wxColour color) : m_baseColor(std::move(color))
             {
             assert(m_baseColor.IsOk() && L"Invalid base color passed to ColorContrast.");
             }
@@ -308,7 +308,7 @@ namespace Wisteria::Colors
         ///     Should be between @c 0.0 to @c 1.0.
         /// @note Returns @c false if either color is invalid.
         [[nodiscard]]
-        static bool AreColorsClose(const wxColour color1, const wxColour color2,
+        static bool AreColorsClose(const wxColour& color1, const wxColour& color2,
                                    const double delta = math_constants::tenth)
             {
             assert(color1.IsOk() && color2.IsOk() && L"Invalid color passed to AreColorsClose().");
@@ -333,7 +333,7 @@ namespace Wisteria::Colors
 
       private:
         wxColour m_baseColor{ *wxWHITE };
-        constexpr static double m_tolerance{ math_constants::half };
+        constexpr static double M_TOLERANCE{ math_constants::half };
         };
 
     /// @brief Color schemes to use for grouped data.
@@ -349,7 +349,7 @@ namespace Wisteria::Colors
                 @param colors The initializer list of colors to fill the scheme with.
                 @note A series of shaded or tinted versions of these colors will also
                     be added to this list of colors, essentially double the color count.*/
-            explicit ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors) {}
+            ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors) {}
 
             /** @brief Constructor.
                 @param colors The initializer list of colors to fill the scheme with.
@@ -402,7 +402,7 @@ namespace Wisteria::Colors
             wxColour GetColor(const size_t index, const uint8_t opacity) const
                 {
                 auto color = GetColor(index);
-                return wxColour(color.Red(), color.Green(), color.Blue(), opacity);
+                return { color.Red(), color.Green(), color.Blue(), opacity };
                 }
 
             /** @brief Gets the color from a given index.
@@ -422,7 +422,7 @@ namespace Wisteria::Colors
 
             /** @brief Adds a color to the scheme.
                 @param color The color to add.*/
-            void AddColor(const wxColour color)
+            void AddColor(const wxColour& color)
                 {
                 assert(color.IsOk() && L"Invalid color passed to AddColor().");
                 m_colors.push_back(color);
@@ -431,7 +431,7 @@ namespace Wisteria::Colors
             /// @brief Removes all colors from the collection.
             void Clear() noexcept { m_colors.clear(); }
 
-          protected:
+          private:
             /// @brief The colors in the scheme.
             std::vector<wxColour> m_colors;
             };

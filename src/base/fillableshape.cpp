@@ -8,9 +8,6 @@
 
 #include "fillableshape.h"
 
-using namespace Wisteria::Colors;
-using namespace Wisteria::Icons;
-
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
@@ -19,7 +16,7 @@ namespace Wisteria::GraphItems
         assert(GetBrush().IsOk() && L"Fillable shape must have a valid brush!");
         if (!GetBrush().IsOk())
             {
-            return wxRect();
+            return {};
             }
 
         if (GetClippingRect())
@@ -28,7 +25,7 @@ namespace Wisteria::GraphItems
             }
 
         auto bBox = GetBoundingBox(dc);
-        auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
+        auto drawRect = wxRect(ScaleToScreenAndCanvas(GetShapeSizeDIPS()));
         // keep drawing area inside of the full area
         drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
         drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
@@ -89,10 +86,10 @@ namespace Wisteria::GraphItems
             gdc.Clear();
 
             auto shapeInfo{ GraphItemBase::GetGraphItemInfo() };
-            shapeInfo.Brush(
-                wxBrush(Colors::ColorContrast::ChangeOpacity(shapeInfo.GetBrush().GetColour(), 32),
-                        shapeInfo.GetBrush().GetStyle()));
-            Shape ghostShape(shapeInfo, GetShape(), GetSizeDIPS());
+            shapeInfo.Brush(wxBrush(Wisteria::Colors::ColorContrast::ChangeOpacity(
+                                        shapeInfo.GetBrush().GetColour(), 32),
+                                    shapeInfo.GetBrush().GetStyle()));
+            const Shape ghostShape(shapeInfo, GetShape(), GetSizeDIPS());
 
             ghostShape.Draw(wxRect(drawRect.GetSize()), gdc);
             memDC.SelectObject(wxNullBitmap);
@@ -115,15 +112,17 @@ namespace Wisteria::GraphItems
                 {
                 auto filledBmp = bmp.GetSubBitmap(wxRect(
                     wxPoint(0, yCutOff), wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
-                dc.DrawBitmap(filledBmp, drawRect.GetLeftTop() + wxPoint(0, yCutOff), true);
+                dc.DrawBitmap(filledBmp,
+                              drawRect.GetLeftTop() + wxPoint{ 0, static_cast<int>(yCutOff) },
+                              true);
                 }
             }
 
         // draw the bounding box outline
         if (IsSelected())
             {
-            wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(drawRect);
             }
 
@@ -132,6 +131,6 @@ namespace Wisteria::GraphItems
             dc.DestroyClippingRegion();
             }
 
-        return wxRect(dc.GetSize());
+        return { dc.GetSize() };
         }
     } // namespace Wisteria::GraphItems
