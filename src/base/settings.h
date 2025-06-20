@@ -20,7 +20,9 @@
 namespace Wisteria
     {
     // clang-format off
+    /// @private
     wxGCC_WARNING_SUPPRESS(unused-function)
+    /// @returns The version of Wisteria-Dataviz.
     [[nodiscard]]
     static wxVersionInfo GetLibraryVersionInfo()
         {
@@ -28,6 +30,7 @@ namespace Wisteria
                              _WISTERIA_VERSION_PATCH, _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME,
                              _WISTERIA_COPYRIGHT);
         }
+    /// @private
     wxGCC_WARNING_RESTORE(unused-function)
         // clang-format on
 
