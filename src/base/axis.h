@@ -748,12 +748,14 @@ namespace Wisteria::GraphItems
              Examples of what this can be used for are logarithmic scales with condensed ranges.
             @param value The position on the axis. Note that this value's position will be spaced
                 evenly between the points around it, even if they are not equidistant in value.
-            @param label The label to display on the axis at this position.
+            @param label The label to display on the axis at this position.\n
+                If empty, then the label will be @c value formatted into a string with the current
+                precision.
             @note If a value is already at this position, then this function is ignored.
             @warning Call AdjustRangeToLabels() after you are finished adding your
                 axis values to adjust the range.
             @sa AdjustRangeToLabels().*/
-        void AddUnevenAxisPoint(const double value, const wxString& label);
+        void AddUnevenAxisPoint(const double value, const wxString& label = wxString{});
         /// @brief Adjusts the start and end of the range based on min and max range of the labels.
         /// @details This should be called if new points have been added via
         ///     GetAxisPoints() or AddUnevenAxisPoint().

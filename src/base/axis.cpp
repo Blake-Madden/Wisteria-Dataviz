@@ -3561,7 +3561,10 @@ namespace Wisteria::GraphItems
                     }
                 }
             }
-        Label lab(label);
+        Label lab(label.empty() ?
+                      wxNumberFormatter::ToString(
+                          value, GetPrecision(), wxNumberFormatter::Style::Style_WithThousandsSep) :
+                      label);
         lab.SplitTextToFitLength(m_suggestedMaxLengthPerLine);
         pos = m_axisLabels.insert(pos, AxisPoint(value, lab.GetText()));
         }
