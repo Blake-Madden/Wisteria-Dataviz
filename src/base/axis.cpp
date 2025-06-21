@@ -3580,16 +3580,8 @@ namespace Wisteria::GraphItems
         std::optional<double> rangeEnd{ std::nullopt };
         for (const auto& label : GetAxisPoints())
             {
-            if (IsReversed())
-                {
-                rangeStart = std::max(rangeStart.value_or(label.GetValue()), label.GetValue());
-                rangeEnd = std::min(rangeEnd.value_or(label.GetValue()), label.GetValue());
-                }
-            else
-                {
-                rangeStart = std::min(rangeStart.value_or(label.GetValue()), label.GetValue());
-                rangeEnd = std::max(rangeEnd.value_or(label.GetValue()), label.GetValue());
-                }
+            rangeStart = std::min(rangeStart.value_or(label.GetValue()), label.GetValue());
+            rangeEnd = std::max(rangeEnd.value_or(label.GetValue()), label.GetValue());
             }
         m_rangeStart = rangeStart.value_or(m_rangeStart);
         m_rangeEnd = rangeEnd.value_or(m_rangeEnd);

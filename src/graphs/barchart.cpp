@@ -919,10 +919,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             else
                 {
                 // right side of the block
-                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       bar.GetAxisPosition(),
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                GetPhysicalCoordinates(
+                    GetScalingAxis().GetRange().first + barBlockRenderInfo.m_axisOffset,
+                    bar.GetAxisPosition(), barBlockRenderInfo.m_middlePointOfBarEnd);
                 // left side of the block
                 wxPoint pt;
                 GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
