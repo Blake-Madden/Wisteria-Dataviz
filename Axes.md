@@ -142,6 +142,7 @@ create a scale where the intervals differ (e.g., 1, 5, 15, 50, 100), but the tic
 equidistantly. For example, this:
 
 ```cpp
+theChart->GetAxisPoints().clear(); // clear current scale
 theChart->GetLeftYAxis().AddUnevenAxisPoint(1, L"1");
 theChart->GetLeftYAxis().AddUnevenAxisPoint(5, L"5");
 theChart->GetLeftYAxis().AddUnevenAxisPoint(15, L"15");

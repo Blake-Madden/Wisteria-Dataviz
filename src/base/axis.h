@@ -752,8 +752,9 @@ namespace Wisteria::GraphItems
                 If empty, then the label will be @c value formatted into a string with the current
                 precision.
             @note If a value is already at this position, then this function is ignored.
-            @warning Call AdjustRangeToLabels() after you are finished adding your
-                axis values to adjust the range.
+            @warning Call `GetAxisPoints().clear()` prior to calling this to clear any current points.
+                Also, call AdjustRangeToLabels() after you are finished adding your axis values
+                to adjust the range.
             @sa AdjustRangeToLabels().*/
         void AddUnevenAxisPoint(const double value, const wxString& label = wxString{});
         /// @brief Adjusts the start and end of the range based on min and max range of the labels.
