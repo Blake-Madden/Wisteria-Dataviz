@@ -901,33 +901,71 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
 
         wxCoord lineXStart{ 0 }; // set the left (starting point) of the bar
-        if (bar.GetCustomScalingAxisStartPosition().has_value())
+        if (GetScalingAxis().IsReversed())
             {
-            GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                   bar.GetAxisPosition(), barBlockRenderInfo.m_middlePointOfBarEnd);
-            wxPoint customStartPt;
-            GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                       barBlockRenderInfo.m_axisOffset,
-                                   bar.GetAxisPosition(), customStartPt);
-            lineXStart = customStartPt.x +
-                         (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+            if (bar.GetCustomScalingAxisStartPosition().has_value())
+                {
+                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       bar.GetAxisPosition(),
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                wxPoint customStartPt;
+                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       bar.GetAxisPosition(), customStartPt);
+                lineXStart = customStartPt.x +
+                             (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+                }
+            else
+                {
+                // right side of the block
+                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       bar.GetAxisPosition(),
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                // left side of the block
+                wxPoint pt;
+                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       bar.GetAxisPosition(), pt);
+                // if the first block, push it over 1 pixel so that it doesn't overlap the
+                // bar axis
+                lineXStart =
+                    pt.x + (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+                }
             }
         else
             {
-            // right side of the block
-            GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
-                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                   bar.GetAxisPosition(), barBlockRenderInfo.m_middlePointOfBarEnd);
-            // left side of the block
-            wxPoint pt;
-            GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
-                                       barBlockRenderInfo.m_axisOffset,
-                                   bar.GetAxisPosition(), pt);
-            // if the first block, push it over 1 pixel so that it doesn't overlap the
-            // bar axis
-            lineXStart =
-                pt.x + (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+            if (bar.GetCustomScalingAxisStartPosition().has_value())
+                {
+                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       bar.GetAxisPosition(),
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                wxPoint customStartPt;
+                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       bar.GetAxisPosition(), customStartPt);
+                lineXStart = customStartPt.x +
+                             (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+                }
+            else
+                {
+                // right side of the block
+                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       bar.GetAxisPosition(),
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                // left side of the block
+                wxPoint pt;
+                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       bar.GetAxisPosition(), pt);
+                // if the first block, push it over 1 pixel so that it doesn't overlap the
+                // bar axis
+                lineXStart =
+                    pt.x + (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+                }
             }
 
         const wxCoord barLength = barBlockRenderInfo.m_middlePointOfBarEnd.x - lineXStart;
@@ -1414,34 +1452,70 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
         // set the bottom (starting point) of the bar
         wxCoord lineYStart{ 0 };
-        if (bar.GetCustomScalingAxisStartPosition().has_value())
+        if (GetScalingAxis().IsReversed())
             {
-            // top of block
-            GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                   bar.GetCustomScalingAxisStartPosition().value() +
-                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                   barBlockRenderInfo.m_middlePointOfBarEnd);
-            // bottom of block
-            wxPoint customStartPt;
-            GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                   bar.GetCustomScalingAxisStartPosition().value() +
-                                       barBlockRenderInfo.m_axisOffset,
-                                   customStartPt);
-            lineYStart = customStartPt.y;
+            if (bar.GetCustomScalingAxisStartPosition().has_value())
+                {
+                // top of block
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                // bottom of block
+                wxPoint customStartPt;
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       customStartPt);
+                lineYStart = customStartPt.y;
+                }
+            else
+                {
+                // top of block
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                // bottom of block
+                wxPoint pt;
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       pt);
+                lineYStart = pt.y;
+                }
             }
         else
             {
-            // top of block
-            GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                   GetScalingAxis().GetRange().first +
-                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                   barBlockRenderInfo.m_middlePointOfBarEnd);
-            // bottom of block
-            wxPoint pt;
-            GetPhysicalCoordinates(
-                bar.GetAxisPosition(),
-                GetScalingAxis().GetRange().first + barBlockRenderInfo.m_axisOffset, pt);
-            lineYStart = pt.y;
+            if (bar.GetCustomScalingAxisStartPosition().has_value())
+                {
+                // top of block
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                // bottom of block
+                wxPoint customStartPt;
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       bar.GetCustomScalingAxisStartPosition().value() +
+                                           barBlockRenderInfo.m_axisOffset,
+                                       customStartPt);
+                lineYStart = customStartPt.y;
+                }
+            else
+                {
+                // top of block
+                GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                       GetScalingAxis().GetRange().first +
+                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                       barBlockRenderInfo.m_middlePointOfBarEnd);
+                // bottom of block
+                wxPoint pt;
+                GetPhysicalCoordinates(
+                    bar.GetAxisPosition(),
+                    GetScalingAxis().GetRange().first + barBlockRenderInfo.m_axisOffset, pt);
+                lineYStart = pt.y;
+                }
             }
 
         barBlockRenderInfo.m_axisOffset += barBlock.GetLength();
