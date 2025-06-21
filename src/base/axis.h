@@ -755,7 +755,7 @@ namespace Wisteria::GraphItems
             @sa AdjustRangeToLabels().*/
         void AddUnevenAxisPoint(const double value, const wxString& label);
         /// @brief Adjusts the start and end of the range based on min and max range of the labels.
-        ///     This should be called if the generated (default) axis labels have been edited via
+        /// @details This should be called if new points have been added via
         ///     GetAxisPoints() or AddUnevenAxisPoint().
         void AdjustRangeToLabels();
 

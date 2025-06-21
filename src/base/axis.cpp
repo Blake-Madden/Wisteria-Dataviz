@@ -3573,21 +3573,23 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        m_rangeStart = GetAxisPoints().at(0).GetValue();
-        m_rangeEnd = GetAxisPoints().at(0).GetValue();
+        std::optional<double> rangeStart{ std::nullopt };
+        std::optional<double> rangeEnd{ std::nullopt };
         for (const auto& label : GetAxisPoints())
             {
             if (IsReversed())
                 {
-                m_rangeStart = std::max(m_rangeStart, label.GetValue());
-                m_rangeEnd = std::min(m_rangeEnd, label.GetValue());
+                rangeStart = std::max(rangeStart.value_or(label.GetValue()), label.GetValue());
+                rangeEnd = std::min(rangeEnd.value_or(label.GetValue()), label.GetValue());
                 }
             else
                 {
-                m_rangeStart = std::min(m_rangeStart, label.GetValue());
-                m_rangeEnd = std::max(m_rangeEnd, label.GetValue());
+                rangeStart = std::min(rangeStart.value_or(label.GetValue()), label.GetValue());
+                rangeEnd = std::max(rangeEnd.value_or(label.GetValue()), label.GetValue());
                 }
             }
+        m_rangeStart = rangeStart.value_or(m_rangeStart);
+        m_rangeEnd = rangeEnd.value_or(m_rangeEnd);
         }
 
     //-------------------------------------------
