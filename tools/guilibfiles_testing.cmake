@@ -40,6 +40,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/groupgraph2d.cpp
     ../../src/graphs/heatmap.cpp
     ../../src/graphs/histogram.cpp
+    ../../src/graphs/inflesz.cpp
     ../../src/graphs/likertchart.cpp
     ../../src/graphs/lineplot.cpp
     ../../src/graphs/lixgauge.cpp

@@ -24,6 +24,7 @@
 #include "../src/graphs/ganttchart.h"
 #include "../src/graphs/heatmap.h"
 #include "../src/graphs/histogram.h"
+#include "../src/graphs/inflesz.h"
 #include "../src/graphs/likertchart.h"
 #include "../src/graphs/lineplot.h"
 #include "../src/graphs/lrroadmap.h"
@@ -49,7 +50,7 @@
 #include <wx/wx.h>
 
 #ifndef __WISTERIA_DEMO_H__
-#define __WISTERIA_DEMO_H__
+    #define __WISTERIA_DEMO_H__
 
 // Define a new application
 class MyApp final : public wxApp
