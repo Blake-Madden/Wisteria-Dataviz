@@ -849,7 +849,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
     //-----------------------------------
     wxPoint BarChart::DrawBarBlockHorizontal(
-        Bar & bar, size_t barIndex, BarBlock barBlock, BarRenderInfo& barRenderInfo,
+        Bar & bar, size_t barIndex, const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
         BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
         const bool measureOnly /*= false*/)
         {
@@ -1357,7 +1357,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
     //-----------------------------------
     wxPoint BarChart::DrawBarBlockVertical(
-        Bar & bar, size_t barIndex, BarBlock barBlock, BarRenderInfo& barRenderInfo,
+        Bar & bar, size_t barIndex, const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
         BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
         const bool measureOnly /*= false*/)
 
