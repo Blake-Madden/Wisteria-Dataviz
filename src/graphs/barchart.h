@@ -1327,7 +1327,7 @@ namespace Wisteria::Graphs
         ///    there are missing bars along the bar axis, so this (by default) will use
         ///    the number of axis labels that would appear under each place where a bar would go.\n
         ///    (Note that the outer labels are not counted, just the labels under the bars.)
-        /// @note The default behaviour assumes that labels are appearing beneath the middle of
+        /// @note The default behavior assumes that labels are appearing beneath the middle of
         ///    each bar (instead of cutpoints, like in histograms), so override this if relying
         ///    on bar axis labels won't work.\n
         ///    This should be overridden if bar axis labelling is being done in a different way,
@@ -1359,6 +1359,40 @@ namespace Wisteria::Graphs
             }
 
       private:
+        struct BarRenderInfo
+            {
+            explicit BarRenderInfo(wxDC& dc) : m_dc(dc) {}
+
+            wxCoord m_barSpacing{ 0 };
+            wxCoord m_scaledShadowOffset{ 0 };
+            int m_defaultFontPointSize{ 0 };
+            wxCoord m_labelSpacingFromLine{ 0 };
+            wxImage m_scaledCommonImg;
+            std::vector<std::unique_ptr<GraphItems::Label>> m_decals;
+            wxRect m_barRect{};
+            double m_barWidth{ 0 };
+            wxDC& m_dc;
+            std::vector<wxPoint> m_barMiddleEndPositions;
+            };
+
+        struct BarBlockRenderInfo
+            {
+            wxPoint m_middlePointOfBarEnd;
+            wxCoord m_axisOffset{ 0 };
+            };
+
+        wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
+                        const bool measureOnly = false);
+        wxPoint DrawBarBlockHorizontal(Bar& bar, size_t barIndex, BarBlock barBlock,
+                                       BarRenderInfo& barRenderInfo,
+                                       BarBlockRenderInfo& barBlockRenderInfo,
+                                       const wxRect& drawArea, const bool measureOnly = false);
+        wxPoint DrawBarBlockVertical(Bar& bar, size_t barIndex, BarBlock barBlock,
+                                     BarRenderInfo& barRenderInfo,
+                                     BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
+                                     const bool measureOnly = false);
+        void DrawBarGroups(BarRenderInfo& barRenderInfo);
+
         void AdjustScalingAxisFromBarLength(const double barLength);
         void AdjustScalingAxisFromBarGroups();
         std::vector<Bar> m_bars;

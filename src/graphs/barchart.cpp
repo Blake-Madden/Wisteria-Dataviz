@@ -848,1173 +848,1118 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
-    void BarChart::RecalcSizes(wxDC & dc)
+    wxPoint BarChart::DrawBarBlockHorizontal(
+        Bar & bar, size_t barIndex, BarBlock barBlock, BarRenderInfo& barRenderInfo,
+        BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
+        const bool measureOnly /*= false*/)
         {
-        Graph2D::RecalcSizes(dc);
+        wxPoint arrowPoints[7]{ { 0, 0 } };
+        wxPoint boxPoints[4]{ { 0, 0 } };
 
-        const auto defaultFontPointSize{
-            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()
-        };
-
-        // if no bars then just draw a blank 10x10 grid
-        if (GetBars().empty())
+        /* If the bar (or block) is set to cover a specific range
+           (e.g., histograms do this) then calculate
+           the width of the bar based on the coordinates.
+           Otherwise, just divvy up the bars evenly to fit the plot window.*/
+        if (barBlock.GetCustomWidth().has_value())
             {
-            GetRightYAxis().Reset();
-            GetBarAxis().Reset();
-            GetBarAxis().SetRange(0, 10, 0, 1, 1);
-            GetTopXAxis().Reset();
-            GetScalingAxis().Reset();
-            GetScalingAxis().SetRange(0, 10, 0, 1, 1);
-            return;
+            wxPoint topRightPointOfBar, bottomRightPointOfBar;
+            GetPhysicalCoordinates(barBlock.GetLength() /* offset doesn't matter here */,
+                                   bar.GetAxisPosition() -
+                                       safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
+                                   topRightPointOfBar);
+            GetPhysicalCoordinates(barBlock.GetLength(),
+                                   bar.GetAxisPosition() +
+                                       safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
+                                   bottomRightPointOfBar);
+            barRenderInfo.m_barWidth = (topRightPointOfBar.y - bottomRightPointOfBar.y);
+            }
+        else if (bar.GetCustomWidth().has_value())
+            {
+            wxPoint topRightPointOfBar, bottomRightPointOfBar;
+            GetPhysicalCoordinates(barBlock.GetLength() /* offset doesn't matter here */,
+                                   bar.GetAxisPosition() -
+                                       safe_divide<double>(bar.GetCustomWidth().value(), 2),
+                                   topRightPointOfBar);
+            GetPhysicalCoordinates(barBlock.GetLength(),
+                                   bar.GetAxisPosition() +
+                                       safe_divide<double>(bar.GetCustomWidth().value(), 2),
+                                   bottomRightPointOfBar);
+            barRenderInfo.m_barWidth = (topRightPointOfBar.y - bottomRightPointOfBar.y);
+            }
+        else
+            {
+            const size_t barSlots = GetBarSlotCount();
+            const size_t overallBarSpacing = (barRenderInfo.m_barSpacing * (barSlots - 1));
+            barRenderInfo.m_barWidth = safe_divide<double>(
+                GetPlotAreaBoundingBox().GetHeight() -
+                    (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth() + barSlots ?
+                         overallBarSpacing :
+                         0),
+                (barSlots + 1));
             }
 
-        const wxCoord barSpacing = m_includeSpacesBetweenBars ? ScaleToScreenAndCanvas(10) : 0;
-        const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
-        const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
+        wxCoord lineXStart{ 0 }; // set the left (starting point) of the bar
+        if (bar.GetCustomScalingAxisStartPosition().has_value())
+            {
+            GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                   bar.GetAxisPosition(), barBlockRenderInfo.m_middlePointOfBarEnd);
+            wxPoint customStartPt;
+            GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                                       barBlockRenderInfo.m_axisOffset,
+                                   bar.GetAxisPosition(), customStartPt);
+            lineXStart = customStartPt.x +
+                         (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+            }
+        else
+            {
+            // right side of the block
+            GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
+                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                   bar.GetAxisPosition(), barBlockRenderInfo.m_middlePointOfBarEnd);
+            // left side of the block
+            wxPoint pt;
+            GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
+                                       barBlockRenderInfo.m_axisOffset,
+                                   bar.GetAxisPosition(), pt);
+            // if the first block, push it over 1 pixel so that it doesn't overlap the
+            // bar axis
+            lineXStart =
+                pt.x + (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
+            }
 
-        std::vector<std::unique_ptr<GraphItems::Label>> decals;
-        double barWidth{ 0 };
-        wxRect barRect;
-        wxImage scaledCommonImg;
+        const wxCoord barLength = barBlockRenderInfo.m_middlePointOfBarEnd.x - lineXStart;
+        barBlockRenderInfo.m_axisOffset += barBlock.GetLength();
 
-        // main bar rendering
-        const auto drawBar = [&](auto& bar, const bool measureOnly, size_t barIndex)
-        {
-            wxPoint middlePointOfBarEnd;
-            wxCoord axisOffset{ 0 };
-            wxPoint boxPoints[4]{ { 0, 0 } };
-            wxPoint arrowPoints[7]{ { 0, 0 } };
-            wxRect drawArea{ GetPlotAreaBoundingBox() };
-            if (GetLeftYAxis().GetPen().IsOk())
+        const wxCoord lineYStart = barBlockRenderInfo.m_middlePointOfBarEnd.y -
+                                   safe_divide<double>(barRenderInfo.m_barWidth, 2.0);
+        const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
+        barRenderInfo.m_barRect =
+            wxRect(lineXStart, lineYStart, barLength, barRenderInfo.m_barWidth);
+        wxRect barNeckRect = barRenderInfo.m_barRect;
+
+        // if just measuring, then we're done
+        if (measureOnly)
+            {
+            return barBlockRenderInfo.m_middlePointOfBarEnd;
+            }
+
+        // draw the bar (block)
+        if (barBlock.IsShown() && barLength > 0)
+            {
+            // if block has a customized opacity, then use that instead of the
+            // bar's opacity
+            const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                                            Wisteria::Colors::ColorContrast::ChangeOpacity(
+                                                barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
+                                            barBlock.GetBrush().GetColour();
+            const wxColour blockLightenedColor =
+                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
+                                                                   bar.GetOpacity()) :
+                    barBlock.GetLightenedColor();
+            wxBrush blockBrush{ barBlock.GetBrush() };
+            blockBrush.SetColour(blockColor);
+
+            if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
                 {
-                drawArea.SetWidth(drawArea.GetWidth() -
-                                  ScaleToScreenAndCanvas(GetLeftYAxis().GetPen().GetWidth()));
-                drawArea.SetLeft(drawArea.GetLeft() +
-                                 ScaleToScreenAndCanvas(GetLeftYAxis().GetPen().GetWidth()));
+                wxRect imgSubRect{ barRenderInfo.m_barRect };
+                imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
+                                  -GetPlotAreaBoundingBox().GetY());
+                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        .Pen(GetImageOutlineColor())
+                        .AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                    barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
+                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                            ShadowType::RightSideAndBottomShadow :
+                                            ShadowType::NoDisplay);
+                barImage->SetClippingRect(drawArea);
+                AddObject(std::move(barImage));
                 }
-            if (GetBottomXAxis().GetPen().IsOk())
+            else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
                 {
-                drawArea.SetHeight(drawArea.GetHeight() -
-                                   ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
-                drawArea.SetTop(drawArea.GetTop() +
-                                ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
+                const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
+                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        .Pen(GetImageOutlineColor())
+                        .AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                    Wisteria::GraphItems::Image::CropImageToRect(
+                        barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                        barRenderInfo.m_barRect, true));
+                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                            ShadowType::RightSideAndBottomShadow :
+                                            ShadowType::NoDisplay);
+                barImage->SetClippingRect(drawArea);
+                AddObject(std::move(barImage));
                 }
-            for (const auto& barBlock : bar.GetBlocks())
+            else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
                 {
-                if (GetBarOrientation() == Orientation::Horizontal)
+                assert((bar.GetShape() == BarShape::Rectangle) &&
+                       L"Non-rectangular shapes not currently "
+                       "supported with stipple bar effect.");
+                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        .Pen(wxNullPen)
+                        .AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                    Wisteria::GraphItems::Image::CreateStippledImage(
+                        GetStippleBrush()
+                            .GetBitmap(GetStippleBrush().GetDefaultSize())
+                            .ConvertToImage(),
+                        wxSize(barLength, barRenderInfo.m_barWidth), Orientation::Horizontal,
+                        (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4)));
+                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                // note that stipples have their own shadows (a silhouette), so turn off
+                // the Image's native shadow renderer.
+                barImage->SetShadowType(ShadowType::NoDisplay);
+                barImage->SetClippingRect(drawArea);
+                AddObject(std::move(barImage));
+                }
+            else if (bar.GetEffect() == BoxEffect::StippleShape)
+                {
+                assert((bar.GetShape() == BarShape::Rectangle) &&
+                       L"Non-rectangular shapes not currently "
+                       "supported with stipple bar effect.");
+                auto shapeWidth{ barRenderInfo.m_barWidth };
+                // These particular icons are drawn with a ratio where the width
+                // is 60% of the height if the drawing area is square. To prevent
+                // having large gaps between the icons, adjust the width of the icons'
+                // drawing areas so that they aren't drawn inside of squares.
+                if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
+                    GetStippleShape() == Icons::IconShape::Woman ||
+                    GetStippleShape() == Icons::IconShape::Man)
                     {
-                    /* If the bar (or block) is set to cover a specific range
-                       (e.g., histograms do this) then calculate
-                       the width of the bar based on the coordinates.
-                       Otherwise, just divvy up the bars evenly to fit the plot window.*/
-                    if (barBlock.GetCustomWidth().has_value())
-                        {
-                        wxPoint topRightPointOfBar, bottomRightPointOfBar;
-                        GetPhysicalCoordinates(
-                            barBlock.GetLength() /*offset doesn't matter here*/,
-                            bar.GetAxisPosition() -
-                                safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
-                            topRightPointOfBar);
-                        GetPhysicalCoordinates(
-                            barBlock.GetLength(),
-                            bar.GetAxisPosition() +
-                                safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
-                            bottomRightPointOfBar);
-                        barWidth = (topRightPointOfBar.y - bottomRightPointOfBar.y);
-                        }
-                    else if (bar.GetCustomWidth().has_value())
-                        {
-                        wxPoint topRightPointOfBar, bottomRightPointOfBar;
-                        GetPhysicalCoordinates(
-                            barBlock.GetLength() /*offset doesn't matter here*/,
-                            bar.GetAxisPosition() -
-                                safe_divide<double>(bar.GetCustomWidth().value(), 2),
-                            topRightPointOfBar);
-                        GetPhysicalCoordinates(
-                            barBlock.GetLength(),
-                            bar.GetAxisPosition() +
-                                safe_divide<double>(bar.GetCustomWidth().value(), 2),
-                            bottomRightPointOfBar);
-                        barWidth = (topRightPointOfBar.y - bottomRightPointOfBar.y);
-                        }
-                    else
-                        {
-                        const size_t barSlots = GetBarSlotCount();
-                        const size_t overallBarSpacing = (barSpacing * (barSlots - 1));
-                        barWidth = safe_divide<double>(
-                            GetPlotAreaBoundingBox().GetHeight() -
-                                (overallBarSpacing <
-                                         GetPlotAreaBoundingBox().GetWidth() + barSlots ?
-                                     overallBarSpacing :
-                                     0),
-                            (barSlots + 1));
-                        }
-
-                    wxCoord lineXStart{ 0 }; // set the left (starting point) of the bar
-                    if (bar.GetCustomScalingAxisStartPosition().has_value())
-                        {
-                        GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                                   axisOffset + barBlock.GetLength(),
-                                               bar.GetAxisPosition(), middlePointOfBarEnd);
-                        wxPoint customStartPt;
-                        GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                                   axisOffset,
-                                               bar.GetAxisPosition(), customStartPt);
-                        lineXStart =
-                            customStartPt.x + (axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
-                        }
-                    else
-                        {
-                        // right side of the block
-                        GetPhysicalCoordinates(GetScalingAxis().GetRange().first + axisOffset +
-                                                   barBlock.GetLength(),
-                                               bar.GetAxisPosition(), middlePointOfBarEnd);
-                        // left side of the block
-                        wxPoint pt;
-                        GetPhysicalCoordinates(GetScalingAxis().GetRange().first + axisOffset,
-                                               bar.GetAxisPosition(), pt);
-                        // if the first block, push it over 1 pixel so that it doesn't overlap the
-                        // bar axis
-                        lineXStart = pt.x + (axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
-                        }
-
-                    const wxCoord barLength = middlePointOfBarEnd.x - lineXStart;
-                    axisOffset += barBlock.GetLength();
-
-                    const wxCoord lineYStart =
-                        middlePointOfBarEnd.y - safe_divide<double>(barWidth, 2.0);
-                    const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
-                    barRect = wxRect(lineXStart, lineYStart, barLength, barWidth);
-                    wxRect barNeckRect = barRect;
-
-                    // if just measuring then we're done
-                    if (measureOnly)
-                        {
-                        return middlePointOfBarEnd;
-                        }
-
-                    // draw the bar (block)
-                    if (barBlock.IsShown() && barLength > 0)
-                        {
-                        // if block has a customized opacity, then use that instead of the bar's
-                        // opacity
-                        const wxColour blockColor =
-                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                                Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                    barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
-                                barBlock.GetBrush().GetColour();
-                        const wxColour blockLightenedColor =
-                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                                Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                    barBlock.GetLightenedColor(), bar.GetOpacity()) :
-                                barBlock.GetLightenedColor();
-                        wxBrush blockBrush{ barBlock.GetBrush() };
-                        blockBrush.SetColour(blockColor);
-
-                        if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
-                            {
-                            wxRect imgSubRect{ barRect };
-                            imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
-                                              -GetPlotAreaBoundingBox().GetY());
-                            auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                                Wisteria::GraphItems::GraphItemInfo(
-                                    barBlock.GetSelectionLabel().GetText())
-                                    .Pen(GetImageOutlineColor())
-                                    .AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                scaledCommonImg.GetSubImage(imgSubRect));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                                        ShadowType::RightSideAndBottomShadow :
-                                                        ShadowType::NoDisplay);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(std::move(barImage));
-                            }
-                        else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
-                            {
-                            const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
-                            auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                                Wisteria::GraphItems::GraphItemInfo(
-                                    barBlock.GetSelectionLabel().GetText())
-                                    .Pen(GetImageOutlineColor())
-                                    .AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                Wisteria::GraphItems::Image::CropImageToRect(
-                                    barScaledImage.GetBitmap(barScaledImage.GetDefaultSize())
-                                        .ConvertToImage(),
-                                    barRect, true));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                                        ShadowType::RightSideAndBottomShadow :
-                                                        ShadowType::NoDisplay);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(std::move(barImage));
-                            }
-                        else if (bar.GetEffect() == BoxEffect::StippleImage &&
-                                 GetStippleBrush().IsOk())
-                            {
-                            assert((bar.GetShape() == BarShape::Rectangle) &&
-                                   L"Non-rectangular shapes not currently "
-                                   "supported with stipple bar effect.");
-                            auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                                Wisteria::GraphItems::GraphItemInfo(
-                                    barBlock.GetSelectionLabel().GetText())
-                                    .Pen(wxNullPen)
-                                    .AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                Wisteria::GraphItems::Image::CreateStippledImage(
-                                    GetStippleBrush()
-                                        .GetBitmap(GetStippleBrush().GetDefaultSize())
-                                        .ConvertToImage(),
-                                    wxSize(barLength, barWidth), Orientation::Horizontal,
-                                    (GetShadowType() != ShadowType::NoDisplay),
-                                    ScaleToScreenAndCanvas(4)));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            // note that stipples have their own shadows (a silhouette), so turn off
-                            // the Image's native shadow renderer.
-                            barImage->SetShadowType(ShadowType::NoDisplay);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(std::move(barImage));
-                            }
-                        else if (bar.GetEffect() == BoxEffect::StippleShape)
-                            {
-                            assert((bar.GetShape() == BarShape::Rectangle) &&
-                                   L"Non-rectangular shapes not currently "
-                                   "supported with stipple bar effect.");
-                            auto shapeWidth{ barWidth };
-                            // These particular icons are drawn with a ratio where the width
-                            // is 60% of the height if the drawing area is square. To prevent
-                            // having large gaps between the icons, adjust the width of the icons'
-                            // drawing areas so that they aren't drawn inside of squares.
-                            if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
-                                GetStippleShape() == Icons::IconShape::Woman ||
-                                GetStippleShape() == Icons::IconShape::Man)
-                                {
-                                shapeWidth *= 0.6;
-                                }
-                            else if (GetStippleShape() == Icons::IconShape::Ruler)
-                                {
-                                shapeWidth *= 0.4;
-                                }
-                            // likewise, handle icons that are wider than others
-                            if (GetStippleShape() == Icons::IconShape::Car ||
-                                GetStippleShape() == Icons::IconShape::Blackboard)
-                                {
-                                shapeWidth *= 1.25;
-                                }
-                            auto currentXLeft = lineXStart;
-                            while (currentXLeft < (lineXStart + barLength))
-                                {
-                                const wxSize stippleImgSize(shapeWidth, barWidth);
-                                auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
-                                    Wisteria::GraphItems::GraphItemInfo{}
-                                        .Pen(wxNullPen)
-                                        .Brush(GetStippleShapeColor())
-                                        .AnchorPoint(wxPoint(currentXLeft, lineYStart))
-                                        .Anchoring(Anchoring::TopLeftCorner)
-                                        .DPIScaling(GetDPIScaleFactor())
-                                        .Scaling(GetScaling()),
-                                    GetStippleShape(), stippleImgSize);
-                                shape->SetBoundingBox(wxRect(wxPoint(currentXLeft, lineYStart),
-                                                             wxSize(shapeWidth, barWidth)),
-                                                      dc, GetScaling());
-                                shape->SetClippingRect(barRect);
-                                AddObject(std::move(shape));
-                                currentXLeft += stippleImgSize.GetWidth();
-                                }
-                            }
-                        // color-filled bar
-                        else
-                            {
-                            std::unique_ptr<GraphItems::Polygon> box{ nullptr };
-                            GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
-                            if (bar.GetShape() == BarShape::Rectangle)
-                                {
-                                // Polygons don't support drop shadows,
-                                // so need to manually add a shadow as another polygon.
-                                // Also, only use a shadow if the fill color is opaque and
-                                // the bar block isn't too small.
-                                if (GetShadowType() != ShadowType::NoDisplay &&
-                                    blockBrush.GetColour().IsOk() &&
-                                    blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
-                                    barBlock.GetLength() > rangeStart)
-                                    {
-                                    // in case this bar is way too small because of the
-                                    // scaling then don't bother with the shadow
-                                    if (barRect.GetHeight() > scaledShadowOffset)
-                                        {
-                                        wxPoint shadowPts[7] = {
-                                            barRect.GetLeftBottom(),
-                                            barRect.GetLeftBottom() +
-                                                wxPoint(0, scaledShadowOffset),
-                                            barRect.GetRightBottom() +
-                                                wxPoint(scaledShadowOffset, scaledShadowOffset),
-                                            barRect.GetRightTop() +
-                                                wxPoint(scaledShadowOffset, scaledShadowOffset),
-                                            barRect.GetRightTop() + wxPoint(0, scaledShadowOffset),
-                                            barRect.GetRightBottom(),
-                                            barRect.GetLeftBottom() // close polygon
-                                        };
-                                        AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
-                                            Wisteria::GraphItems::GraphItemInfo()
-                                                .Pen(wxNullPen)
-                                                .Brush(GraphItemBase::GetShadowColor()),
-                                            shadowPts, std::size(shadowPts)));
-                                        }
-                                    }
-                                box = std::make_unique<GraphItems::Polygon>(
-                                    Wisteria::GraphItems::GraphItemInfo(
-                                        barBlock.GetSelectionLabel().GetText())
-                                        .Pen(*wxBLACK_PEN)
-                                        .Brush(blockBrush)
-                                        .Scaling(GetScaling())
-                                        .Outline(true, true, true, true)
-                                        .ShowLabelWhenSelected(true),
-                                    boxPoints, std::size(boxPoints));
-                                }
-                            else if (bar.GetShape() == BarShape::Arrow)
-                                {
-                                assert(!(GetShadowType() != ShadowType::NoDisplay) &&
-                                       L"Drop shadow not supported for arrow shape currently.");
-                                barNeckRect.Deflate(
-                                    wxSize(0, safe_divide(barNeckRect.GetHeight(), 5)));
-                                barNeckRect.SetRight(barNeckRect.GetRight() -
-                                                     (safe_divide(barNeckRect.GetWidth(), 10)));
-                                arrowPoints[0] = barNeckRect.GetTopLeft();
-                                arrowPoints[1] = barNeckRect.GetTopRight();
-                                arrowPoints[2] = wxPoint(barNeckRect.GetRight(), barRect.GetTop());
-                                arrowPoints[3] = wxPoint(
-                                    barRect.GetRight(),
-                                    barRect.GetTop() + (safe_divide((barRect.GetHeight()), 2)));
-                                arrowPoints[4] =
-                                    wxPoint(barNeckRect.GetRight(), barRect.GetBottom());
-                                arrowPoints[5] = barNeckRect.GetBottomRight();
-                                arrowPoints[6] = barNeckRect.GetBottomLeft();
-                                box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                                    Wisteria::GraphItems::GraphItemInfo(
-                                        barBlock.GetSelectionLabel().GetText())
-                                        .Pen(*wxBLACK_PEN)
-                                        .Brush(blockBrush)
-                                        .Scaling(GetScaling())
-                                        .Outline(true, true, true, true)
-                                        .ShowLabelWhenSelected(true),
-                                    arrowPoints, std::size(arrowPoints));
-                                }
-
-                            assert(box);
-
-                            if (barBlock.GetOutlinePen().IsOk())
-                                {
-                                box->GetPen() = barBlock.GetOutlinePen();
-                                }
-                            else
-                                {
-                                box->GetPen().SetColour(Wisteria::Colors::ColorContrast::IsLight(
-                                                            GetPlotOrCanvasColor()) ?
-                                                            *wxWHITE :
-                                                            *wxBLACK);
-                                }
-                            if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
-                                {
-                                box->GetBrush() = wxNullBrush;
-                                box->SetBackgroundFill(Colors::GradientFill(
-                                    blockColor, blockLightenedColor, FillDirection::East));
-                                }
-                            else if (bar.GetEffect() == BoxEffect::Glassy)
-                                {
-                                box->GetBrush() = wxNullBrush;
-                                box->SetBackgroundFill(Colors::GradientFill(
-                                    blockColor, blockColor, // second color not used
-                                    FillDirection::South));
-                                }
-                            else if (bar.GetEffect() == BoxEffect::FadeFromTopToBottom)
-                                {
-                                box->GetBrush() = wxNullBrush;
-                                box->SetBackgroundFill(Colors::GradientFill(
-                                    blockColor, blockLightenedColor, FillDirection::West));
-                                }
-                            // in case an explicit color is used for the background
-                            // and the brush is perhaps a hatch to be draw on top of it
-                            else if (barBlock.GetColor().IsOk())
-                                {
-                                box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
-                                box->GetPen().SetColour(Wisteria::Colors::ColorContrast::IsLight(
-                                                            GetPlotOrCanvasColor()) ?
-                                                            *wxWHITE :
-                                                            *wxBLACK);
-                                }
-
-                            // if the bar is totally transparent, then draw a contrasting outline
-                            // (unless the client also made the outline explicitly transparent)
-                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
-                                box->GetPen() != *wxTRANSPARENT_PEN)
-                                {
-                                box->GetPen().SetColour(Wisteria::Colors::ColorContrast::IsLight(
-                                                            GetPlotOrCanvasColor()) ?
-                                                            *wxBLACK :
-                                                            *wxWHITE);
-                                }
-
-                            // if the box is really thin, then don't use the outline pen on its
-                            // sides
-                            if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
-                                {
-                                box->GetGraphItemInfo().Outline(true, false, true, false);
-                                }
-                            box->SetShape(
-                                (bar.GetEffect() == BoxEffect::WaterColor) ?
-                                    GraphItems::Polygon::PolygonShape::WaterColorRectangle :
-                                (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
-                                    GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
-                                (bar.GetShape() == BarShape::Arrow) ?
-                                    GraphItems::Polygon::PolygonShape::Irregular :
-                                (bar.GetEffect() == BoxEffect::Glassy) ?
-                                    GraphItems::Polygon::PolygonShape::GlassyRectangle :
-                                    GraphItems::Polygon::PolygonShape::Rectangle);
-                            // along with a second coat, we will make the thick water color
-                            // brush use a more opaque value than the system's default
-                            if (bar.GetEffect() == BoxEffect::ThickWaterColor &&
-                                box->GetBrush().IsOk() &&
-                                box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
-                                Settings::GetTranslucencyValue() < 200)
-                                {
-                                box->GetBrush().SetColour(
-                                    Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                        box->GetBrush().GetColour(), 200));
-                                }
-                            // flip outline logic so that we have a hard outline since we are
-                            // not "drawing within the lines" (also, don't clip)
-                            if (bar.GetEffect() == BoxEffect::WaterColor ||
-                                bar.GetEffect() == BoxEffect::ThickWaterColor)
-                                {
-                                // ...but only use hard outline if there isn't a user-defined
-                                // outline
-                                if (!barBlock.GetOutlinePen().IsOk())
-                                    {
-                                    box->GetPen().SetColour(
-                                        Wisteria::Colors::ColorContrast::IsLight(
-                                            GetPlotOrCanvasColor()) ?
-                                            *wxBLACK :
-                                            *wxWHITE);
-                                    }
-                                SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
-                                }
-                            // clip box to not be on top of axes
-                            else
-                                {
-                                box->SetClippingRect(drawArea);
-                                SetDefaultLegendShape(Icons::IconShape::Square);
-                                }
-                            // add the box to the plot item collection
-                            AddObject(std::move(box));
-                            }
-                        }
-                    // add the decal (if there is one)
-                    if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
-                        barBlock.GetDecal().GetText().length())
-                        {
-                        const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
-                        wxRect decalRect(barNeckRect);
-                        decalRect.Deflate(leftPadding, 0);
-
-                        auto decalLabel = std::make_unique<GraphItems::Label>(barBlock.GetDecal());
-                        decalLabel->GetGraphItemInfo()
+                    shapeWidth *= 0.6;
+                    }
+                else if (GetStippleShape() == Icons::IconShape::Ruler)
+                    {
+                    shapeWidth *= 0.4;
+                    }
+                // likewise, handle icons that are wider than others
+                if (GetStippleShape() == Icons::IconShape::Car ||
+                    GetStippleShape() == Icons::IconShape::Blackboard)
+                    {
+                    shapeWidth *= 1.25;
+                    }
+                auto currentXLeft = lineXStart;
+                while (currentXLeft < (lineXStart + barLength))
+                    {
+                    const wxSize stippleImgSize(shapeWidth, barRenderInfo.m_barWidth);
+                    auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
+                        Wisteria::GraphItems::GraphItemInfo{}
                             .Pen(wxNullPen)
-                            .Text(barBlock.ExpandDecalLabel())
-                            .Scaling(GetScaling())
+                            .Brush(GetStippleShapeColor())
+                            .AnchorPoint(wxPoint(currentXLeft, lineYStart))
+                            .Anchoring(Anchoring::TopLeftCorner)
                             .DPIScaling(GetDPIScaleFactor())
-                            .Padding(2, 2, 2, 2);
-                        decalLabel->GetFont().MakeSmaller().MakeSmaller();
-                        if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
+                            .Scaling(GetScaling()),
+                        GetStippleShape(), stippleImgSize);
+                    shape->SetBoundingBox(wxRect(wxPoint(currentXLeft, lineYStart),
+                                                 wxSize(shapeWidth, barRenderInfo.m_barWidth)),
+                                          barRenderInfo.m_dc, GetScaling());
+                    shape->SetClippingRect(barRenderInfo.m_barRect);
+                    AddObject(std::move(shape));
+                    currentXLeft += stippleImgSize.GetWidth();
+                    }
+                }
+            // color-filled bar
+            else
+                {
+                std::unique_ptr<GraphItems::Polygon> box{ nullptr };
+                GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
+                if (bar.GetShape() == BarShape::Rectangle)
+                    {
+                    // Polygons don't support drop shadows,
+                    // so need to manually add a shadow as another polygon.
+                    // Also, only use a shadow if the fill color is opaque and
+                    // the bar block isn't too small.
+                    if (GetShadowType() != ShadowType::NoDisplay && blockBrush.GetColour().IsOk() &&
+                        blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
+                        barBlock.GetLength() > rangeStart)
+                        {
+                        // in case this bar is way too small because of the
+                        // scaling then don't bother with the shadow
+                        if (barRenderInfo.m_barRect.GetHeight() >
+                            barRenderInfo.m_scaledShadowOffset)
                             {
-                            decalLabel->SetBoundingBox(decalRect, dc, GetScaling());
-                            decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                            wxPoint shadowPts[7] = {
+                                barRenderInfo.m_barRect.GetLeftBottom(),
+                                barRenderInfo.m_barRect.GetLeftBottom() +
+                                    wxPoint(0, barRenderInfo.m_scaledShadowOffset),
+                                barRenderInfo.m_barRect.GetRightBottom() +
+                                    wxPoint(barRenderInfo.m_scaledShadowOffset,
+                                            barRenderInfo.m_scaledShadowOffset),
+                                barRenderInfo.m_barRect.GetRightTop() +
+                                    wxPoint(barRenderInfo.m_scaledShadowOffset,
+                                            barRenderInfo.m_scaledShadowOffset),
+                                barRenderInfo.m_barRect.GetRightTop() +
+                                    wxPoint(0, barRenderInfo.m_scaledShadowOffset),
+                                barRenderInfo.m_barRect.GetRightBottom(),
+                                barRenderInfo.m_barRect.GetLeftBottom() // close polygon
+                            };
+                            AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
+                                Wisteria::GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
+                                    GraphItemBase::GetShadowColor()),
+                                shadowPts, std::size(shadowPts)));
                             }
-                        else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
-                            {
-                            decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize());
-                            }
-                        else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
-                            {
-                            decalLabel->SplitTextToFitBoundingBox(
-                                dc, wxSize(decalRect.GetWidth(), std::numeric_limits<int>::max()));
-                            }
-                        // if drawing as-is, then draw a box around the label
-                        // if it's larger than the parent block
-                        else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
-                            {
-                            const auto actualDecalRect = decalLabel->GetBoundingBox(dc);
-                            // allow a little wiggle room
-                            if (actualDecalRect.GetWidth() - ScaleToScreenAndCanvas(1) >
-                                    decalRect.GetWidth() ||
-                                actualDecalRect.GetHeight() - ScaleToScreenAndCanvas(1) >
-                                    decalRect.GetHeight())
-                                {
-                                decalLabel->GetGraphItemInfo()
-                                    .FontBackgroundColor(
-                                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                            decalLabel->GetFontColor()))
-                                    .Pen(*wxBLACK_PEN);
-                                }
-                            }
-                        // make multiline decals a little more compact so that
-                        // they have a better chance of fitting
-                        decalLabel->SetLineSpacing(0);
-                        decalLabel->SetShadowType(ShadowType::NoDisplay);
-                        decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
-                        decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                        // allow selecting the bar underneath this label
-                        decalLabel->SetSelectable(false);
-                        // if font is way too small, then show it as a label
-                        // overlapping the bar instead of a decal
-                        if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
-                            decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
-                            decalLabel->GetFont().GetPointSize() < defaultFontPointSize / 2)
-                            {
-                            decalLabel->GetFont().SetPointSize(defaultFontPointSize);
-                            decalLabel->GetPen().SetColour(*wxBLACK);
-                            decalLabel->SetFontColor(*wxBLACK);
-                            decalLabel->SetFontBackgroundColor(*wxWHITE);
-                            }
-                        const wxRect labelBox = decalLabel->GetBoundingBox(dc);
-                        if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
-                            {
-                            decalLabel->SetAnchorPoint(wxPoint(
-                                (barNeckRect.GetLeft() + leftPadding),
-                                (barNeckRect.GetTop() +
-                                 safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
-                            }
-                        else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
-                            {
-                            decalLabel->SetAnchorPoint(wxPoint(
-                                (barNeckRect.GetLeft() +
-                                 safe_divide(barNeckRect.GetWidth() - labelBox.GetWidth(), 2)),
-                                (barNeckRect.GetTop() +
-                                 safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
-                            }
-                        else // flush right
-                            {
-                            decalLabel->SetAnchorPoint(wxPoint(
-                                (barNeckRect.GetRight() - (labelBox.GetWidth() + leftPadding)),
-                                (barNeckRect.GetTop() +
-                                 safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
-                            }
-                        // if drawing a color and hatch pattern, then show the decal with an outline
-                        // to make it easier to read
-                        if (bar.GetEffect() == BoxEffect::Solid && barBlock.GetColor().IsOk() &&
-                            barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
-                            {
-                            decalLabel->GetPen().SetColour(*wxBLACK);
-                            decalLabel->SetFontColor(*wxBLACK);
-                            decalLabel->SetFontBackgroundColor(*wxWHITE);
-                            }
-                        // This will be added to the plot's collection of object AFTER
-                        // all blocks have been added.
-                        // This ensures that decals that go outside of their block are
-                        // eclipsed by the next block.
-                        decals.push_back(std::move(decalLabel));
                         }
+                    box = std::make_unique<GraphItems::Polygon>(
+                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                            .Pen(*wxBLACK_PEN)
+                            .Brush(blockBrush)
+                            .Scaling(GetScaling())
+                            .Outline(true, true, true, true)
+                            .ShowLabelWhenSelected(true),
+                        boxPoints, std::size(boxPoints));
+                    }
+                else if (bar.GetShape() == BarShape::Arrow)
+                    {
+                    assert(!(GetShadowType() != ShadowType::NoDisplay) &&
+                           L"Drop shadow not supported for arrow shape currently.");
+                    barNeckRect.Deflate(wxSize(0, safe_divide(barNeckRect.GetHeight(), 5)));
+                    barNeckRect.SetRight(barNeckRect.GetRight() -
+                                         (safe_divide(barNeckRect.GetWidth(), 10)));
+                    arrowPoints[0] = barNeckRect.GetTopLeft();
+                    arrowPoints[1] = barNeckRect.GetTopRight();
+                    arrowPoints[2] =
+                        wxPoint(barNeckRect.GetRight(), barRenderInfo.m_barRect.GetTop());
+                    arrowPoints[3] =
+                        wxPoint(barRenderInfo.m_barRect.GetRight(),
+                                barRenderInfo.m_barRect.GetTop() +
+                                    (safe_divide((barRenderInfo.m_barRect.GetHeight()), 2)));
+                    arrowPoints[4] =
+                        wxPoint(barNeckRect.GetRight(), barRenderInfo.m_barRect.GetBottom());
+                    arrowPoints[5] = barNeckRect.GetBottomRight();
+                    arrowPoints[6] = barNeckRect.GetBottomLeft();
+                    box = std::make_unique<Wisteria::GraphItems::Polygon>(
+                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                            .Pen(*wxBLACK_PEN)
+                            .Brush(blockBrush)
+                            .Scaling(GetScaling())
+                            .Outline(true, true, true, true)
+                            .ShowLabelWhenSelected(true),
+                        arrowPoints, std::size(arrowPoints));
+                    }
+
+                assert(box);
+
+                if (barBlock.GetOutlinePen().IsOk())
+                    {
+                    box->GetPen() = barBlock.GetOutlinePen();
                     }
                 else
                     {
-                    /* if the bar (or block) is set to cover a specific range
-                       (e.g., histograms do this when using cutpoints) then calculate
-                       the width of the bar based on the coordinates.
-                       Otherwise, just divvy up the bars evenly to fit the plot window.*/
-                    if (barBlock.GetCustomWidth().has_value())
+                    box->GetPen().SetColour(
+                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                            *wxWHITE :
+                            *wxBLACK);
+                    }
+                if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
+                    {
+                    box->GetBrush() = wxNullBrush;
+                    box->SetBackgroundFill(
+                        Colors::GradientFill(blockColor, blockLightenedColor, FillDirection::East));
+                    }
+                else if (bar.GetEffect() == BoxEffect::Glassy)
+                    {
+                    box->GetBrush() = wxNullBrush;
+                    box->SetBackgroundFill(Colors::GradientFill(blockColor,
+                                                                blockColor, // second color not used
+                                                                FillDirection::South));
+                    }
+                else if (bar.GetEffect() == BoxEffect::FadeFromTopToBottom)
+                    {
+                    box->GetBrush() = wxNullBrush;
+                    box->SetBackgroundFill(
+                        Colors::GradientFill(blockColor, blockLightenedColor, FillDirection::West));
+                    }
+                // in case an explicit color is used for the background
+                // and the brush is perhaps a hatch to be draw on top of it
+                else if (barBlock.GetColor().IsOk())
+                    {
+                    box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
+                    box->GetPen().SetColour(
+                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                            *wxWHITE :
+                            *wxBLACK);
+                    }
+
+                // if the bar is totally transparent, then draw a contrasting outline
+                // (unless the client also made the outline explicitly transparent)
+                if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
+                    box->GetPen() != *wxTRANSPARENT_PEN)
+                    {
+                    box->GetPen().SetColour(
+                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                            *wxBLACK :
+                            *wxWHITE);
+                    }
+
+                // if the box is really thin, then don't use the outline pen on its sides
+                if (DownscaleFromScreenAndCanvas(barRenderInfo.m_barRect.GetWidth()) < 5)
+                    {
+                    box->GetGraphItemInfo().Outline(true, false, true, false);
+                    }
+                box->SetShape((bar.GetEffect() == BoxEffect::WaterColor) ?
+                                  GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                              (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
+                                  GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
+                              (bar.GetShape() == BarShape::Arrow) ?
+                                  GraphItems::Polygon::PolygonShape::Irregular :
+                              (bar.GetEffect() == BoxEffect::Glassy) ?
+                                  GraphItems::Polygon::PolygonShape::GlassyRectangle :
+                                  GraphItems::Polygon::PolygonShape::Rectangle);
+                // along with a second coat, we will make the thick water color
+                // brush use a more opaque value than the system's default
+                if (bar.GetEffect() == BoxEffect::ThickWaterColor && box->GetBrush().IsOk() &&
+                    box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                    Settings::GetTranslucencyValue() < 200)
+                    {
+                    box->GetBrush().SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(
+                        box->GetBrush().GetColour(), 200));
+                    }
+                // flip outline logic so that we have a hard outline since we are
+                // not "drawing within the lines" (also, don't clip)
+                if (bar.GetEffect() == BoxEffect::WaterColor ||
+                    bar.GetEffect() == BoxEffect::ThickWaterColor)
+                    {
+                    // ...but only use hard outline if there isn't a user-defined outline
+                    if (!barBlock.GetOutlinePen().IsOk())
                         {
-                        wxPoint leftPointOfBar, rightPointOfBar;
-                        GetPhysicalCoordinates(
-                            bar.GetAxisPosition() -
-                                safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
-                            barBlock.GetLength() /*offset doesn't matter here*/, leftPointOfBar);
-                        GetPhysicalCoordinates(
-                            bar.GetAxisPosition() +
-                                safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
-                            barBlock.GetLength(), rightPointOfBar);
-                        barWidth = ((rightPointOfBar.x - leftPointOfBar.x) - barSpacing);
+                        box->GetPen().SetColour(
+                            Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                *wxBLACK :
+                                *wxWHITE);
                         }
-                    else if (bar.GetCustomWidth().has_value())
-                        {
-                        wxPoint leftPointOfBar, rightPointOfBar;
-                        GetPhysicalCoordinates(
-                            bar.GetAxisPosition() -
-                                safe_divide<double>(bar.GetCustomWidth().value(), 2),
-                            barBlock.GetLength() /*offset doesn't matter here*/, leftPointOfBar);
-                        GetPhysicalCoordinates(
-                            bar.GetAxisPosition() +
-                                safe_divide<double>(bar.GetCustomWidth().value(), 2),
-                            barBlock.GetLength(), rightPointOfBar);
-                        barWidth = ((rightPointOfBar.x - leftPointOfBar.x) - barSpacing);
-                        }
-                    else
-                        {
-                        const size_t barSlots = GetBarSlotCount();
-                        const size_t overallBarSpacing = (barSpacing * (barSlots - 1));
-                        barWidth = safe_divide<double>(
-                            // the plot area, minus the cumulative spaces between their bars
-                            // (unless the spacing is too aggressive)
-                            GetPlotAreaBoundingBox().GetWidth() -
-                                (overallBarSpacing <
-                                         GetPlotAreaBoundingBox().GetWidth() + barSlots ?
-                                     overallBarSpacing :
-                                     0),
-                            // add an "extra" bar to account for the half bar space
-                            // around the first and last bars
-                            (barSlots + 1));
-                        }
+                    SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
+                    }
+                // clip box to not be on top of axes
+                else
+                    {
+                    box->SetClippingRect(drawArea);
+                    SetDefaultLegendShape(Icons::IconShape::Square);
+                    }
+                // add the box to the plot item collection
+                AddObject(std::move(box));
+                }
+            }
+        // add the decal (if there is one)
+        if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
+            !barBlock.GetDecal().GetText().empty())
+            {
+            const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
+            wxRect decalRect(barNeckRect);
+            decalRect.Deflate(leftPadding, 0);
 
-                    // set the bottom (starting point) of the bar
-                    wxCoord lineYStart{ 0 };
-                    if (bar.GetCustomScalingAxisStartPosition().has_value())
-                        {
-                        // top of block
-                        GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                               bar.GetCustomScalingAxisStartPosition().value() +
-                                                   axisOffset + barBlock.GetLength(),
-                                               middlePointOfBarEnd);
-                        // bottom of block
-                        wxPoint customStartPt;
-                        GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                               bar.GetCustomScalingAxisStartPosition().value() +
-                                                   axisOffset,
-                                               customStartPt);
-                        lineYStart = customStartPt.y;
-                        }
-                    else
-                        {
-                        // top of block
-                        GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                               GetScalingAxis().GetRange().first + axisOffset +
-                                                   barBlock.GetLength(),
-                                               middlePointOfBarEnd);
-                        // bottom of block
-                        wxPoint pt;
-                        GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                               GetScalingAxis().GetRange().first + axisOffset, pt);
-                        lineYStart = pt.y;
-                        }
+            auto decalLabel = std::make_unique<GraphItems::Label>(barBlock.GetDecal());
+            decalLabel->GetGraphItemInfo()
+                .Pen(wxNullPen)
+                .Text(barBlock.ExpandDecalLabel())
+                .Scaling(GetScaling())
+                .DPIScaling(GetDPIScaleFactor())
+                .Padding(2, 2, 2, 2);
+            decalLabel->GetFont().MakeSmaller().MakeSmaller();
+            if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
+                {
+                decalLabel->SetBoundingBox(decalRect, barRenderInfo.m_dc, GetScaling());
+                decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                }
+            else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
+                {
+                decalLabel->SplitTextToFitBoundingBox(barRenderInfo.m_dc, decalRect.GetSize());
+                }
+            else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
+                {
+                decalLabel->SplitTextToFitBoundingBox(
+                    barRenderInfo.m_dc,
+                    wxSize(decalRect.GetWidth(), std::numeric_limits<int>::max()));
+                }
+            // if drawing as-is, then draw a box around the label
+            // if it's larger than the parent block
+            else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
+                {
+                const auto actualDecalRect = decalLabel->GetBoundingBox(barRenderInfo.m_dc);
+                // allow a little wiggle room
+                if (actualDecalRect.GetWidth() - ScaleToScreenAndCanvas(1) > decalRect.GetWidth() ||
+                    actualDecalRect.GetHeight() - ScaleToScreenAndCanvas(1) > decalRect.GetHeight())
+                    {
+                    decalLabel->GetGraphItemInfo()
+                        .FontBackgroundColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            decalLabel->GetFontColor()))
+                        .Pen(*wxBLACK_PEN);
+                    }
+                }
+            // make multiline decals a little more compact so that
+            // they have a better chance of fitting
+            decalLabel->SetLineSpacing(0);
+            decalLabel->SetShadowType(ShadowType::NoDisplay);
+            decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
+            decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+            // allow selecting the bar underneath this label
+            decalLabel->SetSelectable(false);
+            // if font is way too small, then show it as a label
+            // overlapping the bar instead of a decal
+            if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
+                decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
+                decalLabel->GetFont().GetPointSize() < barRenderInfo.m_defaultFontPointSize / 2)
+                {
+                decalLabel->GetFont().SetPointSize(barRenderInfo.m_defaultFontPointSize);
+                decalLabel->GetPen().SetColour(*wxBLACK);
+                decalLabel->SetFontColor(*wxBLACK);
+                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                }
+            const wxRect labelBox = decalLabel->GetBoundingBox(barRenderInfo.m_dc);
+            if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
+                {
+                decalLabel->SetAnchorPoint(
+                    wxPoint((barNeckRect.GetLeft() + leftPadding),
+                            (barNeckRect.GetTop() +
+                             safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
+                }
+            else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
+                {
+                decalLabel->SetAnchorPoint(
+                    wxPoint((barNeckRect.GetLeft() +
+                             safe_divide(barNeckRect.GetWidth() - labelBox.GetWidth(), 2)),
+                            (barNeckRect.GetTop() +
+                             safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
+                }
+            else // flush right
+                {
+                decalLabel->SetAnchorPoint(
+                    wxPoint((barNeckRect.GetRight() - (labelBox.GetWidth() + leftPadding)),
+                            (barNeckRect.GetTop() +
+                             safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
+                }
+            // if drawing a color and hatch pattern, then show the decal with an outline
+            // to make it easier to read
+            if (bar.GetEffect() == BoxEffect::Solid && barBlock.GetColor().IsOk() &&
+                barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
+                {
+                decalLabel->GetPen().SetColour(*wxBLACK);
+                decalLabel->SetFontColor(*wxBLACK);
+                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                }
+            // This will be added to the plot's collection of object AFTER
+            // all blocks have been added.
+            // This ensures that decals that go outside of their block are
+            // eclipsed by the next block.
+            barRenderInfo.m_decals.push_back(std::move(decalLabel));
+            }
 
-                    axisOffset += barBlock.GetLength();
-                    const wxCoord barLength = lineYStart - middlePointOfBarEnd.y;
-                    const wxCoord lineYEnd = lineYStart - barLength;
-                    const wxCoord lineXStart =
-                        middlePointOfBarEnd.x - safe_divide<double>(barWidth, 2.0);
-                    const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
-                    barRect = wxRect(lineXStart, lineYEnd, barWidth, barLength);
-                    wxRect barNeckRect = barRect;
+        return barBlockRenderInfo.m_middlePointOfBarEnd;
+        }
 
-                    // if just measuring then we're done
-                    if (measureOnly)
-                        {
-                        return middlePointOfBarEnd;
-                        }
+    //-----------------------------------
+    wxPoint BarChart::DrawBarBlockVertical(
+        Bar & bar, size_t barIndex, BarBlock barBlock, BarRenderInfo& barRenderInfo,
+        BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
+        const bool measureOnly /*= false*/)
 
-                    // draw the bar
-                    if (barBlock.IsShown() && barLength > 0)
-                        {
-                        // if block has a customized opacity, then use that instead of the bar's
-                        // opacity
-                        const wxColour blockColor =
-                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                                Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                    barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
-                                barBlock.GetBrush().GetColour();
-                        const wxColour blockLightenedColor =
-                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                                Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                    barBlock.GetLightenedColor(), bar.GetOpacity()) :
-                                barBlock.GetLightenedColor();
-                        wxBrush blockBrush{ barBlock.GetBrush() };
-                        blockBrush.SetColour(blockColor);
+        {
+        wxPoint boxPoints[4]{ { 0, 0 } };
+        wxPoint arrowPoints[7]{ { 0, 0 } };
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
-                            {
-                            wxRect imgSubRect{ barRect };
-                            imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
-                                              -GetPlotAreaBoundingBox().GetY());
-                            auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                                Wisteria::GraphItems::GraphItemInfo(
-                                    barBlock.GetSelectionLabel().GetText())
-                                    .Pen(GetImageOutlineColor())
-                                    .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                scaledCommonImg.GetSubImage(imgSubRect));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                                        ShadowType::RightSideShadow :
-                                                        ShadowType::NoDisplay);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(std::move(barImage));
-                            }
-                        else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
-                            {
-                            const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
-                            auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                                Wisteria::GraphItems::GraphItemInfo(
-                                    barBlock.GetSelectionLabel().GetText())
-                                    .Pen(GetImageOutlineColor())
-                                    .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                Wisteria::GraphItems::Image::CropImageToRect(
-                                    barScaledImage.GetBitmap(barScaledImage.GetDefaultSize())
-                                        .ConvertToImage(),
-                                    barRect, true));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                                        ShadowType::RightSideAndBottomShadow :
-                                                        ShadowType::NoDisplay);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(std::move(barImage));
-                            }
-                        else if (bar.GetEffect() == BoxEffect::StippleImage &&
-                                 GetStippleBrush().IsOk())
-                            {
-                            assert((bar.GetShape() == BarShape::Rectangle) &&
-                                   L"Non-rectangular shapes not currently "
-                                   "supported with stipple bar effect.");
-                            auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                                Wisteria::GraphItems::GraphItemInfo(
-                                    barBlock.GetSelectionLabel().GetText())
-                                    .Pen(wxNullPen)
-                                    .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                Wisteria::GraphItems::Image::CreateStippledImage(
-                                    GetStippleBrush()
-                                        .GetBitmap(GetStippleBrush().GetDefaultSize())
-                                        .ConvertToImage(),
-                                    wxSize(barWidth, barLength), Orientation::Vertical,
-                                    (GetShadowType() != ShadowType::NoDisplay),
-                                    ScaleToScreenAndCanvas(4)));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            // note that stipples have their own shadows (a silhouette), so turn off
-                            // the Image's native shadow renderer.
-                            barImage->SetShadowType(ShadowType::NoDisplay);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(std::move(barImage));
-                            }
-                        else if (bar.GetEffect() == BoxEffect::StippleShape)
-                            {
-                            assert((bar.GetShape() == BarShape::Rectangle) &&
-                                   L"Non-rectangular shapes not currently "
-                                   "supported with stipple bar effect.");
-                            auto shapeHeight{ barWidth };
-                            // These particular icons are drawn with a ratio where the height
-                            // is 75% of the width if the drawing area is square. To prevent
-                            // having large gaps between the icons, adjust the height of the icons'
-                            // drawing areas so that they aren't drawn inside of squares.
-                            if (GetStippleShape() == Icons::IconShape::Car ||
-                                GetStippleShape() == Icons::IconShape::Blackboard)
-                                {
-                                shapeHeight *= 0.75;
-                                }
-                            auto currentYTop = lineYStart - shapeHeight;
-                            while ((currentYTop + shapeHeight) > lineYEnd)
-                                {
-                                const wxSize stippleImgSize(barWidth, shapeHeight);
-                                auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
-                                    Wisteria::GraphItems::GraphItemInfo{}
-                                        .Pen(wxNullPen)
-                                        .Brush(GetStippleShapeColor())
-                                        .AnchorPoint(wxPoint(lineXStart, currentYTop))
-                                        .Anchoring(Anchoring::TopLeftCorner)
-                                        .DPIScaling(GetDPIScaleFactor())
-                                        .Scaling(GetScaling()),
-                                    GetStippleShape(), stippleImgSize);
-                                shape->SetBoundingBox(wxRect(wxPoint(lineXStart, currentYTop),
-                                                             wxSize(barWidth, shapeHeight)),
-                                                      dc, GetScaling());
-                                shape->SetClippingRect(barRect);
-                                AddObject(std::move(shape));
-                                currentYTop -= stippleImgSize.GetHeight();
-                                }
-                            }
-                        else
-                            {
-                            std::unique_ptr<GraphItems::Polygon> box{ nullptr };
-                            GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
-                            if (bar.GetShape() == BarShape::Rectangle)
-                                {
-                                // polygons don't support drop shadows,
-                                // so need to manually add a shadow as another polygon
-                                if (GetShadowType() != ShadowType::NoDisplay &&
-                                    blockBrush.GetColour().IsOk() &&
-                                    blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
-                                    barBlock.GetLength() > rangeStart)
-                                    {
-                                    // in case this bar is way too small because of the scaling,
-                                    // then don't bother with the shadow
-                                    if (barRect.GetHeight() > scaledShadowOffset)
-                                        {
-                                        const wxPoint shadowPts[4] = {
-                                            barRect.GetRightBottom() +
-                                                wxPoint(scaledShadowOffset, 0),
-                                            barRect.GetRightTop() +
-                                                wxPoint(scaledShadowOffset, scaledShadowOffset),
-                                            barRect.GetRightTop() + wxPoint(0, scaledShadowOffset),
-                                            barRect.GetRightBottom()
-                                        };
-                                        AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
-                                            Wisteria::GraphItems::GraphItemInfo()
-                                                .Pen(wxNullPen)
-                                                .Brush(GraphItemBase::GetShadowColor()),
-                                            shadowPts, std::size(shadowPts)));
-                                        }
-                                    }
+        /* if the bar (or block) is set to cover a specific range
+           (e.g., histograms do this when using cutpoints) then calculate
+           the width of the bar based on the coordinates.
+           Otherwise, just divvy up the bars evenly to fit the plot window.*/
+        if (barBlock.GetCustomWidth().has_value())
+            {
+            wxPoint leftPointOfBar, rightPointOfBar;
+            GetPhysicalCoordinates(
+                bar.GetAxisPosition() - safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
+                barBlock.GetLength() /* offset doesn't matter here */, leftPointOfBar);
+            GetPhysicalCoordinates(bar.GetAxisPosition() +
+                                       safe_divide<double>(barBlock.GetCustomWidth().value(), 2),
+                                   barBlock.GetLength(), rightPointOfBar);
+            barRenderInfo.m_barWidth =
+                ((rightPointOfBar.x - leftPointOfBar.x) - barRenderInfo.m_barSpacing);
+            }
+        else if (bar.GetCustomWidth().has_value())
+            {
+            wxPoint leftPointOfBar, rightPointOfBar;
+            GetPhysicalCoordinates(
+                bar.GetAxisPosition() - safe_divide<double>(bar.GetCustomWidth().value(), 2),
+                barBlock.GetLength() /* offset doesn't matter here */, leftPointOfBar);
+            GetPhysicalCoordinates(bar.GetAxisPosition() +
+                                       safe_divide<double>(bar.GetCustomWidth().value(), 2),
+                                   barBlock.GetLength(), rightPointOfBar);
+            barRenderInfo.m_barWidth =
+                ((rightPointOfBar.x - leftPointOfBar.x) - barRenderInfo.m_barSpacing);
+            }
+        else
+            {
+            const size_t barSlots = GetBarSlotCount();
+            const size_t overallBarSpacing = (barRenderInfo.m_barSpacing * (barSlots - 1));
+            barRenderInfo.m_barWidth = safe_divide<double>(
+                // the plot area, minus the cumulative spaces between their bars
+                // (unless the spacing is too aggressive)
+                GetPlotAreaBoundingBox().GetWidth() -
+                    (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth() + barSlots ?
+                         overallBarSpacing :
+                         0),
+                // add an "extra" bar to account for the half bar space
+                // around the first and last bars
+                (barSlots + 1));
+            }
 
-                                box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                                    Wisteria::GraphItems::GraphItemInfo(
-                                        barBlock.GetSelectionLabel().GetText())
-                                        .Pen(*wxBLACK_PEN)
-                                        .Brush(blockBrush)
-                                        .Scaling(GetScaling())
-                                        .Outline(true, true, true, true)
-                                        .ShowLabelWhenSelected(true),
-                                    boxPoints, std::size(boxPoints));
-                                }
-                            else if (bar.GetShape() == BarShape::Arrow)
-                                {
-                                assert(!(GetShadowType() != ShadowType::NoDisplay) &&
-                                       L"Drop shadow not supported for arrow shape currently.");
-                                barNeckRect.Deflate(
-                                    wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
-                                const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(), 10);
-                                barNeckRect.SetTop(barNeckRect.GetTop() + arrowHeadSize);
-                                barNeckRect.SetHeight(barNeckRect.GetHeight() - arrowHeadSize);
-                                arrowPoints[0] = barNeckRect.GetBottomLeft();
-                                arrowPoints[1] = barNeckRect.GetTopLeft();
-                                arrowPoints[2] = wxPoint(barRect.GetLeft(), barNeckRect.GetTop());
-                                arrowPoints[3] = wxPoint(barRect.GetLeft() +
-                                                             (safe_divide(barRect.GetWidth(), 2)),
-                                                         barRect.GetTop());
-                                arrowPoints[4] = wxPoint(barRect.GetRight(), barNeckRect.GetTop());
-                                arrowPoints[5] = barNeckRect.GetTopRight();
-                                arrowPoints[6] = barNeckRect.GetBottomRight();
-                                box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                                    Wisteria::GraphItems::GraphItemInfo(
-                                        barBlock.GetSelectionLabel().GetText())
-                                        .Pen(*wxBLACK_PEN)
-                                        .Brush(blockBrush)
-                                        .Outline(true, true, true, true)
-                                        .Scaling(GetScaling())
-                                        .ShowLabelWhenSelected(true),
-                                    arrowPoints, std::size(arrowPoints));
-                                }
+        // set the bottom (starting point) of the bar
+        wxCoord lineYStart{ 0 };
+        if (bar.GetCustomScalingAxisStartPosition().has_value())
+            {
+            // top of block
+            GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                   bar.GetCustomScalingAxisStartPosition().value() +
+                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                   barBlockRenderInfo.m_middlePointOfBarEnd);
+            // bottom of block
+            wxPoint customStartPt;
+            GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                   bar.GetCustomScalingAxisStartPosition().value() +
+                                       barBlockRenderInfo.m_axisOffset,
+                                   customStartPt);
+            lineYStart = customStartPt.y;
+            }
+        else
+            {
+            // top of block
+            GetPhysicalCoordinates(bar.GetAxisPosition(),
+                                   GetScalingAxis().GetRange().first +
+                                       barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
+                                   barBlockRenderInfo.m_middlePointOfBarEnd);
+            // bottom of block
+            wxPoint pt;
+            GetPhysicalCoordinates(
+                bar.GetAxisPosition(),
+                GetScalingAxis().GetRange().first + barBlockRenderInfo.m_axisOffset, pt);
+            lineYStart = pt.y;
+            }
 
-                            assert(box);
-                            if (barBlock.GetOutlinePen().IsOk())
-                                {
-                                box->GetPen() = barBlock.GetOutlinePen();
-                                }
-                            else
-                                {
-                                box->GetPen().SetColour(Wisteria::Colors::ColorContrast::IsLight(
-                                                            GetPlotOrCanvasColor()) ?
-                                                            *wxWHITE :
-                                                            *wxBLACK);
-                                }
+        barBlockRenderInfo.m_axisOffset += barBlock.GetLength();
+        const wxCoord barLength = lineYStart - barBlockRenderInfo.m_middlePointOfBarEnd.y;
+        const wxCoord lineYEnd = lineYStart - barLength;
+        const wxCoord lineXStart = barBlockRenderInfo.m_middlePointOfBarEnd.x -
+                                   safe_divide<double>(barRenderInfo.m_barWidth, 2.0);
+        const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
+        barRenderInfo.m_barRect = wxRect(lineXStart, lineYEnd, barRenderInfo.m_barWidth, barLength);
+        wxRect barNeckRect = barRenderInfo.m_barRect;
 
-                            if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
-                                {
-                                box->GetBrush() = wxNullBrush;
-                                box->SetBackgroundFill(Colors::GradientFill(
-                                    blockColor, blockLightenedColor, FillDirection::North));
-                                }
-                            else if (bar.GetEffect() == BoxEffect::FadeFromTopToBottom)
-                                {
-                                box->GetBrush() = wxNullBrush;
-                                box->SetBackgroundFill(Colors::GradientFill(
-                                    blockColor, blockLightenedColor, FillDirection::South));
-                                }
-                            else if (bar.GetEffect() == BoxEffect::Glassy)
-                                {
-                                box->GetBrush() = wxNullBrush;
-                                box->SetBackgroundFill(Colors::GradientFill(blockColor, blockColor,
-                                                                            FillDirection::East));
-                                }
-                            // in case an explicit color is used for the background
-                            // and the brush is perhaps a hatch to be draw on top of it
-                            else if (barBlock.GetColor().IsOk())
-                                {
-                                box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
-                                box->GetPen().SetColour(Wisteria::Colors::ColorContrast::IsLight(
-                                                            GetPlotOrCanvasColor()) ?
-                                                            *wxWHITE :
-                                                            *wxBLACK);
-                                }
+        // if just measuring then we're done
+        if (measureOnly)
+            {
+            return barBlockRenderInfo.m_middlePointOfBarEnd;
+            }
 
-                            // if the bar is totally transparent, then draw a contrasting outline
-                            // (unless the client also made the outline explicitly transparent)
-                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
-                                box->GetPen() != *wxTRANSPARENT_PEN)
-                                {
-                                box->GetPen().SetColour(Wisteria::Colors::ColorContrast::IsLight(
-                                                            GetPlotOrCanvasColor()) ?
-                                                            *wxBLACK :
-                                                            *wxWHITE);
-                                }
+        // draw the bar
+        if (barBlock.IsShown() && barLength > 0)
+            {
+            // if block has a customized opacity, then use that instead of the bar's opacity
+            const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                                            Wisteria::Colors::ColorContrast::ChangeOpacity(
+                                                barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
+                                            barBlock.GetBrush().GetColour();
+            const wxColour blockLightenedColor =
+                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
+                                                                   bar.GetOpacity()) :
+                    barBlock.GetLightenedColor();
+            wxBrush blockBrush{ barBlock.GetBrush() };
+            blockBrush.SetColour(blockColor);
 
-                            // if the box is really thin, then don't use the outline pen on the
-                            // top/bottom
-                            if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
-                                {
-                                box->GetGraphItemInfo().Outline(false, true, false, true);
-                                }
-                            box->SetShape(
-                                (bar.GetEffect() == BoxEffect::WaterColor) ?
-                                    GraphItems::Polygon::PolygonShape::WaterColorRectangle :
-                                (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
-                                    GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
-                                (bar.GetShape() == BarShape::Arrow) ?
-                                    GraphItems::Polygon::PolygonShape::Irregular :
-                                (bar.GetEffect() == BoxEffect::Glassy) ?
-                                    GraphItems::Polygon::PolygonShape::GlassyRectangle :
-                                    GraphItems::Polygon::PolygonShape::Rectangle);
-                            // along with a second coat, we will make the thick water color
-                            // brush use a more opaque value than the system's default
-                            if (bar.GetEffect() == BoxEffect::ThickWaterColor &&
-                                box->GetBrush().IsOk() &&
-                                box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
-                                Settings::GetTranslucencyValue() < 200)
-                                {
-                                box->GetBrush().SetColour(
-                                    Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                        box->GetBrush().GetColour(), 200));
-                                }
-                            // flip outline logic so that we have a hard outline since we are
-                            // not "drawing within the lines" (also, don't clip)
-                            if (bar.GetEffect() == BoxEffect::WaterColor ||
-                                bar.GetEffect() == BoxEffect::ThickWaterColor)
-                                {
-                                // ...but only use hard outline if there isn't a user-defined
-                                // outline
-                                if (!barBlock.GetOutlinePen().IsOk())
-                                    {
-                                    box->GetPen().SetColour(
-                                        Wisteria::Colors::ColorContrast::IsLight(
-                                            GetPlotOrCanvasColor()) ?
-                                            *wxBLACK :
-                                            *wxWHITE);
-                                    }
-                                SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
-                                }
-                            // clip box to not be on top of axes
-                            else
-                                {
-                                box->SetClippingRect(drawArea);
-                                SetDefaultLegendShape(Icons::IconShape::Square);
-                                }
-                            // add the box to the plot item collection
-                            AddObject(std::move(box));
-                            }
-                        }
-                    // add the decal (if there is one)
-                    if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
-                        barBlock.GetDecal().GetText().length())
-                        {
-                        const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
-                        wxRect decalRect(barNeckRect);
-                        decalRect.Deflate(leftPadding, 0);
-
-                        auto decalLabel = std::make_unique<GraphItems::Label>(barBlock.GetDecal());
-                        decalLabel->GetGraphItemInfo()
+            if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
+                {
+                wxRect imgSubRect{ barRenderInfo.m_barRect };
+                imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
+                                  -GetPlotAreaBoundingBox().GetY());
+                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        .Pen(GetImageOutlineColor())
+                        .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
+                    barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
+                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                            ShadowType::RightSideShadow :
+                                            ShadowType::NoDisplay);
+                barImage->SetClippingRect(drawArea);
+                AddObject(std::move(barImage));
+                }
+            else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
+                {
+                const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
+                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        .Pen(GetImageOutlineColor())
+                        .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
+                    Wisteria::GraphItems::Image::CropImageToRect(
+                        barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                        barRenderInfo.m_barRect, true));
+                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                            ShadowType::RightSideAndBottomShadow :
+                                            ShadowType::NoDisplay);
+                barImage->SetClippingRect(drawArea);
+                AddObject(std::move(barImage));
+                }
+            else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
+                {
+                assert((bar.GetShape() == BarShape::Rectangle) &&
+                       L"Non-rectangular shapes not currently "
+                       "supported with stipple bar effect.");
+                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                        .Pen(wxNullPen)
+                        .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
+                    Wisteria::GraphItems::Image::CreateStippledImage(
+                        GetStippleBrush()
+                            .GetBitmap(GetStippleBrush().GetDefaultSize())
+                            .ConvertToImage(),
+                        wxSize(barRenderInfo.m_barWidth, barLength), Orientation::Vertical,
+                        (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4)));
+                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                // note that stipples have their own shadows (a silhouette), so turn off
+                // the Image's native shadow renderer.
+                barImage->SetShadowType(ShadowType::NoDisplay);
+                barImage->SetClippingRect(drawArea);
+                AddObject(std::move(barImage));
+                }
+            else if (bar.GetEffect() == BoxEffect::StippleShape)
+                {
+                assert((bar.GetShape() == BarShape::Rectangle) &&
+                       L"Non-rectangular shapes not currently "
+                       "supported with stipple bar effect.");
+                auto shapeHeight{ barRenderInfo.m_barWidth };
+                // These particular icons are drawn with a ratio where the height
+                // is 75% of the width if the drawing area is square. To prevent
+                // having large gaps between the icons, adjust the height of the icons'
+                // drawing areas so that they aren't drawn inside of squares.
+                if (GetStippleShape() == Icons::IconShape::Car ||
+                    GetStippleShape() == Icons::IconShape::Blackboard)
+                    {
+                    shapeHeight *= 0.75;
+                    }
+                auto currentYTop = lineYStart - shapeHeight;
+                while ((currentYTop + shapeHeight) > lineYEnd)
+                    {
+                    const wxSize stippleImgSize(barRenderInfo.m_barWidth, shapeHeight);
+                    auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
+                        Wisteria::GraphItems::GraphItemInfo{}
                             .Pen(wxNullPen)
-                            .Text(barBlock.ExpandDecalLabel())
-                            .Scaling(GetScaling())
+                            .Brush(GetStippleShapeColor())
+                            .AnchorPoint(wxPoint(lineXStart, currentYTop))
+                            .Anchoring(Anchoring::TopLeftCorner)
                             .DPIScaling(GetDPIScaleFactor())
-                            .Padding(2, 2, 2, 2);
-                        decalLabel->GetFont().MakeSmaller().MakeSmaller();
-                        if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
-                            {
-                            decalLabel->SetBoundingBox(decalRect, dc, GetScaling());
-                            decalLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-                            decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
-                            }
-                        else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
-                            {
-                            decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize());
-                            }
-                        else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
-                            {
-                            decalLabel->SplitTextToFitBoundingBox(
-                                dc, wxSize(decalRect.GetWidth(), std::numeric_limits<int>::max()));
-                            }
-                        // if drawing as-is, then draw a box around the label
-                        // if it's larger than the parent block
-                        else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
-                            {
-                            const auto actualDecalRect = decalLabel->GetBoundingBox(dc);
-                            if (actualDecalRect.GetWidth() - ScaleToScreenAndCanvas(1) >
-                                    decalRect.GetWidth() ||
-                                actualDecalRect.GetHeight() - ScaleToScreenAndCanvas(1) >
-                                    decalRect.GetHeight())
-                                {
-                                decalLabel->GetGraphItemInfo().FontBackgroundColor(
-                                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                        decalLabel->GetFontColor()));
-                                }
-                            }
-                        // make multiline decals a little more compact so that they
-                        // have a better chance of fitting
-                        decalLabel->SetLineSpacing(0);
-                        decalLabel->SetShadowType(ShadowType::NoDisplay);
-                        decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
-                        decalLabel->SetTextOrientation(Orientation::Horizontal);
-                        decalLabel->SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
-                        // allow selecting the bar underneath this label
-                        decalLabel->SetSelectable(false);
-                        // if font is way too small, then show it as a label
-                        // overlapping the bar instead of a decal.
-                        if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
-                            decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
-                            decalLabel->GetFont().GetPointSize() < defaultFontPointSize / 2)
-                            {
-                            decalLabel->GetFont().SetPointSize(defaultFontPointSize);
-                            decalLabel->SetFontColor(*wxBLACK);
-                            decalLabel->GetPen().SetColour(*wxBLACK);
-                            decalLabel->SetFontBackgroundColor(*wxWHITE);
-                            }
-                        const wxRect labelBoundingBox = decalLabel->GetBoundingBox(dc);
-                        if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushBottom)
-                            {
-                            decalLabel->SetAnchorPoint(wxPoint(
-                                (barNeckRect.GetLeft() +
-                                 safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(),
-                                             2)),
-                                (barNeckRect.GetBottom() - leftPadding)));
-                            }
-                        else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
-                            {
-                            decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                            decalLabel->SetAnchorPoint(wxPoint(
-                                (barNeckRect.GetLeft() +
-                                 safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(),
-                                             2)),
-                                (barNeckRect.GetTop() +
-                                 safe_divide(barNeckRect.GetHeight() - labelBoundingBox.GetHeight(),
-                                             2))));
-                            }
-                        else // flush top
-                            {
-                            decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                            decalLabel->SetAnchorPoint(wxPoint(
-                                (barNeckRect.GetLeft() +
-                                 safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(),
-                                             2)),
-                                (barNeckRect.GetTop() + leftPadding)));
-                            }
-                        // if drawing a color and hatch pattern, then show the decal with an outline
-                        // to make it easier to read
-                        if (bar.GetEffect() == BoxEffect::Solid && barBlock.GetColor().IsOk() &&
-                            barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
-                            {
-                            decalLabel->GetPen().SetColour(*wxBLACK);
-                            decalLabel->SetFontColor(*wxBLACK);
-                            decalLabel->SetFontBackgroundColor(*wxWHITE);
-                            }
-                        decals.push_back(std::move(decalLabel));
-                        }
+                            .Scaling(GetScaling()),
+                        GetStippleShape(), stippleImgSize);
+                    shape->SetBoundingBox(wxRect(wxPoint(lineXStart, currentYTop),
+                                                 wxSize(barRenderInfo.m_barWidth, shapeHeight)),
+                                          barRenderInfo.m_dc, GetScaling());
+                    shape->SetClippingRect(barRenderInfo.m_barRect);
+                    AddObject(std::move(shape));
+                    currentYTop -= stippleImgSize.GetHeight();
                     }
                 }
-
-            bar.GetLabel().SetScaling(GetScaling());
-            bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-            bar.GetLabel().SetShadowType(GetShadowType());
-            bar.GetLabel().SetFontColor(GetBarAxis().GetFontColor());
-            bar.GetLabel().SetFont(GetBarAxis().GetFont());
-
-            // after all blocks are built, add the label at the end of the full bar
-            if (GetBarOrientation() == Orientation::Horizontal && bar.GetLabel().IsShown())
+            else
                 {
-                auto bBox = bar.GetLabel().GetBoundingBox(dc);
-                bar.GetLabel().SetAnchorPoint(
-                    wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (bBox.GetWidth() / 2),
-                            middlePointOfBarEnd.y));
-
-                auto barLabel = std::make_unique<GraphItems::Label>(bar.GetLabel());
-                bBox = barLabel->GetBoundingBox(dc);
-
-                if (!Wisteria::GraphItems::Polygon::IsRectInsideRect(bBox,
-                                                                     GetPlotAreaBoundingBox()))
+                std::unique_ptr<GraphItems::Polygon> box{ nullptr };
+                GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
+                if (bar.GetShape() == BarShape::Rectangle)
                     {
-                    barLabel->Offset((GetPlotAreaBoundingBox().GetRight() - bBox.GetRight()), 0);
-                    bBox.Offset((GetPlotAreaBoundingBox().GetRight() - bBox.GetRight()) +
-                                    ScaleToScreenAndCanvas(2),
-                                0);
-                    if (barRect.Intersects(bBox))
+                    // polygons don't support drop shadows,
+                    // so need to manually add a shadow as another polygon
+                    if (GetShadowType() != ShadowType::NoDisplay && blockBrush.GetColour().IsOk() &&
+                        blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
+                        barBlock.GetLength() > rangeStart)
                         {
-                        barLabel->SetPadding(2, 2, 2, 2);
-                        barLabel->GetPen() = *wxBLACK_PEN;
-                        barLabel->SetFontBackgroundColor(
-                            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                barLabel->GetFontColor()));
+                        // in case this bar is way too small because of the scaling,
+                        // then don't bother with the shadow
+                        if (barRenderInfo.m_barRect.GetHeight() >
+                            barRenderInfo.m_scaledShadowOffset)
+                            {
+                            const wxPoint shadowPts[4] = {
+                                barRenderInfo.m_barRect.GetRightBottom() +
+                                    wxPoint(barRenderInfo.m_scaledShadowOffset, 0),
+                                barRenderInfo.m_barRect.GetRightTop() +
+                                    wxPoint(barRenderInfo.m_scaledShadowOffset,
+                                            barRenderInfo.m_scaledShadowOffset),
+                                barRenderInfo.m_barRect.GetRightTop() +
+                                    wxPoint(0, barRenderInfo.m_scaledShadowOffset),
+                                barRenderInfo.m_barRect.GetRightBottom()
+                            };
+                            AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
+                                Wisteria::GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
+                                    GraphItemBase::GetShadowColor()),
+                                shadowPts, std::size(shadowPts)));
+                            }
                         }
+
+                    box = std::make_unique<Wisteria::GraphItems::Polygon>(
+                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                            .Pen(*wxBLACK_PEN)
+                            .Brush(blockBrush)
+                            .Scaling(GetScaling())
+                            .Outline(true, true, true, true)
+                            .ShowLabelWhenSelected(true),
+                        boxPoints, std::size(boxPoints));
+                    }
+                else if (bar.GetShape() == BarShape::Arrow)
+                    {
+                    assert(!(GetShadowType() != ShadowType::NoDisplay) &&
+                           L"Drop shadow not supported for arrow shape currently.");
+                    barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
+                    const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(), 10);
+                    barNeckRect.SetTop(barNeckRect.GetTop() + arrowHeadSize);
+                    barNeckRect.SetHeight(barNeckRect.GetHeight() - arrowHeadSize);
+                    arrowPoints[0] = barNeckRect.GetBottomLeft();
+                    arrowPoints[1] = barNeckRect.GetTopLeft();
+                    arrowPoints[2] =
+                        wxPoint(barRenderInfo.m_barRect.GetLeft(), barNeckRect.GetTop());
+                    arrowPoints[3] =
+                        wxPoint(barRenderInfo.m_barRect.GetLeft() +
+                                    (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
+                                barRenderInfo.m_barRect.GetTop());
+                    arrowPoints[4] =
+                        wxPoint(barRenderInfo.m_barRect.GetRight(), barNeckRect.GetTop());
+                    arrowPoints[5] = barNeckRect.GetTopRight();
+                    arrowPoints[6] = barNeckRect.GetBottomRight();
+                    box = std::make_unique<Wisteria::GraphItems::Polygon>(
+                        Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
+                            .Pen(*wxBLACK_PEN)
+                            .Brush(blockBrush)
+                            .Outline(true, true, true, true)
+                            .Scaling(GetScaling())
+                            .ShowLabelWhenSelected(true),
+                        arrowPoints, std::size(arrowPoints));
                     }
 
-                AddObject(std::move(barLabel));
-                middlePointOfBarEnd.x += bBox.GetWidth() + (labelSpacingFromLine * 2);
-                }
-            else if (GetBarOrientation() == Orientation::Vertical && bar.GetLabel().IsShown())
-                {
-                auto bBox = bar.GetLabel().GetBoundingBox(dc);
-                bar.GetLabel().SetAnchorPoint(wxPoint(
-                    middlePointOfBarEnd.x,
-                    middlePointOfBarEnd.y - (labelSpacingFromLine + (bBox.GetHeight() / 2))));
-
-                auto barLabel = std::make_unique<GraphItems::Label>(bar.GetLabel());
-                bBox = barLabel->GetBoundingBox(dc);
-
-                if (!Wisteria::GraphItems::Polygon::IsRectInsideRect(bBox,
-                                                                     GetPlotAreaBoundingBox()))
+                assert(box);
+                if (barBlock.GetOutlinePen().IsOk())
                     {
-                    barLabel->Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()));
-                    bBox.Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()) -
-                                       // wiggle room before adding outlining
-                                       // that will stand out from the other labels
-                                       ScaleToScreenAndCanvas(2));
-                    if (barRect.Intersects(bBox))
-                        {
-                        barLabel->SetPadding(2, 2, 2, 2);
-                        barLabel->GetPen() = *wxBLACK_PEN;
-                        barLabel->SetFontBackgroundColor(
-                            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                barLabel->GetFontColor()));
-                        }
+                    box->GetPen() = barBlock.GetOutlinePen();
+                    }
+                else
+                    {
+                    box->GetPen().SetColour(
+                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                            *wxWHITE :
+                            *wxBLACK);
                     }
 
-                AddObject(std::move(barLabel));
-                middlePointOfBarEnd.y -= bBox.GetHeight() + (labelSpacingFromLine * 2);
+                if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
+                    {
+                    box->GetBrush() = wxNullBrush;
+                    box->SetBackgroundFill(Colors::GradientFill(blockColor, blockLightenedColor,
+                                                                FillDirection::North));
+                    }
+                else if (bar.GetEffect() == BoxEffect::FadeFromTopToBottom)
+                    {
+                    box->GetBrush() = wxNullBrush;
+                    box->SetBackgroundFill(Colors::GradientFill(blockColor, blockLightenedColor,
+                                                                FillDirection::South));
+                    }
+                else if (bar.GetEffect() == BoxEffect::Glassy)
+                    {
+                    box->GetBrush() = wxNullBrush;
+                    box->SetBackgroundFill(
+                        Colors::GradientFill(blockColor, blockColor, FillDirection::East));
+                    }
+                // in case an explicit color is used for the background
+                // and the brush is perhaps a hatch to be draw on top of it
+                else if (barBlock.GetColor().IsOk())
+                    {
+                    box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
+                    box->GetPen().SetColour(
+                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                            *wxWHITE :
+                            *wxBLACK);
+                    }
+
+                // if the bar is totally transparent, then draw a contrasting outline
+                // (unless the client also made the outline explicitly transparent)
+                if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
+                    box->GetPen() != *wxTRANSPARENT_PEN)
+                    {
+                    box->GetPen().SetColour(
+                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                            *wxBLACK :
+                            *wxWHITE);
+                    }
+
+                // if the box is really thin, then don't use the outline pen on the
+                // top/bottom
+                if (DownscaleFromScreenAndCanvas(barRenderInfo.m_barRect.GetWidth()) < 5)
+                    {
+                    box->GetGraphItemInfo().Outline(false, true, false, true);
+                    }
+                box->SetShape((bar.GetEffect() == BoxEffect::WaterColor) ?
+                                  GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                              (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
+                                  GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
+                              (bar.GetShape() == BarShape::Arrow) ?
+                                  GraphItems::Polygon::PolygonShape::Irregular :
+                              (bar.GetEffect() == BoxEffect::Glassy) ?
+                                  GraphItems::Polygon::PolygonShape::GlassyRectangle :
+                                  GraphItems::Polygon::PolygonShape::Rectangle);
+                // along with a second coat, we will make the thick water color
+                // brush use a more opaque value than the system's default
+                if (bar.GetEffect() == BoxEffect::ThickWaterColor && box->GetBrush().IsOk() &&
+                    box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                    Settings::GetTranslucencyValue() < 200)
+                    {
+                    box->GetBrush().SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(
+                        box->GetBrush().GetColour(), 200));
+                    }
+                // flip outline logic so that we have a hard outline since we are
+                // not "drawing within the lines" (also, don't clip)
+                if (bar.GetEffect() == BoxEffect::WaterColor ||
+                    bar.GetEffect() == BoxEffect::ThickWaterColor)
+                    {
+                    // ...but only use hard outline if there isn't a user-defined outline
+                    if (!barBlock.GetOutlinePen().IsOk())
+                        {
+                        box->GetPen().SetColour(
+                            Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                *wxBLACK :
+                                *wxWHITE);
+                        }
+                    SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
+                    }
+                // clip box to not be on top of axes
+                else
+                    {
+                    box->SetClippingRect(drawArea);
+                    SetDefaultLegendShape(Icons::IconShape::Square);
+                    }
+                // add the box to the plot item collection
+                AddObject(std::move(box));
                 }
-
-            return middlePointOfBarEnd;
-        };
-
-        // scale the common image to the plot area's size
-        scaledCommonImg = GetCommonBoxImage().IsOk() ?
-                              Wisteria::GraphItems::Image::CropImageToRect(
-                                  GetCommonBoxImage()
-                                      .GetBitmap(GetCommonBoxImage().GetDefaultSize())
-                                      .ConvertToImage(),
-                                  GetPlotAreaBoundingBox().GetSize(), true) :
-                              wxNullImage;
-
-        // draw the bars
-        std::vector<wxPoint> barMiddleEndPositions;
-        barMiddleEndPositions.reserve(GetBars().size());
-        for (size_t i = 0; i < GetBars().size(); ++i)
+            }
+        // add the decal (if there is one)
+        if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
+            !barBlock.GetDecal().GetText().empty())
             {
-            // keep track of where each bar ends
-            barMiddleEndPositions.push_back(drawBar(GetBars()[i], false, i));
+            const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
+            wxRect decalRect(barNeckRect);
+            decalRect.Deflate(leftPadding, 0);
+
+            auto decalLabel = std::make_unique<GraphItems::Label>(barBlock.GetDecal());
+            decalLabel->GetGraphItemInfo()
+                .Pen(wxNullPen)
+                .Text(barBlock.ExpandDecalLabel())
+                .Scaling(GetScaling())
+                .DPIScaling(GetDPIScaleFactor())
+                .Padding(2, 2, 2, 2);
+            decalLabel->GetFont().MakeSmaller().MakeSmaller();
+            if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
+                {
+                decalLabel->SetBoundingBox(decalRect, barRenderInfo.m_dc, GetScaling());
+                decalLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                }
+            else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
+                {
+                decalLabel->SplitTextToFitBoundingBox(barRenderInfo.m_dc, decalRect.GetSize());
+                }
+            else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
+                {
+                decalLabel->SplitTextToFitBoundingBox(
+                    barRenderInfo.m_dc,
+                    wxSize(decalRect.GetWidth(), std::numeric_limits<int>::max()));
+                }
+            // if drawing as-is, then draw a box around the label
+            // if it's larger than the parent block
+            else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
+                {
+                const auto actualDecalRect = decalLabel->GetBoundingBox(barRenderInfo.m_dc);
+                if (actualDecalRect.GetWidth() - ScaleToScreenAndCanvas(1) > decalRect.GetWidth() ||
+                    actualDecalRect.GetHeight() - ScaleToScreenAndCanvas(1) > decalRect.GetHeight())
+                    {
+                    decalLabel->GetGraphItemInfo().FontBackgroundColor(
+                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            decalLabel->GetFontColor()));
+                    }
+                }
+            // make multiline decals a little more compact so that they
+            // have a better chance of fitting
+            decalLabel->SetLineSpacing(0);
+            decalLabel->SetShadowType(ShadowType::NoDisplay);
+            decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
+            decalLabel->SetTextOrientation(Orientation::Horizontal);
+            decalLabel->SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
+            // allow selecting the bar underneath this label
+            decalLabel->SetSelectable(false);
+            // if font is way too small, then show it as a label
+            // overlapping the bar instead of a decal.
+            if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
+                decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
+                decalLabel->GetFont().GetPointSize() < barRenderInfo.m_defaultFontPointSize / 2)
+                {
+                decalLabel->GetFont().SetPointSize(barRenderInfo.m_defaultFontPointSize);
+                decalLabel->SetFontColor(*wxBLACK);
+                decalLabel->GetPen().SetColour(*wxBLACK);
+                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                }
+            const wxRect labelBoundingBox = decalLabel->GetBoundingBox(barRenderInfo.m_dc);
+            if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushBottom)
+                {
+                decalLabel->SetAnchorPoint(
+                    wxPoint((barNeckRect.GetLeft() +
+                             safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
+                            (barNeckRect.GetBottom() - leftPadding)));
+                }
+            else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
+                {
+                decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                decalLabel->SetAnchorPoint(wxPoint(
+                    (barNeckRect.GetLeft() +
+                     safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
+                    (barNeckRect.GetTop() +
+                     safe_divide(barNeckRect.GetHeight() - labelBoundingBox.GetHeight(), 2))));
+                }
+            else // flush top
+                {
+                decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
+                decalLabel->SetAnchorPoint(
+                    wxPoint((barNeckRect.GetLeft() +
+                             safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
+                            (barNeckRect.GetTop() + leftPadding)));
+                }
+            // if drawing a color and hatch pattern, then show the decal with an outline
+            // to make it easier to read
+            if (bar.GetEffect() == BoxEffect::Solid && barBlock.GetColor().IsOk() &&
+                barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
+                {
+                decalLabel->GetPen().SetColour(*wxBLACK);
+                decalLabel->SetFontColor(*wxBLACK);
+                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                }
+            barRenderInfo.m_decals.push_back(std::move(decalLabel));
             }
 
-        // draw the decals on top of the blocks
-        for (auto& decal : decals)
-            {
-            AddObject(std::move(decal));
-            }
-        decals.clear();
+        return barBlockRenderInfo.m_middlePointOfBarEnd;
+        }
 
-        // add the brackets and bars for any bar groups
+    //-----------------------------------
+    wxPoint BarChart::DrawBar(Bar & bar, size_t barIndex, BarRenderInfo& barRenderInfo,
+                              const bool measureOnly)
+        {
+        BarBlockRenderInfo barBlockRenderInfo{};
+
+        wxRect drawArea{ GetPlotAreaBoundingBox() };
+        if (GetLeftYAxis().GetPen().IsOk())
+            {
+            drawArea.SetWidth(drawArea.GetWidth() -
+                              ScaleToScreenAndCanvas(GetLeftYAxis().GetPen().GetWidth()));
+            drawArea.SetLeft(drawArea.GetLeft() +
+                             ScaleToScreenAndCanvas(GetLeftYAxis().GetPen().GetWidth()));
+            }
+        if (GetBottomXAxis().GetPen().IsOk())
+            {
+            drawArea.SetHeight(drawArea.GetHeight() -
+                               ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
+            drawArea.SetTop(drawArea.GetTop() +
+                            ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
+            }
+
+        for (const auto& barBlock : bar.GetBlocks())
+            {
+            if (GetBarOrientation() == Orientation::Horizontal)
+                {
+                DrawBarBlockHorizontal(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo,
+                                       drawArea, measureOnly);
+                }
+            else
+                {
+                DrawBarBlockVertical(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo,
+                                     drawArea, measureOnly);
+                }
+            }
+
+        bar.GetLabel().SetScaling(GetScaling());
+        bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
+        bar.GetLabel().SetShadowType(GetShadowType());
+        bar.GetLabel().SetFontColor(GetBarAxis().GetFontColor());
+        bar.GetLabel().SetFont(GetBarAxis().GetFont());
+
+        // after all blocks are built, add the label at the end of the full bar
+        if (GetBarOrientation() == Orientation::Horizontal && bar.GetLabel().IsShown())
+            {
+            auto bBox = bar.GetLabel().GetBoundingBox(barRenderInfo.m_dc);
+            bar.GetLabel().SetAnchorPoint(wxPoint(barBlockRenderInfo.m_middlePointOfBarEnd.x +
+                                                      barRenderInfo.m_labelSpacingFromLine +
+                                                      (bBox.GetWidth() / 2),
+                                                  barBlockRenderInfo.m_middlePointOfBarEnd.y));
+
+            auto barLabel = std::make_unique<GraphItems::Label>(bar.GetLabel());
+            bBox = barLabel->GetBoundingBox(barRenderInfo.m_dc);
+
+            if (!Wisteria::GraphItems::Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()))
+                {
+                barLabel->Offset((GetPlotAreaBoundingBox().GetRight() - bBox.GetRight()), 0);
+                bBox.Offset((GetPlotAreaBoundingBox().GetRight() - bBox.GetRight()) +
+                                ScaleToScreenAndCanvas(2),
+                            0);
+                if (barRenderInfo.m_barRect.Intersects(bBox))
+                    {
+                    barLabel->SetPadding(2, 2, 2, 2);
+                    barLabel->GetPen() = *wxBLACK_PEN;
+                    barLabel->SetFontBackgroundColor(
+                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            barLabel->GetFontColor()));
+                    }
+                }
+
+            AddObject(std::move(barLabel));
+            barBlockRenderInfo.m_middlePointOfBarEnd.x +=
+                bBox.GetWidth() + (barRenderInfo.m_labelSpacingFromLine * 2);
+            }
+        else if (GetBarOrientation() == Orientation::Vertical && bar.GetLabel().IsShown())
+            {
+            auto bBox = bar.GetLabel().GetBoundingBox(barRenderInfo.m_dc);
+            bar.GetLabel().SetAnchorPoint(
+                wxPoint(barBlockRenderInfo.m_middlePointOfBarEnd.x,
+                        barBlockRenderInfo.m_middlePointOfBarEnd.y -
+                            (barRenderInfo.m_labelSpacingFromLine + (bBox.GetHeight() / 2))));
+
+            auto barLabel = std::make_unique<GraphItems::Label>(bar.GetLabel());
+            bBox = barLabel->GetBoundingBox(barRenderInfo.m_dc);
+
+            if (!Wisteria::GraphItems::Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()))
+                {
+                barLabel->Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()));
+                bBox.Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()) -
+                                   // wiggle room before adding outlining
+                                   // that will stand out from the other labels
+                                   ScaleToScreenAndCanvas(2));
+                if (barRenderInfo.m_barRect.Intersects(bBox))
+                    {
+                    barLabel->SetPadding(2, 2, 2, 2);
+                    barLabel->GetPen() = *wxBLACK_PEN;
+                    barLabel->SetFontBackgroundColor(
+                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            barLabel->GetFontColor()));
+                    }
+                }
+
+            AddObject(std::move(barLabel));
+            barBlockRenderInfo.m_middlePointOfBarEnd.y -=
+                bBox.GetHeight() + (barRenderInfo.m_labelSpacingFromLine * 2);
+            }
+
+        return barBlockRenderInfo.m_middlePointOfBarEnd;
+        }
+
+    //-----------------------------------
+    void BarChart::DrawBarGroups(BarRenderInfo & barRenderInfo)
+        {
         std::optional<wxCoord> maxBracketStartPos{ 0.0 };
         for (auto& barGroup : m_barGroups)
             {
@@ -2026,7 +1971,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
             for (size_t i = startPos; i <= endPos; ++i)
                 {
-                const wxPoint brackPos = barMiddleEndPositions[i];
+                const wxPoint brackPos = barRenderInfo.m_barMiddleEndPositions[i];
                 if (GetBarOrientation() == Orientation::Horizontal)
                     {
                     maxBracketStartPos =
@@ -2046,8 +1991,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
         for (const auto& barGroup : m_barGroups)
             {
-            wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
-            wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
+            wxPoint brackPos1 =
+                barRenderInfo.m_barMiddleEndPositions[barGroup.m_barPositions.first];
+            wxPoint brackPos2 =
+                barRenderInfo.m_barMiddleEndPositions[barGroup.m_barPositions.second];
             double grandTotal{ 0 };
             // the bars specified in the group may be in different order, so use
             // min and max to make sure you are using the true start and end bars
@@ -2082,21 +2029,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         (brackPos1.y < brackPos2.y) ?
                             safe_divide<double>(
                                 GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
-                                    barWidth),
+                                    barRenderInfo.m_barWidth),
                                 2) :
                             safe_divide<double>(
                                 GetBars()[barGroup.m_barPositions.second].GetCustomWidth().value_or(
-                                    barWidth),
+                                    barRenderInfo.m_barWidth),
                                 2);
                     const auto barsWidth =
                         std::abs(brackPos1.y - brackPos2.y) +
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
-                                barWidth),
+                                barRenderInfo.m_barWidth),
                             2) +
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.second].GetCustomWidth().value_or(
-                                barWidth),
+                                barRenderInfo.m_barWidth),
                             2);
 
                     const auto yPos = std::min(brackPos1.y, brackPos2.y) +
@@ -2149,9 +2096,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 .Anchoring(Anchoring::TopLeftCorner),
                             Icons::IconShape::RightCurlyBrace,
                             wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)), nullptr));
-                        drawBar(theBar, false, 0);
+                        DrawBar(theBar, 0, barRenderInfo);
                         // cppcheck-suppress knownEmptyContainer
-                        for (auto& decal : decals)
+                        for (auto& decal : barRenderInfo.m_decals)
                             {
                             AddObject(std::move(decal));
                             }
@@ -2177,21 +2124,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         (brackPos1.x < brackPos2.x) ?
                             safe_divide<double>(
                                 GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
-                                    barWidth),
+                                    barRenderInfo.m_barWidth),
                                 2) :
                             safe_divide<double>(
                                 GetBars()[barGroup.m_barPositions.second].GetCustomWidth().value_or(
-                                    barWidth),
+                                    barRenderInfo.m_barWidth),
                                 2);
                     const auto barsWidth =
                         std::abs(brackPos1.x - brackPos2.x) +
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
-                                barWidth),
+                                barRenderInfo.m_barWidth),
                             2) +
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.second].GetCustomWidth().value_or(
-                                barWidth),
+                                barRenderInfo.m_barWidth),
                             2);
 
                     const auto xPos = std::min(brackPos1.x, brackPos2.x) +
@@ -2245,9 +2192,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 .Anchoring(Anchoring::TopLeftCorner),
                             Icons::IconShape::TopCurlyBrace,
                             wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth), nullptr));
-                        drawBar(theBar, false, 0);
+                        DrawBar(theBar, 0, barRenderInfo);
                         // cppcheck-suppress knownEmptyContainer
-                        for (auto& decal : decals)
+                        for (auto& decal : barRenderInfo.m_decals)
                             {
                             AddObject(std::move(decal));
                             }
@@ -2255,5 +2202,58 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 }
             }
+        }
+
+    //-----------------------------------
+    void BarChart::RecalcSizes(wxDC & dc)
+        {
+        Graph2D::RecalcSizes(dc);
+
+        // if no bars then just draw a blank 10x10 grid
+        if (GetBars().empty())
+            {
+            GetRightYAxis().Reset();
+            GetBarAxis().Reset();
+            GetBarAxis().SetRange(0, 10, 0, 1, 1);
+            GetTopXAxis().Reset();
+            GetScalingAxis().Reset();
+            GetScalingAxis().SetRange(0, 10, 0, 1, 1);
+            return;
+            }
+
+        BarRenderInfo barRenderInfo{ dc };
+
+        barRenderInfo.m_barSpacing = m_includeSpacesBetweenBars ? ScaleToScreenAndCanvas(10) : 0;
+        barRenderInfo.m_scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
+        barRenderInfo.m_labelSpacingFromLine = ScaleToScreenAndCanvas(5);
+        barRenderInfo.m_defaultFontPointSize =
+            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
+        // scale the common image to the plot area's size
+        barRenderInfo.m_scaledCommonImg =
+            GetCommonBoxImage().IsOk() ? Wisteria::GraphItems::Image::CropImageToRect(
+                                             GetCommonBoxImage()
+                                                 .GetBitmap(GetCommonBoxImage().GetDefaultSize())
+                                                 .ConvertToImage(),
+                                             GetPlotAreaBoundingBox().GetSize(), true) :
+                                         wxNullImage;
+
+        // draw the bars
+        barRenderInfo.m_barMiddleEndPositions.reserve(GetBars().size());
+        for (size_t i = 0; i < GetBars().size(); ++i)
+            {
+            // keep track of where each bar ends
+            barRenderInfo.m_barMiddleEndPositions.push_back(
+                DrawBar(GetBars()[i], i, barRenderInfo));
+            }
+
+        // draw the decals on top of the blocks
+        for (auto& decal : barRenderInfo.m_decals)
+            {
+            AddObject(std::move(decal));
+            }
+        barRenderInfo.m_decals.clear();
+
+        // add the brackets and bars for any bar groups
+        DrawBarGroups(barRenderInfo);
         }
     }
