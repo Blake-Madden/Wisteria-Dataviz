@@ -24,10 +24,7 @@ namespace Wisteria::Graphs
             even have brush, stipple, or image patterns drawn on them.
             (These blocks are essentially bar chart blocks and inherit all the functionality
              from there.)
-
-         | Example |
-         | :-------------- |
-         | @image html ScaleChart.svg width=90% |
+        @image html ScaleChart.svg width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset where one continuous column contains the values(s).
@@ -231,6 +228,7 @@ namespace Wisteria::Graphs
                 Along with color, this should contain a decal label.
             @param scalingAxisStart Where along the scaling axis the bar should start.\n
                 This is optional, and the default will be to start where the axis starts.
+            @param header An optional label to display above the scale.
             @warning The default scaling axis is 0-100. If you intend to change that,
                 then do that by calling `GetScalingAxis().SetRange()` before any calls
                 to this function.

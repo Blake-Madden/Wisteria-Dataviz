@@ -588,6 +588,7 @@ namespace Wisteria::GraphItems
             return m_renderer;
             }
 
+        /// @returns The shape's size in device independent pixels.
         [[nodiscard]]
         wxSize GetShapeSizeDIPS() const noexcept
             {
