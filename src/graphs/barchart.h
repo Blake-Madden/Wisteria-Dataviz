@@ -1383,11 +1383,11 @@ namespace Wisteria::Graphs
 
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
                         const bool measureOnly = false);
-        wxPoint DrawBarBlockHorizontal(Bar& bar, size_t barIndex, const BarBlock& barBlock,
+        wxPoint DrawBarBlockHorizontal(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
                                        BarRenderInfo& barRenderInfo,
                                        BarBlockRenderInfo& barBlockRenderInfo,
                                        const wxRect& drawArea, const bool measureOnly = false);
-        wxPoint DrawBarBlockVertical(Bar& bar, size_t barIndex, const BarBlock& barBlock,
+        wxPoint DrawBarBlockVertical(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
                                      BarRenderInfo& barRenderInfo,
                                      BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
                                      const bool measureOnly = false);
