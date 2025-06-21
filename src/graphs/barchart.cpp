@@ -848,11 +848,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
-    wxPoint BarChart::DrawBarBlockHorizontal(
-        const Bar& bar, size_t barIndex, const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
-        BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
-        const bool measureOnly /*= false*/)
+    wxPoint BarChart::DrawBarBlockHorizontal(const Bar& bar, const size_t barIndex,
+                                             const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
+                                             BarBlockRenderInfo& barBlockRenderInfo,
+                                             const bool measureOnly /*= false*/)
         {
+        const wxRect drawArea{ GetDrawArea() };
+
         wxPoint arrowPoints[7]{ { 0, 0 } };
         wxPoint boxPoints[4]{ { 0, 0 } };
 
@@ -1356,12 +1358,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
-    wxPoint BarChart::DrawBarBlockVertical(
-        const Bar& bar, size_t barIndex, const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
-        BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
-        const bool measureOnly /*= false*/)
-
+    wxPoint BarChart::DrawBarBlockVertical(const Bar& bar, const size_t barIndex,
+                                           const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
+                                           BarBlockRenderInfo& barBlockRenderInfo,
+                                           const bool measureOnly /*= false*/)
         {
+        const wxRect drawArea{ GetDrawArea() };
+
         wxPoint boxPoints[4]{ { 0, 0 } };
         wxPoint arrowPoints[7]{ { 0, 0 } };
 
@@ -1848,11 +1851,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
-    wxPoint BarChart::DrawBar(Bar & bar, size_t barIndex, BarRenderInfo& barRenderInfo,
-                              const bool measureOnly)
+    wxRect BarChart::GetDrawArea() const
         {
-        BarBlockRenderInfo barBlockRenderInfo{};
-
         wxRect drawArea{ GetPlotAreaBoundingBox() };
         if (GetLeftYAxis().GetPen().IsOk())
             {
@@ -1868,18 +1868,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             drawArea.SetTop(drawArea.GetTop() +
                             ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
             }
+        return drawArea;
+        }
+
+    //-----------------------------------
+    wxPoint BarChart::DrawBar(Bar & bar, const size_t barIndex, BarRenderInfo& barRenderInfo,
+                              const bool measureOnly)
+        {
+        BarBlockRenderInfo barBlockRenderInfo{};
 
         for (const auto& barBlock : bar.GetBlocks())
             {
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
                 DrawBarBlockHorizontal(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo,
-                                       drawArea, measureOnly);
+                                       measureOnly);
                 }
             else
                 {
                 DrawBarBlockVertical(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo,
-                                     drawArea, measureOnly);
+                                     measureOnly);
                 }
             }
 

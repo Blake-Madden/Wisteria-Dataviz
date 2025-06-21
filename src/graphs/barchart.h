@@ -1381,17 +1381,20 @@ namespace Wisteria::Graphs
             wxCoord m_axisOffset{ 0 };
             };
 
-        wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
+        wxPoint DrawBar(Bar& bar, const size_t barIndex, BarRenderInfo& barRenderInfo,
                         const bool measureOnly = false);
-        wxPoint DrawBarBlockHorizontal(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
-                                       BarRenderInfo& barRenderInfo,
+        wxPoint DrawBarBlockHorizontal(const Bar& bar, const size_t barIndex,
+                                       const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
                                        BarBlockRenderInfo& barBlockRenderInfo,
-                                       const wxRect& drawArea, const bool measureOnly = false);
-        wxPoint DrawBarBlockVertical(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
-                                     BarRenderInfo& barRenderInfo,
-                                     BarBlockRenderInfo& barBlockRenderInfo, const wxRect& drawArea,
+                                       const bool measureOnly = false);
+        wxPoint DrawBarBlockVertical(const Bar& bar, const size_t barIndex,
+                                     const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
+                                     BarBlockRenderInfo& barBlockRenderInfo,
                                      const bool measureOnly = false);
         void DrawBarGroups(BarRenderInfo& barRenderInfo);
+
+        [[nodiscard]]
+        wxRect GetDrawArea() const;
 
         void AdjustScalingAxisFromBarLength(const double barLength);
         void AdjustScalingAxisFromBarGroups();
