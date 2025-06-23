@@ -752,9 +752,9 @@ namespace Wisteria::GraphItems
                 If empty, then the label will be @c value formatted into a string with the current
                 precision.
             @note If a value is already at this position, then this function is ignored.
-            @warning Call `GetAxisPoints().clear()` prior to calling this to clear any current points.
-                Also, call AdjustRangeToLabels() after you are finished adding your axis values
-                to adjust the range.
+            @warning Call `GetAxisPoints().clear()` prior to calling this to clear any current
+                points. Also, call AdjustRangeToLabels() after you are finished adding your
+                axis values to adjust the range.
             @sa AdjustRangeToLabels().*/
         void AddUnevenAxisPoint(const double value, const wxString& label = wxString{});
         /// @brief Adjusts the start and end of the range based on min and max range of the labels.
@@ -1893,16 +1893,16 @@ namespace Wisteria::GraphItems
             CalcTickMarkPositions();
             }
 
-        /** @brief Sets the physical start and end points of the axis (relative to the parent
-           canvas).
+        /** @brief Sets the physical start and end points of the axis (relative to the
+                parent canvas).
             @param pt1 The first point.
             @param pt2 The second point.*/
         void SetPoints(const wxPoint pt1, const wxPoint pt2, wxDC& dc);
 
         /// @returns The top physical (relative to the parent canvas) point of the axis line
         ///     (for vertical axes).
-        /// @note This is always the top-most point vertically, regardless of whether the axis is
-        /// reversed.
+        /// @note This is always the top-most point vertically, regardless of whether the axis
+        ///     is reversed.
         [[nodiscard]]
         wxPoint GetTopPoint() const
             {

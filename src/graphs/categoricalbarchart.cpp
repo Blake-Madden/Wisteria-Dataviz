@@ -12,11 +12,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graphs::BarChart)
 
-    using namespace Wisteria::GraphItems;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     void CategoricalBarChart::SetData(
@@ -112,12 +108,12 @@ namespace Wisteria::Graphs
 
         // calculate how many observations are in each group
         aggregate_frequency_set<CatBarBlock> groups;
-        std::map<wxString, size_t, Data::wxStringLessNoCase> m_IDsMap;
+        std::map<wxString, size_t, Data::wxStringLessNoCase> idMap;
         if (m_useIDColumnForBars)
             {
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
-                m_IDsMap.insert(std::make_pair(m_idColumn->GetValue(i), m_IDsMap.size()));
+                idMap.insert(std::make_pair(m_idColumn->GetValue(i), idMap.size()));
                 }
             }
 
@@ -137,14 +133,14 @@ namespace Wisteria::Graphs
 
             if (m_useIDColumnForBars)
                 {
-                const auto ID = m_IDsMap.find(m_idColumn->GetValue(i));
-                assert((ID != m_IDsMap.cend()) && L"Error finding bar index for ID value!");
-                if (ID != m_IDsMap.cend())
+                const auto id = idMap.find(m_idColumn->GetValue(i));
+                assert((id != idMap.cend()) && L"Error finding bar index for ID value!");
+                if (id != idMap.cend())
                     {
                     groups.insert(
                         // the current category ID (and group's color index and label,
                         // if applicable)
-                        CatBarBlock{ ID->second, m_idColumn->GetValue(i), colorIndex,
+                        CatBarBlock{ id->second, m_idColumn->GetValue(i), colorIndex,
                                      (IsUsingGrouping() ? GetGroupColumn()->GetLabelFromID(
                                                               GetGroupColumn()->GetValue(i)) :
                                                           wxString()) },
@@ -198,30 +194,30 @@ namespace Wisteria::Graphs
                 {
                 blockLabelText.Prepend(blockTable.first.m_groupName + L": ");
                 }
-            GraphItems::Label blockLabel(blockLabelText);
+            const GraphItems::Label blockLabel(blockLabelText);
 
             auto foundBar = std::find_if(
                 GetBars().begin(), GetBars().end(), [&blockTable](const auto& bar) noexcept
                 { return compare_doubles(bar.GetAxisPosition(), blockTable.first.m_bin); });
             if (foundBar == GetBars().end())
                 {
-                Bar theBar(blockTable.first.m_bin,
-                           { BarBlock(BarBlockInfo(blockTable.second.second)
-                                          .Brush(blockBrush)
-                                          .Color(blockColor)
-                                          .Tag(blockTable.first.m_groupName)
-                                          .SelectionLabel(blockLabel)) },
-                           wxEmptyString, GraphItems::Label(blockTable.first.m_binName),
-                           GetBarEffect(), GetBarOpacity());
+                const Bar theBar(blockTable.first.m_bin,
+                                 { BarBlock(BarBlockInfo(blockTable.second.second)
+                                                .Brush(blockBrush)
+                                                .Color(blockColor)
+                                                .Tag(blockTable.first.m_groupName)
+                                                .SelectionLabel(blockLabel)) },
+                                 wxEmptyString, GraphItems::Label(blockTable.first.m_binName),
+                                 GetBarEffect(), GetBarOpacity());
                 AddBar(theBar);
                 }
             else
                 {
-                BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second)
-                                             .Brush(blockBrush)
-                                             .Color(blockColor)
-                                             .Tag(blockTable.first.m_groupName)
-                                             .SelectionLabel(blockLabel)) };
+                const BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second)
+                                                   .Brush(blockBrush)
+                                                   .Color(blockColor)
+                                                   .Tag(blockTable.first.m_groupName)
+                                                   .SelectionLabel(blockLabel)) };
                 foundBar->AddBlock(block);
                 UpdateScalingAxisFromBar(*foundBar);
                 }

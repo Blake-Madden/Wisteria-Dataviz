@@ -314,6 +314,10 @@ namespace Wisteria::GraphItems
             @param[out] points The (4) points to store the rectangle's points into.
             @warning Make sure that @c points has 4 items in it.*/
         static void GetRectPoints(const wxRect& rect, wxPoint* points);
+        /** @brief Determines the four corners of a rectangle.
+            @param rect The rectangle to analyze.
+            @param[out] points An array of points to store the rectangle's points into.*/
+        static void GetRectPoints(const wxRect& rect, std::array<wxPoint, 4>& points);
         /** @brief Determines the bounding box that a polygon requires to fit inside of.
             @param polygon The polygon's points.
             @param N The number of points in the polygon.

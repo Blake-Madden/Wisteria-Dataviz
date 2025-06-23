@@ -17,18 +17,19 @@
 namespace Wisteria::Graphs
     {
     /** @brief W-Curve plot, which displays experiential, longitudinal data.
-        @details An example of this is students' sense of belonging responses across semesters or years.
-            Another example can be customers' satisfaction over the course of product releases.
+        @details An example of this is students' sense of belonging responses across semesters or
+            years. Another example can be customers' satisfaction over the course of
+            product releases.
 
-            In regards to student experiential data, this plot demonstrates W-Curve theory. This postulates
-            that students' campus experience begins positively, then follows a pattern of dipping and rising
-            over the subsequent semesters.
+            In regards to student experiential data, this plot demonstrates W-Curve theory.
+            This postulates that students' campus experience begins positively, then follows
+            a pattern of dipping and rising over the subsequent semesters.
         @image html WCurve.svg width=90%
         @par %Data:
-            This plot accepts a Data::Dataset where one continuous column (i.e., Y) is the dependent measurement,
-            another continuous column (i.e., X) is the time interval,
-            and a categorical column is the observation's name or ID. Below is an example where X is @c YEAR,
-            Y is @c BELONG, and group is @c NAME.
+            This plot accepts a Data::Dataset where one continuous column (i.e., Y) is the dependent
+            measurement, another continuous column (i.e., X) is the time interval, and a categorical
+            column is the observation's name or ID. Below is an example where X is @c YEAR, Y is @c
+            BELONG, and group is @c NAME.
 
          | YEAR | BELONG | NAME   |
          | --:  | --:    | :--    |
@@ -48,8 +49,8 @@ namespace Wisteria::Graphs
          ...
 
          Regarding the X column, the values should start at 1 and usually go up
-         to 4 (going up to 10 is supported). This represents the semester/year/period that the measurement
-         was recorded for the observation.
+         to 4 (going up to 10 is supported). This represents the semester/year/period that the
+         measurement was recorded for the observation.
 
         @par Missing Data:
             Refer to LinePlot for how missing data is handled.
@@ -116,7 +117,7 @@ namespace Wisteria::Graphs
         wxDECLARE_DYNAMIC_CLASS(WCurvePlot);
         WCurvePlot() = default;
 
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
             @param colors The color scheme to apply to the points.
@@ -130,9 +131,9 @@ namespace Wisteria::Graphs
                 Set to a new line scheme filled with @c wxPenStyle::wxTRANSPARENT
                 to not show any lines.*/
         explicit WCurvePlot(Canvas* canvas,
-            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
-            const std::shared_ptr<Icons::Schemes::IconScheme>& shapes = nullptr,
-            const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr);
+                            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+                            const std::shared_ptr<Icons::Schemes::IconScheme>& shapes = nullptr,
+                            const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr);
         /** @brief Sets the data.
             @details Along with the X and Y points, separate lines will be created based on
                 the grouping column in the data. The group ID assigned to each line will also
@@ -154,10 +155,10 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
-            const wxString& yColumnName,
-            const wxString& xColumnName,
-            std::optional<const wxString> groupColumnName) final;
+        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
+                     const wxString& xColumnName,
+                     std::optional<const wxString> groupColumnName) final;
+
         /// @brief Sets the label for the major time intervals used in the data collection
         ///     (e.g., "semester" or "year").
         ///     This is drawn on the top axis labels.
@@ -167,14 +168,15 @@ namespace Wisteria::Graphs
             m_timeLabel = label;
             ResetTimeLabels();
             }
-    private:
+
+      private:
         void ResetTimeLabels();
         [[nodiscard]]
         wxString FormatTimeLabel(const uint8_t step) const;
 
         wxString m_timeLabel{ _(L"year") };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

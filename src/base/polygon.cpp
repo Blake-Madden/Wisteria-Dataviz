@@ -267,6 +267,15 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    void Polygon::GetRectPoints(const wxRect& rect, std::array<wxPoint, 4>&  points)
+        {
+        points[0] = rect.GetTopLeft();
+        points[1] = rect.GetTopRight();
+        points[2] = rect.GetBottomRight();
+        points[3] = rect.GetBottomLeft();
+        }
+
+    //-------------------------------------------
     wxRect Polygon::GetRectFromPoints(const wxPoint* points)
         {
         if (points == nullptr)

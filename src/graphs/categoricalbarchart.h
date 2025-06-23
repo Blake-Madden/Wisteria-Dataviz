@@ -16,11 +16,12 @@
 
 namespace Wisteria::Graphs
     {
+    // clang-format off
     /** @brief %Bar chart that aggregates the frequency (or summed values)
          of a categorical column's labels.
-    
+
          Bars can either be plotted as a regular bar or split into (stacked) groups.
-        
+
          | Regular         | Grouped
          | :-------------- | :--------------------------------
          | @image html CategorizedBarChart.svg width=90% | @image html GroupedCategorizedBarChart.svg width=90%
@@ -36,11 +37,11 @@ namespace Wisteria::Graphs
          - Missing data in the categorical column will be shown as an empty axis label.
          - Missing data in the group column will be shown as an empty legend label.
          - If summing a continuous column, then missing data will be ignored (listwise deletion).
-          
+
         @note If you want to create a bar chart that sums the counts of unique, discrete values
          from a continuous variable, then histograms offer this ability. Refer to the
          @c BinUniqueValues binning method in the Histogram documentation to learn more.
-         
+
          @par Example:
          @code
           // "this" will be a parent wxWidgets frame or dialog, "canvas"
@@ -71,13 +72,15 @@ namespace Wisteria::Graphs
           // plot->SetData(mpgData, L"manufacturer", std::nullopt, L"model");
 
           canvas->SetFixedObject(0, 0, plot);
-         @endcode*/
+         @endcode
+    */
+    // clang-format on
     class CategoricalBarChart final : public Wisteria::Graphs::BarChart
         {
         wxDECLARE_DYNAMIC_CLASS(CategoricalBarChart);
         CategoricalBarChart() = default;
 
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.
             @param brushes The brush scheme, which will contain the color and brush patterns
@@ -86,14 +89,16 @@ namespace Wisteria::Graphs
                 brush patterns.\n
                 This is useful if using a hatched brush, as this color will be solid
                 and show underneath it. Leave as null just to use the brush scheme.*/
-        explicit CategoricalBarChart(Wisteria::Canvas* canvas,
-                           std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
-                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
-            Wisteria::Graphs::BarChart(canvas)
+        explicit CategoricalBarChart(
+            Wisteria::Canvas* canvas,
+            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
+            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr)
+            : Wisteria::Graphs::BarChart(canvas)
             {
-            SetBrushScheme(brushes != nullptr ? brushes :
-                std::make_unique<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()) );
-            SetColorScheme(colors);
+            SetBrushScheme(brushes != nullptr ? std::move(brushes) :
+                                                std::make_unique<Brushes::Schemes::BrushScheme>(
+                                                    *Settings::GetDefaultColorScheme()));
+            SetColorScheme(std::move(colors));
             // categorical axis labels (especially longer ones) usually look
             // better with horizontal bars
             SetBarOrientation(Wisteria::Orientation::Horizontal);
@@ -130,7 +135,8 @@ namespace Wisteria::Graphs
                      const std::optional<const wxString>& weightColumnName = std::nullopt,
                      const std::optional<const wxString>& groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
-    private:
+
+      private:
         struct CatBarBlock
             {
             // group ID in the main categorical column, used for the bar axis position ordering
@@ -143,23 +149,30 @@ namespace Wisteria::Graphs
             size_t m_schemeIndex{ 0 };
             // the name of the group for a subblock in a bar (from the secondary group column)
             wxString m_groupName;
+
             // sorts by group ID from the primary categorical column, or by the
             // subgroup label (if grouping is in use) alphabetically
             [[nodiscard]]
             bool operator<(const CatBarBlock& that) const noexcept
                 {
                 if (m_bin != that.m_bin)
-                    { return m_bin < that.m_bin; }
+                    {
+                    return m_bin < that.m_bin;
+                    }
                 // if in the same bar, then compare by label alphabetically
                 return m_groupName.CmpNoCase(that.m_groupName) < 0;
                 }
             };
+
         void Calculate();
+
         /// @brief Simpler way to get the bar slots since this isn't like a histogram that
         ///     can have gaps in between the bars.
         [[nodiscard]]
         size_t GetBarSlotCount() const noexcept final
-            { return GetBars().size(); }
+            {
+            return GetBars().size();
+            }
 
         const Wisteria::Data::Column<wxString>* m_idColumn{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
@@ -168,7 +181,7 @@ namespace Wisteria::Graphs
         bool m_useIDColumnForBars{ false };
         bool m_useWeightColumn{ false };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

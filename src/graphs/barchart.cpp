@@ -214,7 +214,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::AddFirstBarBracket(const wxString& firstBarBlock, const wxString& lastBarBlock,
                                       const wxString& bracketLabel)
         {
-        assert(GetBars().size() && L"No bars available when adding an axis bracket!");
+        assert(!GetBars().empty() && L"No bars available when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars available when adding an axis bracket.").ToUTF8());
@@ -250,7 +250,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                         const wxString& lastBarBlockPattern,
                                         const wxString& bracketLabel)
         {
-        assert(GetBars().size() && L"No bars available when adding an axis bracket!");
+        assert(!GetBars().empty() && L"No bars available when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars available when adding an axis bracket.").ToUTF8());
@@ -283,7 +283,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::AddLastBarBracket(const wxString& firstBarBlock, const wxString& lastBarBlock,
                                      const wxString& bracketLabel)
         {
-        assert(GetBars().size() && L"No bars when adding an axis bracket!");
+        assert(!GetBars().empty() && L"No bars when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars when adding an axis bracket.").ToUTF8());
@@ -328,7 +328,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                        const wxString& lastBarBlockPattern,
                                        const wxString& bracketLabel)
         {
-        assert(GetBars().size() && L"No bars when adding an axis bracket!");
+        assert(!GetBars().empty() && L"No bars when adding an axis bracket!");
         if (GetBars().empty())
             {
             throw std::runtime_error(_(L"No bars when adding an axis bracket.").ToUTF8());
@@ -449,7 +449,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                               m_highestBarAxisPosition + GetBarAxis().GetInterval(),
                               GetBarAxis().GetPrecision(), GetBarAxis().GetInterval(),
                               GetBarAxis().GetDisplayInterval());
-        if (bar.GetAxisLabel().IsShown() && bar.GetAxisLabel().GetText().length())
+        if (bar.GetAxisLabel().IsShown() && !bar.GetAxisLabel().GetText().empty())
             {
             GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), bar.GetAxisLabel());
             }
@@ -648,7 +648,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             if (foundPos == GetBars().cend())
                 {
                 const auto maxAxisPos =
-                    GetBars().size() ?
+                    !GetBars().empty() ?
                         std::max_element(GetBars().cbegin(), GetBars().cend(),
                                          [](const auto& lhv, const auto& rhv) noexcept
                                          { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })
@@ -711,7 +711,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             for (size_t s{ 1 }, d{ 0 }; s < indices.size(); ++s)
                 {
                 for (d = indices[s]; d < s; d = indices[d])
-                    ;
+                    {
+                    }
                 if (d == s)
                     {
                     while (d = indices[d], d != s)
@@ -2072,9 +2073,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
         for (const auto& barGroup : m_barGroups)
             {
-            wxPoint brackPos1 =
+            const wxPoint brackPos1 =
                 barRenderInfo.m_barMiddleEndPositions[barGroup.m_barPositions.first];
-            wxPoint brackPos2 =
+            const wxPoint brackPos2 =
                 barRenderInfo.m_barMiddleEndPositions[barGroup.m_barPositions.second];
             double grandTotal{ 0 };
             // the bars specified in the group may be in different order, so use
@@ -2337,4 +2338,4 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         // add the brackets and bars for any bar groups
         DrawBarGroups(barRenderInfo);
         }
-    }
+    } // namespace Wisteria::Graphs
