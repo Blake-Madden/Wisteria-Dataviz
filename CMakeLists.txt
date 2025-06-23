@@ -57,6 +57,7 @@ if(TARGET doxygen-docs)
 endif()
 
 add_custom_target(doxygen-docs
+            ALL
             COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
             COMMENT "Generating API documentation with Doxygen"
