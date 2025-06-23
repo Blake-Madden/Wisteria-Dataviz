@@ -663,8 +663,18 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Flips the axis. Call this after setting up the range and intervals.
+            @param reverse @c true to reverse the scale, @c false to reset it.
+            @deprecated Use Reverse() instead.*/
+        [[deprecated("Use Reverse() instead.")]]
+        void ReverseScale(bool reverse)
+            {
+            Reverse(reverse);
+            }
+
+        /** @brief Flips the axis.
+            @note Call this after setting up the range, intervals, brackets, etc.
             @param reverse @c true to reverse the scale, @c false to reset it.*/
-        void ReverseScale(bool reverse);
+        void Reverse(bool reverse = true);
         /// @}
 
         /** @name Range & Interval Functions

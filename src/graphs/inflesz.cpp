@@ -28,8 +28,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
         */
         SetDataColumnHeader(_DT(L"PUNTUACIÓN"));
 
-        GetScalingAxis().ReverseScale(true);
-
         // graph has an odd scale where the "very difficult" section and crunched down,
         // even though it consumes 40% of the range
         GetScalingAxis().GetAxisPoints().clear();
@@ -55,6 +53,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
         // and top axes
         GetScalingAxis().AddUnevenAxisPoint(105, L" ");
         GetScalingAxis().AdjustRangeToLabels();
+
+        GetScalingAxis().Reverse();
 
         SetMainScaleValues({ 0, 15, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100 },
                            0);

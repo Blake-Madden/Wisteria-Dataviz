@@ -54,7 +54,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             sentenceRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
             sentenceRuler.SetTickMarkInterval(1);
             sentenceRuler.SetDoubleSidedAxisLabels(true);
-            sentenceRuler.ReverseScale(true);
+            sentenceRuler.Reverse();
             sentenceRuler.GetHeader().SetText(_(L"WORDS PER\nSENTENCE"));
             sentenceRuler.GetHeader().GetPen() = wxNullPen;
             sentenceRuler.GetHeader().SetTextAlignment(TextAlignment::Centered);
@@ -113,7 +113,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             syllableRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
             syllableRuler.SetTickMarkInterval(1);
             syllableRuler.SetDoubleSidedAxisLabels(true);
-            syllableRuler.ReverseScale(true);
+            syllableRuler.Reverse();
             syllableRuler.GetHeader().SetText(_(L"SYLLABLES PER\n100 WORDS"));
             syllableRuler.GetHeader().GetPen() = wxNullPen;
             syllableRuler.GetHeader().SetTextAlignment(TextAlignment::Centered);

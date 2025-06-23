@@ -856,8 +856,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         const wxRect drawArea{ GetDrawArea() };
 
-        wxPoint arrowPoints[7]{ { 0, 0 } };
-        wxPoint boxPoints[4]{ { 0, 0 } };
+        std::array<wxPoint, 7> arrowPoints{};
+        std::array<wxPoint, 4> boxPoints{};
 
         /* If the bar (or block) is set to cover a specific range
            (e.g., histograms do this) then calculate
@@ -1127,7 +1127,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         if (barRenderInfo.m_barRect.GetHeight() >
                             barRenderInfo.m_scaledShadowOffset)
                             {
-                            wxPoint shadowPts[7] = {
+                            const std::array<wxPoint, 7> shadowPts = {
                                 barRenderInfo.m_barRect.GetLeftBottom(),
                                 barRenderInfo.m_barRect.GetLeftBottom() +
                                     wxPoint(0, barRenderInfo.m_scaledShadowOffset),
@@ -1145,7 +1145,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
                                 Wisteria::GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
                                     GraphItemBase::GetShadowColor()),
-                                shadowPts, std::size(shadowPts)));
+                                shadowPts));
                             }
                         }
                     box = std::make_unique<GraphItems::Polygon>(
@@ -1155,7 +1155,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .Scaling(GetScaling())
                             .Outline(true, true, true, true)
                             .ShowLabelWhenSelected(true),
-                        boxPoints, std::size(boxPoints));
+                        boxPoints);
                     }
                 else if (bar.GetShape() == BarShape::Arrow)
                     {
@@ -1183,7 +1183,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .Scaling(GetScaling())
                             .Outline(true, true, true, true)
                             .ShowLabelWhenSelected(true),
-                        arrowPoints, std::size(arrowPoints));
+                        arrowPoints);
                     }
 
                 assert(box);
@@ -1403,8 +1403,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         const wxRect drawArea{ GetDrawArea() };
 
-        wxPoint boxPoints[4]{ { 0, 0 } };
-        wxPoint arrowPoints[7]{ { 0, 0 } };
+        std::array<wxPoint, 4> boxPoints{};
+        std::array<wxPoint, 7> arrowPoints{};
 
         /* if the bar (or block) is set to cover a specific range
            (e.g., histograms do this when using cutpoints) then calculate
@@ -1661,7 +1661,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         if (barRenderInfo.m_barRect.GetHeight() >
                             barRenderInfo.m_scaledShadowOffset)
                             {
-                            const wxPoint shadowPts[4] = {
+                            const std::array<wxPoint, 4> shadowPts = {
                                 barRenderInfo.m_barRect.GetRightBottom() +
                                     wxPoint(barRenderInfo.m_scaledShadowOffset, 0),
                                 barRenderInfo.m_barRect.GetRightTop() +
@@ -1674,7 +1674,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             AddObject(std::make_unique<Wisteria::GraphItems::Polygon>(
                                 Wisteria::GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
                                     GraphItemBase::GetShadowColor()),
-                                shadowPts, std::size(shadowPts)));
+                                shadowPts));
                             }
                         }
 
@@ -1685,7 +1685,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .Scaling(GetScaling())
                             .Outline(true, true, true, true)
                             .ShowLabelWhenSelected(true),
-                        boxPoints, std::size(boxPoints));
+                        boxPoints);
                     }
                 else if (bar.GetShape() == BarShape::Arrow)
                     {
@@ -1714,7 +1714,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .Outline(true, true, true, true)
                             .Scaling(GetScaling())
                             .ShowLabelWhenSelected(true),
-                        arrowPoints, std::size(arrowPoints));
+                        arrowPoints);
                     }
 
                 assert(box);

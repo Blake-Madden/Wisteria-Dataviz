@@ -3693,7 +3693,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Axis::ReverseScale(bool reverse)
+    void Axis::Reverse(bool reverse /*= true*/)
         {
         // reverse it if not already reversed and client is asking for it to be reversed
         if (reverse && !IsReversed())

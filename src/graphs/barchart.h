@@ -196,7 +196,7 @@ namespace Wisteria::Graphs
             /// @brief Sets the block's brush.
             /// @param brush The brush of the block.
             /// @returns A self reference.
-            BarBlockInfo& Brush(const wxBrush brush)
+            BarBlockInfo& Brush(const wxBrush& brush)
                 {
                 m_brush = brush;
                 return *this;
@@ -212,7 +212,7 @@ namespace Wisteria::Graphs
             ///    In other works, this color is ignored for fades, glossy effects, stipples, etc.
             /// @param color The background color of the block.
             /// @returns A self reference.
-            BarBlockInfo& Color(const wxColour color)
+            BarBlockInfo& Color(const wxColour& color)
                 {
                 m_color = color;
                 return *this;
@@ -223,7 +223,7 @@ namespace Wisteria::Graphs
             /// @note If this is not set, then the parent bar chart will deduce the
             ///    best outline color.
             /// @returns A self reference.
-            BarBlockInfo& OutlinePen(const wxPen pen)
+            BarBlockInfo& OutlinePen(const wxPen& pen)
                 {
                 m_outlinePen = pen;
                 return *this;
@@ -498,10 +498,11 @@ namespace Wisteria::Graphs
                 @param customWidth How wide to show the bar. If provided, this will override the
                     calculated width (which would show all bars with a uniform width).*/
             Bar(const double axisPosition, const std::vector<BarBlock>& blocks,
-                const wxString& barLabel, const Wisteria::GraphItems::Label& axisLabel,
+                const wxString& barLabel, Wisteria::GraphItems::Label axisLabel,
                 const BoxEffect effect, const uint8_t opacity = wxALPHA_OPAQUE,
                 const std::optional<double> customWidth = std::nullopt)
-                : m_blocks(blocks), m_opacity(opacity), m_barEffect(effect), m_axisLabel(axisLabel),
+                : m_blocks(blocks), m_opacity(opacity), m_barEffect(effect),
+                  m_axisLabel(std::move(axisLabel)),
                   m_barLabel(Wisteria::GraphItems::GraphItemInfo(barLabel).Pen(wxNullPen)),
                   m_customWidth(customWidth), m_axisPosition(axisPosition)
                 {
@@ -511,7 +512,7 @@ namespace Wisteria::Graphs
                     {
                     m_customWidth = std::nullopt;
                     }
-                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0f,
+                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0F,
                                            [](const auto initVal, const auto& block) noexcept
                                            { return initVal + block.GetLength(); });
                 }
@@ -617,7 +618,7 @@ namespace Wisteria::Graphs
             ///    bars are).
             /// @note You can mix and match custom-width and auto-fitted bars in the same barchart;
             ///    just don't set the custom width for bars that you wish to be auto-fitted.
-            void SetCustomWidth(const std::optional<double> width) noexcept
+            void SetCustomWidth(const std::optional<double> width)
                 {
                 m_customWidth = width;
                 // sanity checks
@@ -654,7 +655,7 @@ namespace Wisteria::Graphs
             void AddBlock(const BarBlock& block) noexcept
                 {
                 m_blocks.push_back(block);
-                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0f,
+                m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0F,
                                            [](const auto initVal, const auto& bBlock)
                                            { return initVal + bBlock.GetLength(); });
                 }
@@ -1228,7 +1229,7 @@ namespace Wisteria::Graphs
             m_isSortable = sortable;
             if (sortable)
                 {
-                GetBarAxis().ReverseScale(false);
+                GetBarAxis().Reverse(false);
                 GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
                 }
             }
@@ -1373,7 +1374,7 @@ namespace Wisteria::Graphs
             wxCoord m_labelSpacingFromLine{ 0 };
             wxImage m_scaledCommonImg;
             std::vector<std::unique_ptr<GraphItems::Label>> m_decals;
-            wxRect m_barRect{};
+            wxRect m_barRect;
             double m_barWidth{ 0 };
             wxDC& m_dc;
             std::vector<wxPoint> m_barMiddleEndPositions;

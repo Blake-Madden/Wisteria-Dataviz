@@ -170,7 +170,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             }
 
         // reverse so that bars appear in the order that the client constructed them
-        GetBarAxis().ReverseScale(true);
+        GetBarAxis().Reverse();
 
         if (GetScalingAxis().GetRangeDates().first.IsValid() &&
             GetScalingAxis().GetRangeDates().second.IsValid())

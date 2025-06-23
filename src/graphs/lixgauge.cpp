@@ -31,7 +31,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
 
         GetBottomXAxis().SetRange(0, 2, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 100, 0, 5, 1);
-        GetLeftYAxis().ReverseScale(true);
+        GetLeftYAxis().Reverse();
         GetBottomXAxis().Show(false);
         GetLeftYAxis().Show(false);
         GetTopXAxis().Show(false);
@@ -126,7 +126,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             leftRuler.SetCustomLabel(40, GraphItems::Label(L"40"));
             leftRuler.SetCustomLabel(50, GraphItems::Label(L"50"));
             leftRuler.SetCustomLabel(60, GraphItems::Label(L"60"));
-            leftRuler.ReverseScale(true);
+            leftRuler.Reverse();
             leftRuler.SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::AlignWithBoundary);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
@@ -158,7 +158,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             middleRuler.SetCustomXPosition(1);
             middleRuler.SetCustomYPosition(minYAxis);
             middleRuler.SetRange(minYAxis, maxYAxis, 0, 10, 1);
-            middleRuler.ReverseScale(true);
+            middleRuler.Reverse();
             middleRuler.SetId(101);
             middleRuler.Show(false);
             AddCustomAxis(middleRuler);
@@ -176,7 +176,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             rightRuler.SetCustomLabel(35, GraphItems::Label(L"35"));
             rightRuler.SetCustomLabel(45, GraphItems::Label(L"45"));
             rightRuler.SetCustomLabel(55, GraphItems::Label(L"55"));
-            rightRuler.ReverseScale(true);
+            rightRuler.Reverse();
             rightRuler.SetId(102);
             rightRuler.GetAxisLinePen() = wxNullPen;
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
