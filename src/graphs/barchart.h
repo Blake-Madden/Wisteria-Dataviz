@@ -1106,8 +1106,7 @@ namespace Wisteria::Graphs
             @param bracketLabel The label for the bracket.
             @note This should be called after all bars have been added and
                 bar orientation has been set.
-            @throws std::runtime_error If a provided label isn't found, throws an exception.
-            @todo Add support for reversed scaling axis.*/
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddFirstBarBracket(const wxString& firstBarBlock, const wxString& lastBarBlock,
                                 const wxString& bracketLabel);
         /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
@@ -1120,8 +1119,7 @@ namespace Wisteria::Graphs
             @param bracketLabel The label for the bracket.
             @note This should be called after all bars have been added and
                 bar orientation has been set.
-            @throws std::runtime_error If a provided label isn't found, throws an exception.
-            @todo Add support for reversed scaling axis.*/
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddFirstBarBracketRE(const wxString& firstBarBlockPattern,
                                   const wxString& lastBarBlockPattern,
                                   const wxString& bracketLabel);
@@ -1133,8 +1131,7 @@ namespace Wisteria::Graphs
             @param bracketLabel The label for the bracket.
             @note This should be called after all bars have been added and
                 bar orientation has been set.
-            @throws std::runtime_error If a provided label isn't found, throws an exception.
-            @todo Add support for reversed scaling axis.*/
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddLastBarBracket(const wxString& firstBarBlock, const wxString& lastBarBlock,
                                const wxString& bracketLabel);
         /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
@@ -1147,8 +1144,7 @@ namespace Wisteria::Graphs
             @param bracketLabel The label for the bracket.
             @note This should be called after all bars have been added and
                 bar orientation has been set.
-            @throws std::runtime_error If a provided label isn't found, throws an exception.
-            @todo Add support for reversed scaling axis.*/
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddLastBarBracketRE(const wxString& firstBarBlockPattern,
                                  const wxString& lastBarBlockPattern, const wxString& bracketLabel);
 
