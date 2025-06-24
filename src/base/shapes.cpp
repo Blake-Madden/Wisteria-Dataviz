@@ -1365,10 +1365,10 @@ namespace Wisteria::GraphItems
             gc->DrawEllipse(faceRect);
 
             // hair
-            gc->SetPen(wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::ClassicFrenchGray),
+            gc->SetPen(wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack),
                                   static_cast<int>(billRect.GetHeight() * 0.13) });
             wxRect2DDouble hairRect{ faceRect };
-            hairRect.Deflate(ScaleToScreenAndCanvas(math_constants::three_fourths));
+            hairRect.Deflate(ScaleToScreenAndCanvas(0.8));
             hairRect.Offset(-ScaleToScreenAndCanvas(math_constants::half),
                             -ScaleToScreenAndCanvas(math_constants::half));
 
@@ -1378,7 +1378,7 @@ namespace Wisteria::GraphItems
                                    GetYPosFromTop(hairRect, 0.0) });
             hairPath.AddQuadCurveToPoint(GetXPosFromLeft(faceRect, 0), GetYPosFromTop(faceRect, 0),
                                          GetXPosFromLeft(faceRect, 0.0),
-                                         GetYPosFromTop(faceRect, math_constants::three_quarters));
+                                         GetYPosFromTop(faceRect, math_constants::half));
             gc->StrokePath(hairPath);
 
             gc->ResetClip();
@@ -1437,7 +1437,7 @@ namespace Wisteria::GraphItems
 
             // orange 100 in the bottom corner
             rightSealRect.MoveLeftTo(billRect.GetRight() - rightSealRect.GetWidth());
-            rightSealRect.SetTop(rightSealRect.GetBottom());
+            rightSealRect.SetTop(GetYPosFromTop(billRect, 0.7));
             rightSealRect.SetBottom(billRect.GetBottom());
             fontSize = Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
             gc->SetFont(wxFontInfo{ fontSize }.Bold(),
