@@ -3349,8 +3349,9 @@ namespace Wisteria::GraphItems
                 m_axisLabels.emplace_back(i, wxString{}, display);
                 lastValidPoint = i;
                 }
-            m_rangeStart = rangeEnd;
-            m_rangeEnd = lastValidPoint;
+            // will be lowest value because we were going backwards to get this
+            m_rangeStart = lastValidPoint;
+            m_rangeEnd = rangeEnd;
             }
         else
             {
