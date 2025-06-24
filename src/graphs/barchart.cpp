@@ -162,10 +162,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     std::optional<double> BarChart::FindBarBlockStart(const size_t barIndex,
                                                       const wxString& blockTag) const
         {
-        if (GetScalingAxis().IsReversed())
-            {
-            return std::nullopt;
-            }
         assert(barIndex < GetBars().size() && L"Bar index out of range!");
         if (barIndex >= GetBars().size())
             {
@@ -188,10 +184,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     std::optional<double> BarChart::FindBarBlockEnd(const size_t barIndex, const wxString& blockTag)
         const
         {
-        if (GetScalingAxis().IsReversed())
-            {
-            return std::nullopt;
-            }
         assert(barIndex < GetBars().size() && L"Bar index out of range!");
         if (barIndex >= GetBars().size())
             {
