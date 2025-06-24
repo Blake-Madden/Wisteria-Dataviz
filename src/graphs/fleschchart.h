@@ -77,7 +77,7 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
                      const wxString& wordsPerSentenceColumnName, const wxString& scoreColumnName,
                      const wxString& syllablesPerWordColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt,

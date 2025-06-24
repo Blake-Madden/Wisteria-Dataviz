@@ -19,8 +19,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
-        SetShapeScheme(shapes != nullptr ? shapes :
+        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
+        SetShapeScheme(shapes != nullptr ? std::move(shapes) :
                                            std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
 
@@ -48,7 +48,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             {
             GraphItems::Axis sentenceRuler(Wisteria::AxisType::LeftYAxis);
             sentenceRuler.SetFontColor(GetLeftYAxis().GetFontColor());
-            sentenceRuler.SetCustomXPosition(0.5f);
+            sentenceRuler.SetCustomXPosition(0.5F);
             sentenceRuler.SetCustomYPosition(50);
             sentenceRuler.SetRange(5, 40, 0, 5, 1);
             sentenceRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
@@ -107,7 +107,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             {
             GraphItems::Axis syllableRuler(Wisteria::AxisType::RightYAxis);
             syllableRuler.SetFontColor(GetLeftYAxis().GetFontColor());
-            syllableRuler.SetCustomXPosition(3.5f);
+            syllableRuler.SetCustomXPosition(3.5F);
             syllableRuler.SetCustomYPosition(100);
             syllableRuler.SetRange(120, 200, 0, 5, 1);
             syllableRuler.SetTickMarkDisplay(GraphItems::Axis::TickMark::DisplayType::Crossed);
@@ -123,7 +123,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         }
 
     //----------------------------------------------------------------
-    void FleschChart::SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
+    void FleschChart::SetData(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
                               const wxString& wordsPerSentenceColumnName,
                               const wxString& scoreColumnName,
                               const wxString& syllablesPerWordColumnName,
@@ -143,7 +143,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             return;
             }
 
-        SetGroupColumn(groupColumnName);
+        SetGroupColumn(std::move(groupColumnName));
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())

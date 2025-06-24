@@ -1057,6 +1057,7 @@ EXCLUDE                = ../../src/easyexif \
                          ../../src/utfcpp \
                          ../../src/ui/controls/gtk/gtktextview-helper.h \
                          ../../src/ui/controls/gtk/gtktextview-helper.cpp \
+                         ../../src/base/graphitems.cpp \
                          ../../src/base/image.cpp \
                          ../../src/base/canvas.cpp \
                          ../../src/graphs/wordcloud.cpp \
