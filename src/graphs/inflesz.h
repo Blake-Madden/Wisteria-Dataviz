@@ -28,11 +28,11 @@ namespace Wisteria::Graphs
 
          A categorical column can also optionally be used as a grouping variable.
 
-         | ID     | Score | Group |
-         | :--    | --:   | --:   |
-         | week 1 | 52    | Anna  |
-         | week 2 | 50    | Anna  |
-         | week 1 | 62    | Joe   |
+         | ID     | Score | Group    |
+         | :--    | --:   | --:      |
+         | week 1 | 52    | Topic 1  |
+         | week 2 | 50    | Topic 1  |
+         | week 1 | 62    | Topic 2  |
          ...
 
         @par Missing Data:
