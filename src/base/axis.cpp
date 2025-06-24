@@ -3015,6 +3015,12 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate)
         {
+        assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
+        assert(startDate <= endDate && L"Start date should be before end date!");
+        if (!startDate.IsValid() || !endDate.IsValid())
+            {
+            return;
+            }
         const auto numberOfDays = endDate.Subtract(startDate).GetDays();
         SetRange(startDate, endDate,
                  (numberOfDays <= 10  ? DateInterval::Daily :
@@ -3029,6 +3035,7 @@ namespace Wisteria::GraphItems
                         const DateInterval displayInterval, const FiscalYear fyType)
         {
         assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
+        assert(startDate <= endDate && L"Start date should be before end date!");
         // can't do much with this range if invalid, so have to ignore it
         if (!startDate.IsValid() || !endDate.IsValid())
             {
@@ -3195,6 +3202,11 @@ namespace Wisteria::GraphItems
         if (IsStartingAtZero())
             {
             rangeStart = std::min<double>(0, rangeStart);
+            }
+        assert(rangeEnd >= rangeStart);
+        if (compare_doubles_less(rangeEnd, rangeStart))
+            {
+            return;
             }
 
         double rangeSize = (rangeEnd - rangeStart);
