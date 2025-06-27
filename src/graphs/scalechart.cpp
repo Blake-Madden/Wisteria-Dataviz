@@ -160,7 +160,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             GraphItems::Axis scoreRuler(Wisteria::AxisType::LeftYAxis);
             scoreRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             const auto [yStart, yEnd] = GetScalingAxis().GetRange();
-            scoreRuler.SetCustomYPosition(yEnd);
+            scoreRuler.SetCustomYPosition(GetScalingAxis().IsReversed() ? yEnd : yStart);
             scoreRuler.SetRange(yStart, yEnd, 0, GetScalingAxis().GetInterval(), 1);
             scoreRuler.SetCustomXPosition(1.5);
             scoreRuler.SetId(101);

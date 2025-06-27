@@ -861,7 +861,7 @@ namespace Wisteria
 
         /** @brief Contrasts a title label against the canvas.
             @param[in,out] title The title label to contrast.*/
-        void ContrastTitleLabel(GraphItems::Label& title);
+        void ContrastTitleLabel(GraphItems::Label& title) const;
 
         /// @returns The top-level floating (i.e., not anchored) object on the
         ///     canvas located at @c pt.

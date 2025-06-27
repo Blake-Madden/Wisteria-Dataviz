@@ -113,7 +113,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(0.9f);
-            leftRuler.SetCustomYPosition(minYAxis);
+            leftRuler.SetCustomYPosition(maxYAxis);
             leftRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.Reverse();
@@ -161,7 +161,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             middleRuler.GetAxisLinePen() = wxNullPen;
             middleRuler.SetOutlineSize(wxSize(15, 5));
             middleRuler.SetCustomXPosition(1);
-            middleRuler.SetCustomYPosition(minYAxis);
+            middleRuler.SetCustomYPosition(maxYAxis);
             middleRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             middleRuler.Reverse();
             middleRuler.SetId(101);
@@ -173,7 +173,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             rightRuler.SetCustomXPosition(1.1f);
-            rightRuler.SetCustomYPosition(minYAxis);
+            rightRuler.SetCustomYPosition(maxYAxis);
             rightRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             rightRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             rightRuler.Reverse();

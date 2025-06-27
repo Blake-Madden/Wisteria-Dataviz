@@ -515,7 +515,7 @@ namespace Wisteria
         }
 
     //----------------------------------------------------------------
-    void Canvas::ContrastTitleLabel(GraphItems::Label& title)
+    void Canvas::ContrastTitleLabel(GraphItems::Label& title) const
         {
         const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
             GetBackgroundColor()) };

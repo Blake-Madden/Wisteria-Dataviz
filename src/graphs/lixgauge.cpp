@@ -118,7 +118,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(0.9f);
-            leftRuler.SetCustomYPosition(minYAxis);
+            leftRuler.SetCustomYPosition(maxYAxis);
             leftRuler.SetRange(minYAxis, maxYAxis, 0, 10, 1);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
             leftRuler.SetCustomLabel(20, GraphItems::Label(_DT(L"20", DTExplanation::Constant)));
@@ -156,7 +156,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             GraphItems::Axis middleRuler(Wisteria::AxisType::LeftYAxis);
             middleRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             middleRuler.SetCustomXPosition(1);
-            middleRuler.SetCustomYPosition(minYAxis);
+            middleRuler.SetCustomYPosition(maxYAxis);
             middleRuler.SetRange(minYAxis, maxYAxis, 0, 10, 1);
             middleRuler.Reverse();
             middleRuler.SetId(101);
@@ -169,7 +169,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             rightRuler.SetCustomXPosition(1.1f);
-            rightRuler.SetCustomYPosition(minYAxis);
+            rightRuler.SetCustomYPosition(maxYAxis);
             rightRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             rightRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
             rightRuler.SetCustomLabel(25, GraphItems::Label(L"25"));
@@ -218,9 +218,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
         const auto [startY, endY] = GetLeftYAxis().GetRange();
         if (GetBottomXAxis().GetPhysicalCoordinate(startX, coordX1) &&
             GetBottomXAxis().GetPhysicalCoordinate(endX, coordX2) &&
-            GetLeftYAxis().GetPhysicalCoordinate(endY, coordY1) &&
-            GetLeftYAxis().GetPhysicalCoordinate(endY + 2, coordY2) &&
-            GetLeftYAxis().GetPhysicalCoordinate(startY, coordY3))
+            GetLeftYAxis().GetPhysicalCoordinate(startY, coordY1) &&
+            GetLeftYAxis().GetPhysicalCoordinate(startY + 2, coordY2) &&
+            GetLeftYAxis().GetPhysicalCoordinate(endY, coordY3))
             {
             outerLines->AddLine(wxPoint(coordX1, coordY1), wxPoint(coordX2, coordY1));
             outerLines->AddLine(wxPoint(coordX1, coordY2), wxPoint(coordX2, coordY2));
