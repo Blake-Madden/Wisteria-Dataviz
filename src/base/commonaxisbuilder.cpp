@@ -60,7 +60,6 @@ namespace Wisteria
         // tell the canvas to align the axis line to the left side of its
         // bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
-        commonAxis->SetCanvasMargins(0, 0, 0, 10);
         // Get the canvas size of the axis and add it to the canvas.
         commonAxis->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(*commonAxis));
         commonAxis->SetFixedWidthOnCanvas(true);
@@ -118,7 +117,6 @@ namespace Wisteria
         commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the bottom side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
-        commonAxis->SetCanvasMargins(10, 0, 5, 0);
         // get the canvas size of the axis and add it to the canvas
         commonAxis->SetCanvasHeightProportion(canvas->CalcMinHeightProportion(*commonAxis));
         commonAxis->FitCanvasRowHeightToContent(true);
