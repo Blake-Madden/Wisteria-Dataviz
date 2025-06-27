@@ -92,6 +92,7 @@ bool Wisteria::UI::BaseApp::OnInit()
         }
 #elif defined(__UNIX__)
     struct sysinfo status{};
+
     if (sysinfo(&status) == 0)
         {
         wxLogMessage(L"Physical Memory: %.02f Gbs.",
@@ -238,6 +239,9 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
     const int ftSize = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
     const auto backscreenHeight = bitmap.GetHeight() * math_constants::fifth;
 
+    const wxString theFontName{ Wisteria::GraphItems::Label::GetFirstAvailableFont(
+        { DONTTRANSLATE(L"Roboto"), DONTTRANSLATE(L"Orbitron"), DONTTRANSLATE(L"Georgia") }) };
+
     wxBitmap canvasBmp(bitmap);
     wxMemoryDC memDC(canvasBmp);
     wxGCDC gcdc(memDC);
@@ -247,8 +251,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         Wisteria::GraphItems::GraphItemInfo(appName)
             .Pen(wxNullPen)
             .Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD,
-                         false, DONTTRANSLATE(L"Georgia")))
-            .FontColor(wxColour(L"#315184"))
+                         false, theFontName))
+            .FontColor(*wxWHITE)
             .DPIScaling(1.0)
             .Anchoring(Anchoring::TopLeftCorner)
             .AnchorPoint({ 0, 0 })
@@ -261,7 +265,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         // draw translucent backscreens on image so that text written on it can be read
         {
         const wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
-        const wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
+        const wxDCBrushChanger bc(gcdc, wxBrush(wxColour(61, 60, 59, 175)));
         gcdc.DrawRectangle(wxRect(0, 0, canvasBmp.GetWidth(), backscreenHeight));
         gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetWidth(), backscreenHeight);
         if (includeCopyright)
@@ -286,13 +290,13 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         boundingBox = appLabel.GetBoundingBox(gcdc);
         appLabel.Draw(gcdc);
 
-        appLabel.GetGraphItemInfo().FontColor(wxColour(2, 186, 2)).Padding(4, 0, 4, 0);
+        appLabel.GetGraphItemInfo().Padding(4, 0, 4, 2);
         appLabel.Offset(boundingBox.GetWidth(), 0);
         appLabel.SetText(appName.substr(spacePos + 1));
         boundingBox = appLabel.GetBoundingBox(gcdc);
         appLabel.Draw(gcdc);
 
-        appLabel.GetGraphItemInfo().FontColor(*wxBLACK).Padding(4, 4, 4, 2);
+        appLabel.GetGraphItemInfo().FontColor(wxColour(L"#F89522")).Padding(4, 4, 4, 2);
         appLabel.Offset(boundingBox.GetWidth(), 0);
         appLabel.SetText(appSubName);
         appLabel.Draw(gcdc);
@@ -310,8 +314,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
                                  vendorName, _(L"All rights reserved.")))
                 .Pen(wxNullPen)
                 .Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
-                             false, GraphItems::Label::GetFirstAvailableMonospaceFont()))
-                .FontColor(*wxBLACK)
+                             false, theFontName))
+                .FontColor(*wxWHITE)
                 .Padding(4, 4, 4, 4)
                 .DPIScaling(1.0)
                 .Anchoring(Anchoring::BottomRightCorner)
