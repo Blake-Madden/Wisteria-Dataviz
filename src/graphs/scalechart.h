@@ -191,7 +191,8 @@ namespace Wisteria::Graphs
             @param colors The color scheme to apply to the points.
                 Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
-                Leave as null to use the standard shapes.*/
+                Leave as null to use the standard shapes.
+         */
         explicit ScaleChart(
             Wisteria::Canvas* canvas,
             std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
@@ -218,7 +219,8 @@ namespace Wisteria::Graphs
             @sa SetDataColumnHeader().
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
-                @c wxString::FromUTF8() when formatting it for an error message.*/
+                @c wxString::FromUTF8() when formatting it for an error message.
+         */
         void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
                      const std::optional<const wxString>& groupColumnName = std::nullopt);
 
@@ -231,7 +233,8 @@ namespace Wisteria::Graphs
             @param header An optional label to display above the scale.
             @warning The default scaling axis is 0-100. If you intend to change that,
                 then do that by calling `GetScalingAxis().SetRange()` before any calls
-                to this function.
+                to this function.\n
+                Also, all scales should be set up before calling SetData().
          */
         void AddScale(const std::vector<BarChart::BarBlock>& blocks,
                       const std::optional<double> scalingAxisStart = std::nullopt,
@@ -263,16 +266,33 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /// @returns Whether the score is being showcased.
+        /// @sa ShowcaseScore().
+        [[nodiscard]]
+        bool IsShowcasingScore() const noexcept
+            {
+            return m_showcaseScore;
+            }
+
+        /// @brief Makes most areas of the graph translucent except for where the score is,
+        ///     drawing attention to it.
+        /// @param showcase @c true to showcase where the score is.
+        /// @note This will have no effect if multiple scores are shown.
+        void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
+
       private:
         void RecalcSizes(wxDC& dc) override;
 
         void AdjustAxes();
+
+        void GhostAllBars();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
 
         std::vector<double> m_scaleValues;
         uint8_t m_precision{ 1 };
+        bool m_showcaseScore{ true };
         };
     } // namespace Wisteria::Graphs
 

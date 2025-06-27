@@ -66,6 +66,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         // get the score data
         m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
 
+        AdjustAxes();
+
         const auto [yStart, yEnd] = GetScalingAxis().GetRange();
         frequency_set<double> jitterPoints;
         for (const auto& datum : m_scoresColumn->GetValues())
@@ -78,6 +80,39 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             jitterPoints.insert(std::clamp<double>(datum, yStart, yEnd));
             }
         m_jitter.CalcSpread(jitterPoints);
+
+        if (IsShowcasingScore())
+            {
+            GhostAllBars();
+
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+                {
+                if (std::isnan(m_scoresColumn->GetValue(i)))
+                    {
+                    continue;
+                    }
+
+                // constrain scores to the scale
+                const auto currentScore =
+                    std::clamp<double>(m_scoresColumn->GetValue(i), yStart, yEnd);
+
+                for (auto& bar : GetBars())
+                    {
+                    auto barBlockStart = bar.GetCustomScalingAxisStartPosition().value_or(
+                        GetScalingAxis().GetRange().first);
+                    for (auto& barBlock : bar.GetBlocks())
+                        {
+                        if (is_within(currentScore, barBlockStart,
+                                      barBlockStart + barBlock.GetLength()))
+                            {
+                            barBlock.Ghost(false);
+                            break;
+                            }
+                        barBlockStart += barBlock.GetLength();
+                        }
+                    }
+                }
+            }
         }
 
     //----------------------------------------------------------------
@@ -144,10 +179,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         }
 
     //----------------------------------------------------------------
+    void ScaleChart::GhostAllBars()
+        {
+        if (IsShowcasingScore())
+            {
+            for (auto& bar : GetBars())
+                {
+                for (auto& barBlock : bar.GetBlocks())
+                    {
+                    barBlock.Ghost(true);
+                    }
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void ScaleChart::RecalcSizes(wxDC & dc)
         {
-        AdjustAxes();
-
         BarChart::RecalcSizes(dc);
 
         if (GetDataset() == nullptr)
@@ -201,7 +249,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         };
 
         std::ranges::for_each(std::as_const(m_scaleValues), [&addTextPoint, this](const auto& val)
-                      { addTextPoint(1, val, val, m_precision); });
+                              { addTextPoint(1, val, val, m_precision); });
 
         // start plotting the scores
         const auto [yStart, yEnd] = GetScalingAxis().GetRange();
