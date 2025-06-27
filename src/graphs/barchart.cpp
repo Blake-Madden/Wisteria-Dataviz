@@ -554,7 +554,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             if (barPercentOfLastInterval > math_constants::fifth)
                 {
                 GetScalingAxis().SetRange(
-                    currentRange.first, currentRange.second + GetScalingAxis().GetInterval(),
+                    currentRange.first,
+                    // for really wide labels, use two intervals
+                    currentRange.second + (currentRange.second > 100'000 ?
+                                               2 * GetScalingAxis().GetInterval() :
+                                               GetScalingAxis().GetInterval()),
                     GetScalingAxis().GetPrecision(), GetScalingAxis().GetInterval(),
                     GetScalingAxis().GetDisplayInterval());
                 }
