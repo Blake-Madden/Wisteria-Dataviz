@@ -33,7 +33,7 @@ namespace Wisteria::Graphs
             - Missing data in the group column will be shown as an empty legend label.
             - If either the X or Y value is missing data, then a gap in the line will be shown
               at where the observation appeared in the series. Because the points are drawn
-              along the X axis as the appear in the data, a missing data value will not be included
+              along the X axis as they appear in the data, a missing data value will not be included
               in the line, but will break the line. The following valid point in the series will
               restart the line.\n
               For example, if five points are being plotted and the third item contains missing
@@ -220,19 +220,19 @@ namespace Wisteria::Graphs
                 show markers for certain lines/groups.
             @code
              // to turn off markers, pass this in as the shape scheme argument
-             std::make_shared<IconScheme>(IconScheme{IconShape::BlankIcon}));
+             std::make_shared<IconScheme>(IconScheme{IconShape::BlankIcon});
 
              // to show an image as the point markers, use this
              std::make_shared<IconScheme>(IconScheme({IconShape::ImageIcon},
                 wxBitmapBundle::FromSVGFile(L"logo.svg",
-                    Image::GetSVGSize(L"logo.svg"))) ));
+                    Image::GetSVGSize(L"logo.svg"))));
 
             // or show a different image for each group
             std::make_shared<IconScheme>(IconScheme({IconShape::ImageIcon},
                 { wxBitmapBundle::FromSVGFile(L"hs.svg",
                     Image::GetSVGSize(L"hs.svg")),
                   wxBitmapBundle::FromSVGFile(L"university.svg",
-                    Image::GetSVGSize(L"university.svg")) } )));
+                    Image::GetSVGSize(L"university.svg")) }));
             @endcode
             @param linePenStyles The line styles to use for the lines.
                 The default is to use solid, straight lines.\n
@@ -244,13 +244,14 @@ namespace Wisteria::Graphs
                           std::shared_ptr<LineStyleScheme> linePenStyles = nullptr)
             : GroupGraph2D(canvas),
               m_linePenStyles(linePenStyles != nullptr ?
-                                  linePenStyles :
+                                  std::move(linePenStyles) :
                                   std::make_shared<LineStyleScheme>(LineStyleScheme{
                                       { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
             {
-            SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+            SetColorScheme(colors != nullptr ? std::move(colors) :
+                                               Settings::GetDefaultColorScheme());
             SetShapeScheme(shapes != nullptr ?
-                               shapes :
+                               std::move(shapes) :
                                std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                    Wisteria::Icons::Schemes::StandardShapes()));
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
@@ -283,7 +284,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         virtual void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
                              const wxString& xColumnName,
-                             std::optional<const wxString> groupColumnName = std::nullopt);
+                             const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /** @brief Sets an additional function to assign a point's color to something different
                 from the rest of its group based on a set of criteria.
@@ -304,7 +305,7 @@ namespace Wisteria::Graphs
                         wxNullColour;
                     });
             @endcode*/
-        void SetPointColorCriteria(PointColorCriteria criteria) { m_colorIf = criteria; }
+        void SetPointColorCriteria(const PointColorCriteria& criteria) { m_colorIf = criteria; }
 
         /// @name Line Functions
         /// @brief Functions relating to accessing and customizing the lines.
@@ -525,7 +526,7 @@ namespace Wisteria::Graphs
 
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]]
-        bool IsDataSingleDirection(std::shared_ptr<const Data::Dataset>& data,
+        bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
                                    const Data::GroupIdType group) const noexcept;
 
         Data::ContinuousColumnConstIterator m_xColumnContinuous;

@@ -118,7 +118,7 @@ namespace Wisteria::Graphs
          auto legend = OTroadmap->CreateLegend(
             LegendOptions().
                 IncludeHeader(true).
-                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
+                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
          const auto proportionForEachRoadMap =
             safe_divide<double>(1 - canvas->CalcMinHeightProportion(legend), 2);
          canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);
@@ -201,7 +201,7 @@ namespace Wisteria::Graphs
                      const std::optional<size_t>& minimumCountForItem);
 
         /// @brief Adds a caption explaining how to interpret the graph.
-        void AddDefaultCaption() final;
+        void AddDefaultCaption() override final;
 
         /** @brief Sets the legend label for positive influencers.
             @param label The label to display.*/
@@ -214,14 +214,14 @@ namespace Wisteria::Graphs
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
-        wxString GetPositiveLegendLabel() const final
+        wxString GetPositiveLegendLabel() const override final
             {
             return m_positiveLabel;
             }
 
         /// @returns The negative label used for the legend.
         [[nodiscard]]
-        wxString GetNegativeLegendLabel() const final
+        wxString GetNegativeLegendLabel() const override final
             {
             return m_negativeLabel;
             }

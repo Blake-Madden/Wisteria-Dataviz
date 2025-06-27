@@ -59,9 +59,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
                     .ToUTF8());
             }
 
-        auto maxVal = std::max_element(coefficientColumn->GetValues().cbegin(),
-                                       coefficientColumn->GetValues().cend(), [](auto lh, auto rh)
-                                       { return std::abs(lh) < std::abs(rh); });
+        const auto maxVal =
+            std::ranges::max_element(coefficientColumn->GetValues(),
+                                     [](auto lh, auto rh) { return std::abs(lh) < std::abs(rh); });
         // set the magnitude to the strongest coefficient (either negative or positive)
         SetMagnitude(std::abs(*maxVal));
         // if no valid coefficients, then quit

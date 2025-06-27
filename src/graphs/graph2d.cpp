@@ -85,15 +85,16 @@ namespace Wisteria::Graphs
 
         // combine lines with the same color and label
         std::vector<ReferenceLine> refLines{ GetReferenceLines() };
-        std::sort(refLines.begin(), refLines.end(),
-                  [](const auto& left, const auto& right) noexcept
-                  { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
-        refLines.erase(std::unique(refLines.begin(), refLines.end(),
-                                   [](const auto& left, const auto& right) noexcept
-                                   {
-                                       return (left.m_label.CmpNoCase(right.m_label) == 0 &&
-                                               left.m_pen.GetColour() == right.m_pen.GetColour());
-                                   }),
+        std::ranges::sort(refLines, [](const auto& left, const auto& right) noexcept
+                          { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
+        refLines.erase(std::ranges::unique(refLines,
+                                           [](const auto& left, const auto& right) noexcept
+                                           {
+                                               return (left.m_label.CmpNoCase(right.m_label) == 0 &&
+                                                       left.m_pen.GetColour() ==
+                                                           right.m_pen.GetColour());
+                                           })
+                           .begin(),
                        refLines.end());
         // resort by axis position and add to the legend
         std::sort(refLines.begin(), refLines.end());
@@ -109,15 +110,16 @@ namespace Wisteria::Graphs
 
         // combine areas with the same color and label
         std::vector<ReferenceArea> refAreas{ GetReferenceAreas() };
-        std::sort(refAreas.begin(), refAreas.end(),
-                  [](const auto& left, const auto& right) noexcept
-                  { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
-        refAreas.erase(std::unique(refAreas.begin(), refAreas.end(),
-                                   [](const auto& left, const auto& right) noexcept
-                                   {
-                                       return (left.m_label.CmpNoCase(right.m_label) == 0 &&
-                                               left.m_pen.GetColour() == right.m_pen.GetColour());
-                                   }),
+        std::ranges::sort(refAreas, [](const auto& left, const auto& right) noexcept
+                          { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
+        refAreas.erase(std::ranges::unique(refAreas,
+                                           [](const auto& left, const auto& right) noexcept
+                                           {
+                                               return (left.m_label.CmpNoCase(right.m_label) == 0 &&
+                                                       left.m_pen.GetColour() ==
+                                                           right.m_pen.GetColour());
+                                           })
+                           .begin(),
                        refAreas.end());
         // resort by axis position and add to the legend
         std::sort(refAreas.begin(), refAreas.end());
@@ -199,7 +201,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Graph2D::Graph2D(Canvas* canvas)
         {
-        SetDPIScaleFactor(canvas != nullptr ? canvas->GetDPIScaleFactor() : 1);
+        Graph2D::SetDPIScaleFactor(canvas != nullptr ? canvas->GetDPIScaleFactor() : 1);
         SetCanvas(canvas);
 
         GetTitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
@@ -257,16 +259,15 @@ namespace Wisteria::Graphs
         leftMargin = rightMargin = topMargin = bottomMargin = 0;
         std::vector<long> topMarginVals, bottomMarginVals, leftMarginVals, rightMarginVals;
 
-        const auto addGutterDifferences = [this, &topMarginVals, &bottomMarginVals,
-                                           &leftMarginVals, &rightMarginVals]
-            (const wxRect gutter)
-            {
+        const auto addGutterDifferences = [this, &topMarginVals, &bottomMarginVals, &leftMarginVals,
+                                           &rightMarginVals](const wxRect gutter)
+        {
             topMarginVals.push_back(GetLeftYAxis().GetTopPoint().y - gutter.GetTop());
             bottomMarginVals.push_back(gutter.GetBottom() - GetLeftYAxis().GetBottomPoint().y);
 
             leftMarginVals.push_back(GetBottomXAxis().GetLeftPoint().x - gutter.GetLeft());
             rightMarginVals.push_back(gutter.GetRight() - GetBottomXAxis().GetRightPoint().x);
-            };
+        };
 
         addGutterDifferences(GetLeftYAxis().GetBoundingBox(dc));
         addGutterDifferences(GetRightYAxis().GetBoundingBox(dc));
@@ -276,12 +277,14 @@ namespace Wisteria::Graphs
         // Adjust for any custom axes also.
         // Note that we are only interested in how much the custom axes overhang the main axes.
         for (const auto& customAxis : GetCustomAxes())
-            { addGutterDifferences(customAxis.GetBoundingBox(dc)); }
+            {
+            addGutterDifferences(customAxis.GetBoundingBox(dc));
+            }
 
-        topMargin = *std::max_element(topMarginVals.cbegin(), topMarginVals.cend());
-        bottomMargin = *std::max_element(bottomMarginVals.cbegin(), bottomMarginVals.cend());
-        leftMargin = *std::max_element(leftMarginVals.cbegin(), leftMarginVals.cend());
-        rightMargin = *std::max_element(rightMarginVals.cbegin(), rightMarginVals.cend());
+        topMargin = *std::ranges::max_element(std::as_const(topMarginVals));
+        bottomMargin = *std::ranges::max_element(std::as_const(bottomMarginVals));
+        leftMargin = *std::ranges::max_element(std::as_const(leftMarginVals));
+        rightMargin = *std::ranges::max_element(std::as_const(rightMarginVals));
         }
 
     //----------------------------------------------------------------
@@ -303,7 +306,7 @@ namespace Wisteria::Graphs
         {
         // sets the physical points for the axes
         const auto adjustAxesPoints = [&dc, this]()
-            {
+        {
             GetBottomXAxis().SetPoints(GetPlotAreaBoundingBox().GetLeftBottom(),
                                        GetPlotAreaBoundingBox().GetRightBottom(), dc);
             GetTopXAxis().SetPoints(GetPlotAreaBoundingBox().GetTopLeft(),
@@ -323,7 +326,8 @@ namespace Wisteria::Graphs
                 for (auto& customAxis : GetCustomAxes())
                     {
                     wxCoord x{ 0 }, y{ 0 };
-                    if (GetBottomXAxis().GetPhysicalCoordinate(customAxis.GetCustomXPosition(), x) &&
+                    if (GetBottomXAxis().GetPhysicalCoordinate(customAxis.GetCustomXPosition(),
+                                                               x) &&
                         GetLeftYAxis().GetPhysicalCoordinate(customAxis.GetCustomYPosition(), y))
                         {
                         if (customAxis.IsVertical())
@@ -333,14 +337,14 @@ namespace Wisteria::Graphs
                             wxCoord yStartCoordinateOffsetted{ 0 };
                             if (customAxis.GetPhysicalCustomYPosition() != -1 &&
                                 GetLeftYAxis().GetPhysicalCoordinate(
-                                    rangeYStart+customAxis.GetOffsetFromParentAxis(),
+                                    rangeYStart + customAxis.GetOffsetFromParentAxis(),
                                     yStartCoordinateOffsetted))
                                 {
                                 customAxis.SetPoints(
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(),
-                                        customAxis.GetPhysicalCustomYPosition()),
+                                            customAxis.GetPhysicalCustomYPosition()),
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(),
-                                        yStartCoordinateOffsetted),
+                                            yStartCoordinateOffsetted),
                                     dc);
                                 }
                             }
@@ -348,24 +352,24 @@ namespace Wisteria::Graphs
                             {
                             customAxis.SetPhysicalCustomXPosition(x);
                             customAxis.SetPhysicalCustomYPosition(y);
-                            wxCoord xStartCoordinateOffsetted{0};
+                            wxCoord xStartCoordinateOffsetted{ 0 };
                             if (customAxis.GetPhysicalCustomXPosition() != -1 &&
                                 GetBottomXAxis().GetPhysicalCoordinate(
-                                    rangeXStart+customAxis.GetOffsetFromParentAxis(),
+                                    rangeXStart + customAxis.GetOffsetFromParentAxis(),
                                     xStartCoordinateOffsetted))
                                 {
                                 customAxis.SetPoints(
                                     wxPoint(xStartCoordinateOffsetted,
-                                        customAxis.GetPhysicalCustomYPosition()),
+                                            customAxis.GetPhysicalCustomYPosition()),
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(),
-                                        customAxis.GetPhysicalCustomYPosition()),
+                                            customAxis.GetPhysicalCustomYPosition()),
                                     dc);
                                 }
                             }
                         }
                     }
                 }
-            };
+        };
 
         m_plotRect = GetBoundingBox(dc);
         // constrain to zero origin in case it goes outside of that by a pixel or two
@@ -373,27 +377,27 @@ namespace Wisteria::Graphs
         // set the axes' points assuming the entire drawing area, then measure their overhangs
         adjustAxesPoints();
 
-        long leftAxisOverhang{ 0 }, rightAxisOverhang{ 0 },
-             topAxisOverhang{ 0 }, bottomAxisOverhang{ 0 };
-        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang,
-                        topAxisOverhang, bottomAxisOverhang, dc);
+        long leftAxisOverhang{ 0 }, rightAxisOverhang{ 0 }, topAxisOverhang{ 0 },
+            bottomAxisOverhang{ 0 };
+        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang, topAxisOverhang, bottomAxisOverhang,
+                        dc);
 
-        m_calculatedLeftPadding = std::max<long>(leftAxisOverhang,
-            GetLeftYAxis().GetProtrudingBoundingBox(dc).GetWidth());
-        m_calculatedRightPadding = std::max<long>(rightAxisOverhang,
-            GetRightYAxis().GetProtrudingBoundingBox(dc).GetWidth());
-        m_calculatedBottomPadding = std::max<long>(bottomAxisOverhang,
-            GetBottomXAxis().GetProtrudingBoundingBox(dc).GetHeight());
-        m_calculatedTopPadding = std::max<long>(topAxisOverhang,
-            GetTopXAxis().GetProtrudingBoundingBox(dc).GetHeight());
+        m_calculatedLeftPadding = std::max<long>(
+            leftAxisOverhang, GetLeftYAxis().GetProtrudingBoundingBox(dc).GetWidth());
+        m_calculatedRightPadding = std::max<long>(
+            rightAxisOverhang, GetRightYAxis().GetProtrudingBoundingBox(dc).GetWidth());
+        m_calculatedBottomPadding = std::max<long>(
+            bottomAxisOverhang, GetBottomXAxis().GetProtrudingBoundingBox(dc).GetHeight());
+        m_calculatedTopPadding =
+            std::max<long>(topAxisOverhang, GetTopXAxis().GetProtrudingBoundingBox(dc).GetHeight());
 
         // shrink the plot area to fit so that the axes outer area fit in the drawing area
         m_plotRect.x += m_calculatedLeftPadding;
         m_plotRect.y += m_calculatedTopPadding;
         m_plotRect.SetWidth(m_plotRect.GetWidth() -
-            (m_calculatedLeftPadding+m_calculatedRightPadding));
+                            (m_calculatedLeftPadding + m_calculatedRightPadding));
         m_plotRect.SetHeight(m_plotRect.GetHeight() -
-            (m_calculatedTopPadding+m_calculatedBottomPadding));
+                             (m_calculatedTopPadding + m_calculatedBottomPadding));
 
         if (m_plotRect.GetWidth() < 0)
             {
@@ -413,8 +417,8 @@ namespace Wisteria::Graphs
             // if too wide, shrink down its scaling
             if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
                 {
-                const auto rescaleFactor = safe_divide<double>(GetBoundingBox(dc).GetWidth(),
-                    titleRect.GetWidth());
+                const auto rescaleFactor =
+                    safe_divide<double>(GetBoundingBox(dc).GetWidth(), titleRect.GetWidth());
                 GetTitle().SetScaling(GetTitle().GetScaling() * rescaleFactor);
                 titleRect = GetTitle().GetBoundingBox(dc);
                 }
@@ -436,8 +440,8 @@ namespace Wisteria::Graphs
             // if too wide, shrink down its scaling
             if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
                 {
-                const auto rescaleFactor = safe_divide<double>(GetBoundingBox(dc).GetWidth(),
-                    titleRect.GetWidth());
+                const auto rescaleFactor =
+                    safe_divide<double>(GetBoundingBox(dc).GetWidth(), titleRect.GetWidth());
                 GetSubtitle().SetScaling(GetSubtitle().GetScaling() * rescaleFactor);
                 titleRect = GetSubtitle().GetBoundingBox(dc);
                 }
@@ -456,7 +460,8 @@ namespace Wisteria::Graphs
         if ((GetTitle().GetText().length() && GetTitle().IsShown()) ||
             (GetSubtitle().GetText().length() && GetSubtitle().IsShown()))
             {
-            const auto lineSpacing = ScaleToScreenAndCanvas(GetCaption().GetLineSpacing() *
+            const auto lineSpacing = ScaleToScreenAndCanvas(
+                GetCaption().GetLineSpacing() *
                 ((GetTitle().GetText().length() && GetSubtitle().GetText().length()) ? 3 : 2));
             m_plotRect.y += lineSpacing;
             m_plotRect.SetHeight(m_plotRect.GetHeight() - lineSpacing);
@@ -468,8 +473,8 @@ namespace Wisteria::Graphs
             // if too wide, shrink down its scaling
             if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
                 {
-                const auto rescaleFactor = safe_divide<double>(GetBoundingBox(dc).GetWidth(),
-                    titleRect.GetWidth());
+                const auto rescaleFactor =
+                    safe_divide<double>(GetBoundingBox(dc).GetWidth(), titleRect.GetWidth());
                 GetCaption().SetScaling(GetCaption().GetScaling() * rescaleFactor);
                 titleRect = GetCaption().GetBoundingBox(dc);
                 }
@@ -480,19 +485,20 @@ namespace Wisteria::Graphs
                 }
 
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
-                                  (GetCaption().GetBoundingBox(dc).GetHeight()+
-                                   (ScaleToScreenAndCanvas(GetCaption().GetLineSpacing()*2))));
+                                 (GetCaption().GetBoundingBox(dc).GetHeight() +
+                                  (ScaleToScreenAndCanvas(GetCaption().GetLineSpacing() * 2))));
             }
 
         // adjust axes and do one more pass to ensure nothing like
-        // custom axis brackets are going outside of the area
+        // custom axis brackets are going outside the area
         adjustAxesPoints();
-        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang,
-            topAxisOverhang, bottomAxisOverhang, dc);
+        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang, topAxisOverhang, bottomAxisOverhang,
+                        dc);
 
         if (m_calculatedRightPadding < rightAxisOverhang)
             {
-            m_plotRect.SetWidth(m_plotRect.GetWidth() - (rightAxisOverhang - m_calculatedRightPadding));
+            m_plotRect.SetWidth(m_plotRect.GetWidth() -
+                                (rightAxisOverhang - m_calculatedRightPadding));
             m_calculatedRightPadding = rightAxisOverhang;
             }
 
@@ -500,13 +506,21 @@ namespace Wisteria::Graphs
         // (e.g., another graph), then adjust them now
         const auto originalPlotArea = GetPlotAreaBoundingBox();
         if (GetContentTop())
-            { m_plotRect.SetTop(GetContentTop().value()); }
+            {
+            m_plotRect.SetTop(GetContentTop().value());
+            }
         if (GetContentBottom())
-            { m_plotRect.SetBottom(GetContentBottom().value()); }
+            {
+            m_plotRect.SetBottom(GetContentBottom().value());
+            }
         if (GetContentLeft())
-            { m_plotRect.SetLeft(GetContentLeft().value()); }
+            {
+            m_plotRect.SetLeft(GetContentLeft().value());
+            }
         if (GetContentRight())
-            { m_plotRect.SetRight(GetContentRight().value()); }
+            {
+            m_plotRect.SetRight(GetContentRight().value());
+            }
         const auto adjustedPlotArea = GetPlotAreaBoundingBox();
 
         // ...and shrink the graph (draw) area to the smaller plot area
@@ -514,19 +528,21 @@ namespace Wisteria::Graphs
         if (adjustedPlotArea.GetWidth() < originalPlotArea.GetWidth())
             {
             drawArea.SetLeft(drawArea.GetLeft() +
-                (adjustedPlotArea.GetLeft() - originalPlotArea.GetLeft()));
+                             (adjustedPlotArea.GetLeft() - originalPlotArea.GetLeft()));
             drawArea.SetWidth(drawArea.GetWidth() -
-                (originalPlotArea.GetWidth() - adjustedPlotArea.GetWidth()));
+                              (originalPlotArea.GetWidth() - adjustedPlotArea.GetWidth()));
             }
         if (adjustedPlotArea.GetHeight() < originalPlotArea.GetHeight())
             {
             drawArea.SetTop(drawArea.GetTop() +
-                (adjustedPlotArea.GetTop() - originalPlotArea.GetTop()));
+                            (adjustedPlotArea.GetTop() - originalPlotArea.GetTop()));
             drawArea.SetHeight(drawArea.GetHeight() -
-                (originalPlotArea.GetHeight() - adjustedPlotArea.GetHeight()));
+                               (originalPlotArea.GetHeight() - adjustedPlotArea.GetHeight()));
             }
         if (drawArea != GetBoundingBox(dc))
-            { SetBoundingBox(drawArea, dc, GetScaling()); }
+            {
+            SetBoundingBox(drawArea, dc, GetScaling());
+            }
 
         // reset the axes' points to the updated plot area
         adjustAxesPoints();
@@ -537,12 +553,14 @@ namespace Wisteria::Graphs
         {
         for (auto& object : m_plotObjects)
             {
-            if (GetSelectedIds().find(object->GetId()) != GetSelectedIds().cend())
+            if (GetSelectedIds().contains(object->GetId()))
                 {
                 // if applicable, set the object's subitems' selections from before
                 auto foundItem = m_selectedItemsWithSubitems.find(object->GetId());
                 if (foundItem != m_selectedItemsWithSubitems.cend())
-                    { object->GetSelectedIds() = foundItem->second; }
+                    {
+                    object->GetSelectedIds() = foundItem->second;
+                    }
                 // and reset its previous selection state
                 object->SetSelected(true);
                 }
@@ -565,13 +583,14 @@ namespace Wisteria::Graphs
         if (GetBoundingBox(dc).IsEmpty())
             {
             if (GetCanvas() != nullptr)
-                { SetBoundingBox(GetCanvas()->GetCanvasRect(dc), dc, GetScaling()); }
+                {
+                SetBoundingBox(GetCanvas()->GetCanvasRect(dc), dc, GetScaling());
+                }
             else
                 {
-                SetBoundingBox(
-                    wxRect(wxSize(Canvas::GetDefaultCanvasWidthDIPs(),
-                                  Canvas::GetDefaultCanvasHeightDIPs())),
-                    dc, 1.0);
+                SetBoundingBox(wxRect(wxSize(Canvas::GetDefaultCanvasWidthDIPs(),
+                                             Canvas::GetDefaultCanvasHeightDIPs())),
+                               dc, 1.0);
                 }
             }
 
@@ -590,7 +609,9 @@ namespace Wisteria::Graphs
             customAxis.SetScaling(GetScaling());
             customAxis.SetAxisLabelScaling(GetScaling());
             for (auto& bracket : customAxis.GetBrackets())
-                { bracket.GetLabel().SetScaling(GetScaling()); }
+                {
+                bracket.GetLabel().SetScaling(GetScaling());
+                }
             }
         GetTitle().SetScaling(GetScaling());
         GetSubtitle().SetScaling(GetScaling());
@@ -598,35 +619,45 @@ namespace Wisteria::Graphs
 
         // update mirrored axes
         if (IsXAxisMirrored())
-            { GetTopXAxis().CopySettings(GetBottomXAxis()); }
+            {
+            GetTopXAxis().CopySettings(GetBottomXAxis());
+            }
         if (IsYAxisMirrored())
-            { GetRightYAxis().CopySettings(GetLeftYAxis()); }
+            {
+            GetRightYAxis().CopySettings(GetLeftYAxis());
+            }
 
         AdjustPlotArea(dc);
 
         const bool shouldStackLeftY = GetLeftYAxis().ShouldLabelsBeStackedToFit(dc);
-        if (GetLeftYAxis().IsShown() &&
-            ((GetLeftYAxis().IsStackingLabels() && !shouldStackLeftY) ||
-            (!GetLeftYAxis().IsStackingLabels() && shouldStackLeftY)) )
-            { GetLeftYAxis().StackLabels(shouldStackLeftY); }
+        if (GetLeftYAxis().IsShown() && ((GetLeftYAxis().IsStackingLabels() && !shouldStackLeftY) ||
+                                         (!GetLeftYAxis().IsStackingLabels() && shouldStackLeftY)))
+            {
+            GetLeftYAxis().StackLabels(shouldStackLeftY);
+            }
 
         const bool shouldStackRightY = GetRightYAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetRightYAxis().IsShown() &&
             ((GetRightYAxis().IsStackingLabels() && !shouldStackRightY) ||
-            (!GetRightYAxis().IsStackingLabels() && shouldStackRightY)) )
-            { GetRightYAxis().StackLabels(shouldStackRightY); }
+             (!GetRightYAxis().IsStackingLabels() && shouldStackRightY)))
+            {
+            GetRightYAxis().StackLabels(shouldStackRightY);
+            }
 
         const bool shouldStackBottomX = GetBottomXAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetBottomXAxis().IsShown() &&
             ((GetBottomXAxis().IsStackingLabels() && !shouldStackBottomX) ||
-            (!GetBottomXAxis().IsStackingLabels() && shouldStackBottomX)) )
-            { GetBottomXAxis().StackLabels(shouldStackBottomX); }
+             (!GetBottomXAxis().IsStackingLabels() && shouldStackBottomX)))
+            {
+            GetBottomXAxis().StackLabels(shouldStackBottomX);
+            }
 
         const bool shouldStackTopX = GetTopXAxis().ShouldLabelsBeStackedToFit(dc);
-        if (GetTopXAxis().IsShown() &&
-            ((GetTopXAxis().IsStackingLabels() && !shouldStackTopX) ||
-            (!GetTopXAxis().IsStackingLabels() && shouldStackTopX)) )
-            { GetTopXAxis().StackLabels(shouldStackTopX); }
+        if (GetTopXAxis().IsShown() && ((GetTopXAxis().IsStackingLabels() && !shouldStackTopX) ||
+                                        (!GetTopXAxis().IsStackingLabels() && shouldStackTopX)))
+            {
+            GetTopXAxis().StackLabels(shouldStackTopX);
+            }
 
         // Use a consistent font scaling for the four main axes, using the smallest one.
         // Note that the fonts will only be made smaller (not larger) across the axes, so
@@ -636,28 +667,31 @@ namespace Wisteria::Graphs
         const double leftYLabelScaling = GetLeftYAxis().CalcBestScalingToFitLabels(dc);
         const double rightYLabelScaling = GetRightYAxis().CalcBestScalingToFitLabels(dc);
 
-        const double smallestMainAxesLabelScaling = std::min({
-                                                       bottomXLabelScaling, topXLabelScaling,
-                                                       leftYLabelScaling, rightYLabelScaling });
+        const double smallestMainAxesLabelScaling = std::min(
+            { bottomXLabelScaling, topXLabelScaling, leftYLabelScaling, rightYLabelScaling });
         double smallestCustomAxisLabelScaling = smallestMainAxesLabelScaling;
         if (GetCustomAxes().size())
             {
-            const auto& smallestScaledCustomAxis = *std::min_element(GetCustomAxes().cbegin(),
-                GetCustomAxes().cend(),
+            const auto& smallestScaledCustomAxis = *std::ranges::min_element(
+                std::as_const(GetCustomAxes()),
                 [](const auto& lhv, const auto& rhv) noexcept
-                { return compare_doubles_less(lhv.GetAxisLabelScaling(),
-                                              rhv.GetAxisLabelScaling()); });
+                {
+                    return compare_doubles_less(lhv.GetAxisLabelScaling(),
+                                                rhv.GetAxisLabelScaling());
+                });
             smallestCustomAxisLabelScaling = smallestScaledCustomAxis.GetAxisLabelScaling();
             }
-        const double smallestLabelScaling = std::min(smallestMainAxesLabelScaling,
-                                                     smallestCustomAxisLabelScaling);
+        const double smallestLabelScaling =
+            std::min(smallestMainAxesLabelScaling, smallestCustomAxisLabelScaling);
         GetBottomXAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetTopXAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetLeftYAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetRightYAxis().SetAxisLabelScaling(smallestLabelScaling);
 
         for (auto& customAxis : GetCustomAxes())
-            { customAxis.SetAxisLabelScaling(smallestLabelScaling); }
+            {
+            customAxis.SetAxisLabelScaling(smallestLabelScaling);
+            }
 
         // adjust plot margins again in case stacking or common axis
         // label scaling was changed
@@ -690,16 +724,17 @@ namespace Wisteria::Graphs
                         if (bBox.Intersects(nextBBox))
                             {
                             const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
-                            const auto percentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
+                            const auto percentEclipsed =
+                                safe_divide<double>(heightEclipsed, bBox.GetHeight());
                             customAxis.GetBrackets()[i].GetLabel().SetScaling(
                                 std::max(MIN_BRACKET_FONT_SCALE,
-                                    customAxis.GetBrackets()[i].GetLabel().GetScaling() *
-                                        (1.0 - percentEclipsed)) );
-                            smallestBracketFontScale =
-                                std::max(MIN_BRACKET_FONT_SCALE,
-                                    std::min(smallestBracketFontScale.value_or(
+                                         customAxis.GetBrackets()[i].GetLabel().GetScaling() *
+                                             (1.0 - percentEclipsed)));
+                            smallestBracketFontScale = std::max(
+                                MIN_BRACKET_FONT_SCALE,
+                                std::min(smallestBracketFontScale.value_or(
                                              customAxis.GetBrackets()[i].GetLabel().GetScaling()),
-                                             customAxis.GetBrackets()[i].GetLabel().GetScaling()));
+                                         customAxis.GetBrackets()[i].GetLabel().GetScaling()));
                             }
                         }
                     }
@@ -725,16 +760,17 @@ namespace Wisteria::Graphs
                         if (bBox.Intersects(nextBBox))
                             {
                             const auto widthEclipsed = bBox.GetRight() - nextBBox.GetLeft();
-                            const auto percentEclipsed = safe_divide<double>(widthEclipsed, bBox.GetWidth());
+                            const auto percentEclipsed =
+                                safe_divide<double>(widthEclipsed, bBox.GetWidth());
                             customAxis.GetBrackets()[i].GetLabel().SetScaling(
                                 std::max(MIN_BRACKET_FONT_SCALE,
-                                    customAxis.GetBrackets()[i].GetLabel().GetScaling() *
-                                        (1.0 - percentEclipsed)) );
-                            smallestBracketFontScale =
-                                std::max(MIN_BRACKET_FONT_SCALE,
-                                    std::min(smallestBracketFontScale.value_or(
+                                         customAxis.GetBrackets()[i].GetLabel().GetScaling() *
+                                             (1.0 - percentEclipsed)));
+                            smallestBracketFontScale = std::max(
+                                MIN_BRACKET_FONT_SCALE,
+                                std::min(smallestBracketFontScale.value_or(
                                              customAxis.GetBrackets()[i].GetLabel().GetScaling()),
-                                             customAxis.GetBrackets()[i].GetLabel().GetScaling()));
+                                         customAxis.GetBrackets()[i].GetLabel().GetScaling()));
                             }
                         }
                     }
@@ -747,7 +783,9 @@ namespace Wisteria::Graphs
             for (auto& customAxis : GetCustomAxes())
                 {
                 for (auto& bracket : customAxis.GetBrackets())
-                    { bracket.GetLabel().SetScaling(smallestBracketFontScale.value()); }
+                    {
+                    bracket.GetLabel().SetScaling(smallestBracketFontScale.value());
+                    }
                 }
             }
 
@@ -758,7 +796,7 @@ namespace Wisteria::Graphs
         if (GetPlotBackgroundColor().IsOk() &&
             GetPlotBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
             {
-            wxPoint boxPoints[4]{ {0, 0} };
+            wxPoint boxPoints[4]{ { 0, 0 } };
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             AddObject(
                 std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
@@ -773,62 +811,62 @@ namespace Wisteria::Graphs
             {
             auto img = std::make_unique<Image>(
                 (m_plotAreaImageFit == ImageFit::Shrink ?
-                    Image::ShrinkImageToRect(
-                        m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
-                        GetPlotAreaBoundingBox().GetSize()) :
-                    Image::CropImageToRect(
-                        m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize()).ConvertToImage(),
-                        GetPlotAreaBoundingBox().GetSize(), true) ));
+                     Image::ShrinkImageToRect(
+                         m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize())
+                             .ConvertToImage(),
+                         GetPlotAreaBoundingBox().GetSize()) :
+                     Image::CropImageToRect(
+                         m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize())
+                             .ConvertToImage(),
+                         GetPlotAreaBoundingBox().GetSize(), true)));
             img->SetDPIScaleFactor(dc.FromDIP(1));
             img->SetAnchoring(Anchoring::TopLeftCorner);
-            img->SetAnchorPoint(
-                m_plotAreaImageFit == ImageFit::Shrink ?
-                wxPoint(GetPlotAreaBoundingBox().GetLeft() +
-                    (((GetPlotAreaBoundingBox().GetWidth() - img->GetImageSize().GetWidth()) / 2)),
-                    GetPlotAreaBoundingBox().GetTop() +
-                    (((GetPlotAreaBoundingBox().GetHeight() - img->GetImageSize().GetHeight()) / 2))) :
-                GetPlotAreaBoundingBox().GetTopLeft());
+            img->SetAnchorPoint(m_plotAreaImageFit == ImageFit::Shrink ?
+                                    wxPoint(GetPlotAreaBoundingBox().GetLeft() +
+                                                (((GetPlotAreaBoundingBox().GetWidth() -
+                                                   img->GetImageSize().GetWidth()) /
+                                                  2)),
+                                            GetPlotAreaBoundingBox().GetTop() +
+                                                (((GetPlotAreaBoundingBox().GetHeight() -
+                                                   img->GetImageSize().GetHeight()) /
+                                                  2))) :
+                                    GetPlotAreaBoundingBox().GetTopLeft());
             img->SetOpacity(m_bgImageOpacity);
             AddObject(std::move(img));
             }
 
         // draw the X axis grid lines
-        if (GetBottomXAxis().IsShown() &&
-            GetBottomXAxis().GetGridlinePen().IsOk() &&
+        if (GetBottomXAxis().IsShown() && GetBottomXAxis().GetGridlinePen().IsOk() &&
             GetBottomXAxis().GetAxisPointsCount() > 2)
             {
-            auto xAxisLines =
-                std::make_unique<Wisteria::GraphItems::Lines>(
-                    GetBottomXAxis().GetGridlinePen(), GetScaling());
-            for (auto pos = GetBottomXAxis().GetAxisPoints().cbegin()+1;
-                pos != GetBottomXAxis().GetAxisPoints().cend()-1;
-                ++pos)
+            auto xAxisLines = std::make_unique<Wisteria::GraphItems::Lines>(
+                GetBottomXAxis().GetGridlinePen(), GetScaling());
+            for (auto pos = GetBottomXAxis().GetAxisPoints().cbegin() + 1;
+                 pos != GetBottomXAxis().GetAxisPoints().cend() - 1; ++pos)
                 {
-                xAxisLines->AddLine(
-                    wxPoint(static_cast<wxCoord>(pos->GetPhysicalCoordinate()),
-                        GetPlotAreaBoundingBox().GetY()),
-                    wxPoint(static_cast<wxCoord>(pos->GetPhysicalCoordinate()),
-                        (GetPlotAreaBoundingBox().GetY() + GetPlotAreaBoundingBox().GetHeight())));
+                xAxisLines->AddLine(wxPoint(static_cast<wxCoord>(pos->GetPhysicalCoordinate()),
+                                            GetPlotAreaBoundingBox().GetY()),
+                                    wxPoint(static_cast<wxCoord>(pos->GetPhysicalCoordinate()),
+                                            (GetPlotAreaBoundingBox().GetY() +
+                                             GetPlotAreaBoundingBox().GetHeight())));
                 }
             AddObject(std::move(xAxisLines));
             }
 
         // draw the Y axis grid lines
-        if (GetLeftYAxis().IsShown() &&
-            GetLeftYAxis().GetGridlinePen().IsOk() &&
+        if (GetLeftYAxis().IsShown() && GetLeftYAxis().GetGridlinePen().IsOk() &&
             GetLeftYAxis().GetAxisPointsCount() > 2)
             {
-            auto yAxisLines =
-                std::make_unique<Wisteria::GraphItems::Lines>(GetLeftYAxis().GetGridlinePen(),
-                                                              GetScaling());
-            for (auto pos = GetLeftYAxis().GetAxisPoints().cbegin()+1;
-                pos != GetLeftYAxis().GetAxisPoints().cend()-1;
-                ++pos)
+            auto yAxisLines = std::make_unique<Wisteria::GraphItems::Lines>(
+                GetLeftYAxis().GetGridlinePen(), GetScaling());
+            for (auto pos = GetLeftYAxis().GetAxisPoints().cbegin() + 1;
+                 pos != GetLeftYAxis().GetAxisPoints().cend() - 1; ++pos)
                 {
-                yAxisLines->AddLine(wxPoint(GetPlotAreaBoundingBox().GetX(),
-                    static_cast<wxCoord>(pos->GetPhysicalCoordinate())),
-                    wxPoint((GetPlotAreaBoundingBox().GetX()+GetPlotAreaBoundingBox().GetWidth()),
-                        static_cast<wxCoord>(pos->GetPhysicalCoordinate())) );
+                yAxisLines->AddLine(
+                    wxPoint(GetPlotAreaBoundingBox().GetX(),
+                            static_cast<wxCoord>(pos->GetPhysicalCoordinate())),
+                    wxPoint((GetPlotAreaBoundingBox().GetX() + GetPlotAreaBoundingBox().GetWidth()),
+                            static_cast<wxCoord>(pos->GetPhysicalCoordinate())));
                 }
             AddObject(std::move(yAxisLines));
             }
@@ -856,8 +894,8 @@ namespace Wisteria::Graphs
                 title->SetAnchoring(Anchoring::Center);
                 auto topPt = GetBoundingBox(dc).GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing()) +
-                            safe_divide<double>(title->GetBoundingBox(dc).GetHeight(), 2);
-                topPt.x += GetBoundingBox(dc).GetWidth()/2;
+                           safe_divide<double>(title->GetBoundingBox(dc).GetHeight(), 2);
+                topPt.x += GetBoundingBox(dc).GetWidth() / 2;
                 title->SetAnchorPoint(topPt);
                 }
             else if (title->GetRelativeAlignment() == RelativeAlignment::FlushRight)
@@ -874,9 +912,9 @@ namespace Wisteria::Graphs
         if (GetSubtitle().GetText().length())
             {
             const auto titleSpacing = (GetTitle().GetText().length() ?
-                GetTitle().GetBoundingBox(dc).GetHeight() +
-                ScaleToScreenAndCanvas(GetTitle().GetLineSpacing()) :
-                0);
+                                           GetTitle().GetBoundingBox(dc).GetHeight() +
+                                               ScaleToScreenAndCanvas(GetTitle().GetLineSpacing()) :
+                                           0);
             auto subtitle = std::make_unique<GraphItems::Label>(GetSubtitle());
             if (subtitle->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
@@ -890,15 +928,16 @@ namespace Wisteria::Graphs
                 subtitle->SetAnchoring(Anchoring::Center);
                 auto topPt = GetBoundingBox(dc).GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) +
-                    safe_divide<double>(subtitle->GetBoundingBox(dc).GetHeight(), 2) + titleSpacing;
-                topPt.x += GetBoundingBox(dc).GetWidth()/2;
+                           safe_divide<double>(subtitle->GetBoundingBox(dc).GetHeight(), 2) +
+                           titleSpacing;
+                topPt.x += GetBoundingBox(dc).GetWidth() / 2;
                 subtitle->SetAnchorPoint(topPt);
                 }
             else if (subtitle->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
                 subtitle->SetAnchoring(Anchoring::TopRightCorner);
                 auto topPt = GetBoundingBox(dc).GetRightTop();
-                topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing())+titleSpacing;
+                topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) + titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
                 }
             AddObject(std::move(subtitle));
@@ -920,8 +959,8 @@ namespace Wisteria::Graphs
                 caption->SetAnchoring(Anchoring::Center);
                 auto bottomPt = GetBoundingBox(dc).GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing()) +
-                    safe_divide<double>(caption->GetBoundingBox(dc).GetHeight(), 2);
-                bottomPt.x += GetBoundingBox(dc).GetWidth()/2;
+                              safe_divide<double>(caption->GetBoundingBox(dc).GetHeight(), 2);
+                bottomPt.x += GetBoundingBox(dc).GetWidth() / 2;
                 caption->SetAnchorPoint(bottomPt);
                 }
             else if (caption->GetRelativeAlignment() == RelativeAlignment::FlushRight)
@@ -949,26 +988,25 @@ namespace Wisteria::Graphs
             if (refLine.m_axisType == AxisType::LeftYAxis ||
                 refLine.m_axisType == AxisType::RightYAxis)
                 {
-                const auto& parentAxis = (refLine.m_axisType == AxisType::LeftYAxis ?
-                                          GetLeftYAxis() : GetRightYAxis());
+                const auto& parentAxis =
+                    (refLine.m_axisType == AxisType::LeftYAxis ? GetLeftYAxis() : GetRightYAxis());
                 if (parentAxis.GetPhysicalCoordinate(refLine.m_axisPosition, axisCoord))
                     {
-                    dividerLine->AddLine(
-                        wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord),
-                        wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord));
+                    dividerLine->AddLine(wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord),
+                                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord));
                     AddObject(std::move(dividerLine));
                     }
                 }
             else if (refLine.m_axisType == AxisType::BottomXAxis ||
                      refLine.m_axisType == AxisType::TopXAxis)
                 {
-                const auto& parentAxis = (refLine.m_axisType == AxisType::BottomXAxis ?
-                                          GetBottomXAxis() : GetTopXAxis());
+                const auto& parentAxis =
+                    (refLine.m_axisType == AxisType::BottomXAxis ? GetBottomXAxis() :
+                                                                   GetTopXAxis());
                 if (parentAxis.GetPhysicalCoordinate(refLine.m_axisPosition, axisCoord))
                     {
-                    dividerLine->AddLine(
-                        wxPoint(axisCoord, GetLeftYAxis().GetBottomPoint().y),
-                        wxPoint(axisCoord, GetLeftYAxis().GetTopPoint().y));
+                    dividerLine->AddLine(wxPoint(axisCoord, GetLeftYAxis().GetBottomPoint().y),
+                                         wxPoint(axisCoord, GetLeftYAxis().GetTopPoint().y));
                     AddObject(std::move(dividerLine));
                     }
                 }
@@ -985,22 +1023,19 @@ namespace Wisteria::Graphs
             if (refArea.m_axisType == AxisType::LeftYAxis ||
                 refArea.m_axisType == AxisType::RightYAxis)
                 {
-                const auto& parentAxis = (refArea.m_axisType == AxisType::LeftYAxis ?
-                                          GetLeftYAxis() : GetRightYAxis());
+                const auto& parentAxis =
+                    (refArea.m_axisType == AxisType::LeftYAxis ? GetLeftYAxis() : GetRightYAxis());
                 if (parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition, axisCoord1) &&
                     parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition2, axisCoord2))
                     {
-                    const wxPoint boxPoints[4] =
-                        {
+                    const wxPoint boxPoints[4] = {
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord1),
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord1),
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2),
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2)
-                        };
+                    };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().
-                        Pen(wxNullPen),
-                        boxPoints, std::size(boxPoints));
+                        GraphItemInfo().Pen(wxNullPen), boxPoints, std::size(boxPoints));
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
                         area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
@@ -1010,16 +1045,16 @@ namespace Wisteria::Graphs
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(
-                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                         Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::South));
                         }
                     else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromBottomToTop)
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(
-                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                         Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::North));
                         }
                     AddObject(std::move(area));
@@ -1044,24 +1079,22 @@ namespace Wisteria::Graphs
                     }
                 }
             else if (refArea.m_axisType == AxisType::BottomXAxis ||
-                refArea.m_axisType == AxisType::TopXAxis)
+                     refArea.m_axisType == AxisType::TopXAxis)
                 {
-                const auto& parentAxis = (refArea.m_axisType == AxisType::BottomXAxis ?
-                                          GetBottomXAxis() : GetTopXAxis());
+                const auto& parentAxis =
+                    (refArea.m_axisType == AxisType::BottomXAxis ? GetBottomXAxis() :
+                                                                   GetTopXAxis());
                 if (parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition, axisCoord1) &&
                     parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition2, axisCoord2))
                     {
-                    const wxPoint boxPoints[4] =
-                        {
+                    const wxPoint boxPoints[4] = {
                         wxPoint(axisCoord1, GetLeftYAxis().GetBottomPoint().y),
                         wxPoint(axisCoord1, GetLeftYAxis().GetTopPoint().y),
                         wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y),
                         wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y)
-                        };
+                    };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().
-                        Pen(wxNullPen),
-                        boxPoints, std::size(boxPoints));
+                        GraphItemInfo().Pen(wxNullPen), boxPoints, std::size(boxPoints));
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
                         area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
@@ -1071,16 +1104,16 @@ namespace Wisteria::Graphs
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(
-                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                         Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::Right));
                         }
                     else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromRightToLeft)
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(
-                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                         Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::Left));
                         }
                     AddObject(std::move(area));
@@ -1112,7 +1145,9 @@ namespace Wisteria::Graphs
             wxCoord x{ 0 }, y{ 0 };
             if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().x, x) &&
                 GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().y, y))
-                { object.GetObject()->SetAnchorPoint({x,y}); }
+                {
+                object.GetObject()->SetAnchorPoint({ x, y });
+                }
             // client may have used a custom scaling for the annotation,
             // so maintain that ratio
             object.GetObject()->SetScaling(GetScaling() * object.GetOriginalScaling());
@@ -1124,7 +1159,9 @@ namespace Wisteria::Graphs
         {
         // draw the plot objects
         for (const auto& object : m_plotObjects)
-            { object->Draw(dc); }
+            {
+            object->Draw(dc);
+            }
         for (const auto& object : m_embeddedObjects)
             {
             for (const auto& interestPoint : object.GetInterestPoints())
@@ -1147,7 +1184,7 @@ namespace Wisteria::Graphs
         // draw the outline
         if (IsSelected())
             {
-            // regular outline
+                // regular outline
                 {
                 wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 wxPoint pts[5];
@@ -1158,97 +1195,106 @@ namespace Wisteria::Graphs
             // with higher-level debugging enabled, show a large amount of information
             // about the plot, including its axes' physical points, scaling, a graphical
             // ruler, etc.
-            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+            if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
                 {
-                // highlight horizontal axes
+                    // highlight horizontal axes
                     {
                     wxDCPenChanger pc(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                     wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_BDIAGONAL_HATCH));
                     dc.DrawRectangle(GetTopXAxis().GetBoundingBox(dc));
                     dc.DrawRectangle(GetBottomXAxis().GetBoundingBox(dc));
                     }
-                // vertical axes
+                    // vertical axes
                     {
                     wxDCPenChanger pc(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                     wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_FDIAGONAL_HATCH));
                     dc.DrawRectangle(GetLeftYAxis().GetBoundingBox(dc));
                     dc.DrawRectangle(GetRightYAxis().GetBoundingBox(dc));
                     }
-                // ruler along the top, showing a 100-pixel legend
+                    // ruler along the top, showing a 100-pixel legend
                     {
                     wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
                     dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // left-to-right
                     for (auto i = GetBoundingBox(dc).GetTopLeft().x;
-                        i < GetBoundingBox(dc).GetTopRight().x;
-                        i += 100)
+                         i < GetBoundingBox(dc).GetTopRight().x; i += 100)
                         {
-                        dc.DrawLine(wxPoint(i, GetBoundingBox(dc).GetTop()),
-                            wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(20)) );
+                        dc.DrawLine(
+                            wxPoint(i, GetBoundingBox(dc).GetTop()),
+                            wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(20)));
                         }
                     // right-to-left
                     for (int i = GetBoundingBox(dc).GetTopRight().x;
-                        i > GetBoundingBox(dc).GetTopLeft().x;
-                        i -= 100)
+                         i > GetBoundingBox(dc).GetTopLeft().x; i -= 100)
                         {
-                        dc.DrawLine(wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(20)),
-                            wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(40)) );
+                        dc.DrawLine(
+                            wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(20)),
+                            wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(40)));
                         }
-                    Label rulerLabel(GraphItemInfo(_DT(L"\u21E6 100 pixels")).
-                        AnchorPoint(wxPoint(GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
-                                            GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25))).
-                        Anchoring(Anchoring::TopRightCorner).FontColor(*wxBLUE).
-                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
-                        FontBackgroundColor(*wxWHITE).Padding(2,2,2,2));
+                    Label rulerLabel(
+                        GraphItemInfo(_DT(L"\u21E6 100 pixels"))
+                            .AnchorPoint(wxPoint(
+                                GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
+                                GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25)))
+                            .Anchoring(Anchoring::TopRightCorner)
+                            .FontColor(*wxBLUE)
+                            .Pen(*wxBLUE_PEN)
+                            .DPIScaling(GetDPIScaleFactor())
+                            .FontBackgroundColor(*wxWHITE)
+                            .Padding(2, 2, 2, 2));
                     rulerLabel.SetMinimumUserSizeDIPs(90, std::nullopt);
                     rulerLabel.Draw(dc);
                     rulerLabel.SetAnchoring(Anchoring::TopLeftCorner);
                     rulerLabel.SetText(_DT(L"100 pixels \u21E8"));
                     rulerLabel.SetAnchorPoint(
                         (wxPoint(GetBoundingBox(dc).GetTopLeft().x + ScaleToScreenAndCanvas(5),
-                         GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(5))) );
+                                 GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(5))));
                     rulerLabel.Draw(dc);
                     }
-                // ruler along the left, showing a 100-pixel legend
+                    // ruler along the left, showing a 100-pixel legend
                     {
                     wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
                     dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // top-to-bottom
                     for (auto i = GetBoundingBox(dc).GetTopLeft().y;
-                        i < GetBoundingBox(dc).GetBottomLeft().y;
-                        i += 100)
+                         i < GetBoundingBox(dc).GetBottomLeft().y; i += 100)
                         {
-                        dc.DrawLine(wxPoint(GetBoundingBox(dc).GetLeft(), i),
-                            wxPoint(GetBoundingBox(dc).GetLeft()+ScaleToScreenAndCanvas(20), i) );
+                        dc.DrawLine(
+                            wxPoint(GetBoundingBox(dc).GetLeft(), i),
+                            wxPoint(GetBoundingBox(dc).GetLeft() + ScaleToScreenAndCanvas(20), i));
                         }
                     }
                 const auto bBox = GetBoundingBox(dc);
-                Label infoLabel(GraphItemInfo(
-                        wxString::Format(_DT(L"Scaling: %s\n"
-                            "Vertical Axes Top (x, y): %d, %d\n"
-                            "Vertical Axes Bottom (x, y): %d, %d\n"
-                            "Horizontal Axes Left (x, y): %d, %d\n"
-                            "Horizontal Axes Right (x, y): %d, %d\n"
-                            "Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
-                            "Content Area (x,y,width,height): %d, %d, %d, %d\n"
-                            "Plot Decoration Padding (t,r,b,l): %ld, %ld, %ld, %ld\n"
-                            "%s"),
-                            wxNumberFormatter::ToString(GetScaling(), 1,
-                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                Label infoLabel(
+                    GraphItemInfo(
+                        wxString::Format(
+                            _DT(L"Scaling: %s\n"
+                                "Vertical Axes Top (x, y): %d, %d\n"
+                                "Vertical Axes Bottom (x, y): %d, %d\n"
+                                "Horizontal Axes Left (x, y): %d, %d\n"
+                                "Horizontal Axes Right (x, y): %d, %d\n"
+                                "Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                                "Content Area (x,y,width,height): %d, %d, %d, %d\n"
+                                "Plot Decoration Padding (t,r,b,l): %ld, %ld, %ld, %ld\n"
+                                "%s"),
+                            wxNumberFormatter::ToString(
+                                GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             GetLeftYAxis().GetTopPoint().x, GetLeftYAxis().GetTopPoint().y,
                             GetLeftYAxis().GetBottomPoint().x, GetLeftYAxis().GetBottomPoint().y,
                             GetBottomXAxis().GetLeftPoint().x, GetBottomXAxis().GetLeftPoint().y,
                             GetBottomXAxis().GetRightPoint().x, GetBottomXAxis().GetRightPoint().y,
-                            bBox.x, bBox.y, bBox.width, bBox.height,
-                            GetContentRect().GetX(), GetContentRect().GetY(),
-                            GetContentRect().GetWidth(), GetContentRect().GetHeight(),
-                            m_calculatedTopPadding, m_calculatedRightPadding,
-                            m_calculatedBottomPadding, m_calculatedLeftPadding,
-                            m_debugDrawInfoLabel)).
-                        AnchorPoint(GetBoundingBox(dc).GetBottomRight()).
-                        Anchoring(Anchoring::BottomRightCorner).FontColor(*wxBLUE).
-                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
-                        FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+                            bBox.x, bBox.y, bBox.width, bBox.height, GetContentRect().GetX(),
+                            GetContentRect().GetY(), GetContentRect().GetWidth(),
+                            GetContentRect().GetHeight(), m_calculatedTopPadding,
+                            m_calculatedRightPadding, m_calculatedBottomPadding,
+                            m_calculatedLeftPadding, m_debugDrawInfoLabel))
+                        .AnchorPoint(GetBoundingBox(dc).GetBottomRight())
+                        .Anchoring(Anchoring::BottomRightCorner)
+                        .FontColor(*wxBLUE)
+                        .Pen(*wxBLUE_PEN)
+                        .DPIScaling(GetDPIScaleFactor())
+                        .FontBackgroundColor(*wxWHITE)
+                        .Padding(2, 2, 2, 2));
                 infoLabel.Draw(dc);
                 }
             }
@@ -1286,10 +1332,9 @@ namespace Wisteria::Graphs
         for (auto plotObject = m_embeddedObjects.rbegin(); plotObject != m_embeddedObjects.rend();
              ++plotObject)
             {
-            if ((*plotObject).GetObject()->IsSelectable() &&
-                (*plotObject).GetObject()->HitTest(pt, dc))
+            if (plotObject->GetObject()->IsSelectable() && plotObject->GetObject()->HitTest(pt, dc))
                 {
-                (*plotObject).GetObject()->SetSelected(!(*plotObject).GetObject()->IsSelected());
+                plotObject->GetObject()->SetSelected(!plotObject->GetObject()->IsSelected());
                 return true;
                 }
             }
@@ -1337,7 +1382,7 @@ namespace Wisteria::Graphs
                 return true;
                 }
             }
-        // no items selected, so see if we at least clicked inside of the plot area
+        // no items selected, so see if we at least clicked inside the plot area
         if (HitTest(pt, dc))
             {
             SetSelected(true);
@@ -1345,4 +1390,4 @@ namespace Wisteria::Graphs
             }
         return false;
         }
-    }
+    } // namespace Wisteria::Graphs

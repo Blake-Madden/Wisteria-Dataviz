@@ -583,7 +583,7 @@ namespace Wisteria::Graphs
         const auto queueObjectForOffsetting = [&addedObjects](auto obj)
         { addedObjects.push_back(std::move(obj)); };
 
-        // get a square inside of the drawing area for the pie
+        // get a square inside the drawing area for the pie
         wxRect pieDrawArea = GetPlotAreaBoundingBox();
         // get 75% of the area width and height for the pie (adding space for any labels),
         // and use the smaller of the two for the pie's area
@@ -1139,7 +1139,7 @@ namespace Wisteria::Graphs
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
-                    // but only if line connection is outside of the pie's bounding box
+                    // but only if line connection is outside the pie's bounding box
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         {
                         middlePt.SetAnchorPoint(calculatedMiddlePt);
@@ -1223,7 +1223,7 @@ namespace Wisteria::Graphs
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
-                    // but only if line connection is outside of the pie's bounding box
+                    // but only if line connection is outside the pie's bounding box
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         {
                         middlePt.SetAnchorPoint(calculatedMiddlePt);
@@ -1322,7 +1322,7 @@ namespace Wisteria::Graphs
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
-                    // but only if line connection is outside of the pie's bounding box
+                    // but only if line connection is outside the pie's bounding box
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         {
                         middlePt.SetAnchorPoint(calculatedMiddlePt);
@@ -1405,7 +1405,7 @@ namespace Wisteria::Graphs
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
-                    // but only if line connection is outside of the pie's bounding box
+                    // but only if line connection is outside the pie's bounding box
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         {
                         middlePt.SetAnchorPoint(calculatedMiddlePt);
@@ -1742,7 +1742,7 @@ namespace Wisteria::Graphs
                 {
                 continue;
                 }
-            // find largest percentage within the subgroup of slices
+            // find the largest percentage within the subgroup of slices
             const auto* const maxPie = *std::max_element(
                 innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
                 [](const auto& lhv, const auto& rhv) noexcept
@@ -1810,9 +1810,9 @@ namespace Wisteria::Graphs
                 {
                 continue;
                 }
-            // find smallest percentage within the subgroup of slices
-            const auto* const minPie = *std::min_element(
-                innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
+            // find the smallest percentage within the subgroup of slices
+            const auto* const minPie = *std::ranges::min_element(
+                std::as_const(innerSlicesForCurrentGroup),
                 [](const auto& lhv, const auto& rhv) noexcept
                 { return compare_doubles_less(lhv->m_percent, rhv->m_percent); });
 
@@ -1915,8 +1915,7 @@ namespace Wisteria::Graphs
         std::vector<wxString> innerLabelsForGroups;
         for (const auto& innerSlice : GetInnerPie())
             {
-            if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
-                showcasedOuterIndices.cend())
+            if (showcasedOuterIndices.contains(innerSlice.m_parentSliceIndex))
                 {
                 innerLabelsForGroups.push_back(innerSlice.GetGroupLabel());
                 }
@@ -1955,8 +1954,7 @@ namespace Wisteria::Graphs
         std::vector<wxString> innerLabelsForGroups;
         for (const auto& innerSlice : GetInnerPie())
             {
-            if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
-                showcasedOuterIndices.cend())
+            if (showcasedOuterIndices.contains(innerSlice.m_parentSliceIndex))
                 {
                 innerLabelsForGroups.push_back(innerSlice.GetGroupLabel());
                 }
@@ -2006,8 +2004,7 @@ namespace Wisteria::Graphs
         std::vector<wxString> innerLabelsForGroups;
         for (const auto& innerSlice : GetInnerPie())
             {
-            if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
-                showcasedOuterIndices.cend())
+            if (showcasedOuterIndices.contains(innerSlice.m_parentSliceIndex))
                 {
                 innerLabelsForGroups.push_back(innerSlice.GetGroupLabel());
                 }

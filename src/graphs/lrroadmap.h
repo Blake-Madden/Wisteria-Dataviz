@@ -91,7 +91,7 @@ namespace Wisteria::Graphs
          auto legend = roadmap->CreateLegend(
             LegendOptions().
                 IncludeHeader(true).
-                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
+                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
          canvas->GetRowInfo(0).HeightProportion(1-canvas->CalcMinHeightProportion(legend));
          canvas->GetRowInfo(1).HeightProportion(canvas->CalcMinHeightProportion(legend));
          canvas->SetFixedObject(1, 0, legend);
@@ -141,19 +141,19 @@ namespace Wisteria::Graphs
                      const std::optional<wxString>& dvName = std::nullopt);
 
         /// @brief Adds a caption explaining how to interpret the graph.
-        void AddDefaultCaption() final;
+        void AddDefaultCaption() override final;
 
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
-        wxString GetPositiveLegendLabel() const final
+        wxString GetPositiveLegendLabel() const override final
             {
             return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel());
             }
 
         /// @returns The negative label used for the legend.
         [[nodiscard]]
-        wxString GetNegativeLegendLabel() const final
+        wxString GetNegativeLegendLabel() const override final
             {
             return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel());
             }

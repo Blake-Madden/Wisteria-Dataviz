@@ -60,7 +60,7 @@ namespace Wisteria::Graphs
         // the scale for the location markers (in DIPs);
         // 4 is probably the best looking small points, and 20 is a large enough
         // while still being reasonable
-        const std::pair<double, double> pointSizesRange = { 4, 20 };
+        constexpr std::pair<double, double> pointSizesRange = { 4, 20 };
 
         wxCoord xPt{ 0 }, yPt{ 0 };
         std::vector<wxPoint> pts;
@@ -238,15 +238,15 @@ namespace Wisteria::Graphs
             rightTextArea.SetRight(GetPlotAreaBoundingBox().GetRight());
             }
 
-        constexpr double SMALLEST_LABEL_SCALING_ALLOWABLE{ 0.5 };
         for (auto& locationLabel : locationLabels)
             {
+            constexpr double SMALLEST_LABEL_SCALING_ALLOWABLE{ 0.5 };
             auto largerRect =
                 (GetLabelPlacement() == LabelPlacement::NextToParent ? GetPlotAreaBoundingBox() :
                  locationLabel->GetAnchoring() == Anchoring::BottomLeftCorner ? leftTextArea :
                                                                                 rightTextArea);
-            const auto bBox = locationLabel->GetBoundingBox(dc);
-            if (!GraphItems::Polygon::IsRectInsideRect(bBox, largerRect))
+            if (const auto bBox = locationLabel->GetBoundingBox(dc);
+                !GraphItems::Polygon::IsRectInsideRect(bBox, largerRect))
                 {
                 const double overhang = (bBox.GetLeft() < largerRect.GetLeft() ?
                                              largerRect.GetLeft() - bBox.GetLeft() :
@@ -269,7 +269,7 @@ namespace Wisteria::Graphs
             AddObject(std::move(locationLabel));
             }
         // add the location markers on top, going forward from the horizon to the starting point
-        std::reverse(locations.begin(), locations.end());
+        std::ranges::reverse(locations);
         for (auto& location : locations)
             {
             AddObject(std::move(location));

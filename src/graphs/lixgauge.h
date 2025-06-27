@@ -12,9 +12,9 @@
 #ifndef LIX_GAUGE_H
 #define LIX_GAUGE_H
 
-#include "groupgraph2d.h"
-#include "../data/jitter.h"
 #include "../base/colorbrewer.h"
+#include "../data/jitter.h"
+#include "groupgraph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -40,14 +40,15 @@ namespace Wisteria::Graphs
          - Blank group labels will be lumped into a "[NO GROUP]" category.
 
         @par Citation:
-            Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research Quarterly*,
-            vol. 18, no. 4, 1983, pp. 480-97.*/
+            Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research
+            Quarterly*, vol. 18, no. 4, 1983, pp. 480-97.
+    */
     class LixGauge final : public GroupGraph2D
         {
         wxDECLARE_DYNAMIC_CLASS(LixGauge);
         LixGauge() = default;
 
-    public:
+      public:
         /** @brief Constructor.
             @param canvas The parent canvas to render on.
             @param colors The color scheme to apply to the points.
@@ -55,8 +56,8 @@ namespace Wisteria::Graphs
             @param shapes The shape scheme to use for the points.
                 Leave as null to use the standard shapes.*/
         explicit LixGauge(Wisteria::Canvas* canvas,
-            std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
+                          std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
+                          std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
         /** @brief Sets the data.
             @param data The data to use.
@@ -70,15 +71,16 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Wisteria::Data::Dataset> data,
                      const wxString& scoreColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt);
-    private:
-        void RecalcSizes(wxDC& dc) final;
+                     const std::optional<const wxString>& groupColumnName = std::nullopt);
+
+      private:
+        void RecalcSizes(wxDC& dc) override final;
         void AdjustAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
         };
-    }
+    } // namespace Wisteria::Graphs
 
 /** @}*/
 

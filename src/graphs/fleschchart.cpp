@@ -127,7 +127,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                               const wxString& wordsPerSentenceColumnName,
                               const wxString& scoreColumnName,
                               const wxString& syllablesPerWordColumnName,
-                              std::optional<const wxString> groupColumnName /*= std::nullopt*/,
+                              const std::optional<wxString>& groupColumnName /*= std::nullopt*/,
                               bool includeSyllableRulerDocumentGroups /*= false*/)
         {
         SetDataset(data);

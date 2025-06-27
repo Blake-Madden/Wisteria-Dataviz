@@ -196,8 +196,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                 }
             const GraphItems::Label blockLabel(blockLabelText);
 
-            auto foundBar = std::find_if(
-                GetBars().begin(), GetBars().end(), [&blockTable](const auto& bar) noexcept
+            auto foundBar = std::ranges::find_if(
+                GetBars(), [&blockTable](const auto& bar) noexcept
                 { return compare_doubles(bar.GetAxisPosition(), blockTable.first.m_bin); });
             if (foundBar == GetBars().end())
                 {

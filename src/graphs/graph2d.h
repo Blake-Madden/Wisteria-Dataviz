@@ -322,7 +322,7 @@ namespace Wisteria::Graphs
             @param color The color to use.
             @note Only certain shapes have customizable colors; the rest use specific
                 colors relevant to them. In those cases, this value will be ignored.*/
-        void SetStippleShapeColor(const wxColour color) noexcept
+        void SetStippleShapeColor(const wxColour& color) noexcept
             {
             if (color.IsOk())
                 {
@@ -375,7 +375,7 @@ namespace Wisteria::Graphs
             m_bgImageOpacity = opacity;
             }
 
-        /// @brief Sets how the plot background image fits inside of the plot area.
+        /// @brief Sets how the plot background image fits inside the plot area.
         /// @param fit How to fit the image.
         void SetPlotBackgroundImageFit(const ImageFit fit) { m_plotAreaImageFit = fit; }
 
@@ -431,7 +431,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         bool HasProperty(const wxString& key) const
             {
-            return m_properties.find(key) != m_properties.end();
+            return m_properties.contains(key);
             }
 
         /// @returns The value of the specified property, or an empty variant if not found.
@@ -475,7 +475,7 @@ namespace Wisteria::Graphs
            BarChart::SetBarEffect().*/
         void SetImageScheme(std::shared_ptr<Wisteria::Images::Schemes::ImageScheme> imageScheme)
             {
-            m_imageScheme = imageScheme;
+            m_imageScheme = std::move(imageScheme);
             }
 
         /// @brief Get the brush scheme used for the bars.
@@ -492,7 +492,7 @@ namespace Wisteria::Graphs
                 `SetData()` is called.*/
         void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
             {
-            m_brushScheme = colors;
+            m_brushScheme = std::move(colors);
             }
 
         /// @brief Get the shape scheme used for the points.
@@ -509,7 +509,7 @@ namespace Wisteria::Graphs
                 `SetData()` is called.*/
         void SetShapeScheme(std::shared_ptr<Icons::Schemes::IconScheme> shapes)
             {
-            m_shapeScheme = shapes;
+            m_shapeScheme = std::move(shapes);
             }
 
         /// @brief Get the color scheme used for the bars.
@@ -526,7 +526,7 @@ namespace Wisteria::Graphs
                 `SetData()` is called.*/
         void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
             {
-            m_colorScheme = colors;
+            m_colorScheme = std::move(colors);
             }
 
         /// @returns The dataset that the graph is using.
@@ -622,7 +622,7 @@ namespace Wisteria::Graphs
         void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object, const wxPoint pt,
                                const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             {
-            AddAnnotation(object, pt, interestPts);
+            AddAnnotation(std::move(object), pt, interestPts);
             }
 
         /// @private
@@ -644,7 +644,7 @@ namespace Wisteria::Graphs
 
       protected:
         /** @private
-            @param Finds and returns a pointer to a continuous column
+            Finds and returns a pointer to a continuous column
                 from the loaded dataset. If not found, throws.*/
         [[nodiscard]]
         const Wisteria::Data::Column<double>*
@@ -774,7 +774,7 @@ namespace Wisteria::Graphs
             @param xValue The x value of the point.
             @param yValue The y value of the point.
             @param[out] resultPt The coordinate on the canvas where the point is at.
-                If the point is not within the plot (i.e., the x or y value is outside of the axes),
+                If the point is not within the plot (i.e., the x or y value is outside the axes),
                 then this will be (-1,-1).
             @returns @c true if the point could be found within the plot.*/
         bool GetPhysicalCoordinates(const double xValue, const double yValue,
@@ -793,7 +793,7 @@ namespace Wisteria::Graphs
         /** @brief Retrieves the coordinates on the canvas where the given point is at.
             @param point The point to search for.
             @param[out] resultPt The coordinate on the canvas where the point is at.
-                If the point is not within the plot (i.e., the x or y value is outside of the axes),
+                If the point is not within the plot (i.e., the x or y value is outside the axes),
                 then this will be (-1,-1).
             @returns @c true if the point could be found within the plot.*/
         bool GetPhysicalCoordinates(const wxPoint& point, wxPoint& resultPt) const
@@ -802,7 +802,7 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Override this to perform plotting logic.
-            @details The is the main interface for constructing the layout and object positioning
+            @details This is the main interface for constructing the layout and object positioning
                 for a plot. All plots should override this.
             @param dc The DC to measure content with.
             @note The base version of this should be called first in derived overrides
@@ -813,7 +813,10 @@ namespace Wisteria::Graphs
         void UpdateSelectedItems() final;
 
         /// @private
-        void SetDataset(const std::shared_ptr<const Data::Dataset> data) noexcept { m_data = data; }
+        void SetDataset(std::shared_ptr<const Data::Dataset> data) noexcept
+            {
+            m_data = std::move(data);
+            }
 
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
@@ -940,7 +943,8 @@ namespace Wisteria::Graphs
             }
 
         /** @returns @c true if @c pt is inside of plot area.
-            @param pt The point to see that is in the plot.*/
+            @param pt The point to see that is in the plot.
+            @param dc The rendering DC.*/
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const final
             {
@@ -950,12 +954,13 @@ namespace Wisteria::Graphs
         /** @brief Selects the object at the given point (relative to the parent canvas),
                 if there is an object at that point.
             @param pt The point to hit test.
+        @param dc The rendering DC.
             @returns @c true if something was selected at the given point.
             @note This will toggle the selection of an object, if it was selected before
                 then it will become unselected.*/
         [[nodiscard]]
         bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;
-        /// @brief Calculates how much outer axis labels and headers go outside of the
+        /// @brief Calculates how much outer axis labels and headers go outside the
         ///     axes' widths and heights (used to adjust the margins of the plot area).
         void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin,
                              long& bottomMargin, wxDC& dc) const;

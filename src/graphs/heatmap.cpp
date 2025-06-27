@@ -18,7 +18,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors :
+        SetColorScheme(colors != nullptr ? std::move(colors) :
                                            std::make_unique<Colors::Schemes::ColorScheme>(
                                                Colors::Schemes::ColorScheme{ *wxWHITE, *wxBLACK }));
 
@@ -69,7 +69,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         // prepare the colors
         m_reversedColorSpectrum = GetColorScheme()->GetColors();
-        std::reverse(m_reversedColorSpectrum.begin(), m_reversedColorSpectrum.end());
+        std::ranges::reverse(m_reversedColorSpectrum);
 
         Colors::ColorBrewer cb;
         cb.SetColorScale(GetColorScheme()->GetColors().cbegin(),
@@ -90,10 +90,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             // if more columns than groups, then fix the column count
             m_groupColumnCount = std::min(m_groupColumnCount, groups.get_data().size());
             m_matrix.resize(groups.get_data().size());
-            const auto maxItemByColumnCount =
-                std::max_element(groups.get_data().cbegin(), groups.get_data().cend(),
-                                 [](const auto& item1, const auto& item2) noexcept
-                                 { return item1.second < item2.second; });
+            const auto maxItemByColumnCount = std::ranges::max_element(
+                groups.get_data(), [](const auto& item1, const auto& item2) noexcept
+                { return item1.second < item2.second; });
             for (auto& row : m_matrix)
                 {
                 row.resize(maxItemByColumnCount->second);
@@ -144,7 +143,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         else
             {
             // Prepare the (rectangular [graphs are usually viewed in landscape]) matrix of color
-            // cells. If there are 10 or less items, then just keep them all on one row.
+            // cells. If there are 10 or fewer items, then just keep them all on one row.
             const size_t cellColumnCount =
                 (m_continuousColumn->GetRowCount() <= 10) ?
                     10 :
@@ -458,8 +457,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         std::copy_if(m_continuousColumn->GetValues().cbegin(),
                      m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
                      [](auto x) { return std::isfinite(x); });
-        const auto minValue = *std::min_element(validData.cbegin(), validData.cend());
-        const auto maxValue = *std::max_element(validData.cbegin(), validData.cend());
+        const auto minValue = *std::ranges::min_element(std::as_const(validData));
+        const auto maxValue = *std::ranges::max_element(std::as_const(validData));
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo(
                 // add spaces on the empty lines to work around SVG exporting

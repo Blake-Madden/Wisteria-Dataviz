@@ -75,6 +75,7 @@ namespace Wisteria::Graphs
          @endcode
     */
     // clang-format on
+
     class CategoricalBarChart final : public Wisteria::Graphs::BarChart
         {
         wxDECLARE_DYNAMIC_CLASS(CategoricalBarChart);
@@ -116,7 +117,7 @@ namespace Wisteria::Graphs
             @param categoricalColumnName The categorical or ID column from the dataset with the
                 labels to group the data into. The labels in this column will become the bars.\n
                 Note that using the ID column here will be less optimal than a categorical column,
-                so this should avoided for larger datasets.
+                so this should be avoided for larger datasets.
             @param weightColumnName The column with values to sum for each category.
                 If not used (@c std::nullopt), then the frequency of the observations
                 in each group will be used.
@@ -169,7 +170,7 @@ namespace Wisteria::Graphs
         /// @brief Simpler way to get the bar slots since this isn't like a histogram that
         ///     can have gaps in between the bars.
         [[nodiscard]]
-        size_t GetBarSlotCount() const noexcept final
+        size_t GetBarSlotCount() const noexcept override final
             {
             return GetBars().size();
             }

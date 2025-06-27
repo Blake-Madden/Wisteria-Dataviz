@@ -18,8 +18,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
                        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
-        SetShapeScheme(shapes != nullptr ? shapes :
+        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
+        SetShapeScheme(shapes != nullptr ? std::move(shapes) :
                                            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
 
@@ -44,9 +44,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     void LixGauge::SetData(std::shared_ptr<const Data::Dataset> data,
                            const wxString& scoreColumnName,
-                           std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+                           const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
         {
-        SetDataset(data);
+        SetDataset(std::move(data));
         ResetGrouping();
         m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();

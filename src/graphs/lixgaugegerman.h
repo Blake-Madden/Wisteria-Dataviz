@@ -92,7 +92,7 @@ namespace Wisteria::Graphs
         void UseEnglishLabels(const bool useEnglish) noexcept { m_useEnglishLabels = useEnglish; }
 
       private:
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override final;
         void AdjustAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };

@@ -122,25 +122,25 @@ namespace Wisteria::GraphItems
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final
             {
             return Polygon::GetPolygonBoundingBox(GetPolygon());
             }
 
       private:
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
 
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
+        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const override final
             {
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, points.data(), points.size());
             }
 
-        void Offset(const int x, const int y) final { m_pieArea.Offset(x, y); }
+        void Offset(const int x, const int y) override final { m_pieArea.Offset(x, y); }
 
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double scaling) final
+                            [[maybe_unused]] const double scaling) override final
             {
             m_pieArea = rect;
             }
@@ -215,7 +215,7 @@ namespace Wisteria::Graphs
 
             With the above data, and outer ring for the colleges will be drawn, where the values from
             `Enrollment` will be aggregated into it. Also, an inner ring for the courses will be drawn,
-            showing the aggregated enrollment numbers for each courses. The courses' slices will be
+            showing the aggregated enrollment numbers for each course. The courses' slices will be
             aligned next to parent College slice that they belong to.
 
             If `Enrollment` is not used as the aggregate column, then the frequency counts for the labels
@@ -344,7 +344,7 @@ namespace Wisteria::Graphs
             /// @param value The value (e.g., number of items in the group) for the slice.
             /// @param percent The percent of the pie that this slice consumes.
             /// @param parentSliceIndex The position along the outer pie of this slice's
-            ///     parent slice (only applies only to the inner pie).
+            ///     parent slice (only applies to the inner pie).
             explicit SliceInfo(wxString groupLabel, const double value = 0,
                                const double percent = 0, size_t parentSliceIndex = 0)
                 : m_groupLabel(std::move(groupLabel)), m_value(value), m_percent(percent),
@@ -529,7 +529,7 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Sets the opacity level for "ghosted" slices.
-            @param opacity The opacity level (should be between @c 0 to @c 255).
+            @param opacity The opacity level (should be between @c 0 and @c 255).
             @note If setting this to @c 0 (fully transparent), then you should set
                 the pie's pen to a darker color.
             @sa GhostOuterPieSlices(), GhostInnerPieSlices().*/
@@ -762,7 +762,7 @@ namespace Wisteria::Graphs
             }
 
         /// @brief Gets/sets the pen used for the lines connecting inner slices to their
-        ///     labels outside of the pie.
+        ///     labels outside the pie.
         /// @returns The inner pie connection line.
         [[nodiscard]]
         wxPen& GetInnerPieConnectionLinePen() noexcept
@@ -771,7 +771,7 @@ namespace Wisteria::Graphs
             }
 
         /// @brief Gets the line style used for the lines connecting inner slices to
-        ///     their labels outside of the pie.
+        ///     their labels outside the pie.
         /// @returns The inner pie connection line style.
         [[nodiscard]]
         LineStyle GetInnerPieConnectionLineStyle() const noexcept
@@ -780,7 +780,7 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Sets the line style used for the lines connecting inner slices to
-                their labels outside of the pie.
+                their labels outside the pie.
             @param lStyle The line style to use.
             @note If label placement is LabelPlacement::Flush, then this will be overridden
                 to use LineStyle::Lines.\n
@@ -1010,9 +1010,9 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options)override final
             {
-            return (options.GetRingPerimeter() == Perimeter::Inner) ?
+            return options.GetRingPerimeter() == Perimeter::Inner ?
                 CreateInnerPieLegend(options.GetPlacementHint()) :
                 CreateOuterPieLegend(options.GetPlacementHint());
             }
@@ -1064,7 +1064,7 @@ namespace Wisteria::Graphs
       private:
         /// @returns The indices along the outer pie of the provided slices.
         std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc)override final;
 
         PieInfo m_innerPie;
         PieInfo m_outerPie;

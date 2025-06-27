@@ -17,7 +17,7 @@ using namespace Wisteria::Icons;
 
 //----------------------------------------------------------------
 void GroupGraph2D::SetGroupColumn(
-    const std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+    const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
     {
     assert(GetDataset() && L"You must call SetDataset() before calling SetGroupColumn()!");
     if (GetDataset() == nullptr)

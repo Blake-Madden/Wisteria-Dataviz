@@ -41,7 +41,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
     //----------------------------------------------------------------
     void WCurvePlot::SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
                              const wxString& xColumnName,
-                             std::optional<const wxString> groupColumnName)
+                             const std::optional<wxString>& groupColumnName)
         {
         if (data == nullptr)
             {
@@ -51,7 +51,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             {
             throw std::runtime_error(_(L"Group column required for W-curve plot.").ToUTF8());
             }
-        LinePlot::SetData(data, yColumnName, xColumnName, groupColumnName);
+        LinePlot::SetData(std::move(data), yColumnName, xColumnName, groupColumnName);
 
         // force the X axes to use neat integers
         const auto [axisMin, axisMax] = GetBottomXAxis().GetRange();
@@ -85,9 +85,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             }
 
         auto [topRangeStart, topRangeEnd] = GetTopXAxis().GetRange();
-        const auto maxXValue = GetXMinMax().second;
         // if last datum collected is at the edge of the range, then add an extra label
-        if (maxXValue == topRangeEnd)
+        if (const auto maxXValue = GetXMinMax().second; maxXValue == topRangeEnd)
             {
             ++topRangeEnd;
             }

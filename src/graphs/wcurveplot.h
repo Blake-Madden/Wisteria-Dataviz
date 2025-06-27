@@ -157,7 +157,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
                      const wxString& xColumnName,
-                     std::optional<const wxString> groupColumnName) final;
+                     const std::optional<wxString>& groupColumnName) override final;
 
         /// @brief Sets the label for the major time intervals used in the data collection
         ///     (e.g., "semester" or "year").

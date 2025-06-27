@@ -80,7 +80,7 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Wisteria::Data::Dataset>& data,
                      const wxString& wordsPerSentenceColumnName, const wxString& scoreColumnName,
                      const wxString& syllablesPerWordColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt,
+                     const std::optional<wxString>& groupColumnName = std::nullopt,
                      bool includeSyllableRulerDocumentGroups = false);
 
         /** @brief Sets whether to draw a line connecting the points between the rulers.
@@ -97,7 +97,7 @@ namespace Wisteria::Graphs
             }
 
       private:
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override final;
 
         const Wisteria::Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };

@@ -27,7 +27,7 @@ namespace Wisteria::Graphs
         | @image html TableMajors.svg width=90% | @image html TablePrograms.svg width=90% |
 
         @par %Data:
-            A table can accept a Data::Dataset, where any type of column can be include.
+            A table can accept a Data::Dataset, where any type of column can be included.
             Which of these columns to include (as well as their order) can be controlled
             by the caller.\n
             \n
@@ -194,7 +194,8 @@ namespace Wisteria::Graphs
             canvas->GetDefaultCanvasHeightDIPs());
 
          canvas->FitToPageWhenPrinting(true);
-        @endcode*/
+        @endcode
+    */
     class Table final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(Table);
@@ -295,7 +296,7 @@ namespace Wisteria::Graphs
             /// @param showRightBorder Whether to show the right border.
             /// @param showBottomBorder Whether to show the bottom border.
             /// @param showLeftBorder Whether to show the left border.
-            TableCell(CellValueType value, const wxColour bgColor, const bool showTopBorder = true,
+            TableCell(CellValueType value, const wxColour& bgColor, const bool showTopBorder = true,
                       const bool showRightBorder = true, const bool showBottomBorder = true,
                       const bool showLeftBorder = true)
                 : m_value(std::move(value)), m_bgColor(bgColor), m_showTopBorder(showTopBorder),
@@ -357,7 +358,7 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the color.
             /// @param color The value to set for the cell.
-            void SetBackgroundColor(const wxColour color)
+            void SetBackgroundColor(const wxColour& color)
                 {
                 if (color.IsOk())
                     {
@@ -418,7 +419,7 @@ namespace Wisteria::Graphs
 
             /// @returns The minimum value that a cell must be before it is suppressed.
             [[nodiscard]]
-            const std::optional<double> GetSuppressionThreshold() const noexcept
+            std::optional<double> GetSuppressionThreshold() const noexcept
                 {
                 return m_suppressionThreshold;
                 }
@@ -517,8 +518,7 @@ namespace Wisteria::Graphs
                 {
                 if (IsNumeric())
                     {
-                    const auto dVal{ std::get_if<double>(&m_value) };
-                    if (dVal)
+                    if (const auto dVal{ std::get_if<double>(&m_value) })
                         {
                         return *dVal;
                         }
@@ -529,8 +529,7 @@ namespace Wisteria::Graphs
                     }
                 else if (IsRatio())
                     {
-                    const auto rVals{ std::get_if<std::pair<double, double>>(&m_value) };
-                    if (rVals)
+                    if (const auto rVals{ std::get_if<std::pair<double, double>>(&m_value) })
                         {
                         return (rVals->first >= rVals->second) ?
                                    safe_divide<double>(rVals->first, rVals->second) :
@@ -641,7 +640,7 @@ namespace Wisteria::Graphs
         /// @param rows The number of rows.
         /// @param cols The number of columns.
         /// @note If the table is being made smaller, then existing content
-        ///     outside of the new size will be removed; other existing content
+        ///     outside the new size will be removed; other existing content
         ///     will be preserved.\n
         ///     Call ClearTable() to clear any existing content if you wish to
         ///     reset the table.
@@ -727,7 +726,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
         /// @details The default behavior is for the table to fit its content, with extra
-        ///     space around it (depending how wide it is).
+        ///     space around it (depending on how wide it is).
         /// @param percent The minimum percent of the area's width that the table should consume.\n
         ///     Set to @c std::nullopt to turn this feature off and
         ///     allow the table to autofit its width.
@@ -753,7 +752,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the minimum percent of the drawing area's height that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
         /// @details The default behavior is for the table to fit its content, with extra
-        ///     space around it (depending how tall it is).
+        ///     space around it (depending on how tall it is).
         /// @param percent The minimum percent of the area's height that the table should consume.
         /// @sa GetPageVerticalAlignment() for controlling how the table is positioned if this
         ///     value is less than @c 1.0.
@@ -812,7 +811,7 @@ namespace Wisteria::Graphs
             else
                 {
                 int64_t lastCol = GetColumnCount() - 1;
-                while (m_currentAggregateColumns.find(lastCol) != m_currentAggregateColumns.cend())
+                while (m_currentAggregateColumns.contains(lastCol))
                     {
                     --lastCol;
                     }
@@ -835,7 +834,7 @@ namespace Wisteria::Graphs
             else
                 {
                 int64_t lastRow = GetRowCount() - 1;
-                while (m_currentAggregateRows.find(lastRow) != m_currentAggregateRows.cend())
+                while (m_currentAggregateRows.contains(lastRow))
                     {
                     --lastRow;
                     }
@@ -860,7 +859,7 @@ namespace Wisteria::Graphs
         /// @details For example, an index of @c 0 will insert the row at the
         ///     top of the table.
         /// @note If the table's size has not been established yet (via SetData()
-        ///     or SetTableSize()), then calls to this will ignored since the
+        ///     or SetTableSize()), then calls to this will be ignored since the
         ///     number of columns is unknown.
         /// @param rowIndex Where to insert the row.
         /// @returns @c true if row was inserted.
@@ -882,10 +881,10 @@ namespace Wisteria::Graphs
             }
 
         /// @brief Inserts an empty column at the given index.
-        /// @details For example, an index of @c 0 will insert the column at the
+        /// @details For example, an index of @c 0 will insert the column on the
         ///     left side of the table.
         /// @note If the table's size has not been established yet (via SetData()
-        ///     or SetTableSize()), then calls to this will ignored since there will
+        ///     or SetTableSize()), then calls to this will be ignored since there will
         ///     be no rows to insert columns into.
         /// @param colIndex Where to insert the column.
         void InsertColumn(const size_t colIndex)
@@ -914,7 +913,7 @@ namespace Wisteria::Graphs
             @param bkColor An optional background for the row.
             @param borders An optional override of the default borders for the cells in this column.
             @note This should be called after all data has been set because the
-                the aggregation values are calculated as this function is called.\n
+                aggregation values are calculated as this function is called.\n
                 Also, if suppression is enabled, then suppressed values will be treated as NaN
                 and may affect the aggregate accordingly.
             @sa InsertRowTotals() for a simplified way to insert a total row
@@ -922,7 +921,7 @@ namespace Wisteria::Graphs
         void InsertAggregateRow(const AggregateInfo& aggInfo,
                                 std::optional<wxString> rowName = std::nullopt,
                                 std::optional<size_t> rowIndex = std::nullopt,
-                                std::optional<wxColour> bkColor = std::nullopt,
+                                const std::optional<wxColour>& bkColor = std::nullopt,
                                 std::optional<std::bitset<4>> borders = std::nullopt);
         /** @brief Adds an aggregate (e.g., total) column into the table.
             @param aggInfo Which type of aggregation to use in the column.
@@ -944,11 +943,11 @@ namespace Wisteria::Graphs
                 Also, if suppression is enabled, then suppressed values will be treated as NaN
                 and may affect the aggregate accordingly.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
-                                   std::optional<wxString> colName = std::nullopt,
-                                   std::optional<size_t> colIndex = std::nullopt,
-                                   std::optional<bool> useAdjacentColors = std::nullopt,
-                                   std::optional<wxColour> bkColor = std::nullopt,
-                                   std::optional<std::bitset<4>> borders = std::nullopt);
+                                   const std::optional<wxString> colName = std::nullopt,
+                                   const std::optional<size_t> colIndex = std::nullopt,
+                                   const std::optional<bool> useAdjacentColors = std::nullopt,
+                                   const std::optional<wxColour>& bkColor = std::nullopt,
+                                   const std::optional<std::bitset<4>> borders = std::nullopt);
         /** @brief Inserts total (and possibly subtotal) rows into a table.
             @details If the first column contains grouped labels (see GroupColumn())
                 and the second column contains labels, then subtotal rows will be inserted
@@ -956,7 +955,7 @@ namespace Wisteria::Graphs
                 bottom of the table.\n
                 Otherwise, a single total row will be inserted at the bottom for all rows.
             @param bkColor An optional background for the row(s).*/
-        void InsertRowTotals(std::optional<wxColour> bkColor = std::nullopt);
+        void InsertRowTotals(const std::optional<wxColour>& bkColor = std::nullopt);
 
         /// @brief Sets the background color for a given row.
         /// @param row The row to change.
@@ -964,8 +963,9 @@ namespace Wisteria::Graphs
         /// @param columnStops An optional list of columns within the row to skip.
         /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
-        void SetRowBackgroundColor(const size_t row, const wxColour color,
-                                   std::optional<std::set<size_t>> columnStops = std::nullopt);
+        void
+        SetRowBackgroundColor(const size_t row, const wxColour& color,
+                              const std::optional<std::set<size_t>>& columnStops = std::nullopt);
 
         /// @brief Sets the background color for a given column.
         /// @param column The column to change.
@@ -973,8 +973,9 @@ namespace Wisteria::Graphs
         /// @param rowStops An optional list of rows within the column to skip.
         /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
-        void SetColumnBackgroundColor(const size_t column, const wxColour color,
-                                      std::optional<std::set<size_t>> rowStops = std::nullopt)
+        void
+        SetColumnBackgroundColor(const size_t column, const wxColour& color,
+                                 const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (color.IsOk())
                 {
@@ -982,8 +983,7 @@ namespace Wisteria::Graphs
                     {
                     for (size_t i = 0; i < m_table.size(); ++i)
                         {
-                        if (rowStops.has_value() &&
-                            rowStops.value().find(i) != rowStops.value().cend())
+                        if (rowStops.has_value() && rowStops.value().contains(i))
                             {
                             continue;
                             }
@@ -997,15 +997,15 @@ namespace Wisteria::Graphs
         /** @brief Makes the specified row use a bold font.
             @param row The row to make bold.
             @param columnStops An optional list of columns within the row to skip.*/
-        void BoldRow(const size_t row, std::optional<std::set<size_t>> columnStops = std::nullopt)
+        void BoldRow(const size_t row,
+                     const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1019,13 +1019,13 @@ namespace Wisteria::Graphs
             @param column The column to make bold.
             @param rowStops An optional list of rows within the column to skip.*/
         void BoldColumn(const size_t column,
-                        std::optional<std::set<size_t>> rowStops = std::nullopt)
+                        const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1039,15 +1039,14 @@ namespace Wisteria::Graphs
             @param row The row to make bold.
             @param columnStops An optional list of columns within the row to skip.*/
         void HighlightRow(const size_t row,
-                          std::optional<std::set<size_t>> columnStops = std::nullopt)
+                          const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1061,13 +1060,13 @@ namespace Wisteria::Graphs
             @param column The column to make bold.
             @param rowStops An optional list of rows within the column to skip.*/
         void HighlightColumn(const size_t column,
-                             std::optional<std::set<size_t>> rowStops = std::nullopt)
+                             const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1127,18 +1126,18 @@ namespace Wisteria::Graphs
             @param showBottomBorder Whether to show the cells' bottom borders.
             @param showLeftBorder Whether to show the cells' left borders.
             @param columnStops An optional list of columns within the row to skip.*/
-        void SetRowBorders(const size_t row, std::optional<bool> showTopBorder,
-                           std::optional<bool> showRightBorder,
-                           std::optional<bool> showBottomBorder, std::optional<bool> showLeftBorder,
-                           std::optional<std::set<size_t>> columnStops = std::nullopt)
+        void SetRowBorders(const size_t row, const std::optional<bool> showTopBorder,
+                           const std::optional<bool> showRightBorder,
+                           const std::optional<bool> showBottomBorder,
+                           const std::optional<bool> showLeftBorder,
+                           const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1171,16 +1170,16 @@ namespace Wisteria::Graphs
             @param showLeftBorder Whether to show the cells' left borders.
             @param rowStops An optional list of rows within the column to skip.*/
         void SetColumnBorders(const size_t column, std::optional<bool> showTopBorder,
-                              std::optional<bool> showRightBorder,
-                              std::optional<bool> showBottomBorder,
-                              std::optional<bool> showLeftBorder,
-                              std::optional<std::set<size_t>> rowStops = std::nullopt)
+                              const std::optional<bool> showRightBorder,
+                              const std::optional<bool> showBottomBorder,
+                              const std::optional<bool> showLeftBorder,
+                              const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1211,15 +1210,14 @@ namespace Wisteria::Graphs
             @param columnStops An optional list of columns within the row to skip.
             @note Cells' default precision is zero.*/
         void SetRowPrecision(const size_t row, const uint8_t precision,
-                             std::optional<std::set<size_t>> columnStops = std::nullopt)
+                             const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1235,13 +1233,13 @@ namespace Wisteria::Graphs
             @param rowStops An optional list of rows within the column to skip.
             @note Cells' default precision is zero.*/
         void SetColumnPrecision(const size_t column, const uint8_t precision,
-                                std::optional<std::set<size_t>> rowStops = std::nullopt)
+                                const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1255,17 +1253,16 @@ namespace Wisteria::Graphs
             @param row The row to have horizontally centered cell content.
             @param alignment How to align the content within the row's cells.
             @param columnStops An optional list of columns within the row to skip.*/
-        void
-        SetRowHorizontalPageAlignment(const size_t row, const PageHorizontalAlignment alignment,
-                                      std::optional<std::set<size_t>> columnStops = std::nullopt)
+        void SetRowHorizontalPageAlignment(
+            const size_t row, const PageHorizontalAlignment alignment,
+            const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1279,16 +1276,15 @@ namespace Wisteria::Graphs
             @param column The column to have horizontally centered cell content.
             @param alignment How to align the content within the column's cells.
             @param rowStops An optional list of rows within the column to skip.*/
-        void
-        SetColumnHorizontalPageAlignment(const size_t column,
-                                         const PageHorizontalAlignment alignment,
-                                         std::optional<std::set<size_t>> rowStops = std::nullopt)
+        void SetColumnHorizontalPageAlignment(
+            const size_t column, const PageHorizontalAlignment alignment,
+            const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1306,15 +1302,14 @@ namespace Wisteria::Graphs
             @param columnStops An optional list of columns within the row to skip.*/
         void SetRowSuppression(const size_t row, const std::optional<double> threshold,
                                const std::optional<wxString>& suppressionLabel,
-                               std::optional<std::set<size_t>> columnStops = std::nullopt)
+                               const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1336,13 +1331,13 @@ namespace Wisteria::Graphs
             @param rowStops An optional list of rows within the column to skip.*/
         void SetColumnSuppression(const size_t column, const std::optional<double> threshold,
                                   const std::optional<wxString>& suppressionLabel,
-                                  std::optional<std::set<size_t>> rowStops = std::nullopt)
+                                  const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1361,15 +1356,14 @@ namespace Wisteria::Graphs
             @param format The display format to apply.
             @param columnStops An optional list of columns within the row to skip.*/
         void SetRowFormat(const size_t row, const TableCellFormat format,
-                          std::optional<std::set<size_t>> columnStops = std::nullopt)
+                          const std::optional<std::set<size_t>>& columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (size_t i = 0; i < currentRow.size(); ++i)
                     {
-                    if (columnStops.has_value() &&
-                        columnStops.value().find(i) != columnStops.value().cend())
+                    if (columnStops.has_value() && columnStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1384,13 +1378,13 @@ namespace Wisteria::Graphs
             @param format The display format to apply.
             @param rowStops An optional list of rows within the column to skip.*/
         void SetColumnFormat(const size_t column, const TableCellFormat format,
-                             std::optional<std::set<size_t>> rowStops = std::nullopt)
+                             const std::optional<std::set<size_t>>& rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
                 for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (rowStops.has_value() && rowStops.value().find(i) != rowStops.value().cend())
+                    if (rowStops.has_value() && rowStops.value().contains(i))
                         {
                         continue;
                         }
@@ -1455,8 +1449,9 @@ namespace Wisteria::Graphs
         ///     the visible cells.
         /// @warning This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
-        void ApplyAlternateRowColors(const wxColour baseColor, const size_t startRow = 0,
-                                     std::optional<std::set<size_t>> columnStops = std::nullopt);
+        void
+        ApplyAlternateRowColors(const wxColour& baseColor, const size_t startRow = 0,
+                                const std::optional<std::set<size_t>>& columnStops = std::nullopt);
         /// @}
 
         /// @name Cell Functions
@@ -1492,21 +1487,21 @@ namespace Wisteria::Graphs
             @param textToFind The text to search for.
             @returns The position of the cell, or `std::nullopt` if not found.*/
         [[nodiscard]]
-        std::optional<CellPosition> FindCellPosition(const wxString& textToFind);
+        std::optional<CellPosition> FindCellPosition(const wxString& textToFind) const;
 
         /** @brief Searches for the position of the first cell whose content matches
                 the provided text in the first row.
             @param textToFind The text to search for.
             @returns The index of the column, or @c std::nullopt if not found.*/
         [[nodiscard]]
-        std::optional<size_t> FindColumnIndex(const wxString& textToFind);
+        std::optional<size_t> FindColumnIndex(const wxString& textToFind) const;
 
         /** @brief Searches for the position of the first cell whose content
                 matches the provided text in the first column.
             @param textToFind The text to search for.
             @returns The index of the row, or @c std::nullopt if not found.*/
         [[nodiscard]]
-        std::optional<size_t> FindRowIndex(const wxString& textToFind);
+        std::optional<size_t> FindRowIndex(const wxString& textToFind) const;
         /// @}
 
         /** @brief Adds a footnote to the table.
@@ -1526,7 +1521,7 @@ namespace Wisteria::Graphs
       private:
         [[deprecated("Tables do not support legends.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label>
-        CreateLegend([[maybe_unused]] const LegendOptions& options) final
+        CreateLegend([[maybe_unused]] const LegendOptions& options) override final
             {
             return nullptr;
             }
@@ -1536,12 +1531,12 @@ namespace Wisteria::Graphs
 
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
         [[nodiscard]]
-        wxRect GetContentRect() const noexcept final
+        wxRect GetContentRect() const noexcept override final
             {
             return wxRect();
             }
 
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override final;
 
         void AdjustTextLabelToCell(const TableCell& cell,
                                    Wisteria::GraphItems::Label& cellLabel) const;
@@ -1584,7 +1579,7 @@ namespace Wisteria::Graphs
         /// @param column The column index of the cell.
         /// @warning This should only be called during or after a call to RecalcSizes().
         [[nodiscard]]
-        wxRect GetCachedCellRect(const size_t row, const size_t column);
+        wxRect GetCachedCellRect(const size_t row, const size_t column) const;
 
         /// @returns If a cell is being eclipsed vertically by the cell above it,
         ///     then return that cell. Otherwise, return @c std::nullopt.
@@ -1603,8 +1598,8 @@ namespace Wisteria::Graphs
             @param aggInfo Which type of aggregate calculation to perform.
             @param aggCell The cell to place the result.
             @param values The values for the calculation.*/
-        void CalculateAggregate(const AggregateInfo& aggInfo, TableCell& aggCell,
-                                const std::vector<double>& values);
+        static void CalculateAggregate(const AggregateInfo& aggInfo, TableCell& aggCell,
+                                       const std::vector<double>& values);
 
         // row x column
         std::pair<size_t, size_t> m_dataSize{ std::make_pair(0, 0) };

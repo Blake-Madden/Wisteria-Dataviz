@@ -134,7 +134,7 @@ namespace Wisteria::Graphs
         /// @private
         /// @brief Sets the grouping column (or keep it as null if not in use).
         /// @warning Call SetDataset() first before calling this.
-        void SetGroupColumn(const std::optional<const wxString> groupColumnName = std::nullopt);
+        void SetGroupColumn(const std::optional<const wxString>& groupColumnName = std::nullopt);
 
       private:
         [[nodiscard]]

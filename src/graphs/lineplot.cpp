@@ -15,9 +15,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     void LinePlot::SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
                            const wxString& xColumnName,
-                           std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+                           const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
-        SetDataset(data);
+        SetDataset(std::move(data));
         ResetGrouping();
         GetSelectedIds().clear();
 
@@ -86,7 +86,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 ln.m_shape = GetShapeScheme()->GetShape(currentIndex);
                 ln.m_shapeImg = GetShapeScheme()->GetImage(currentIndex);
                 // if some sort of spiral, then draw as a dashed spline
-                if (IsAutoSplining() && !IsDataSingleDirection(data, group.second))
+                if (IsAutoSplining() && !IsDataSingleDirection(GetDataset(), group.second))
                     {
                     ln.GetPen().SetStyle(wxPenStyle::wxPENSTYLE_SHORT_DASH);
                     ln.SetStyle(LineStyle::Spline);
@@ -107,7 +107,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             Line ln;
             ln.SetGroupInfo(groupColumnName, 0, wxString{});
             ln.GetPen().SetColour(GetColorScheme()->GetColor(0));
-            if (IsAutoSplining() && !IsDataSingleDirection(data, 0))
+            if (IsAutoSplining() && !IsDataSingleDirection(GetDataset(), 0))
                 {
                 ln.GetPen().SetStyle(wxPenStyle::wxPENSTYLE_SHORT_DASH);
                 ln.SetStyle(LineStyle::Spline);
@@ -123,7 +123,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         }
 
     //-------------------------------------------
-    bool LinePlot::IsDataSingleDirection(std::shared_ptr<const Data::Dataset> & data,
+    bool LinePlot::IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
                                          const Data::GroupIdType group) const noexcept
         {
         assert(data && L"Null dataset passed to IsDataSingleDirection()");
@@ -281,7 +281,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
 
         const bool showingMarkers =
             (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
-             // multiple lines or one line and it is not using a blank icon
+             // multiple lines (or one line) and it is not using a blank icon
              (m_lines.size() > 1 || GetShapeScheme()->GetShape(0) != Icons::IconShape::Blank));
         wxString legendText;
         size_t lineCount{ 0 };

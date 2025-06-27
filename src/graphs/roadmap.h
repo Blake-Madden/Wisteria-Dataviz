@@ -86,7 +86,7 @@ namespace Wisteria::Graphs
 
         /// @brief Gets/sets the pen used to draw the lane separator on the road.
         /// @details This is useful for changing the color, pen style, or even removing the
-        ///     line on the middle of the road.\n
+        ///     line in the middle of the road.\n
         ///     The width of this pen will always be ignored, though, as the lane separator
         ///     will always be a tenth the width of the road.
         /// @note Set this to @c wxNullPen to not draw a line down the middle of the road.
@@ -164,7 +164,7 @@ namespace Wisteria::Graphs
         using RoadStopIcon = std::pair<Wisteria::Icons::IconShape, wxColour>;
 
         /// @brief A "stop on the road" (i.e., an IV from the multiple regression formula,
-        ///     strength from a SWOT analysis, etc.), which causes a curve in the road
+        ///     strength from a SWOT analysis, etc.), which causes a curve in the road,
         ///     based on its influence.
         class RoadStopInfo
             {

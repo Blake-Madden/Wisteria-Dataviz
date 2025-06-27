@@ -79,30 +79,30 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
             m_words.push_back(WordInfo{ wordColumn->GetLabelFromID(labelID).ToStdWstring(),
                                         freqAndCount.second });
             }
-        std::sort(m_words.begin(), m_words.end(),
-                  // most frequent to least frequent
-                  [](const auto& lhv, const auto& rhv) noexcept
-                  { return lhv.m_frequency > rhv.m_frequency; });
+        std::ranges::sort(m_words,
+                          // most frequent to the least frequent
+                          [](const auto& lhv, const auto& rhv) noexcept
+                          { return lhv.m_frequency > rhv.m_frequency; });
 
         // remove words that don't meet the minimum frequency
-        auto wordsToRemoveStart =
-            std::find_if(m_words.cbegin(), m_words.cend(), [minFreq](const auto& item) noexcept
-                         { return item.m_frequency < minFreq; });
+        const auto wordsToRemoveStart =
+            std::ranges::find_if(std::as_const(m_words), [minFreq](const auto& item) noexcept
+                                 { return item.m_frequency < minFreq; });
         if (wordsToRemoveStart != m_words.cend())
             {
             m_words.erase(wordsToRemoveStart, m_words.end());
             }
 
-        std::sort(m_words.begin(), m_words.end(),
-                  // least frequent to most frequent because we go backwards when
-                  // moving these into drawable labels
-                  [](const auto& lhv, const auto& rhv) noexcept
-                  { return lhv.m_frequency < rhv.m_frequency; });
+        std::ranges::sort(m_words,
+                          // least frequent to most frequent because we go backwards when
+                          // moving these into drawable labels
+                          [](const auto& lhv, const auto& rhv) noexcept
+                          { return lhv.m_frequency < rhv.m_frequency; });
 
         if (maxFreq)
             {
             // remove words that exceed the maximum frequency
-            auto maxWordsToRemoveStart =
+            const auto maxWordsToRemoveStart =
                 std::find_if(m_words.cbegin(), m_words.cend(), [maxFreq](const auto& item)
                              { return item.m_frequency > maxFreq.value(); });
             if (maxWordsToRemoveStart != m_words.cend())
@@ -120,8 +120,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
         const auto grandTotal = std::accumulate(m_words.cbegin(), m_words.cend(), 0.0,
                                                 [](const auto& val, const auto word) noexcept
                                                 { return word.m_frequency + val; });
-        std::for_each(m_words.begin(), m_words.end(), [&grandTotal](auto& val) noexcept
-                      { val.m_frequency = safe_divide(val.m_frequency, grandTotal); });
+        std::ranges::for_each(m_words, [&grandTotal](auto& val) noexcept
+                              { val.m_frequency = safe_divide(val.m_frequency, grandTotal); });
         }
 
     //----------------------------------------------------------------
@@ -216,8 +216,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
             }
 
         // sort remaining labels by width, largest-to-smallest
-        std::sort(
-            labels.begin(), labels.end(), [&dc](const auto& lhv, const auto& rhv) noexcept
+        std::ranges::sort(
+            labels, [&dc](const auto& lhv, const auto& rhv) noexcept
             { return lhv->GetBoundingBox(dc).GetWidth() > rhv->GetBoundingBox(dc).GetWidth(); });
 
         TryPlaceLabelsInPolygon(labels, dc, polygon);
@@ -263,7 +263,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                 bBox.SetTopLeft(foundPos->GetTopRight());
                 if (bBox.GetRight() > polyBoundingBox.GetRight())
                     {
-                    // ...try it under the other label if it went outside of the draw area
+                    // ...try it under the other label if it went outside the draw area
                     bBox.SetTopLeft(foundPos->GetBottomLeft());
                     if (bBox.GetBottom() > polyBoundingBox.GetBottom())
                         {

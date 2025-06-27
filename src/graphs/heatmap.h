@@ -65,7 +65,7 @@ namespace Wisteria::Graphs
 
          Note that the data is mapped exactly in the order that it appears in the data
          (i.e., nothing is sorted). Because this, the grouping column should be presorted
-         and each group's values should be in the order that want them to be appear in the plot.
+         and each group's values should be in the order that want them to appear in the plot.
 
          @par Missing Data:
          - Missing data in the ID column will result in an empty selection label for the cell.
@@ -105,7 +105,7 @@ namespace Wisteria::Graphs
                 Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
                      MakeBold().MakeLarger());
 
-          // use group and put all of the students' heatmaps into one row
+          // use group and put all the students' heatmaps into one row
           plot->SetData(testScoresData, L"test_score", L"Name", 1);
           // say "Students" at the top instead of "Groups"
           plot->SetGroupHeaderPrefix(_(L"Students"));
@@ -202,7 +202,8 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label>
+        CreateLegend(const LegendOptions& options) override final;
 
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
@@ -213,7 +214,7 @@ namespace Wisteria::Graphs
             }
 
       private:
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override final;
 
         struct HeatCell
             {

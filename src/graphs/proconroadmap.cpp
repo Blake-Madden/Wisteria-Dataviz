@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "proconroadmap.h"
+#include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roadmap)
 
@@ -122,20 +123,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
         // In other words, we set the values to positive and then get the min and max
         std::vector<double> values;
         values.reserve(influencers.get_data().size());
-        for (const auto& influencer : influencers.get_data())
+        for (const auto& [fst, snd] : influencers.get_data() | std::views::values)
             {
-            values.push_back(std::abs(influencer.second.second));
+            values.push_back(std::abs(snd));
             }
 
-        auto maxVal = std::max_element(values.cbegin(), values.cend());
+        const auto maxVal = std::ranges::max_element(std::as_const(values));
         // set the magnitude to the highest category count
         SetMagnitude(std::abs(*maxVal));
 
         // add the influencers as road stops
-        for (const auto& influencer : influencers.get_data())
+        for (const auto& [fst, snd] : influencers.get_data())
             {
-            GetRoadStops().push_back(
-                RoadStopInfo(influencer.first).Value(influencer.second.second));
+            GetRoadStops().push_back(RoadStopInfo(fst).Value(snd.second));
             }
         }
 
