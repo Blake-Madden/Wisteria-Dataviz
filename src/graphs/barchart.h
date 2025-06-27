@@ -275,6 +275,15 @@ namespace Wisteria::Graphs
                 return *this;
                 }
 
+            /// @brief Sets whether the block should be made translucent.
+            /// @param ghost @c true to make the block translucent.
+            /// @returns A self reference.
+            BarBlockInfo& Ghost(const bool ghost) noexcept
+                {
+                m_ghost = ghost;
+                return *this;
+                }
+
           private:
             wxBrush m_brush{ *wxGREEN_BRUSH };
             wxPen m_outlinePen{ wxNullPen };
@@ -283,6 +292,7 @@ namespace Wisteria::Graphs
             Wisteria::GraphItems::Label m_selectionLabel;
             Wisteria::GraphItems::Label m_decal;
             bool m_show{ true };
+            bool m_ghost{ false };
             wxString m_tag;
             };
 
@@ -300,7 +310,8 @@ namespace Wisteria::Graphs
             explicit BarBlock(const BarBlockInfo& info)
                 : m_brush(info.m_brush), m_outlinePen(info.m_outlinePen), m_color(info.m_color),
                   m_length(info.m_length), m_selectionLabel(info.m_selectionLabel),
-                  m_decal(info.m_decal), m_show(info.m_show), m_tag(info.m_tag)
+                  m_decal(info.m_decal), m_show(info.m_show), m_tag(info.m_tag),
+                  m_ghost(info.m_ghost)
                 {
                 }
 
@@ -453,6 +464,31 @@ namespace Wisteria::Graphs
                 return m_customWidth;
                 }
 
+            /// @returns @c true if the block is being made translucent.
+            [[nodiscard]]
+            bool IsGhosted() const noexcept
+                {
+                return m_ghost;
+                }
+
+            /// @brief Sets the block to be translucent.
+            /// @param ghost @c true to make the block translucent.
+            void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
+
+            /// @returns The opacity level applied if "ghosted".
+            [[nodiscard]]
+            uint8_t GetGhostOpacity() const noexcept
+                {
+                return m_ghostOpacity;
+                }
+
+            /** @brief Sets the opacity level for "ghosting".
+                @param opacity The opacity level (should be between @c 0 to @c 255).
+                @note If setting this to @c 0 (fully transparent), then you should set
+                    the block's pen to a darker color.
+                @sa Ghost().*/
+            void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
+
           private:
             /// @brief The brush (color and pattern) of the block.
             /// @note The bar block's opacity will override the parent bar's opacity
@@ -476,6 +512,10 @@ namespace Wisteria::Graphs
             wxString m_tag;
             /// Only used if a bar must be a specific width
             std::optional<double> m_customWidth{ std::nullopt };
+            /// Block is being made translucent.
+            bool m_ghost{ false };
+            /// How translucent to make the block.
+            uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
             };
 
         /// @brief A bar shown along an axis.
@@ -916,7 +956,7 @@ namespace Wisteria::Graphs
             @sa SetGhostOpacity().*/
         void ShowcaseBars(const std::vector<double>& positions);
 
-        /// @returns The opacity level applied to "ghosted" slices.
+        /// @returns The opacity level applied if being "ghosted".
         [[nodiscard]]
         uint8_t GetGhostOpacity() const noexcept
             {

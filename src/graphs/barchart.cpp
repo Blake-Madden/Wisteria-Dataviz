@@ -981,19 +981,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         // draw the bar (block)
         if (barBlock.IsShown() && barLength > 0)
             {
-            // if block has a customized opacity, then use that instead of the
-            // bar's opacity
-            const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                                            Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                                barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
-                                            barBlock.GetBrush().GetColour();
+            // if block has a customized opacity (or ghosted),
+            // then use that instead of the bar's opacity
+            const wxColour blockColor =
+                barBlock.IsGhosted() ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
+                                                                   GetGhostOpacity()) :
+                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
+                                                                   bar.GetOpacity()) :
+                    barBlock.GetBrush().GetColour();
             const wxColour blockLightenedColor =
+                barBlock.IsGhosted() ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
+                                                                   GetGhostOpacity()) :
                 barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
                                                                    bar.GetOpacity()) :
                     barBlock.GetLightenedColor();
             wxBrush blockBrush{ barBlock.GetBrush() };
             blockBrush.SetColour(blockColor);
+
+            const uint8_t opacityToApply =
+                barBlock.IsGhosted() ? barBlock.GetGhostOpacity() : bar.GetOpacity();
 
             if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
                 {
@@ -1005,7 +1015,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         .Pen(GetImageOutlineColor())
                         .AnchorPoint(wxPoint(lineXStart, lineYStart)),
                     barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
-                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
                 barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                             ShadowType::RightSideAndBottomShadow :
@@ -1023,7 +1033,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     Wisteria::GraphItems::Image::CropImageToRect(
                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
                         barRenderInfo.m_barRect, true));
-                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
                 barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                             ShadowType::RightSideAndBottomShadow :
@@ -1046,7 +1056,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .ConvertToImage(),
                         wxSize(barLength, barRenderInfo.m_barWidth), Orientation::Horizontal,
                         (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4)));
-                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
                 // note that stipples have their own shadows (a silhouette), so turn off
                 // the Image's native shadow renderer.
@@ -1297,6 +1307,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 .Scaling(GetScaling())
                 .DPIScaling(GetDPIScaleFactor())
                 .Padding(2, 2, 2, 2);
+            if (barBlock.IsGhosted())
+                {
+                decalLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                    decalLabel->GetFontColor(), barBlock.GetGhostOpacity()));
+                }
             decalLabel->GetFont().MakeSmaller().MakeSmaller();
             if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                 {
@@ -1530,18 +1545,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         // draw the bar
         if (barBlock.IsShown() && barLength > 0)
             {
-            // if block has a customized opacity, then use that instead of the bar's opacity
-            const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                                            Wisteria::Colors::ColorContrast::ChangeOpacity(
-                                                barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
-                                            barBlock.GetBrush().GetColour();
+            // if block has a customized opacity (or ghosted),
+            // then use that instead of the bar's opacity
+            const wxColour blockColor =
+                barBlock.IsGhosted() ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
+                                                                   GetGhostOpacity()) :
+                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
+                                                                   bar.GetOpacity()) :
+                    barBlock.GetBrush().GetColour();
             const wxColour blockLightenedColor =
+                barBlock.IsGhosted() ?
+                    Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
+                                                                   GetGhostOpacity()) :
                 barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
                                                                    bar.GetOpacity()) :
                     barBlock.GetLightenedColor();
             wxBrush blockBrush{ barBlock.GetBrush() };
             blockBrush.SetColour(blockColor);
+
+            const uint8_t opacityToApply =
+                barBlock.IsGhosted() ? barBlock.GetGhostOpacity() : bar.GetOpacity();
 
             if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
                 {
@@ -1553,7 +1579,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         .Pen(GetImageOutlineColor())
                         .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                     barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
-                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
                 barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                             ShadowType::RightSideShadow :
@@ -1571,7 +1597,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     Wisteria::GraphItems::Image::CropImageToRect(
                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
                         barRenderInfo.m_barRect, true));
-                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
                 barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
                                             ShadowType::RightSideAndBottomShadow :
@@ -1594,7 +1620,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .ConvertToImage(),
                         wxSize(barRenderInfo.m_barWidth, barLength), Orientation::Vertical,
                         (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4)));
-                barImage->SetOpacity(bar.GetOpacity());
+                barImage->SetOpacity(opacityToApply);
                 barImage->SetAnchoring(Anchoring::TopLeftCorner);
                 // note that stipples have their own shadows (a silhouette), so turn off
                 // the Image's native shadow renderer.
@@ -1828,6 +1854,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 .Scaling(GetScaling())
                 .DPIScaling(GetDPIScaleFactor())
                 .Padding(2, 2, 2, 2);
+            if (barBlock.IsGhosted())
+                {
+                decalLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                    decalLabel->GetFontColor(), barBlock.GetGhostOpacity()));
+                }
             decalLabel->GetFont().MakeSmaller().MakeSmaller();
             if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                 {
