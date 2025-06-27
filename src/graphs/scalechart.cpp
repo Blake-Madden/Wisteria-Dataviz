@@ -66,6 +66,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         // get the score data
         m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
 
+        const auto [yStart, yEnd] = GetScalingAxis().GetRange();
         frequency_set<double> jitterPoints;
         for (const auto& datum : m_scoresColumn->GetValues())
             {
@@ -74,7 +75,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
                 continue;
                 }
 
-            jitterPoints.insert(std::clamp<double>(datum, 0, 100));
+            jitterPoints.insert(std::clamp<double>(datum, yStart, yEnd));
             }
         m_jitter.CalcSpread(jitterPoints);
         }
@@ -116,6 +117,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         GetCustomAxes().clear();
 
             // Score custom axis that jitter points are drawn around.
+            // Note that we only use these for the bar axis positioning of points,
+            // the scaling axis is used for placing the points where they should be.
+            // This is because the main scaling axis may be logarithmic and won't
+            // align with these scales.
             {
             GraphItems::Axis scoreRuler(Wisteria::AxisType::LeftYAxis);
             scoreRuler.SetDPIScaleFactor(GetDPIScaleFactor());
