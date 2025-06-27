@@ -19,7 +19,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         : Wisteria::Graphs::BarChart(canvas)
         {
         SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
-        SetShapeScheme(shapes != nullptr ? shapes :
+        SetShapeScheme(shapes != nullptr ? std::move(shapes) :
                                            std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
 
@@ -125,6 +125,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             scoreRuler.SetCustomXPosition(1.5);
             scoreRuler.SetId(101);
             scoreRuler.Show(false);
+            scoreRuler.Reverse(GetScalingAxis().IsReversed());
             AddCustomAxis(scoreRuler);
 
             scoreRuler.SetId(102);
