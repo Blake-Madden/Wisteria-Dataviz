@@ -292,7 +292,7 @@ namespace Wisteria::Graphs
 
         std::vector<double> m_scaleValues;
         uint8_t m_precision{ 1 };
-        bool m_showcaseScore{ true };
+        bool m_showcaseScore{ false };
         };
     } // namespace Wisteria::Graphs
 

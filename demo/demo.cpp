@@ -536,8 +536,107 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<InfleszChart>(subframe->m_canvas);
+        auto plot = std::make_shared<ScaleChart>(subframe->m_canvas);
+        plot->AddScale(
+            std::vector<BarChart::BarBlock>{
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(59)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _(L"F (fail)") }
+                                                     .LabelFitting(LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) } },
+            std::nullopt, L"Grades");
+        plot->AddScale(
+            std::vector<BarChart::BarBlock>{
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(59)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _(L"F (fail)") }
+                                                     .LabelFitting(LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A-" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(4)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+                BarChart::BarBlock{
+                    Wisteria::Graphs::BarChart::BarBlockInfo(3)
+                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
+                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
+                            LabelFit::ScaleFontToFit))) },
+            },
+            std::nullopt, L"Grades");
+        plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0);
         plot->SetData(testScoresData, L"TEST_SCORE", L"NAME");
+        plot->SetDataColumnHeader(_(L"Test Scores"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
