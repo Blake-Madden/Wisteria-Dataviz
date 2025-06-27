@@ -70,8 +70,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
     //-----------------------------------
     void BarChart::AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
-                               std::optional<wxString> decal, std::optional<wxColour> color,
-                               std::optional<wxBrush> brush)
+                               const std::optional<wxString>& decal,
+                               const std::optional<wxColour>& color,
+                               const std::optional<wxBrush>& brush)
         {
         const auto firstBar = FindBar(firstBarLabel);
         const auto lastBar = FindBar(lastBarLabel);
@@ -97,8 +98,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
     //-----------------------------------
     void BarChart::AddBarGroup(const double firstBarAxisPosition, const double lastBarAxisPosition,
-                               std::optional<wxString> decal, std::optional<wxColour> color,
-                               std::optional<wxBrush> brush)
+                               const std::optional<wxString>& decal,
+                               const std::optional<wxColour>& color,
+                               const std::optional<wxBrush>& brush)
         {
         const auto firstBar = FindBar(firstBarAxisPosition);
         const auto lastBar = FindBar(lastBarAxisPosition);
@@ -1151,7 +1153,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 else if (bar.GetShape() == BarShape::Arrow)
                     {
-                    assert(!(GetShadowType() != ShadowType::NoDisplay) &&
+                    assert(GetShadowType() == ShadowType::NoDisplay &&
                            L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(0, safe_divide(barNeckRect.GetHeight(), 5)));
                     barNeckRect.SetRight(barNeckRect.GetRight() -
@@ -1211,7 +1213,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         Colors::GradientFill(blockColor, blockLightenedColor, FillDirection::West));
                     }
                 // in case an explicit color is used for the background
-                // and the brush is perhaps a hatch to be draw on top of it
+                // and the brush is perhaps a hatch to be drawn on top of it
                 else if (barBlock.GetColor().IsOk())
                     {
                     box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
@@ -1379,7 +1381,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             // This will be added to the plot's collection of object AFTER
             // all blocks have been added.
-            // This ensures that decals that go outside of their block are
+            // This ensures that decals that go outside their block are
             // eclipsed by the next block.
             barRenderInfo.m_decals.push_back(std::move(decalLabel));
             }
@@ -1681,7 +1683,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 else if (bar.GetShape() == BarShape::Arrow)
                     {
-                    assert(!(GetShadowType() != ShadowType::NoDisplay) &&
+                    assert(GetShadowType() == ShadowType::NoDisplay &&
                            L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
                     const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(), 10);
@@ -1741,7 +1743,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         Colors::GradientFill(blockColor, blockColor, FillDirection::East));
                     }
                 // in case an explicit color is used for the background
-                // and the brush is perhaps a hatch to be draw on top of it
+                // and the brush is perhaps a hatch to be drawn on top of it
                 else if (barBlock.GetColor().IsOk())
                     {
                     box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
@@ -2142,7 +2144,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             wxString{}, Wisteria::GraphItems::Label{}, GetBarEffect(),
                             GetBarOpacity());
                         UpdateBarLabel(theBar);
-                        // if the superbar is going outside of the plot area, then
+                        // if the superbar is going outside the plot area, then
                         // shove it back over and adjust the width of the bracket as well
                         if ((scalingAxisPos + grandTotal) > GetScalingAxis().GetRange().second)
                             {
@@ -2237,7 +2239,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             wxString{}, Wisteria::GraphItems::Label{}, GetBarEffect(),
                             GetBarOpacity());
                         UpdateBarLabel(theBar);
-                        // if the superbar is going outside of the plot area, then
+                        // if the superbar is going outside the plot area, then
                         // shove it back down and adjust the height of the bracket as well
                         if ((scalingAxisPos + grandTotal) > GetScalingAxis().GetRange().second)
                             {

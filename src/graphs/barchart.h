@@ -288,7 +288,7 @@ namespace Wisteria::Graphs
 
         /// @brief The smaller sections of a bar.
         /// @details Multiple blocks are stacked to make the final bar
-        ///    show grouping inside of the bar.
+        ///    show grouping inside the bar.
         class BarBlock
             {
           public:
@@ -431,7 +431,7 @@ namespace Wisteria::Graphs
             ///    block will consume 25% of the width of the axis
             ///    (regardless of how wide the other bars are).
             /// @note You can mix and match custom-width at the bar and bar-block levels,
-            ///    although that normally wouldn't be recommend.\n
+            ///    although that normally wouldn't be recommended.\n
             ///    Prefer just setting custom widths at the bar level,
             ///    unless you have a special need.
             void SetCustomWidth(const std::optional<double> width) noexcept
@@ -466,7 +466,7 @@ namespace Wisteria::Graphs
             wxColour m_color;
             /// The length of the block (i.e., how much of the scaling axis the block consumes).
             double m_length{ 0 };
-            /// The label shown on the middle of the bar when it is selected by the mouse.
+            /// The label shown in the middle of the bar when it is selected by the mouse.
             Wisteria::GraphItems::Label m_selectionLabel;
             /// The decal being drawn across the bar.
             Wisteria::GraphItems::Label m_decal;
@@ -474,7 +474,7 @@ namespace Wisteria::Graphs
             bool m_show{ true };
             /// An optional tag to identify or classify the block.
             wxString m_tag;
-            /// only used if a bar must be a specific width
+            /// Only used if a bar must be a specific width
             std::optional<double> m_customWidth{ std::nullopt };
             };
 
@@ -687,14 +687,14 @@ namespace Wisteria::Graphs
             std::vector<BarBlock>::const_iterator
             FindFirstBlockRE(const wxString& pattern) const noexcept
                 {
-                wxRegEx re(pattern);
-                if (!re.IsValid())
+                wxRegEx rgx(pattern);
+                if (!rgx.IsValid())
                     {
                     return GetBlocks().cend();
                     }
 
                 return std::find_if(GetBlocks().cbegin(), GetBlocks().cend(),
-                                    [&](const auto& block) { return re.Matches(block.GetTag()); });
+                                    [&](const auto& block) { return rgx.Matches(block.GetTag()); });
                 }
 
             /** @brief Searches for the last block in the bar whose tag matches the
@@ -986,9 +986,9 @@ namespace Wisteria::Graphs
                 the brush scheme will be used.
             @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
-                         std::optional<wxString> decal = std::nullopt,
-                         std::optional<wxColour> color = std::nullopt,
-                         std::optional<wxBrush> brush = std::nullopt);
+                         const std::optional<wxString>& decal = std::nullopt,
+                         const std::optional<wxColour>& color = std::nullopt,
+                         const std::optional<wxBrush>& brush = std::nullopt);
         /** @brief Adds a bracket (inside the plotting area) around a range of bars
                 and draws a bar above that showing the length of the children bars combined.
             @details This is useful for giving attention to a block of smaller bars
@@ -1003,9 +1003,9 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If a provided axis positions doesn't have a bar,
                 throws an exception.*/
         void AddBarGroup(const double firstBarAxisPosition, const double lastBarAxisPosition,
-                         std::optional<wxString> decal = std::nullopt,
-                         std::optional<wxColour> color = std::nullopt,
-                         std::optional<wxBrush> brush = std::nullopt);
+                         const std::optional<wxString>& decal = std::nullopt,
+                         const std::optional<wxColour>& color = std::nullopt,
+                         const std::optional<wxBrush>& brush = std::nullopt);
 
         /** @brief Adds a bracket around a range of bars and draws a bar above that
                 showing the length of the children bars combined.
@@ -1155,7 +1155,7 @@ namespace Wisteria::Graphs
         ///     Call this after all manual calls to @c AddBar or various @c SetData() derived
         ///     functions.
         /// @warning Bar labels should be set to @c BinLabelDisplay::NoDisplay as they will go
-        ///     outside of the plotting area.
+        ///     outside the plotting area.
         void ConstrainScalingAxisToBars()
             {
             GetScalingAxis().SetRange(GetScalingAxis().GetRange().first, m_longestBarLength,

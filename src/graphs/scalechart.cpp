@@ -18,7 +18,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
         : Wisteria::Graphs::BarChart(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
         SetShapeScheme(shapes != nullptr ? shapes :
                                            std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
@@ -44,7 +44,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
         const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
         {
-        SetDataset(data);
+        SetDataset(std::move(data));
         ResetGrouping();
         m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();
@@ -87,7 +87,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         }
 
     //----------------------------------------------------------------
-    void ScaleChart::AddScale(std::vector<BarChart::BarBlock> blocks,
+    void ScaleChart::AddScale(const std::vector<BarChart::BarBlock>& blocks,
                               const std::optional<double> scalingAxisStart /*= std::nullopt*/,
                               const wxString& header /*= wxString{}*/)
         {
@@ -95,7 +95,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
                     Wisteria::GraphItems::Label{}, Wisteria::BoxEffect::Solid };
         if (scalingAxisStart)
             {
-            theBar.SetCustomScalingAxisStartPosition(scalingAxisStart.value());
+            theBar.SetCustomScalingAxisStartPosition(scalingAxisStart);
             }
         AddBar(theBar, theBar.GetLength() >
                            GetScalingAxis().GetRange().second - GetScalingAxis().GetRange().first);
@@ -150,8 +150,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             }
 
         // draw the numeric points along the scale section
-        const auto commonLabelSizeIterator = std::max_element(
-            m_scaleValues.cbegin(), m_scaleValues.cend(),
+        const auto commonLabelSizeIterator = std::ranges::max_element(
+            std::as_const(m_scaleValues),
             [this, &dc](const auto& lhv, const auto& rhv)
             {
                 return dc
@@ -194,8 +194,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
                 }
         };
 
-        std::for_each(m_scaleValues.cbegin(), m_scaleValues.cend(),
-                      [&addTextPoint, this](const auto& val)
+        std::ranges::for_each(std::as_const(m_scaleValues), [&addTextPoint, this](const auto& val)
                       { addTextPoint(1, val, val, m_precision); });
 
         // start plotting the scores

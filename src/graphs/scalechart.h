@@ -233,7 +233,7 @@ namespace Wisteria::Graphs
                 then do that by calling `GetScalingAxis().SetRange()` before any calls
                 to this function.
          */
-        void AddScale(std::vector<BarChart::BarBlock> blocks,
+        void AddScale(const std::vector<BarChart::BarBlock>& blocks,
                       const std::optional<double> scalingAxisStart = std::nullopt,
                       const wxString& header = wxString{});
 
@@ -264,7 +264,7 @@ namespace Wisteria::Graphs
             }
 
       private:
-        void RecalcSizes(wxDC& dc);
+        void RecalcSizes(wxDC& dc) override;
 
         void AdjustAxes();
 
