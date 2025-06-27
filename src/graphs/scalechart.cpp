@@ -115,7 +115,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         {
         GetCustomAxes().clear();
 
-            // score custom axis that jitter points are drawn around
+            // Score custom axis that jitter points are drawn around.
             {
             GraphItems::Axis scoreRuler(Wisteria::AxisType::LeftYAxis);
             scoreRuler.SetDPIScaleFactor(GetDPIScaleFactor());
@@ -221,7 +221,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), yStart, yEnd);
 
             wxCoord yPt{ 0 };
-            assert(middleRuler.GetPhysicalCoordinate(currentScore, yPt) &&
+            assert(GetScalingAxis().GetPhysicalCoordinate(currentScore, yPt) &&
                    L"Unable to find point on scale chart!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
@@ -229,7 +229,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             const size_t colorIndex =
                 IsUsingGrouping() ? GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) : 0;
 
-            if (middleRuler.GetPhysicalCoordinate(currentScore, yPt))
+            if (GetScalingAxis().GetPhysicalCoordinate(currentScore, yPt))
                 {
                 wxPoint pt(middleRuler.GetPhysicalCustomXPosition(), yPt);
                 m_jitter.JitterPoint(pt);
