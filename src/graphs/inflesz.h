@@ -46,6 +46,7 @@ namespace Wisteria::Graphs
          [Validation of the INFLESZ scale to evaluate readability of texts aimed at the patient].
          Anales del sistema sanitario de Navarra vol. 31,2 (2008): 135-52. doi:10.4321/s1137-66272008000300004*/
     // clang-format on
+
     class InfleszChart final : public Wisteria::Graphs::ScaleChart
         {
         wxDECLARE_DYNAMIC_CLASS(InfleszChart);
@@ -64,8 +65,8 @@ namespace Wisteria::Graphs
                 for comparison.*/
         explicit InfleszChart(
             Wisteria::Canvas* canvas,
-            std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr,
+            const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,
             const bool includeSzigriszt = true, const bool includeFlesch = true);
         };
     } // namespace Wisteria::Graphs

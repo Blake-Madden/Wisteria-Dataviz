@@ -14,10 +14,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
     {
     InfleszChart::InfleszChart(
         Wisteria::Canvas * canvas,
-        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/,
+        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
+        const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/,
         const bool includeSzigriszt /*= true*/, const bool includeFlesch /*= true*/)
-        : Wisteria::Graphs::ScaleChart(canvas, std::move(colors), std::move(shapes))
+        : Wisteria::Graphs::ScaleChart(canvas, colors, shapes)
         {
         SetMainScaleColumnHeader(_DT(L"IFSZ"));
         /*

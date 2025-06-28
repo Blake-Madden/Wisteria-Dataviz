@@ -56,8 +56,8 @@ namespace Wisteria::Graphs
                Leave as null to use the standard shapes.*/
         explicit FleschChart(
             Wisteria::Canvas* canvas,
-            std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
+            const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr);
 
         /** @brief Sets the data.
             @param data The data to use.

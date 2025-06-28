@@ -39,7 +39,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
         }
 
     //----------------------------------------------------------------
-    void WCurvePlot::SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
+    void WCurvePlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
+                             const wxString& yColumnName,
                              const wxString& xColumnName,
                              const std::optional<wxString>& groupColumnName)
         {
@@ -51,7 +52,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
             {
             throw std::runtime_error(_(L"Group column required for W-curve plot.").ToUTF8());
             }
-        LinePlot::SetData(std::move(data), yColumnName, xColumnName, groupColumnName);
+        LinePlot::SetData(data, yColumnName, xColumnName, groupColumnName);
 
         // force the X axes to use neat integers
         const auto [axisMin, axisMax] = GetBottomXAxis().GetRange();

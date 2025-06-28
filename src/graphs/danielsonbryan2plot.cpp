@@ -15,12 +15,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
     //----------------------------------------------------------------
     DanielsonBryan2Plot::DanielsonBryan2Plot(
         Wisteria::Canvas * canvas,
-        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
+        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
+        const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
-        SetShapeScheme(shapes != nullptr ? std::move(shapes) :
+        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetShapeScheme(shapes != nullptr ? shapes :
                                            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
         if (GetCanvas() != nullptr)
@@ -41,10 +41,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
 
     //----------------------------------------------------------------
     void DanielsonBryan2Plot::SetData(
-        std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
-        std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& scoreColumnName,
+        const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
-        SetDataset(std::move(data));
+        SetDataset(data);
         ResetGrouping();
         m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();
@@ -55,7 +55,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             return;
             }
 
-        SetGroupColumn(std::move(groupColumnName));
+        SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())

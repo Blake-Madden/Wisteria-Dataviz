@@ -136,7 +136,7 @@ namespace Wisteria::Graphs
                 The default color scale is white (low values) to black (high values),
                 which creates a grayscale spectrum.*/
         explicit HeatMap(Wisteria::Canvas* canvas,
-                         std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
+                         const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr);
         /** @brief Sets the data across the heatmap.
             @param data The data.
             @param continuousColumnName The data column from the dataset to use for
@@ -158,10 +158,10 @@ namespace Wisteria::Graphs
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& continuousColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt,
-                     std::optional<size_t> groupColumnCount = std::nullopt);
+                     const std::optional<wxString>& groupColumnName = std::nullopt,
+                     const std::optional<size_t> groupColumnCount = std::nullopt);
 
         /** @name Grouping Functions
             @brief Functions related to how grouped cells are displayed.

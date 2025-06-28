@@ -13,11 +13,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    void LinePlot::SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
+    void LinePlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
+                           const wxString& yColumnName,
                            const wxString& xColumnName,
                            const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
-        SetDataset(std::move(data));
+        SetDataset(data);
         ResetGrouping();
         GetSelectedIds().clear();
 

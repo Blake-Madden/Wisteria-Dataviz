@@ -473,9 +473,10 @@ namespace Wisteria::Graphs
                 and center the image.
             @sa SetCommonBoxImageOutlineColor(), BoxPlot::SetBoxEffect(),
            BarChart::SetBarEffect().*/
-        void SetImageScheme(std::shared_ptr<Wisteria::Images::Schemes::ImageScheme> imageScheme)
+        void
+        SetImageScheme(const std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>& imageScheme)
             {
-            m_imageScheme = std::move(imageScheme);
+            m_imageScheme = imageScheme;
             }
 
         /// @brief Get the brush scheme used for the bars.
@@ -490,9 +491,9 @@ namespace Wisteria::Graphs
             @param colors The color scheme to use.
             @warning For most derived graphs, this will have no effect until
                 `SetData()` is called.*/
-        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
+        void SetBrushScheme(const std::shared_ptr<Brushes::Schemes::BrushScheme>& colors)
             {
-            m_brushScheme = std::move(colors);
+            m_brushScheme = colors;
             }
 
         /// @brief Get the shape scheme used for the points.
@@ -507,9 +508,9 @@ namespace Wisteria::Graphs
             @param shapes The shape scheme to use.
             @warning For most derived graphs, this will have no effect until
                 `SetData()` is called.*/
-        void SetShapeScheme(std::shared_ptr<Icons::Schemes::IconScheme> shapes)
+        void SetShapeScheme(const std::shared_ptr<Icons::Schemes::IconScheme>& shapes)
             {
-            m_shapeScheme = std::move(shapes);
+            m_shapeScheme = shapes;
             }
 
         /// @brief Get the color scheme used for the bars.
@@ -524,9 +525,9 @@ namespace Wisteria::Graphs
             @param colors The color scheme to use.
             @warning For most derived graphs, this will have no effect until
                 `SetData()` is called.*/
-        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
+        void SetColorScheme(const std::shared_ptr<Colors::Schemes::ColorScheme>& colors)
             {
-            m_colorScheme = std::move(colors);
+            m_colorScheme = colors;
             }
 
         /// @returns The dataset that the graph is using.
@@ -619,10 +620,10 @@ namespace Wisteria::Graphs
 
         /// @private
         [[deprecated("Use AddAnnotation() instead.")]]
-        void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object, const wxPoint pt,
+        void AddEmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object, const wxPoint pt,
                                const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             {
-            AddAnnotation(std::move(object), pt, interestPts);
+            AddAnnotation(object, pt, interestPts);
             }
 
         /// @private
@@ -813,9 +814,9 @@ namespace Wisteria::Graphs
         void UpdateSelectedItems() final;
 
         /// @private
-        void SetDataset(std::shared_ptr<const Data::Dataset> data) noexcept
+        void SetDataset(const std::shared_ptr<const Data::Dataset>& data) noexcept
             {
-            m_data = std::move(data);
+            m_data = data;
             }
 
         /// @brief Additional info to show when selecting a plot in debug mode.

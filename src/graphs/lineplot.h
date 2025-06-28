@@ -238,20 +238,19 @@ namespace Wisteria::Graphs
                 The default is to use solid, straight lines.\n
                 Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`
                 to not show any lines.*/
-        explicit LinePlot(Canvas* canvas,
-                          std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-                          std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr,
-                          std::shared_ptr<LineStyleScheme> linePenStyles = nullptr)
+        explicit LinePlot(
+            Canvas* canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,
+            const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr)
             : GroupGraph2D(canvas),
               m_linePenStyles(linePenStyles != nullptr ?
-                                  std::move(linePenStyles) :
+                                  linePenStyles :
                                   std::make_shared<LineStyleScheme>(LineStyleScheme{
                                       { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
             {
-            SetColorScheme(colors != nullptr ? std::move(colors) :
-                                               Settings::GetDefaultColorScheme());
+            SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
             SetShapeScheme(shapes != nullptr ?
-                               std::move(shapes) :
+                               shapes :
                                std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
                                    Wisteria::Icons::Schemes::StandardShapes()));
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
@@ -282,7 +281,8 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        virtual void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& yColumnName,
+        virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                             const wxString& yColumnName,
                              const wxString& xColumnName,
                              const std::optional<wxString>& groupColumnName = std::nullopt);
 

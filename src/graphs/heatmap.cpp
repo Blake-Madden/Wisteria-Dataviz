@@ -15,10 +15,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
     {
     //----------------------------------------------------------------
     HeatMap::HeatMap(Wisteria::Canvas * canvas,
-                     std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/)
+                     const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? std::move(colors) :
+        SetColorScheme(colors != nullptr ? colors :
                                            std::make_unique<Colors::Schemes::ColorScheme>(
                                                Colors::Schemes::ColorScheme{ *wxWHITE, *wxBLACK }));
 
@@ -32,12 +32,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
         }
 
     //----------------------------------------------------------------
-    void HeatMap::SetData(std::shared_ptr<const Data::Dataset> data,
+    void HeatMap::SetData(const std::shared_ptr<const Data::Dataset>& data,
                           const wxString& continuousColumnName,
-                          std::optional<const wxString> groupColumnName /*= std::nullopt*/,
-                          std::optional<size_t> groupColumnCount /*= std::nullopt*/)
+                          const std::optional<wxString>& groupColumnName /*= std::nullopt*/,
+                          const std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
-        SetDataset(std::move(data));
+        SetDataset(data);
         ResetGrouping();
         GetSelectedIds().clear();
 
@@ -46,7 +46,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             return;
             }
 
-        SetGroupColumn(std::move(groupColumnName));
+        SetGroupColumn(groupColumnName);
         m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {

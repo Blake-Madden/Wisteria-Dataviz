@@ -92,14 +92,14 @@ namespace Wisteria::Graphs
                 and show underneath it. Leave as null just to use the brush scheme.*/
         explicit CategoricalBarChart(
             Wisteria::Canvas* canvas,
-            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr)
+            const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
+            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr)
             : Wisteria::Graphs::BarChart(canvas)
             {
-            SetBrushScheme(brushes != nullptr ? std::move(brushes) :
+            SetBrushScheme(brushes != nullptr ? brushes :
                                                 std::make_unique<Brushes::Schemes::BrushScheme>(
                                                     *Settings::GetDefaultColorScheme()));
-            SetColorScheme(std::move(colors));
+            SetColorScheme(colors);
             // categorical axis labels (especially longer ones) usually look
             // better with horizontal bars
             SetBarOrientation(Wisteria::Orientation::Horizontal);
@@ -131,10 +131,10 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& categoricalColumnName,
-                     const std::optional<const wxString>& weightColumnName = std::nullopt,
-                     const std::optional<const wxString>& groupColumnName = std::nullopt,
+                     const std::optional<wxString>& weightColumnName = std::nullopt,
+                     const std::optional<wxString>& groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
 
       private:

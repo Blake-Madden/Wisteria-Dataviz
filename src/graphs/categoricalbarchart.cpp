@@ -16,13 +16,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
     {
     //----------------------------------------------------------------
     void CategoricalBarChart::SetData(
-        std::shared_ptr<const Data::Dataset> data, const wxString& categoricalColumnName,
-        const std::optional<const wxString>& weightColumnName /*= std::nullopt*/,
-        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/,
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& categoricalColumnName,
+        const std::optional<wxString>& weightColumnName /*= std::nullopt*/,
+        const std::optional<wxString>& groupColumnName /*= std::nullopt*/,
         const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/)
         {
         // point to (new) data and reset
-        SetDataset(std::move(data));
+        SetDataset(data);
         ResetGrouping();
         m_useWeightColumn = weightColumnName.has_value();
         m_useIDColumnForBars = false;

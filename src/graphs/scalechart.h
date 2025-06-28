@@ -195,8 +195,8 @@ namespace Wisteria::Graphs
          */
         explicit ScaleChart(
             Wisteria::Canvas* canvas,
-            std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
+            const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr);
 
         /** @brief Displays a series of numbers along the left side,
                 positioned at their given value.
@@ -221,8 +221,9 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
          */
-        void SetData(std::shared_ptr<const Data::Dataset> data, const wxString& scoreColumnName,
-                     const std::optional<const wxString>& groupColumnName = std::nullopt);
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const wxString& scoreColumnName,
+                     const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /** @brief Adds a color-block scale along the right side of the scores
                 and numeric scale.
