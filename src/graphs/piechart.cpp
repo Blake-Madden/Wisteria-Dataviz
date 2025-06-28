@@ -888,6 +888,11 @@ namespace Wisteria::Graphs
                     middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
                     smallestMiddleLabelFontSize = std::min(smallestMiddleLabelFontSize,
                                                            middleLabel->GetFont().GetPointSize());
+                    if (GetOuterPie().at(i).IsGhosted())
+                        {
+                        middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                            middleLabel->GetFontColor(), GetGhostOpacity()));
+                    }
                     }
                 middleLabels.push_back(std::move(middleLabel));
                 }
@@ -1038,6 +1043,11 @@ namespace Wisteria::Graphs
                     middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
                     smallestMiddleLabelFontSize = std::min(smallestMiddleLabelFontSize,
                                                            middleLabel->GetFont().GetPointSize());
+                    if (innerPie.IsGhosted())
+                        {
+                        middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                            middleLabel->GetFontColor(), GetGhostOpacity()));
+                    }
                     }
                 middleLabels.push_back(std::move(middleLabel));
                 }
