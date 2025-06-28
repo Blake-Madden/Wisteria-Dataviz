@@ -76,7 +76,7 @@ namespace Wisteria::Graphs
                      std::optional<const wxString> groupColumnName = std::nullopt);
 
       private:
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override final;
         void AdjustAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };

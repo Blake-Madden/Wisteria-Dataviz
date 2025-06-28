@@ -131,7 +131,7 @@ namespace Wisteria
             ///     and remains locked, regardless of titles.
             /// @warning This should only be used for the first or last row on a page,
             ///     as it requires to adjust the layout of previous items on the page.
-            ///     If multiple items are locked on the same page or appear on the middle
+            ///     If multiple items are locked on the same page or appear in the middle
             ///     of the page, this will result in unexpected page layout.
             /// @returns A self reference.
             CanvasRowInfo& LockProportion(const bool locked) noexcept
@@ -179,7 +179,7 @@ namespace Wisteria
         Canvas& operator=(const Canvas&) = delete;
 
         /// @private
-        void OnDraw(wxDC& dc) final;
+        void OnDraw(wxDC& dc) override final;
 
         // standard events
         /// @private
@@ -226,7 +226,7 @@ namespace Wisteria
                                 Image::GetSVGSize(L"logo.svg"),
                                 gdc.FromDIP(wxSize(Canvas::GetDefaultCanvasWidthDIPs(),
                                                    Canvas::GetDefaultCanvasHeightDIPs())));
-             const auto bb = wxBitmapBundle::FromSVGFile(L"logo.svg", sz));
+             const auto bb = wxBitmapBundle::FromSVGFile(L"logo.svg", sz);
              // now, set it as the canvas's background
              canvas->SetBackgroundImage(bb);
             @endcode*/
@@ -424,9 +424,9 @@ namespace Wisteria
         /** @brief Sets the fixed object at the given row and column.
             @param row The row location of the item being set.
             @param column The column location of the item being set.
-            @param object The object being add to the location.*/
+            @param object The object being added to the location.*/
         void SetFixedObject(const size_t row, const size_t column,
-                            std::shared_ptr<GraphItems::GraphItemBase> object);
+                            const std::shared_ptr<GraphItems::GraphItemBase>& object);
         /// @returns The fixed object at @c row and @c column.
         /// @param row The row of the object.
         /// @param column The column of the object.
@@ -460,9 +460,9 @@ namespace Wisteria
                 (as well as stand-alone axes) down a column to have the same width and positions.
             @param align @c true to align column contents.
             @note If the grid is jagged, then the content alignment will stop on the first
-                row that has less columns than the top row. For example, if a canvas has three rows,
-                where the first and last rows have two graphs and the second only has one graph,
-                then the X axes of the first column of graphs will be aligned,
+                row that has fewer columns than the top row. For example, if a canvas has three
+                rows, where the first and last rows have two graphs and the second only has
+                one graph, then the X axes of the first column of graphs will be aligned,
                 but not the second column.
                 This is because the second row does not have a second column, so alignment adjusting
                 stops at that point.*/
@@ -754,12 +754,12 @@ namespace Wisteria
                                        const Watermark& watermark);
         /** @brief Draws a watermark logo on the corner of a canvas.
             @param dc The device context to draw on.*/
-        void DrawWatermarkLogo(wxDC& dc);
+        void DrawWatermarkLogo(wxDC& dc) const;
 
         /// @returns The (scaled) rectangle area of the canvas.
         /// @param dc The measuring DC.
         [[nodiscard]]
-        wxRect GetCanvasRect(wxDC& dc) const noexcept
+        wxRect GetCanvasRect(const wxDC& dc) const noexcept
             {
             wxRect scaledRect(m_rectDIPs);
             scaledRect.SetSize(dc.FromDIP(m_rectDIPs.GetSize()));
@@ -818,8 +818,8 @@ namespace Wisteria
 
         /// @private
         [[nodiscard]]
-        const std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row,
-                                                                        const size_t column) const;
+        std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row,
+                                                                  const size_t column) const;
 
       private:
         /// @brief Divides the width of a row into columns, taking into account items
@@ -866,6 +866,7 @@ namespace Wisteria
         /// @returns The top-level floating (i.e., not anchored) object on the
         ///     canvas located at @c pt.
         /// @param pt The point to look at.
+        /// @param dc The rendering DC.
         [[nodiscard]]
         std::vector<std::shared_ptr<GraphItems::GraphItemBase>>::reverse_iterator
         FindFreeFloatingObject(const wxPoint& pt, wxDC& dc);
@@ -885,7 +886,7 @@ namespace Wisteria
         ///     It should <b>not</b> be used with font point sizes because DPI scaling is handled by
         ///     the OS for those. Instead, font sizes should only be scaled to the canvas's scaling.
         [[nodiscard]]
-        double ScaleToScreenAndCanvas(const double value, wxDC& dc) const noexcept
+        double ScaleToScreenAndCanvas(const double value, const wxDC& dc) const noexcept
             {
             return value * GetScaling() * dc.FromDIP(1);
             }

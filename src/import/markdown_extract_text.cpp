@@ -385,7 +385,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                 else
                     {
                     bool pastFirstLine{ false };
-                    // tab over each line inside of the code block
+                    // tab over each line inside the code block
                     while (m_currentStart < endOfTag)
                         {
                         if (*m_currentStart == L'\r' || *m_currentStart == L'\n')
@@ -619,7 +619,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     }
                 }
             }
-        // images (we don't read in the alt text inside of the [], just skip everything)
+        // images (we don't read in the alt text inside the [], just skip everything)
         else if (*m_currentStart == L'!')
             {
             if (!isEscaping && (m_currentStart + 1 < m_currentEndSentinel) &&

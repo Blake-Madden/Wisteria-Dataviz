@@ -201,7 +201,7 @@ namespace Wisteria::GraphItems
                 are `wxImage` objects that can be passed to an `Image`'s constructor.*/
         /// @{
 
-        /** @brief Shrinks an image to fit inside of a rect.
+        /** @brief Shrinks an image to fit inside a rect.
             @details If the image is smaller than the rect, then the original image is returned.\n
                 If the height of the image is closer to the rect's than
                 the width is, then its height will be scaled to the rect's height
@@ -454,14 +454,14 @@ namespace Wisteria::GraphItems
             @warning The image will be stretched to fit in this size, distorting its appearance.\n
                 Prefer using SetWidth(), SetHeight(), or SetBestSize() to maintain aspect ratio.*/
         void SetSize(const wxSize sz);
-        /** @brief Sets the image's size to fit inside of the specified bounding box.
+        /** @brief Sets the image's size to fit inside the specified bounding box.
             @param suggestedSz The suggested bounding box size.
             @returns The new size of the image based on the suggested size.
             @note The image's new size may be different from the suggested size here, as it will
                 maintain the image's aspect ratio.*/
         wxSize SetBestSize(const wxSize suggestedSz);
 
-        /** @brief Calculates the image's size to fit inside of the specified bounding box.
+        /** @brief Calculates the image's size to fit inside the specified bounding box.
             @param suggestedSz The suggested bounding box size.
             @returns The new size of the image based on the suggested size.
             @note The image's new size may be different from the suggested size here, as it will
@@ -517,35 +517,37 @@ namespace Wisteria::GraphItems
         /** @brief Draws the image onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the image is being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
         /// @returns The rectangle on the canvas where the image would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final;
         /** @brief Bounds the image to the given rectangle.
             @param rect The rectangle to bound the image to.
+            @param dc The rendering DC.
             @param parentScaling This parameter is ignored.
             @note The size of the image will be adjusted (height-wise first,
                 then length-wise if necessary) to this box.
                 If the image isn't wide enough to fill the bounding box,
                 then it will be anchored within the specified rectangle.\n
                 Call SetPageVerticalAlignment() and SetPageHorizontalAlignment()
-                to control how it is positioned inside of its bounding box.*/
+                to control how it is positioned inside its bounding box.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final;
+                            [[maybe_unused]] const double parentScaling) override final;
 
         /** @brief Moves the item by the specified x and y values.
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) noexcept final
+        void Offset(const int xToMove, const int yToMove) noexcept override final
             {
             SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove));
             }
 
-        /** @returns @c true if the given point is inside of the image.
-            @param pt The point to check.*/
+        /** @returns @c true if the given point is inside the image.
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
+        bool HitTest(const wxPoint pt, wxDC& dc) const noexcept override final
             {
             return GetBoundingBox(dc).Contains(pt);
             }

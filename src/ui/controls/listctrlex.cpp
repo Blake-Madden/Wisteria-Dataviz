@@ -382,7 +382,7 @@ namespace Wisteria::UI
             {
             if (selectedRow == wxNOT_FOUND && IsItemAddingEnabled())
                 {
-                // add a new row if they clicked outside of any valid rows (or if there are no rows)
+                // add a new row if they clicked outside any valid rows (or if there are no rows)
                 selectedRow = AddRow();
                 }
             // update our point to take the scrollbar positions into account AFTER
@@ -1315,7 +1315,7 @@ namespace Wisteria::UI
             return 2 * m_list->GetDPIScaleFactor();
             }
 
-        /// @returns The left / right padding inside of the cells.
+        /// @returns The left / right padding inside the cells.
         [[nodiscard]]
         wxCoord GetCellSidePadding() const
             {
@@ -1337,7 +1337,7 @@ namespace Wisteria::UI
             return 20 * m_list->GetDPIScaleFactor();
             }
 
-        /// @returns The left and right padding inside of the cells.
+        /// @returns The left and right padding inside the cells.
         [[nodiscard]]
         wxCoord GetMinColumnWidth() const
             {

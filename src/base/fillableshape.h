@@ -56,7 +56,7 @@ namespace Wisteria::GraphItems
         /** @brief Draws the shape onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
 
       private:
         double m_fillPercent{ math_constants::empty };

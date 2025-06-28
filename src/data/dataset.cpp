@@ -1298,7 +1298,7 @@ namespace Wisteria::Data
                     break;
                     }
                 if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
-                    // numbers outside of 0-7 probably aren't a discrete code
+                    // numbers outside 0-7 probably aren't a discrete code
                     !is_within(
                         std::make_pair(0.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
                         parsedNumber))

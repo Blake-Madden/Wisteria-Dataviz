@@ -151,7 +151,7 @@ namespace lily_of_the_valley
                 is_inside_of_single_quotes = false;
                 }
             // if a single quote already started a quote pair (and this is closing it) or
-            // we are not inside of a double quote then count single quotes
+            // we are not inside a double quote then count single quotes
             else if ((!is_inside_of_quotes || is_inside_of_single_quotes) &&
                      string[0] == 0x27) // single quote
                 {
@@ -603,7 +603,7 @@ namespace lily_of_the_valley
                 {
                 return charset;
                 }
-            // if the content-type and content= are inside of this meta tag then
+            // if the content-type and content= are inside this meta tag then
             // it's legit, so move to it and stop looking
             if (contentType < nextAngleSymbol && contentStart < nextAngleSymbol)
                 {
@@ -726,7 +726,7 @@ namespace lily_of_the_valley
                     is_inside_of_single_quotes = false;
                     }
                 // if a single quote already started a quote pair (and this is closing it) or
-                // we are not inside of a double quote then count single quotes
+                // we are not inside a double quote then count single quotes
                 else if ((!is_inside_of_quotes || is_inside_of_single_quotes) &&
                          string[0] == 0x27) // single quote
                     {
@@ -741,7 +741,7 @@ namespace lily_of_the_valley
             // if the substring loop completed then the substring was found.
             if (i == strSearchSize)
                 {
-                // make sure we aren't inside of quotes--if so, we need to skip it.
+                // make sure we aren't inside quotes--if so, we need to skip it.
                 if (!is_inside_of_quotes)
                     {
                     return string;
@@ -808,13 +808,13 @@ namespace lily_of_the_valley
                     string_util::strcspn_pointer(foundTag, L"\"'>;", 4) :
                 allowQuotedTags    ? string_util::strcspn_pointer(foundTag, L" \"'>;", 5) :
                 allowSpacesInValue ? string_util::strcspn_pointer(foundTag, L"\"'>", 3) :
-                                     // not allowing spaces and the tag is not inside of quotes
+                                     // not allowing spaces and the tag is not inside quotes
                                      // (like a style section)
                                      string_util::strcspn_pointer(foundTag, L" \"'>", 4);
             if (end && (end <= elementEnd))
                 {
                 // If at the end of the element, trim off any trailing spaces or a terminating '/'.
-                // Note that we don't search for '/' above because it can be inside of a valid tag
+                // Note that we don't search for '/' above because it can be inside a valid tag
                 // value (such as a file path).
                 if (*end == L'>')
                     {
@@ -934,7 +934,7 @@ namespace lily_of_the_valley
                 parse_raw_text(html_text, text_length);
                 }
             }
-        // if there is text outside of the starting < section then just decode it
+        // if there is text outside the starting < section then just decode it
         else if (start > html_text && include_outer_text)
             {
             parse_raw_text(html_text, std::min<size_t>((start - html_text), text_length));
@@ -972,7 +972,7 @@ namespace lily_of_the_valley
             const size_t remainingTextLength = (endSentinel - start);
             currentElement.assign(get_element_name(start + 1, false));
 
-            // at the start of a new anchor and not inside of another one
+            // at the start of a new anchor and not inside another one
             // (which isn't valid HTML, but you never know)
             if (currentElement == L"a" && previousElement != L"a")
                 {
@@ -1820,7 +1820,7 @@ namespace lily_of_the_valley
                 {
                 return nullptr;
                 }
-            // flip the state of double or single quote if not inside of
+            // flip the state of double or single quote if not inside
             // the other type of quotes
             else if (!is_inside_of_single_quotes && *text == L'\"')
                 {
@@ -1834,7 +1834,7 @@ namespace lily_of_the_valley
                 }
             else if (*text == L'>')
                 {
-                // not inside of any quoted attributes, so this is the closing >
+                // not inside any quoted attributes, so this is the closing >
                 if (!is_inside_of_double_quotes && !is_inside_of_single_quotes)
                     {
                     return text;
@@ -1842,7 +1842,7 @@ namespace lily_of_the_valley
                 else if (lastQuotePos != nullptr)
                     {
                     const wchar_t* lookBack{ lastQuotePos };
-                    // if the quote we are inside of doesn't have a = in front of it,
+                    // if the quote we are inside doesn't have a = in front of it,
                     // then this quote is garbage; treat the > we are on as
                     // the closing tag
                     bool foundEqual{ false };

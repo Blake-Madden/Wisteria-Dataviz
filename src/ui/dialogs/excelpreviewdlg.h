@@ -117,7 +117,7 @@ namespace Wisteria::UI
         /// @private
         ExcelPreviewDlg& operator=(const ExcelPreviewDlg& that) = delete;
 
-        /// @returns @c true if a given cell was inside of the preview grid's selected cells.
+        /// @returns @c true if a given cell was inside the preview grid's selected cells.
         /// @param cell The cell to review.
         [[nodiscard]]
         bool IsCellSelected(const wxGridCellCoords& cell) const

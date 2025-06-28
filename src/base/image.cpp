@@ -233,8 +233,6 @@ namespace Wisteria::GraphItems
         // If width is 9, then actual bytes in a row will be 28, and not 27.
         const int nBytesInARow = std::ceil(image.GetWidth() * 3 / 4.0) * 4.0;
 
-        constexpr auto RGB_BUFFER_SIZE{ 256 };
-
 // Note that radius pixels are avoided from left, right, top, and bottom edges.
 // Go to the next row of pixels...
 #pragma omp parallel for
@@ -243,6 +241,7 @@ namespace Wisteria::GraphItems
             // ...and go across, pixel-by-pixel
             for (int nX = radius; nX < image.GetWidth() - radius; ++nX)
                 {
+                constexpr auto RGB_BUFFER_SIZE{ 256 };
                 // Reset calculations of last pixel.
                 std::array<int, RGB_BUFFER_SIZE> nIntensityCount{ 0 };
                 std::array<int, RGB_BUFFER_SIZE> nSumR{ 0 };
@@ -903,8 +902,8 @@ namespace Wisteria::GraphItems
             // parse EXIF
             if (image.IsOk() && image.GetType() == wxBITMAP_TYPE_JPEG)
                 {
-                easyexif::EXIFInfo result;
-                if (result.parseFrom(static_cast<const unsigned char*>(mappedImg.GetStream()),
+                if (easyexif::EXIFInfo result;
+                    result.parseFrom(static_cast<const unsigned char*>(mappedImg.GetStream()),
                                      mappedImg.GetMapSize()) == 0)
                     {
                     // correct the orientation (if necessary)
@@ -921,6 +920,8 @@ namespace Wisteria::GraphItems
                     // image data starts at lower left of image, turn it
                     case 8:
                         image = image.Rotate90(false);
+                        break;
+                    default: /* no-op */;
                         }
                     }
                 }
@@ -1014,7 +1015,7 @@ namespace Wisteria::GraphItems
 
         SetOpacity(m_img, m_opacity, true);
 
-        // Draw the shadow. This needs to be a polygon outside of the image
+        // Draw the shadow. This needs to be a polygon outside the image
         // in case the image is translucent.
         if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
             GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
@@ -1049,7 +1050,7 @@ namespace Wisteria::GraphItems
                 }
             }
 
-        // position the image inside of its (possibly) larger box
+        // position the image inside its (possibly) larger box
         wxPoint imgTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
         // horizontal page alignment
         if ((GetFrameSize() == GetImageSize()) ||

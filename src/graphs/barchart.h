@@ -483,7 +483,7 @@ namespace Wisteria::Graphs
                 }
 
             /** @brief Sets the opacity level for "ghosting".
-                @param opacity The opacity level (should be between @c 0 to @c 255).
+                @param opacity The opacity level (should be between @c 0 and @c 255).
                 @note If setting this to @c 0 (fully transparent), then you should set
                     the block's pen to a darker color.
                 @sa Ghost().*/
@@ -714,8 +714,8 @@ namespace Wisteria::Graphs
                     or `GetBlocks().cend()` if not found.*/
             std::vector<BarBlock>::const_iterator FindBlock(const wxString& tag) const noexcept
                 {
-                return std::find_if(GetBlocks().cbegin(), GetBlocks().cend(), [&](const auto& block)
-                                    { return block.GetTag().CmpNoCase(tag) == 0; });
+                return std::ranges::find_if(GetBlocks(), [&](const auto& block)
+                                            { return block.GetTag().CmpNoCase(tag) == 0; });
                 }
 
             /** @brief Searches for the first block in the bar whose tag matches the
@@ -733,8 +733,8 @@ namespace Wisteria::Graphs
                     return GetBlocks().cend();
                     }
 
-                return std::find_if(GetBlocks().cbegin(), GetBlocks().cend(),
-                                    [&](const auto& block) { return rgx.Matches(block.GetTag()); });
+                return std::ranges::find_if(GetBlocks(), [&](const auto& block)
+                                            { return rgx.Matches(block.GetTag()); });
                 }
 
             /** @brief Searches for the last block in the bar whose tag matches the
@@ -824,8 +824,8 @@ namespace Wisteria::Graphs
             /// @private
             std::vector<BarBlock>::iterator FindBlock(const wxString& tag) noexcept
                 {
-                return std::find_if(GetBlocks().begin(), GetBlocks().end(), [&](const auto& block)
-                                    { return block.GetTag().CmpNoCase(tag) == 0; });
+                return std::ranges::find_if(GetBlocks(), [&](const auto& block)
+                                            { return block.GetTag().CmpNoCase(tag) == 0; });
                 }
 
           private:
@@ -966,7 +966,7 @@ namespace Wisteria::Graphs
         /** @brief Sets the opacity level for "ghosted" bars.\n
                 This is only used if ShowcaseBars() is called; this is the
                 opacity applied to bars not being showcased.
-            @param opacity The opacity level (should be between @c 0 to @c 255).
+            @param opacity The opacity level (should be between @c 0 and @c 255).
             @sa ShowcaseBars().*/
         void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
 

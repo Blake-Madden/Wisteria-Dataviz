@@ -77,7 +77,7 @@ namespace html_utilities
 
     /** @brief Functor that accepts a block of script text and
             returns the links in it, one-by-one.
-        @details Links will be absolute URLs inside of double quotes.*/
+        @details Links will be absolute URLs inside double quotes.*/
     class javascript_hyperlink_parse
         {
       public:
@@ -565,7 +565,7 @@ namespace lily_of_the_valley
         /** @brief Main interface for extracting plain text from an HTML buffer.
             @param html_text The HTML text to strip.
             @param text_length The length of the HTML text.
-            @param include_outer_text Whether text outside of the first and last `<>`
+            @param include_outer_text Whether text outside the first and last `<>`
                 should be included. Recommended @c true.
             @param preserve_newlines Whether embedded newlines should be included
                 in the output. If @c false, then they will be replaced with spaces,
@@ -674,22 +674,22 @@ namespace lily_of_the_valley
             @param text The HTML stream to analyze.*/
         [[nodiscard]]
         static const wchar_t* find_close_tag(const wchar_t* text);
-        /** @brief Reads the value inside of an element as a string.
+        /** @brief Reads the value inside an element as a string.
             @details For example, this would read "My title" from "<H1>My title</H1>".
             @param html_text The start of the element.
             @param html_end How far into the HTML buffer we should read.
             @param element The element that we are looking at.
-            @returns The string inside of the element.
+            @returns The string inside the element.
             @note Returned string may need to be decoded by another html_extract_text object.*/
         [[nodiscard]]
         static std::wstring_view read_element_as_string(const wchar_t* html_text,
                                                         const wchar_t* html_end,
                                                         std::wstring_view element);
-        /** @brief Searches for a tag inside of an element and returns its value
+        /** @brief Searches for a tag inside an element and returns its value
                 (or empty string if not found).
             @param text The start of the element section.
             @param tag The inner tag to search for (e.g., "bgcolor").
-            @param allowQuotedTags Set this parameter to @c true for tags that are inside of
+            @param allowQuotedTags Set this parameter to @c true for tags that are inside
                 quotes (e.g., style values). For example, to read "bold" as the value for
                 "font-weight" from "<span style="font-weight: bold;">",
                 this should be set to @c true.
@@ -707,7 +707,7 @@ namespace lily_of_the_valley
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "bgcolor").
             @param allowQuotedTags Set this parameter to @c true for tags that are
-                inside of quotes (e.g., style values).\n
+                inside quotes (e.g., style values).\n
                 For example, to read "bold" from "<span style="font-weight: bold;">",
                 this would need to be @c true. Usually this would be @c false.
             @param allowSpacesInValue Whether there can be a spaces in the tag's value.
@@ -722,7 +722,7 @@ namespace lily_of_the_valley
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "score").
             @param allowQuotedTags Set this parameter to true for tags that are
-                inside of quotes (e.g., style values).\n
+                inside quotes (e.g., style values).\n
                 For example, to read "bold" from "<span style="font-weight: bold;">",
                 this would need to be @c true. Usually this would be @c false.
             @returns The attribute value as a double, or zero on failure.*/
@@ -755,13 +755,13 @@ namespace lily_of_the_valley
         static const wchar_t* find_closing_element(const wchar_t* sectionStart,
                                                    const wchar_t* sectionEnd,
                                                    std::wstring_view elementTag);
-        /** @brief Searches for an attribute inside of an element.
+        /** @brief Searches for an attribute inside an element.
             @returns The position of the attribute (or null if not found).
             @param text The start of the element section.
             @param tag The inner tag to search for (e.g., "bgcolor").
-            @param allowQuotedTags Set this parameter to true for tags that are inside of quotes
+            @param allowQuotedTags Set this parameter to true for tags that are inside quotes
                 (e.g., style values like "font-weight", as in "<span style="font-weight: bold;">").
-                To find "font-weight" inside of the style tag, this parameter should be @c true.\n
+                To find "font-weight" inside the style tag, this parameter should be @c true.\n
                 Usually this would be @c false.
             @note If the position is currently on a '<' and you are searching for its matching '>',
                 then you should set @c sectionStart to one character after the '<'.*/
@@ -783,7 +783,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::wstring find_id(std::wstring_view& htmlText);
         /** @brief Searches for a single character in a string, but ensures that
-                it is not inside of a pair of double or single quotes.
+                it is not inside a pair of double or single quotes.
             @details This is specifically tailored for " and ' type of quotes used
                 for HTML attributes.
             @param string The string to search in.

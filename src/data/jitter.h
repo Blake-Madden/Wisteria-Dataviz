@@ -24,7 +24,7 @@ namespace Wisteria::Data
     /** @brief Shifts (single-series) points around an axis using the bee-swarm method.
         @details When multiple data lie at the same point, jittering them slightly along the
             non-dominant axis makes it easier to see both points. This class keeps track of points
-            like this and jitters them across both sides of the axis inside of a provided area.
+            like this and jitters them across both sides of the axis inside a provided area.
 
             This applies to plots where the position of a point only relates to one axis.
             As an example, a vertical box plot, where the Y axis shows a datum's value,

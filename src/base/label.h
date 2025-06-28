@@ -382,7 +382,7 @@ namespace Wisteria::GraphItems
         /** @returns The font size that would fit for a given string within a given bounding box.
             @param dc The device context that the text is being drawn on.
             @param ft The font this is being drawn with.
-            @param boundingBox The bounding box that the text should fit inside of.
+            @param boundingBox The bounding box that the text should fit inside.
             @param text The text that is being drawn.
             @warning `boundingBoxSize` is assumed to be scaled from the parent already,
                 so the font size returned will fit this area as-is.\n
@@ -455,7 +455,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxSize CalcTopImageSize(const wxCoord textWidth) const;
 
-        /** @returns @c true if the given point is inside of the label.
+        /** @returns @c true if the given point is inside the label.
             @param pt The point to check.*/
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const final

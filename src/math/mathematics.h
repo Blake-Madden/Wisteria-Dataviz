@@ -519,11 +519,11 @@ namespace geometry
         return std::sqrt((xDiff * xDiff) + (yDiff * yDiff));
         }
 
-    /** @brief Determines if a point is inside of a circle.
+    /** @brief Determines if a point is inside a circle.
         @param ctr The center point of the circle.
         @param radius of the circle.
         @param pt The point to review.
-        @returns @c true if the point is inside of the circle.*/
+        @returns @c true if the point is inside the circle.*/
     [[nodiscard]]
     inline bool is_point_inside_circle(const std::pair<double, double> ctr, const double radius,
                                        const std::pair<double, double> pt) noexcept
@@ -531,9 +531,9 @@ namespace geometry
         return (distance_between_points(ctr, pt) <= radius);
         }
 
-    /** @brief Calculates the width of a rectangle that can fit inside of a circle.
+    /** @brief Calculates the width of a rectangle that can fit inside a circle.
         @param radius The radius of the circle.
-        @returns The width of the largest rectangle that can fit inside of the circle.*/
+        @returns The width of the largest rectangle that can fit inside the circle.*/
     [[nodiscard]]
     inline double radius_to_inner_rect_width(const double radius) noexcept
         {
@@ -858,7 +858,7 @@ namespace geometry
         @param size The initial size to be downscaled.
         @param boundingSize The bounding box to fit the size into.
         @note The assumption here is that @c size is either wider or taller (or both) than
-            @c boundingSize and that it is being scaled down to fit inside of @c boundingSize.
+            @c boundingSize and that it is being scaled down to fit inside @c boundingSize.
             If it is already small enough to fit in @c boundingSize,
                 then the original size is returned.*/
     [[nodiscard]]
@@ -874,7 +874,7 @@ namespace geometry
             {
             return std::make_pair(0, 0);
             }
-        // if size fits inside of new size, then no need to downscale
+        // if size fits inside new size, then no need to downscale
         if (size.first <= boundingSize.first && size.second <= boundingSize.second)
             {
             return size;
@@ -916,7 +916,7 @@ namespace geometry
         @param size The initial size to be upscaled.
         @param boundingSize The bounding box to fit the size into.
         @note The assumption here is that @c size is either narrower or shorter (or both) than
-            @c boundingSize and that it is being upscaled to fit inside of @c boundingSize.
+            @c boundingSize and that it is being upscaled to fit inside @c boundingSize.
             If it is already larger enough to consume one of the dimensions of @c boundingSize,
             then the original size is returned.*/
     [[nodiscard]]
@@ -932,7 +932,7 @@ namespace geometry
             {
             return std::make_pair(0, 0);
             }
-        // if size fits outside of new size, then no need to upscale
+        // if size fits outside new size, then no need to upscale
         if (size.first >= boundingSize.first && size.second >= boundingSize.second)
             {
             return size;

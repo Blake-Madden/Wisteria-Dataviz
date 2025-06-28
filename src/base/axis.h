@@ -169,9 +169,9 @@ namespace Wisteria::GraphItems
             /// @brief How a tickmark is displayed.
             enum class DisplayType
                 {
-                Inner,    /*!< The tickmark is inside of the plot.*/
-                Outer,    /*!< The tickmark is outside of the plot.*/
-                Crossed,  /*!< The tickmark is both inside and outside of the plot.*/
+                Inner,    /*!< The tickmark is inside the plot.*/
+                Outer,    /*!< The tickmark is outside the plot.*/
+                Crossed,  /*!< The tickmark is both inside and outside the plot.*/
                 NoDisplay /*!< Do not display tickmarks.*/
                 };
 
@@ -594,7 +594,7 @@ namespace Wisteria::GraphItems
         /** @private
             @brief Sets the DPI scaling for the axis.
             @param scaling The DPI scaling to use.*/
-        void SetDPIScaleFactor(const double scaling) final
+        void SetDPIScaleFactor(const double scaling) override final
             {
             GraphItemBase::SetDPIScaleFactor(scaling);
             m_title.SetDPIScaleFactor(scaling);
@@ -608,7 +608,7 @@ namespace Wisteria::GraphItems
         /** @private
             @brief Sets the scaling of the axis.
             @param scaling The scaling to use.*/
-        void SetScaling(const double scaling) final;
+        void SetScaling(const double scaling) override final;
 
         /// @brief Which parts of the axis should be reset when Reset() is called.
         enum class AxisResetLevel
@@ -757,7 +757,7 @@ namespace Wisteria::GraphItems
 
              Examples of what this can be used for are logarithmic scales with condensed ranges.
             @param value The position on the axis. Note that this value's position will be spaced
-                evenly between the points around it, even if they are not equidistant in value.
+                evenly between the surrounding points, even if they are not equidistant in value.
             @param label The label to display on the axis at this position.\n
                 If empty, then the label will be @c value formatted into a string with the current
                 precision.
@@ -994,8 +994,8 @@ namespace Wisteria::GraphItems
         /** @brief Sets whether the first and last axis labels should be shown
                 (the outer lines of the plot).
                 This should be called after the labels and scaling have been set.
-            @param display Whether or not outer labels should be displayed.*/
-        void ShowOuterLabels(bool display = true) noexcept
+            @param display Whether outer labels should be displayed.*/
+        void ShowOuterLabels(const bool display = true) noexcept
             {
             if (!m_axisLabels.empty())
                 {
@@ -1113,7 +1113,7 @@ namespace Wisteria::GraphItems
             @param bottom The bottom padding.
             @param left The left padding.*/
         void SetPadding(const wxCoord top, const wxCoord right, const wxCoord bottom,
-                        const wxCoord left) noexcept final
+                        const wxCoord left) noexcept override final
             {
             GraphItemBase::SetPadding(top, right, bottom, left);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1122,7 +1122,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the bottom padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetBottomPadding(const wxCoord padding) noexcept final
+        void SetBottomPadding(const wxCoord padding) noexcept override final
             {
             GraphItemBase::SetBottomPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1131,7 +1131,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the top padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetTopPadding(const wxCoord padding) noexcept final
+        void SetTopPadding(const wxCoord padding) noexcept override final
             {
             GraphItemBase::SetTopPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1140,7 +1140,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the right padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetRightPadding(const wxCoord padding) noexcept final
+        void SetRightPadding(const wxCoord padding) noexcept override final
             {
             GraphItemBase::SetRightPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1149,7 +1149,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the left padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetLeftPadding(const wxCoord padding) noexcept final
+        void SetLeftPadding(const wxCoord padding) noexcept override final
             {
             GraphItemBase::SetLeftPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1297,7 +1297,7 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Sets the opacity level for "ghosted" lines.
-            @param opacity The opacity level (should be between @c 0 to @c 255).*/
+            @param opacity The opacity level (should be between @c 0 and @c 255).*/
         void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
 
         /// @returns @c true if the lines are being made translucent.
@@ -1346,7 +1346,7 @@ namespace Wisteria::GraphItems
         /// @{
 
         /** @brief Gets/sets the title of the axis.
-            @details This is a label that appears at the far outside of the axis,
+            @details This is a label that appears at the far outside the axis,
                 drawn parallel to it. Relative alignment can control where the
                 title is aligned against the axis
                 (the default is to align it centered to the axis line).
@@ -1591,14 +1591,14 @@ namespace Wisteria::GraphItems
         // These are overridden so that the widest and tallest labels are invalidated.
         /// @private
         [[nodiscard]]
-        GraphItemInfo& GetGraphItemInfo() noexcept final
+        GraphItemInfo& GetGraphItemInfo() noexcept override final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetGraphItemInfo();
             }
 
         /// @private
-        void SetFontBackgroundColor(const wxColour& color) final
+        void SetFontBackgroundColor(const wxColour& color) override final
             {
             if (color.IsOk())
                 {
@@ -1609,7 +1609,7 @@ namespace Wisteria::GraphItems
 
         /// @private
         [[nodiscard]]
-        wxFont& GetFont() noexcept final
+        wxFont& GetFont() noexcept override final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetFont();
@@ -1617,13 +1617,13 @@ namespace Wisteria::GraphItems
 
         /// @private
         [[nodiscard]]
-        const wxFont& GetFont() const noexcept final
+        const wxFont& GetFont() const noexcept override final
             {
             return GraphItemBase::GetFont();
             }
 
         /// @private
-        void SetFont(const wxFont& font) final
+        void SetFont(const wxFont& font) override final
             {
             GraphItemBase::SetFont(font);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1633,7 +1633,7 @@ namespace Wisteria::GraphItems
                 }
             }
 
-        // Just hiding these from Doxygen. If these are included inside of groupings,
+        // Just hiding these from Doxygen. If these are included inside groupings,
         // then the "private" tag will break the group in the generated help.
         /// @private
         [[nodiscard]]
@@ -1759,7 +1759,7 @@ namespace Wisteria::GraphItems
 
         /// @brief If embedded into canvas (i.e., not part of a plot) then this is
         ///     used by canvas to set the axis to a common size with plots next to it.
-        void RecalcSizes(wxDC& dc) final
+        void RecalcSizes(wxDC& dc) override final
             {
             if (IsVertical() && GetContentTop() && GetContentBottom())
                 {
@@ -1788,7 +1788,7 @@ namespace Wisteria::GraphItems
         /// @returns The rectangular area of the axis line area.
         ///     This is relative to its parent canvas.
         [[nodiscard]]
-        wxRect GetContentRect() const noexcept final
+        wxRect GetContentRect() const noexcept override final
             {
             if (IsVertical())
                 {
@@ -1872,22 +1872,23 @@ namespace Wisteria::GraphItems
         /// @param dc The DC to draw on.
         /// @returns The bounding box that the axis was drawn in.
         [[nodiscard]]
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
         /** @returns The rectangle that the axis would fit in.
             @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with
                 the same DC.*/
         [[nodiscard]]
-        wxRect GetBoundingBox(wxDC& dc) const final;
-        /** @returns The rectangle of the part of the axis that protrudes outside of the plot area.
+        wxRect GetBoundingBox(wxDC& dc) const override final;
+        /** @returns The rectangle of the part of the axis that protrudes outside the plot area.
             @param dc The DC to measure with.*/
         [[nodiscard]]
         wxRect GetProtrudingBoundingBox(wxDC& dc) const;
 
-        /** @returns @c true if the given point is inside of this point.
-            @param pt The point to check.*/
+        /** @returns @c true if the given point is inside this point.
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const final
+        bool HitTest(const wxPoint pt, wxDC& dc) const override final
             {
             return GetBoundingBox(dc).Contains(pt);
             }
@@ -1895,7 +1896,7 @@ namespace Wisteria::GraphItems
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) final
+        void Offset(const int xToMove, const int yToMove) override final
             {
             m_points.first += wxPoint(xToMove, yToMove);
             m_points.second += wxPoint(xToMove, yToMove);
@@ -1906,7 +1907,8 @@ namespace Wisteria::GraphItems
         /** @brief Sets the physical start and end points of the axis (relative to the
                 parent canvas).
             @param pt1 The first point.
-            @param pt2 The second point.*/
+            @param pt2 The second point.
+            @param dc The rendering DC.*/
         void SetPoints(const wxPoint pt1, const wxPoint pt2, wxDC& dc);
 
         /// @returns The top physical (relative to the parent canvas) point of the axis line
@@ -2032,7 +2034,7 @@ namespace Wisteria::GraphItems
         /// @brief Calculates how much space is available for the labels within the plot area.
         void CalcMaxLabelWidth();
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final;
+                            [[maybe_unused]] const double parentScaling) override final;
 
         /// @returns The physical (relative to the parent canvas) starting and ending points
         ///     for the axis.

@@ -34,7 +34,7 @@ namespace Wisteria
         /** @returns @c true if specified page number is within the range of pages being printed.
             @param pageNum The page number to check for.
             @note Page # is 1-indexed.*/
-        bool HasPage(int pageNum) noexcept final
+        bool HasPage(int pageNum) noexcept override final
             {
             return (pageNum > 0 && static_cast<size_t>(pageNum) <= m_canvases.size());
             }
@@ -44,7 +44,8 @@ namespace Wisteria
             @param[out] maxPage The highest possible page index.
             @param[out] selPageFrom The starting page.
             @param[out] selPageTo The ending page.*/
-        void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom, int* selPageTo) final
+        void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom,
+                         int* selPageTo) override final
             {
             assert(m_canvases.size() && L"No pages in ReportPrintout!");
             *minPage = (m_canvases.size() ? 1 : 0);
@@ -56,7 +57,7 @@ namespace Wisteria
         /** @brief Prints the specified page number.
             @param page The page to print.
             @returns @c true if printing page was successful.*/
-        bool OnPrintPage(int page) final;
+        bool OnPrintPage(int page) override final;
 
       private:
         /// @returns The margin around the printing area.

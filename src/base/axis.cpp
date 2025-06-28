@@ -549,7 +549,7 @@ namespace Wisteria::GraphItems
                 title.SetScaling(GetScaling());
                 topLeftCorner.x -= title.GetBoundingBox(dc).GetWidth() +
                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided,
+                // title is NOT drawn on the inside if axis is double-sided,
                 // that wouldn't really make sense
                 }
             }
@@ -601,7 +601,7 @@ namespace Wisteria::GraphItems
                 title.SetScaling(GetScaling());
                 bottomRightCorner.x += title.GetBoundingBox(dc).GetWidth() +
                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided,
+                // title is NOT drawn on the inside if axis is double-sided,
                 // that wouldn't really make sense
                 }
             }
@@ -639,7 +639,7 @@ namespace Wisteria::GraphItems
                 title.SetScaling(GetScaling());
                 bottomRightCorner.y += title.GetBoundingBox(dc).GetHeight() +
                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided,
+                // title is NOT drawn on the inside if axis is double-sided,
                 // that wouldn't really make sense
                 }
             }
@@ -678,7 +678,7 @@ namespace Wisteria::GraphItems
                 title.SetScaling(GetScaling());
                 topLeftCorner.y -= title.GetBoundingBox(dc).GetHeight() +
                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided,
+                // title is NOT drawn on the inside if axis is double-sided,
                 // that wouldn't really make sense
                 }
             }
@@ -714,7 +714,7 @@ namespace Wisteria::GraphItems
                     {
                     labelBox.Offset((labelBox.GetWidth() / 2), 0);
                     }
-                // see if the left or right hinges of this box goes outside of the
+                // see if the left or right hinges of this box goes outside the
                 // current bounding box
                 if (labelBox.GetLeft() < topLeftCorner.x)
                     {
@@ -809,7 +809,7 @@ namespace Wisteria::GraphItems
     void Axis::CopySettings(const Axis& that)
         {
         // note that we won't copy over the brackets, title, footer, or header;
-        // these are not technically part of the axis (they're an add on),
+        // these are not technically part of the axis (they're an add-on),
         // and client may not want that to be copied from axis to axis
         m_axisLabels = that.m_axisLabels;
         m_customAxisLabels = that.m_customAxisLabels;
@@ -1320,7 +1320,7 @@ namespace Wisteria::GraphItems
             {
             titleLabel.SetScaling(GetScaling());
             const auto titleBox = titleLabel.GetBoundingBox(dc);
-            // downscale the title if it is going outside of the axis
+            // downscale the title if it is going outside the axis
             if (IsVertical())
                 {
                 if (titleBox.GetHeight() > axisRect.GetHeight())
@@ -2639,7 +2639,7 @@ namespace Wisteria::GraphItems
                 }
             }
 
-        // if axis is light, then it is probably being contrasted against an dark background,
+        // if axis is light, then it is probably being contrasted against a dark background,
         // so make the outline white in that case (black, otherwise)
         const bool penIsLight{ (
             GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour().IsOk() &&
@@ -2910,7 +2910,7 @@ namespace Wisteria::GraphItems
                 ++displayedLabelsCount;
                 }
             }
-        // If outer labels are hanging outside of the plot area, then assume
+        // If outer labels are hanging outside the plot area, then assume
         // half of both of these two labels don't need to be included in the
         // plot area's width; thus, remove necessary space for one label.
         if (displayedLabelsCount > 2 && GetAxisPoints().size() > 2 && IsShowingOuterLabels() &&
@@ -2954,7 +2954,7 @@ namespace Wisteria::GraphItems
                 wxCoord axisTextWidth =
                     isMeasuringByHeight ? labelSize.GetHeight() : labelSize.GetWidth();
                 // with the first and last labels, the outer halves
-                // of them hang outside of the plot area
+                // of them hang outside the plot area
                 if (IsShowingOuterLabels() &&
                     (pos == GetAxisPoints().cbegin() || pos == GetAxisPoints().cend() - 1))
                     {
@@ -3349,7 +3349,7 @@ namespace Wisteria::GraphItems
                 m_axisLabels.emplace_back(i, wxString{}, display);
                 lastValidPoint = i;
                 }
-            // will be lowest value because we were going backwards to get this
+            // will be the lowest value because we were going backwards to get this
             m_rangeStart = lastValidPoint;
             m_rangeEnd = rangeEnd;
             }
@@ -3549,7 +3549,7 @@ namespace Wisteria::GraphItems
     void Axis::AddUnevenAxisPoint(const double value, const wxString& label)
         {
         // bail if something at the provided axis value is already in here
-        if (std::find(m_axisLabels.cbegin(), m_axisLabels.cend(), AxisPoint(value, label)) !=
+        if (std::ranges::find(std::as_const(m_axisLabels), AxisPoint(value, label)) !=
             m_axisLabels.cend())
             {
             wxLogVerbose(L"Value %f/%s in call to %s ignored; value already present on axis.",
@@ -3711,12 +3711,12 @@ namespace Wisteria::GraphItems
         // reverse it if not already reversed and client is asking for it to be reversed
         if (reverse && !IsReversed())
             {
-            std::reverse(m_axisLabels.begin(), m_axisLabels.end());
+            std::ranges::reverse(m_axisLabels);
             }
         // or reverse it if already reversed and client is asking for it to NOT be reversed
         else if (!reverse && IsReversed())
             {
-            std::reverse(m_axisLabels.begin(), m_axisLabels.end());
+            std::ranges::reverse(m_axisLabels);
             }
         m_scaledReserved = reverse;
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -4112,13 +4112,13 @@ namespace Wisteria::GraphItems
     void Axis::SetScaling(const double scaling)
         {
         GraphItemBase::SetScaling(scaling);
-        std::for_each(GetBrackets().begin(), GetBrackets().end(),
-                      [this, scaling](auto& bracket)
-                      {
-                          bracket.GetLabel().SetScaling(scaling);
-                          // also update the DPI scale factor for the label
-                          bracket.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-                      });
+        std::ranges::for_each(GetBrackets(),
+                              [this, scaling](auto& bracket)
+                              {
+                                  bracket.GetLabel().SetScaling(scaling);
+                                  // also update the DPI scale factor for the label
+                                  bracket.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
+                              });
         }
 
     //-------------------------------------------

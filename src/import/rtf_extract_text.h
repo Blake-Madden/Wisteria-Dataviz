@@ -639,7 +639,7 @@ namespace lily_of_the_valley
         bool m_in_bullet_state{ false };
 
         /// @brief Keeps track of the number of `<span>` generating
-        ///     commands inside of an {} environment.
+        ///     commands inside an {} environment.
         class command_stacks
             {
           public:

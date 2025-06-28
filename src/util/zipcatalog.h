@@ -41,7 +41,7 @@ namespace Wisteria
         int m_icon{ 0 };
         };
 
-    /// @brief Helper class that reads files inside of a zip file by just passing in the file path.
+    /// @brief Helper class that reads files inside a zip file by just passing in the file path.
     class ZipCatalog
         {
       public:

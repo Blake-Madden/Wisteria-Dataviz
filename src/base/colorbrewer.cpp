@@ -79,7 +79,7 @@ namespace Wisteria::Colors
         }
 
     //-------------------------------------------
-    wxColour ColorContrast::Contrast(const wxColour& color)
+    wxColour ColorContrast::Contrast(const wxColour& color) const
         {
         assert(color.IsOk() && L"Invalid color passed to Contrast().");
         const auto bgLuminance = m_baseColor.GetLuminance();

@@ -687,7 +687,7 @@ void SideBar::OnDraw(wxDC& dc)
 //---------------------------------------------------
 void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
     {
-    // if mouse is not inside of window, then turn off any item mouse highlighting
+    // if mouse is not inside window, then turn off any item mouse highlighting
     if (!GetScreenRect().Contains(wxGetMousePosition()))
         {
         ClearHighlightedItems();

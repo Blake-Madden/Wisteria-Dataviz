@@ -36,7 +36,7 @@ namespace Wisteria::Brushes
                                  const Colors::Schemes::ColorScheme& colorScheme)
                 {
                 // fill with brushes and colors
-                // (which may be the default black if much less colors than brush styles)
+                // (which may be the default black if there are fewer colors than brush styles)
                 if (brushStyles.size() >= colorScheme.GetColors().size())
                     {
                     for (size_t i = 0; i < brushStyles.size(); ++i)

@@ -1071,7 +1071,7 @@ namespace Wisteria::GraphItems
                 auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
                 leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
                                 safe_divide(bmp.GetWidth(), 2);
-                // ensure image doesn't go below (and outside of) the text
+                // ensure image doesn't go below (and outside) the text
                 leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
                                                           bmp.GetHeight());
                 dc.DrawBitmap(bmp, leftCorner);

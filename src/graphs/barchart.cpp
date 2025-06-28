@@ -589,9 +589,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         for (auto& bar : GetBars())
             {
-            const auto foundPos =
-                std::find_if(labels.cbegin(), labels.cend(), [&bar](const auto& label)
-                             { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
+            const auto foundPos = std::ranges::find_if(
+                labels, [&bar](const auto& label)
+                { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
             bar.SetOpacity((foundPos == labels.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
             bar.m_barLabel.Show(foundPos != labels.cend());
             }
@@ -603,8 +603,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         for (auto& bar : GetBars())
             {
             const auto foundPos =
-                std::find_if(positions.cbegin(), positions.cend(), [&bar](const auto& position)
-                             { return compare_doubles(bar.GetAxisPosition(), position); });
+                std::ranges::find_if(positions, [&bar](const auto& position)
+                                     { return compare_doubles(bar.GetAxisPosition(), position); });
             bar.SetOpacity((foundPos == positions.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
             bar.m_barLabel.Show(foundPos != positions.cend());
             }
@@ -639,17 +639,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         // (if not, then add an empty bar for it)
         for (const auto& label : labels)
             {
-            const auto foundPos =
-                std::find_if(GetBars().cbegin(), GetBars().cend(), [&label](const auto& bar)
-                             { return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0; });
+            const auto foundPos = std::ranges::find_if(
+                std::as_const(GetBars()), [&label](const auto& bar)
+                { return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0; });
             // if bar with label not found, then add an empty one
             if (foundPos == GetBars().cend())
                 {
                 const auto maxAxisPos =
                     !GetBars().empty() ?
-                        std::max_element(GetBars().cbegin(), GetBars().cend(),
-                                         [](const auto& lhv, const auto& rhv) noexcept
-                                         { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })
+                        std::ranges::max_element(
+                            std::as_const(GetBars()), [](const auto& lhv, const auto& rhv) noexcept
+                            { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })
                             ->GetAxisPosition() :
                         0.0;
                 AddBar(Bar{ maxAxisPos + GetBarAxis().GetTickMarkInterval(),
@@ -661,8 +661,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             }
         // resort in case bars were added
-        std::sort(GetBars().begin(), GetBars().end(), [](const auto& lhv, const auto& rhv) noexcept
-                  { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
+        std::ranges::sort(GetBars(), [](const auto& lhv, const auto& rhv) noexcept
+                          { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
         // if not all labels were provided, then get the other bar labels that weren't
         // provided and sort those, pushing them all beneath the provided bars
         if (labels.size() != GetBars().size())
@@ -671,25 +671,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             // get the bar labels that the caller did not specify
             for (const auto& bar : GetBars())
                 {
-                const auto foundPos =
-                    std::find_if(labels.cbegin(), labels.cend(), [&bar](const auto& label)
-                                 { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
+                const auto foundPos = std::ranges::find_if(
+                    std::as_const(labels), [&bar](const auto& label)
+                    { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
                 if (foundPos == labels.cend())
                     {
                     otherLabelBars.push_back(bar.GetAxisLabel().GetText());
                     }
                 }
             // sort them, set the expected order, and copy them after the labels the caller provided
-            std::sort(otherLabelBars.begin(), otherLabelBars.end(),
-                      [](const auto& lhv, const auto& rhv) { return lhv.CmpNoCase(rhv) < 0; });
+            std::ranges::sort(otherLabelBars, [](const auto& lhv, const auto& rhv)
+                              { return lhv.CmpNoCase(rhv) < 0; });
             if ((direction == SortDirection::SortDescending &&
                  GetBarOrientation() == Orientation::Vertical) ||
                 (direction == SortDirection::SortAscending &&
                  GetBarOrientation() == Orientation::Horizontal))
                 {
-                std::reverse(otherLabelBars.begin(), otherLabelBars.end());
+                std::ranges::reverse(otherLabelBars);
                 }
-            std::copy(otherLabelBars.cbegin(), otherLabelBars.cend(), std::back_inserter(labels));
+            std::ranges::copy(std::as_const(otherLabelBars), std::back_inserter(labels));
             }
         // shouldn't happen, sanity test
         if (labels.size() != GetBars().size())
@@ -721,9 +721,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
 
             // sort the bars back into the proper axis positions
-            std::sort(GetBars().begin(), GetBars().end(),
-                      [](const auto& lhv, const auto& rhv) noexcept
-                      { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
+            std::ranges::sort(GetBars(), [](const auto& lhv, const auto& rhv) noexcept
+                              { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); });
         };
 
         // Reorder the provided labels (if necessary) to match the sorting direction
@@ -734,14 +733,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             (direction == SortDirection::SortAscending &&
              GetBarOrientation() == Orientation::Horizontal))
             {
-            std::reverse(labels.begin(), labels.end());
+            std::ranges::reverse(labels);
             }
         // get the indices into the bars based on the order of the provided labels
         for (const auto& label : labels)
             {
-            const auto foundPos =
-                std::find_if(GetBars().cbegin(), GetBars().cend(), [&label](const auto& bar)
-                             { return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0; });
+            const auto foundPos = std::ranges::find_if(
+                std::as_const(GetBars()), [&label](const auto& bar)
+                { return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0; });
             // shouldn't happen, sanity test
             if (foundPos == GetBars().cend())
                 {
@@ -796,13 +795,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
         else
             {
-            std::sort(m_bars.begin(), m_bars.end(),
-                      [](const Bar& left, const Bar& right)
-                      {
-                          return wxUILocale::GetCurrent().CompareStrings(
-                                     left.GetAxisLabel().GetText(), right.GetAxisLabel().GetText(),
-                                     wxCompare_CaseInsensitive) < 0;
-                      });
+            std::ranges::sort(m_bars,
+                              [](const Bar& left, const Bar& right)
+                              {
+                                  return wxUILocale::GetCurrent().CompareStrings(
+                                             left.GetAxisLabel().GetText(),
+                                             right.GetAxisLabel().GetText(),
+                                             wxCompare_CaseInsensitive) < 0;
+                              });
             }
         // Because we start at the origin, descending when horizontal goes the opposite way
         // internally. When it's displayed, descending will be shown as going largest-to-smallest as
@@ -853,9 +853,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                              const bool measureOnly /*= false*/)
         {
         const wxRect drawArea{ GetDrawArea() };
-
-        std::array<wxPoint, 7> arrowPoints{};
-        std::array<wxPoint, 4> boxPoints{};
 
         /* If the bar (or block) is set to cover a specific range
            (e.g., histograms do this) then calculate
@@ -1077,7 +1074,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // These particular icons are drawn with a ratio where the width
                 // is 60% of the height if the drawing area is square. To prevent
                 // having large gaps between the icons, adjust the width of the icons'
-                // drawing areas so that they aren't drawn inside of squares.
+                // drawing areas so that they aren't drawn inside squares.
                 if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
                     GetStippleShape() == Icons::IconShape::Woman ||
                     GetStippleShape() == Icons::IconShape::Man)
@@ -1118,6 +1115,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             // color-filled bar
             else
                 {
+                std::array<wxPoint, 4> boxPoints{};
                 std::unique_ptr<GraphItems::Polygon> box{ nullptr };
                 GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
                 if (bar.GetShape() == BarShape::Rectangle)
@@ -1167,6 +1165,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 else if (bar.GetShape() == BarShape::Arrow)
                     {
+                    std::array<wxPoint, 7> arrowPoints{};
                     assert(GetShadowType() == ShadowType::NoDisplay &&
                            L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(0, safe_divide(barNeckRect.GetHeight(), 5)));
@@ -1416,9 +1415,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         const wxRect drawArea{ GetDrawArea() };
 
-        std::array<wxPoint, 4> boxPoints{};
-        std::array<wxPoint, 7> arrowPoints{};
-
         /* if the bar (or block) is set to cover a specific range
            (e.g., histograms do this when using cutpoints) then calculate
            the width of the bar based on the coordinates.
@@ -1641,7 +1637,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // These particular icons are drawn with a ratio where the height
                 // is 75% of the width if the drawing area is square. To prevent
                 // having large gaps between the icons, adjust the height of the icons'
-                // drawing areas so that they aren't drawn inside of squares.
+                // drawing areas so that they aren't drawn inside squares.
                 if (GetStippleShape() == Icons::IconShape::Car ||
                     GetStippleShape() == Icons::IconShape::Blackboard)
                     {
@@ -1670,6 +1666,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else
                 {
+                std::array<wxPoint, 4> boxPoints{};
                 std::unique_ptr<GraphItems::Polygon> box{ nullptr };
                 GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
                 if (bar.GetShape() == BarShape::Rectangle)
@@ -1713,6 +1710,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }
                 else if (bar.GetShape() == BarShape::Arrow)
                     {
+                    std::array<wxPoint, 7> arrowPoints{};
                     assert(GetShadowType() == ShadowType::NoDisplay &&
                            L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));

@@ -243,22 +243,22 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Alexander Motrichuk's implementation of determining if a point is
-                inside of a polygon.
+                inside a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
                 by shooting a ray along the X axis.
             @param p The point.
             @param polygon The polygon's points.
             @param N The number of points in the polygon.
-            @returns Whether the point is inside of the polygon.*/
+            @returns Whether the point is inside the polygon.*/
         [[nodiscard]]
         static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N);
 
-        /** @brief Determines if a rectangle is inside of a polygon.
+        /** @brief Determines if a rectangle is inside a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
                 by shooting a ray along the X axis.
             @param rect The rectangle to review against the polygon.
             @param polygon The polygon to perform collision detection within.
-            @returns Whether the point is inside of the polygon.
+            @returns Whether the point is inside the polygon.
             @todo needs unit testing*/
         template<typename polygonT>
         [[nodiscard]]
@@ -273,15 +273,15 @@ namespace Wisteria::GraphItems
         /** @brief Determines if a rectangle entirely fits another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
-            @returns @c true if @c innerRect is inside of @c outerRect.*/
+            @returns @c true if @c innerRect is inside @c outerRect.*/
         [[nodiscard]]
         static bool IsRectInsideRect(const wxRect innerRect, const wxRect outerRect);
         /** @brief Determines how much of a rectangle fits into another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
             @returns A pair containing the percent of the width and height of @c innerRect
-                that fits inside of @c outerRect.\n
-                For example, if 3/4 of the smaller rect's width is inside of the larger rect
+                that fits inside @c outerRect.\n
+                For example, if 3/4 of the smaller rect's width is inside the larger rect
                 and 1/2 of its height fits, then this will return @c 0.75 and @c 0.5.*/
         [[nodiscard]]
         static std::pair<double, double> GetPercentInsideRect(const wxRect innerRect,
@@ -318,14 +318,14 @@ namespace Wisteria::GraphItems
             @param rect The rectangle to analyze.
             @param[out] points An array of points to store the rectangle's points into.*/
         static void GetRectPoints(const wxRect& rect, std::array<wxPoint, 4>& points);
-        /** @brief Determines the bounding box that a polygon requires to fit inside of.
+        /** @brief Determines the bounding box that a polygon requires to fit inside.
             @param polygon The polygon's points.
             @param N The number of points in the polygon.
             @returns The rectangle that the polygon would need to fit in.
             @todo needs unit testing*/
         [[nodiscard]]
         static wxRect GetPolygonBoundingBox(const wxPoint* polygon, const size_t N);
-        /** @brief Determines the bounding box that a polygon requires to fit inside of.
+        /** @brief Determines the bounding box that a polygon requires to fit inside.
             @param polygon The polygon's points.
             @returns The rectangle that the polygon would need to fit in.
             @todo needs unit testing*/
@@ -352,19 +352,20 @@ namespace Wisteria::GraphItems
 
         /// @}
       private:
-        /** @returns @c true if the given point is inside of this polygon.
-            @param pt The point to check.*/
+        /** @returns @c true if the given point is inside this polygon.
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const final;
+        bool HitTest(const wxPoint pt, wxDC& dc) const override final;
         /** @brief Draws the polygon.
             @param dc The canvas to draw the point on.
             @returns The box that the polygon is being drawn within.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
 
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final
             {
             return GetPolygonBoundingBox(m_scaledPoints.data(), m_scaledPoints.size());
             }
@@ -372,13 +373,14 @@ namespace Wisteria::GraphItems
         /** @brief Moves the polygon by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) final;
+        void Offset(const int xToMove, const int yToMove) override final;
         /** @brief Bounds the polygon to the given rectangle.
             @param rect The rectangle to bound the polygon to.
+            @param dc The rendering DC.
             @param parentScaling This parameter is not used in this implementation.
             @todo Add support for this; not currently implemented.*/
         void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final;
+                            [[maybe_unused]] const double parentScaling) override final;
         /** @returns A rectangle from four points.
             @param points The four points to construct the rectangle.
             @warning It is assumed that there are four elements in @c points.*/

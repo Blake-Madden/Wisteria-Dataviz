@@ -15,8 +15,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
     ///----------------------------------------------------------------
     CrawfordGraph::CrawfordGraph(
         Wisteria::Canvas * canvas,
-        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes /*= nullptr*/)
+        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
+        const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
         SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
@@ -48,10 +48,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         }
 
     //----------------------------------------------------------------
-    void CrawfordGraph::SetData(std::shared_ptr<const Data::Dataset> data,
-                                const wxString& scoreColumnName,
-                                const wxString& syllablesPer100WordsColumnName,
-                                std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+    void CrawfordGraph::SetData(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& scoreColumnName,
+        const wxString& syllablesPer100WordsColumnName,
+        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -310,11 +310,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
                 points->AddPoint(
                     GraphItems::Point2D(
                         GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
-                                .AnchorPoint(pt)
-                                .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                    GetPlotOrCanvasColor()))
-                                .Brush(GetColorScheme()->GetColor(colorIndex)),
-                            Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
+                            .AnchorPoint(pt)
+                            .Pen(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()))
+                            .Brush(GetColorScheme()->GetColor(colorIndex)),
+                        Settings::GetPointRadius(), GetShapeScheme()->GetShape(colorIndex)),
                     dc);
                 }
             }

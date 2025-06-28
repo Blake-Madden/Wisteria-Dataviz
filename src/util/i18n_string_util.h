@@ -255,7 +255,7 @@ namespace i18n_string_util
         }
 
     /// @brief Converts escaped control characters (e.g., "\n")
-    ///     inside of a string into spaces.
+    ///     inside a string into spaces.
     /// @param[out] str The string being escaped.
     template<typename string_typeT>
     void replace_escaped_control_chars(string_typeT& str)

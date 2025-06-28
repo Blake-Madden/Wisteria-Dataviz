@@ -126,7 +126,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                 break;
                 }
             }
-        // if a quote, then make sure we don't pick up what looks like comments later inside of it
+        // if a quote, then make sure we don't pick up what looks like comments later inside it
         else if (*cpp_text == L'\"')
             {
             cpp_text = string_util::find_unescaped_char(++cpp_text, L'\"');

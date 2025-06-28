@@ -47,23 +47,22 @@ namespace Wisteria
 
         /// @brief Syncs the dimensions of the tables, so that they all have a minimum
         ///     number of rows and columns (based on the largest number of rows and columns).
-        void SyncTableSizes()
+        void SyncTableSizes() const
             {
             if (m_tables.empty())
                 {
                 return;
                 }
             const auto maxRowCount =
-                std::max_element(m_tables.cbegin(), m_tables.cend(),
-                                 [](const auto& lhv, const auto& rhv) noexcept
-                                 { return lhv->GetTableSize().first < rhv->GetTableSize().first; })
+                std::ranges::max_element(
+                    m_tables, [](const auto& lhv, const auto& rhv) noexcept
+                    { return lhv->GetTableSize().first < rhv->GetTableSize().first; })
                     ->get()
                     ->GetTableSize()
                     .first;
             const auto maxColumnCount =
-                std::max_element(
-                    m_tables.cbegin(), m_tables.cend(),
-                    [](const auto& lhv, const auto& rhv) noexcept
+                std::ranges::max_element(
+                    m_tables, [](const auto& lhv, const auto& rhv) noexcept
                     { return lhv->GetTableSize().second < rhv->GetTableSize().second; })
                     ->get()
                     ->GetTableSize()

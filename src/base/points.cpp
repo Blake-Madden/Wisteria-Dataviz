@@ -24,7 +24,7 @@ namespace Wisteria::GraphItems
             // (this is needed if the parent graph needed to recreate this collection)
             for (auto& pt : m_points)
                 {
-                if (GetSelectedIds().find(pt.GetId()) != GetSelectedIds().cend())
+                if (GetSelectedIds().contains(pt.GetId()))
                     {
                     pt.SetSelected(selected);
                     }
@@ -226,8 +226,7 @@ namespace Wisteria::GraphItems
             const wxDCPenChanger pc(dc, scaledPen);
 
             const auto okPointsCount =
-                std::count_if(m_points.cbegin(), m_points.cend(),
-                              [](const auto pt) noexcept { return pt.IsOk(); });
+                std::ranges::count_if(m_points, [](const auto pt) noexcept { return pt.IsOk(); });
             if (okPointsCount == 0)
                 {
                 return {};

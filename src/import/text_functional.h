@@ -50,7 +50,7 @@ namespace lily_of_the_valley
     class cell_trim
         {
       public:
-        /** @brief Finds the string inside of a larger string, ignoring the
+        /** @brief Finds the string inside a larger string, ignoring the
                 spaces and quotes around it.
             @returns Position into the string buffer where the first non-space/quote is.
             @param value The string to trim.

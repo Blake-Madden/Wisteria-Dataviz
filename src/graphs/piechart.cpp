@@ -81,12 +81,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         // make it fit in the slice and return it (or null if too small)
         const auto fitLabelToSlice = [this, &dc](auto& pieSliceLabel)
         {
-            auto points = GetPolygon();
+            const auto points = GetPolygon();
             bool middleLabelIsTooSmall{ false };
             for (;;)
                 {
-                auto labelBox = pieSliceLabel->GetBoundingBox(dc);
-                if (Polygon::IsInsidePolygon(labelBox.GetTopLeft(), points.data(), points.size()) &&
+                if (auto labelBox = pieSliceLabel->GetBoundingBox(dc);
+                    Polygon::IsInsidePolygon(labelBox.GetTopLeft(), points.data(), points.size()) &&
                     Polygon::IsInsidePolygon(labelBox.GetBottomLeft(), points.data(),
                                              points.size()) &&
                     Polygon::IsInsidePolygon(labelBox.GetTopRight(), points.data(),
@@ -97,7 +97,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                     break;
                     }
                 const auto currentFontSize = pieSliceLabel->GetFont().GetFractionalPointSize();
-                pieSliceLabel->GetFont().Scale(.95f);
+                pieSliceLabel->GetFont().Scale(.95F);
                 // either too small for our taste or couldn't be scaled down anymore
                 if ((pieSliceLabel->GetFont().GetFractionalPointSize() * GetScaling()) <= 6 ||
                     compare_doubles(pieSliceLabel->GetFont().GetFractionalPointSize(),
@@ -892,7 +892,7 @@ namespace Wisteria::Graphs
                         {
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
                             middleLabel->GetFontColor(), GetGhostOpacity()));
-                    }
+                        }
                     }
                 middleLabels.push_back(std::move(middleLabel));
                 }
@@ -1047,7 +1047,7 @@ namespace Wisteria::Graphs
                         {
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
                             middleLabel->GetFontColor(), GetGhostOpacity()));
-                    }
+                        }
                     }
                 middleLabels.push_back(std::move(middleLabel));
                 }
@@ -1057,21 +1057,21 @@ namespace Wisteria::Graphs
             }
 
         // sort top quadrant labels (top-to-bottom)
-        std::sort(outerTopLeftLabelAndLines.begin(), outerTopLeftLabelAndLines.end(),
-                  [](const auto& lhv, const auto& rhv) noexcept
-                  {
-                      assert(lhv.first && L"Invalid pie label when sorting!");
-                      assert(rhv.first && L"Invalid pie label when sorting!");
-                      return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
-                  });
+        std::ranges::sort(outerTopLeftLabelAndLines,
+                          [](const auto& lhv, const auto& rhv) noexcept
+                          {
+                              assert(lhv.first && L"Invalid pie label when sorting!");
+                              assert(rhv.first && L"Invalid pie label when sorting!");
+                              return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
+                          });
         // reverse bottom quadrant sort labels (bottom-to-top)
-        std::sort(outerBottomLeftLabelAndLines.begin(), outerBottomLeftLabelAndLines.end(),
-                  [](const auto& lhv, const auto& rhv) noexcept
-                  {
-                      assert(lhv.first && L"Invalid pie label when sorting!");
-                      assert(rhv.first && L"Invalid pie label when sorting!");
-                      return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
-                  });
+        std::ranges::sort(outerBottomLeftLabelAndLines,
+                          [](const auto& lhv, const auto& rhv) noexcept
+                          {
+                              assert(lhv.first && L"Invalid pie label when sorting!");
+                              assert(rhv.first && L"Invalid pie label when sorting!");
+                              return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+                          });
         // Make the left-side outer labels (for both rings) have a common font size.
         // Also, adjust their positioning and connection lines (if necessary).
         wxRect previousLabelBoundingBox;
@@ -1245,20 +1245,20 @@ namespace Wisteria::Graphs
             }
 
         // do the same for the right-side labels
-        std::sort(outerTopRightLabelAndLines.begin(), outerTopRightLabelAndLines.end(),
-                  [](const auto& lhv, const auto& rhv) noexcept
-                  {
-                      assert(lhv.first && L"Invalid pie label when sorting!");
-                      assert(rhv.first && L"Invalid pie label when sorting!");
-                      return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
-                  });
-        std::sort(outerBottomRightLabelAndLines.begin(), outerBottomRightLabelAndLines.end(),
-                  [](const auto& lhv, const auto& rhv) noexcept
-                  {
-                      assert(lhv.first && L"Invalid pie label when sorting!");
-                      assert(rhv.first && L"Invalid pie label when sorting!");
-                      return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
-                  });
+        std::ranges::sort(outerTopRightLabelAndLines,
+                          [](const auto& lhv, const auto& rhv) noexcept
+                          {
+                              assert(lhv.first && L"Invalid pie label when sorting!");
+                              assert(rhv.first && L"Invalid pie label when sorting!");
+                              return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
+                          });
+        std::ranges::sort(outerBottomRightLabelAndLines,
+                          [](const auto& lhv, const auto& rhv) noexcept
+                          {
+                              assert(lhv.first && L"Invalid pie label when sorting!");
+                              assert(rhv.first && L"Invalid pie label when sorting!");
+                              return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+                          });
 
         // right-side labels, top quadrant (drawn clockwise)
         for (size_t i = 0; i < outerTopRightLabelAndLines.size(); ++i)
@@ -1658,10 +1658,9 @@ namespace Wisteria::Graphs
             }
 
         // find largest percentage
-        const auto& maxPie =
-            *std::max_element(GetOuterPie().cbegin(), GetOuterPie().cend(),
-                              [](const auto& lhv, const auto& rhv) noexcept
-                              { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
+        const auto& maxPie = *std::ranges::max_element(
+            GetOuterPie(), [](const auto& lhv, const auto& rhv) noexcept
+            { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the largest one
         std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
@@ -1686,10 +1685,9 @@ namespace Wisteria::Graphs
             }
 
         // find smallest percentage
-        const auto& minPie =
-            *std::min_element(GetOuterPie().cbegin(), GetOuterPie().cend(),
-                              [](const auto& lhv, const auto& rhv) noexcept
-                              { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
+        const auto& minPie = *std::ranges::min_element(
+            GetOuterPie(), [](const auto& lhv, const auto& rhv) noexcept
+            { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the smallest one
         std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
@@ -1714,10 +1712,9 @@ namespace Wisteria::Graphs
             }
 
         // find largest percentage
-        const auto& maxPie =
-            *std::max_element(GetInnerPie().cbegin(), GetInnerPie().cend(),
-                              [](const auto& lhv, const auto& rhv) noexcept
-                              { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
+        const auto& maxPie = *std::ranges::max_element(
+            GetInnerPie(), [](const auto& lhv, const auto& rhv) noexcept
+            { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the largest one
         std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
@@ -1753,8 +1750,8 @@ namespace Wisteria::Graphs
                 continue;
                 }
             // find the largest percentage within the subgroup of slices
-            const auto* const maxPie = *std::max_element(
-                innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
+            const auto* const maxPie = *std::ranges::max_element(
+                std::as_const(innerSlicesForCurrentGroup),
                 [](const auto& lhv, const auto& rhv) noexcept
                 { return compare_doubles_less(lhv->m_percent, rhv->m_percent); });
 
@@ -1782,10 +1779,9 @@ namespace Wisteria::Graphs
             }
 
         // find smallest percentage
-        const auto& minPie =
-            *std::min_element(GetInnerPie().cbegin(), GetInnerPie().cend(),
-                              [](const auto& lhv, const auto& rhv) noexcept
-                              { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
+        const auto& minPie = *std::ranges::min_element(
+            GetInnerPie(), [](const auto& lhv, const auto& rhv) noexcept
+            { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the smallest one
         std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
@@ -2002,8 +1998,8 @@ namespace Wisteria::Graphs
         std::set<size_t> showcasedOuterIndices;
         for (const auto& pieSliceLabel : pieSlices)
             {
-            const auto foundSlice = std::find_if(
-                GetOuterPie().cbegin(), GetOuterPie().cend(), [&pieSliceLabel](const auto& slice)
+            const auto foundSlice = std::ranges::find_if(
+                std::as_const(GetOuterPie()), [&pieSliceLabel](const auto& slice)
                 { return (slice.GetGroupLabel().CmpNoCase(pieSliceLabel) == 0); });
             if (foundSlice != GetOuterPie().cend())
                 {

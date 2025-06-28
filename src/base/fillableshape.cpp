@@ -26,11 +26,11 @@ namespace Wisteria::GraphItems
 
         auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(GetShapeSizeDIPS()));
-        // keep drawing area inside of the full area
+        // keep drawing area inside the full area
         drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
         drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
 
-        // position the shape inside of its (possibly) larger box
+        // position the shape inside its (possibly) larger box
         wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
         // horizontal page alignment
         if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)

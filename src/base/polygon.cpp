@@ -81,20 +81,18 @@ namespace Wisteria::GraphItems
             return false;
             }
 
-        constexpr double DOUBLE_EPSILON{ .01f };
-        constexpr bool BOUND{ true };
         // cross points count of x
         int crossPointsCount{ 0 };
 
         // neighbor bound vertices
-        wxPoint p1, p2;
 
         // left vertex
-        p1 = polygon[0];
+        wxPoint p1 = polygon[0];
 
         // check all rays
         for (int i = 1; i <= N; ++i)
             {
+            constexpr bool BOUND{ true };
             // point is a vertex
             if (p == p1)
                 {
@@ -102,9 +100,9 @@ namespace Wisteria::GraphItems
                 }
 
             // right vertex
-            p2 = polygon[i % N];
+            wxPoint p2 = polygon[i % N];
 
-            // ray is outside of our interests
+            // ray is outside our interests
             if (p.y < std::min(p1.y, p2.y) || p.y > std::max(p1.y, p2.y))
                 {
                 // next ray left point
@@ -143,7 +141,8 @@ namespace Wisteria::GraphItems
                         const auto xinters = ((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
 
                         // overlies on a ray
-                        if (std::fabs(p.x - xinters) < DOUBLE_EPSILON)
+                        if (constexpr double DOUBLE_EPSILON{ .01f };
+                            std::fabs(p.x - xinters) < DOUBLE_EPSILON)
                             {
                             return BOUND;
                             }
@@ -267,7 +266,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Polygon::GetRectPoints(const wxRect& rect, std::array<wxPoint, 4>&  points)
+    void Polygon::GetRectPoints(const wxRect& rect, std::array<wxPoint, 4>& points)
         {
         points[0] = rect.GetTopLeft();
         points[1] = rect.GetTopRight();

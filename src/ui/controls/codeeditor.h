@@ -52,7 +52,7 @@ namespace Wisteria::UI
 
         codeEditor->AddFunctionsOrClasses(MathFunctions);
 
-        // or, add these functions inside of a library named "Math"
+        // or, add these functions inside a library named "Math"
         codeEditor->AddLibrary(L"Math", MathFunctions);
 
         // merge all custom functions, libraries, and classes into the
@@ -87,7 +87,7 @@ namespace Wisteria::UI
         /** @brief Adds a library and its functions/classes.
                 This information is used for autocompletion.
             @param library The name of the library.
-            @param functions The classes and functions inside of the library.
+            @param functions The classes and functions inside the library.
                 The syntax for these strings is
                 the name of the function and (optionally) a return type following a tab character.
                 For example, `"GetUser()->User"` will load a function named `GetUser`
@@ -96,7 +96,7 @@ namespace Wisteria::UI
         void AddLibrary(const wxString& library, const NameList& functions);
         /** @brief Adds a class and its functions. This information is used for autocompletion.
             @param theClass The name of the class.
-            @param functions The functions inside of the class.
+            @param functions The functions inside the class.
                 The syntax for these strings is the name of the function and
                 (optionally) a return type following a tab character.
                 For example, `"GetUser()->User"` will load a function

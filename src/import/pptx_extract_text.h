@@ -139,7 +139,7 @@ namespace lily_of_the_valley
                         {
                         add_character(L'\n');
                         }
-                    // Read the text section inside of it. If no valid text section, then
+                    // Read the text section inside it. If no valid text section, then
                     // just add a space (which an empty run implies) and skip to the next run.
                     start = find_element(start, rowEnd, L"a:t", false);
                     if (!start || start > endSentinel)
@@ -173,7 +173,7 @@ namespace lily_of_the_valley
                     add_character(L'\n');
                     add_character(L'\n');
                     }
-                // ...otherwise, lines might actually be paragraphs split to fit inside of a box
+                // ...otherwise, lines might actually be paragraphs split to fit inside a box
                 else
                     {
                     add_character(L'\n');

@@ -275,7 +275,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                             {
                             bBox.SetTopLeft(foundPos->GetTopLeft());
                             bBox.SetTop(bBox.GetTop() - bBox.GetHeight());
-                            // ...too high (outside of draw area), so give up
+                            // ...too high (outside draw area), so give up
                             if (bBox.GetTop() < polyBoundingBox.GetTop())
                                 {
                                 return false;

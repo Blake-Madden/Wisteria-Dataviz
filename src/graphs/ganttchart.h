@@ -204,7 +204,7 @@ namespace Wisteria::Graphs
       private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it
-        ///     inside of a call to GanttChart::AddTask().
+        ///     inside a call to GanttChart::AddTask().
         /// @note A task's color is controlled via the parent GanttChart's color scheme,
         ///     which is specified in its constructor.
         class TaskInfo

@@ -101,7 +101,7 @@
 @def PROFILE_SECTION_END()
     Ends a profiled section. @see PROFILE_SECTION_START
     @note If this is not called, then the current `PROFILE_SECTION_START()` block will implicitly stop at the
-     end of the bracketed section that it is inside of.
+     end of the bracketed section that it is inside.
 
 @def SET_PROFILER_REPORT_PATH(path)
     @brief Sets the path to where the profile report will be written.

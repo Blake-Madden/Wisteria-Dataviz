@@ -942,7 +942,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /** @returns @c true if @c pt is inside of plot area.
+        /** @returns @c true if @c pt is inside plot area.
             @param pt The point to see that is in the plot.
             @param dc The rendering DC.*/
         [[nodiscard]]

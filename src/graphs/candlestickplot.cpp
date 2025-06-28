@@ -10,7 +10,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::Graph2D)
 
-using namespace Wisteria::GraphItems;
+    using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
 
 namespace Wisteria::Graphs
@@ -95,30 +95,28 @@ namespace Wisteria::Graphs
             }
 
         const wxDateTime firstDay =
-            std::min_element(m_ohlcs.cbegin(), m_ohlcs.cend(),
-                             [](const auto& ohlc1, const auto& ohlc2)
-                             {
-                                 return (!ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid()) ?
-                                            false :
-                                        (!ohlc1.m_date.IsValid() && ohlc2.m_date.IsValid()) ?
-                                            false :
-                                        (ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid()) ?
-                                            true :
-                                            ohlc1.m_date < ohlc2.m_date;
-                             })
+            std::ranges::min_element(
+                std::as_const(m_ohlcs),
+                [](const auto& ohlc1, const auto& ohlc2)
+                {
+                    return (!ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid()) ? false :
+                           (!ohlc1.m_date.IsValid() && ohlc2.m_date.IsValid())  ? false :
+                           (ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid())  ? true :
+                                                                                  ohlc1.m_date <
+                                                                                     ohlc2.m_date;
+                })
                 ->m_date;
         const wxDateTime lastDay =
-            std::max_element(m_ohlcs.cbegin(), m_ohlcs.cend(),
-                             [](const auto& ohlc1, const auto& ohlc2)
-                             {
-                                 return (!ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid()) ?
-                                            false :
-                                        (!ohlc1.m_date.IsValid() && ohlc2.m_date.IsValid()) ?
-                                            true :
-                                        (ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid()) ?
-                                            false :
-                                            ohlc1.m_date < ohlc2.m_date;
-                             })
+            std::ranges::max_element(
+                std::as_const(m_ohlcs),
+                [](const auto& ohlc1, const auto& ohlc2)
+                {
+                    return (!ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid()) ? false :
+                           (!ohlc1.m_date.IsValid() && ohlc2.m_date.IsValid())  ? true :
+                           (ohlc1.m_date.IsValid() && !ohlc2.m_date.IsValid())  ? false :
+                                                                                  ohlc1.m_date <
+                                                                                     ohlc2.m_date;
+                })
                 ->m_date;
 
         if (firstDay.IsValid() && lastDay.IsValid())

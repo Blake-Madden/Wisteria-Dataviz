@@ -49,7 +49,7 @@ namespace Wisteria::GraphItems
             }
 
         /// @returns The radius of the point. The radius is the distance from the center point
-        ///     to outside of the circle.
+        ///     to outside the circle.
         /// @warning This needs to be scaled when called for measuring and rendering.
         [[nodiscard]]
         size_t GetRadius() const noexcept
@@ -65,15 +65,16 @@ namespace Wisteria::GraphItems
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final;
 
       private:
-        /** @returns @c true if the given point is inside of this point.
+        /** @returns @c true if the given point is inside this point.
             @note This does a hit test within a bounding box of the point, not the point itself.
-                So it may return @c true if slightly at the corner outside of the point.
-            @param pt The point to check.*/
+                So it may return @c true if slightly at the corner outside the point.
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const final
+        bool HitTest(const wxPoint pt, wxDC& dc) const override final
             {
             return GetBoundingBox(dc).Contains(pt);
             }
@@ -81,7 +82,7 @@ namespace Wisteria::GraphItems
         /** @brief Draws the point.
             @param dc The canvas to draw the point on.
             @returns The box that the point is being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
 
         /// @returns @c true if center point is valid.
         [[nodiscard]]
@@ -93,17 +94,18 @@ namespace Wisteria::GraphItems
         /** @brief Moves the point by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) final
+        void Offset(const int xToMove, const int yToMove) override final
             {
             SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove));
             }
 
         /** @brief Bounds the point to the given rectangle.
             @param rect The rectangle to bound the point to.
+            @param dc The rendering DC.
             @param parentScaling This parameter is ignored.
             @note The scaling of the point will be adjusted to this box.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final;
+                            [[maybe_unused]] const double parentScaling) override final;
 
         Wisteria::Icons::IconShape m_shape{ Wisteria::Icons::IconShape::Circle };
         const wxBitmapBundle* m_iconImage{ nullptr };
@@ -165,7 +167,7 @@ namespace Wisteria::GraphItems
                 their coordinates adjusted as the canvas gets rescaled.
                 This is meant for movable objects on a canvas that a client can manually move.
             @param freeFloat Whether the points should be free floating.*/
-        void SetFreeFloating(const bool freeFloat) final
+        void SetFreeFloating(const bool freeFloat) override final
             {
             GraphItemBase::SetFreeFloating(freeFloat);
             for (auto& point : m_points)
@@ -188,7 +190,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the scaling of the points. As a canvas grows or shrinks,
                 this can be adjusted to make the rendering of lines/text/etc. fit appropriately.
             @param scaling The scaling to use.*/
-        void SetScaling(const double scaling) final
+        void SetScaling(const double scaling) override final
             {
             GraphItemBase::SetScaling(scaling);
             for (auto& point : m_points)
@@ -199,7 +201,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Sets the DPI scale factor.
         /// @param scaling The DPI scaling.
-        void SetDPIScaleFactor(const double scaling) noexcept final
+        void SetDPIScaleFactor(const double scaling) noexcept override final
             {
             GraphItemBase::SetDPIScaleFactor(scaling);
             for (auto& point : m_points)
@@ -219,25 +221,26 @@ namespace Wisteria::GraphItems
         /** @brief Sets whether the points are selected.
             @param selected Whether the last hit point
                 (or all points if there was no previous hit) should be selected.*/
-        void SetSelected(const bool selected) final;
+        void SetSelected(const bool selected) override final;
         /** @brief Draws the selected points' labels.
             @param dc The DC to render with.
             @param scaling The scaling to draw the text with. This may be different from
                 the scaling used by the element itself, depending on what the scaling is of the
            caller.
-            @param boundingBox The bounding box to constrain the label inside of.
+            @param boundingBox The bounding box to constrain the label inside.
                 Default is an empty rect, which will cause this parameter to be ignored.*/
         void DrawSelectionLabel(wxDC& dc, const double scaling,
-                                const wxRect boundingBox = wxRect()) const final;
+                                const wxRect boundingBox = wxRect{}) const override final;
 
         /** @warning Should not be called. Points should be explicitly set at
                 specific coordinates, and cannot be scaled to fit in an arbitrary bounding box.
                 This is only included to fulfill the interface contract.
             @param rect This parameter is ignored.
+            @param dc The rendering DC.
             @param parentScaling This parameter is ignored.*/
         [[deprecated("Not implemented")]]
         void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final
+                            [[maybe_unused]] const double parentScaling) override final
             {
             wxFAIL_MSG(L"SetBoundingBox() not supported for Points2D objects."
                        "Points should be explicitly set at specific coordinates, "
@@ -247,12 +250,12 @@ namespace Wisteria::GraphItems
         /** @brief Draws the points, using the pen and brush connected to this object.
             @param dc The device context to draw to.
             @returns The area that the points are being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
 
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final
             {
             wxRect boundingBox(m_boundingBox.GetTopLeft(),
                                wxSize(m_boundingBox.GetWidth() * GetScaling(),
@@ -268,7 +271,7 @@ namespace Wisteria::GraphItems
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) final
+        void Offset(const int xToMove, const int yToMove) override final
             {
             for (auto& point : m_points)
                 {
@@ -278,9 +281,10 @@ namespace Wisteria::GraphItems
             }
 
         /** @returns @c true if the given point is inside any of the points in this collection.
-            @param pt The point to check.*/
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const final;
+        bool HitTest(const wxPoint pt, wxDC& dc) const override final;
         std::vector<Point2D> m_points;
         mutable std::vector<Point2D>::size_type m_lastHitPointIndex{
             static_cast<std::vector<Point2D>::size_type>(-1)
@@ -296,6 +300,6 @@ namespace Wisteria::GraphItems
         };
     } // namespace Wisteria::GraphItems
 
-    /** @}*/
+/** @}*/
 
 #endif // WISTERIA_POINTS_H

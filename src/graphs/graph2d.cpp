@@ -372,7 +372,7 @@ namespace Wisteria::Graphs
         };
 
         m_plotRect = GetBoundingBox(dc);
-        // constrain to zero origin in case it goes outside of that by a pixel or two
+        // constrain to zero origin in case it goes outside that by a pixel or two
         m_plotRect.x = std::max(m_plotRect.x, 0);
         // set the axes' points assuming the entire drawing area, then measure their overhangs
         adjustAxesPoints();

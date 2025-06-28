@@ -1800,7 +1800,7 @@ namespace Wisteria
                 return m_itemInfo.m_relativeAlignment;
                 }
 
-            // Just hiding these from Doxygen. If these are included inside of groupings,
+            // Just hiding these from Doxygen. If these are included inside groupings,
             // then the "private" tag will break the group in the generated help.
             /// @private
             [[nodiscard]]
@@ -1892,7 +1892,7 @@ namespace Wisteria
             /// @note Derived classes need to override this to unselect all subitems.
             virtual void ClearSelections() { SetSelected(false); }
 
-            /** @returns @c true if the given point is inside of this element.
+            /** @returns @c true if the given point is inside this element.
                 @param pt The point to check.
                 @param dc The DC used for measuring. Not all objects use this parameter.*/
             [[nodiscard]]
@@ -1998,7 +1998,7 @@ namespace Wisteria
 
             /** @brief Override this for selecting subitems at a given point.
                     This implementation will select the entire object if
-                    @c pt is inside of the object.
+                    @c pt is inside the object.
                 @param pt The point to hit test.
                 @param dc The DC used for measuring. Not all objects use this parameter.
                 @returns @c true if something was selected at the given point.

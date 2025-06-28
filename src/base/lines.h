@@ -79,27 +79,28 @@ namespace Wisteria::GraphItems
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) final;
+        void Offset(const int xToMove, const int yToMove) override final;
 
       private:
         /** @brief Draws the points, using the pen and brush connected to this object.
             @param dc The device context to draw to.
             @returns The area that the points are being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final;
         /** @returns @c true if the given point is inside any of the points in this collection.
-            @param pt The point to check.*/
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final;
+        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const override final;
 
         /** @warning Do not call this function. It is only included because it's contractually
              required by base class and is not relevant to this object.*/
         [[deprecated("Not implemented")]]
         void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final
+                            [[maybe_unused]] const double parentScaling) override final
             {
             wxFAIL_MSG(L"SetBoundingBox() not supported for Lines objects. "
                        "Points should be explicitly set at specific coordinates, "

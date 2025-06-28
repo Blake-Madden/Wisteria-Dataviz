@@ -989,7 +989,7 @@ namespace Wisteria::UI
         /// @param formatAsStandAloneFile Specifies whether this HTML is going to
         ///     represent a stand-alone file. If true, a document declaration is added to the top.
         /// @param tableCaption A caption to be drawn above the data.\n
-        ///     Will be inside of a div with class "caption" that can be customized via CSS.
+        ///     Will be inside a div with class "caption" that can be customized via CSS.
         void FormatToHtml(wxString& outputText, bool usePrinterSettings,
                           const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
                           long firstRow = 0, long lastRow = -1, long firstColumn = 0,
@@ -1007,7 +1007,7 @@ namespace Wisteria::UI
         /// @param includeColumnHeader Specifies whether to include the column headers,
         ///     which will be the first row.
         /// @param tableCaption A caption to be drawn above the data.\n
-        ///     Will be inside of a div with class "caption" that can be customized via CSS.
+        ///     Will be inside a div with class "caption" that can be customized via CSS.
         /// @returns The list control's content, formatted as LaTeX.
         [[nodiscard]]
         wxString

@@ -44,11 +44,11 @@ enum class FilePathType
     Gopher,          /*!< Gopher URL.*/
     LocalOrNetwork,  /*!< Path that is either on the local system or on a network.*/
     InvalidFileType, /*!< Not a legitimate file path.*/
-    ArchivedFile,    /*!< A file inside of an archive file.
+    ArchivedFile,    /*!< A file inside an archive file.
                         May or may not be an URL or local file--caller is responsible for
                         determining that and opening it accordingly.
                         @note The path syntax is `path/file.zip#subfile`.*/
-    ExcelCell        /*!< A cell address inside of an Excel 2007 file.
+    ExcelCell        /*!< A cell address inside an Excel 2007 file.
                         May or may not be an URL or local file--caller is responsible for
                         determining that and opening it accordingly.
                         @note The path syntax is `path/file.xlsx#sheet_name#cell`.*/
@@ -142,7 +142,7 @@ class FilePathResolverBase
         return m_fileType == FilePathType::InvalidFileType;
         }
 
-    /** @returns @c true if path is a file inside of an archive file.
+    /** @returns @c true if path is a file inside an archive file.
         @note The file may actually be local (or on a network),
         but because we use special syntax for paths to archive subfiles
         then we have to consider its path type as something special.*/
@@ -152,7 +152,7 @@ class FilePathResolverBase
         return m_fileType == FilePathType::ArchivedFile;
         }
 
-    /** @returns @c true if path is a cell inside of an Excel 2007 file.
+    /** @returns @c true if path is a cell inside an Excel 2007 file.
         @note The file may actually be local (or on a network),
             but because we use special syntax for paths to Excel cells
             then we have to consider its path type as something special.*/
@@ -275,7 +275,7 @@ wxString JoinDirs(const wxArrayString& dirs);
     @param dirs The folder names to combine.*/
 [[nodiscard]]
 wxString JoinWebDirs(const wxArrayString& dirs);
-/** @returns The list of extensions inside of a file filter string.
+/** @returns The list of extensions inside a file filter string.
     @param fileFilter The file filter.*/
 [[nodiscard]]
 wxString ExtractExtensionsFromFileFilter(const wxString& fileFilter);

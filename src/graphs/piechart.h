@@ -34,7 +34,7 @@ namespace Wisteria::GraphItems
             : m_pieArea(pieRect), m_startAngle(startAngle), m_endAngle(endAngle), m_value(value),
               m_percent(percent)
             {
-            GetGraphItemInfo() = info;
+            GraphItemBase::GetGraphItemInfo() = info;
             }
 
         /// @returns The pen used for the outer arc of the slice, if different

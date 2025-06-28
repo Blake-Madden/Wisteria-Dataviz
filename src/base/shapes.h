@@ -50,7 +50,7 @@ namespace Wisteria::GraphItems
                 this object goes out of scope. Either way, just use the returned
                 @c wxGraphicsContext to draw to and the rendering/blitting will be applied when
                 this object goes out of scope.*/
-        wxGraphicsContext* GetGraphicsContext() noexcept { return m_gc; }
+        wxGraphicsContext* GetGraphicsContext() const noexcept { return m_gc; }
 
         /// @private
         ~GraphicsContextFallback();
@@ -289,7 +289,7 @@ namespace Wisteria::GraphItems
         /// @brief Draws a rectangle that looks like it was painted with watercolor.
         /// @param rect The area to draw within.
         /// @param dc The DC to draw to.
-        /// @note The color will more than likely go outside of the provided rectangle,
+        /// @note The color will more than likely go outside the provided rectangle,
         ///     as that is the aesthetic that we are going for.\n
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
@@ -298,7 +298,7 @@ namespace Wisteria::GraphItems
         ///     painted with a second coat.
         /// @param rect The area to draw within.
         /// @param dc The DC to draw to.
-        /// @note The color will more than likely go outside of the provided rectangle,
+        /// @note The color will more than likely go outside the provided rectangle,
         ///     as that is the aesthetic that we are going for.\n
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
@@ -413,14 +413,14 @@ namespace Wisteria::GraphItems
         void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const;
 
         /// @brief Offsets calls to GetXPosFromLeft(). This is useful for centering the rendering
-        ///     of irregular (i.e., non-square) shapes inside of squares.
+        ///     of irregular (i.e., non-square) shapes inside squares.
         void SetXOffsetPercentage(const double offset) const noexcept
             {
             m_xOffsetPercentage = offset;
             }
 
         /// @brief Offsets calls to GetYPosFromLeft(). This is useful for centering the rendering
-        ///     of irregular (i.e., non-square) shapes inside of squares.
+        ///     of irregular (i.e., non-square) shapes inside squares.
         void SetYOffsetPercentage(const double offset) const noexcept
             {
             m_yOffsetPercentage = offset;
@@ -428,7 +428,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
-        ///     that need to go a little outside of the rect.
+        ///     that need to go a little outside the rect.
         [[nodiscard]]
         double GetXPosFromLeft(const wxRect rect, const double percentFromLeft) const
             {
@@ -437,9 +437,9 @@ namespace Wisteria::GraphItems
 
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
-        ///     that need to go a little outside of the rect.
+        ///     that need to go a little outside the rect.
         [[nodiscard]]
-        double GetXPosFromLeft(const wxRect2DDouble rect, const double percentFromLeft) const
+        double GetXPosFromLeft(const wxRect2DDouble& rect, const double percentFromLeft) const
             {
             return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + m_xOffsetPercentage));
             }
@@ -453,7 +453,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]]
-        double GetYPosFromTop(const wxRect2DDouble rect, const double percentFromTop) const
+        double GetYPosFromTop(const wxRect2DDouble& rect, const double percentFromTop) const
             {
             return rect.GetTop() + (rect.GetHeight() * (percentFromTop + m_yOffsetPercentage));
             }
@@ -583,7 +583,7 @@ namespace Wisteria::GraphItems
 
         /// @returns The renderer.
         [[nodiscard]]
-        ShapeRenderer& GetRenderer() noexcept
+        ShapeRenderer& GetRenderer() const noexcept
             {
             return m_renderer;
             }
@@ -615,8 +615,9 @@ namespace Wisteria::GraphItems
             m_renderer.m_graphInfo.Scaling(scaling);
             }
 
-        /** @returns @c true if the given point is inside of the shape.
-            @param pt The point to check.*/
+        /** @returns @c true if the given point is inside the shape.
+            @param pt The point to check.
+            @param dc The rendering DC.*/
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             {

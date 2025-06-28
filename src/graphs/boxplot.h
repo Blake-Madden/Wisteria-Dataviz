@@ -145,7 +145,7 @@ namespace Wisteria::Graphs
                 return m_opacity;
                 }
 
-            /** @brief Sets he opacity (how opaque or translucent) the box is.
+            /** @brief Sets the opacity (how opaque or translucent) the box is.
                 @param opacity The opacity level.*/
             void SetOpacity(const uint8_t opacity) noexcept { m_opacity = opacity; }
 
@@ -223,18 +223,19 @@ namespace Wisteria::Graphs
                 @details Also sets the percentiles used for the box range (must be between 1 and 49)
                     This would usually be 25, giving you the standard quartiles range.
                 @param data The data to assign to the box.
-                @param useGrouping Whether to filter the data to a specific group ID for this box.
+                @param continuousColumnName The data column.
+                @param groupColumnName  An optional categorical column to group the points by.
                 @param groupId The group ID for this box. Data points from @c data will only be used
                     for his box if their group ID is @c groupId.
-                    Has no effect if @c useGrouping if @c false.
+                    Has no effect if @c useGrouping is @c false.
                 @param schemeIndex The index into the icon/color/brush schemes.
                 @throws std::runtime_error If any columns can't be found by name, throws an
                     exception.\n The exception's @c what() message is UTF-8 encoded,
                     so pass it to @c wxString::FromUTF8() when formatting it for
                     an error message.*/
-            void SetData(std::shared_ptr<const Data::Dataset> data,
+            void SetData(const std::shared_ptr<const Data::Dataset>& data,
                          const wxString& continuousColumnName,
-                         std::optional<const wxString> groupColumnName,
+                         const std::optional<const wxString>& groupColumnName,
                          const Data::GroupIdType groupId, const size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
@@ -317,10 +318,10 @@ namespace Wisteria::Graphs
                 This will only have a noticeable effect if the brush is non-solid (e.g., hatched).
             @param shapes The shape scheme to use for the points.\n
                 Leave as null to use the standard shapes.*/
-        explicit BoxPlot(Canvas* canvas,
-                         std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
-                         std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-                         std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
+        explicit BoxPlot(
+            Canvas* canvas, const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
+            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
+            const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr);
 
         /** @brief Sets the data.
             @details Also sets the percentiles used for the box range (must be between 1 and 49)
@@ -335,9 +336,9 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to @c
                 wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& continuousColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt);
+                     const std::optional<const wxString>& groupColumnName = std::nullopt);
 
         /// @name Box Functions
         /// @brief Functions relating to the boxes.
@@ -405,7 +406,8 @@ namespace Wisteria::Graphs
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label>
+        CreateLegend(const LegendOptions& options) override final;
 
         /// @}
 
@@ -422,7 +424,7 @@ namespace Wisteria::Graphs
             return m_opacity;
             }
 
-        /** @brief Sets he opacity (how opaque or translucent) the box is.
+        /** @brief Sets the opacity (how opaque or translucent) the box is.
             @param opacity The opacity level.*/
         void SetOpacity(const uint8_t opacity) noexcept
             {
@@ -515,7 +517,7 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the default color of the points.
             @param color The color to use.*/
-        void SetPointColor(const wxColour color) noexcept
+        void SetPointColor(const wxColour& color) noexcept
             {
             if (color.IsOk())
                 {
@@ -547,7 +549,7 @@ namespace Wisteria::Graphs
                 call `GetBottomXAxis().ShowAxisLabels(true)` after adding the box and its custom
            label.*/
         void AddBox(const BoxAndWhisker& box);
-        void RecalcSizes(wxDC& dc) final;
+        void RecalcSizes(wxDC& dc) override final;
 
         std::vector<BoxAndWhisker> m_boxes;
         bool m_overlayLegend{ true };

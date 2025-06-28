@@ -239,7 +239,7 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
                     // add a little padding around the control(s) being highlighted
                     startPoint -=
                         wxPoint(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
-                    // adjust if outside of render area
+                    // adjust if outside render area
                     startPoint.x = std::max(
                         startPoint.x, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
                     startPoint.y = std::max(

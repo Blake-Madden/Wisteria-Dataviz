@@ -129,8 +129,8 @@ namespace Wisteria::Colors
             std::vector<double> validColorData;
             std::copy_if(start, end, std::back_inserter(validColorData),
                          [](auto x) { return std::isfinite(x); });
-            m_range.first = *std::min_element(validColorData.cbegin(), validColorData.cend());
-            m_range.second = *std::max_element(validColorData.cbegin(), validColorData.cend());
+            m_range.first = *std::ranges::min_element(std::as_const(validColorData));
+            m_range.second = *std::ranges::max_element(std::as_const(validColorData));
 
             const size_t rangeSize = std::distance(start, end);
 
@@ -156,8 +156,8 @@ namespace Wisteria::Colors
             std::vector<double> validColorData;
             std::copy_if(values.cbegin(), values.cend(), std::back_inserter(validColorData),
                          [](auto x) { return std::isfinite(x); });
-            m_range.first = *std::min_element(validColorData.cbegin(), validColorData.cend());
-            m_range.second = *std::max_element(validColorData.cbegin(), validColorData.cend());
+            m_range.first = *std::ranges::min_element(std::as_const(validColorData));
+            m_range.second = *std::ranges::max_element(std::as_const(validColorData));
 
             std::vector<wxColour> colors;
             colors.reserve(values.size());
@@ -215,7 +215,7 @@ namespace Wisteria::Colors
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
         [[nodiscard]]
-        wxColour Contrast(const wxColour& color);
+        wxColour Contrast(const wxColour& color) const;
 
         /// @returns A variation of @c color with a different opacity.
         /// @param color The base color to apply an opacity to.
@@ -370,10 +370,10 @@ namespace Wisteria::Colors
 
             /** @brief Gets the color from a given index.
                 @param index The index into the color list to return.
-                    If index is outside of the color scheme but within double the
+                    If index is outside the color scheme but within double the
                     size of the scheme, then scheme will "wrap around" and
                     return a shaded or tinted version.
-                    If outside of twice the number of colors, then returns white.
+                    If outside twice the number of colors, then returns white.
 
                     For example, if you have 8 colors and pass in an index of 7,
                     then it will return the last color.\n

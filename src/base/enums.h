@@ -151,10 +151,10 @@ namespace Wisteria
         SplitTextToFitWidth,  /*!< Text is split into multiple lines to fit in the parent's width.*/
         DisplayAsIs,          /*!< Text is drawn from where it is anchored and is
                                    not scaled or split.\n
-                                   May go outside of its parent.*/
+                                   May go outside its parent.*/
         DisplayAsIsAutoFrame, /*!< Text is drawn from where it is anchored and is
                                    not scaled or split.\n
-                                   May go outside of its parent. If it does go outside of parent,
+                                   May go outside its parent. If it does go outside parent,
                                    will draw a frame around the text.*/
         };
 

@@ -949,9 +949,9 @@ namespace Wisteria
                         }
                     if (topPoints.size() && bottomPoints.size())
                         {
-                        const auto topPt = *std::max_element(topPoints.cbegin(), topPoints.cend());
+                        const auto topPt = *std::ranges::max_element(std::as_const(topPoints));
                         const auto bottomPt =
-                            *std::min_element(bottomPoints.cbegin(), bottomPoints.cend());
+                            *std::ranges::min_element(std::as_const(bottomPoints));
                         for (auto& objectsPos : *fixedObjectsRowItems)
                             {
                             if (objectsPos != nullptr && !objectsPos->GetContentRect().IsEmpty())
@@ -1002,10 +1002,8 @@ namespace Wisteria
                     if (leftPoints.size() && rightPoints.size())
                         {
                         // apply the smallest content area to the items in the column
-                        const auto leftPt =
-                            *std::max_element(leftPoints.cbegin(), leftPoints.cend());
-                        const auto rightPt =
-                            *std::min_element(rightPoints.cbegin(), rightPoints.cend());
+                        const auto leftPt = *std::ranges::max_element(std::as_const(leftPoints));
+                        const auto rightPt = *std::ranges::min_element(std::as_const(rightPoints));
                         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
                              fixedObjectsRowPos != GetFixedObjects().end(); ++fixedObjectsRowPos)
                             {
@@ -1157,7 +1155,7 @@ namespace Wisteria
                     }
                 }
             }
-        // divide the remaining space amongst the rows being auto fit
+        // divide the remaining space amongst the rows being auto-fitted
         // (i.e., the rows with items whose heights don't need to be a particular value).
         const size_t autoFitRows = m_rowsInfo.size() - rowsBeingFit;
         const auto avgAutoFitRowHeight = safe_divide<double>(overallScaling, autoFitRows);
@@ -1242,8 +1240,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    const std::shared_ptr<GraphItems::GraphItemBase>
-    Canvas::GetFixedObject(const size_t row, const size_t column) const
+    std::shared_ptr<GraphItems::GraphItemBase> Canvas::GetFixedObject(const size_t row,
+                                                                      const size_t column) const
         {
         assert(GetFixedObjects().size());
         assert(row < GetFixedObjects().size());
@@ -1272,10 +1270,9 @@ namespace Wisteria
         // if more than 100%, then we need to trim the other items in the row
         if (!compare_doubles(totalPercent, 1.0))
             {
-            const size_t flexibleObjects =
-                std::count_if(GetFixedObjects().at(row).cbegin(), GetFixedObjects().at(row).cend(),
-                              [](const auto& obj) noexcept
-                              { return (obj != nullptr && !obj->IsFixedWidthOnCanvas()); });
+            const size_t flexibleObjects = std::ranges::count_if(
+                std::as_const(GetFixedObjects().at(row)), [](const auto& obj) noexcept
+                { return (obj != nullptr && !obj->IsFixedWidthOnCanvas()); });
             const double totalDiff{ totalPercent - 1.0 };
             const auto avgWidthDiff = safe_divide<double>(totalDiff, flexibleObjects);
             // this is the only object in the row and doesn't have a fixed width, set it to 100%
@@ -1323,7 +1320,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void Canvas::SetFixedObject(const size_t row, const size_t column,
-                                std::shared_ptr<GraphItems::GraphItemBase> object)
+                                const std::shared_ptr<GraphItems::GraphItemBase>& object)
         {
         // cache the original scaling in case when need to recalculate
         // new canvas dimensions later
@@ -1525,7 +1522,7 @@ namespace Wisteria
         }
 
     //-------------------------------------------
-    void Canvas::DrawWatermarkLogo(wxDC& dc)
+    void Canvas::DrawWatermarkLogo(wxDC& dc) const
         {
         if (GetCanvasRect(dc).GetWidth() == 0 || GetCanvasRect(dc).GetHeight() == 0)
             {

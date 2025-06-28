@@ -107,11 +107,11 @@ namespace Wisteria::GraphItems
 
         auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
-        // keep drawing area inside of the full area
+        // keep drawing area inside the full area
         drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
         drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
 
-        // position the shape inside of its (possibly) larger box
+        // position the shape inside its (possibly) larger box
         wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
         // horizontal page alignment
         if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
@@ -460,7 +460,7 @@ namespace Wisteria::GraphItems
 
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedWidth{ drawRect.GetWidth() * 0.4 };
@@ -1459,7 +1459,7 @@ namespace Wisteria::GraphItems
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedWidth{ drawRect.GetWidth() * 0.4 };
@@ -1808,7 +1808,7 @@ namespace Wisteria::GraphItems
             drawRect.Offset(wxPoint(adjustLeft, 0));
             }
 
-            // outside of bag
+            // outside bag
             {
             const wxDCBrushChanger bc(dc, *wxWHITE);
             dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
@@ -1980,12 +1980,11 @@ namespace Wisteria::GraphItems
                                           midPoint + wxPoint(0, iconRadius),
                                           midPoint + wxPoint(iconRadius, 0) };
 
-        std::for_each(points.begin(), points.end(), [&iconRadius, this](auto& pt)
-                      { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius / 2)); });
+        std::ranges::for_each(points, [&iconRadius, this](auto& pt)
+                              { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius / 2)); });
         dc.DrawLines(points.size(), points.data());
 
-        std::for_each(points.begin(), points.end(),
-                      [this](auto& pt) { pt.y += ScaleToScreenAndCanvas(4); });
+        std::ranges::for_each(points, [this](auto& pt) { pt.y += ScaleToScreenAndCanvas(4); });
         dc.DrawLines(points.size(), points.data());
         }
 
@@ -2006,12 +2005,11 @@ namespace Wisteria::GraphItems
                                           midPoint + wxPoint(0, -iconRadius),
                                           midPoint + wxPoint(iconRadius, 0) };
 
-        std::for_each(points.begin(), points.end(), [&iconRadius, this](auto& pt)
-                      { pt.y += ScaleToScreenAndCanvas(-2 + (iconRadius / 2)); });
+        std::ranges::for_each(points, [&iconRadius, this](auto& pt)
+                              { pt.y += ScaleToScreenAndCanvas(-2 + (iconRadius / 2)); });
         dc.DrawLines(points.size(), points.data());
 
-        std::for_each(points.begin(), points.end(),
-                      [this](auto& pt) { pt.y += ScaleToScreenAndCanvas(4); });
+        std::ranges::for_each(points, [this](auto& pt) { pt.y += ScaleToScreenAndCanvas(4); });
         dc.DrawLines(points.size(), points.data());
         }
 
@@ -2116,10 +2114,9 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger bc(
             dc, ApplyParentColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
 
-        const auto iconRadius = GetRadius(rect);
-
             // sign post
             {
+            const auto iconRadius = GetRadius(rect);
             const std::array<wxPoint, 2> pt = {
                 rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, iconRadius),
                 // bottom
@@ -2314,7 +2311,7 @@ namespace Wisteria::GraphItems
         dcRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
                            ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                            0);
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedHeight{ dcRect.GetHeight() * math_constants::three_quarters };
@@ -2772,7 +2769,7 @@ namespace Wisteria::GraphItems
         {
         wxRect dcRect{ rect };
         dcRect.Deflate(ScaleToScreenAndCanvas(2));
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedHeight{ dcRect.GetHeight() * 0.6 };
@@ -3000,7 +2997,7 @@ namespace Wisteria::GraphItems
 
             // draw the stem
             auto stemPath = gc->CreatePath();
-            // start at the top middle top middle
+            // start at the top middle
             stemPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
                                  GetYPosFromTop(rect, .025));
             // draw to the bottom middle of leaf
@@ -3170,7 +3167,7 @@ namespace Wisteria::GraphItems
             // top
             //----
             fillPath.MoveToPoint(GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, 0)); // top left
-            // "outside of the lines" points along the top
+            // "outside the lines" points along the top
             double previousXPos{ 0.0 };
             for (size_t i = 1; i <= strayLinesAlongTopBottom; ++i)
                 {
@@ -3213,7 +3210,7 @@ namespace Wisteria::GraphItems
 
             // bottom
             //-------
-            // "outside of the lines" points along the bottom
+            // "outside the lines" points along the bottom
             previousXPos = math_constants::full;
             for (long i = static_cast<long>(strayLinesAlongTopBottom); i > 0; --i)
                 {
@@ -3290,7 +3287,7 @@ namespace Wisteria::GraphItems
                 gc->SetPen(scaledPen);
 
                 // shrink drawing area for wider pens so that they don't
-                // go outside of it
+                // go outside it
                 drawRect.SetHeight(drawRect.GetHeight() - scaledPen.GetWidth());
                 drawRect.SetTop(drawRect.GetTop() + (scaledPen.GetWidth() / 2));
                 }
@@ -3343,7 +3340,7 @@ namespace Wisteria::GraphItems
                 gc->SetPen(scaledPen);
 
                 // shrink drawing area for wider pens so that they don't
-                // go outside of it
+                // go outside it
                 drawRect.SetWidth(drawRect.GetWidth() - scaledPen.GetWidth());
                 drawRect.SetLeft(drawRect.GetLeft() + (scaledPen.GetWidth() / 2));
                 }
@@ -3397,7 +3394,7 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger bc{ dc, *wxBLACK_BRUSH };
 
         wxRect dcRect{ rect };
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedWidth{ dcRect.GetWidth() * .6 };
@@ -3467,7 +3464,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(bodyRect,
                                 (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) + ARM_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
-            // inside of left arm
+            // inside left arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect,
                                 (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) + ARM_WIDTH),
@@ -3491,7 +3488,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
                                               ARM_WIDTH + ARMPIT_WIDTH + LEG_WIDTH),
                 GetYPosFromTop(bodyRect, SIDE_LENGTH));
-            // inside of left leg
+            // inside left leg
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
                                               ARM_WIDTH + ARMPIT_WIDTH + LEG_WIDTH),
@@ -3508,7 +3505,7 @@ namespace Wisteria::GraphItems
                                 math_constants::half + (CROTCH_WIDTH * math_constants::half)),
                 GetYPosFromTop(bodyRect,
                                SHOULDER_HEIGHT + ARM_LENGTH + LENGTH_BETWEEN_ARM_AND_LEGS));
-            // inside of right leg
+            // inside right leg
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect,
                                 math_constants::half + (CROTCH_WIDTH * math_constants::half)),
@@ -3533,7 +3530,7 @@ namespace Wisteria::GraphItems
                                               (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
                                               ARMPIT_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
-            // inside of right arm
+            // inside right arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half +
                                               (CROTCH_WIDTH * math_constants::half) + LEG_WIDTH +
@@ -3580,7 +3577,7 @@ namespace Wisteria::GraphItems
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedWidth{ drawRect.GetWidth() * .6 };
@@ -3657,7 +3654,7 @@ namespace Wisteria::GraphItems
                                SHOULDER_HEIGHT + ARM_SHORT_LENGTH + Y_CONTROL_POINT_OFFSET),
                 GetXPosFromLeft(bodyRect, ARM_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
-            // inside of left arm
+            // inside left arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
                                               ARM_WIDTH + ARMPIT_WIDTH),
@@ -3703,7 +3700,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) -
                                               ARM_WIDTH - ARMPIT_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
-            // inside of right arm
+            // inside right arm
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - ARM_WIDTH),
                                        GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
             // right hand
@@ -3745,7 +3742,7 @@ namespace Wisteria::GraphItems
         drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
-        // adjust to center it horizontally inside of square area
+        // adjust to center it horizontally inside square area
         if (rect.GetWidth() == rect.GetHeight())
             {
             const auto adjustedWidth{ drawRect.GetWidth() * .6 };
@@ -3822,7 +3819,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
                                               ARM_WIDTH + ARMPIT_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + ARM_LENGTH));
-            // inside of left arm
+            // inside left arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, (math_constants::half - COLLAR_WIDTH - SHOULDER_WIDTH) +
                                               ARM_WIDTH + ARMPIT_WIDTH),
@@ -3876,7 +3873,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) -
                                               ARM_WIDTH - ARMPIT_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT));
-            // inside of right arm
+            // inside right arm
             outlinePath.AddLineToPoint(
                 GetXPosFromLeft(bodyRect, (math_constants::half + COLLAR_WIDTH + SHOULDER_WIDTH) -
                                               ARM_WIDTH - ARMPIT_WIDTH),

@@ -1149,7 +1149,7 @@ namespace string_util
         }
 
     /// @brief Searches for a string in a larger string as a whole word.
-    /// @param haystack The string to search inside of.
+    /// @param haystack The string to search inside.
     /// @param needle The string to search for.
     /// @param start_index The starting position within @c haystack to start the search.
     /// @returns The position of the found word, or @c npos if not found.
@@ -1208,7 +1208,7 @@ namespace string_util
                     continue;
                     }
                 }
-            // inside of haystack
+            // inside haystack
             else
                 {
                 if (needle.length() == haystack.length())

@@ -38,7 +38,7 @@ namespace lily_of_the_valley
                 }
             int32_t quoteStack{ 0 };
             while (text[0] && !is_eol(text[0]) &&
-                   // allow delims if inside of set of double quotes
+                   // allow delims if inside set of double quotes
                    (!is_delimiter(text[0]) || (quoteStack % 2 != 0)))
                 {
                 if (text[0] == L'\"')

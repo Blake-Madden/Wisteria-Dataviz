@@ -91,7 +91,7 @@ wxString FilePathResolverBase::ResolvePath(
         {
         FilePathType specificLocalType = FilePathType::LocalOrNetwork;
 
-        // if not found, see if it might be file inside of an archive or a cell in a spreadsheet.
+        // if not found, see if it might be file inside an archive or a cell in a spreadsheet.
         // a heuristic check to see if it at least is a real file path will then will use the
         // special file type that we determine here.
         wxRegEx RE(L"[.](xlsx|zip)#", wxRE_ICASE);
@@ -238,7 +238,7 @@ wxString ParseTitleFromFileName(wxString filename)
         }
     FilePathResolverBase resolvePath(filename);
     filename = resolvePath.GetResolvedPath();
-    // paths to worksheet/cell inside of Excel file should keep the spreadsheet file extension
+    // paths to worksheet/cell inside Excel file should keep the spreadsheet file extension
     if (resolvePath.IsExcelCell())
         {
         filename.Replace(L".", wxString{}, true);
@@ -533,7 +533,7 @@ int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs)
 wxString ExtractExtensionsFromFileFilter(const wxString& fileFilter)
     {
     wxString retVal = fileFilter;
-    // get the actual filter inside of the "()" section of the string
+    // get the actual filter inside the "()" section of the string
     auto index = retVal.find(L'(');
     if (index != wxString::npos)
         {
