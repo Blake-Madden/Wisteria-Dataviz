@@ -433,6 +433,10 @@ namespace Wisteria
             else if (imageType == wxBITMAP_TYPE_PNG)
                 {
                 img.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_LEVEL, 9);
+                if (!GetLabel().empty())
+                    {
+                    img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, GetLabel());
+                    }
                 } // max compression
             else if (imageType == wxBITMAP_TYPE_GIF)
                 {
@@ -440,7 +444,10 @@ namespace Wisteria
                 wxQuantize::Quantize(img, img, 256);
                 img.ConvertAlphaToMask();
                 // use the comment field too
-                img.SetOption(wxIMAGE_OPTION_GIF_COMMENT, GetLabel());
+                if (!GetLabel().empty())
+                    {
+                    img.SetOption(wxIMAGE_OPTION_GIF_COMMENT, GetLabel());
+                    }
                 }
 
             if (!img.SaveFile(filePath.GetFullPath(), imageType))
