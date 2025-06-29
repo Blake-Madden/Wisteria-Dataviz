@@ -209,6 +209,10 @@ namespace Wisteria
                          _(L"A format that uses vector (rather than raster) drawing. "
                            "Vector-based images can be scaled to much larger sizes, "
                            "without the loss of quality that raster images would experience."));
+        choices.Add(L"WebP");
+        descriptions.Add(openTag + _DT(L"Web Picture") + closeTag +
+                         _(L"A replacement for JPEG, PNG, and GIF file formats "
+                           "which supports both lossy and lossless compression."));
         RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
                                    _(L"Image formats:"), _(L"Export Image"), choices, descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
@@ -238,6 +242,9 @@ namespace Wisteria
             break;
         case 6:
             fileFilter = L"SVG (*.svg)|*.svg";
+            break;
+        case 7:
+            fileFilter = L"WebP (*.webp)|*.webp";
             break;
         default:
             fileFilter = L"PNG (*.png)|*.png";
@@ -276,6 +283,9 @@ namespace Wisteria
                 break;
             case 6:
                 filePath.SetExt(L"svg");
+                break;
+            case 7:
+                filePath.SetExt(L"webp");
                 break;
             default:
                 filePath.SetExt(L"png");

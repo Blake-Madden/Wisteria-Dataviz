@@ -974,6 +974,10 @@ namespace Wisteria::GraphItems
             {
             imageType = wxBITMAP_TYPE_TGA;
             }
+        else if (ext.CmpNoCase(L"webp") == 0)
+            {
+            imageType = wxBITMAP_TYPE_WEBP;
+            }
         // no enum value for this, but need to set it to something
         else if (ext.CmpNoCase(L"svg") == 0)
             {
