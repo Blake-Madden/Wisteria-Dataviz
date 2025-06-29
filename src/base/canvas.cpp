@@ -244,7 +244,7 @@ namespace Wisteria
             fileFilter = L"SVG (*.svg)|*.svg";
             break;
         case 7:
-            fileFilter = L"WebP (*.webp)|*.webp";
+            fileFilter = _DT(L"WebP (*.webp)|*.webp");
             break;
         default:
             fileFilter = L"PNG (*.png)|*.png";
