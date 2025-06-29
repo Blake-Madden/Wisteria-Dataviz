@@ -315,7 +315,8 @@ namespace Wisteria::Graphs
                                      GetPlotAreaBoundingBox().GetLeftBottom(), dc);
             GetRightYAxis().SetPoints(GetPlotAreaBoundingBox().GetRightTop(),
                                       GetPlotAreaBoundingBox().GetRightBottom(), dc);
-            wxCoord yStartCoordinate(0), yEndCoordinate(0), xStartCoordinate(0), xEndCoordinate(0);
+            wxCoord yStartCoordinate{ 0 }, yEndCoordinate{ 0 }, xStartCoordinate{ 0 },
+                xEndCoordinate{ 0 };
             const auto [rangeYStart, rangeYEnd] = GetLeftYAxis().GetRange();
             const auto [rangeXStart, rangeXEnd] = GetBottomXAxis().GetRange();
             if (GetLeftYAxis().GetPhysicalCoordinate(rangeYStart, yStartCoordinate) &&
@@ -334,17 +335,17 @@ namespace Wisteria::Graphs
                             {
                             customAxis.SetPhysicalCustomXPosition(x);
                             customAxis.SetPhysicalCustomYPosition(y);
-                            wxCoord yStartCoordinateOffsetted{ 0 };
+                            wxCoord yStartCoordinateOffset{ 0 };
                             if (customAxis.GetPhysicalCustomYPosition() != -1 &&
                                 GetLeftYAxis().GetPhysicalCoordinate(
                                     rangeYStart + customAxis.GetOffsetFromParentAxis(),
-                                    yStartCoordinateOffsetted))
+                                    yStartCoordinateOffset))
                                 {
                                 customAxis.SetPoints(
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(),
                                             customAxis.GetPhysicalCustomYPosition()),
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(),
-                                            yStartCoordinateOffsetted),
+                                            yStartCoordinateOffset),
                                     dc);
                                 }
                             }
@@ -352,14 +353,14 @@ namespace Wisteria::Graphs
                             {
                             customAxis.SetPhysicalCustomXPosition(x);
                             customAxis.SetPhysicalCustomYPosition(y);
-                            wxCoord xStartCoordinateOffsetted{ 0 };
+                            wxCoord xStartCoordinateOffset{ 0 };
                             if (customAxis.GetPhysicalCustomXPosition() != -1 &&
                                 GetBottomXAxis().GetPhysicalCoordinate(
                                     rangeXStart + customAxis.GetOffsetFromParentAxis(),
-                                    xStartCoordinateOffsetted))
+                                    xStartCoordinateOffset))
                                 {
                                 customAxis.SetPoints(
-                                    wxPoint(xStartCoordinateOffsetted,
+                                    wxPoint(xStartCoordinateOffset,
                                             customAxis.GetPhysicalCustomYPosition()),
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(),
                                             customAxis.GetPhysicalCustomYPosition()),
@@ -411,7 +412,7 @@ namespace Wisteria::Graphs
             }
 
         // make space for the titles
-        if (GetTitle().GetText().length() && GetTitle().IsShown())
+        if (!GetTitle().GetText().empty() && GetTitle().IsShown())
             {
             auto titleRect = GetTitle().GetBoundingBox(dc);
             // if too wide, shrink down its scaling
@@ -434,7 +435,7 @@ namespace Wisteria::Graphs
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
                                  GetTitle().GetBoundingBox(dc).GetHeight());
             }
-        if (GetSubtitle().GetText().length() && GetSubtitle().IsShown())
+        if (!GetSubtitle().GetText().empty() && GetSubtitle().IsShown())
             {
             auto titleRect = GetSubtitle().GetBoundingBox(dc);
             // if too wide, shrink down its scaling
@@ -457,12 +458,12 @@ namespace Wisteria::Graphs
             }
         // if both titles, then we need a space above and below them and one between.
         // if only one of the titles, then just a space above and below it.
-        if ((GetTitle().GetText().length() && GetTitle().IsShown()) ||
-            (GetSubtitle().GetText().length() && GetSubtitle().IsShown()))
+        if ((!GetTitle().GetText().empty() && GetTitle().IsShown()) ||
+            (!GetSubtitle().GetText().empty() && GetSubtitle().IsShown()))
             {
             const auto lineSpacing = ScaleToScreenAndCanvas(
                 GetCaption().GetLineSpacing() *
-                ((GetTitle().GetText().length() && GetSubtitle().GetText().length()) ? 3 : 2));
+                ((!GetTitle().GetText().empty() && !GetSubtitle().GetText().empty()) ? 3 : 2));
             m_plotRect.y += lineSpacing;
             m_plotRect.SetHeight(m_plotRect.GetHeight() - lineSpacing);
             }
@@ -879,7 +880,7 @@ namespace Wisteria::Graphs
         AddObject(std::make_unique<Axis>(GetRightYAxis()));
 
         // draw the title
-        if (GetTitle().GetText().length())
+        if (!GetTitle().GetText().empty())
             {
             auto title = std::make_unique<GraphItems::Label>(GetTitle());
             if (title->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
@@ -909,9 +910,9 @@ namespace Wisteria::Graphs
             }
 
         // draw the subtitle
-        if (GetSubtitle().GetText().length())
+        if (!GetSubtitle().GetText().empty())
             {
-            const auto titleSpacing = (GetTitle().GetText().length() ?
+            const auto titleSpacing = (!GetTitle().GetText().empty() ?
                                            GetTitle().GetBoundingBox(dc).GetHeight() +
                                                ScaleToScreenAndCanvas(GetTitle().GetLineSpacing()) :
                                            0);
