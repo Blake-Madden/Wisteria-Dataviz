@@ -954,7 +954,8 @@ namespace Wisteria
                             *std::ranges::min_element(std::as_const(bottomPoints));
                         for (auto& objectsPos : *fixedObjectsRowItems)
                             {
-                            if (objectsPos != nullptr && !objectsPos->GetContentRect().IsEmpty())
+                            if (objectsPos != nullptr && !objectsPos->GetContentRect().IsEmpty() &&
+                                topPt <= bottomPt)
                                 {
                                 objectsPos->SetContentTop(topPt);
                                 objectsPos->SetContentBottom(bottomPt);
@@ -1008,7 +1009,8 @@ namespace Wisteria
                              fixedObjectsRowPos != GetFixedObjects().end(); ++fixedObjectsRowPos)
                             {
                             auto& objectPos = fixedObjectsRowPos->at(colIndex);
-                            if (objectPos != nullptr && !objectPos->GetContentRect().IsEmpty())
+                            if (objectPos != nullptr && !objectPos->GetContentRect().IsEmpty() &&
+                                rightPt >= leftPt)
                                 {
                                 objectPos->SetContentLeft(leftPt);
                                 objectPos->SetContentRight(rightPt);
