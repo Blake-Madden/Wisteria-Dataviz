@@ -144,7 +144,7 @@ Building
 Windows
 -----------------------------
 
-Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher:
+Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher:
 
 - Open *Visual Studio* and select *Clone a Repository*
   - Enter [https://github.com/wxWidgets/wxWidgets.git](https://github.com/wxWidgets/wxWidgets.git) and clone it
@@ -171,7 +171,7 @@ Install the following from your repository manager (or build from source):
 - *Threading Building Blocks* (libtbb) and its development files
 - *Doxygen* (if building the API documentation)
 
-Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher at the
 same folder level as this project:
 
 ```
@@ -197,7 +197,7 @@ Install the following using brew (or build from source):
 - *XCode*
 - *Doxygen* (if building the API documentation)
 
-Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher at the
+Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher at the
 same folder level as this project:
 
 ```
@@ -225,7 +225,7 @@ To build the API documentation, open "docs/doxygen/Doxyfile" in Doxygen and run 
 Dependencies
 =============================
 
-- [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3 or higher
+- [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher
 - A C++20 compatible compiler (*XCode* on macOS)
 - *CMake* 3.25 or higher
 - *Doxygen* (if building the API documentation)
