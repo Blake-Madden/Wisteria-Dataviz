@@ -121,26 +121,33 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             leftRuler.GetAxisLinePen() = wxNullPen;
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 25, 25, 25,
-                IsUsingEnglishLabels() ? _(L"very easy text") : wxString(_DT("Sehr leichter Text")),
-                wxColour(66, 51, 251)));
+                IsUsingEnglishLabels() ?
+                    wxString{ DONTTRANSLATE(L"very easy text", DTExplanation::DirectQuote,
+                                            L"These are the English labels from the article and "
+                                            "should always appear as this.") } :
+                    wxString{ DONTTRANSLATE(L"Sehr leichter Text", DTExplanation::DirectQuote,
+                                            L"Original German labels.") },
+                wxColour{ 66, 51, 251 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 35, 35, 35,
-                IsUsingEnglishLabels() ? _(L"easy text") : wxString(_DT("Leichter Text")),
-                wxColour(163, 182, 250)));
+                IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"easy text") } :
+                                         wxString{ DONTTRANSLATE("Leichter Text") },
+                wxColour{ 163, 182, 250 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 45, 45, 45,
-                IsUsingEnglishLabels() ? _(L"average text") :
-                                         wxString(_DT("Durchschnittlicher Text")),
-                wxColour(239, 173, 186)));
+                IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"average text") } :
+                                         wxString{ DONTTRANSLATE("Durchschnittlicher Text") },
+                wxColour{ 239, 173, 186 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 55, 55, 55,
-                IsUsingEnglishLabels() ? _(L"difficult text") : wxString(_DT("Schwieriger Text")),
-                wxColour(237, 27, 37)));
+                IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"difficult text") } :
+                                         wxString{ DONTTRANSLATE("Schwieriger Text") },
+                wxColour{ 237, 27, 37 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 65, 65, 65,
-                IsUsingEnglishLabels() ? _(L"very difficult text") :
-                                         wxString(_DT("Sehr schwieriger Text")),
-                wxColour(250, 0, 0)));
+                IsUsingEnglishLabels() ? wxString{ DONTTRANSLATE(L"very difficult text") } :
+                                         wxString{ DONTTRANSLATE("Sehr schwieriger Text") },
+                wxColour{ 250, 0, 0 }));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetWidth(2);
@@ -182,25 +189,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 30, 30, 30,
                 IsUsingEnglishLabels() ?
-                    _(L"children and youth\nliterature (for ages 8-16)") :
-                    wxString(DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher",
-                                           DTExplanation::DirectQuote)),
-                wxColour(138, 163, 249)));
+                    wxString{ DONTTRANSLATE(L"children and youth\nliterature (for ages 8-16)") } :
+                    wxString{ DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher") },
+                wxColour{ 138, 163, 249 }));
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 40, 40, 40,
-                IsUsingEnglishLabels() ? _(L"bellestristic texts (prose\nfiction for adults)") :
-                                         wxString(DONTTRANSLATE(L"Belletristik")),
-                wxColour(207, 217, 252)));
+                IsUsingEnglishLabels() ?
+                    wxString{ DONTTRANSLATE(L"bellestristic texts (prose\nfiction for adults)") } :
+                    wxString(DONTTRANSLATE(L"Belletristik")),
+                wxColour{ 207, 217, 252 }));
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 50, 50, 50,
-                IsUsingEnglishLabels() ? _(L"informational (non fiction)\ntexts (Sachliteratur)") :
-                                         wxString(DONTTRANSLATE(L"Sachliteratur")),
-                wxColour(245, 126, 133)));
+                IsUsingEnglishLabels() ?
+                    wxString{
+                        DONTTRANSLATE(L"informational (non fiction)\ntexts (Sachliteratur)") } :
+                    wxString{ DONTTRANSLATE(L"Sachliteratur") },
+                wxColour{ 245, 126, 133 }));
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 60, 60, 60,
-                IsUsingEnglishLabels() ? _(L"technical texts\n(Fachliteratur)") :
-                                         wxString(DONTTRANSLATE(L"Fachliteratur")),
-                wxColour(237, 10, 10)));
+                IsUsingEnglishLabels() ?
+                    wxString{ DONTTRANSLATE(L"technical texts\n(Fachliteratur)") } :
+                    wxString{ DONTTRANSLATE(L"Fachliteratur") },
+                wxColour{ 237, 10, 10 }));
             for (auto& bracket : rightRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetWidth(2);
