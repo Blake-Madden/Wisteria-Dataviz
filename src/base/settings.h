@@ -116,6 +116,23 @@ namespace Wisteria
             m_translucencyValue = std::clamp<uint8_t>(value, 0, 255);
             }
 
+        /// @returns The DPI image resolution when saving graphs.
+        [[nodiscard]]
+        static wxSize GetImageResolutionDPI() noexcept
+            {
+            return m_imageResolutionDPI;
+            }
+
+        /// @brief Sets the DPI image resolution when saving graphs.
+        /// @param res The resolution (width x height).
+        static void SetImageResolutionDPI(const wxSize res)
+            {
+            if (res.IsFullySpecified())
+                {
+                m_imageResolutionDPI = res;
+                }
+            }
+
         /// @brief Gets the maximum number of items that can be displayed in a legend.
         /// @returns The maximum number of items that can be displayed in a legend.
         [[nodiscard]]
@@ -218,6 +235,7 @@ namespace Wisteria
         constexpr static uint8_t GHOST_OPACITY = 32;
 
       private:
+        inline static wxSize m_imageResolutionDPI{ 300, 300 };
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };
         inline static size_t m_maxLegendTextLength{ 40 };

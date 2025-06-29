@@ -409,8 +409,9 @@ namespace Wisteria
             wxImage img(exportFile.ConvertToImage());
 
             img.SetOption(wxIMAGE_OPTION_RESOLUTIONUNIT, wxIMAGE_RESOLUTION_INCHES);
-            img.SetOption(wxIMAGE_OPTION_RESOLUTIONX, 300);
-            img.SetOption(wxIMAGE_OPTION_RESOLUTIONY, 300);
+            img.SetOption(wxIMAGE_OPTION_RESOLUTIONX, Settings::GetImageResolutionDPI().GetWidth());
+            img.SetOption(wxIMAGE_OPTION_RESOLUTIONY,
+                          Settings::GetImageResolutionDPI().GetHeight());
 
             // color mode
             if (options.m_mode ==
