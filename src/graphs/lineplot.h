@@ -365,14 +365,6 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint,
-                                                        const bool includeHeader)
-            {
-            return CreateLegend(LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
-            }
-
       protected:
         /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
         /// @param index The row in the X column to review.
