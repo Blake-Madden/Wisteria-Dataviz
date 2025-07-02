@@ -395,6 +395,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawDollar(const wxRect rect, wxDC& dc) const;
+        /// @brief Draws a computer monitor.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawMonitor(const wxRect rect, wxDC& dc) const;
         /// @}
       private:
         enum class Temperature

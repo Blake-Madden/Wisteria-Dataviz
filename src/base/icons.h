@@ -107,7 +107,8 @@ namespace Wisteria::Icons
         House,                    /*!< A house.*/
         Barn,                     /*!< A barn.*/
         Farm,                     /*!< A barn and grain silo.*/
-        Dollar                    /*!< A US dollar bill.*/
+        Dollar,                   /*!< A US dollar bill.*/
+        Monitor                   /*!< A computer monitor.*/
         };
 
     /// @brief Item to draw on a legend.

@@ -230,7 +230,8 @@ namespace Wisteria::GraphItems
             { IconShape::House, &ShapeRenderer::DrawHouse },
             { IconShape::Barn, &ShapeRenderer::DrawBarn },
             { IconShape::Farm, &ShapeRenderer::DrawFarm },
-            { IconShape::Dollar, &ShapeRenderer::DrawDollar }
+            { IconShape::Dollar, &ShapeRenderer::DrawDollar },
+            { IconShape::Monitor, &ShapeRenderer::DrawMonitor }
         };
 
         // connect the rendering function to the shape
@@ -1309,6 +1310,85 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawMonitor(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger pc{ dc, *wxBLACK_PEN };
+        const wxDCBrushChanger bc{ dc, *wxBLACK_BRUSH };
+        const wxDCFontChanger fc{ dc };
+
+        wxRect2DDouble drawRect{ rect };
+        drawRect.Deflate(ScaleToScreenAndCanvas(1));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for monitor icon!");
+        if (gc != nullptr)
+            {
+            wxRect2DDouble monitorOuterRect{ drawRect };
+            monitorOuterRect.SetHeight(monitorOuterRect.GetHeight() * math_constants::half);
+            monitorOuterRect.Offset(0, drawRect.GetHeight() * math_constants::quarter);
+
+            wxRect2DDouble monitorRect{ monitorOuterRect };
+            monitorRect.Deflate(ScaleToScreenAndCanvas(math_constants::half));
+
+            // stand pole
+            gc->SetBrush(ColorBrewer::GetColor(Color::White));
+            gc->SetPen({ ColorBrewer::GetColor(Color::DarkGray),
+                         static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            wxRect2DDouble poleRect{ monitorRect };
+            poleRect.SetWidth(monitorRect.GetWidth() * math_constants::tenth);
+            poleRect.Offset((monitorRect.GetWidth() * math_constants::half) -
+                                (poleRect.GetWidth() * math_constants::half),
+                            poleRect.GetHeight() * math_constants::half);
+            gc->DrawRectangle(poleRect);
+
+            // stand base
+            wxRect2DDouble standBaseRect{ poleRect };
+
+            standBaseRect.SetHeight(standBaseRect.GetHeight() * math_constants::third);
+            standBaseRect.SetWidth(monitorRect.GetWidth() * math_constants::half);
+            standBaseRect.MoveLeftTo(monitorRect.GetLeft() +
+                                     (monitorRect.GetWidth() * math_constants::half) -
+                                     (standBaseRect.GetWidth() * math_constants::half));
+            standBaseRect.MoveBottomTo(drawRect.GetBottom());
+
+            // draw everything
+            gc->SetBrush(ColorBrewer::GetColor(Color::White));
+            gc->SetPen({ ColorBrewer::GetColor(Color::DarkGray),
+                         static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->DrawRectangle(monitorOuterRect);
+
+            const auto boardBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(monitorRect, -0.75), GetYPosFromTop(monitorRect, -0.75),
+                GetXPosFromLeft(monitorRect, 1), GetYPosFromTop(monitorRect, 1),
+                Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
+                Colors::ColorBrewer::GetColor(Colors::Color::Black));
+            gc->SetBrush(boardBrush);
+            gc->SetPen(wxPen{ ColorBrewer::GetColor(Color::White),
+                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->DrawRectangle(monitorRect);
+
+            gc->SetBrush(ColorBrewer::GetColor(Color::White));
+            gc->SetPen({ ColorBrewer::GetColor(Color::DarkGray),
+                         static_cast<int>(ScaleToScreenAndCanvas(1)) });
+
+            auto standBasePath = gc->CreatePath();
+            standBasePath.MoveToPoint(standBaseRect.GetLeftBottom());
+            standBasePath.AddLineToPoint(standBaseRect.GetRightBottom());
+            standBasePath.AddQuadCurveToPoint(standBaseRect.GetRight(), standBaseRect.GetTop(),
+                                              GetXPosFromLeft(standBaseRect, math_constants::half),
+                                              GetYPosFromTop(standBaseRect, 0));
+            standBasePath.AddQuadCurveToPoint(standBaseRect.GetLeftTop(),
+                                              standBaseRect.GetLeftBottom());
+
+            standBasePath.CloseSubpath();
+            gc->FillPath(standBasePath);
+            gc->StrokePath(standBasePath);
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawDollar(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
@@ -1365,8 +1445,7 @@ namespace Wisteria::GraphItems
             gc->DrawEllipse(faceRect);
 
             // hair
-            gc->SetPen(wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack),
-                                  static_cast<int>(billRect.GetHeight() * 0.13) });
+            gc->SetPen(wxPenInfo{ L"#3E3E3C", static_cast<int>(billRect.GetHeight() * 0.13) });
             wxRect2DDouble hairRect{ faceRect };
             hairRect.Deflate(ScaleToScreenAndCanvas(0.8));
             hairRect.Offset(-ScaleToScreenAndCanvas(math_constants::half),

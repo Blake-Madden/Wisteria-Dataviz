@@ -155,7 +155,8 @@ namespace Wisteria
                 { L"house", Icons::IconShape::House },
                 { L"barn", Icons::IconShape::Barn },
                 { L"farm", Icons::IconShape::Farm },
-                { L"dollar", Icons::IconShape::Dollar }
+                { L"dollar", Icons::IconShape::Dollar },
+                { L"monitor", Icons::IconShape::Monitor }
             };
 
             const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
