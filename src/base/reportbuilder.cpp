@@ -144,7 +144,7 @@ namespace Wisteria
                     const auto rowsProperty = page->GetProperty(L"rows");
                     if (rowsProperty->IsOk())
                         {
-                        size_t currentRow{ 0 }, currentColumn{ 0 };
+                        size_t currentRow{ 0 };
                         const auto rows = rowsProperty->GetValueArrayObject();
                         rowCount = rows.size();
                         // Empty page? Go to next one.
@@ -158,7 +158,7 @@ namespace Wisteria
                             const auto itemsProperty = row->GetProperty(L"items");
                             if (itemsProperty->IsOk())
                                 {
-                                currentColumn = 0;
+                                size_t currentColumn{ 0 };
                                 auto items = itemsProperty->GetValueArrayObject();
                                 if (const auto gridSize = canvas->GetFixedObjectsGridSize();
                                     gridSize.second < items.size())
@@ -2754,12 +2754,12 @@ namespace Wisteria
                 }
             }
 
+        // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))
             {
-            barChart->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32));
+            barChart->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
+                                          ->GetValueNumber(Wisteria::Settings::GHOST_OPACITY));
             }
-
-        // showcasing
         if (const auto showcaseNode = graphNode->GetProperty(L"showcase-bars");
             showcaseNode->IsOk() && showcaseNode->IsValueArray())
             {
@@ -3498,8 +3498,8 @@ namespace Wisteria
 
             if (graphNode->HasProperty(L"ghost-opacity"))
                 {
-                pieChart->SetGhostOpacity(
-                    graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32));
+                pieChart->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
+                                              ->GetValueNumber(Wisteria::Settings::GHOST_OPACITY));
                 }
 
             // margin notes
@@ -3709,8 +3709,9 @@ namespace Wisteria
             const auto linkId = ConvertNumber(graphNode->GetProperty(L"link-id"));
             if (linkId)
                 {
-                auto foundPosTLink = std::find_if(
-                    m_tableLinks.begin(), m_tableLinks.end(), [&linkId](const auto& tLink)
+                auto foundPosTLink =
+                    std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
+                                 [&linkId](const auto& tLink)
                     { return tLink.GetId() == static_cast<size_t>(linkId.value()); });
                 if (foundPosTLink != m_tableLinks.end())
                     {
