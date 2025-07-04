@@ -1315,6 +1315,8 @@ namespace Wisteria::GraphItems
         /// @brief If colors in the axes are the same as @c bkColor, then set them
         ///     to black or white, contrasting against @c bkColor.
         /// @param bkColor The background color to contrast against.
+        /// @note This will not do anything for the text elements of the axis if it
+        ///     has a font background color overriding any underlying canvas color.
         void ContrastAgainstColor(const wxColour& bkColor)
             {
             const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
@@ -1322,6 +1324,10 @@ namespace Wisteria::GraphItems
             if (GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour() == bkColor)
                 {
                 GetAxisLinePen().SetColour(contrastingColor);
+                }
+            if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor().GetAlpha() > 0)
+                {
+                return;
                 }
             if (GetFontColor().IsOk() && GetFontColor() == bkColor)
                 {
