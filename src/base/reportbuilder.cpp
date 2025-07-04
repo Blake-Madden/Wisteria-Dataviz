@@ -2878,6 +2878,9 @@ namespace Wisteria
             const auto barBrackets = barBracketsNode->GetValueArrayObject();
             for (const auto& barBracket : barBrackets)
                 {
+                // just log any missing bracket requests and then skip over them
+                try
+                    {
                 if (barBracket->HasProperty(L"start-block-re") &&
                     barBracket->HasProperty(L"end-block-re"))
                     {
@@ -2894,6 +2897,11 @@ namespace Wisteria
                         barBracket->GetProperty(L"label")->GetValueString());
                     }
                 }
+                catch (const std::exception& err)
+                    {
+                    wxLogWarning(wxString::FromUTF8(err.what()));
+                    }
+                }
             }
         if (const auto barBracketsNode = graphNode->GetProperty(L"last-bar-brackets");
             barBracketsNode->IsOk() && barBracketsNode->IsValueArray())
@@ -2901,6 +2909,8 @@ namespace Wisteria
             const auto barBrackets = barBracketsNode->GetValueArrayObject();
             for (const auto& barBracket : barBrackets)
                 {
+                try
+                    {
                 if (barBracket->HasProperty(L"start-block-re") &&
                     barBracket->HasProperty(L"end-block-re"))
                     {
@@ -2915,6 +2925,11 @@ namespace Wisteria
                         barBracket->GetProperty(L"start-block")->GetValueString(),
                         barBracket->GetProperty(L"end-block")->GetValueString(),
                         barBracket->GetProperty(L"label")->GetValueString());
+                    }
+                }
+                catch (const std::exception& err)
+                    {
+                    wxLogWarning(wxString::FromUTF8(err.what()));
                     }
                 }
             }
