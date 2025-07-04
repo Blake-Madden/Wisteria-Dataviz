@@ -16,10 +16,6 @@ wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
-    using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-using namespace Wisteria::UI;
-
 namespace Wisteria
     {
     //------------------------------------------------------
@@ -33,11 +29,11 @@ namespace Wisteria
 #endif
         printOut->SetUp(dc);
 
-        const auto orginalMinWidth = GetCanvasMinWidthDIPs();
+        const auto originalMinWidth = GetCanvasMinWidthDIPs();
 
         int w{ 0 }, h{ 0 };
         printOut->GetPageSizePixels(&w, &h);
-        const auto scaledHeight = geometry::rescaled_height(std::make_pair(w, h), orginalMinWidth);
+        const auto scaledHeight = geometry::rescaled_height(std::make_pair(w, h), originalMinWidth);
 
         if (scaledHeight > 0) // sanity check in case page size calc failed
             {
@@ -213,8 +209,9 @@ namespace Wisteria
         descriptions.Add(openTag + _DT(L"Web Picture") + closeTag +
                          _(L"A replacement for JPEG, PNG, and GIF file formats "
                            "which supports both lossy and lossless compression."));
-        RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
-                                   _(L"Image formats:"), _(L"Export Image"), choices, descriptions);
+        Wisteria::UI::RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
+                                                 _(L"Image formats:"), _(L"Export Image"), choices,
+                                                 descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
             {
             return;
@@ -304,11 +301,12 @@ namespace Wisteria
         OnDraw(gcdc);
         memDc.SelectObject(wxNullBitmap);
 
-        ImageExportOptions imgOptions;
+        Wisteria::UI::ImageExportOptions imgOptions;
         imgOptions.m_imageSize = GetCanvasRectDIPs().GetSize();
 
         wxString ext{ fn.GetExt() };
-        ImageExportDlg optionsDlg(this, Image::GetImageFileTypeFromExtension(ext), previewImg,
+        Wisteria::UI::ImageExportDlg optionsDlg(
+            this, Wisteria::GraphItems::Image::GetImageFileTypeFromExtension(ext), previewImg,
                                   imgOptions);
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
         // no options for SVG (since size doesn't matter),
@@ -325,7 +323,7 @@ namespace Wisteria
         }
 
     //--------------------------------------------------
-    bool Canvas::Save(const wxFileName& filePath, const ImageExportOptions& options)
+    bool Canvas::Save(const wxFileName& filePath, const Wisteria::UI::ImageExportOptions& options)
         {
         // immediately recalc everything when we change the canvas size
         CanvasResizeDelayChanger resizeDelay{ *this };
@@ -372,12 +370,13 @@ namespace Wisteria
         else
             {
             wxString ext{ filePath.GetExt() };
-            const wxBitmapType imageType = Image::GetImageFileTypeFromExtension(ext);
+            const wxBitmapType imageType =
+                Wisteria::GraphItems::Image::GetImageFileTypeFromExtension(ext);
 
             // new bitmap to be used by memory DC
             wxBitmap exportFile;
             exportFile.CreateWithDIPSize(wxSize(width, height), GetDPIScaleFactor());
-            Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
+            Wisteria::GraphItems::Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
             wxMemoryDC memDc(exportFile);
             memDc.Clear();
 #ifdef __WXMSW__
@@ -414,8 +413,8 @@ namespace Wisteria
                           Settings::GetImageResolutionDPI().GetHeight());
 
             // color mode
-            if (options.m_mode ==
-                static_cast<decltype(options.m_mode)>(ImageExportOptions::ColorMode::Grayscale))
+            if (options.m_mode == static_cast<decltype(options.m_mode)>(
+                                      Wisteria::UI::ImageExportOptions::ColorMode::Grayscale))
                 {
                 img = img.ConvertToGreyscale();
                 }
@@ -1497,7 +1496,8 @@ namespace Wisteria
             DrawWatermarkLabel(
                 dc, GetCanvasRect(dc),
                 Watermark{ GetWatermark(),
-                           ColorBrewer::GetColor(Color::Red, Settings::GetTranslucencyValue()),
+                           Wisteria::Colors::ColorBrewer::GetColor(
+                               Wisteria::Colors::Color::Red, Settings::GetTranslucencyValue()),
                            WatermarkDirection::Diagonal });
             }
 
@@ -1505,7 +1505,7 @@ namespace Wisteria
             {
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);
-            Label infoLabel(GraphItemInfo(m_debugInfo)
+            Wisteria::GraphItems::Label infoLabel(Wisteria::GraphItems::GraphItemInfo(m_debugInfo)
                                 .AnchorPoint(bBox.GetBottomRight())
                                 .Anchoring(Anchoring::BottomRightCorner)
                                 .FontColor(*wxBLUE)
@@ -1588,8 +1588,8 @@ namespace Wisteria
 
                 // set the font size so that the text will fit diagonally
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetPointSize(Label::CalcDiagonalFontSize(dc, labelFont, drawingRect,
-                                                                   angle, watermark.m_label));
+                labelFont.SetPointSize(Wisteria::GraphItems::Label::CalcDiagonalFontSize(
+                    dc, labelFont, drawingRect, angle, watermark.m_label));
                 labelFont.MakeBold();
                 wxDCFontChanger fc(dc, labelFont);
 
@@ -1612,7 +1612,7 @@ namespace Wisteria
             else
                 {
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetPointSize(Label::CalcFontSizeToFitBoundingBox(
+                labelFont.SetPointSize(Wisteria::GraphItems::Label::CalcFontSizeToFitBoundingBox(
                     dc, labelFont, drawingRect, watermark.m_label));
                 labelFont.MakeBold();
                 wxDCFontChanger fc(dc, labelFont);
