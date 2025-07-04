@@ -1441,7 +1441,7 @@ namespace Wisteria::Graphs
         void AdjustScalingAxisFromBarGroups();
         std::vector<Bar> m_bars;
         uint8_t m_barOpacity{ wxALPHA_OPAQUE };
-        uint8_t m_ghostOpacity{ 32 }; // used for showcasing
+        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY }; // used for showcasing
         BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         wxString m_binLabelSuffix;
