@@ -1006,7 +1006,16 @@ namespace Wisteria
                             break;
                             }
                         const auto& objectPos = fixedObjectsRowPos->at(colIndex);
-                        if (objectPos != nullptr && !objectPos->GetContentRect().IsEmpty())
+                        if (objectPos == nullptr)
+                            {
+                            wxLogWarning(wxString::Format(
+                                L"Alignment of columns on canvas failed because row %zu "
+                                "has null objects instead of empty sizers.",
+                                std::distance(GetFixedObjects().begin(), fixedObjectsRowPos)));
+                            noMoreColumns = true;
+                            break;
+                            }
+                        if (!objectPos->GetContentRect().IsEmpty())
                             {
                             leftPoints.push_back(objectPos->GetContentRect().GetLeft());
                             rightPoints.push_back(objectPos->GetContentRect().GetRight());
@@ -1015,6 +1024,8 @@ namespace Wisteria
                     // the grid is jagged, so stop aligning the columns
                     if (noMoreColumns)
                         {
+                        wxLogWarning(L"Alignment of columns on canvas failed because some rows "
+                                     "have more columns than others.");
                         break;
                         }
                     if (leftPoints.size() && rightPoints.size())
