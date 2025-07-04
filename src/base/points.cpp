@@ -221,9 +221,10 @@ namespace Wisteria::GraphItems
         // draw connection points
         if (GetPen().IsOk() && !m_points.empty())
             {
-            wxPen scaledPen(GetPen());
+            wxPen scaledPen{ GetPen() };
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
-            const wxDCPenChanger pc(dc, scaledPen);
+            scaledPen.SetColour(GetMaybeGhostedColor(scaledPen.GetColour()));
+            const wxDCPenChanger pc{ dc, scaledPen };
 
             const auto okPointsCount =
                 std::ranges::count_if(m_points, [](const auto pt) noexcept { return pt.IsOk(); });
@@ -242,7 +243,7 @@ namespace Wisteria::GraphItems
                     if (m_points[i].IsOk() &&
                         m_points[i].m_shape == Wisteria::Icons::IconShape::Blank)
                         {
-                        const wxDCBrushChanger bc(dc, scaledPen.GetColour());
+                        const wxDCBrushChanger bc{ dc, scaledPen.GetColour() };
                         dc.DrawCircle(m_points[i].GetAnchorPoint(), m_points[i].GetRadius());
                         break;
                         }
@@ -314,13 +315,16 @@ namespace Wisteria::GraphItems
             }
         const bool areAllPointsSelected = (!m_singlePointSelection && IsSelected());
 
-        const wxDCBrushChanger bc(dc, GetPoints().front().GetBrush());
+        wxBrush firstBrush{ GetPoints().front().GetBrush() };
+        firstBrush.SetColour(GetMaybeGhostedColor(firstBrush.GetColour()));
+        const wxDCBrushChanger bc{ dc, firstBrush };
         wxPen scaledPen{ GetPoints().front().GetPen() };
         if (scaledPen.IsOk())
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
             }
-        const wxDCPenChanger pc(dc, scaledPen);
+        scaledPen.SetColour(GetMaybeGhostedColor(scaledPen.GetColour()));
+        const wxDCPenChanger pc{ dc, scaledPen };
 
         for (const auto& point : GetPoints())
             {

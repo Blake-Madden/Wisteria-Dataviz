@@ -2654,6 +2654,20 @@ namespace Wisteria
                 ExpandConstants(variablesNode->GetProperty(L"x")->GetValueString()),
                 (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
             LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+
+            // showcasing
+            if (graphNode->HasProperty(L"ghost-opacity"))
+                {
+                linePlot->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
+                                              ->GetValueNumber(Wisteria::Settings::GHOST_OPACITY));
+                }
+
+            if (const auto showcaseNode = graphNode->GetProperty(L"showcase-lines");
+                showcaseNode->IsOk() && showcaseNode->IsValueArray())
+                {
+                linePlot->ShowcaseLines(showcaseNode->GetValueStringVector());
+                }
+
             return linePlot;
             }
         else

@@ -187,6 +187,8 @@ Properties for `"line-plot"` nodes:
   - `"x"`: The X column.
   - `"y"`: The Y column.
   - `"group"`: The grouping column (this is optional).
+- `"ghost-opacity"`: A number specifying the opacity level of non-showcased lines.
+- `"showcase-lines"`: An array of strings specifying which lines to showcase.
 - Some base properties available to [graphs](#graph-properties).
 :::
 

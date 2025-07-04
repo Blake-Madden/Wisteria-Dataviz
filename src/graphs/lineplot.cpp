@@ -14,8 +14,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     {
     //----------------------------------------------------------------
     void LinePlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                           const wxString& yColumnName,
-                           const wxString& xColumnName,
+                           const wxString& yColumnName, const wxString& xColumnName,
                            const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
@@ -61,7 +60,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                     }
                 }
             }
-        m_lines.clear();
+        GetLines().clear();
         GetLeftYAxis().Reset();
         GetRightYAxis().Reset();
         GetBottomXAxis().Reset();
@@ -164,7 +163,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             return;
             }
 
-        m_lines.push_back(line);
+        GetLines().push_back(line);
 
         const auto [fullYDataMin, fullYDataMax] =
             std::minmax_element(m_yColumn->GetValues().cbegin(), m_yColumn->GetValues().cend());
@@ -222,13 +221,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         // clear everything, update axes mirroring or whatever if requested by client
         Graph2D::RecalcSizes(dc);
 
-        for (auto& line : m_lines)
+        for (auto& line : GetLines())
             {
             auto points = std::make_unique<GraphItems::Points2D>(line.GetPen());
             points->SetScaling(GetScaling());
             points->SetDPIScaleFactor(GetDPIScaleFactor());
             points->SetLineStyle(line.GetStyle());
             points->Reserve(GetDataset()->GetRowCount());
+            const bool isLineGhosted =
+                (IsUsingGrouping() && !m_showcasedLines.empty() &&
+                 std::ranges::find(m_showcasedLines, line.GetText()) == m_showcasedLines.cend());
+            if (isLineGhosted)
+                {
+                points->Ghost(true);
+                points->SetGhostOpacity(GetGhostOpacity());
+                }
             wxPoint pt;
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
@@ -252,14 +259,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                     {
                     continue;
                     }
-                const wxColor ptColor =
-                    (m_colorIf ? m_colorIf(GetXValue(i), m_yColumn->GetValue(i)) :
-                                 line.GetPen().GetColour());
+                const wxColor ptColor = GetMaybeGhostedColor(
+                    m_colorIf ? m_colorIf(GetXValue(i), m_yColumn->GetValue(i)) :
+                                line.GetPen().GetColour(),
+                    isLineGhosted);
                 points->AddPoint(
                     GraphItems::Point2D(
                         GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
                             .AnchorPoint(pt)
-                            .Brush((ptColor.IsOk() ? ptColor : line.GetPen().GetColour())),
+                            .Pen(GetMaybeGhostedColor(line.GetPen().GetColour(), isLineGhosted))
+                            .Brush((ptColor.IsOk() ? ptColor :
+                                                     GetMaybeGhostedColor(line.GetPen().GetColour(),
+                                                                          isLineGhosted))),
                         Settings::GetPointRadius(), line.m_shape, &line.m_shapeImg),
                     dc);
                 }
@@ -281,12 +292,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 .DPIScaling(GetDPIScaleFactor()));
 
         const bool showingMarkers =
-            (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
+            (GetShapeScheme()->GetShapes().size() >= GetLines().size() &&
              // multiple lines (or one line) and it is not using a blank icon
-             (m_lines.size() > 1 || GetShapeScheme()->GetShape(0) != Icons::IconShape::Blank));
+             (GetLines().size() > 1 || GetShapeScheme()->GetShape(0) != Icons::IconShape::Blank));
         wxString legendText;
         size_t lineCount{ 0 };
-        for (const auto& line : m_lines)
+        for (const auto& line : GetLines())
             {
             if (Settings::GetMaxLegendItemCount() == lineCount)
                 {

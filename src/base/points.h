@@ -187,6 +187,31 @@ namespace Wisteria::GraphItems
         /// @param lineStyle The line style.
         void SetLineStyle(const LineStyle lineStyle) noexcept { m_lineStyle = lineStyle; }
 
+        /// @returns @c true if the line (and points) is being made translucent.
+        [[nodiscard]]
+        bool IsGhosted() const noexcept
+            {
+            return m_ghost;
+            }
+
+        /// @brief Sets the line (and points) to be translucent.
+        /// @param ghost @c true to make the line translucent.
+        void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
+
+        /// @returns The opacity level applied if "ghosted".
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /** @brief Sets the opacity level for "ghosting".
+            @param opacity The opacity level (should be between @c 0 and @c 255).
+            @note If setting this to @c 0 (fully transparent), then you should set
+                the block's pen to a darker color.
+            @sa Ghost().*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
+
         /** @brief Sets the scaling of the points. As a canvas grows or shrinks,
                 this can be adjusted to make the rendering of lines/text/etc. fit appropriately.
             @param scaling The scaling to use.*/
@@ -285,6 +310,15 @@ namespace Wisteria::GraphItems
             @param dc The rendering DC.*/
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const override final;
+
+        [[nodiscard]]
+        wxColour GetMaybeGhostedColor(const wxColour& color) const
+            {
+            return (IsGhosted() && color.IsOk()) ?
+                Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
+                color;
+            }
+
         std::vector<Point2D> m_points;
         mutable std::vector<Point2D>::size_type m_lastHitPointIndex{
             static_cast<std::vector<Point2D>::size_type>(-1)
@@ -297,6 +331,9 @@ namespace Wisteria::GraphItems
         LineStyle m_lineStyle{ LineStyle::Lines };
 
         long m_currentAssignedId{ 0 };
+
+        bool m_ghost{ false };
+        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         };
     } // namespace Wisteria::GraphItems
 

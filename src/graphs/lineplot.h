@@ -192,7 +192,7 @@ namespace Wisteria::Graphs
             ///     only be used for this line if their group ID is @c groupId.
             /// @param groupName The display name of the group.\n
             ///     This is useful for a client to find a line by name and then customize it.
-            void SetGroupInfo(const std::optional<const wxString>& groupColumnName,
+            void SetGroupInfo(const std::optional<wxString>& groupColumnName,
                               const Data::GroupIdType groupId, const wxString& groupName)
                 {
                 m_groupColumnName = groupColumnName;
@@ -207,7 +207,7 @@ namespace Wisteria::Graphs
             LineStyle m_lineStyle{ LineStyle::Lines };
             Icons::IconShape m_shape{ Icons::IconShape::Circle };
             wxBitmapBundle m_shapeImg;
-            wxPen m_linePen{ wxPen(*wxBLACK, 2) };
+            wxPen m_linePen{ wxPen{ *wxBLACK, 2 } };
             };
 
         /** @brief Constructor.
@@ -282,8 +282,7 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                             const wxString& yColumnName,
-                             const wxString& xColumnName,
+                             const wxString& yColumnName, const wxString& xColumnName,
                              const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /** @brief Sets an additional function to assign a point's color to something different
@@ -355,6 +354,29 @@ namespace Wisteria::Graphs
                 (refer to WCurvePlot as an example).
             @param autoSpline @c true to enable auto splining.*/
         void AutoSpline(const bool autoSpline) noexcept { m_autoSpline = autoSpline; }
+
+        /** @brief Sets the specified lines (by group label) to be fully opaque,
+                and all others to a lighter opacity.
+            @param labels The lines to showcase.
+            @note Call SetGhostOpacity() prior to this to control how translucent
+                the non-showcased (i.e., "ghosted") bars are.
+            @warning This will only take effect if grouping is enabled.
+            @sa SetGhostOpacity().*/
+        void ShowcaseLines(const std::vector<wxString>& labels) { m_showcasedLines = labels; }
+
+        /// @returns The opacity level applied if being "ghosted".
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /** @brief Sets the opacity level for "ghosted" bars.\n
+                This is only used if ShowcaseBars() is called; this is the
+                opacity applied to bars not being showcased.
+            @param opacity The opacity level (should be between @c 0 and @c 255).
+            @sa ShowcaseBars().*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
 
         /// @}
 
@@ -521,6 +543,14 @@ namespace Wisteria::Graphs
         bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
                                    const Data::GroupIdType group) const noexcept;
 
+        [[nodiscard]]
+        wxColour GetMaybeGhostedColor(const wxColour& color, const bool isGhosted) const
+            {
+            return (isGhosted && color.IsOk()) ?
+                       Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
+                       color;
+            }
+
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
         Data::DateColumnConstIterator m_xColumnDate;
@@ -533,6 +563,11 @@ namespace Wisteria::Graphs
         std::shared_ptr<LineStyleScheme> m_linePenStyles{ nullptr };
 
         PointColorCriteria m_colorIf;
+
+        std::vector<wxString> m_showcasedLines;
+        // the default ghost effect is OK for bars, but for thin lines it needs to be a
+        // bit more opaque to be able to see anything
+        uint8_t m_ghostOpacity{ std::max<uint8_t>(75, Wisteria::Settings::GHOST_OPACITY) };
         };
     } // namespace Wisteria::Graphs
 
