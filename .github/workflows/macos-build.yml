@@ -10,7 +10,7 @@ jobs:
         with:
           submodules: recursive
   
-      - name: Install wxwidgets
+      - name: Download wxwidgets
         run: |
              brew install cmake tbb
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
@@ -46,4 +46,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WDV-macos-junit.xml
-          path: WDV-macos-junit.xml
+          path: tests/WDV-macos-junit.xml
