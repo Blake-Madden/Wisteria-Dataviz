@@ -38,6 +38,7 @@ namespace Wisteria
                     // to manually chop that off as best we can
                     if (noTrailingZeroes)
                         {
+                        /// @todo use wxNumberFormatter::RemoveTrailingZeroes if ever public
                         const auto decimalPosition = result.rfind(
                             wxString{ wxNumberFormatter::GetDecimalSeparator() }.append("00"));
                         if (decimalPosition != wxString::npos)
@@ -52,7 +53,7 @@ namespace Wisteria
 #else
         return wxNumberFormatter::ToString(val, 2,
                                            wxNumberFormatter::Style::Style_WithThousandsSep |
-                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
 #endif
         return {};
         }
