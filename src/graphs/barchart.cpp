@@ -585,7 +585,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
-    void BarChart::ShowcaseBars(const std::vector<wxString>& labels)
+    void BarChart::ShowcaseBars(const std::vector<wxString>& labels,
+                                const bool hideLabelsOnGhostedBars /*= true*/)
         {
         for (auto& bar : GetBars())
             {
@@ -593,12 +594,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 labels, [&bar](const auto& label)
                 { return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0; });
             bar.SetOpacity((foundPos == labels.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
-            bar.m_barLabel.Show(foundPos != labels.cend());
+            bar.m_barLabel.Show(hideLabelsOnGhostedBars ? foundPos != labels.cend() : true);
             }
         }
 
     //-----------------------------------
-    void BarChart::ShowcaseBars(const std::vector<double>& positions)
+    void BarChart::ShowcaseBars(const std::vector<double>& positions,
+                                const bool hideLabelsOnGhostedBars /*= true*/)
         {
         for (auto& bar : GetBars())
             {
@@ -606,7 +608,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 std::ranges::find_if(positions, [&bar](const auto& position)
                                      { return compare_doubles(bar.GetAxisPosition(), position); });
             bar.SetOpacity((foundPos == positions.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
-            bar.m_barLabel.Show(foundPos != positions.cend());
+            bar.m_barLabel.Show(hideLabelsOnGhostedBars ? foundPos != positions.cend() : true);
             }
         }
 

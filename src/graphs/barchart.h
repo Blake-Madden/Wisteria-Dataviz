@@ -947,17 +947,22 @@ namespace Wisteria::Graphs
         /** @brief Sets the specified bars (by custom axis label) to be fully opaque,
                 and all others to a lighter opacity.
             @param labels The bars to showcase.
+            @param hideLabelsOnGhostedBars @c true to not show the labels at the end of any bars
+                that are being ghosted.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
             @sa SetGhostOpacity().*/
-        void ShowcaseBars(const std::vector<wxString>& labels);
+        void ShowcaseBars(const std::vector<wxString>& labels, bool hideLabelsOnGhostedBars = true);
         /** @brief Sets the specified bars (by axis position) to be fully opaque,
                 and all others to a lighter opacity.
             @param positions The axis positions of the bars to showcase.
+            @param hideLabelsOnGhostedBars @c true to not show the labels at the end of any bars
+                that are being ghosted.
             @note Call SetGhostOpacity() prior to this to control how translucent
                 the non-showcased (i.e., "ghosted") bars are.
             @sa SetGhostOpacity().*/
-        void ShowcaseBars(const std::vector<double>& positions);
+        void ShowcaseBars(const std::vector<double>& positions,
+                          bool hideLabelsOnGhostedBars = true);
 
         /// @returns The opacity level applied if being "ghosted".
         [[nodiscard]]

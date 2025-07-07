@@ -29,8 +29,11 @@ Properties common to all bar-chart derived graphs:
   - `"bin-name-and-percentage"`
 - `"bar-label-suffix"`: A string to add to the end of each bar label.
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
-- `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.
+- `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.\
+  This will only have an effect if `"showcase-bars"` is in use.
 - `"showcase-bars"`: An array of strings specifying which bars to showcase.
+- `"hide-ghosted-labels"`: A boolean specifying whether to hide labels on bars that are being ghosted.\
+  This will only have an effect if `"showcase-bars"` is in use.
 - `"bar-icons"`: An array of bar icon specifications. Each specification contains the following:
   - `"label"`: The label of the bar to add an icon to.
   - `"image"`: The path to the image to add to the bar label.

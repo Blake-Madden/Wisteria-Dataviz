@@ -2790,7 +2790,9 @@ namespace Wisteria
         if (const auto showcaseNode = graphNode->GetProperty(L"showcase-bars");
             showcaseNode->IsOk() && showcaseNode->IsValueArray())
             {
-            barChart->ShowcaseBars(showcaseNode->GetValueStringVector());
+            const bool hideGhostedLabels =
+                graphNode->GetProperty(L"hide-ghosted-labels")->GetValueBool(true);
+            barChart->ShowcaseBars(showcaseNode->GetValueStringVector(), hideGhostedLabels);
             }
 
         // decals to add to the bars
