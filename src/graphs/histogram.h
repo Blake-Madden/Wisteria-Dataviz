@@ -211,8 +211,8 @@ namespace Wisteria::Graphs
                 This is useful if using a hatched brush, as this color will be solid and show
                 underneath it. Leave as null just to use the brush scheme.*/
         explicit Histogram(Wisteria::Canvas* canvas,
-                           std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
-                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr)
+                           const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
+                           const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr)
             : Wisteria::Graphs::BarChart(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
@@ -273,18 +273,18 @@ namespace Wisteria::Graphs
                 implicitly added to the bins' selection label.\n
                 Also, call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& continuousColumnName,
                      const std::optional<const wxString>& groupColumnName = std::nullopt,
-                     const BinningMethod bMethod = BinningMethod::BinByIntegerRange,
-                     const RoundingMethod rounding = RoundingMethod::NoRounding,
-                     const IntervalDisplay iDisplay = IntervalDisplay::Cutpoints,
-                     const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue,
-                     const bool showFullRangeOfValues = true,
-                     const std::optional<double> startBinsValue = std::nullopt,
-                     const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges =
+                     BinningMethod bMethod = BinningMethod::BinByIntegerRange,
+                     RoundingMethod rounding = RoundingMethod::NoRounding,
+                     IntervalDisplay iDisplay = IntervalDisplay::Cutpoints,
+                     BinLabelDisplay blDisplay = BinLabelDisplay::BinValue,
+                     bool showFullRangeOfValues = true,
+                     std::optional<double> startBinsValue = std::nullopt,
+                     const std::pair<std::optional<size_t>, std::optional<size_t>>& binCountRanges =
                          std::make_pair(std::nullopt, std::nullopt),
-                     const bool neatIntervals = false);
+                     bool neatIntervals = false);
 
         /** @brief Gets the number of bins/cells in the histogram with data in them.
             @note This refers to the number of cells with data in them, not the number
@@ -340,7 +340,7 @@ namespace Wisteria::Graphs
             }
 
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
-        /// @note Columns can only be sorted if your are showing unique values for the categories
+        /// @note Columns can only be sorted if you are showing unique values for the categories
         ///     (i.e., not ranges) and you are just showing bars that actually have values
         ///     (so that the bars are next to each other).
         /// @returns Whether the columns (bins) can be sorted.
@@ -364,7 +364,7 @@ namespace Wisteria::Graphs
         /** Specifies whether the axis should display each step
                 (even if no bin is associated with a step) or if it should display steps that
                 have categories on them.\n
-                Setting this to @c false will put all of the bars together, but might have an
+                Setting this to @c false will put all the bars together, but might have an
                 uneven step size on the axis and fit lines won't be able to be drawn.
                 This is only used if you are categorizing by unique (non-integer) values.
             @param display @c true to display the full range of values.*/
@@ -395,19 +395,19 @@ namespace Wisteria::Graphs
                 to ranges, then this is an optional number of bins to use.
             @details If the number of categories exceeds the maximum number of categories,
                 then it will implicitly switch to equal-ranges mode.*/
-        void SortIntoUniqueValues(const std::optional<size_t> binCount);
+        void SortIntoUniqueValues(std::optional<size_t> binCount);
         /** @brief Bins the data into a specific number of categories.
             @param binCount An optional number of bins to use.
             @details This is recommended if you have a lot of data and want to
                 break data into categories.*/
-        void SortIntoRanges(const std::optional<size_t> binCount);
+        void SortIntoRanges(std::optional<size_t> binCount);
         /// @brief Call this when sorting data (in case it needs to be rounded).
         ///     If rounding is turned off then this simply returns the same value.
         [[nodiscard]]
         double ConvertToSortableValue(const double& value) const;
 
         [[nodiscard]]
-        wxString GetCustomBarLabelOrValue(const double& value, const size_t precision = 0);
+        wxString GetCustomBarLabelOrValue(const double& value, uint8_t precision = 0);
 
         /// @brief Calculates the number of bins to use based on the data.
         [[nodiscard]]

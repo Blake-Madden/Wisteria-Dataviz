@@ -6,14 +6,18 @@
 
     The benefits of this library over other profiling tools are:
 
-    - Performance times are only collected on the sections of code that you specify. This is useful for when you are only interested
-      in reviewing certain sections of code, rather than the entire codebase.
-    - Along with collecting function times (PROFILE()), specific blocks of code can also be tracked (PROFILE_SECTION_START()).
-    - When a section of code that is being profiled calls another profiled code block, then the first block will be paused. This will
-      thus only show the time it took to execute the code in the initial block, excluding the time it took to call any subsequent blocks
-      that are also being tracked. This is an important distinction from other profiling systems.
+    - Performance times are only collected on the sections of code that you specify. This is useful
+for when you are only interested in reviewing certain sections of code, rather than the entire
+codebase.
+    - Along with collecting function times (PROFILE()), specific blocks of code can also be tracked
+(PROFILE_SECTION_START()).
+    - When a section of code that is being profiled calls another profiled code block, then the
+first block will be paused. This will thus only show the time it took to execute the code in the
+initial block, excluding the time it took to call any subsequent blocks that are also being tracked.
+This is an important distinction from other profiling systems.
 
-    Profiling information will be written to standard output and a specified file (SET_PROFILER_REPORT_PATH()).
+    Profiling information will be written to standard output and a specified file
+(SET_PROFILER_REPORT_PATH()).
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the 3-Clause BSD License.
@@ -22,7 +26,8 @@
    @par Citation
     This was inspired by the article:
 
-    Hjelstrom, Greg, and Byon Garrabrant. "Real-Time Hierarchical Profiling." *Game Programming Gems 3*, Charles River Media, 2002, pp 146-152.
+    Hjelstrom, Greg, and Byon Garrabrant. "Real-Time Hierarchical Profiling." *Game Programming Gems
+3*, Charles River Media, 2002, pp 146-152.
    @date 2005-2025
    @copyright Blake Madden
    @author Blake Madden
@@ -58,19 +63,20 @@
 #ifndef __DEBUG_PROFILE_H__
 #define __DEBUG_PROFILE_H__
 
-#include <set>
 #include <algorithm>
-#include <string>
-#include <ctime>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <chrono>
-#include <locale>
 #include <cassert>
+#include <chrono>
+#include <cmath>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <locale>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
+// clang-format off
 /**
 @def PROFILE()
     @brief Profiles the current function and will write to the profile data when the function completes.
@@ -86,12 +92,14 @@
 
 @def PROFILE_SECTION_START(section_name)
     @brief Profiles a section of code. A unique label describing the code section should be passed here.
-    @details The profiling will stop when the code section goes out of scope. @sa PROFILE_SECTION_END
+    @details The profiling will stop when the code section goes out of scope.
+    @sa PROFILE_SECTION_END
     @param section_name The user-defined name to associate with the code block.
 
 @def PROFILE_SECTION_WITH_INFO_START(section_name, info)
     @brief Profiles a section of code. A unique label describing the code section should be passed here.
-    @details The profiling will stop when the code section goes out of scope. @sa PROFILE_SECTION_END
+    @details The profiling will stop when the code section goes out of scope.
+    @sa PROFILE_SECTION_END
     @param section_name The user-defined name to associate with the code block.
     @param info Information specific to this function call (e.g., the argument values to this function).
      The information connected to the highest call time of this function will be shown in the results.
@@ -155,7 +163,7 @@
     #define SET_PROFILER_REPORT_PATH(path) ((void)0)
     #define DUMP_PROFILER_REPORT() ((void)0)
 #endif
-
+// clang-format on
 #ifdef ENABLE_PROFILING
 //-----------------------------------------------------------------------
 // profiler definition
@@ -164,27 +172,36 @@ namespace __debug
     //-------------------------------------
     class __profile_info
         {
-    public:
-        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time) :
-            m_name(name),
-            m_called_count(1), m_lowest_duration_time(duration_time),
-            m_highest_duration_time(duration_time),
-            m_total_duration_time(duration_time), m_average_duration_time(duration_time)
-            {}
+      public:
+        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time)
+            : m_name(name), m_called_count(1), m_lowest_duration_time(duration_time),
+              m_highest_duration_time(duration_time), m_total_duration_time(duration_time),
+              m_average_duration_time(duration_time)
+            {
+            }
+
         __profile_info(const char* name, const std::chrono::nanoseconds& duration_time,
-                       const char* extra_info) :
-            m_name(name), m_extra_info(extra_info),
-            m_called_count(1), m_lowest_duration_time(duration_time),
-            m_highest_duration_time(duration_time),
-            m_total_duration_time(duration_time), m_average_duration_time(duration_time)
-            {}
+                       const char* extra_info)
+            : m_name(name), m_extra_info(extra_info), m_called_count(1),
+              m_lowest_duration_time(duration_time), m_highest_duration_time(duration_time),
+              m_total_duration_time(duration_time), m_average_duration_time(duration_time)
+            {
+            }
+
         [[nodiscard]]
         inline bool operator<(const __profile_info& that) const noexcept
-            { return m_name < that.m_name; }
+            {
+            return m_name < that.m_name;
+            }
+
         [[nodiscard]]
         inline bool operator==(const __profile_info& that) const noexcept
-            { return m_name == that.m_name; }
-        void add_duration_time(const std::chrono::nanoseconds& duration_time, const char* extra_info);
+            {
+            return m_name == that.m_name;
+            }
+
+        void add_duration_time(const std::chrono::nanoseconds& duration_time,
+                               const char* extra_info);
 
         std::string m_name;
         std::string m_extra_info;
@@ -199,7 +216,7 @@ namespace __debug
     //-------------------------------------
     class __profiler
         {
-    public:
+      public:
         explicit __profiler(const char* name);
         __profiler(const char* name, const char* extra_info);
         __profiler(const __profiler& that) = delete;
@@ -210,13 +227,17 @@ namespace __debug
         inline static void pop_profiler();
 
         inline void pause() noexcept
-            { m_pause_starttime = std::chrono::high_resolution_clock::now(); }
+            {
+            m_pause_starttime = std::chrono::high_resolution_clock::now();
+            }
+
         inline void unpause() noexcept
             {
             m_pause_endtime = std::chrono::high_resolution_clock::now();
             m_total_pause_duration += (m_pause_endtime - m_pause_starttime);
             }
-    protected:
+
+      protected:
         std::chrono::time_point<std::chrono::high_resolution_clock> m_starttime;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_endtime;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_pause_starttime;
@@ -229,14 +250,16 @@ namespace __debug
     //-------------------------------------
     class __profile_reporter
         {
-    public:
+      public:
         __profile_reporter() noexcept {}
+
         __profile_reporter(const __profile_reporter& that) = delete;
         __profile_reporter& operator=(const __profile_reporter& that) = delete;
-        ~__profile_reporter()
-            { dump_results(); }
-        static void set_output_path(const char* path)
-            { m_outputPath = path; }
+
+        ~__profile_reporter() { dump_results(); }
+
+        static void set_output_path(const char* path) { m_outputPath = path; }
+
         static void dump_results();
         static std::string m_outputPath;
         static std::set<__profile_info> m_profiles;

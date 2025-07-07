@@ -80,7 +80,7 @@ namespace Wisteria::Data
                 you can jitter points out to.
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
-                For example, LeftYAxis will cause jittering along the x axis.*/
+                For example, LeftYAxis will cause jittering along the X axis.*/
         Jitter(const size_t jitterWidth, const AxisType dominantAxis)
             : m_jitterSideWidth(safe_divide<size_t>(jitterWidth, 2)), m_dominantAxis(dominantAxis)
             {
@@ -89,7 +89,7 @@ namespace Wisteria::Data
         /** @brief Constructor.
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
-                For example, LeftYAxis will cause jittering along the x axis.*/
+                For example, LeftYAxis will cause jittering along the X axis.*/
         explicit Jitter(const AxisType dominantAxis) : m_dominantAxis(dominantAxis) {}
 
         /// @private
@@ -171,12 +171,12 @@ namespace Wisteria::Data
                     is_even(plottedPointInfo->second) ?
                         -static_cast<wxCoord>(
                             safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
-                                                1, m_numberOfPointsOnEachSide)) :
+                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2), 1,
+                                               m_numberOfPointsOnEachSide)) :
                         static_cast<wxCoord>(
                             safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
-                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
-                                                1, m_numberOfPointsOnEachSide));
+                            std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2), 1,
+                                               m_numberOfPointsOnEachSide));
                 return true;
                 }
             return false;

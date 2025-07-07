@@ -86,7 +86,7 @@ namespace Wisteria::GraphItems
 
         /// @returns @c true if center point is valid.
         [[nodiscard]]
-        bool IsOk() const noexcept
+        bool IsOk() const noexcept override final
             {
             return GetAnchorPoint().IsFullySpecified();
             }
@@ -315,8 +315,8 @@ namespace Wisteria::GraphItems
         wxColour GetMaybeGhostedColor(const wxColour& color) const
             {
             return (IsGhosted() && color.IsOk()) ?
-                Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
-                color;
+                       Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
+                       color;
             }
 
         std::vector<Point2D> m_points;

@@ -20,8 +20,6 @@
 #include <wx/image.h>
 #include <wx/mstream.h>
 #include <wx/regex.h>
-#include <wx/statline.h>
-#include <wx/tokenzr.h>
 #include <wx/wx.h>
 #include <wx/xml/xml.h>
 #if __has_include(<omp.h>)

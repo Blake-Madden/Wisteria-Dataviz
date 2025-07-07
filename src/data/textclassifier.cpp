@@ -11,10 +11,12 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------------------------
-    void TextClassifier::SetClassifierData(
-        const std::shared_ptr<const Data::Dataset>& classifierData, const wxString& categoryColumnName,
-        const std::optional<wxString>& subCategoryColumnName, const wxString& patternsColumnName,
-        const std::optional<wxString>& negationPatternsColumnName)
+    void
+    TextClassifier::SetClassifierData(const std::shared_ptr<const Data::Dataset>& classifierData,
+                                      const wxString& categoryColumnName,
+                                      const std::optional<wxString>& subCategoryColumnName,
+                                      const wxString& patternsColumnName,
+                                      const std::optional<wxString>& negationPatternsColumnName)
         {
         // reset
         m_categoryPatternsMap.clear();
@@ -105,7 +107,7 @@ namespace Wisteria::Data
     //----------------------------------------------------------------
     std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
     TextClassifier::ClassifyData(const std::shared_ptr<const Data::Dataset>& contentData,
-                                 const wxString& contentColumnName)
+                                 const wxString& contentColumnName) const
         {
         // nothing patterns or categories loaded from previous call to SetClassifierData()?
         if (m_categoryPatternsMap.get_data().empty())
@@ -151,8 +153,9 @@ namespace Wisteria::Data
                         reg.first->Matches(
                             contentColumn->GetLabelFromID(contentColumn->GetValue(i))) &&
                         // either no negating regex or it doesn't match it
-                        (!reg.second->IsValid() || !reg.second->Matches(contentColumn->GetLabelFromID(
-                                                      contentColumn->GetValue(i)))))
+                        (!reg.second->IsValid() ||
+                         !reg.second->Matches(
+                             contentColumn->GetLabelFromID(contentColumn->GetValue(i)))))
                         {
                         categoryRegexMatched = true;
                         matchedAnyCategory = true;

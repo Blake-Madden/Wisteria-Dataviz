@@ -167,7 +167,7 @@ namespace Wisteria::Graphs
             SortByAxisLabel  /*!< Compare bars lexicographically on their labels.*/
             };
 
-        /// @brief Shapes for the bars.
+        /// @brief Shapes that bars can be drawn as.
         enum class BarShape
             {
             Rectangle, /*!< A rectangle.*/
@@ -420,7 +420,7 @@ namespace Wisteria::Graphs
 
             /// @returns The user-defined tag.
             [[nodiscard]]
-            wxString GetTag() const noexcept
+            wxString GetTag() const
                 {
                 return m_tag;
                 }
@@ -445,7 +445,7 @@ namespace Wisteria::Graphs
             ///    although that normally wouldn't be recommended.\n
             ///    Prefer just setting custom widths at the bar level,
             ///    unless you have a special need.
-            void SetCustomWidth(const std::optional<double> width) noexcept
+            void SetCustomWidth(const std::optional<double>& width) noexcept
                 {
                 m_customWidth = width;
                 if (m_customWidth.has_value() &&
@@ -692,7 +692,7 @@ namespace Wisteria::Graphs
                 @param block The to add to the bar.
                 @note If calling this, be sure to adjust the range of the scaling axis if need be.
                     Normally, it's preferred to let AddBar() handle this.*/
-            void AddBlock(const BarBlock& block) noexcept
+            void AddBlock(const BarBlock& block)
                 {
                 m_blocks.push_back(block);
                 m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(), 0.0F,
@@ -879,7 +879,7 @@ namespace Wisteria::Graphs
             @param adjustScalingAxis @c true to adjust the scaling axis to fit the bar.\n
                 @c false is only recommended if you will be setting the scaling axis manually
                 and don't want the chart adjusting it for you.*/
-        void AddBar(Bar bar, const bool adjustScalingAxis = true);
+        void AddBar(Bar bar, bool adjustScalingAxis = true);
 
         /// @brief Removes all bars from the chart.
         /// @param resetAxes @c true to reset axes. @c true is recommended if you will be adding
@@ -995,23 +995,21 @@ namespace Wisteria::Graphs
         /// @param axisPosition The axis position of the bar to search for.
         /// @returns The index of the bar if found, @c std::nullopt otherwise.
         [[nodiscard]]
-        std::optional<size_t> FindBar(const double axisPosition);
+        std::optional<size_t> FindBar(double axisPosition);
         /** @brief Finds the start of a bar block.
             @param barIndex Which bar to use.
             @param blockTag The tag to identify the bar block to find.
             @returns The position along the scaling axis where the block begins, or @c std::nullopt
                 if not found.*/
         [[nodiscard]]
-        std::optional<double> FindBarBlockStart(const size_t barIndex,
-                                                const wxString& blockTag) const;
+        std::optional<double> FindBarBlockStart(size_t barIndex, const wxString& blockTag) const;
         /** @brief Finds the end of a bar block.
             @param barIndex Which bar to use.
             @param blockTag The tag to identify the bar block to find.
             @returns The position along the scaling axis where the block ends, or @c std::nullopt
                 if not found.*/
         [[nodiscard]]
-        std::optional<double> FindBarBlockEnd(const size_t barIndex,
-                                              const wxString& blockTag) const;
+        std::optional<double> FindBarBlockEnd(size_t barIndex, const wxString& blockTag) const;
 
         /** @brief Adds a bracket (inside the plotting area) around a range of bars
                 and draws a bar above that showing the length of the children bars combined.
@@ -1042,7 +1040,7 @@ namespace Wisteria::Graphs
                 the brush scheme will be used.
             @throws std::runtime_error If a provided axis positions doesn't have a bar,
                 throws an exception.*/
-        void AddBarGroup(const double firstBarAxisPosition, const double lastBarAxisPosition,
+        void AddBarGroup(double firstBarAxisPosition, double lastBarAxisPosition,
                          const std::optional<wxString>& decal = std::nullopt,
                          const std::optional<wxColour>& color = std::nullopt,
                          const std::optional<wxBrush>& brush = std::nullopt);
@@ -1135,7 +1133,7 @@ namespace Wisteria::Graphs
         /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).\n
         ///     Also, if aligning with a common X axis, then set this to @c Vertical.
         ///     (Set to @c Horizontal if aligning with a common Y axis.)
-        void SetBarOrientation(const Orientation orient);
+        void SetBarOrientation(Orientation orient);
         /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
             @param firstBarBlock The tag of the bar block of the first bar where the
                 bracket should begin.\n
@@ -1217,7 +1215,7 @@ namespace Wisteria::Graphs
         ///    SortDescending to sort largest-to-smallest (A-Z).
         /// @warning If there are bar groups or brackets along the bar axis, then those
         ///     will be removed when sorting.
-        virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
+        virtual void SortBars(BarSortComparison sortMethod, SortDirection direction);
         /// @brief Sorts the bars (based on a specified order of axis labels).
         ///     This is similar to what @c forcats::fct_relevel() does in R.
         /// @param labels The axis labels of the bars, sorted in the new order that they should
@@ -1234,7 +1232,7 @@ namespace Wisteria::Graphs
         ///     with the same axis label, then this will return without sorting.
         /// @warning If there are bar groups or brackets along the bar axis, then those
         ///     will be removed when sorting.
-        virtual void SortBars(std::vector<wxString> labels, const SortDirection direction);
+        virtual void SortBars(std::vector<wxString> labels, SortDirection direction);
 
         /// @returns @c true if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept { return m_isSortable; }
@@ -1404,6 +1402,9 @@ namespace Wisteria::Graphs
             {
             explicit BarRenderInfo(wxDC& dc) : m_dc(dc) {}
 
+            BarRenderInfo(const BarRenderInfo& that) = delete;
+            BarRenderInfo& operator=(const BarRenderInfo& that) = delete;
+
             wxCoord m_barSpacing{ 0 };
             wxCoord m_scaledShadowOffset{ 0 };
             int m_defaultFontPointSize{ 0 };
@@ -1422,22 +1423,22 @@ namespace Wisteria::Graphs
             wxCoord m_axisOffset{ 0 };
             };
 
-        wxPoint DrawBar(Bar& bar, const size_t barIndex, BarRenderInfo& barRenderInfo,
-                        const bool measureOnly = false);
-        wxPoint DrawBarBlockHorizontal(const Bar& bar, const size_t barIndex,
-                                       const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
+        wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
+                        bool measureOnly = false);
+        wxPoint DrawBarBlockHorizontal(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
+                                       BarRenderInfo& barRenderInfo,
                                        BarBlockRenderInfo& barBlockRenderInfo,
-                                       const bool measureOnly = false);
-        wxPoint DrawBarBlockVertical(const Bar& bar, const size_t barIndex,
-                                     const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
+                                       bool measureOnly = false);
+        wxPoint DrawBarBlockVertical(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
+                                     BarRenderInfo& barRenderInfo,
                                      BarBlockRenderInfo& barBlockRenderInfo,
-                                     const bool measureOnly = false);
+                                     bool measureOnly = false);
         void DrawBarGroups(BarRenderInfo& barRenderInfo);
 
         [[nodiscard]]
         wxRect GetDrawArea() const;
 
-        void AdjustScalingAxisFromBarLength(const double barLength);
+        void AdjustScalingAxisFromBarLength(double barLength);
         void AdjustScalingAxisFromBarGroups();
         std::vector<Bar> m_bars;
         uint8_t m_barOpacity{ wxALPHA_OPAQUE };

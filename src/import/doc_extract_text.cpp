@@ -167,12 +167,10 @@ namespace lily_of_the_valley
     void word1997_extract_text::load_stream(file_system_entry* cfbObj)
         {
         assert(cfbObj);
-        if (!cfbObj)
+        if (cfbObj == nullptr)
             {
             return;
             }
-
-        parse_state currentState;
 
         size_t offset{ 0 };
         // cppcheck-suppress unreadVariable
@@ -183,6 +181,7 @@ namespace lily_of_the_valley
         // process the stream
         while (!cfbObj->eof() && offset < m_text_body_stream_length)
             {
+            parse_state currentState;
             paragraphBuffer.clear();
             currentState.m_non_printable_char_detected = false;
             // cppcheck-suppress unreadVariable
@@ -430,7 +429,7 @@ namespace lily_of_the_valley
                     case 0x08:
                         currentState.m_hyperlink_begin_char_detected = false;
                         break;
-                    // MS 1252 surrogates need to be converted to unicode values
+                    // MS 1252 surrogates need to be converted to Unicode values
                     case 0x80:
                         paragraphBuffer += 0x20AC;
                         break;
@@ -518,7 +517,7 @@ namespace lily_of_the_valley
                         currentState.m_non_printable_char_detected = true;
                         };
                     }
-                // private-use unicode values used for ligatures
+                // private-use Unicode values used for ligatures
                 else if (currentChar == 0xF001)
                     {
                     paragraphBuffer += L"fi";
@@ -667,7 +666,7 @@ namespace lily_of_the_valley
                     }
                 const auto dataType = read_int(propBuffer.data(), property.first);
                 std::wstring propertyValue;
-                // Multi-byte character string
+                // Multibyte character string
                 if (dataType == static_cast<int32_t>(property_data_type::vt_bstr) ||
                     dataType == static_cast<int32_t>(property_data_type::vt_lpstr))
                     {
@@ -822,7 +821,7 @@ namespace lily_of_the_valley
         // Look for a Unicode null terminator (both bytes are zero)
         // and if there is more data after it, then it probably is a binary stream.
         // It wouldn't make sense to have an embedded terminator in the middle of a text block.
-        size_t index = 0;
+        size_t index{ 0 };
         while (index < size - 1)
             {
             if (buffer[index] == 0 && buffer[index + 1] == 0)
@@ -1217,7 +1216,7 @@ namespace lily_of_the_valley
 
     //----------------------------------------------------
     size_t word1997_extract_text::read_stream(void* buffer, size_t bufferSize,
-                                              file_system_entry* cfbObj)
+                                              file_system_entry* cfbObj) const
         {
         if (buffer == nullptr || cfbObj == nullptr || bufferSize == 0)
             {
@@ -1303,11 +1302,11 @@ namespace lily_of_the_valley
                 cfbObj->seek(static_cast<long>(cfbObj->m_stream_offset),
                              cfb_iostream::cfb_strem_seek_type::seek_beg);
                 }
-            const auto readbytes =
+            const auto readBytes =
                 cfbObj->read(static_cast<char*>(buffer) + readSize,
                              std::min<size_t>(bufferSize - readSize, sectorSize));
-            readSize += readbytes;
-            cfbObj->m_stream_offset += readbytes;
+            readSize += readBytes;
+            cfbObj->m_stream_offset += readBytes;
             }
 
         /* Also, if a weird offset caused a partial read and there is more space in the buffer

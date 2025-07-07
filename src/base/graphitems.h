@@ -23,10 +23,10 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 #include <wx/dcgraph.h>
 #include <wx/gdicmn.h>
-#include <wx/numformatter.h>
 #include <wx/settings.h>
 #include <wx/string.h>
 #include <wx/uilocale.h>
@@ -68,8 +68,7 @@ namespace Wisteria
 
         /// @brief Constructor.
         /// @param penStyles The initializer list of pen & line styles to fill the scheme with.
-        explicit LineStyleScheme(
-            const std::initializer_list<std::pair<wxPenStyle, LineStyle>>& penStyles)
+        LineStyleScheme(const std::initializer_list<std::pair<wxPenStyle, LineStyle>>& penStyles)
             : m_lineStyles(penStyles)
             {
             }
@@ -98,7 +97,7 @@ namespace Wisteria
             @param lineStyle The line style.*/
         void AddLineStyle(const wxPenStyle penStyle, const LineStyle lineStyle)
             {
-            m_lineStyles.push_back(std::make_pair(penStyle, lineStyle));
+            m_lineStyles.emplace_back(penStyle, lineStyle);
             }
 
         /// @brief Removes all line styles from the collection.
@@ -159,15 +158,14 @@ namespace Wisteria
 
             /** @brief Constructor.
                 @param col The color to paint with.*/
-            explicit GradientFill(const wxColour& col) : m_color1(col) {}
+            explicit GradientFill(wxColour col) : m_color1(std::move(col)) {}
 
             /** @brief Constructor, which will paint with a gradient.
                 @param col1 The first color of the gradient.
                 @param col2 The second color of the gradient.
                 @param dir The direction of the gradient.*/
-            GradientFill(const wxColour& col1, const wxColour& col2,
-                         const FillDirection dir) noexcept
-                : m_color1(col1), m_color2(col2), m_direction(dir)
+            GradientFill(wxColour col1, wxColour col2, const FillDirection dir) noexcept
+                : m_color1(std::move(col1)), m_color2(std::move(col2)), m_direction(dir)
                 {
                 }
 
@@ -266,7 +264,7 @@ namespace Wisteria
             /** @brief Specifies the font color for the top line of the label.
                 @param fontColor The font color for the top line.
                 @returns A self reference.*/
-            HeaderInfo& FontColor(const wxColour fontColor) noexcept
+            HeaderInfo& FontColor(const wxColour& fontColor) noexcept
                 {
                 m_fontColor = fontColor;
                 return *this;
@@ -275,7 +273,7 @@ namespace Wisteria
             /** @brief Specifies the font for the top line of the label.
                 @param font The font for the top line.
                 @returns A self reference.*/
-            HeaderInfo& Font(const wxFont font) noexcept
+            HeaderInfo& Font(const wxFont& font) noexcept
                 {
                 m_font = font;
                 return *this;
@@ -588,8 +586,8 @@ namespace Wisteria
                     to fit inside its parent.
                 @details This controls how to draw the label across an element
                     (and possibly fit inside it).\n
-                    An example of this could be a label drawn on the center of a bar on a bar chart.
-                    Essentially, this is used when the parent it treating this label like a decal.
+                    An example of this could be a label drawn in the center of a bar on a bar chart.
+                    Essentially, this is used when the parent is treating this label like a decal.
                 @param labelFit The fitting method to use.
                 @returns A self reference.*/
             GraphItemInfo& LabelFitting(const LabelFit labelFit) noexcept
@@ -651,7 +649,7 @@ namespace Wisteria
             /// @brief Sets the font color.
             /// @param textColor The font color.
             /// @returns A self reference.
-            GraphItemInfo& FontColor(const wxColour textColor)
+            GraphItemInfo& FontColor(const wxColour& textColor)
                 {
                 m_textColor = textColor;
                 return *this;
@@ -660,7 +658,7 @@ namespace Wisteria
             /// @brief Sets the font background color.
             /// @param textColor The font background color.
             /// @returns A self reference.
-            GraphItemInfo& FontBackgroundColor(const wxColour textColor)
+            GraphItemInfo& FontBackgroundColor(const wxColour& textColor)
                 {
                 m_textBgColor = textColor;
                 return *this;
@@ -893,7 +891,7 @@ namespace Wisteria
 
           public:
             /// @private
-            GraphItemBase() noexcept {}
+            GraphItemBase() noexcept = default;
 
             /** @brief Constructor.
                 @param scaling The current scaling to measure and render with.
@@ -909,9 +907,6 @@ namespace Wisteria
             /** @brief Constructor.
                 @param itemInfo Extended information to construct this item with.*/
             explicit GraphItemBase(GraphItemInfo itemInfo) : m_itemInfo(std::move(itemInfo)) {}
-
-            /// @private
-            virtual ~GraphItemBase() {}
 
             /** @brief Sets the scaling of the element.
                 @details This will affect the thickness of the object's outline.
@@ -994,7 +989,7 @@ namespace Wisteria
             [[nodiscard]]
             static wxColour GetShadowColor()
                 {
-                return wxColour(84, 84, 84, 175);
+                return { 84, 84, 84, 175 };
                 }
 
             /** @brief Sets the point where the box will be anchored.
@@ -1095,7 +1090,7 @@ namespace Wisteria
             /** @brief Moves the element by the specified x and y values.
                 @param xToMove The amount to move horizontally.
                 @param yToMove The amount to move vertically.*/
-            virtual void Offset(const int xToMove, const int yToMove) = 0;
+            virtual void Offset(int xToMove, int yToMove) = 0;
             /// @returns The rectangle on the canvas where the element would fit in.
             /// @param dc The DC to measure content with.
             [[nodiscard]]
@@ -1109,8 +1104,7 @@ namespace Wisteria
                     consistent scaling size.
                 @note Derived variations should call InvalidateCachedBoundingBox() and
                     SetCachedBoundingBox().*/
-            virtual void SetBoundingBox(const wxRect& rect, wxDC& dc,
-                                        const double parentScaling) = 0;
+            virtual void SetBoundingBox(const wxRect& rect, wxDC& dc, double parentScaling) = 0;
 
             /** @brief Gets/sets the item's base attributes (e.g., anchoring, font info).
                 @details This is a convenient way to chain multiple attribute updates.
@@ -1144,7 +1138,7 @@ namespace Wisteria
                 InvalidateCachedBoundingBox();
                 }
 
-            /// @returns What the object's starting point is referencing when it need to be
+            /// @returns What the object's starting point is referencing when it needs to be
             ///     rendered on its parent.
             [[nodiscard]]
             const Anchoring& GetAnchoring() const noexcept
@@ -1451,7 +1445,7 @@ namespace Wisteria
             /** @brief Sets the area that the object's rendering is restricted to.
                 @details By default, objects are drawn as-is and are not clipped.
                 @param clipRect The clipping rect, or @c std::nullopt to turn off clipping.*/
-            void SetClippingRect(const std::optional<wxRect> clipRect)
+            void SetClippingRect(const std::optional<wxRect>& clipRect)
                 {
                 m_itemInfo.m_clippingRect = clipRect;
                 }
@@ -1768,7 +1762,7 @@ namespace Wisteria
 
             /// @returns @c true if the object is valid.
             [[nodiscard]]
-            bool IsOk() const noexcept
+            virtual bool IsOk() const noexcept
                 {
                 return m_itemInfo.m_isOk;
                 }
@@ -1873,8 +1867,7 @@ namespace Wisteria
                     depending on what the scaling is of the caller.
                 @param boundingBox An optional bounding box to attempt to constrain
                     the selection label to.*/
-            virtual void DrawSelectionLabel(wxDC& dc, const double scaling,
-                                            const wxRect boundingBox = wxRect()) const;
+            virtual void DrawSelectionLabel(wxDC& dc, double scaling, wxRect boundingBox) const;
 
             /** @brief Recompute coordinates and sizes within this object.
                 @param dc The DC used for measuring.
@@ -1896,7 +1889,7 @@ namespace Wisteria
                 @param pt The point to check.
                 @param dc The DC used for measuring. Not all objects use this parameter.*/
             [[nodiscard]]
-            virtual bool HitTest(const wxPoint pt, wxDC& dc) const = 0;
+            virtual bool HitTest(wxPoint pt, wxDC& dc) const = 0;
 
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param value The value (e.g., pen width) to scale.
@@ -1935,9 +1928,9 @@ namespace Wisteria
                     that may affect the bounding box as well.\n
                     This also resets the cached content bounding box
                     (only some objects like Label use this).*/
-            void InvalidateCachedBoundingBox()
+            void InvalidateCachedBoundingBox() const
                 {
-                m_cachedBoundingBox = m_cachedContentBoundingBox = wxRect();
+                m_cachedBoundingBox = m_cachedContentBoundingBox = wxRect{};
                 }
 
             /** @brief Saves the bounding box information, which can be later retrieved from
@@ -2026,7 +2019,7 @@ namespace Wisteria
             [[nodiscard]]
             virtual wxRect GetContentRect() const noexcept
                 {
-                return wxRect();
+                return {};
                 }
 
             /// @returns The object's content area top point (relative to the parent canvas).

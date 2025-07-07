@@ -13,11 +13,9 @@
 #define WISTERIA_EXCEL_H
 
 #include "../import/xlsx_extract_text.h"
-#include "../util/memorymappedfile.h"
 #include "../util/zipcatalog.h"
 #include <variant>
 #include <wx/string.h>
-#include <wx/wx.h>
 
 namespace Wisteria::Data
     {

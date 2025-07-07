@@ -93,6 +93,7 @@ namespace Wisteria::Data
         @todo Add unit tests.
     */
     // clang-format on
+
     class TextClassifier
         {
       public:
@@ -154,7 +155,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
         ClassifyData(const std::shared_ptr<const Data::Dataset>& contentData,
-                     const wxString& contentColumnName);
+                     const wxString& contentColumnName) const;
 
       private:
         using IdPair = std::pair<Data::GroupIdType, Data::GroupIdType>;

@@ -32,7 +32,6 @@ namespace Wisteria
         m_pageNumber = 1;
 
         std::vector<Canvas*> reportPages;
-        std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
 
         assert(parent && L"Parent window must not be null when building a canvas!");
         if (parent == nullptr)
@@ -105,8 +104,8 @@ namespace Wisteria
         const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
             {
-            const auto pages = pagesProperty->GetValueArrayObject();
-            for (const auto& page : pages)
+            std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
+            for (const auto pages = pagesProperty->GetValueArrayObject(); const auto& page : pages)
                 {
                 // common axes are per page, where they must reference child graphs on the same page
                 m_commonAxesPlaceholders.clear();
@@ -342,8 +341,8 @@ namespace Wisteria
                             {
                             for (const auto& childId : commonAxisInfo.m_childrenIds)
                                 {
-                                auto childGraph = std::find_if(
-                                    embeddedGraphs.cbegin(), embeddedGraphs.cend(),
+                                auto childGraph = std::ranges::find_if(
+                                    std::as_const(embeddedGraphs),
                                     [&childId](const auto& graph) noexcept
                                     { return graph->GetId() == static_cast<long>(childId); });
                                 if (childGraph != embeddedGraphs.end() && (*childGraph) != nullptr)
@@ -393,7 +392,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush)
+    void ReportBuilder::LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush) const
         {
         if (brushNode->IsOk())
             {
@@ -430,7 +429,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen)
+    void ReportBuilder::LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen) const
         {
         static const std::map<std::wstring, wxPenStyle> styleValues = {
             { L"dot", wxPenStyle::wxPENSTYLE_DOT },
@@ -705,7 +704,7 @@ namespace Wisteria
     //---------------------------------------------------
     std::shared_ptr<GraphItems::Label>
     ReportBuilder::LoadLabel(const wxSimpleJSON::Ptr_t& labelNode,
-                             const GraphItems::Label& labelTemplate)
+                             const GraphItems::Label& labelTemplate) const
         {
         // just a string
         if (labelNode->IsValueString())
@@ -723,13 +722,12 @@ namespace Wisteria
             label->SetText(ExpandConstants(labelNode->GetProperty(L"text")->GetValueString()));
             label->GetPen() = wxNullPen;
 
-            const wxColour bgcolor(ConvertColor(labelNode->GetProperty(L"background")));
-            if (bgcolor.IsOk())
+            if (const wxColour bgColor(ConvertColor(labelNode->GetProperty(L"background")));
+                bgColor.IsOk())
                 {
-                label->SetFontBackgroundColor(bgcolor);
+                label->SetFontBackgroundColor(bgColor);
                 }
-            const wxColour color(ConvertColor(labelNode->GetProperty(L"color")));
-            if (color.IsOk())
+            if (const wxColour color(ConvertColor(labelNode->GetProperty(L"color"))); color.IsOk())
                 {
                 label->SetFontColor(color);
                 }
@@ -840,7 +838,7 @@ namespace Wisteria
     //---------------------------------------------------
     std::optional<std::vector<wxString>>
     ReportBuilder::ExpandColumnSelections(wxString var,
-                                          const std::shared_ptr<const Data::Dataset>& dataset)
+                                          const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (var.starts_with(L"{{") && var.ends_with(L"}}"))
             {
@@ -873,9 +871,9 @@ namespace Wisteria
                 const auto catCols{ dataset->GetCategoricalColumnNames() };
                 const auto contCols{ dataset->GetContinuousColumnNames() };
                 const auto dateCols{ dataset->GetDateColumnNames() };
-                std::copy(catCols.cbegin(), catCols.cend(), std::back_inserter(columns));
-                std::copy(contCols.cbegin(), contCols.cend(), std::back_inserter(columns));
-                std::copy(dateCols.cbegin(), dateCols.cend(), std::back_inserter(columns));
+                std::ranges::copy(catCols, std::back_inserter(columns));
+                std::ranges::copy(contCols, std::back_inserter(columns));
+                std::ranges::copy(dateCols, std::back_inserter(columns));
 
                 return columns;
                 }
@@ -1208,8 +1206,7 @@ namespace Wisteria
             if (reFunctionRename.Matches(countFormula))
                 {
                 reFunctionRename.ReplaceFirst(&countFormula, L"groupcount");
-                const auto groupTotal = CalcGroupCount(countFormula, dataset);
-                if (groupTotal)
+                if (const auto groupTotal = CalcGroupCount(countFormula, dataset))
                     {
                     return safe_divide<double>(groupTotal.value(), dataset->GetRowCount());
                     }
@@ -1238,12 +1235,11 @@ namespace Wisteria
         if (re.Matches(formula))
             {
             wxString countFormula(formula);
-            const wxRegEx reFunctionRename(L"(?i)(grouppercent)");
-            if (reFunctionRename.Matches(countFormula))
+            if (const wxRegEx reFunctionRename(L"(?i)(grouppercent)");
+                reFunctionRename.Matches(countFormula))
                 {
                 reFunctionRename.ReplaceFirst(&countFormula, L"grouppercentdecimal");
-                const auto percDec = CalcGroupPercentDecimal(countFormula, dataset);
-                if (percDec)
+                if (const auto percDec = CalcGroupPercentDecimal(countFormula, dataset))
                     {
                     return wxString::Format(
                         /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
@@ -1834,7 +1830,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadDatasetTransformations(const wxSimpleJSON::Ptr_t& dsNode,
-                                                   std::shared_ptr<Data::Dataset>& dataset)
+                                                   const std::shared_ptr<Data::Dataset>& dataset)
         {
         if (dsNode->IsOk())
             {
@@ -2314,7 +2310,7 @@ namespace Wisteria
             }
         else
             {
-            throw std::runtime_error(_(L"Variables not defined for Gannt chart.").ToUTF8());
+            throw std::runtime_error(_(L"Variables not defined for Gantt chart.").ToUTF8());
             }
         }
 
@@ -2448,8 +2444,7 @@ namespace Wisteria
                 ExpandConstants(variablesNode->GetProperty(L"questions")->GetValueStringVector());
             for (const auto& questionVar : questionVars)
                 {
-                auto convertedVars = ExpandColumnSelections(questionVar, foundPos->second);
-                if (convertedVars)
+                if (auto convertedVars = ExpandColumnSelections(questionVar, foundPos->second))
                     {
                     questions.insert(questions.cend(), convertedVars.value().cbegin(),
                                      convertedVars.value().cend());
@@ -2719,7 +2714,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
-                                     std::shared_ptr<Graphs::BarChart> barChart)
+                                     std::shared_ptr<Graphs::BarChart> barChart) const
         {
         const auto boxEffect = ReportEnumConvert::ConvertBoxEffect(
             graphNode->GetProperty(L"box-effect")->GetValueString());
@@ -2895,22 +2890,22 @@ namespace Wisteria
                 // just log any missing bracket requests and then skip over them
                 try
                     {
-                if (barBracket->HasProperty(L"start-block-re") &&
-                    barBracket->HasProperty(L"end-block-re"))
-                    {
-                    barChart->AddFirstBarBracketRE(
-                        barBracket->GetProperty(L"start-block-re")->GetValueString(),
-                        barBracket->GetProperty(L"end-block-re")->GetValueString(),
-                        barBracket->GetProperty(L"label")->GetValueString());
+                    if (barBracket->HasProperty(L"start-block-re") &&
+                        barBracket->HasProperty(L"end-block-re"))
+                        {
+                        barChart->AddFirstBarBracketRE(
+                            barBracket->GetProperty(L"start-block-re")->GetValueString(),
+                            barBracket->GetProperty(L"end-block-re")->GetValueString(),
+                            barBracket->GetProperty(L"label")->GetValueString());
+                        }
+                    else
+                        {
+                        barChart->AddFirstBarBracket(
+                            barBracket->GetProperty(L"start-block")->GetValueString(),
+                            barBracket->GetProperty(L"end-block")->GetValueString(),
+                            barBracket->GetProperty(L"label")->GetValueString());
+                        }
                     }
-                else
-                    {
-                    barChart->AddFirstBarBracket(
-                        barBracket->GetProperty(L"start-block")->GetValueString(),
-                        barBracket->GetProperty(L"end-block")->GetValueString(),
-                        barBracket->GetProperty(L"label")->GetValueString());
-                    }
-                }
                 catch (const std::exception& err)
                     {
                     wxLogWarning(wxString::FromUTF8(err.what()));
@@ -2925,22 +2920,22 @@ namespace Wisteria
                 {
                 try
                     {
-                if (barBracket->HasProperty(L"start-block-re") &&
-                    barBracket->HasProperty(L"end-block-re"))
-                    {
-                    barChart->AddLastBarBracketRE(
-                        barBracket->GetProperty(L"start-block-re")->GetValueString(),
-                        barBracket->GetProperty(L"end-block-re")->GetValueString(),
-                        barBracket->GetProperty(L"label")->GetValueString());
+                    if (barBracket->HasProperty(L"start-block-re") &&
+                        barBracket->HasProperty(L"end-block-re"))
+                        {
+                        barChart->AddLastBarBracketRE(
+                            barBracket->GetProperty(L"start-block-re")->GetValueString(),
+                            barBracket->GetProperty(L"end-block-re")->GetValueString(),
+                            barBracket->GetProperty(L"label")->GetValueString());
+                        }
+                    else
+                        {
+                        barChart->AddLastBarBracket(
+                            barBracket->GetProperty(L"start-block")->GetValueString(),
+                            barBracket->GetProperty(L"end-block")->GetValueString(),
+                            barBracket->GetProperty(L"label")->GetValueString());
+                        }
                     }
-                else
-                    {
-                    barChart->AddLastBarBracket(
-                        barBracket->GetProperty(L"start-block")->GetValueString(),
-                        barBracket->GetProperty(L"end-block")->GetValueString(),
-                        barBracket->GetProperty(L"label")->GetValueString());
-                    }
-                }
                 catch (const std::exception& err)
                     {
                     wxLogWarning(wxString::FromUTF8(err.what()));
@@ -3031,7 +3026,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::unique_ptr<GraphItems::FillableShape>
-    ReportBuilder::LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode)
+    ReportBuilder::LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode) const
         {
         const auto loadedShape =
             ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
@@ -3067,8 +3062,7 @@ namespace Wisteria
                 }
             else if (fillPercentNode->IsValueString())
                 {
-                const auto numberVal = ExpandNumericConstant(fillPercentNode->GetValueString());
-                if (numberVal)
+                if (const auto numberVal = ExpandNumericConstant(fillPercentNode->GetValueString()))
                     {
                     fillPercent = numberVal.value();
                     }
@@ -3098,7 +3092,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::unique_ptr<GraphItems::Shape>
-    ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode)
+    ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode) const
         {
         const auto loadedShape =
             ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
@@ -3331,8 +3325,8 @@ namespace Wisteria
                 {
                 std::vector<wxString> columnHeader =
                     graphNode->GetProperty(L"column-headers")->GetValueStringVector();
-                std::transform(columnHeader.begin(), columnHeader.end(), columnHeader.begin(),
-                               [this](const auto& val) { return ExpandConstants(val); });
+                std::ranges::transform(columnHeader, columnHeader.begin(),
+                                       [this](const auto& val) { return ExpandConstants(val); });
                 sankey->SetColumnHeaders(columnHeader);
                 }
 
@@ -3679,8 +3673,7 @@ namespace Wisteria
             const auto readVariables = variablesNode->GetValueStringVector();
             for (const auto& readVar : readVariables)
                 {
-                auto convertedVars = ExpandColumnSelections(readVar, foundPos->second);
-                if (convertedVars)
+                if (auto convertedVars = ExpandColumnSelections(readVar, foundPos->second))
                     {
                     variables.insert(variables.cend(), convertedVars.value().cbegin(),
                                      convertedVars.value().cend());
@@ -3735,12 +3728,10 @@ namespace Wisteria
 
         if (graphNode->HasProperty(L"link-id"))
             {
-            const auto linkId = ConvertNumber(graphNode->GetProperty(L"link-id"));
-            if (linkId)
+            if (const auto linkId = ConvertNumber(graphNode->GetProperty(L"link-id")))
                 {
-                auto foundPosTLink =
-                    std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
-                                 [&linkId](const auto& tLink)
+                auto foundPosTLink = std::ranges::find_if(
+                    m_tableLinks, [&linkId](const auto& tLink)
                     { return tLink.GetId() == static_cast<size_t>(linkId.value()); });
                 if (foundPosTLink != m_tableLinks.end())
                     {
@@ -3823,7 +3814,7 @@ namespace Wisteria
             table->GroupColumn(columnGrouping);
             }
 
-        // apply zebra stripes to loaded data before we just adding custom rows/columns, manually
+        // apply zebra stripes to loaded data before we start adding custom rows/columns, manually
         // changing row/column colors, etc.
         if (graphNode->HasProperty(L"alternate-row-color"))
             {
@@ -4928,7 +4919,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxColour ReportBuilder::ConvertColor(const wxSimpleJSON::Ptr_t& colorNode)
+    wxColour ReportBuilder::ConvertColor(const wxSimpleJSON::Ptr_t& colorNode) const
         {
         if (!colorNode->IsOk())
             {
@@ -4943,7 +4934,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxColour ReportBuilder::ConvertColor(wxString colorStr)
+    wxColour ReportBuilder::ConvertColor(wxString colorStr) const
         {
         // in case the color is a user-defined constant in the file
         colorStr = ExpandConstants(colorStr);
@@ -5041,7 +5032,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Brushes::Schemes::BrushScheme>
-    ReportBuilder::LoadBrushScheme(const wxSimpleJSON::Ptr_t& brushSchemeNode)
+    ReportBuilder::LoadBrushScheme(const wxSimpleJSON::Ptr_t& brushSchemeNode) const
         {
         const auto brushStylesNode = brushSchemeNode->GetProperty(L"brush-styles");
         if (brushStylesNode->IsOk() && brushStylesNode->IsValueArray())
@@ -5050,14 +5041,13 @@ namespace Wisteria
             const auto brushStylesVals = brushStylesNode->GetValueArrayString();
             for (const auto& brushStylesVal : brushStylesVals)
                 {
-                const auto bStyle = ReportEnumConvert::ConvertBrushStyle(brushStylesVal);
-                if (bStyle)
+                if (const auto bStyle = ReportEnumConvert::ConvertBrushStyle(brushStylesVal))
                     {
                     brushStyles.push_back(bStyle.value());
                     }
                 }
-            const auto colorScheme = LoadColorScheme(brushSchemeNode->GetProperty(L"color-scheme"));
-            if (colorScheme)
+            if (const auto colorScheme =
+                    LoadColorScheme(brushSchemeNode->GetProperty(L"color-scheme")))
                 {
                 return std::make_shared<Brushes::Schemes::BrushScheme>(brushStyles, *colorScheme);
                 }
@@ -5065,8 +5055,7 @@ namespace Wisteria
         // just a named color scheme
         else if (brushSchemeNode->IsValueString())
             {
-            const auto colorScheme = LoadColorScheme(brushSchemeNode);
-            if (colorScheme)
+            if (const auto colorScheme = LoadColorScheme(brushSchemeNode))
                 {
                 return std::make_shared<Brushes::Schemes::BrushScheme>(*colorScheme);
                 }
@@ -5076,7 +5065,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Colors::Schemes::ColorScheme>
-    ReportBuilder::LoadColorScheme(const wxSimpleJSON::Ptr_t& colorSchemeNode)
+    ReportBuilder::LoadColorScheme(const wxSimpleJSON::Ptr_t& colorSchemeNode) const
         {
         if (!colorSchemeNode->IsOk())
             {
@@ -5106,10 +5095,10 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Wisteria::LineStyleScheme>
-    ReportBuilder::LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode)
+    ReportBuilder::LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode) const
         {
         // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring_view, LineStyle> lineStyleEnsums = {
+        static const std::map<std::wstring_view, LineStyle> lineStyleEnums = {
             { L"arrows", LineStyle::Arrows },
             { L"lines", LineStyle::Lines },
             { L"spline", LineStyle::Spline }
@@ -5128,9 +5117,9 @@ namespace Wisteria
                 {
                 wxPen pn(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SOLID);
                 LoadPen(lineStyle->GetProperty(L"pen-style"), pn);
-                const auto foundPos = lineStyleEnsums.find(std::wstring_view(
+                const auto foundPos = lineStyleEnums.find(std::wstring_view(
                     lineStyle->GetProperty(L"line-style")->GetValueString().MakeLower().wc_str()));
-                if (foundPos != lineStyleEnsums.cend())
+                if (foundPos != lineStyleEnums.cend())
                     {
                     lineStyles.emplace_back(pn.GetStyle(), foundPos->second);
                     }
@@ -5196,7 +5185,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::NormalizeFilePath(const wxString& path)
+    wxString ReportBuilder::NormalizeFilePath(const wxString& path) const
         {
         wxString expandedPath{ path };
         if (expandedPath.empty())
@@ -5217,7 +5206,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::unique_ptr<GraphItems::Image>
-    ReportBuilder::LoadImage(const wxSimpleJSON::Ptr_t& imageNode)
+    ReportBuilder::LoadImage(const wxSimpleJSON::Ptr_t& imageNode) const
         {
         static const std::map<std::wstring_view, ResizeMethod> resizeValues = {
             { L"downscale-only", ResizeMethod::DownscaleOnly },
@@ -5253,7 +5242,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxBitmap ReportBuilder::LoadImageFile(const wxSimpleJSON::Ptr_t& bmpNode)
+    wxBitmap ReportBuilder::LoadImageFile(const wxSimpleJSON::Ptr_t& bmpNode) const
         {
         // if simply a file path, then load that and return
         if (bmpNode->IsValueString())
@@ -5318,7 +5307,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
-                                 GraphItems::GraphItemBase& item)
+                                 GraphItems::GraphItemBase& item) const
         {
         if (!itemNode->IsOk())
             {
@@ -5659,7 +5648,7 @@ namespace Wisteria
                 if (interestPointsNode->IsOk())
                     {
                     // get all the points on the plot that the note is pointing at
-                    std::vector<wxPoint> interestPointPostions;
+                    std::vector<wxPoint> interestPointPositions;
                     const auto interestPoints = interestPointsNode->GetValueArrayObject();
                     for (const auto& interestPoint : interestPoints)
                         {
@@ -5669,7 +5658,7 @@ namespace Wisteria
                                                            interestPoint->GetProperty(L"y"));
                         if (xPos.has_value() && yPos.has_value())
                             {
-                            interestPointPostions.push_back(wxPoint(xPos.value(), yPos.value()));
+                            interestPointPositions.push_back(wxPoint(xPos.value(), yPos.value()));
                             }
                         }
                     wxPoint anchorPt;
@@ -5689,14 +5678,14 @@ namespace Wisteria
                     // if no anchor point specified, then use the middle point
                     // of the interest points
                     /// @todo try to add even better logic in here, like how ggrepel works
-                    else if (interestPointPostions.size())
+                    else if (interestPointPositions.size())
                         {
                         const auto [minX, maxX] = std::minmax_element(
-                            interestPointPostions.cbegin(), interestPointPostions.cend(),
+                            interestPointPositions.cbegin(), interestPointPositions.cend(),
                             [](const auto& lhv, const auto& rhv) noexcept
                             { return lhv.x < rhv.x; });
                         const auto [minY, maxY] = std::minmax_element(
-                            interestPointPostions.cbegin(), interestPointPostions.cend(),
+                            interestPointPositions.cbegin(), interestPointPositions.cend(),
                             [](const auto& lhv, const auto& rhv) noexcept
                             { return lhv.y < rhv.y; });
                         anchorPt.x = safe_divide(maxX->x - minX->x, 2) + minX->x;
@@ -5704,7 +5693,7 @@ namespace Wisteria
                         }
                     if (anchorPt.IsFullySpecified())
                         {
-                        graph->AddAnnotation(label, anchorPt, interestPointPostions);
+                        graph->AddAnnotation(label, anchorPt, interestPointPositions);
                         }
                     }
                 }

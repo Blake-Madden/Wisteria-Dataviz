@@ -499,7 +499,7 @@ namespace lily_of_the_valley
             @param cfbObj The entry to read from
                 (will have its file position moved during the read).
             @returns The number of bytes read.*/
-        size_t read_stream(void* buffer, size_t bufferSize, file_system_entry* cfbObj);
+        size_t read_stream(void* buffer, size_t bufferSize, file_system_entry* cfbObj) const;
 
         /// @brief General cleanup.
         void reset() noexcept

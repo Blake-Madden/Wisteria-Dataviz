@@ -52,8 +52,8 @@ namespace Wisteria::Data
         for (const auto& srcColumn : m_fromDataset->GetDateColumns())
             {
             m_toDataset->AddDateColumn(srcColumn.GetName());
-            auto newColumn = m_toDataset->GetDateColumn(srcColumn.GetName());
-            if (newColumn != m_toDataset->GetDateColumns().cend())
+            if (auto newColumn = m_toDataset->GetDateColumn(srcColumn.GetName());
+                newColumn != m_toDataset->GetDateColumns().cend())
                 {
                 newColumn->Reserve(srcColumn.GetRowCount());
                 }
@@ -63,8 +63,8 @@ namespace Wisteria::Data
         for (const auto& srcColumn : m_fromDataset->GetContinuousColumns())
             {
             m_toDataset->AddContinuousColumn(srcColumn.GetName());
-            auto newColumn = m_toDataset->GetContinuousColumn(srcColumn.GetName());
-            if (newColumn != m_toDataset->GetContinuousColumns().cend())
+            if (auto newColumn = m_toDataset->GetContinuousColumn(srcColumn.GetName());
+                newColumn != m_toDataset->GetContinuousColumns().cend())
                 {
                 newColumn->Reserve(srcColumn.GetRowCount());
                 }
@@ -74,8 +74,8 @@ namespace Wisteria::Data
         for (const auto& srcColumn : m_fromDataset->GetCategoricalColumns())
             {
             m_toDataset->AddCategoricalColumn(srcColumn.GetName(), srcColumn.GetStringTable());
-            auto newColumn = m_toDataset->GetCategoricalColumn(srcColumn.GetName());
-            if (newColumn != m_toDataset->GetCategoricalColumns().cend())
+            if (auto newColumn = m_toDataset->GetCategoricalColumn(srcColumn.GetName());
+                newColumn != m_toDataset->GetCategoricalColumns().cend())
                 {
                 newColumn->Reserve(srcColumn.GetRowCount());
                 }

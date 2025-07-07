@@ -20,38 +20,30 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
-#include <set>
 #include <stdexcept>
 #include <vector>
 #include <wx/bitmap.h>
 #include <wx/clipbrd.h>
-#include <wx/dataobj.h>
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
-#include <wx/dcmemory.h>
-#include <wx/dcprint.h>
 #include <wx/dcps.h>
 #include <wx/dcsvg.h>
 #include <wx/dragimag.h>
 #include <wx/event.h>
-#include <wx/file.h>
 #include <wx/filename.h>
-#include <wx/graphics.h>
 #include <wx/html/helpctrl.h>
 #include <wx/image.h>
-#include <wx/print.h>
 #include <wx/printdlg.h>
 #include <wx/quantize.h>
 #include <wx/timer.h>
-#include <wx/tokenzr.h>
 #include <wx/wupdlock.h>
 #include <wx/wx.h>
 
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
-#define EVT_WISTERIA_CANVAS_DCLICK(winid, fn)                                                      \
-    wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winid, wxCommandEventHandler(fn))
+#define EVT_WISTERIA_CANVAS_DCLICK(winId, fn)                                                      \
+    wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winId, wxCommandEventHandler(fn))
 
 /// @endcond
 

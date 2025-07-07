@@ -11,7 +11,7 @@
 using namespace Wisteria;
 
 //------------------------------------------------------
-bool ReportPrintout::OnPrintPage(int page)
+bool ReportPrintout::OnPrintPage(const int page)
     {
     wxDC* dc = GetDC();
     auto canvas = GetCanvasFromPageNumber(page);
@@ -234,9 +234,10 @@ wxString ReportPrintout::ExpandPrintString(const wxString& printString, const in
 
 //------------------------------------------------------
 PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut)
-    : m_canvas(canvas), m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
-      m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
-      m_originalSize(canvas ? canvas->GetSize() : wxSize())
+    : m_canvas(canvas),
+      m_originalMinWidth((canvas != nullptr) ? canvas->GetCanvasMinWidthDIPs() : 0),
+      m_originalMinHeight((canvas != nullptr) ? canvas->GetCanvasMinHeightDIPs() : 0),
+      m_originalSize((canvas != nullptr) ? canvas->GetSize() : wxSize{})
     {
     assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
     assert(printOut && L"Invalid printout passed to PrintFitToPageChanger!");
@@ -275,9 +276,10 @@ PrintFitToPageChanger::~PrintFitToPageChanger()
 
 //------------------------------------------------------
 FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const wxSize newSize)
-    : m_canvas(canvas), m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
-      m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
-      m_originalSize(canvas ? canvas->GetSize() : wxSize())
+    : m_canvas(canvas),
+      m_originalMinWidth((canvas != nullptr) ? canvas->GetCanvasMinWidthDIPs() : 0),
+      m_originalMinHeight((canvas != nullptr) ? canvas->GetCanvasMinHeightDIPs() : 0),
+      m_originalSize((canvas != nullptr) ? canvas->GetSize() : wxSize{})
     {
     assert(canvas && L"Invalid canvas passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr)
@@ -285,7 +287,7 @@ FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const wxSize ne
         const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),
                                  canvas->GetCanvasRectDIPs().GetHeight());
         m_sizeChanged = currentSize != newSize;
-        if (m_canvas != nullptr && m_sizeChanged)
+        if (m_sizeChanged)
             {
             m_canvas->SetCanvasMinWidthDIPs(
                 std::min(Canvas::GetDefaultCanvasWidthDIPs(), newSize.GetWidth()));

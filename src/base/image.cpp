@@ -945,7 +945,7 @@ namespace Wisteria::GraphItems
     wxBitmapType Image::GetImageFileTypeFromExtension(wxString& ext)
         {
         ext = (ext.find(L'.') == std::wstring::npos) ? ext : wxFileName(ext).GetExt();
-        wxBitmapType imageType = wxBITMAP_TYPE_ANY;
+        wxBitmapType imageType{};
         if (ext.CmpNoCase(L"jpg") == 0 || ext.CmpNoCase(L"jpeg") == 0 || ext.CmpNoCase(L"jpe") == 0)
             {
             imageType = wxBITMAP_TYPE_JPEG;

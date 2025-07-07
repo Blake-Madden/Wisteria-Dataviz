@@ -44,13 +44,13 @@ namespace Wisteria
     enum class FillDirection
         {
         /// @brief fill upward.
-        North,
+        North = 0,
         /// @brief fill downward.
-        South,
+        South = 1,
         /// @brief fill to the right.
-        East,
+        East = 2,
         /// @brief fill to the left.
-        West,
+        West = 3,
         /// @brief fill upward.
         Up = North,
         /// @brief fill downward.
@@ -115,9 +115,9 @@ namespace Wisteria
     ///     having to be changed.
     enum class RelativeAlignment
         {
-        FlushLeft,                /*!< Flush left/ragged right.*/
-        FlushRight,               /*!< Flush right/ragged left.*/
-        Centered,                 /*!< Centered.*/
+        FlushLeft = 0,            /*!< Flush left/ragged right.*/
+        FlushRight = 1,           /*!< Flush right/ragged left.*/
+        Centered = 2,             /*!< Centered.*/
         FlushBottom = FlushRight, /*!< Flush to the bottom.*/
         FlushTop = FlushLeft      /*!< Flush to the top.*/
         };
@@ -136,10 +136,10 @@ namespace Wisteria
     /// @todo Add support for other sides.
     enum class ShadowType
         {
-        NoDisplay,               /*!< No shadow should be drawn.*/
-        NoShadow = NoDisplay,    /*!< No shadow should be drawn.*/
-        RightSideShadow,         /*!< Draw a shadow on the right side.*/
-        RightSideAndBottomShadow /*!< Draw a shadow on the right side and bottom.*/
+        NoDisplay = 0,               /*!< No shadow should be drawn.*/
+        NoShadow = NoDisplay,        /*!< No shadow should be drawn.*/
+        RightSideShadow = 1,         /*!< Draw a shadow on the right side.*/
+        RightSideAndBottomShadow = 2 /*!< Draw a shadow on the right side and bottom.*/
         };
 
     /// @brief How the decal's label should be adjusted to fit on its parent.
@@ -182,23 +182,23 @@ namespace Wisteria
     enum class TextAlignment
         {
         /// @brief Text is flush left/ragged right. (This is the default for Labels.)
-        FlushLeft,
+        FlushLeft = 0,
         /// @brief Same as @c FlushLeft.
         RaggedRight = FlushLeft,
         /// @brief Text is flush right/ragged left.
-        FlushRight,
+        FlushRight = 1,
         /// @brief Same as @c FlushRight.
         RaggedLeft = FlushRight,
         /// @brief Text is centered.
-        Centered,
+        Centered = 2,
         /// @brief Multiline text is tracked (space inserted) to make lines equal width.
         ///     Hair spaces are inserted between each character.
-        JustifiedAtCharacter,
+        JustifiedAtCharacter = 3,
         /// @brief Same as @c JustifiedAtCharacter.
         Justified = JustifiedAtCharacter,
         /// @brief Multiline text is tracked (space inserted) to make lines equal width.
         ///     Hair spaces are inserted between each word.
-        JustifiedAtWord
+        JustifiedAtWord = 4
         };
 
     /// @brief @brief How a label's text is aligned within its user-defined bounding box,
@@ -381,38 +381,38 @@ namespace Wisteria
     enum class BoxEffect
         {
         /// @brief Solid color.
-        Solid,
+        Solid = 0,
         /// @brief Glass effect.
-        Glassy,
+        Glassy = 1,
         /// @brief Color gradient, bottom-to-top.
-        FadeFromBottomToTop,
+        FadeFromBottomToTop = 2,
         /// @brief Color gradient, left-to-right.
         FadeFromLeftToRight = FadeFromBottomToTop,
         /// @brief Color gradient, top-to-bottom.
-        FadeFromTopToBottom,
+        FadeFromTopToBottom = 3,
         /// @brief Color gradient, right-to-left.
         FadeFromRightToLeft = FadeFromTopToBottom,
         /// @brief For backward compatibility, use @c StippleImage instead.
         /// @private
-        Stipple,
+        Stipple = 4,
         /// @brief Fill with a repeating image.
         StippleImage = Stipple,
         /// @brief Fill with a repeating shape (Icons::IconShape).
-        StippleShape,
+        StippleShape = 5,
         /// @brief A watercolor-like effect, where the box is warped and looks
         ///     like it was filled in with watercolor paint (or a marker).\n
         ///     Note that if an outline pen is in use, it will be drawn over the
-        ///     fill color, giving the look that it showing through the "watercolor".
-        WaterColor,
+        ///     fill color, giving the look that it is showing through the "watercolor".
+        WaterColor = 6,
         /// @brief Same as WaterColor, but applies a second coat of paint, making
         ///     it appear thicker.
-        ThickWaterColor,
+        ThickWaterColor = 7,
         /// @brief A subimage of a larger image shared by all boxes.
-        CommonImage,
+        CommonImage = 8,
         /// @brief An image scaled down to fit the box.
-        Image,
+        Image = 9,
         /// @private
-        EFFECTS_COUNT
+        EFFECTS_COUNT = 10
         };
 
     /// @brief Pie slice rendering options (used for pie charts.)
@@ -428,7 +428,7 @@ namespace Wisteria
     /// @brief Effects that could be applied to an image.
     enum class ImageEffect
         {
-        /// @brief Do no alter the image.
+        /// @brief Do not alter the image.
         NoEffect,
         /// @brief Shades of gray (i.e., Black & White).
         Grayscale,

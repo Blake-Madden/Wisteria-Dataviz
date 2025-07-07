@@ -24,16 +24,15 @@ namespace Wisteria::Data
 
       public:
         PivotedWiderRow(wxString identifier,
-                        std::vector<std::pair<wxString, CategoricalOrIdDataType>>& idColumns,
-                        std::map<wxString, double, wxStringLessNoCase>& pivotedColumns)
+                        const std::vector<std::pair<wxString, CategoricalOrIdDataType>>& idColumns,
+                        const std::map<wxString, double, wxStringLessNoCase>& pivotedColumns)
             : m_id(std::move(identifier)), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
             {
             }
 
         /// @private
         [[nodiscard]]
-        bool
-        operator<(const PivotedWiderRow& that) const
+        bool operator<(const PivotedWiderRow& that) const
             {
             return m_id.CmpNoCase(that.m_id) < 0;
             }
@@ -78,7 +77,7 @@ namespace Wisteria::Data
             @param valuesFromColumns Continuous columns that will be copied into the new
                 columns created by the labels from @c namesFromColumn.\n
                 If multiple value columns are provided, then an extra column will be created
-                for each label column for each values column.\n
+                for each label column from every value column.\n
                 If no columns are provided, then frequency counts of each unique combination
                 of ID labels will be used as the value.
             @param namesSep If multiple value columns are provided, then this separator will

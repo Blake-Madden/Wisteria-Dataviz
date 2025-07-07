@@ -12,6 +12,7 @@
 #ifndef WISTERIA_SUBSET_H
 #define WISTERIA_SUBSET_H
 
+#include "../base/enums.h"
 #include "clone.h"
 
 namespace Wisteria::Data
@@ -111,7 +112,7 @@ namespace Wisteria::Data
                                               const ColumnFilterInfo& columnFilter);
         /** @brief Creates a subset, based on multiple filters that are ORed together.
             @details In other words, if any of the filters match against an observation,
-                then it will included in the subset.
+                then it will be included in the subset.
             @param fromDataset The source datasource to subset.
             @param columnFilters The criteria for subsetting, defining the columns, values
                 to filter on, and how to compare the values.

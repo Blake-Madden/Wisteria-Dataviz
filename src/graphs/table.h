@@ -439,9 +439,9 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the number of columns that this cell should consume.
             /// @param colCount The number of cells that this should consume horizontally.
-            void SetColumnCount(const int colCount) noexcept
+            void SetColumnCount(const size_t colCount) noexcept
                 {
-                if (colCount <= 0)
+                if (colCount == 0)
                     {
                     m_columnCount = 1;
                     }
@@ -453,9 +453,9 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the number of rows that this cell should consume.
             /// @param rowCount The number of cells that this should consume vertically.
-            void SetRowCount(const int rowCount) noexcept
+            void SetRowCount(const size_t rowCount) noexcept
                 {
-                if (rowCount <= 0)
+                if (rowCount == 0)
                     {
                     m_rowCount = 1;
                     }
@@ -561,8 +561,8 @@ namespace Wisteria::Graphs
             // default to 100, but client can turn this off with std::nullopt
             std::optional<size_t> m_suggestedLineLength{ 100 };
 
-            int m_columnCount{ 1 };
-            int m_rowCount{ 1 };
+            size_t m_columnCount{ 1 };
+            size_t m_rowCount{ 1 };
 
             bool m_showTopBorder{ true };
             bool m_showRightBorder{ true };
@@ -943,7 +943,7 @@ namespace Wisteria::Graphs
                 Also, if suppression is enabled, then suppressed values will be treated as NaN
                 and may affect the aggregate accordingly.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
-                                   const std::optional<wxString> colName = std::nullopt,
+                                   const std::optional<wxString>& colName = std::nullopt,
                                    const std::optional<size_t> colIndex = std::nullopt,
                                    const std::optional<bool> useAdjacentColors = std::nullopt,
                                    const std::optional<wxColour>& bkColor = std::nullopt,

@@ -59,7 +59,7 @@ namespace lily_of_the_valley
             @returns A pointer to the parsed text, or null upon failure.\n
                 Call get_filtered_text_length() to get the length of the parsed text.*/
         const wchar_t* operator()(const wchar_t* html_text, const size_t text_length);
-        /** @brief Reads the "docProps/core.xml" file and extracts meta data from the file
+        /** @brief Reads the "docProps/core.xml" file and extracts metadata from the file
                 (e.g., subject, title).
             @param html_text The "docProps/core.xml" text to extract text from.\n
                 "docProps/core.xml" is extracted from a DOCX file.\n

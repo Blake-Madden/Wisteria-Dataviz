@@ -286,7 +286,7 @@ namespace lily_of_the_valley
             @details This is mostly used for HTML windows that have application-related
                 bookmarks in them that need to be removed prior to printing or saving them.
             @param[in,out] HtmlText The text to strip hyperlinks from.
-            @param preserveInPageBookmarks Whether or not to preserve hyperlinks to bookmarks that
+            @param preserveInPageBookmarks Whether to preserve hyperlinks to bookmarks that
                 happen to be in the current block of text.
             @todo needs unit test.*/
         static void strip_hyperlinks(std::wstring& HtmlText,
@@ -315,7 +315,7 @@ namespace lily_of_the_valley
                     }
                 }
 
-            size_t start = 0;
+            size_t start{ 0 };
             while (start != std::wstring::npos)
                 {
                 start = HtmlText.find(L"<a href=", start);
@@ -343,7 +343,7 @@ namespace lily_of_the_valley
                     {
                     link.erase(0, 1);
                     // if the bookmark isn't found in this file then remove the link to it
-                    if (BookmarksInCurrentPage.find(link) == BookmarksInCurrentPage.cend())
+                    if (!BookmarksInCurrentPage.contains(link))
                         {
                         HtmlText.erase(start, (endOfTag - start) + 1);
                         const size_t endOfAnchor = HtmlText.find(L"</a>", start);

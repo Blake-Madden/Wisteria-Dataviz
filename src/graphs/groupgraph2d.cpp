@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "groupgraph2d.h"
+#include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Graph2D)
 
@@ -47,7 +48,7 @@ void GroupGraph2D::BuildGroupIdMap()
         }
     // make reverse string table, sorted by label
     std::map<wxString, Data::GroupIdType, Data::wxStringLessNoCase> groups;
-    if (GetGroupColumn()->GetStringTable().size())
+    if (!GetGroupColumn()->GetStringTable().empty())
         {
         for (const auto& [id, str] : GetGroupColumn()->GetStringTable())
             {
@@ -66,7 +67,7 @@ void GroupGraph2D::BuildGroupIdMap()
         }
     // build a list of group IDs and their respective strings' alphabetical order
     size_t currentIndex{ 0 };
-    for (auto& group : groups)
+    for (const auto& group : groups)
         {
         m_groupIds.insert(std::make_pair(group.second, currentIndex++));
         }
@@ -129,11 +130,11 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOption
         const wxBrush br = (GetBrushScheme() ? GetBrushScheme()->GetBrush(schemeIndex) :
                             GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(schemeIndex)) :
                                                *wxTRANSPARENT_BRUSH);
-        legend->GetLegendIcons().push_back(LegendIcon(
+        legend->GetLegendIcons().emplace_back(
             (GetShapeScheme() ? GetShapeScheme()->GetShape(schemeIndex) : m_defaultLegendShape),
             *wxBLACK_PEN, br,
             GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(schemeIndex)) :
-                               std::nullopt));
+                               std::nullopt);
 
         ++lineCount;
         }
@@ -152,13 +153,12 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOption
                 (GetBrushScheme() ? GetBrushScheme()->GetBrush(mdSchemeIndex) :
                  GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
                                     *wxTRANSPARENT_BRUSH);
-            legend->GetLegendIcons().push_back(
-                LegendIcon((GetShapeScheme() ? GetShapeScheme()->GetShape(mdSchemeIndex) :
+            legend->GetLegendIcons().emplace_back((GetShapeScheme() ? GetShapeScheme()->GetShape(mdSchemeIndex) :
                                                m_defaultLegendShape),
                            *wxBLACK_PEN, brush,
                            GetColorScheme() ?
                                std::optional<wxColour>(GetColorScheme()->GetColor(mdSchemeIndex)) :
-                               std::nullopt));
+                               std::nullopt);
             }
         }
 

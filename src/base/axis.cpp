@@ -515,7 +515,7 @@ namespace Wisteria::GraphItems
             bottomRightCorner = wxPoint(
                 GetBottomPoint().x + (CalcTickMarkInnerWidth() +
                                       (HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
-                GetBottomPoint().y); // the line, tickmarks, and space after that
+                GetBottomPoint().y); // the line, tick marks, and space after that
             // the axis label
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
                 {
@@ -568,7 +568,7 @@ namespace Wisteria::GraphItems
 
             bottomRightCorner =
                 wxPoint(GetBottomPoint().x + (CalcTickMarkOuterWidth() + spaceBetweenAxisAndLabel),
-                        GetBottomPoint().y); // the line, tickmarks, and space after that
+                        GetBottomPoint().y); // the line, tick marks, and space after that
             bottomRightCorner.x +=
                 (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ? 0 :
                 IsStackingLabels() ? textMeasurement * 2 :
@@ -613,7 +613,7 @@ namespace Wisteria::GraphItems
                                    (HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)));
             bottomRightCorner =
                 wxPoint(GetBottomPoint().x,
-                        // include the line, tickmarks, and space after that
+                        // include the line, tick marks, and space after that
                         GetBottomPoint().y + (CalcTickMarkOuterWidth() + spaceBetweenAxisAndLabel));
             bottomRightCorner.y += IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
             if (HasDoubleSidedAxisLabels())
@@ -651,7 +651,7 @@ namespace Wisteria::GraphItems
                 wxPoint(GetBottomPoint().x,
                         GetBottomPoint().y + (CalcTickMarkInnerWidth() +
                                               (HasDoubleSidedAxisLabels() ?
-                                                   // the line, tickmarks, and space after that
+                                                   // the line, tick marks, and space after that
                                                    spaceBetweenAxisAndLabel :
                                                    0)));
             topLeftCorner.y -= IsStackingLabels() ? textMeasurement * 2 : textMeasurement;
@@ -2285,10 +2285,9 @@ namespace Wisteria::GraphItems
                         const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x =
-                                GetTopPoint().x -
-                                (ScaleToScreenAndCanvas(
-                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
+                            wxCoord x = GetTopPoint().x -
+                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
+                                        CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -3706,7 +3705,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Axis::Reverse(bool reverse /*= true*/)
+    void Axis::Reverse(const bool reverse /*= true*/)
         {
         // reverse it if not already reversed and client is asking for it to be reversed
         if (reverse && !IsReversed())

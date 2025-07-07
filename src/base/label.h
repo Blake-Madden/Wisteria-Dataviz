@@ -13,11 +13,7 @@
 #define WISTERIA_CANVASLABEL_H
 
 #include "graphitems.h"
-#include <string_view>
 #include <vector>
-#include <wx/fontenum.h>
-#include <wx/regex.h>
-#include <wx/tokenzr.h>
 #include <wx/wx.h>
 
 // forward declares
@@ -58,7 +54,7 @@ namespace Wisteria::GraphItems
         /// @private
         Label() noexcept
             {
-            GetGraphItemInfo().Outline(true, true, true, true);
+            GraphItemBase::GetGraphItemInfo().Outline(true, true, true, true);
             ShowLabelWhenSelected(false);
             GetPen() = wxNullPen;
             }
@@ -67,7 +63,7 @@ namespace Wisteria::GraphItems
             @param itemInfo Base plot object settings.*/
         explicit Label(const GraphItems::GraphItemInfo& itemInfo) : GraphItemBase(itemInfo)
             {
-            GetGraphItemInfo().Outline(true, true, true, true);
+            GraphItemBase::GetGraphItemInfo().Outline(true, true, true, true);
             ShowLabelWhenSelected(false);
             InvalidateCachedBoundingBox();
             CalcLongestLineLength();
@@ -77,7 +73,7 @@ namespace Wisteria::GraphItems
             @param text The text to display on the label.*/
         explicit Label(const wxString& text) : GraphItemBase(1.0F, text)
             {
-            GetGraphItemInfo().Outline(true, true, true, true);
+            GraphItemBase::GetGraphItemInfo().Outline(true, true, true, true);
             GetPen() = wxNullPen;
             ShowLabelWhenSelected(false);
             InvalidateCachedBoundingBox();
@@ -87,7 +83,7 @@ namespace Wisteria::GraphItems
         /** @brief Draws the box onto the given @c wxDC.
             @param dc The wxDC to render onto.
             @returns The box that the text is being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        wxRect Draw(wxDC& dc) const override final;
 
         /// @returns The minimum width needed for the left padding if including a legend.
         /// @sa SetLeftPadding().
@@ -120,7 +116,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the label, which the caller can use (e.g., as a selection label).
             @param label The text for the label.*/
-        void SetText(const wxString& label) final
+        void SetText(const wxString& label) override final
             {
             GraphItemBase::SetText(label);
             CalcLongestLineLength();
@@ -284,7 +280,7 @@ namespace Wisteria::GraphItems
             @note This is a more optimal alternative to GetBoundingBox(), which doesn't have to
                 create its own temporary @c wxDC.*/
         [[nodiscard]]
-        wxRect GetBoundingBox(wxDC& dc) const final;
+        wxRect GetBoundingBox(wxDC& dc) const override final;
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
             @param dc The DC to measure content with.
@@ -297,7 +293,7 @@ namespace Wisteria::GraphItems
                 Call SetAnchoring() to control how it is anchored.
             @sa SetBoundingBoxToContentAdjustment().*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) final;
+                            [[maybe_unused]] const double parentScaling) override final;
 
         /// @brief When calling SetBoundingBox(), calling this first will prevent the scaling
         ///     from being adjusted to the new bounding box.
@@ -314,7 +310,7 @@ namespace Wisteria::GraphItems
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) final
+        void Offset(const int xToMove, const int yToMove) override final
             {
             SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove));
             InvalidateCachedBoundingBox();
@@ -456,9 +452,10 @@ namespace Wisteria::GraphItems
         wxSize CalcTopImageSize(const wxCoord textWidth) const;
 
         /** @returns @c true if the given point is inside the label.
-            @param pt The point to check.*/
+            @param pt The point to check.
+            @param dc The DC to calculate positions from.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const final
+        bool HitTest(const wxPoint pt, wxDC& dc) const override final
             {
             return GetBoundingBox(dc).Contains(pt);
             }

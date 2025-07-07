@@ -69,7 +69,7 @@ namespace lily_of_the_valley
     html_extract_text::find_bookmark(const wchar_t* sectionStart, const wchar_t* sectionEnd)
         {
         const wchar_t* nextAnchor = find_element(sectionStart, sectionEnd, L"a", true);
-        if (nextAnchor)
+        if (nextAnchor != nullptr)
             {
             auto [bookMarkPtr, bookMarkSize] = read_attribute(nextAnchor, L"name", false, false);
             if (bookMarkPtr != nullptr && bookMarkSize > 0)
@@ -87,7 +87,7 @@ namespace lily_of_the_valley
             }
         return std::make_pair(nullptr, std::wstring{});
         }
-    
+
     //------------------------------------------------------------------
     std::wstring html_extract_text::find_id(std::wstring_view& htmlText)
         {
@@ -175,9 +175,9 @@ namespace lily_of_the_valley
            a smaller font, which is what browsers then render them as.
            There is no way to tell what the author's intent is, but if more than
            four characters, then it's probably not really meant to be a super or subscript.*/
-        constexpr size_t maxSubscriptLength{ 4 };
         if (textSize > 0)
             {
+            constexpr size_t maxSubscriptLength{ 4 };
             size_t currentStartPosition{ 0 };
             while (textSize > 0)
                 {
@@ -578,11 +578,11 @@ namespace lily_of_the_valley
             if (std::strncmp(pageContent, "<?xml", 5) == 0)
                 {
                 const char* encoding = std::strstr(pageContent, "encoding=\"");
-                if (encoding)
+                if (encoding != nullptr)
                     {
                     encoding += 10;
                     const char* encodingEnd = std::strchr(encoding, '\"');
-                    if (encodingEnd)
+                    if (encodingEnd != nullptr)
                         {
                         charset = std::string(encoding, (encodingEnd - encoding));
                         }
@@ -1185,7 +1185,7 @@ namespace lily_of_the_valley
                         html_extract_text::read_attribute_as_string(start, L"content", false, true);
                     html_extract_text valueParser;
                     auto author = valueParser(m_author.c_str(), m_author.length(), true, false);
-                    if (author)
+                    if (author != nullptr)
                         {
                         m_author.assign(author);
                         string_util::trim(m_author);
@@ -1251,7 +1251,7 @@ namespace lily_of_the_valley
                     // convert any embedded entities in the title
                     html_extract_text titleParser;
                     auto title = titleParser(titleStart, end - titleStart, true, false);
-                    if (title)
+                    if (title != nullptr)
                         {
                         m_title.assign(title);
                         string_util::trim(m_title);
@@ -1284,7 +1284,7 @@ namespace lily_of_the_valley
                     // convert any embedded entities in the subject
                     html_extract_text subjectParser;
                     auto subject = subjectParser(subjectStart, end - subjectStart, true, false);
-                    if (subject)
+                    if (subject != nullptr)
                         {
                         m_subject.assign(subject);
                         string_util::trim(m_subject);
@@ -1371,7 +1371,7 @@ namespace lily_of_the_valley
                     }
                 // see if this should be treated as a new paragraph because it is a break,
                 // paragraph, list item, or table row
-                else if (newParagraphElements.find(currentElement) != newParagraphElements.cend())
+                else if (newParagraphElements.contains(currentElement))
                     {
                     add_character(L'\n');
                     add_character(L'\n');
@@ -1395,8 +1395,7 @@ namespace lily_of_the_valley
                 // or end of a section that is like a paragraph
                 else if (remainingTextLength >= 3 && start[0] == L'<' && start[1] == L'/')
                     {
-                    if (newParagraphElements.find(currentElement.substr(1)) !=
-                            newParagraphElements.cend() &&
+                    if (newParagraphElements.contains(currentElement.substr(1)) &&
                         // no need for extra lines for these, the terminating
                         // </table>, </dl>, or </select> will handle that
                         currentElement != L"/tr" && currentElement != L"/dt" &&
@@ -1482,7 +1481,7 @@ namespace lily_of_the_valley
                             else if (attrib.find(L"hidden") != std::wstring::npos)
                                 {
                                 auto spanEnd = find_closing_element(start, endSentinel, L"span");
-                                if (spanEnd)
+                                if (spanEnd != nullptr)
                                     {
                                     start = spanEnd;
                                     }
@@ -1993,7 +1992,7 @@ namespace html_utilities
                 currentPos += 2;
                 continue;
                 }
-            // next <a> found, so copy over all of the text before it,
+            // next <a> found, so copy over all the text before it,
             // then move over to the end of this element.
             add_characters({ lastEnd, static_cast<size_t>(currentPos - lastEnd) });
             currentPos = html_extract_text::find_close_tag(currentPos);
@@ -2472,7 +2471,7 @@ namespace html_utilities
         if (pos == m_table.cend())
             {
             std::wstring cmpKey{ html_entity.data(), html_entity.length() };
-            // ...do a case insensitive search.
+            // ...do a case-insensitive search.
             std::transform(cmpKey.begin(), cmpKey.end(), cmpKey.begin(), std::towlower);
             pos = m_table.find(cmpKey);
             // if the character can't be converted, then return a question mark
@@ -2608,8 +2607,8 @@ namespace html_utilities
     //------------------------------------------------------------------
     const wchar_t* html_image_parse::operator()()
         {
-        static const std::wstring_view HTML_IMAGE(L"img");
-        static const std::wstring_view DATA_IMAGE(L"data:image");
+        constexpr static std::wstring_view HTML_IMAGE(L"img");
+        constexpr static std::wstring_view DATA_IMAGE(L"data:image");
         // reset
         m_current_hyperlink_length = 0;
 
@@ -2715,17 +2714,16 @@ namespace html_utilities
     //------------------------------------------------------------------
     const wchar_t* html_hyperlink_parse::operator()()
         {
-        static const std::wstring_view HTML_META(L"meta");
-        static const std::wstring_view HTML_IFRAME(L"iframe");
-        static const std::wstring_view HTML_FRAME(L"frame");
-        static const std::wstring_view HTML_IMAGE(L"img");
-        static const std::wstring_view DATA_IMAGE(L"data:image");
+        constexpr static std::wstring_view HTML_META(L"meta");
+        constexpr static std::wstring_view HTML_IFRAME(L"iframe");
+        constexpr static std::wstring_view HTML_FRAME(L"frame");
+        constexpr static std::wstring_view HTML_IMAGE(L"img");
+        constexpr static std::wstring_view DATA_IMAGE(L"data:image");
         // if we are in an embedded script block, then continue parsing the
         // links out of that instead of using the regular parser
         if (m_inside_of_script_section)
             {
-            const wchar_t* currentLink = m_javascript_hyperlink_parse();
-            if (currentLink)
+            if (const wchar_t* currentLink = m_javascript_hyperlink_parse(); currentLink != nullptr)
                 {
                 m_current_link_is_image = false;
                 m_current_link_is_javascript = false;
@@ -2781,7 +2779,7 @@ namespace html_utilities
                     html_extract_text::compare_element(m_html_text + 1, HTML_IFRAME, false))
                     {
                     m_html_text += 4;
-                    const auto [imageSrc, imageLengh] =
+                    const auto [imageSrc, imageLength] =
                         html_extract_text::read_attribute(m_html_text, L"src", false, true);
                     if (imageSrc != nullptr &&
                         // skip over base64-encoded image data, we just want file paths
@@ -2789,15 +2787,15 @@ namespace html_utilities
                             0)
                         {
                         m_html_text = imageSrc;
-                        m_current_hyperlink_length = imageLengh;
+                        m_current_hyperlink_length = imageLength;
                         return m_html_text;
                         }
                     // if we are currently in a SCRIPT section (that didn't have a link in it),
                     // then start parsing that section instead
                     else if (m_inside_of_script_section)
                         {
-                        const wchar_t* currentLink = m_javascript_hyperlink_parse();
-                        if (currentLink)
+                        if (const wchar_t* currentLink = m_javascript_hyperlink_parse();
+                            currentLink != nullptr)
                             {
                             m_current_link_is_image = false;
                             m_current_link_is_javascript = false;
@@ -2937,14 +2935,14 @@ namespace html_utilities
                 }
             }
 
-        const std::wstring_view SMS_BODY{ L"sms:?&body=" };
+        constexpr std::wstring_view SMS_BODY{ L"sms:?&body=" };
         if (path.starts_with(SMS_BODY))
             {
             path.remove_prefix(SMS_BODY.length());
             }
 
-        const std::wstring_view QUOT_TAG{ L"&quot;" };
-        const std::wstring_view AMP_TAG{ L"&amp;" };
+        constexpr std::wstring_view QUOT_TAG{ L"&quot;" };
+        constexpr std::wstring_view AMP_TAG{ L"&amp;" };
         if (path.starts_with(QUOT_TAG))
             {
             path.remove_prefix(QUOT_TAG.length());
@@ -3114,7 +3112,7 @@ namespace html_utilities
     //------------------------------------------------------------------
     std::wstring html_url_format::parse_image_name_from_url(std::wstring_view url)
         {
-        static const std::wstring_view PHP_IMAGE{ L"image=" };
+        constexpr static std::wstring_view PHP_IMAGE{ L"image=" };
         std::wstring image_name;
         if (url.empty())
             {
@@ -3125,9 +3123,9 @@ namespace html_utilities
             {
             return image_name;
             }
-        const auto foundPos = std::search(
-            url.cbegin(), url.cend(), PHP_IMAGE.cbegin(), PHP_IMAGE.cend(),
-            [](wchar_t lhv, wchar_t rhv) { return std::towlower(lhv) == std::towlower(rhv); });
+        const auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(),
+                                          PHP_IMAGE.cend(), [](wchar_t lhv, wchar_t rhv)
+                                          { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + PHP_IMAGE.length());
@@ -3153,14 +3151,14 @@ namespace html_utilities
     //------------------------------------------------------------------
     std::wstring html_url_format::parse_top_level_domain_from_url(std::wstring_view url)
         {
-        static const std::wstring_view WWW{ L"www." };
+        constexpr static std::wstring_view WWW{ L"www." };
         std::wstring tld;
         if (url.empty())
             {
             return tld;
             }
         // move to after the "www." or (if not there) the start of the url
-        // (note that this needs to be case insensitive, hence the std::search)
+        // (note that this needs to be case-insensitive, hence the std::search)
         const auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
                                           [](wchar_t lhv, wchar_t rhv)
                                           { return std::towlower(lhv) == std::towlower(rhv); });
@@ -3217,7 +3215,7 @@ namespace html_utilities
             {
             last_slash = url.rfind(L'/', query_position - 1);
             }
-        // see if the slash is just the one after "http:/" or if there no none at all
+        // see if the slash is just the one after "http:/" or if there is no none at all
         if ((last_slash != std::wstring::npos && (last_slash > 0) &&
              (url[last_slash - 1] == L'/')) ||
             last_slash == std::wstring::npos)

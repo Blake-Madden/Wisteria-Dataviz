@@ -16,7 +16,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
     {
     //----------------------------------------------------------------
     void Histogram::SetData(
-        std::shared_ptr<const Data::Dataset> data, const wxString& continuousColumnName,
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& continuousColumnName,
         const std::optional<const wxString>& groupColumnName /*= std::nullopt*/,
         const BinningMethod bMethod /*= BinningMethod::BinByIntegerRange*/,
         const RoundingMethod rounding /*= RoundingMethod::NoRounding*/,
@@ -24,7 +24,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/,
         const bool showFullRangeOfValues /*= true*/,
         const std::optional<double> startBinsValue /*= std::nullopt*/,
-        const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges
+        const std::pair<std::optional<size_t>, std::optional<size_t>>& binCountRanges
         /*= std::make_pair(std::nullopt, std::nullopt)*/,
         const bool neatIntervals /*= false*/)
         {
@@ -109,10 +109,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
 
     //----------------------------------------------------------------
     wxString Histogram::GetCustomBarLabelOrValue(const double& value,
-                                                 const size_t precision /*= 0*/)
+                                                 const uint8_t precision /*= 0*/)
         {
         const auto& customLabel = GetBarAxis().GetCustomLabel(value);
-        if (customLabel.IsOk() && customLabel.GetText().length())
+        if (customLabel.IsOk() && !customLabel.GetText().empty())
             {
             return customLabel.GetText();
             }
@@ -151,8 +151,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             }
 
         // calculate how many observations are in each group
-        multi_value_aggregate_map<BinBlock, wxString, std::less<BinBlock>, Data::wxStringLessNoCase>
-            groups;
+        multi_value_aggregate_map<BinBlock, wxString, std::less<>, Data::wxStringLessNoCase> groups;
         groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
         bool hasFloatingPointValue{ false };
 
@@ -210,20 +209,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         // add an empty bar at position 1 if there isn't one there already
         // and caller wants the axis to start at a specific point
         if (GetBinsStart() && !std::isnan(GetBinsStart().value()) && IsShowingFullRangeOfValues() &&
-            groups.get_data().find(BinBlock{ GetBinsStart().value(), 0, 0, wxEmptyString }) ==
-                groups.get_data().end())
+            !groups.get_data().contains(BinBlock{ GetBinsStart().value(), 0, 0, wxEmptyString }))
             {
             Bar theBar(GetBinsStart().value(),
                        { BarBlock(BarBlockInfo()
                                       .Brush(GetBrushScheme()->GetBrush(0))
                                       .Color(GetColorScheme() ? GetColorScheme()->GetColor(0) :
                                                                 wxTransparentColour)) },
-                       wxString{}, GraphItems::Label(wxEmptyString), GetBarEffect(),
-                       GetBarOpacity());
+                       wxString{}, GraphItems::Label(wxString{}), GetBarEffect(), GetBarOpacity());
             AddBar(theBar);
             }
         // add the bars (block-by-block)
-        size_t barNumber{ 1 };
+        double barNumber{ 1.0 };
         for (const auto& blockTable : groups.get_data())
             {
             const wxColour blockColor =
@@ -248,14 +245,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             blockLabel.Trim();
             // if observations are added to the selection label, but not all of them,
             // then add ellipsis
-            if (blockTable.second.first.size() < blockTable.second.second &&
+            if (blockTable.second.first.size() < static_cast<size_t>(blockTable.second.second) &&
                 blockTable.second.first.size() > 1)
                 {
                 blockLabel += /* TRANSLATORS: Label truncation. */ _(L"...");
                 }
 
-            auto foundBar = std::find_if(
-                GetBars().begin(), GetBars().end(), [&blockTable](const auto& bar)
+            auto foundBar = std::ranges::find_if(
+                GetBars(), [&blockTable](const auto& bar)
                 { return compare_doubles(bar.GetAxisPosition(), blockTable.first.m_bin); });
             if (foundBar == GetBars().end())
                 {
@@ -329,11 +326,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             }
         std::vector<double> validData;
         validData.reserve(GetDataset()->GetRowCount());
-        std::copy_if(m_continuousColumn->GetValues().cbegin(),
-                     m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
-                     [](auto x) { return std::isfinite(x); });
-        double minVal = *std::min_element(validData.cbegin(), validData.cend());
-        double maxVal = *std::max_element(validData.cbegin(), validData.cend());
+        std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+                             [](auto x) { return std::isfinite(x); });
+        double minVal = *std::ranges::min_element(std::as_const(validData));
+        double maxVal = *std::ranges::max_element(std::as_const(validData));
         // If data fails into a small range (e.g., < 2), then forcibly turn off rounding and integer
         // binning. Make sure that the range is larger than 0 though (otherwise there will probably
         // just be one bin and integer mode would be better there).
@@ -397,7 +393,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     }
                 }
             }
-        double binSize = safe_divide<double>((maxVal - minVal), numOfBins);
+        auto binSize = safe_divide<double>((maxVal - minVal), static_cast<double>(numOfBins));
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
             {
             assert(!has_fractional_part(binSize));
@@ -438,8 +434,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                    edge). This prevents us from making an extra bin just for this one value.*/
                 if (compare_doubles(currentVal, minVal))
                     {
-                    auto foundGroup = std::find(
-                        bins[0].begin(), bins[0].end(),
+                    auto foundGroup = std::ranges::find(
+                        bins[0],
                         comparable_first_pair(
                             (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
                             valuesCounter(0.0, std::set<wxString, Data::wxStringLessNoCase>{})));
@@ -456,18 +452,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         {
                         std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
-                        bins[0].push_back(comparable_first_pair(
+                        bins[0].emplace_back(
                             (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
-                            valuesCounter(1.0, theSet)));
+                            valuesCounter(1.0, theSet));
                         }
                     break;
                     }
-                else if (compare_doubles_greater(currentVal, (minVal + (j * binSize))) &&
-                         compare_doubles_less_or_equal(currentVal,
-                                                       (minVal + (j * binSize) + binSize)))
+                else if (compare_doubles_greater(currentVal,
+                                                 (minVal + (static_cast<double>(j) * binSize))) &&
+                         compare_doubles_less_or_equal(
+                             currentVal, (minVal + (static_cast<double>(j) * binSize) + binSize)))
                     {
-                    auto foundGroup = std::find(
-                        bins[j].begin(), bins[j].end(),
+                    auto foundGroup = std::ranges::find(
+                        bins[j],
                         comparable_first_pair(
                             (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
                             valuesCounter(0.0, std::set<wxString, Data::wxStringLessNoCase>{})));
@@ -484,10 +481,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         {
                         std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
-                        bins[j].push_back(comparable_first_pair(
-                            (IsUsingGrouping() ? GetGroupColumn()->GetValue(i) :
-                                                 static_cast<Data::GroupIdType>(0)),
-                            valuesCounter(1, theSet)));
+                        bins[j].emplace_back((IsUsingGrouping() ?
+                                                  GetGroupColumn()->GetValue(i) :
+                                                  static_cast<Data::GroupIdType>(0)),
+                                             valuesCounter(1, theSet));
                         }
                     break;
                     }
@@ -510,9 +507,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
 
         // tally up the total group counts
         double total = 0;
-        for (size_t i = 0; i < bins.size(); ++i)
+        for (const auto& bin : bins)
             {
-            for (const auto& blocks : bins[i])
+            for (const auto& blocks : bin)
                 {
                 total += blocks.second.first;
                 }
@@ -521,9 +518,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         /* Remove any following bins that do not have anything in them (might happen if the range
            had to be expanded to create integral intervals). Leading bins are handled separately in
            the loop below because the range min value makes removing bins here more tricky.*/
-        while (bins.size())
+        while (!bins.empty())
             {
-            if (bins.back().size() > 0)
+            if (!bins.back().empty())
                 {
                 break;
                 }
@@ -537,8 +534,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         bool firstBinWithValuesFound = false;
         for (size_t i = 0; i < bins.size(); ++i)
             {
-            Bar theBar(startingBarAxisPosition + (i * binSize), std::vector<BarBlock>(),
-                       wxEmptyString, GraphItems::Label(), GetBarEffect(), GetBarOpacity(),
+            Bar theBar(startingBarAxisPosition + (static_cast<double>(i) * binSize),
+                       std::vector<BarBlock>(), wxEmptyString, GraphItems::Label(), GetBarEffect(),
+                       GetBarOpacity(),
                        (GetIntervalDisplay() == IntervalDisplay::Cutpoints) ? binSize : 0);
 
             // build the bar from its blocks (i.e., subgroups)
@@ -571,7 +569,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     blockLabel.append(obsLabel).append(L"\n");
                     }
                 blockLabel.Trim();
-                if (block.second.second.size() < block.second.first &&
+                if (block.second.second.size() < static_cast<size_t>(block.second.first) &&
                     block.second.second.size() > 1)
                     {
                     blockLabel += /* TRANSLATORS: Label truncation. */ _(L"...");
@@ -638,8 +636,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                    starting after the cutpoint.*/
                 const double startValue = (i == 0) ?
                                               isLowestValueBeingAdjusted ? minVal + 1 : minVal :
-                                              minVal + 1 + (i * binSize);
-                const double endValue = minVal + (i * binSize) + binSize;
+                                              minVal + 1 + (static_cast<double>(i) * binSize);
+                const double endValue = minVal + (static_cast<double>(i) * binSize) + binSize;
                 wxString axisLabel;
                 if (startValue == endValue)
                     {
@@ -652,7 +650,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                     }
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
                     {
-                    GetBarAxis().SetCustomLabel(startingBarAxisPosition + (i * binSize),
+                    GetBarAxis().SetCustomLabel(startingBarAxisPosition +
+                                                    (static_cast<double>(i) * binSize),
                                                 GraphItems::Label(axisLabel));
                     }
                 }
@@ -664,14 +663,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         // TRANSLATORS: %s are the cutoff points for a bin
                         _(L"%s and <= %s"),
                         wxNumberFormatter::ToString(
-                            minVal + (i * binSize), 6,
+                            minVal + (static_cast<double>(i) * binSize), 6,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes),
                         wxNumberFormatter::ToString(
-                            minVal + (i * binSize) + binSize, 6,
+                            minVal + (static_cast<double>(i) * binSize) + binSize, 6,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
                     {
-                    GetBarAxis().SetCustomLabel(startingBarAxisPosition + (i * binSize),
+                    GetBarAxis().SetCustomLabel(startingBarAxisPosition +
+                                                    (static_cast<double>(i) * binSize),
                                                 GraphItems::Label(axisLabel));
                     }
                 }
@@ -711,20 +711,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         // Sturges
         else if (m_validN < 200)
             {
-            return std::ceil(std::log2(m_validN)) + 1;
+            return static_cast<size_t>(std::ceil(std::log2(m_validN)) + 1);
             }
         // Scott
         else
             {
             std::vector<double> validData;
             validData.reserve(GetDataset()->GetRowCount());
-            std::copy_if(m_continuousColumn->GetValues().cbegin(),
-                         m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
-                         [](auto x) { return std::isfinite(x); });
-            const auto minVal = *std::min_element(validData.cbegin(), validData.cend());
-            const auto maxVal = *std::max_element(validData.cbegin(), validData.cend());
+            std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+                                 [](auto x) { return std::isfinite(x); });
+            const auto minVal = *std::ranges::min_element(std::as_const(validData));
+            const auto maxVal = *std::ranges::max_element(std::as_const(validData));
             const auto sd = statistics::standard_deviation(validData, true);
-            return safe_divide(maxVal - minVal, 3.5 * safe_divide(sd, std::cbrt(m_validN)));
+            return static_cast<size_t>(
+                safe_divide(maxVal - minVal, 3.5 * safe_divide(sd, std::cbrt(m_validN))));
             }
         }
 
@@ -735,21 +735,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             {
             return value;
             }
-        else if (GetRoundingMethod() == RoundingMethod::Round)
+        if (GetRoundingMethod() == RoundingMethod::Round)
             {
             return round_to_integer(value);
             }
-        else if (GetRoundingMethod() == RoundingMethod::RoundDown)
+        if (GetRoundingMethod() == RoundingMethod::RoundDown)
             {
             return std::floor(static_cast<double>(value));
             }
-        else if (GetRoundingMethod() == RoundingMethod::RoundUp)
+        if (GetRoundingMethod() == RoundingMethod::RoundUp)
             {
             return std::ceil(static_cast<double>(value));
             }
-        else
-            {
-            return value;
-            }
+        return value;
         }
     } // namespace Wisteria::Graphs

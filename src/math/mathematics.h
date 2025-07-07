@@ -20,14 +20,9 @@
 #include <functional>
 #include <initializer_list>
 #include <limits>
-#include <numeric>
+#include <numbers>
 #include <string>
 #include <string_view>
-
-/// @todo replace this when upgrading to C++20.
-#ifndef M_PI
-    #define M_PI 3.1415926535897932384626433832795
-#endif
 
 /// @brief Math constants.
 namespace math_constants
@@ -228,8 +223,9 @@ constexpr T coalesce(std::initializer_list<T> list)
     @returns The value, rescaled to the new data range.
     @todo needs unit tests.*/
 [[nodiscard]]
-constexpr inline double scale_within(double unscaledValue, std::pair<double, double> dataRange,
-                                     std::pair<double, double> newDataRange)
+constexpr inline double scale_within(double unscaledValue,
+                                     const std::pair<double, double>& dataRange,
+                                     const std::pair<double, double>& newDataRange)
     {
     return safe_divide<double>(
                ((newDataRange.second - newDataRange.first) * (unscaledValue - dataRange.first)),
@@ -283,7 +279,7 @@ constexpr inline std::pair<double, double> adjust_intervals(const double start,
                                                             const double end) noexcept
     {
     const auto rangeSize = (end - start);
-    uint8_t intervalSize{ 1 };
+    uint8_t intervalSize{};
     if (rangeSize > 100'000'000)
         {
         intervalSize = 9;
@@ -511,8 +507,8 @@ namespace geometry
         @param pt2 The second point.
         @returns The distance between the points.*/
     [[nodiscard]]
-    inline double distance_between_points(const std::pair<double, double> pt1,
-                                          const std::pair<double, double> pt2) noexcept
+    inline double distance_between_points(const std::pair<double, double>& pt1,
+                                          const std::pair<double, double>& pt2) noexcept
         {
         const double xDiff = pt1.first - pt2.first;
         const double yDiff = pt1.second - pt2.second;
@@ -525,8 +521,8 @@ namespace geometry
         @param pt The point to review.
         @returns @c true if the point is inside the circle.*/
     [[nodiscard]]
-    inline bool is_point_inside_circle(const std::pair<double, double> ctr, const double radius,
-                                       const std::pair<double, double> pt) noexcept
+    inline bool is_point_inside_circle(const std::pair<double, double>& ctr, const double radius,
+                                       const std::pair<double, double>& pt) noexcept
         {
         return (distance_between_points(ctr, pt) <= radius);
         }
@@ -546,7 +542,7 @@ namespace geometry
     [[nodiscard]]
     constexpr inline double circumference_to_radius(const double circumference) noexcept
         {
-        return safe_divide<double>(safe_divide<double>(circumference, M_PI), 2);
+        return safe_divide<double>(safe_divide<double>(circumference, std::numbers::pi), 2);
         }
 
     /** @brief Converts degrees (i.e., an angle) to radians.
@@ -555,7 +551,7 @@ namespace geometry
     [[nodiscard]]
     constexpr inline double degrees_to_radians(const double degrees) noexcept
         {
-        return degrees * M_PI / static_cast<double>(180);
+        return degrees * std::numbers::pi / static_cast<double>(180);
         }
 
     /** @brief Converts radians to degrees (i.e., an angle).
@@ -564,17 +560,17 @@ namespace geometry
     [[nodiscard]]
     constexpr inline double radians_to_degrees(const double radians) noexcept
         {
-        return radians * 180 / static_cast<double>(M_PI);
+        return radians * 180 / static_cast<double>(std::numbers::pi);
         }
 
     /** @brief Given a square area with an arc drawn from its center point counter-clockwise
             (from the 3 o'clock position), calculates where the end point of the arc would be at.
         @param areaSize The size of the area with the arc drawn within it.
         @param degrees The angle (in degrees) of the arc,
-            drawn from 3 o'clock going counter clockwise.
+            drawn from 3 o'clock going counterclockwise.
         @returns The end point of the arc.*/
     [[nodiscard]]
-    constexpr inline std::pair<double, double> arc_vertex(std::pair<double, double> areaSize,
+    constexpr inline std::pair<double, double> arc_vertex(const std::pair<double, double>& areaSize,
                                                           const double degrees) noexcept
         {
         return std::make_pair(
@@ -588,7 +584,7 @@ namespace geometry
        side.
         @param hypotenuse The hypotenuse of the triangle (the slope of the triangle).
         @param angleInDegrees The angle between the hypotenuse and bottom side
-            (this angle is opposite from the height side).
+            (this angle is opposite to the height side).
 
                |*
              h |  *
@@ -634,8 +630,8 @@ namespace geometry
         @param pt2 The second point.
         @note The ordering of points doesn't matter, the length will be the same either way.*/
     [[nodiscard]]
-    inline double segment_length(const std::pair<double, double> pt1,
-                                 const std::pair<double, double> pt2) noexcept
+    inline double segment_length(const std::pair<double, double>& pt1,
+                                 const std::pair<double, double>& pt2) noexcept
         {
         return std::sqrt(std::pow(pt1.first - pt2.first, 2) + std::pow(pt1.second - pt2.second, 2));
         }
@@ -650,8 +646,8 @@ namespace geometry
             This value should be between `0` and `1.0`.
         @note Adapted from https://stackoverflow.com/questions/1934210/finding-a-point-on-a-line*/
     [[nodiscard]]
-    inline std::pair<double, double> point_along_line(const std::pair<double, double> pt1,
-                                                      const std::pair<double, double> pt2,
+    inline std::pair<double, double> point_along_line(const std::pair<double, double>& pt1,
+                                                      const std::pair<double, double>& pt2,
                                                       double segmentRatio) noexcept
         {
         assert(segmentRatio >= 0 && segmentRatio <= 1.0 && "segmentRatio must be between 0 and 1!");
@@ -727,8 +723,8 @@ namespace geometry
         @todo needs unit tested.*/
     [[nodiscard]]
     inline std::tuple<double, double, bool>
-    middle_point_horizontal_spline(const std::pair<double, double> pt1,
-                                   const std::pair<double, double> pt2) noexcept
+    middle_point_horizontal_spline(const std::pair<double, double>& pt1,
+                                   const std::pair<double, double>& pt2) noexcept
         {
         // see which point is which in our left-to-right flow
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
@@ -751,8 +747,8 @@ namespace geometry
         @todo needs unit tested.*/
     [[nodiscard]]
     inline std::pair<double, double>
-    middle_point_horizontal_upward_spline(const std::pair<double, double> pt1,
-                                          const std::pair<double, double> pt2) noexcept
+    middle_point_horizontal_upward_spline(const std::pair<double, double>& pt1,
+                                          const std::pair<double, double>& pt2) noexcept
         {
         // see which point is which in our left-to-right flow
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
@@ -774,8 +770,8 @@ namespace geometry
         @todo needs unit tested.*/
     [[nodiscard]]
     inline std::pair<double, double>
-    middle_point_horizontal_downward_spline(const std::pair<double, double> pt1,
-                                            const std::pair<double, double> pt2) noexcept
+    middle_point_horizontal_downward_spline(const std::pair<double, double>& pt1,
+                                            const std::pair<double, double>& pt2) noexcept
         {
         // see which point is which in our left-to-right flow
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
@@ -790,8 +786,8 @@ namespace geometry
         @param pt2 The second point of the line segment.
         @note The angle is going from @c pt1 to @c pt2.*/
     [[nodiscard]]
-    inline double segment_angle_degrees(const std::pair<double, double> pt1,
-                                        const std::pair<double, double> pt2) noexcept
+    inline double segment_angle_degrees(const std::pair<double, double>& pt1,
+                                        const std::pair<double, double>& pt2) noexcept
         {
         return radians_to_degrees(std::atan2(pt2.second - pt1.second, pt2.first - pt1.first));
         }
@@ -804,7 +800,7 @@ namespace geometry
         @todo needs unit tested.*/
     [[nodiscard]]
     inline std::pair<double, double> find_point(const double angleInDegrees, const double length,
-                                                const std::pair<double, double> origin) noexcept
+                                                const std::pair<double, double>& origin) noexcept
         {
         return std::make_pair(origin.first + length * std::cos(degrees_to_radians(angleInDegrees)),
                               origin.second +
@@ -820,7 +816,7 @@ namespace geometry
         @note A negative new width will yield a zero height (a negative width is nonsensical,
             but at least try to return something sensical).*/
     [[nodiscard]]
-    inline double rescaled_height(const std::pair<double, double> size,
+    inline double rescaled_height(const std::pair<double, double>& size,
                                   const double newWidth) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newWidth >= 0) &&
@@ -841,7 +837,7 @@ namespace geometry
         @note A negative new height will yield a zero width (a negative height is nonsensical,
             but at least try to return something sensical).*/
     [[nodiscard]]
-    inline double rescaled_width(const std::pair<double, double> size,
+    inline double rescaled_width(const std::pair<double, double>& size,
                                  const double newHeight) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newHeight >= 0) &&
@@ -863,8 +859,8 @@ namespace geometry
                 then the original size is returned.*/
     [[nodiscard]]
     inline std::pair<double, double>
-    downscaled_size(const std::pair<double, double> size,
-                    const std::pair<double, double> boundingSize) noexcept
+    downscaled_size(const std::pair<double, double>& size,
+                    const std::pair<double, double>& boundingSize) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && boundingSize.first >= 0 &&
                               boundingSize.second >= 0) &&
@@ -921,8 +917,8 @@ namespace geometry
             then the original size is returned.*/
     [[nodiscard]]
     inline std::pair<double, double>
-    upscaled_size(const std::pair<double, double> size,
-                  const std::pair<double, double> boundingSize) noexcept
+    upscaled_size(const std::pair<double, double>& size,
+                  const std::pair<double, double>& boundingSize) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && boundingSize.first >= 0 &&
                               boundingSize.second >= 0) &&

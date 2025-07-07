@@ -24,7 +24,7 @@ namespace Wisteria::GraphItems
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
-        auto bBox = GetBoundingBox(dc);
+        const auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(GetShapeSizeDIPS()));
         // keep drawing area inside the full area
         drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));

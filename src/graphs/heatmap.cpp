@@ -208,7 +208,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         // size the boxes to fit in the area available
         wxRect drawArea = GetPlotAreaBoundingBox();
-        const auto padding = wxSizerFlags::GetDefaultBorder() * GetScaling();
+        const auto padding = static_cast<int>(wxSizerFlags::GetDefaultBorder() * GetScaling());
         wxCoord groupHeaderLabelHeight{ 0 };
         wxFont groupHeaderLabelFont{ GetBottomXAxis().GetFont() };
         bool groupHeaderLabelMultiline{ false };
@@ -454,9 +454,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             }
 
         std::vector<double> validData;
-        std::copy_if(m_continuousColumn->GetValues().cbegin(),
-                     m_continuousColumn->GetValues().cend(), std::back_inserter(validData),
-                     [](auto x) { return std::isfinite(x); });
+        std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+                             [](auto x) { return std::isfinite(x); });
         const auto minValue = *std::ranges::min_element(std::as_const(validData));
         const auto maxValue = *std::ranges::max_element(std::as_const(validData));
         auto legend = std::make_unique<GraphItems::Label>(
@@ -477,7 +476,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                             legend->GetText());
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
-        legend->GetLegendIcons().push_back(Icons::LegendIcon(m_reversedColorSpectrum));
+        legend->GetLegendIcons().emplace_back(m_reversedColorSpectrum);
 
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());

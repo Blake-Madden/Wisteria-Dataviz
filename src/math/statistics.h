@@ -209,9 +209,9 @@ namespace statistics
         std::vector<double> dest;
         dest.reserve(data.size());
         // don't copy NaN into buffer
-        std::copy_if(data.cbegin(), data.cend(), std::back_inserter(dest),
-                     [](const auto val) noexcept { return !std::isnan(val); });
-        std::sort(dest.begin(), dest.end());
+        std::ranges::copy_if(data, std::back_inserter(dest),
+                             [](const auto val) noexcept { return !std::isnan(val); });
+        std::ranges::sort(dest);
         return median_presorted(dest);
         }
 
@@ -412,7 +412,7 @@ namespace statistics
          std::vector<double> values = { 5, 9, -3, 6, 7, 6, 6, 4, 3, 17 };
          // load the data
          statistics::find_outliers
-            findOutlier(values));
+            findOutlier(values);
          std::vector<int> theOutliers;
          // iterate through the outliers by calling operator().
          for (;;)
@@ -449,14 +449,14 @@ namespace statistics
             m_temp_buffer.clear();
             m_temp_buffer.reserve(data.size());
             // don't copy NaN into buffer
-            std::copy_if(data.cbegin(), data.cend(), std::back_inserter(m_temp_buffer),
-                         [](const auto val) noexcept { return !std::isnan(val); });
+            std::ranges::copy_if(data, std::back_inserter(m_temp_buffer),
+                                 [](const auto val) noexcept { return !std::isnan(val); });
             // if no valid data, then leave boundaries as NaN and bail
             if (m_temp_buffer.empty())
                 {
                 return;
                 }
-            std::sort(m_temp_buffer.begin(), m_temp_buffer.end());
+            std::ranges::sort(m_temp_buffer);
             // calculate the quartile ranges
             statistics::quartiles_presorted(m_temp_buffer, lq, uq);
             // calculate the outliers and extremes

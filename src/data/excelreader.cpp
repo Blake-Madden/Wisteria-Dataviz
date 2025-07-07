@@ -43,9 +43,8 @@ namespace Wisteria::Data
         if (const auto* const worksheetName{ std::get_if<wxString>(&worksheet) };
             worksheetName != nullptr)
             {
-            const auto sheetPos = std::find(m_xlsxTextExtractor.get_worksheet_names().cbegin(),
-                                            m_xlsxTextExtractor.get_worksheet_names().cend(),
-                                            worksheetName->wc_str());
+            const auto sheetPos = std::ranges::find(m_xlsxTextExtractor.get_worksheet_names(),
+                                                    worksheetName->wc_str());
             if (sheetPos != m_xlsxTextExtractor.get_worksheet_names().cend())
                 {
                 const std::wstring sheetFile = archive.ReadTextFile(wxString::Format(

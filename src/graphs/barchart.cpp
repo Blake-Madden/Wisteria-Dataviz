@@ -21,9 +21,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::UpdateBarLabel(Bar & bar)
         {
-        const double grandTotal =
-            std::accumulate(GetBars().cbegin(), GetBars().cend(), 0.0,
-                            [](auto lhv, auto rhv) noexcept { return lhv + rhv.GetLength(); });
+        const double grandTotal = std::accumulate(GetBars().cbegin(), GetBars().cend(), 0.0,
+                                                  [](auto lhv, const auto& rhv) noexcept
+                                                  { return lhv + rhv.GetLength(); });
 
         const double percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
         const wxString labelStr =
@@ -2080,29 +2080,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
             for (size_t i = startPos; i <= endPos; ++i)
                 {
-                const wxPoint brackPos = barRenderInfo.m_barMiddleEndPositions[i];
+                const wxPoint bracketPos = barRenderInfo.m_barMiddleEndPositions[i];
                 if (GetBarOrientation() == Orientation::Horizontal)
                     {
                     maxBracketStartPos =
-                        std::max({ brackPos.x, maxBracketStartPos.value_or(brackPos.x) });
+                        std::max({ bracketPos.x, maxBracketStartPos.value_or(bracketPos.x) });
                     barGroup.m_maxBarPos =
-                        std::max(brackPos.x, barGroup.m_maxBarPos.value_or(brackPos.x));
+                        std::max(bracketPos.x, barGroup.m_maxBarPos.value_or(bracketPos.x));
                     }
                 else
                     {
                     maxBracketStartPos =
-                        std::min({ brackPos.y, maxBracketStartPos.value_or(brackPos.y) });
+                        std::min({ bracketPos.y, maxBracketStartPos.value_or(bracketPos.y) });
                     barGroup.m_maxBarPos =
-                        std::min(brackPos.y, barGroup.m_maxBarPos.value_or(brackPos.y));
+                        std::min(bracketPos.y, barGroup.m_maxBarPos.value_or(bracketPos.y));
                     }
                 }
             }
 
         for (const auto& barGroup : m_barGroups)
             {
-            const wxPoint brackPos1 =
+            const wxPoint bracketPos1 =
                 barRenderInfo.m_barMiddleEndPositions[barGroup.m_barPositions.first];
-            const wxPoint brackPos2 =
+            const wxPoint bracketPos2 =
                 barRenderInfo.m_barMiddleEndPositions[barGroup.m_barPositions.second];
             double grandTotal{ 0 };
             // the bars specified in the group may be in different order, so use
@@ -2124,18 +2124,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             double scalingAxisPos{ 0 }, barAxisPos{ 0 };
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
-                const wxCoord brackStartXPos =
-                    std::max({ brackPos1.x, brackPos2.x,
+                const wxCoord bracketStartXPos =
+                    std::max({ bracketPos1.x, bracketPos2.x,
                                (m_barGroupPlacement == LabelPlacement::Flush ?
-                                    maxBracketStartPos.value_or(brackPos1.x) :
-                                    barGroup.m_maxBarPos.value_or(brackPos1.x)) });
+                                    maxBracketStartPos.value_or(bracketPos1.x) :
+                                    barGroup.m_maxBarPos.value_or(bracketPos1.x)) });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
-                        brackStartXPos + ScaleToScreenAndCanvas(bracesWidth), scalingAxisPos))
+                        bracketStartXPos + ScaleToScreenAndCanvas(bracesWidth), scalingAxisPos))
                     {
                     // make the curly braces stretch from the top of the first bar
                     // to the bottom of the last one
                     const auto yOffset =
-                        (brackPos1.y < brackPos2.y) ?
+                        (bracketPos1.y < bracketPos2.y) ?
                             safe_divide<double>(
                                 GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
                                     barRenderInfo.m_barWidth),
@@ -2145,7 +2145,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                     barRenderInfo.m_barWidth),
                                 2);
                     const auto barsWidth =
-                        std::abs(brackPos1.y - brackPos2.y) +
+                        std::abs(bracketPos1.y - bracketPos2.y) +
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
                                 barRenderInfo.m_barWidth),
@@ -2155,8 +2155,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 barRenderInfo.m_barWidth),
                             2);
 
-                    const auto yPos = std::min(brackPos1.y, brackPos2.y) +
-                                      safe_divide<double>(std::abs(brackPos1.y - brackPos2.y), 2);
+                    const auto yPos =
+                        std::min(bracketPos1.y, bracketPos2.y) +
+                        safe_divide<double>(std::abs(bracketPos1.y - bracketPos2.y), 2);
                     if (GetBarAxis().GetValueFromPhysicalCoordinate(yPos, barAxisPos))
                         {
                         Bar theBar(
@@ -2177,7 +2178,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             wxString{}, Wisteria::GraphItems::Label{}, GetBarEffect(),
                             GetBarOpacity());
                         UpdateBarLabel(theBar);
-                        // if the superbar is going outside the plot area, then
+                        // if the super bar is going outside the plot area, then
                         // shove it back over and adjust the width of the bracket as well
                         if ((scalingAxisPos + grandTotal) > GetScalingAxis().GetRange().second)
                             {
@@ -2187,7 +2188,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             if (GetScalingAxis().GetPhysicalCoordinate(scalingAxisPos,
                                                                        newBracketRight))
                                 {
-                                bracesWidth = newBracketRight - brackStartXPos;
+                                bracesWidth = newBracketRight - bracketStartXPos;
                                 }
                             }
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
@@ -2200,8 +2201,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                            2))
                                 .Scaling(GetScaling())
                                 .DPIScaling(GetDPIScaleFactor())
-                                .AnchorPoint(wxPoint(brackStartXPos,
-                                                     std::min(brackPos1.y, brackPos2.y) - yOffset))
+                                .AnchorPoint(
+                                    wxPoint(bracketStartXPos,
+                                            std::min(bracketPos1.y, bracketPos2.y) - yOffset))
                                 .Anchoring(Anchoring::TopLeftCorner),
                             Icons::IconShape::RightCurlyBrace,
                             wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)), nullptr));
@@ -2216,13 +2218,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             else
                 {
-                const wxCoord brackStartYPos =
-                    std::min({ brackPos1.y, brackPos2.y,
+                const wxCoord bracketStartYPos =
+                    std::min({ bracketPos1.y, bracketPos2.y,
                                (m_barGroupPlacement == LabelPlacement::Flush ?
-                                    maxBracketStartPos.value_or(brackPos1.y) :
-                                    barGroup.m_maxBarPos.value_or(brackPos1.y)) });
+                                    maxBracketStartPos.value_or(bracketPos1.y) :
+                                    barGroup.m_maxBarPos.value_or(bracketPos1.y)) });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
-                        brackStartYPos -
+                        bracketStartYPos -
                             // space for the braces and a couple DIPs between that and the group bar
                             ScaleToScreenAndCanvas(bracesWidth + 2),
                         scalingAxisPos))
@@ -2230,7 +2232,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     // make the curly braces stretch from the top of the first bar
                     // to the bottom of the last one
                     const auto xOffset =
-                        (brackPos1.x < brackPos2.x) ?
+                        (bracketPos1.x < bracketPos2.x) ?
                             safe_divide<double>(
                                 GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
                                     barRenderInfo.m_barWidth),
@@ -2240,7 +2242,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                     barRenderInfo.m_barWidth),
                                 2);
                     const auto barsWidth =
-                        std::abs(brackPos1.x - brackPos2.x) +
+                        std::abs(bracketPos1.x - bracketPos2.x) +
                         safe_divide<double>(
                             GetBars()[barGroup.m_barPositions.first].GetCustomWidth().value_or(
                                 barRenderInfo.m_barWidth),
@@ -2250,8 +2252,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 barRenderInfo.m_barWidth),
                             2);
 
-                    const auto xPos = std::min(brackPos1.x, brackPos2.x) +
-                                      safe_divide<double>(std::abs(brackPos1.x - brackPos2.x), 2);
+                    const auto xPos =
+                        std::min(bracketPos1.x, bracketPos2.x) +
+                        safe_divide<double>(std::abs(bracketPos1.x - bracketPos2.x), 2);
                     if (GetBarAxis().GetValueFromPhysicalCoordinate(xPos, barAxisPos))
                         {
                         Bar theBar(
@@ -2272,7 +2275,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             wxString{}, Wisteria::GraphItems::Label{}, GetBarEffect(),
                             GetBarOpacity());
                         UpdateBarLabel(theBar);
-                        // if the superbar is going outside the plot area, then
+                        // if the super bar is going outside the plot area, then
                         // shove it back down and adjust the height of the bracket as well
                         if ((scalingAxisPos + grandTotal) > GetScalingAxis().GetRange().second)
                             {
@@ -2282,7 +2285,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             if (GetScalingAxis().GetPhysicalCoordinate(scalingAxisPos,
                                                                        newBracketTop))
                                 {
-                                bracesWidth = brackStartYPos - newBracketTop;
+                                bracesWidth = bracketStartYPos - newBracketTop;
                                 }
                             }
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
@@ -2296,8 +2299,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                 .Scaling(GetScaling())
                                 .DPIScaling(GetDPIScaleFactor())
                                 .AnchorPoint(
-                                    wxPoint(std::min(brackPos1.x, brackPos2.x) - xOffset,
-                                            brackStartYPos - ScaleToScreenAndCanvas(bracesWidth)))
+                                    wxPoint(std::min(bracketPos1.x, bracketPos2.x) - xOffset,
+                                            bracketStartYPos - ScaleToScreenAndCanvas(bracesWidth)))
                                 .Anchoring(Anchoring::TopLeftCorner),
                             Icons::IconShape::TopCurlyBrace,
                             wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth), nullptr));

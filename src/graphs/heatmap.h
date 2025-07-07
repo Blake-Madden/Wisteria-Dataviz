@@ -161,7 +161,7 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& continuousColumnName,
                      const std::optional<wxString>& groupColumnName = std::nullopt,
-                     const std::optional<size_t> groupColumnCount = std::nullopt);
+                     std::optional<size_t> groupColumnCount = std::nullopt);
 
         /** @name Grouping Functions
             @brief Functions related to how grouped cells are displayed.

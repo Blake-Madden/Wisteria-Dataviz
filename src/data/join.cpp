@@ -89,14 +89,13 @@ namespace Wisteria::Data
         // prepare the fused dataset with non-join columns from the right dataset
         //--------------------------
         std::set<wxString, wxStringLessNoCase> rightColumnsToJoinBy;
-        std::for_each(byColumns.begin(), byColumns.end(),
-                      [&](const auto& val) { rightColumnsToJoinBy.insert(val.second); });
+        std::ranges::for_each(byColumns,
+                              [&](const auto& val) { rightColumnsToJoinBy.insert(val.second); });
 
         // if right has an active ID column, left does not, and we are not joining by
         // it then add that (this would be an unlikely case)
         if (rightDataset->HasValidIdData() && !mergedData->HasValidIdData() &&
-            rightColumnsToJoinBy.find(rightDataset->GetIdColumn().GetName()) ==
-                rightColumnsToJoinBy.cend())
+            !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
             {
             mergedData->GetIdColumn().SetName(rightDataset->GetIdColumn().GetName());
             outIdColumnsMap =
@@ -106,8 +105,7 @@ namespace Wisteria::Data
         // then the one from the right will not be copied over since a dataset
         // only has one ID column. This is an odd situation, so just log a warning about it.
         if (rightDataset->HasValidIdData() && mergedData->HasValidIdData() &&
-            rightColumnsToJoinBy.find(rightDataset->GetIdColumn().GetName()) ==
-                rightColumnsToJoinBy.cend())
+            !rightColumnsToJoinBy.contains(rightDataset->GetIdColumn().GetName()))
             {
             wxLogWarning(
                 L"'%s': ID column from right dataset will not be copied while left joining.",
@@ -117,7 +115,7 @@ namespace Wisteria::Data
         for (const auto& catCol : rightDataset->GetCategoricalColumns())
             {
             // if cat column is a join key, then we won't be adding that
-            if (rightColumnsToJoinBy.find(catCol.GetName()) != rightColumnsToJoinBy.cend())
+            if (rightColumnsToJoinBy.contains(catCol.GetName()))
                 {
                 continue;
                 }

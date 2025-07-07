@@ -12,21 +12,16 @@
 #ifndef WISTERIA_ICONS_H
 #define WISTERIA_ICONS_H
 
-#include "../math/mathematics.h"
 #include "settings.h"
 #include <array>
 #include <initializer_list>
 #include <memory>
 #include <optional>
-#include <set>
 #include <vector>
 #include <wx/bmpbndl.h>
 #include <wx/dcgraph.h>
 #include <wx/gdicmn.h>
-#include <wx/numformatter.h>
 #include <wx/string.h>
-#include <wx/uilocale.h>
-#include <wx/wx.h>
 
 /// @brief Icons and icon schemes.
 namespace Wisteria::Icons

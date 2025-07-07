@@ -25,7 +25,7 @@ namespace lily_of_the_valley
             @returns A pointer to the parsed text, or null upon failure.*/
         const wchar_t* operator()(const std::wstring_view idl_buffer)
             {
-            static const std::wstring_view HELP_STRING{ L"helpstring(\"" };
+            constexpr static std::wstring_view HELP_STRING{ L"helpstring(\"" };
             clear_log();
             clear();
             if (idl_buffer.empty())

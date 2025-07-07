@@ -32,6 +32,7 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
     #include <wx/msw/private.h>
 #endif
 #include "../../base/colorbrewer.h"
+#include <numbers>
 
 using namespace Wisteria::UI;
 using namespace Wisteria::GraphItems;
@@ -105,18 +106,20 @@ void RibbonMetroArtProvider::SetColourScheme(const wxColour& primary, const wxCo
 
     // Map primary saturation from [0, 1] to [.25, .75]
     bool primary_is_gray = false;
-    static const float gray_saturation_threshold = 0.01f;
+    constexpr static float gray_saturation_threshold = 0.01f;
     if (primary_hsl.saturation <= gray_saturation_threshold)
         {
         primary_is_gray = true;
         }
     else
         {
-        primary_hsl.saturation = std::cos(primary_hsl.saturation * float(M_PI)) * -0.25f + 0.5f;
+        primary_hsl.saturation =
+            std::cos(primary_hsl.saturation * float(std::numbers::pi)) * -0.25f + 0.5f;
         }
 
     // Map primary luminance from [0, 1] to [.23, .83]
-    primary_hsl.luminance = std::cos(primary_hsl.luminance * float(M_PI)) * -0.3f + 0.53f;
+    primary_hsl.luminance =
+        std::cos(primary_hsl.luminance * float(std::numbers::pi)) * -0.3f + 0.53f;
 
     // Map secondary saturation from [0, 1] to [0.16, 0.84]
     bool secondary_is_gray = false;
@@ -126,11 +129,13 @@ void RibbonMetroArtProvider::SetColourScheme(const wxColour& primary, const wxCo
         }
     else
         {
-        secondary_hsl.saturation = std::cos(secondary_hsl.saturation * float(M_PI)) * -0.34f + 0.5f;
+        secondary_hsl.saturation =
+            std::cos(secondary_hsl.saturation * float(std::numbers::pi)) * -0.34f + 0.5f;
         }
 
     // Map secondary luminance from [0, 1] to [0.1, 0.9]
-    secondary_hsl.luminance = std::cos(secondary_hsl.luminance * float(M_PI)) * -0.4f + 0.5f;
+    secondary_hsl.luminance =
+        std::cos(secondary_hsl.luminance * float(std::numbers::pi)) * -0.4f + 0.5f;
 
     const auto LikePrimary = [primary_hsl, primary_is_gray](double h, double s, double l)
     {
@@ -567,10 +572,10 @@ void RibbonMetroArtProvider::DrawPanelBackground(wxDC& dc, wxRibbonPanel* wnd, c
 
     wxRect true_rect(rect);
     RemovePanelPadding(&true_rect);
-    const bool has_ext_button = wnd->HasExtButton();
 
         // draw panel label
         {
+        const bool has_ext_button = wnd->HasExtButton();
         dc.SetFont(m_panel_label_font);
         dc.SetPen(*wxTRANSPARENT_PEN);
         dc.SetBrush(*wxTRANSPARENT_BRUSH);
@@ -981,7 +986,7 @@ void RibbonMetroArtProvider::DrawButtonBarButtonForeground(wxDC& dc, const wxRec
         {
     case wxRIBBON_BUTTONBAR_BUTTON_LARGE:
         {
-        const int padding = 2;
+        constexpr int padding = 2;
         dc.DrawBitmap(bitmap_large, rect.x + (rect.width - bitmap_large.GetWidth()) / 2,
                       rect.y + padding, true);
         int ypos = rect.y + padding + bitmap_large.GetHeight() + padding;

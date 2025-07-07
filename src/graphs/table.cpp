@@ -387,8 +387,8 @@ namespace Wisteria::Graphs
             {
             const auto& cellLabel{ m_table[i][columnToSort] };
             const auto foundPos =
-                std::find_if(labels.cbegin(), labels.cend(), [&cellLabel](const auto& label)
-                             { return label.CmpNoCase(cellLabel.GetDisplayValue()) == 0; });
+                std::ranges::find_if(std::as_const(labels), [&cellLabel](const auto& label)
+                                     { return label.CmpNoCase(cellLabel.GetDisplayValue()) == 0; });
             if (foundPos == labels.cend())
                 {
                 otherLabels.push_back(cellLabel.GetDisplayValue());
@@ -401,7 +401,7 @@ namespace Wisteria::Graphs
             {
             std::ranges::reverse(otherLabels);
             }
-        std::copy(otherLabels.cbegin(), otherLabels.cend(), std::back_inserter(labels));
+        std::ranges::copy(std::as_const(otherLabels), std::back_inserter(labels));
 
         // adapted from
         // https://stackoverflow.com/questions/69764803/how-to-sort-reorder-a-vec-by-indices
@@ -415,7 +415,7 @@ namespace Wisteria::Graphs
                     auto current_idx = idx;
                     while (true)
                         {
-                        auto target_idx = indices[current_idx];
+                        const auto target_idx = indices[current_idx];
                         indices[current_idx] = current_idx;
                         if (indices[target_idx] == target_idx)
                             {
@@ -434,8 +434,8 @@ namespace Wisteria::Graphs
             std::optional<size_t> foundRow{ std::nullopt };
             for (size_t i = 0; i < m_table.size(); ++i)
                 {
-                const auto& cellLabel{ m_table[i][columnToSort] };
-                if (label.CmpNoCase(cellLabel.GetDisplayValue()) == 0)
+                if (const auto& cellLabel{ m_table[i][columnToSort] };
+                    label.CmpNoCase(cellLabel.GetDisplayValue()) == 0)
                     {
                     foundRow = i;
                     break;
@@ -665,7 +665,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void
     Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
-                                 const std::optional<wxString> colName /*= std::nullopt*/,
+                                 const std::optional<wxString>& colName /*= std::nullopt*/,
                                  const std::optional<size_t> colIndex /*= std::nullopt*/,
                                  const std::optional<bool> useAdjacentColors /*= std::nullopt*/,
                                  const std::optional<wxColour>& bkColor /*= std::nullopt*/,
@@ -942,7 +942,7 @@ namespace Wisteria::Graphs
             for (size_t i = 1 + (m_hasGroupHeader ? 1 : 0) /* skip header*/; i < GetRowCount();
                  /*in loop*/)
                 {
-                size_t startingCounter = i;
+                const size_t startingCounter = i;
                 while (i < GetRowCount() - 1 && m_table[i][column].IsText() &&
                        m_table[i + 1][column].IsText() &&
                        m_table[i][column].GetDisplayValue().CmpNoCase(
@@ -992,8 +992,7 @@ namespace Wisteria::Graphs
                     {
                     continue;
                     }
-                const auto val = GetCell(row, column).GetDoubleValue();
-                if (!std::isnan(val))
+                if (const auto val = GetCell(row, column).GetDoubleValue(); !std::isnan(val))
                     {
                     values.insert(val);
                     }
@@ -1005,18 +1004,18 @@ namespace Wisteria::Graphs
                 {
                 return topNPositions;
                 }
-            const auto maxValBaseline = *std::min_element(maxValues.cbegin(), maxValues.cend());
+            const auto maxValBaseline = *std::ranges::min_element(std::as_const(maxValues));
 
             // get the positions of cells less than or equal to the top N values
             for (size_t row = 0; row < GetRowCount(); ++row)
                 {
                 // skip over aggregate rows (i.e., subtotals)
-                if (m_aggregateRows.find(row) != m_aggregateRows.cend())
+                if (m_aggregateRows.contains(row))
                     {
                     continue;
                     }
-                const auto val = GetCell(row, column).GetDoubleValue();
-                if (!std::isnan(val) && compare_doubles_greater_or_equal(val, maxValBaseline))
+                if (const auto val = GetCell(row, column).GetDoubleValue();
+                    !std::isnan(val) && compare_doubles_greater_or_equal(val, maxValBaseline))
                     {
                     topNPositions.push_back({ row, column });
                     }
@@ -1041,8 +1040,7 @@ namespace Wisteria::Graphs
                     {
                     continue;
                     }
-                auto val = GetCell(row, column).GetDoubleValue();
-                if (!std::isnan(val))
+                if (auto val = GetCell(row, column).GetDoubleValue(); !std::isnan(val))
                     {
                     values.push_back(std::move(val));
                     }
@@ -1053,15 +1051,14 @@ namespace Wisteria::Graphs
             for (size_t row = 0; row < GetRowCount(); ++row)
                 {
                 // skip over aggregate rows (i.e., subtotals)
-                if (m_aggregateRows.find(row) != m_aggregateRows.cend())
+                if (m_aggregateRows.contains(row))
                     {
                     continue;
                     }
-                const auto val = GetCell(row, column).GetDoubleValue();
-                if (!std::isnan(val))
+                if (const auto val = GetCell(row, column).GetDoubleValue(); !std::isnan(val))
                     {
-                    const auto zScore = statistics::z_score(val, meanVal, sdVal);
-                    if (std::abs(zScore) > outlierThreshold)
+                    if (const auto zScore = statistics::z_score(val, meanVal, sdVal);
+                        std::abs(zScore) > outlierThreshold)
                         {
                         outlierPositions.push_back({ row, column });
                         }
@@ -1102,24 +1099,26 @@ namespace Wisteria::Graphs
                     }
                 // if cell consumes multiple rows, then divide its height across them
                 // and set the cells in the rows beneath to the remaining height
-                rowHeights[currentRow] = std::max(safe_divide(bBox.GetHeight(), cell.m_rowCount),
-                                                  rowHeights[currentRow]);
+                rowHeights[currentRow] = std::max(
+                    safe_divide<int>(bBox.GetHeight(), cell.m_rowCount), rowHeights[currentRow]);
                 if (cell.m_rowCount > 1)
                     {
                     auto remainingRows = cell.m_rowCount - 1;
                     auto nextRow = currentRow + 1;
                     while (remainingRows > 0 && nextRow < GetRowCount())
                         {
-                        rowHeights[nextRow] = std::max(
-                            safe_divide(bBox.GetHeight(), cell.m_rowCount), rowHeights[nextRow]);
+                        rowHeights[nextRow] =
+                            std::max(safe_divide<int>(bBox.GetHeight(), cell.m_rowCount),
+                                     rowHeights[nextRow]);
                         ++nextRow;
                         --remainingRows;
                         }
                     }
                 // if cell consumes multiple columns, then divide its width across them
                 // and set the proceeding columns to the remaining width
-                columnWidths[currentColumn] = std::max(
-                    safe_divide(bBox.GetWidth(), cell.m_columnCount), columnWidths[currentColumn]);
+                columnWidths[currentColumn] =
+                    std::max(safe_divide<int>(bBox.GetWidth(), cell.m_columnCount),
+                             columnWidths[currentColumn]);
                 if (cell.m_columnCount > 1)
                     {
                     auto remainingColumns = cell.m_columnCount - 1;
@@ -1127,7 +1126,7 @@ namespace Wisteria::Graphs
                     while (remainingColumns > 0 && nextColumn < row.size())
                         {
                         columnWidths[nextColumn] =
-                            std::max(safe_divide(bBox.GetWidth(), cell.m_columnCount),
+                            std::max(safe_divide<int>(bBox.GetWidth(), cell.m_columnCount),
                                      columnWidths[nextColumn]);
                         ++nextColumn;
                         --remainingColumns;
@@ -1340,7 +1339,7 @@ namespace Wisteria::Graphs
                 0;
 
         // measure the text
-        wxPoint pts[4];
+        std::array<wxPoint, 4> pts{};
         std::vector<std::unique_ptr<Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         size_t currentRow{ 0 }, currentColumn{ 0 };
@@ -1348,7 +1347,7 @@ namespace Wisteria::Graphs
         wxCoord currentYPos{ drawArea.GetY() };
         int columnsToOverwrite{ 0 };
         std::set<std::pair<size_t, size_t>> rowCellsToSkip;
-        m_cachedCellRects.resize(GetRowCount(), std::vector<wxRect>(GetColumnCount(), wxRect()));
+        m_cachedCellRects.resize(GetRowCount(), std::vector<wxRect>(GetColumnCount(), wxRect{}));
         for (const auto& row : m_table)
             {
             currentColumn = 0;
@@ -1403,11 +1402,11 @@ namespace Wisteria::Graphs
                         }
                     }
                 // top left corner, going clockwise
-                pts[0] = wxPoint(currentXPos, currentYPos);
-                pts[1] = wxPoint((currentXPos + currentColumnWidth), currentYPos);
-                pts[2] = wxPoint((currentXPos + currentColumnWidth),
-                                 (currentYPos + currentColumnHeight));
-                pts[3] = wxPoint(currentXPos, (currentYPos + currentColumnHeight));
+                pts[0] = wxPoint{ currentXPos, currentYPos };
+                pts[1] = wxPoint{ (currentXPos + currentColumnWidth), currentYPos };
+                pts[2] = wxPoint{ (currentXPos + currentColumnWidth),
+                                  (currentYPos + currentColumnHeight) };
+                pts[3] = wxPoint{ currentXPos, (currentYPos + currentColumnHeight) };
 
                 wxRect boxRect(pts[0], pts[2]);
                 // if box is going outside the table by a pixel or so, then trim that off
@@ -1538,10 +1537,9 @@ namespace Wisteria::Graphs
             for (size_t colWidthCounter = 0; colWidthCounter < columnWidths.size();
                  ++colWidthCounter)
                 {
-                const auto& cell = GetCell(currentRow, currentColumn);
                 // build a list of cells in the following rows that should be skipped
                 // in the next loop if this one is multi-row
-                if (cell.m_rowCount > 1)
+                if (const auto& cell = GetCell(currentRow, currentColumn); cell.m_rowCount > 1)
                     {
                     auto rowsToSkip = cell.m_rowCount - 1;
                     auto nextRow = currentRow + 1;
@@ -1584,8 +1582,9 @@ namespace Wisteria::Graphs
                                        false;
                 if (currentRow > 0 && !aboveCellHighlighted)
                     {
-                    auto aboveCellsParent = GetEclipsingRowWiseCell(currentRow - 1, currentColumn);
-                    if (aboveCellsParent.has_value())
+                    if (auto aboveCellsParent =
+                            GetEclipsingRowWiseCell(currentRow - 1, currentColumn);
+                        aboveCellsParent.has_value())
                         {
                         aboveCellHighlighted = aboveCellsParent.value().IsHighlighted();
                         }
@@ -1642,21 +1641,21 @@ namespace Wisteria::Graphs
                              parentCell.value().m_showRightBorder)
                         {
                         highlightedBorderLines->AddLine(
-                            wxPoint(currentXPos, currentYPos),
-                            wxPoint(currentXPos, currentYPos + rowHeight));
+                            wxPoint{ currentXPos, currentYPos },
+                            wxPoint{ currentXPos, currentYPos + rowHeight });
                         isPreviousColumnHighlighted = true;
                         }
                     else if (isPreviousColumnHighlighted)
                         {
                         highlightedBorderLines->AddLine(
-                            wxPoint(currentXPos, currentYPos),
-                            wxPoint(currentXPos, currentYPos + rowHeight));
+                            wxPoint{ currentXPos, currentYPos },
+                            wxPoint{ currentXPos, currentYPos + rowHeight });
                         isPreviousColumnHighlighted = false;
                         }
                     else
                         {
-                        borderLines->AddLine(wxPoint(currentXPos, currentYPos),
-                                             wxPoint(currentXPos, currentYPos + rowHeight));
+                        borderLines->AddLine(wxPoint{ currentXPos, currentYPos },
+                                             wxPoint{ currentXPos, currentYPos + rowHeight });
                         }
                     }
                 currentXPos += colWidth;
@@ -1760,8 +1759,7 @@ namespace Wisteria::Graphs
                 GetScaling());
             noteConnectionLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
-            auto gutterSide = DeduceGutterSide(note);
-            if (gutterSide == Side::Right)
+            if (auto gutterSide = DeduceGutterSide(note); gutterSide == Side::Right)
                 {
                 // draw lines from the middle of the cells to a little bit outside the
                 // table going into the right gutter
@@ -1958,8 +1956,7 @@ namespace Wisteria::Graphs
             {
             for (size_t j = 0; j < colCount; ++j)
                 {
-                auto& cell = m_table[i][j];
-                if (cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                if (auto& cell = m_table[i][j]; cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
                     {
                     return CellPosition{ i, j };
                     }
@@ -1995,8 +1992,7 @@ namespace Wisteria::Graphs
             {
             for (size_t i = 0; i < m_table.size(); ++i)
                 {
-                auto& cell = m_table[i][0];
-                if (cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                if (auto& cell = m_table[i][0]; cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
                     {
                     return i;
                     }
@@ -2025,10 +2021,10 @@ namespace Wisteria::Graphs
         };
         // clang-format on
 
-        const auto ftChar = footnoteChars.find(m_footnotes.size() + 1);
-        if (ftChar != footnoteChars.cend())
+        if (const auto ftChar = footnoteChars.find(m_footnotes.size() + 1);
+            ftChar != footnoteChars.cend())
             {
-            if (auto foundCell = FindCell(cellValue))
+            if (auto* foundCell = FindCell(cellValue))
                 {
                 // if changing format to text, then preserve its original alignment
                 if (foundCell->IsDate() || foundCell->IsNumeric())

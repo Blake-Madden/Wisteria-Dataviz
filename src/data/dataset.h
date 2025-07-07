@@ -12,8 +12,6 @@
 #ifndef WISTERIA_DATASET_H
 #define WISTERIA_DATASET_H
 
-#include "../base/enums.h"
-#include "../debug/debug_assert.h"
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
 #include "../math/mathematics.h"
@@ -31,9 +29,7 @@
 #include <vector>
 #include <wx/colour.h>
 #include <wx/datetime.h>
-#include <wx/file.h>
 #include <wx/filename.h>
-#include <wx/numformatter.h>
 #include <wx/regex.h>
 #include <wx/string.h>
 #include <wx/uilocale.h>
@@ -282,7 +278,7 @@ namespace Wisteria::Data
     /// @brief An integral column with a string lookup table.
     /// @details This is useful for categorical data that is stored as numeric codes,
     ///     but have string labels that represent them.
-    /// @note The strings in this table are case insensitive.
+    /// @note The strings in this table are case-insensitive.
     class ColumnWithStringTable final : public Column<GroupIdType>
         {
         friend class Dataset;
@@ -336,7 +332,7 @@ namespace Wisteria::Data
         ///     This function has to call FindMissingDataCode() (making it less than optimal)
         ///     and is only meant for convenience.
         [[nodiscard]]
-        bool IsMissingData(const size_t index) const final;
+        bool IsMissingData(size_t index) const final;
 
         /// @returns @c true if the column contains any missing data.
         [[nodiscard]]
@@ -364,7 +360,7 @@ namespace Wisteria::Data
                 the value will be lumped into an "other" label.
             @param otherLabel The label to use for the new category where low-frequency
                 values are lumped into.*/
-        void CollapseMin(const size_t minVal, const wxString& otherLabel = _(L"Other"));
+        void CollapseMin(size_t minVal, const wxString& otherLabel = _(L"Other"));
 
         /** @brief Collapses strings into an "Other" categorical,
                 except for a list of provided labels.
@@ -867,7 +863,7 @@ namespace Wisteria::Data
             }
 
         /** @brief Set the maximum value that can be seen as discrete when deducing between
-                continuous and categorical data. If an integer is larger then this value
+                continuous and categorical data. If an integer is larger than this value
                 in a column, then it will classify the column as continuous.
             @param maxDiscreteValue The maximum value to allow in a column to still consider
                 it discrete (i.e., categorical).
@@ -1001,18 +997,20 @@ namespace Wisteria::Data
         static void RemoveColumnNamesFromList(std::vector<wxString>& colNames,
                                               const std::initializer_list<wxString>& colsToRemove)
             {
-            auto endOfColumns = std::remove_if(colNames.begin(), colNames.end(),
-                                               [&](const auto& colName)
+            auto endOfColumns =
+                std::ranges::remove_if(colNames,
+                                       [&](const auto& colName)
+                                       {
+                                           for (const auto& removeName : colsToRemove)
                                                {
-                                                   for (const auto& removeName : colsToRemove)
-                                                       {
-                                                       if (colName.CmpNoCase(removeName) == 0)
-                                                           {
-                                                           return true;
-                                                           }
-                                                       }
-                                                   return false;
-                                               });
+                                               if (colName.CmpNoCase(removeName) == 0)
+                                                   {
+                                                   return true;
+                                                   }
+                                               }
+                                           return false;
+                                       })
+                    .begin();
             colNames.erase(endOfColumns, colNames.end());
             }
 
@@ -1054,7 +1052,7 @@ namespace Wisteria::Data
 
         /// @brief Resizes the dataset.
         /// @param rowCount The number of rows to set the dataset to. If increasing the
-        ///     number or rows, new rows will be filled with missing data. If decreasing the
+        ///     number of rows, new rows will be filled with missing data. If decreasing the
         ///     number of rows, then the data will be truncated.
         /// @warning Prefer using Reserve() and AddRow() to allocate memory and to write
         ///     data to the dataset. This should only be used if using Fill() for
@@ -1212,9 +1210,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         CategoricalColumnConstIterator GetCategoricalColumn(const wxString& columnName) const
             {
-            return std::find_if(GetCategoricalColumns().cbegin(), GetCategoricalColumns().cend(),
-                                [&columnName](const auto& item)
-                                { return item.GetName().CmpNoCase(columnName) == 0; });
+            return std::ranges::find_if(GetCategoricalColumns(), [&columnName](const auto& item)
+                                        { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
         /** @brief Gets a writable iterator to a categorical column by name.
@@ -1227,9 +1224,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         CategoricalColumnIterator GetCategoricalColumn(const wxString& columnName)
             {
-            return std::find_if(GetCategoricalColumns().begin(), GetCategoricalColumns().end(),
-                                [&columnName](const auto& item)
-                                { return item.GetName().CmpNoCase(columnName) == 0; });
+            return std::ranges::find_if(GetCategoricalColumns(), [&columnName](const auto& item)
+                                        { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
         /** @brief Gets an iterator to a date column by name.
@@ -1241,9 +1237,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         DateColumnConstIterator GetDateColumn(const wxString& columnName) const
             {
-            return std::find_if(GetDateColumns().cbegin(), GetDateColumns().cend(),
-                                [&columnName](const auto& item)
-                                { return item.GetName().CmpNoCase(columnName) == 0; });
+            return std::ranges::find_if(GetDateColumns(), [&columnName](const auto& item)
+                                        { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
         /** @brief Gets a writable iterator to a date column by name.
@@ -1256,9 +1251,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         DateColumnIterator GetDateColumn(const wxString& columnName)
             {
-            return std::find_if(GetDateColumns().begin(), GetDateColumns().end(),
-                                [&columnName](const auto& item)
-                                { return item.GetName().CmpNoCase(columnName) == 0; });
+            return std::ranges::find_if(GetDateColumns(), [&columnName](const auto& item)
+                                        { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
         /** @brief Gets an iterator to a continuous column by name.
@@ -1270,9 +1264,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         ContinuousColumnConstIterator GetContinuousColumn(const wxString& columnName) const
             {
-            return std::find_if(GetContinuousColumns().cbegin(), GetContinuousColumns().cend(),
-                                [&columnName](const auto& item)
-                                { return item.GetName().CmpNoCase(columnName) == 0; });
+            return std::ranges::find_if(GetContinuousColumns(), [&columnName](const auto& item)
+                                        { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
         /** @brief Gets a writable iterator to a continuous column by name.
@@ -1285,9 +1278,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         ContinuousColumnIterator GetContinuousColumn(const wxString& columnName)
             {
-            return std::find_if(GetContinuousColumns().begin(), GetContinuousColumns().end(),
-                                [&columnName](const auto& item)
-                                { return item.GetName().CmpNoCase(columnName) == 0; });
+            return std::ranges::find_if(GetContinuousColumns(), [&columnName](const auto& item)
+                                        { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
         /// @returns The continuous columns.
@@ -1370,7 +1362,7 @@ namespace Wisteria::Data
                 If there is no grouping being used, then the full categorical column is reviewed.
             @returns The min and max string values.
             @note If there are no valid values, then will return a pair of empty strings.\n
-                Also, the comparison being performed is involves comparing the string values
+                Also, the comparison being performed involves comparing the string values
                 in the string table (case-insensitively), not the underlying (numeric) codes.
             @throws std::runtime_error If provided columns cannot be found or if a grouping
                 column is provided without a group ID, then throws an exception.\n
@@ -1380,7 +1372,7 @@ namespace Wisteria::Data
         std::pair<wxString, wxString>
         GetCategoricalMinMax(const wxString& column,
                              const std::optional<wxString>& groupColumn = std::nullopt,
-                             const std::optional<GroupIdType> groupId = std::nullopt) const;
+                             std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-empty strings) of the specified
                 categorical column, (optionally) where the group ID is @c groupId.
             @param column The name of the categorical column.
@@ -1394,10 +1386,9 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        size_t
-        GetCategoricalColumnValidN(const wxString& column,
-                                   const std::optional<wxString>& groupColumn = std::nullopt,
-                                   const std::optional<GroupIdType> groupId = std::nullopt) const;
+        size_t GetCategoricalColumnValidN(const wxString& column,
+                                          const std::optional<wxString>& groupColumn = std::nullopt,
+                                          std::optional<GroupIdType> groupId = std::nullopt) const;
 
         /** @brief Gets the min and max values from the specified continuous column,
                 (optionally) where the group ID is @c groupId.
@@ -1415,7 +1406,7 @@ namespace Wisteria::Data
         std::pair<double, double>
         GetContinuousMinMax(const std::variant<wxString, size_t>& column,
                             const std::optional<wxString>& groupColumn = std::nullopt,
-                            const std::optional<GroupIdType> groupId = std::nullopt) const;
+                            std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Gets the total from the specified continuous column,
                 (optionally) where the group ID is @c groupId.
             @param column The name or index of the continuous column.
@@ -1431,7 +1422,7 @@ namespace Wisteria::Data
         [[nodiscard]]
         double GetContinuousTotal(const std::variant<wxString, size_t>& column,
                                   const std::optional<wxString>& groupColumn = std::nullopt,
-                                  const std::optional<GroupIdType> groupId = std::nullopt) const;
+                                  std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column,
                 (optionally) where the group ID is @c groupId.
             @param column The name or index of the continuous column.
@@ -1445,10 +1436,9 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
-        size_t
-        GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
-                                  const std::optional<wxString>& groupColumn = std::nullopt,
-                                  const std::optional<GroupIdType> groupId = std::nullopt) const;
+        size_t GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
+                                         const std::optional<wxString>& groupColumn = std::nullopt,
+                                         std::optional<GroupIdType> groupId = std::nullopt) const;
 
         /// @brief Sorts the columns by name.
         /// @note The columns will still be grouped by type (e.g., continuous vs. categorical),
@@ -1498,7 +1488,7 @@ namespace Wisteria::Data
                 the value will be lumped into an "other" label.
             @param otherLabel The label to use for the new category where
                 low-frequency values are lumped into.*/
-        void CollapseMin(const wxString& colName, const size_t minVal,
+        void CollapseMin(const wxString& colName, size_t minVal,
                          const wxString& otherLabel = _(L"Other"));
 
         /** @brief Collapses strings into an "Other" categorical,
@@ -1575,7 +1565,7 @@ namespace Wisteria::Data
             @sa ImportInfoFromPreview().*/
         [[nodiscard]]
         static ColumnPreviewInfo
-        ReadColumnInfoRaw(const wxString& fileText, const wchar_t delimiter,
+        ReadColumnInfoRaw(const wxString& fileText, wchar_t delimiter,
                           const ImportInfo& importInfo = ImportInfo{},
                           std::optional<size_t> rowPreviewCount = std::nullopt);
 
@@ -1613,7 +1603,7 @@ namespace Wisteria::Data
                 GroupColumns({ L"Name" }),
                 L',');
             @endcode*/
-        void ImportText(const wxString& filePath, const ImportInfo& info, const wchar_t delimiter);
+        void ImportText(const wxString& filePath, const ImportInfo& info, wchar_t delimiter);
         /** @brief Imports a file based on its extension.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.\n
@@ -1634,8 +1624,7 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportText(), ReadColumnInfo(), ImportInfoFromPreview().*/
-        void ImportTextRaw(const wxString& fileText, const ImportInfo& info,
-                           const wchar_t delimiter);
+        void ImportTextRaw(const wxString& fileText, const ImportInfo& info, wchar_t delimiter);
 
         /** @brief Imports a comma-separated file into the dataset.
             @details This is a shortcut for ImportText(), using commas as the column separator.
@@ -1694,8 +1683,7 @@ namespace Wisteria::Data
             @throws std::runtime_error If the file can't be written to.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void ExportText(const wxString& filePath, const wchar_t delimiter,
-                        const bool quoteColumns) const;
+        void ExportText(const wxString& filePath, wchar_t delimiter, bool quoteColumns) const;
 
         /** @brief Exports the dataset to as a tab-delimited text file.
             @details This is a shortcut for ExportText(), using tabs as the column separator.
@@ -1822,9 +1810,9 @@ namespace Wisteria::Data
         [[nodiscard]]
         static double ConvertToDouble(const std::wstring& input, double MDRecodeValue);
         [[nodiscard]]
-        static GroupIdType ConvertToGroupId(const std::wstring& input, const GroupIdType mdCode);
+        static GroupIdType ConvertToGroupId(const std::wstring& input, GroupIdType mdCode);
         [[nodiscard]]
-        static wxDateTime ConvertToDate(const wxString& input, const DateImportMethod method,
+        static wxDateTime ConvertToDate(const wxString& input, DateImportMethod method,
                                         const wxString& formatStr);
 
         std::wstring m_name;

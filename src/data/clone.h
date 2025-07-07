@@ -35,7 +35,7 @@ namespace Wisteria::Data
             @param fromDataset The dataset to clone.
             @warning The source dataset should not be altered after calling this.
                 Pointers to its internal structure (e.g., columns) are constructed
-                here and it is assumed that a cloning will take place prior to any
+                here, and it is assumed that a cloning will take place prior to any
                 changes to the dataset being cloned.*/
         void SetSourceData(const std::shared_ptr<const Dataset>& fromDataset);
         /// @brief Creates a clone of the original dataset.

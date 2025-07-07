@@ -9,6 +9,9 @@
 #include "label.h"
 #include "polygon.h"
 #include "shapes.h"
+#include <wx/fontenum.h>
+#include <wx/regex.h>
+#include <wx/tokenzr.h>
 
 namespace Wisteria::GraphItems
     {
@@ -405,7 +408,7 @@ namespace Wisteria::GraphItems
                      ScaleToScreenAndCanvas(GetRightPadding());
             height += spaceBetweenLines + ScaleToScreenAndCanvas(GetTopPadding()) +
                       ScaleToScreenAndCanvas(GetBottomPadding());
-            // now, if top line is a header, then measure that and see if needs to increase the
+            // now, if top line is a header, then measure that and see if it needs to increase the
             // width of the box
             if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos &&
                 secondLineStart != std::wstring::npos)
@@ -1262,8 +1265,8 @@ namespace Wisteria::GraphItems
         auto splitText{ GetText() };
         // add newline after all conjunctions
         const wxString andOrString{ L"(&|and|und|y|et|or|oder|o|ou)" };
-        const wxRegEx reConjuctions(wxString::Format(L"(?i)\\b%s\\b", andOrString));
-        const auto replacedCount = reConjuctions.ReplaceAll(&splitText, L"\\1\n");
+        const wxRegEx reConjunctions(wxString::Format(L"(?i)\\b%s\\b", andOrString));
+        const auto replacedCount = reConjunctions.ReplaceAll(&splitText, L"\\1\n");
         SetText(splitText);
         return (replacedCount > 0);
         }
@@ -1643,8 +1646,7 @@ namespace Wisteria::GraphItems
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto currentLineOffset =
-                (GetLinesIgnoringLeftMargin().find(currentLineNumber) !=
-                 GetLinesIgnoringLeftMargin().cend()) ?
+                (GetLinesIgnoringLeftMargin().contains(currentLineNumber)) ?
                     0 :
                     ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
                         CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth();
@@ -1874,8 +1876,7 @@ namespace Wisteria::GraphItems
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto currentLineOffset =
-                (GetLinesIgnoringLeftMargin().find(currentLineNumber) !=
-                 GetLinesIgnoringLeftMargin().cend()) ?
+                (GetLinesIgnoringLeftMargin().contains(currentLineNumber)) ?
                     0 :
                     ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
                         CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth();
@@ -1924,7 +1925,7 @@ namespace Wisteria::GraphItems
             {
             theFont.SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
             }
-        // Fix the facename. Of interest is that some versions of macOS use hidden fonts for their
+        // Fix the face name. Of interest is that some versions of macOS use hidden fonts for their
         // default font, which won't be displayed in a standard font selection dialog. We have to
         // remap these here. OSX 10.9 font
         if (theFont.GetFaceName() == L".Lucida Grande UI")
@@ -1951,7 +1952,7 @@ namespace Wisteria::GraphItems
                 { wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
                   L"Helvetica Neue", L"Lucida Grande", L"Calibri", L"Arial", L"Courier New" }));
             }
-        assert(!theFont.GetFaceName().empty() && L"Corrected font facename is empty.");
+        assert(!theFont.GetFaceName().empty() && L"Corrected font face name is empty.");
         // if font is still messed up, fall back to system default
         assert(theFont.IsOk());
         if (!theFont.IsOk())

@@ -46,8 +46,8 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                     std::advance(cpp_text, 1);
                     continue;
                     }
-                const wchar_t* const end = std::wcsstr(cpp_text, L"*/");
-                if (end && end < endSentinel)
+                if (const wchar_t* const end = std::wcsstr(cpp_text, L"*/");
+                    end && end < endSentinel)
                     {
                     add_characters_strip_markup(cpp_text, end - cpp_text);
                     add_characters({ L"\n\n", 2 });
@@ -306,8 +306,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                 }
             /* Tags that should be skipped (i.e., not copied into the text) and that should
                also have a newline added before and after their text.*/
-            else if (m_doxygen_tags_single_line.find(doxygenTag) !=
-                     m_doxygen_tags_single_line.cend())
+            else if (m_doxygen_tags_single_line.contains(doxygenTag))
                 {
                 add_character(L'\n');
                 std::advance(cpp_text, doxygenTag.length());
@@ -328,8 +327,8 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                     }
                 continue;
                 }
-            // tags that we want to skip over, but preserve the text around it, just step over it
-            else if (m_doxygen_tags.find(doxygenTag) != m_doxygen_tags.cend())
+            // tags that we want to skip over, but preserve the surrounding text, just step over it
+            else if (m_doxygen_tags.contains(doxygenTag))
                 {
                 std::advance(cpp_text, doxygenTag.length());
                 // scan over space(s)
@@ -342,7 +341,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                 }
             else if (doxygenTag == L"htmlonly")
                 {
-                // scan until be get to a space (skipping the tag)
+                // scan until we get to a space (skipping the tag)
                 std::advance(cpp_text, doxygenTag.length());
                 startPos = cpp_text;
                 // go to the end of the HTML block
@@ -359,7 +358,7 @@ void cpp_extract_text::add_characters_strip_markup(const wchar_t* cpp_text,
                     startPos = cpp_text = std::next(endBlock, 11);
                     }
                 }
-            // ..or a tag name that we want to copy over as part of the text
+            // ...or a tag name that we want to copy over as part of the text
             else
                 {
                 const bool authorCommand = (doxygenTag == L"author" || doxygenTag == L"authors");

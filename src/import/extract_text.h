@@ -118,7 +118,7 @@ namespace lily_of_the_valley
         void resize_buffer(const size_t newSize) { m_text_buffer.resize(newSize); }
 
         /// @brief Empties the log of any previous parsing issues.
-        void clear_log() { m_log.clear(); }
+        void clear_log() const { m_log.clear(); }
 
         /** @brief Adds a message to the report logging system.
             @param message The message to log.*/

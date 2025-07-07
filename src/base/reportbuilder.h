@@ -68,15 +68,15 @@ namespace Wisteria
         static auto wxStringVectorToWstringVector(const std::vector<wxString>& inVec)
             {
             std::vector<std::wstring> outVec(inVec.size());
-            std::transform(inVec.cbegin(), inVec.cend(), outVec.begin(),
-                           [](const auto& val) { return val.ToStdWstring(); });
+            std::ranges::transform(inVec, outVec.begin(),
+                                   [](const auto& val) { return val.ToStdWstring(); });
             return outVec;
             }
 
         /// @brief Loads the datasets node into @c m_datasets.
         /// @details These datasets are used by objects throughout the report,
         ///     referencing them by name.
-        /// @param datasetNode The datasets node.
+        /// @param datasetsNode The datasets node.
         void LoadDatasets(const wxSimpleJSON::Ptr_t& datasetsNode);
         /// @brief Loads the constants node into @c m_values.
         /// @details This is a key/value map used by objects throughout the report,
@@ -100,7 +100,7 @@ namespace Wisteria
         /// @brief Loads the merges node into @c m_datasets.
         /// @details These (merged) datasets are used by objects throughout the report,
         ///     referencing them by name.
-        /// @param pivotsNode The pivots node.
+        /// @param mergesNode The merges node.
         /// @param datasetToMerge The dataset connected to the current dataset node.
         void LoadMerges(const wxSimpleJSON::Ptr_t& mergesNode,
                         const std::shared_ptr<const Data::Dataset>& datasetToMerge);
@@ -116,7 +116,7 @@ namespace Wisteria
         /// @brief Loads the base properties for a graph item
         /// @param itemNode The JSON node to parse.
         /// @param item[in,out] The item to write the properties to.
-        void LoadItem(const wxSimpleJSON::Ptr_t& itemNode, GraphItems::GraphItemBase& item);
+        void LoadItem(const wxSimpleJSON::Ptr_t& itemNode, GraphItems::GraphItemBase& item) const;
         /// @brief Finalizes loading options for a graph.
         /// @details This will load general graph options from a node,
         ///     apply them to the graph, and add the graph (and possibly its legend) to the canvas.
@@ -263,9 +263,9 @@ namespace Wisteria
                                                        size_t& currentColumn);
         /// @brief Loads base-level settings for bar charts.
         /// @param graphNode The graph node to parse.
-        /// @param graph The bar chart to load the base settings to.
+        /// @param barChart The bar chart to load the base settings to.
         void LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
-                          std::shared_ptr<Graphs::BarChart> barChart);
+                          std::shared_ptr<Graphs::BarChart> barChart) const;
         /// @brief Loads a heatmap node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -287,11 +287,11 @@ namespace Wisteria
                                                    size_t& currentColumn);
 
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode);
+        std::unique_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode) const;
 
         [[nodiscard]]
         std::unique_ptr<GraphItems::FillableShape>
-        LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode);
+        LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode) const;
 
         /// @brief Loads properties from a JSON node into an axis.
         /// @param axisNode The node to parse.
@@ -301,12 +301,12 @@ namespace Wisteria
         /// @brief Loads properties from a JSON node into a pen.
         /// @param penNode The node to parse.
         /// @param pen[in,out] The pen to apply the loaded settings to.
-        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen);
+        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen) const;
 
         /// @brief Loads properties from a JSON node into a brush.
         /// @param brushNode The node to parse.
         /// @param brush[in,out] The brush to apply the loaded settings to.
-        void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush);
+        void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush) const;
 
         /// @brief Loads a row or column position for a table from a node.
         /// @details This support loading the @c origin and @c offset properties.
@@ -323,13 +323,13 @@ namespace Wisteria
         /// @param imageNode The image node to parse.
         /// @returns The image that was loaded, or null upon failure.
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode);
+        std::unique_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode) const;
 
         /// @brief Loads a bitmap node.
         /// @param bmpNode The bitmap node to parse.
         /// @returns The bitmap that was loaded (call `IsOk()` to validate it).
         [[nodiscard]]
-        wxBitmap LoadImageFile(const wxSimpleJSON::Ptr_t& bmpNode);
+        wxBitmap LoadImageFile(const wxSimpleJSON::Ptr_t& bmpNode) const;
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.
@@ -338,21 +338,21 @@ namespace Wisteria
         /// @returns A Label object, or null upon failure.
         [[nodiscard]]
         std::shared_ptr<GraphItems::Label> LoadLabel(const wxSimpleJSON::Ptr_t& labelNode,
-                                                     const GraphItems::Label& labelTemplate);
+                                                     const GraphItems::Label& labelTemplate) const;
 
         /// @brief Loads a color scheme from a node.
         /// @param colorSchemeNode The node to parse.
         /// @returns The loaded color scheme, or null upon failure.
         [[nodiscard]]
         std::shared_ptr<Colors::Schemes::ColorScheme>
-        LoadColorScheme(const wxSimpleJSON::Ptr_t& colorSchemeNode);
+        LoadColorScheme(const wxSimpleJSON::Ptr_t& colorSchemeNode) const;
 
         /// @brief Loads a brush scheme from a node.
         /// @param brushSchemeNode The node to parse.
         /// @returns The loaded brush scheme, or null upon failure.
         [[nodiscard]]
         std::shared_ptr<Brushes::Schemes::BrushScheme>
-        LoadBrushScheme(const wxSimpleJSON::Ptr_t& brushSchemeNode);
+        LoadBrushScheme(const wxSimpleJSON::Ptr_t& brushSchemeNode) const;
 
         /// @brief Loads an icon scheme from a node.
         /// @param iconSchemeNode The node to parse.
@@ -366,13 +366,13 @@ namespace Wisteria
         /// @returns The loaded line style scheme, or null upon failure.
         [[nodiscard]]
         std::shared_ptr<Wisteria::LineStyleScheme>
-        LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode);
+        LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode) const;
 
         /** @brief Loads additional transformation features and applies them to a dataset.
             @param dsNode The datasource node that the dataset was loaded from.
             @param[in,out] dataset The dataset apply the transformations to.*/
         void LoadDatasetTransformations(const wxSimpleJSON::Ptr_t& dsNode,
-                                        std::shared_ptr<Data::Dataset>& dataset);
+                                        const std::shared_ptr<Data::Dataset>& dataset);
 
         /// @brief Finds a position on the axis based on the value from a node.
         [[nodiscard]]
@@ -382,23 +382,23 @@ namespace Wisteria
         /// @brief If @c path is fully specified, then returns @c path.
         ///     Otherwise, tries to return the path relative to the project file.
         [[nodiscard]]
-        wxString NormalizeFilePath(const wxString& path);
+        wxString NormalizeFilePath(const wxString& path) const;
 
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and convert into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]]
-        wxColour ConvertColor(wxString colorStr);
+        wxColour ConvertColor(wxString colorStr) const;
         /// @brief Loads a color from a string.
         /// @param colorNode A color node to parse.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]]
-        wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode);
+        wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode) const;
 
         [[nodiscard]]
-        std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node)
+        std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node) const
             {
             if (node->IsValueNumber())
                 {
@@ -439,7 +439,7 @@ namespace Wisteria
         [[nodiscard]]
         ValuesType CalcFormula(const wxString& formula,
                                const std::shared_ptr<const Data::Dataset>& dataset) const;
-        // can be a continuous min/max or string (case insensitive)
+        // can be a continuous min/max or string (case-insensitive)
         [[nodiscard]]
         ValuesType CalcMinMax(const wxString& formula,
                               const std::shared_ptr<const Data::Dataset>& dataset) const;
@@ -490,7 +490,7 @@ namespace Wisteria
             return L"[ ]*\\)";
             }
 
-        // a parameter that is either wrapped in tickmarks (usually a var name),
+        // a parameter that is either wrapped in tick marks (usually a var name),
         // double curly braces (a sub-formula), or empty string (no parameter)
         [[nodiscard]]
         static wxString ColumnNameOrFormulaRegEx()
@@ -510,7 +510,7 @@ namespace Wisteria
             return L"[ ]*,[ ]*";
             }
 
-        // a parameter that is either wrapped in tickmarks or empty string (no parameter)
+        // a parameter that is either wrapped in tick marks or empty string (no parameter)
         [[nodiscard]]
         static wxString StringOrEmptyRegEx()
             {
@@ -518,7 +518,7 @@ namespace Wisteria
             }
 
         // Converts a formula parameter into a column name(s) or group value.
-        // Arguments may be a hard-coded column name (which will be enclosed in tickmarks),
+        // Arguments may be a hard-coded column name (which will be enclosed in tick marks),
         // or another formula (enclosed in {{}}). If the latter, this will calculate
         // that formula (which can be a column selection function, column aggregate function,
         // or group value).
@@ -533,7 +533,8 @@ namespace Wisteria
         /// @brief Converts a multiple column selection function into a vector of column names.
         [[nodiscard]]
         std::optional<std::vector<wxString>>
-        ExpandColumnSelections(wxString var, const std::shared_ptr<const Data::Dataset>& dataset);
+        ExpandColumnSelections(wxString var,
+                               const std::shared_ptr<const Data::Dataset>& dataset) const;
         /// @brief Converts a single column selection function into a column name.
         [[nodiscard]]
         wxString ExpandColumnSelection(const wxString& formula,
