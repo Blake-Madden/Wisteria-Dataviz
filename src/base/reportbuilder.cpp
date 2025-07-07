@@ -105,7 +105,8 @@ namespace Wisteria
         if (pagesProperty->IsOk())
             {
             std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
-            for (const auto pages = pagesProperty->GetValueArrayObject(); const auto& page : pages)
+            const auto pages = pagesProperty->GetValueArrayObject();
+            for (const auto& page : pages)
                 {
                 // common axes are per page, where they must reference child graphs on the same page
                 m_commonAxesPlaceholders.clear();
