@@ -4,7 +4,7 @@ on: [push, pull_request]
 env:
   project: 'Wisteria'
   testrunner: 'WisteriaTestRunner'
-  outfile: 'WDV-junit.xml'
+  outfile: 'WDV-win32-junit.xml'
 
 permissions:
   contents: read
@@ -51,3 +51,9 @@ jobs:
              Write-Host "Failure count is: " + $failures.Value
              exit 1
              }
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.outfile }}
+        path: ${{ env.outfile }}

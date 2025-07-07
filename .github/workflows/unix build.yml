@@ -1,5 +1,5 @@
 name: Linux Build & Unit Tests
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -29,10 +29,10 @@ jobs:
              cmake ./
              make -j4
              cd bin
-             ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
-             cat WDV-junit.xml
-             errors=$(cat WDV-junit.xml | grep -Po '(errors)="\K[^"]*')
-             failures=$(cat WDV-junit.xml | grep -Po '(failures)="\K[^"]*')
+             ./WisteriaTestRunner --reporter JUnit::out=WDV-linux-junit.xml
+             cat WDV-linux-junit.xml
+             errors=$(cat WDV-linux-junit.xml | grep -Po '(errors)="\K[^"]*')
+             failures=$(cat WDV-linux-junit.xml | grep -Po '(failures)="\K[^"]*')
              echo "Error count is: ${errors}"
              echo "Failure count is: ${failures}"
              if [ "$errors" -gt 0 ]; then
@@ -41,3 +41,9 @@ jobs:
              if [ "$failures" -gt 0 ]; then
                exit 1
              fi
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: WDV-linux-junit.xml
+          path: WDV-linux-junit.xml
