@@ -5,6 +5,8 @@ jobs:
   build:
     name: macos-build
     runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,5 +47,5 @@ jobs:
       - name: Archive test results
         uses: actions/upload-artifact@v4
         with:
-          name: WDV-macos-junit.xml
-          path: tests/WDV-macos-junit.xml
+          name: macOS unit tests
+          path: ${{ github.workspace }}/tests/*.xml

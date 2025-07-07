@@ -5,6 +5,8 @@ jobs:
   build:
     name: ubuntu-build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,5 +47,5 @@ jobs:
       - name: Archive test results
         uses: actions/upload-artifact@v4
         with:
-          name: WDV-linux-junit.xml
-          path: tests/WDV-linux-junit.xml
+          name: Linux unit tests
+          path: ${{ github.workspace }}/tests/*.xml

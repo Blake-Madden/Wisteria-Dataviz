@@ -70,3 +70,4 @@ cpp.hint
 *.out
 *.app
 *.manifest
+/tests/gui-tests/wxWidgets_lib

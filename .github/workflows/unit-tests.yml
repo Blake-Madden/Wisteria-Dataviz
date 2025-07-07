@@ -1,10 +1,15 @@
 name: Gui Unit Tests
 on: [push, pull_request]
+env:
+  testrunner: 'WisteriaGuiTestRunner'
+  outfile: 'WDV-gui-junit.xml'
 
 jobs:
   build:
     name: ubuntu-build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -13,32 +18,21 @@ jobs:
       - name: install tools
         run: |
              export DISPLAY=:0.0
-             sudo apt install xvfb libgtk-3-dev cmake libtbb-dev
+             sudo apt-get update && sudo apt-get install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
-             cd wxWidgets
-             mkdir buildgtk
-             cd buildgtk
-             ../configure --with-gtk
-             make -j4
-             sudo make install
-             sudo ldconfig
-             cd ..
-             cd ..
-             cmake ./
-             make -j4
              
       - name: build & run tests
         run: |
              cd ..
              git clone https://github.com/catchorg/Catch2.git
-             cd Wisteria-Dataviz/tests
+             cd Wisteria-Dataviz/tests/gui-tests
              cmake ./
              make -j4
              cd bin
-             xvfb-run -a -s '-screen 0 1600x1200x24' ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
-             cat WDV-junit.xml
-             errors=$(cat WDV-junit.xml | grep -Po '(errors)="\K[^"]*')
-             failures=$(cat WDV-junit.xml | grep -Po '(failures)="\K[^"]*')
+             xvfb-run -a -s '-screen 0 1600x1200x24' ./${{ env.testrunner }} --reporter JUnit::out=${{ env.outfile }}
+             cat ${{ env.outfile }}
+             errors=$(cat ${{ env.outfile }} | grep -Po '(errors)="\K[^"]*')
+             failures=$(cat ${{ env.outfile }} | grep -Po '(failures)="\K[^"]*')
              echo "Error count is: ${errors}"
              echo "Failure count is: ${failures}"
              if [ "$errors" -gt 0 ]; then
@@ -47,3 +41,9 @@ jobs:
              if [ "$failures" -gt 0 ]; then
                exit 1
              fi
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux GUI unit tests
+          path: ${{ github.workspace }}/tests/gui-tests/*.xml
