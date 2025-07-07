@@ -1073,6 +1073,7 @@ EXCLUDE                = ../../src/easyexif \
                          ../../src/graphs/boxplot.cpp \
                          ../../src/data/dataset.cpp \
                          ../../wxWidgets_lib \
+                         ../../tests \
                          ../../cmake-build-debug \
                          ../../cmake-build-release
 
