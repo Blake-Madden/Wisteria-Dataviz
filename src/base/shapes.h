@@ -517,7 +517,7 @@ namespace Wisteria::GraphItems
         ///     that if being drawn as a fillable shape, the "ghosted" portion of the
         ///     shape will appear as expected.
         [[nodiscard]]
-        wxColour ApplyParentColorOpacity(const wxColour& col) const
+        wxColour ApplyColorOpacity(const wxColour& col) const
             {
             return Colors::ColorContrast::ChangeOpacity(
                 col, GetGraphItemInfo().GetBrush().GetColour().GetAlpha());
