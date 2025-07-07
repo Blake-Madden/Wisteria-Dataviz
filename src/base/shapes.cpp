@@ -2979,6 +2979,7 @@ namespace Wisteria::GraphItems
                            .DPIScaling(GetDPIScaleFactor())
                            .Scaling(GetScaling())
                            .Pen(wxNullPen));
+        headline.SetFontColor(ApplyColorOpacity(headline.GetFontColor()));
         headline.SetBoundingBox(headlineBox, dc, GetScaling());
         headline.Draw(dc);
         headlineBox.Offset(wxPoint{ 0, static_cast<int>(ScaleToScreenAndCanvas(1)) });
@@ -2991,8 +2992,9 @@ namespace Wisteria::GraphItems
         pictureBox.SetTop(headlineBox.GetBottom() + ScaleToScreenAndCanvas(1));
         pictureBox.Offset(wxPoint{ static_cast<int>(ScaleToScreenAndCanvas(2)), 0 });
         dc.DrawRectangle(pictureBox);
-        dc.GradientFillLinear(pictureBox, ColorBrewer::GetColor(Colors::Color::Afternoon),
-                              ColorBrewer::GetColor(Colors::Color::BlueSky));
+        dc.GradientFillLinear(pictureBox,
+                              ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::Afternoon)),
+                              ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::BlueSky)));
         wxRect sunRect{ pictureBox };
         sunRect.SetWidth(sunRect.GetWidth() * math_constants::three_quarters);
         sunRect.SetHeight(sunRect.GetWidth());
