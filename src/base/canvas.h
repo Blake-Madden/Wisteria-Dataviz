@@ -894,7 +894,7 @@ namespace Wisteria
         void OnResize(wxSizeEvent& event);
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
         void OnContextMenu([[maybe_unused]] wxContextMenuEvent& event);
-        void OnMouseEvent(wxMouseEvent& event);
+        void OnMouseEvents(wxMouseEvent& event);
         void OnKeyDown(wxKeyEvent& event);
 
         [[nodiscard]]

@@ -523,26 +523,26 @@ namespace Wisteria
         Bind(wxEVT_MENU, &Canvas::OnPreview, this, wxID_PREVIEW);
         Bind(wxEVT_MENU, &Canvas::OnPrint, this, wxID_PRINT);
         // numerous mouse events
-        Bind(wxEVT_LEFT_DOWN, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_LEFT_UP, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_MIDDLE_DOWN, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_MIDDLE_UP, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_RIGHT_DOWN, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_RIGHT_UP, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_MOTION, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_ENTER_WINDOW, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_LEAVE_WINDOW, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_LEFT_DCLICK, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_MIDDLE_DCLICK, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_RIGHT_DCLICK, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_MOUSEWHEEL, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_AUX1_DOWN, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_AUX1_UP, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_AUX1_DCLICK, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_AUX2_DOWN, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_AUX2_UP, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_AUX2_DCLICK, &Canvas::OnMouseEvent, this);
-        Bind(wxEVT_MAGNIFY, &Canvas::OnMouseEvent, this);
+        Bind(wxEVT_LEFT_DOWN, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_LEFT_UP, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_MIDDLE_DOWN, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_MIDDLE_UP, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_RIGHT_DOWN, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_RIGHT_UP, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_MOTION, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_ENTER_WINDOW, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_LEAVE_WINDOW, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_LEFT_DCLICK, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_MIDDLE_DCLICK, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_RIGHT_DCLICK, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_MOUSEWHEEL, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_AUX1_DOWN, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_AUX1_UP, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_AUX1_DCLICK, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_AUX2_DOWN, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_AUX2_UP, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_AUX2_DCLICK, &Canvas::OnMouseEvents, this);
+        Bind(wxEVT_MAGNIFY, &Canvas::OnMouseEvents, this);
         }
 
     //----------------------------------------------------------------
