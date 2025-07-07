@@ -495,7 +495,7 @@ namespace Wisteria
             { L"lines", BracketLineStyle::Lines },
             { L"reverse-arrow", BracketLineStyle::ReverseArrow },
             { L"curly-braces", BracketLineStyle::CurlyBraces },
-            { L"no-connection-lines", BracketLineStyle::NoConnectionLines },
+            { L"no-connection-lines", BracketLineStyle::NoConnectionLines }
         };
 
         const auto titleProperty = axisNode->GetProperty(L"title");

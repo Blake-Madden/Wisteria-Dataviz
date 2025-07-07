@@ -637,7 +637,9 @@ namespace Wisteria
             {
             // use standard string, wxString should not be constructed globally
             static const std::map<std::wstring, NumberDisplay> bDisplayValues = {
-                { L"percentage", NumberDisplay::Percentage }, { L"value", NumberDisplay::Value }
+                { L"percentage", NumberDisplay::Percentage },
+                { L"value", NumberDisplay::Value },
+                { L"currency", NumberDisplay::Currency }
             };
 
             const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());

@@ -13,6 +13,7 @@
 #define WISTERIA_AXIS_H
 
 #include "../data/dataset.h"
+#include "currencyformat.h"
 #include "label.h"
 #include "polygon.h"
 #include "shapes.h"
@@ -931,14 +932,14 @@ namespace Wisteria::GraphItems
 
         /// @returns How the tick labels are displayed.
         [[nodiscard]]
-        const AxisLabelDisplay& GetLabelDisplay() const noexcept
+        AxisLabelDisplay GetLabelDisplay() const noexcept
             {
             return m_labelDisplay;
             }
 
         /// @returns How the numeric values of the axis points are displayed.
         [[nodiscard]]
-        const NumberDisplay& GetNumberDisplay() const noexcept
+        NumberDisplay GetNumberDisplay() const noexcept
             {
             return m_numberLabelDisplay;
             }

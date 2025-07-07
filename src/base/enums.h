@@ -365,7 +365,11 @@ namespace Wisteria
         /// @brief Display the number as-is.
         Value,
         /// @brief Show as a percent.
-        Percentage
+        Percentage,
+        /// @brief Show as currency (using the current locale).
+        /// @warning Currently only supported on wMSW; will return as a regularly
+        ///     formatted string elsewhere.
+        Currency
         };
 
     /// @brief How the segments between the points on a line are connected.
