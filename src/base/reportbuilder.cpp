@@ -2764,13 +2764,19 @@ namespace Wisteria
                 }
             }
 
+        const auto numDisplay = ReportEnumConvert::ConvertNumberDisplay(
+            graphNode->GetProperty(_DT(L"number-display"))->GetValueString());
+        if (numDisplay)
+            {
+            barChart->SetNumerDisplay(numDisplay.value());
+            }
+
         // bar shapes
         const auto barShapes = graphNode->GetProperty(L"bar-shapes");
         // if applying one shape to all bars
         if (barShapes->IsOk() && !barShapes->IsValueArray())
             {
-            const auto barShape = ReportEnumConvert::ConvertBarShape(
-                barShapes->GetValueString());
+            const auto barShape = ReportEnumConvert::ConvertBarShape(barShapes->GetValueString());
             if (barShape.has_value())
                 {
                 for (auto& bar : barChart->GetBars())

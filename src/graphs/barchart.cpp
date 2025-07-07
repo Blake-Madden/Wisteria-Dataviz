@@ -45,8 +45,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
+                (GetNumberDisplay() == NumberDisplay::Currency ?
+                     ToCurrency(bar.GetLength(), true) :
                 wxNumberFormatter::ToString(bar.GetLength(), 0,
-                                            Settings::GetDefaultNumberFormat()) :
+                                                 Settings::GetDefaultNumberFormat())) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                 // if less than 1%, then use higher precision so that it doesn't just show as "0%"
                 wxString::Format(

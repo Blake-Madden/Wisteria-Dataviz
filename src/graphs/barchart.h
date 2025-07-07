@@ -1309,6 +1309,24 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /// @returns How the numeric values of the bar labels are displayed.
+        [[nodiscard]]
+        NumberDisplay GetNumberDisplay() const noexcept
+            {
+            return m_numberLabelDisplay;
+            }
+
+        /// @brief Sets how the numeric values of the bar labels are displayed.
+        /// @param display The numeric display method.
+        /// @note This will only apply if GetBinLabelDisplay() is using a type that includes
+        ///     only the numeric value of the bar. In other words, this will only apply for
+        ///     BinLabelDisplay::BinValue.\m
+        ///     Also, only NumberDisplay::Currency and NumberDisplay::Value are supported.
+        void SetNumerDisplay(const NumberDisplay display)
+            {
+            m_numberLabelDisplay = display;
+            }
+
         /// @returns The suffix being added to each bar label.
         [[nodiscard]]
         wxString GetBinLabelSuffix() const
@@ -1452,6 +1470,7 @@ namespace Wisteria::Graphs
         uint8_t m_barOpacity{ wxALPHA_OPAQUE };
         uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY }; // used for showcasing
         BoxEffect m_barEffect{ BoxEffect::Solid };
+        NumberDisplay m_numberLabelDisplay{ NumberDisplay::Value };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         wxString m_binLabelSuffix;
 
