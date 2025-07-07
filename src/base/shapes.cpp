@@ -1329,8 +1329,11 @@ namespace Wisteria::GraphItems
             monitorRect.Deflate(ScaleToScreenAndCanvas(math_constants::half));
 
             // stand pole
+            // (Note that we do not apply an translucency to the white backgrounds
+            //  as that would allow the monitor stand to show through it.
+            //  Instead, we only make the outline and monitor content translucent.)
             gc->SetBrush(ColorBrewer::GetColor(Color::White));
-            gc->SetPen({ ColorBrewer::GetColor(Color::DarkGray),
+            gc->SetPen({ ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
             wxRect2DDouble poleRect{ monitorRect };
             poleRect.SetWidth(monitorRect.GetWidth() * math_constants::tenth);
@@ -1351,22 +1354,22 @@ namespace Wisteria::GraphItems
 
             // draw everything
             gc->SetBrush(ColorBrewer::GetColor(Color::White));
-            gc->SetPen({ ColorBrewer::GetColor(Color::DarkGray),
+            gc->SetPen({ ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
             gc->DrawRectangle(monitorOuterRect);
 
             const auto boardBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(monitorRect, -0.75), GetYPosFromTop(monitorRect, -0.75),
                 GetXPosFromLeft(monitorRect, 1), GetYPosFromTop(monitorRect, 1),
-                Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
-                Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)));
             gc->SetBrush(boardBrush);
             gc->SetPen(wxPen{ ColorBrewer::GetColor(Color::White),
                               static_cast<int>(ScaleToScreenAndCanvas(1)) });
             gc->DrawRectangle(monitorRect);
 
             gc->SetBrush(ColorBrewer::GetColor(Color::White));
-            gc->SetPen({ ColorBrewer::GetColor(Color::DarkGray),
+            gc->SetPen({ ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
 
             auto standBasePath = gc->CreatePath();
@@ -1400,8 +1403,8 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for dollar icon!");
         if (gc != nullptr)
             {
-            gc->SetBrush(wxColour{ L"#D8D4B4" });
-            gc->SetPen(wxPen{ *wxBLACK,
+            gc->SetBrush(wxColour{ ApplyColorOpacity(L"#D8D4B4") });
+            gc->SetPen(wxPen{ ApplyColorOpacity(*wxBLACK),
                               static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
 
             // background of bill
@@ -1416,7 +1419,7 @@ namespace Wisteria::GraphItems
             innerBillRect.Deflate(ScaleToScreenAndCanvas(2));
 
             gc->SetPen(*wxTRANSPARENT_PEN);
-            gc->SetBrush(wxColour{ L"#3E3E3C" });
+            gc->SetBrush(wxColour{ ApplyColorOpacity(L"#3E3E3C") });
             wxRect2DDouble portraitRect{ innerBillRect };
             portraitRect.SetWidth(portraitRect.GetWidth() * math_constants::third);
             portraitRect.Offset(billRect.GetWidth() * math_constants::quarter, 0);
@@ -1431,7 +1434,9 @@ namespace Wisteria::GraphItems
                             portraitRect.GetWidth() * 0.6, portraitRect.GetHeight());
 
             // face
-            gc->SetPen(wxColour{ L"#3E3E3C" });
+            gc->SetPen((GetGraphItemInfo().GetBrush().GetColour().GetAlpha() < wxALPHA_OPAQUE) ?
+                           Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) :
+                           wxColour{ L"#3E3E3C" });
             gc->SetBrush(wxColour{ L"#ADADAD" });
             const wxRect2DDouble faceRect{ portraitRect.GetX() +
                                                (portraitRect.GetWidth() * math_constants::third),
@@ -1441,7 +1446,11 @@ namespace Wisteria::GraphItems
             gc->DrawEllipse(faceRect);
 
             // hair
-            gc->SetPen(wxPenInfo{ L"#3E3E3C", static_cast<int>(billRect.GetHeight() * 0.13) });
+            gc->SetPen(
+                wxPenInfo{ (GetGraphItemInfo().GetBrush().GetColour().GetAlpha() < wxALPHA_OPAQUE) ?
+                               Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) :
+                               wxColour{ L"#3E3E3C" },
+                           static_cast<int>(billRect.GetHeight() * 0.13) });
             wxRect2DDouble hairRect{ faceRect };
             hairRect.Deflate(ScaleToScreenAndCanvas(0.8));
             hairRect.Offset(-ScaleToScreenAndCanvas(math_constants::half),
@@ -1460,15 +1469,16 @@ namespace Wisteria::GraphItems
             gc->Clip(originalClipRect);
 
             // border frame
-            gc->SetPen(wxPenInfo{ wxColour{ L"#525B54" },
+            gc->SetPen(wxPenInfo{ ApplyColorOpacity(wxColour{ L"#525B54" }),
                                   static_cast<int>(billRect.GetHeight() * math_constants::tenth) }
                            .Cap(wxPenCap::wxCAP_BUTT));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
             gc->DrawRectangle(innerBillRect);
 
             // left seal
-            gc->SetPen(wxPenInfo{ *wxBLACK, static_cast<int>(billRect.GetHeight() * 0.05) });
-            gc->SetBrush(wxColour{ L"#525B54" });
+            gc->SetPen(wxPenInfo{ ApplyColorOpacity(*wxBLACK),
+                                  static_cast<int>(billRect.GetHeight() * 0.05) });
+            gc->SetBrush(ApplyColorOpacity(wxColour{ L"#525B54" }));
             gc->DrawEllipse(GetXPosFromLeft(innerBillRect, math_constants::tenth),
                             GetYPosFromTop(innerBillRect, math_constants::third),
                             innerBillRect.GetHeight() * math_constants::third,
@@ -1484,8 +1494,8 @@ namespace Wisteria::GraphItems
                 innerBillRect.GetHeight() * math_constants::third
             };
 
-            gc->SetPen(
-                wxPenInfo{ wxColour{ L"#689E80" }, static_cast<int>(billRect.GetHeight() * 0.05) });
+            gc->SetPen(wxPenInfo{ ApplyColorOpacity(wxColour{ L"#689E80" }),
+                                  static_cast<int>(billRect.GetHeight() * 0.05) });
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
             gc->DrawEllipse(rightSealRect);
 
@@ -1505,8 +1515,8 @@ namespace Wisteria::GraphItems
             const auto stripBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 0.0),
                 GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(billRect, 2.0),
-                Colors::ColorBrewer::GetColor(Colors::Color::Blue, 150),
-                Colors::ColorBrewer::GetColor(Colors::Color::Gray, 150));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Blue, 150)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Gray, 150)));
             gc->SetBrush(stripBrush);
             gc->DrawRectangle(securityStripRect);
 
@@ -1516,7 +1526,8 @@ namespace Wisteria::GraphItems
             rightSealRect.SetBottom(billRect.GetBottom());
             fontSize = Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
             gc->SetFont(wxFontInfo{ fontSize }.Bold(),
-                        Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200));
+                        ApplyColorOpacity(
+                            Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200)));
             gc->DrawText(L"100", rightSealRect.GetX(), rightSealRect.GetY());
             }
         }
