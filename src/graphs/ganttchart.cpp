@@ -129,30 +129,31 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
             }
 
         const wxDateTime firstDay =
-            std::min_element(m_tasks.cbegin(), m_tasks.cend(),
-                             [](const auto& task1, const auto& task2)
-                             {
-                                 return (!task1.m_start.IsValid() && !task2.m_start.IsValid()) ?
-                                            false :
-                                        (!task1.m_start.IsValid() && task2.m_start.IsValid()) ?
-                                            false :
-                                        (task1.m_start.IsValid() && !task2.m_start.IsValid()) ?
-                                            true :
-                                            task1.m_start < task2.m_start;
-                             })
+            std::ranges::min_element(
+                std::as_const(m_tasks),
+                [](const auto& task1, const auto& task2)
+                {
+                    return (!task1.m_start.IsValid() && !task2.m_start.IsValid()) ?
+                               false :
+                           (!task1.m_start.IsValid() && task2.m_start.IsValid()) ?
+                               false :
+                           (task1.m_start.IsValid() && !task2.m_start.IsValid()) ?
+                               true :
+                               task1.m_start < task2.m_start;
+                })
                 ->m_start;
         const wxDateTime lastDay =
-            std::max_element(m_tasks.cbegin(), m_tasks.cend(),
-                             [](const auto& task1, const auto& task2)
-                             {
-                                 return (!task1.m_end.IsValid() && !task2.m_end.IsValid()) ?
-                                            false :
-                                        (!task1.m_end.IsValid() && task2.m_end.IsValid()) ?
-                                            true :
-                                        (task1.m_end.IsValid() && !task2.m_end.IsValid()) ?
-                                            false :
-                                            task1.m_end < task2.m_end;
-                             })
+            std::ranges::max_element(std::as_const(m_tasks),
+                                     [](const auto& task1, const auto& task2)
+                                     {
+                                         return (!task1.m_end.IsValid() && !task2.m_end.IsValid()) ?
+                                                    false :
+                                                (!task1.m_end.IsValid() && task2.m_end.IsValid()) ?
+                                                    true :
+                                                (task1.m_end.IsValid() && !task2.m_end.IsValid()) ?
+                                                    false :
+                                                    task1.m_end < task2.m_end;
+                                     })
                 ->m_end;
 
         if (firstDay.IsValid() && lastDay.IsValid())
@@ -333,9 +334,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                                 wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description)
                                     .Trim(true)
                                     .Trim(false)))) } },
-                    wxEmptyString, GraphItems::Label(axisLabel), GetBarEffect(), GetBarOpacity());
+                    wxString{}, GraphItems::Label(axisLabel), GetBarEffect(), GetBarOpacity());
                 arrowBar.SetCustomScalingAxisStartPosition(startPoint);
-                arrowBar.SetShape(BarShape::Arrow);
+                arrowBar.SetShape(GetScalingAxis().IsReversed() ? BarShape::ReverseArrow :
+                                                                  BarShape::Arrow);
 
                 wxString decalStr;
                 switch (taskInfo.m_labelDisplay)
