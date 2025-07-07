@@ -3708,13 +3708,9 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Axis::Reverse(const bool reverse /*= true*/)
         {
-        // reverse it if not already reversed and client is asking for it to be reversed
-        if (reverse && !IsReversed())
-            {
-            std::ranges::reverse(m_axisLabels);
-            }
+        // reverse it if not already reversed and client is asking for it to be reversed,
         // or reverse it if already reversed and client is asking for it to NOT be reversed
-        else if (!reverse && IsReversed())
+        if ((reverse && !IsReversed()) || (!reverse && IsReversed()))
             {
             std::ranges::reverse(m_axisLabels);
             }
