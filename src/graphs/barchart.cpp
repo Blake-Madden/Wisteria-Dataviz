@@ -1098,15 +1098,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
                         Wisteria::GraphItems::GraphItemInfo{}
                             .Pen(wxNullPen)
-                            .Brush(GetStippleShapeColor())
-                            .AnchorPoint(wxPoint(currentXLeft, lineYStart))
+                            .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
+                                                                        opacityToApply))
+                            .AnchorPoint(wxPoint{ currentXLeft, lineYStart })
                             .Anchoring(Anchoring::TopLeftCorner)
                             .DPIScaling(GetDPIScaleFactor())
                             .Scaling(GetScaling()),
                         GetStippleShape(), stippleImgSize);
-                    shape->SetBoundingBox(wxRect(wxPoint(currentXLeft, lineYStart),
-                                                 wxSize(shapeWidth, barRenderInfo.m_barWidth)),
-                                          barRenderInfo.m_dc, GetScaling());
+                    shape->SetBoundingBox(
+                        wxRect{ wxPoint{ currentXLeft, lineYStart },
+                                wxSize{ static_cast<int>(shapeWidth),
+                                        static_cast<int>(barRenderInfo.m_barWidth) } },
+                        barRenderInfo.m_dc, GetScaling());
                     shape->SetClippingRect(barRenderInfo.m_barRect);
                     AddObject(std::move(shape));
                     currentXLeft += stippleImgSize.GetWidth();
@@ -1682,15 +1685,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
                         Wisteria::GraphItems::GraphItemInfo{}
                             .Pen(wxNullPen)
-                            .Brush(GetStippleShapeColor())
-                            .AnchorPoint(wxPoint(lineXStart, currentYTop))
+                            .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
+                                                                        opacityToApply))
+                            .AnchorPoint(wxPoint{ lineXStart, static_cast<int>(currentYTop) })
                             .Anchoring(Anchoring::TopLeftCorner)
                             .DPIScaling(GetDPIScaleFactor())
                             .Scaling(GetScaling()),
                         GetStippleShape(), stippleImgSize);
-                    shape->SetBoundingBox(wxRect(wxPoint(lineXStart, currentYTop),
-                                                 wxSize(barRenderInfo.m_barWidth, shapeHeight)),
-                                          barRenderInfo.m_dc, GetScaling());
+                    shape->SetBoundingBox(
+                        wxRect{ wxPoint{ lineXStart, static_cast<int>(currentYTop) },
+                                wxSize{ static_cast<int>(barRenderInfo.m_barWidth),
+                                        static_cast<int>(shapeHeight) } },
+                        barRenderInfo.m_dc, GetScaling());
                     shape->SetClippingRect(barRenderInfo.m_barRect);
                     AddObject(std::move(shape));
                     currentYTop -= stippleImgSize.GetHeight();
