@@ -718,6 +718,23 @@ namespace Wisteria
                         std::optional<AxisType>(foundValue->second) :
                         std::nullopt);
             }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::BarChart::BarShape> ConvertBarShape(const wxString& value)
+            {
+            // use standard string, wxString should not be constructed globally
+            static const std::map<std::wstring, Graphs::BarChart::BarShape> barShapeValues = {
+                { L"rectangle", Graphs::BarChart::BarShape::Rectangle },
+                { L"arrow", Graphs::BarChart::BarShape::Arrow },
+                { L"reverse-arrow", Graphs::BarChart::BarShape::ReverseArrow }
+            };
+
+            const auto foundValue = barShapeValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != barShapeValues.cend()) ?
+                        std::optional<Graphs::BarChart::BarShape>(foundValue->second) :
+                        std::nullopt);
+            }
         };
     } // namespace Wisteria
 

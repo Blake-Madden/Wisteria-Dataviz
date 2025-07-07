@@ -2764,6 +2764,23 @@ namespace Wisteria
                 }
             }
 
+        // bar shapes
+        const auto barShapes = graphNode->GetProperty(L"bar-shapes");
+        // if applying one shape to all bars
+        if (barShapes->IsOk() && !barShapes->IsValueArray())
+            {
+            const auto barShape = ReportEnumConvert::ConvertBarShape(
+                barShapes->GetValueString());
+            if (barShape.has_value())
+                {
+                for (auto& bar : barChart->GetBars())
+                    {
+                    bar.SetShape(barShape.value());
+                    }
+                }
+            }
+        /// @todo Add support for assigning shapes to different bars, based on axis label
+
         // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))
             {

@@ -34,6 +34,12 @@ Properties common to all bar-chart derived graphs:
 - `"bar-icons"`: An array of bar icon specifications. Each specification contains the following:
   - `"label"`: The label of the bar to add an icon to.
   - `"image"`: The path to the image to add to the bar label.
+- `"bar-shapes"`: Properties specifying the shapes of the bars.\
+  If a single value, this shape will be applied to all bars.\
+  Available options (if applying same shape to all bars) are:
+  - `"rectangle"` (the default)
+  - `"arrow"`
+  - `"reverse-arrow"`
 - `"bar-sort"`: Properties specifying how to sort the bars (after loading the data). \
   Available options are:
   - `"direction"`: The direction to sort the bars. \
