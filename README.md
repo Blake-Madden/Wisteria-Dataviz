@@ -192,9 +192,9 @@ If using *KDevelop* or *VS Code*, you can also open the *CMake* file and build f
 macOS
 -----------------------------
 
-Install the following using brew (or build from source):
+Install the following:
 
-- *XCode*
+- *XCode* (will include the *AppleClang* compiler)
 - *Doxygen* (if building the API documentation)
 
 Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher at the
@@ -210,7 +210,7 @@ Next, download *Wisteria* and build the library, demo, and documentation:
 git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
 cd Wisteria-Dataviz
 cmake . -DCMAKE_BUILD_TYPE=Release
-# XCode will not understand an "all" target,
+# AppleClang will not understand an "all" target,
 # so the binaries and manual must be built separately
 cmake --build . --target demo -j4 --config Release
 cmake --build . --target wisteria -j4 --config Release
@@ -226,7 +226,7 @@ Dependencies
 =============================
 
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher
-- A C++20 compatible compiler (*XCode* on macOS)
+- A C++20 compatible compiler (*AppleClang* on macOS)
 - *CMake* 3.25 or higher
 - *Doxygen* (if building the API documentation)
 - *GTK 3* (Linux)
