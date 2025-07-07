@@ -17,7 +17,7 @@ wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
-namespace Wisteria
+    namespace Wisteria
     {
     //------------------------------------------------------
     void Canvas::SetSizeFromPaperSize()
@@ -321,7 +321,7 @@ namespace Wisteria
         wxString ext{ fn.GetExt() };
         Wisteria::UI::ImageExportDlg optionsDlg(
             this, Wisteria::GraphItems::Image::GetImageFileTypeFromExtension(ext), previewImg,
-                                  imgOptions);
+            imgOptions);
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
         // no options for SVG (since size doesn't matter),
         // so don't bother showing the dialog for that
@@ -690,7 +690,7 @@ namespace Wisteria
     //---------------------------------------------------
     void Canvas::OnResize(wxSizeEvent & event)
         {
-        if (m_delayResize && m_blockResize)
+        if (m_delayResize && m_blockResize && IsShownOnScreen())
             {
             m_resizeTimer.Stop();
             m_resizeTimer.StartOnce(500); // half a second
@@ -1102,7 +1102,7 @@ namespace Wisteria
             if (rowInfo.IsProportionLocked())
                 {
                 cumulativeProportionDiff += rowInfo.GetHeightProportion() -
-                    (rowInfo.GetHeightProportion() * heightAdjustmentScale);
+                                            (rowInfo.GetHeightProportion() * heightAdjustmentScale);
                 rowInfo.HeightProportion(rowInfo.GetHeightProportion() * heightAdjustmentScale);
                 }
             else
@@ -1532,13 +1532,13 @@ namespace Wisteria
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);
             Wisteria::GraphItems::Label infoLabel(Wisteria::GraphItems::GraphItemInfo(m_debugInfo)
-                                .AnchorPoint(bBox.GetBottomRight())
-                                .Anchoring(Anchoring::BottomRightCorner)
-                                .FontColor(*wxBLUE)
-                                .Pen(*wxBLUE_PEN)
-                                .DPIScaling(GetDPIScaleFactor())
-                                .FontBackgroundColor(*wxWHITE)
-                                .Padding(2, 2, 2, 2));
+                                                      .AnchorPoint(bBox.GetBottomRight())
+                                                      .Anchoring(Anchoring::BottomRightCorner)
+                                                      .FontColor(*wxBLUE)
+                                                      .Pen(*wxBLUE_PEN)
+                                                      .DPIScaling(GetDPIScaleFactor())
+                                                      .FontBackgroundColor(*wxWHITE)
+                                                      .Padding(2, 2, 2, 2));
             infoLabel.Draw(dc);
             }
         }
