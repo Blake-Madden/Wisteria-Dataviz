@@ -1163,26 +1163,57 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .ShowLabelWhenSelected(true),
                         boxPoints);
                     }
-                else if (bar.GetShape() == BarShape::Arrow)
+                else if (bar.GetShape() == BarShape::Arrow ||
+                         bar.GetShape() == BarShape::ReverseArrow)
                     {
-                    std::array<wxPoint, 7> arrowPoints{};
                     assert(GetShadowType() == ShadowType::NoDisplay &&
                            L"Drop shadow not supported for arrow shape currently.");
-                    barNeckRect.Deflate(wxSize(0, safe_divide(barNeckRect.GetHeight(), 5)));
-                    barNeckRect.SetRight(barNeckRect.GetRight() -
-                                         (safe_divide(barNeckRect.GetWidth(), 10)));
-                    arrowPoints[0] = barNeckRect.GetTopLeft();
-                    arrowPoints[1] = barNeckRect.GetTopRight();
-                    arrowPoints[2] =
-                        wxPoint(barNeckRect.GetRight(), barRenderInfo.m_barRect.GetTop());
-                    arrowPoints[3] =
-                        wxPoint(barRenderInfo.m_barRect.GetRight(),
-                                barRenderInfo.m_barRect.GetTop() +
-                                    (safe_divide((barRenderInfo.m_barRect.GetHeight()), 2)));
-                    arrowPoints[4] =
-                        wxPoint(barNeckRect.GetRight(), barRenderInfo.m_barRect.GetBottom());
-                    arrowPoints[5] = barNeckRect.GetBottomRight();
-                    arrowPoints[6] = barNeckRect.GetBottomLeft();
+                    barNeckRect.Deflate(wxSize{ 0, safe_divide(barNeckRect.GetHeight(), 5) });
+                    const auto originalWidth{ barNeckRect.GetWidth() };
+                    barNeckRect.SetWidth(barNeckRect.GetWidth() * 0.90);
+                    if (bar.GetShape() == BarShape::ReverseArrow)
+                        {
+                        barNeckRect.Offset(originalWidth - barNeckRect.GetWidth(), 0);
+                        }
+
+                    const auto arrowPoints = [&bar = std::as_const(bar),
+                                              &barNeckRect = std::as_const(barNeckRect),
+                                              &barRenderInfo = std::as_const(barRenderInfo)]()
+                    {
+                        return (bar.GetShape() == BarShape::Arrow) ?
+                                   std::array<wxPoint, 7>{
+                                       barNeckRect.GetTopLeft(), barNeckRect.GetTopRight(),
+                                       // left top of arrowhead
+                                       wxPoint{ barNeckRect.GetRight(),
+                                                barRenderInfo.m_barRect.GetTop() },
+                                       // point of arrowhead
+                                       wxPoint{
+                                           barRenderInfo.m_barRect.GetRight(),
+                                           barRenderInfo.m_barRect.GetTop() +
+                                               (safe_divide((barRenderInfo.m_barRect.GetHeight()),
+                                                            2)) },
+                                       // left bottom of arrowhead
+                                       wxPoint{ barNeckRect.GetRight(),
+                                                barRenderInfo.m_barRect.GetBottom() },
+                                       barNeckRect.GetBottomRight(), barNeckRect.GetBottomLeft()
+                                   } :
+                                   std::array<wxPoint, 7>{
+                                       // right bottom of arrowhead
+                                       wxPoint{ barNeckRect.GetLeft(),
+                                                barRenderInfo.m_barRect.GetBottom() },
+                                       // point of arrowhead
+                                       wxPoint{
+                                           barRenderInfo.m_barRect.GetLeft(),
+                                           barRenderInfo.m_barRect.GetTop() +
+                                               (safe_divide((barRenderInfo.m_barRect.GetHeight()),
+                                                            2)) },
+                                       // right top of arrowhead
+                                       wxPoint{ barNeckRect.GetLeft(),
+                                                barRenderInfo.m_barRect.GetTop() },
+                                       barNeckRect.GetTopLeft(), barNeckRect.GetTopRight(),
+                                       barNeckRect.GetBottomRight(), barNeckRect.GetBottomLeft()
+                                   };
+                    }();
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
                         Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
                             .Pen(*wxBLACK_PEN)
@@ -1256,7 +1287,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GraphItems::Polygon::PolygonShape::WaterColorRectangle :
                               (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
                                   GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
-                              (bar.GetShape() == BarShape::Arrow) ?
+                              (bar.GetShape() == BarShape::Arrow ||
+                               bar.GetShape() == BarShape::ReverseArrow) ?
                                   GraphItems::Polygon::PolygonShape::Irregular :
                               (bar.GetEffect() == BoxEffect::Glassy) ?
                                   GraphItems::Polygon::PolygonShape::GlassyRectangle :
@@ -1708,27 +1740,60 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .ShowLabelWhenSelected(true),
                         boxPoints);
                     }
-                else if (bar.GetShape() == BarShape::Arrow)
+                else if (bar.GetShape() == BarShape::Arrow ||
+                         bar.GetShape() == BarShape::ReverseArrow)
                     {
-                    std::array<wxPoint, 7> arrowPoints{};
                     assert(GetShadowType() == ShadowType::NoDisplay &&
                            L"Drop shadow not supported for arrow shape currently.");
                     barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
-                    const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(), 10);
-                    barNeckRect.SetTop(barNeckRect.GetTop() + arrowHeadSize);
-                    barNeckRect.SetHeight(barNeckRect.GetHeight() - arrowHeadSize);
-                    arrowPoints[0] = barNeckRect.GetBottomLeft();
-                    arrowPoints[1] = barNeckRect.GetTopLeft();
-                    arrowPoints[2] =
-                        wxPoint(barRenderInfo.m_barRect.GetLeft(), barNeckRect.GetTop());
-                    arrowPoints[3] =
-                        wxPoint(barRenderInfo.m_barRect.GetLeft() +
-                                    (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
-                                barRenderInfo.m_barRect.GetTop());
-                    arrowPoints[4] =
-                        wxPoint(barRenderInfo.m_barRect.GetRight(), barNeckRect.GetTop());
-                    arrowPoints[5] = barNeckRect.GetTopRight();
-                    arrowPoints[6] = barNeckRect.GetBottomRight();
+
+                    const auto originalHeight{ barNeckRect.GetHeight() };
+                    barNeckRect.SetHeight(barNeckRect.GetHeight() * math_constants::three_quarters);
+                    if (bar.GetShape() == BarShape::Arrow)
+                        {
+                        barNeckRect.Offset(0, originalHeight - barNeckRect.GetHeight());
+                        }
+
+                    const auto arrowPoints = [&bar = std::as_const(bar),
+                                              &barNeckRect = std::as_const(barNeckRect),
+                                              &barRenderInfo = std::as_const(barRenderInfo)]()
+                    {
+                        return bar.GetShape() == BarShape::Arrow ?
+                                   std::array<wxPoint, 7>{
+                                       barNeckRect.GetTopLeft(),
+                                       // left bottom of arrowhead
+                                       wxPoint{ barRenderInfo.m_barRect.GetLeft(),
+                                                barNeckRect.GetTop() },
+                                       // point of arrowhead
+                                       wxPoint{
+                                           barRenderInfo.m_barRect.GetLeft() +
+                                               (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
+                                           barRenderInfo.m_barRect.GetTop() },
+                                       // right bottom of arrowhead
+                                       wxPoint{ barRenderInfo.m_barRect.GetRight(),
+                                                barNeckRect.GetTop() },
+                                       barNeckRect.GetTopRight(), barNeckRect.GetBottomRight(),
+                                       barNeckRect.GetBottomLeft()
+                                   } :
+                                   std::array<wxPoint, 7>{
+                                       barNeckRect.GetBottomLeft(),
+                                       barNeckRect.GetTopLeft(),
+                                       barNeckRect.GetTopRight(),
+                                       barNeckRect.GetBottomRight(),
+                                       // right top of arrowhead
+                                       wxPoint{ barRenderInfo.m_barRect.GetRight(),
+                                                barNeckRect.GetBottom() },
+                                       // point of arrowhead
+                                       wxPoint{
+                                           barRenderInfo.m_barRect.GetLeft() +
+                                               (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
+                                           barRenderInfo.m_barRect.GetBottom() },
+                                       // left top of arrowhead
+                                       wxPoint{ barRenderInfo.m_barRect.GetLeft(),
+                                                barNeckRect.GetBottom() },
+                                   };
+                    }();
+
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
                         Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
                             .Pen(*wxBLACK_PEN)
@@ -1802,7 +1867,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GraphItems::Polygon::PolygonShape::WaterColorRectangle :
                               (bar.GetEffect() == BoxEffect::ThickWaterColor) ?
                                   GraphItems::Polygon::PolygonShape::ThickWaterColorRectangle :
-                              (bar.GetShape() == BarShape::Arrow) ?
+                              (bar.GetShape() == BarShape::Arrow ||
+                               bar.GetShape() == BarShape::ReverseArrow) ?
                                   GraphItems::Polygon::PolygonShape::Irregular :
                               (bar.GetEffect() == BoxEffect::Glassy) ?
                                   GraphItems::Polygon::PolygonShape::GlassyRectangle :

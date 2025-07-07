@@ -170,8 +170,11 @@ namespace Wisteria::Graphs
         /// @brief Shapes that bars can be drawn as.
         enum class BarShape
             {
-            Rectangle, /*!< A rectangle.*/
-            Arrow,     /*!< An arrow.*/
+            Rectangle,    /*!< A rectangle (the default).*/
+            Arrow,        /*!< An arrow pointing to the right (horizontal bars) or
+                               upward (vertical bars).*/
+            ReverseArrow, /*!< An arrow pointing to the left (horizontal bars) or
+                               downward (vertical bars).*/
             /// @private
             BARSHAPE_COUNT
             };
