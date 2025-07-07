@@ -881,8 +881,8 @@ namespace Wisteria::GraphItems
             // tick marks
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
-            double i = start;
-            for (/*already initialized*/; (i <= end); i += GetTickMarkInterval())
+            for (double i = start; compare_doubles_less_or_equal(i, end);
+                 i += GetTickMarkInterval())
                 {
                 const bool majorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
@@ -906,8 +906,8 @@ namespace Wisteria::GraphItems
             // tick marks
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
-            double i = start;
-            for (/*already initialized*/; (i <= end); i += GetTickMarkInterval())
+            for (double i = start; compare_doubles_less_or_equal(i, end);
+                 i += GetTickMarkInterval())
                 {
                 const bool majorTickMark = PointHasLabel(i);
                 TickMark tk(GetTickMarkDisplay(), i,
@@ -3358,7 +3358,8 @@ namespace Wisteria::GraphItems
                We might step over it a bit (depending on how
                the intervals are set up), so a range like 1-70 might wind up being 1-71*/
             double lastValidPoint = rangeStart;
-            for (double i = rangeStart; i < (rangeEnd + interval); i += interval)
+            for (double i = rangeStart; compare_doubles_less(i, (rangeEnd + interval));
+                 i += interval)
                 {
                 // if not set to skip then set it to be displayed
                 const bool display = (currentDisplayInterval == 1);
