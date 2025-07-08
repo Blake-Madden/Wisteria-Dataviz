@@ -18,7 +18,7 @@
 namespace Wisteria
     {
     [[nodiscard]]
-    inline wxString ToCurrency(double val, bool noTrailingZeroes = false)
+    inline wxString ToCurrency(double val, [[maybe_unused]] bool noTrailingZeroes = false)
         {
 #ifdef __WXMSW__
         const wxString inputVal = wxString::FromCDouble(val);
