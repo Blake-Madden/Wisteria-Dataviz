@@ -21,6 +21,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::UpdateBarLabel(Bar & bar)
         {
+        const auto defaultPrecision{ GetScalingAxis().GetPrecision() };
+
         const double grandTotal = std::accumulate(GetBars().cbegin(), GetBars().cend(), 0.0,
                                                   [](auto lhv, const auto& rhv) noexcept
                                                   { return lhv + rhv.GetLength(); });
@@ -34,7 +36,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
                 bar.GetAxisLabel().GetText() +
                     wxString::Format(
-                        L" (%s)", wxNumberFormatter::ToString(bar.GetLength(), 0,
+                        L" (%s)", wxNumberFormatter::ToString(bar.GetLength(), defaultPrecision,
                                                               Settings::GetDefaultNumberFormat())) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
                 wxString::Format(
@@ -42,12 +44,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                        and percentage symbol (%%). '%%' can be changed and/or
                        moved elsewhere in the string. */
                     _(L"%s (%s%%)"), bar.GetAxisLabel().GetText(),
-                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
+                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : defaultPrecision,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                 (GetNumberDisplay() == NumberDisplay::Currency ?
                      ToCurrency(bar.GetLength(), true) :
-                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                     wxNumberFormatter::ToString(bar.GetLength(), defaultPrecision,
                                                  Settings::GetDefaultNumberFormat())) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                 // if less than 1%, then use higher precision so that it doesn't just show as "0%"
@@ -55,7 +57,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
                        '%%' can be changed and/or moved elsewhere in the string. */
                     _(L"%s%%"),
-                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
+                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : defaultPrecision,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                 // BinValueAndPercentage
                 wxString::Format(
@@ -65,7 +67,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     _(L"%s (%s%%)"),
                     wxNumberFormatter::ToString(bar.GetLength(), 0,
                                                 Settings::GetDefaultNumberFormat()),
-                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
+                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : defaultPrecision,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
         bar.GetLabel().SetText(labelStr + m_binLabelSuffix);
         }
