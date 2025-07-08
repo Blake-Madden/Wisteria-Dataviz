@@ -143,7 +143,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             return;
             }
 
-        SetGroupColumn(std::move(groupColumnName));
+        SetGroupColumn(groupColumnName);
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
