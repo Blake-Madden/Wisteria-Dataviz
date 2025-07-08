@@ -550,17 +550,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                            (currentRange.second - GetScalingAxis().GetInterval()) };
             const auto barPercentOfLastInterval{ safe_divide<double>(
                 extraSpaceAfterBar, GetScalingAxis().GetInterval()) };
-            // but only add a new interval if the longest bar is consuming more than
-            // 20% of the current last interval; otherwise, there already is plenty of space
-            // for the label
-            if (barPercentOfLastInterval > math_constants::fifth)
+            // ...but only add a new interval if the longest bar is consuming more than
+            // 20% of the current last interval (or 10% and the label is a long value);
+            // otherwise, there already is plenty of space for the label
+            constexpr auto MAX_SMALL_LABEL_VALUE{ 100'000 };
+            if (barPercentOfLastInterval > math_constants::fifth ||
+                (barPercentOfLastInterval > math_constants::tenth &&
+                 currentRange.second > MAX_SMALL_LABEL_VALUE))
                 {
+                // for really wide labels, use multiple intervals
+                const auto intervalCountToAdd =
+                    1 + ((currentRange.second > MAX_SMALL_LABEL_VALUE) ? 1 : 0);
                 GetScalingAxis().SetRange(
                     currentRange.first,
-                    // for really wide labels, use two intervals
-                    currentRange.second + (currentRange.second > 100'000 ?
-                                               2 * GetScalingAxis().GetInterval() :
-                                               GetScalingAxis().GetInterval()),
+                    currentRange.second + (intervalCountToAdd * GetScalingAxis().GetInterval()),
                     GetScalingAxis().GetPrecision(), GetScalingAxis().GetInterval(),
                     GetScalingAxis().GetDisplayInterval());
                 }
@@ -2407,6 +2410,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             GetScalingAxis().Reset();
             GetScalingAxis().SetRange(0, 10, 0, 1, 1);
             return;
+            }
+
+        // reformat labels, taking into account any changes to label precision
+        // or other display format changes since the bars were constructed
+        for (auto& bar : GetBars())
+            {
+            UpdateBarLabel(bar);
             }
 
         BarRenderInfo barRenderInfo{ dc };
