@@ -1446,7 +1446,7 @@ namespace Wisteria::Graphs
         struct BarBlockRenderInfo
             {
             wxPoint m_middlePointOfBarEnd;
-            wxCoord m_axisOffset{ 0 };
+            double m_axisOffset{ 0.0 };
             };
 
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
