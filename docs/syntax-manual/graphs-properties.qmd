@@ -271,6 +271,8 @@ Note that instead of properties, a single string can be specified indicating a f
   - `"precision"`: A number specifying the precision to use for numbers displayed on the axis.
   - `"interval"`: A number specifying the interval of the tickmarks along the range.
   - `"display-interval"`: A number specifying the how often the axis points should show a label.
+- `"precision"`: A number specifying the precision to use for numbers displayed on the axis. \
+  This will override what is passed to the `"range"` property.
 - `"show-outer-labels"`: `true` to show the outer labels on the axis.
 - `"label-length"`: A number specifying the suggested maximum length for the axis labels. \
     (Default is `100`.)

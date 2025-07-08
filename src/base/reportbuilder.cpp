@@ -568,6 +568,8 @@ namespace Wisteria
             axis.SetRange(rangeStart, rangeEnd, precision, interval, displayInterval);
             }
 
+        axis.SetPrecision(axisNode->GetProperty(_DT(L"precision"))->GetValueNumber(0));
+
         // custom labels
         const auto customLabelsNode = axisNode->GetProperty(L"custom-labels");
         if (customLabelsNode->IsOk() && customLabelsNode->IsValueArray())
