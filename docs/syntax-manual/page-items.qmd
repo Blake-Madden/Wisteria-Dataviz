@@ -173,6 +173,13 @@ Properties for `"label"` nodes:
      The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.
   - `"color"`: The font color for the header. This can be either a color name or hex-encoded value.
+  - `"text-alignment"`: How to align the label's text. \
+      The available options are:
+    - `"flush-left"` or `"ragged-right"`
+    - `"flush-right"` or `"ragged-left"`
+    - `"centered"`
+    - `"justified"` or `"justified-at-character"`
+    - `"justified-at-word"`
   - `"relative-scaling:"`: numeric value of how much to scale the header's font size relative to the label's scaling.
        For example, `2.0` will double the header's default font size compared to the rest of the label. \
        Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
