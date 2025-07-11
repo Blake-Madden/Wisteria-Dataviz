@@ -5502,7 +5502,8 @@ namespace Wisteria
                 }
             else
                 {
-                axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
+                axisPos =
+                    axis.FindCustomLabelPosition(ExpandConstants(positionNode->GetValueString()));
                 }
             }
         else if (positionNode->IsOk() && positionNode->IsValueNumber())
