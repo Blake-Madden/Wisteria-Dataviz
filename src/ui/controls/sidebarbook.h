@@ -16,8 +16,6 @@
 #include <wx/bookctrl.h>
 #include <wx/control.h>
 #include <wx/dynarray.h>
-#include <wx/imaglist.h>
-#include <wx/wupdlock.h>
 
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
@@ -184,7 +182,7 @@ namespace Wisteria::UI
         /// @private
         [[nodiscard]]
         wxSize CalcSizeFromPage(const wxSize& sizePage) const;
-        // this should be called when we need to be relaid out
+        // this should be called when we need to be re-layed out
         /// @private
         void UpdateSize();
 
@@ -203,7 +201,7 @@ namespace Wisteria::UI
         // get/set size of area between book control area and page area
         /// @private
         [[nodiscard]]
-        unsigned int GetInternalBorder() const noexcept
+        static unsigned int GetInternalBorder() noexcept
             {
             return wxSizerFlags::GetDefaultBorder();
             }

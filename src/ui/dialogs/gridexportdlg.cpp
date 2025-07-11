@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "gridexportdlg.h"
+#include <wx/valgen.h>
 
 using namespace Wisteria::UI;
 
@@ -20,13 +21,13 @@ GridExportDlg::GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
     {
     m_options.m_toRow = rowCount;
     m_options.m_toColumn = columnCount;
-    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+    wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
     DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
     CreateControls();
     Centre();
 
-    // setup the radio buttons' subcontrols' enablablement
+    // set up the radio buttons' subcontrols' enablement
     Bind(
         wxEVT_RADIOBUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)

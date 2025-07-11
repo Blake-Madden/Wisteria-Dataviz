@@ -33,7 +33,7 @@ void ImageExportDlg::OnOptionsChanged([[maybe_unused]] wxCommandEvent& event)
     }
 
 //------------------------------------------------------
-void ImageExportDlg::OnSizeChanged(wxSpinEvent& event)
+void ImageExportDlg::OnSizeChanged(const wxSpinEvent& event)
     {
     std::pair<double, double> imgSize(m_options.m_imageSize.x, m_options.m_imageSize.y);
     TransferDataFromWindow();
@@ -160,7 +160,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
 
     if (m_originalBitmap.IsOk())
         {
-        wxStaticBoxSizer* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
+        auto* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
         m_previewThumbnail =
             new Thumbnail(previewSizer->GetStaticBox(), m_originalBitmap, ClickMode::DoNothing,
                           false, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 512, 512 }));

@@ -17,7 +17,6 @@
 #include <set>
 #include <wx/dialog.h>
 #include <wx/grid.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -31,7 +30,7 @@ namespace Wisteria::UI
 
         /// @brief Constructor.
         /// @param wrk The worksheet to preview.
-        /// @param excelFile The excel extractor that @c wrk belongs to.
+        /// @param excelFile The Excel extractor that @c wrk belongs to.
         ExcelTable(lily_of_the_valley::xlsx_extract_text::worksheet* wrk,
                    lily_of_the_valley::xlsx_extract_text* excelFile)
             : m_wrk(wrk), m_excelFile(excelFile)
@@ -86,7 +85,7 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param parent The parent window.
             @param wrk The worksheet to preview.
-            @param excelFile The excel extractor that @c wrk belongs to.
+            @param excelFile The Excel extractor that @c wrk belongs to.
             @param id The dialog's ID.
             @param caption The dialog's caption.
             @param pos The dialog's pos.
@@ -130,8 +129,7 @@ namespace Wisteria::UI
                 {
                 return true;
                 }
-            else if (std::find(m_selectedCells.begin(), m_selectedCells.end(), cell) !=
-                     m_selectedCells.end())
+            else if (std::ranges::find(m_selectedCells, cell) != m_selectedCells.end())
                 {
                 return true;
                 }
@@ -176,6 +174,6 @@ namespace Wisteria::UI
         };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif // EXCEL_PREVIEW_DIALOG_H

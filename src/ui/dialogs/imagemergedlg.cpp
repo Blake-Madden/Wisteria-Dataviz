@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "imagemergedlg.h"
+#include <wx/radiobox.h>
+#include <wx/richmsgdlg.h>
 
 namespace Wisteria::UI
     {
@@ -27,7 +29,7 @@ namespace Wisteria::UI
         m_horizontalThumbsSizer = new wxStaticBoxSizer(wxHORIZONTAL, this);
 
         m_baseImagePath =
-            wxFileName{ ((imgPaths.size() > 0) ? wxFileName(imgPaths[0]) : wxString{}) };
+            wxFileName{ (!imgPaths.empty() ? wxFileName(imgPaths[0]) : wxString{}) };
 
         wxString imageNames;
         for (const auto& imgPath : imgPaths)
@@ -72,7 +74,7 @@ namespace Wisteria::UI
         SetSizerAndFit(mainSizer);
 
         Bind(wxEVT_RADIOBOX,
-             [this]([[maybe_unused]] wxCommandEvent)
+             [this]([[maybe_unused]] const wxCommandEvent&)
              {
                  TransferDataFromWindow();
                  m_horizontalThumbsSizer->Show(m_orientRadio == 0);
@@ -87,7 +89,7 @@ namespace Wisteria::UI
                      }
              });
         Bind(wxEVT_THUMBNAIL_CHANGED,
-             [this]([[maybe_unused]] wxCommandEvent)
+             [this]([[maybe_unused]] const wxCommandEvent&)
              {
                  if (m_orientRadio == 0)
                      {
@@ -100,7 +102,7 @@ namespace Wisteria::UI
              });
         Bind(
             wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent)
+            [this]([[maybe_unused]] const wxCommandEvent&)
             {
                 std::vector<wxImage> images;
 

@@ -14,8 +14,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
     if (HasPage(page))
         {
         m_currentPage = page;
-        wxDC* dc = GetDC();
-        if (dc)
+        if (wxDC* dc = GetDC(); dc != nullptr)
             {
             double scaleX{ 0 }, scaleY{ 0 };
             GetScreenToPageScaling(scaleX, scaleY);
@@ -182,8 +181,7 @@ void HtmlTablePrintout::OnPreparePrinting()
     m_currentPage = 0;
 
     // calculate lines per page and line height
-    wxDC* dc = GetDC();
-    if (dc)
+    if (wxDC* dc = GetDC(); dc != nullptr)
         {
         // adjust user scaling
         double scaleDownX{ 0 }, scaleDownY{ 0 };

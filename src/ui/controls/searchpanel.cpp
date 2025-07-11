@@ -7,7 +7,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "searchpanel.h"
+#include <wx/artprov.h>
+#include <wx/bmpbuttn.h>
 #include <wx/clipbrd.h>
+#include <wx/fdrepdlg.h>
+#include <wx/string.h>
+#include <wx/xrc/xmlres.h>
 
 using namespace Wisteria::UI;
 

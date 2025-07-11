@@ -14,9 +14,7 @@
 
 #include "../controls/thumbnail.h"
 #include <wx/dialog.h>
-#include <wx/slider.h>
 #include <wx/string.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -33,7 +31,7 @@ namespace Wisteria::UI
             @param pos The dialog's screen position.
             @param size The dialog's initial size.
             @param style The dialog's flags.*/
-        OpacityDlg(wxWindow* parent, const uint8_t opacity, const wxBitmap& image,
+        OpacityDlg(wxWindow* parent, const uint8_t opacity, wxBitmap image,
                    wxWindowID id = wxID_ANY, const wxString& caption = _(L"Set Opacity"),
                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
@@ -53,7 +51,7 @@ namespace Wisteria::UI
 
       private:
         void CreateControls();
-        void OnChangeOpacity(wxScrollEvent& event);
+        void OnChangeOpacity(const wxScrollEvent& event);
 
         Thumbnail* m_thumb{ nullptr };
         int m_opacity{ wxALPHA_OPAQUE }; // validator needs an int, not a uint8_t

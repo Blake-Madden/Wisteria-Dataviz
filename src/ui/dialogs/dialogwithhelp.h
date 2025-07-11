@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef WXDIALOG_WITH_HELP_H
-#define WXDIALOG_WITH_HELP_H
+#ifndef WISTERIA_DIALOG_WITH_HELP_H
+#define WISTERIA_DIALOG_WITH_HELP_H
 
 #include <wx/dialog.h>
 #include <wx/filename.h>
@@ -40,7 +40,7 @@ namespace Wisteria::UI
                                              wxRESIZE_BORDER)
             : wxDialog(parent, id, caption, pos, size, style)
             {
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
 
             Bind(wxEVT_COMMAND_BUTTON_CLICKED, &DialogWithHelp::OnHelpClicked, this, wxID_HELP);
             Bind(wxEVT_HELP, &DialogWithHelp::OnContextHelp, this);
@@ -72,7 +72,7 @@ namespace Wisteria::UI
       private:
         void OnHelpClicked([[maybe_unused]] wxCommandEvent& event)
             {
-            if (m_helpTopic.length())
+            if (!m_helpTopic.empty())
                 {
                 wxLaunchDefaultBrowser(wxFileName::FileNameToURL(
                     m_helpProjectFolder + wxFileName::GetPathSeparator() + m_helpTopic));
@@ -92,4 +92,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif // WXDIALOG_WITH_HELP_H
+#endif // WISTERIA_DIALOG_WITH_HELP_H

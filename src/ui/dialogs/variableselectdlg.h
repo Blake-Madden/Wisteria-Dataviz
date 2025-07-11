@@ -13,14 +13,9 @@
 #define VARIABLE_SELECT_DLG_H
 
 #include "../../data/dataset.h"
-#include <wx/artprov.h>
 #include <wx/dialog.h>
-#include <wx/gbsizer.h>
 #include <wx/listctrl.h>
-#include <wx/stattext.h>
 #include <wx/string.h>
-#include <wx/valgen.h>
-#include <wx/wupdlock.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -75,7 +70,7 @@ namespace Wisteria::UI
                 }
 
             /// @brief Sets whether a variable must be selected for this list.
-            /// @details The default is for the list to required.
+            /// @details The default is for the list to be required.
             /// @param required @c true to force the user to select a variable for this list.
             /// @returns A self reference.
             VariableListInfo& Required(const bool required)
@@ -121,7 +116,7 @@ namespace Wisteria::UI
         ///     order), then `1` will return the variables in the grouping list.
         /// @param listIndex The index of the client-defined variable list.
         /// @returns A list of the variable names that the user has selected for a given list.
-        std::vector<wxString> GetSelectedVariables(const size_t listIndex) const;
+        std::vector<wxString> GetSelectedVariables(size_t listIndex) const;
 
       private:
         struct VariableList
@@ -134,7 +129,7 @@ namespace Wisteria::UI
             wxListView* m_list{ nullptr };
             };
 
-        bool Validate();
+        bool Validate() final;
         void CreateControls(const std::vector<VariableListInfo>& varInfo);
         /// @brief Moves the selected variables in one list to another.
         /// @param list The list to move items from.
@@ -144,12 +139,12 @@ namespace Wisteria::UI
         /// @param list The list to get the selected items from.
         /// @returns A vector of the selected strings.
         [[nodiscard]]
-        static std::vector<wxString> GetSelectedVariablesInList(wxListView* list);
+        static std::vector<wxString> GetSelectedVariablesInList(const wxListView* list);
         /// @brief Removes the selected items from a list.
         /// @param list The list box to remove items from.
         static void RemoveSelectedVariablesFromList(wxListView* list);
         /// @brief Enables/disables buttons as needed.
-        void UpdateButtonStates();
+        void UpdateButtonStates() const;
 
         Data::Dataset::ColumnPreviewInfo m_columnInfo;
         wxListView* m_mainVarlist{ nullptr };

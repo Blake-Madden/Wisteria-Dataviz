@@ -170,9 +170,9 @@ namespace Wisteria::UI
             bool m_isActive{ false };
             };
 
-        /** @brief Collapses all of the items that have subitems.*/
+        /** @brief Collapses all the items that have subitems.*/
         void CollapseAll();
-        /** @brief Expands all of the items that have subitems.*/
+        /** @brief Expands all the items that have subitems.*/
         void ExpandAll();
 
         /// @name Editing Functions
@@ -327,7 +327,7 @@ namespace Wisteria::UI
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
             @returns @c true if the item was found and selected.*/
-        bool SelectSubItemById(const std::pair<size_t, wxWindowID> folderAndSubItemId,
+        bool SelectSubItemById(const std::pair<size_t, wxWindowID>& folderAndSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
             return SelectSubItemById(folderAndSubItemId.first, folderAndSubItemId.second, setFocus,
@@ -398,7 +398,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         std::optional<size_t> FindFolder(const wxWindowID Id) const;
         /** @brief Searches for a sub item by ID.
-            @note This it will search within all of the root-level items.
+            @note This it will search within all the root-level items.
             @param Id The ID of the sub item to search for.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
@@ -423,7 +423,7 @@ namespace Wisteria::UI
         std::pair<std::optional<size_t>, std::optional<size_t>>
         FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
         /** @brief Searches for a subitem by label
-            @details Note that it will search within all of the root-level items.
+            @details Note that it will search within all the root-level items.
             @param label The Label of the sub item to search for.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
@@ -439,23 +439,26 @@ namespace Wisteria::UI
 
         /** @brief Sets the color for the currently selected item.
             @param color The color to use.*/
-        void SetSelectedColour(const wxColour color) noexcept { m_selectedColor = color; }
+        void SetSelectedColour(const wxColour& color) noexcept { m_selectedColor = color; }
 
         /** @brief Sets the font color for the currently selected item.
             @param color The color to use.*/
-        void SetSelectedFontColour(const wxColour color) noexcept { m_selectedFontColor = color; }
+        void SetSelectedFontColour(const wxColour& color) noexcept { m_selectedFontColor = color; }
 
         /** @brief Sets the color for the parents.
             @param color The color to use.*/
-        void SetParentColour(const wxColour color) noexcept { m_parentColor = color; }
+        void SetParentColour(const wxColour& color) noexcept { m_parentColor = color; }
 
         /** @brief Sets the color for items that are being moused over.
             @param color The color to use.*/
-        void SetHighlightColour(const wxColour color) noexcept { m_highlightColor = color; }
+        void SetHighlightColour(const wxColour& color) noexcept { m_highlightColor = color; }
 
         /** @brief Sets the font color for items that are being moused over.
             @param color The color to use.*/
-        void SetHighlightFontColour(const wxColour color) noexcept { m_highlightFontColor = color; }
+        void SetHighlightFontColour(const wxColour& color) noexcept
+            {
+            m_highlightFontColor = color;
+            }
 
         /** @brief Sets the entire coloring schema of the control.
             @param colorScheme The color scheme to use.*/
@@ -561,7 +564,7 @@ namespace Wisteria::UI
             }
 
         /// @private
-        bool SelectSubItem(const std::pair<std::optional<size_t>, std::optional<size_t>> item,
+        bool SelectSubItem(const std::pair<std::optional<size_t>, std::optional<size_t>>& item,
                            const bool setFocus = true, const bool sendEvent = true)
             {
             if (item.first.has_value() && item.second.has_value())
@@ -572,8 +575,8 @@ namespace Wisteria::UI
             }
 
         /// @private
-        bool SelectSubItemById(const std::pair<std::optional<wxWindowID>, std::optional<wxWindowID>>
-                                   folderAndSubItemId,
+        bool SelectSubItemById(const std::pair<std::optional<wxWindowID>,
+                                               std::optional<wxWindowID>>& folderAndSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
             if (folderAndSubItemId.first.has_value() && folderAndSubItemId.second.has_value())
@@ -627,8 +630,8 @@ namespace Wisteria::UI
 
         // events
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
-        void OnMouseChange(wxMouseEvent& event);
-        void OnMouseClick(wxMouseEvent& event);
+        void OnMouseChange(const wxMouseEvent& event);
+        void OnMouseClick(const wxMouseEvent& event);
         void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
         void OnChar(wxKeyEvent& event);
         void OnResize(wxSizeEvent& event);
@@ -638,7 +641,7 @@ namespace Wisteria::UI
             @param dc The device context to render on.
             @param rect The box to draw the effect on.
             @param color The base color to fill the box with.*/
-        void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color);
+        static void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour& color);
 
         std::vector<wxBitmapBundle> m_imageList;
 
@@ -655,19 +658,19 @@ namespace Wisteria::UI
             }
 
         [[nodiscard]]
-        wxCoord GetPaddingWidth() const
+        static wxCoord GetPaddingWidth()
             {
             return wxSizerFlags::GetDefaultBorder() * 2;
             }
 
         [[nodiscard]]
-        wxCoord GetPaddingHeight() const
+        static wxCoord GetPaddingHeight()
             {
             return wxSizerFlags::GetDefaultBorder() * 2;
             }
 
         [[nodiscard]]
-        wxCoord GetSubitemIndentation() const
+        static wxCoord GetSubitemIndentation()
             {
             return GetPaddingWidth() * 2;
             }

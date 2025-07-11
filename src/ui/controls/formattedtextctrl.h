@@ -154,7 +154,7 @@ namespace Wisteria::UI
                       const bool caseSensitiveSearch);
 
         /// @private
-        void OnFind(wxFindDialogEvent& myEvent);
+        void OnFind(const wxFindDialogEvent& myEvent);
         /// @private
         void OnContextMenu([[maybe_unused]] wxContextMenuEvent& event);
         /// @private
@@ -255,18 +255,16 @@ namespace Wisteria::UI
             {
             // if landscape, then "turn the page on its side" by flipping the page size
             return wxRect(wxPoint{ 0, 0 }, (m_printData->GetOrientation() == wxLANDSCAPE) ?
-                                             wxSize{ m_paperSize.y,
-                                                     m_paperSize.x } :
-                                             m_paperSize);
+                                               wxSize{ m_paperSize.y, m_paperSize.x } :
+                                               m_paperSize);
             }
 
         /// @returns The width of the printing area.
         [[nodiscard]]
         int GetPageContentAreaWidth() const
             {
-            const int paperWidth = (m_printData->GetOrientation() == wxLANDSCAPE) ?
-                                       m_paperSize.y :
-                                       m_paperSize.x;
+            const int paperWidth =
+                (m_printData->GetOrientation() == wxLANDSCAPE) ? m_paperSize.y : m_paperSize.x;
             return paperWidth - m_rectMargin.GetLeft() - m_rectMargin.GetRight();
             }
 
@@ -274,12 +272,10 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxRect GetPageContentRect() const
             {
-            const int paperWidth = (m_printData->GetOrientation() == wxLANDSCAPE) ?
-                                       m_paperSize.y :
-                                       m_paperSize.x;
-            const int paperHeight = (m_printData->GetOrientation() == wxLANDSCAPE) ?
-                                       m_paperSize.x :
-                                       m_paperSize.y;
+            const int paperWidth =
+                (m_printData->GetOrientation() == wxLANDSCAPE) ? m_paperSize.y : m_paperSize.x;
+            const int paperHeight =
+                (m_printData->GetOrientation() == wxLANDSCAPE) ? m_paperSize.x : m_paperSize.y;
             wxRect printRect(m_rectMargin.GetLeft(), m_rectMargin.GetTop(),
                              paperWidth - m_rectMargin.GetRight(),
                              paperHeight - m_rectMargin.GetBottom());
@@ -424,7 +420,7 @@ namespace Wisteria::UI
             background color tags. Basically, we add all variations of background color tags.
             Here is the reasoning:
             1. LibreOffice and TextEdit (macOS) don't understand "highlight".
-            2. Wordpad doesn't understand "chcbpat".
+            2. WordPad doesn't understand "chcbpat".
             3. LibreOffice, Word, and WordPad don't understand "cb".*/
         [[nodiscard]]
         static wxString FixHighlightingTags(const wxString& text);

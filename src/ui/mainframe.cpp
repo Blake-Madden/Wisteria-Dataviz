@@ -11,7 +11,8 @@
 
 //----------------------------------------------------------
 wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** templates,
-                                                            int noTemplates, bool sortDocs)
+                                                            const int noTemplates,
+                                                            const bool sortDocs)
     {
     wxArrayString strings;
     auto** data = new wxDocTemplate*[noTemplates];
@@ -22,9 +23,8 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
         {
         if (templates[i]->IsVisible())
             {
-            int j;
             bool want = true;
-            for (j = 0; j < n; j++)
+            for (int j = 0; j < n; j++)
                 {
                 // filter out NOT unique documents + view combinations
                 if (templates[i]->GetDocumentName() == data[j]->GetDocumentName() &&
@@ -49,12 +49,11 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
         strings.Sort(); // ascending sort
         // Yes, this will be slow, but template lists
         // are typically short.
-        int j;
         assert(noTemplates >= static_cast<int>(strings.Count()));
         n = std::min<int>(strings.Count(), noTemplates);
         for (i = 0; i < n; i++)
             {
-            for (j = 0; j < noTemplates; j++)
+            for (int j = 0; j < noTemplates; j++)
                 {
                 if (strings[i] == templates[j]->GetDescription())
                     {
@@ -88,20 +87,19 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
             docNames.Add(data[i]->GetDescription());
             }
         // find a suitable parent window
-        wxWindow* parentWindow =
-            [this]()
-            {
+        wxWindow* parentWindow = [this]()
+        {
             if (wxTheApp->GetTopWindow() != nullptr && wxTheApp->GetTopWindow()->IsShown())
                 {
                 return wxTheApp->GetTopWindow();
                 }
             if (GetCurrentDocument() != nullptr &&
-                     GetCurrentDocument()->GetDocumentWindow() != nullptr)
+                GetCurrentDocument()->GetDocumentWindow() != nullptr)
                 {
                 return GetCurrentDocument()->GetDocumentWindow();
                 }
             return wxTheApp->GetTopWindow();
-            }();
+        }();
         RadioBoxDlg radioDlg(parentWindow, _(L"Select Project Type"), wxString{},
                              _(L"Project types:"), _(L"New Project"), docNames, docDescriptions);
         if (radioDlg.ShowModal() == wxID_OK)
@@ -163,10 +161,10 @@ Wisteria::UI::BaseMainFrame::BaseMainFrame(wxDocManager* manager, wxFrame* frame
                                            const wxString& title, const wxPoint& pos,
                                            const wxSize& size, long style)
     : wxDocParentFrame(manager, frame, wxID_ANY, title, pos, size, style),
-      m_defaultFileExtentions(std::move(defaultFileExtensions))
+      m_defaultFileExtensions(std::move(defaultFileExtensions))
     {
     // set up drag 'n' drop
-    SetDropTarget(new DropFiles(this));
+    wxWindow::SetDropTarget(new DropFiles(this));
     // create default printer settings
     GetDocumentManager()->GetPageSetupDialogData().GetPrintData().SetPaperId(
         wxPAPER_LETTER); /*8.5" x 11" (U.S. default)*/
@@ -210,9 +208,9 @@ bool Wisteria::UI::DropFiles::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_un
     for (size_t n = 0; n < filenames.GetCount(); ++n)
         {
         const wxFileName filename(filenames[n]);
-        for (size_t i = 0; i < m_frame->GetDefaultFileExtentions().GetCount(); ++i)
+        for (size_t i = 0; i < m_frame->GetDefaultFileExtensions().GetCount(); ++i)
             {
-            if (filename.GetExt().CmpNoCase(m_frame->GetDefaultFileExtentions()[i]) == 0)
+            if (filename.GetExt().CmpNoCase(m_frame->GetDefaultFileExtensions()[i]) == 0)
                 {
                 m_frame->OpenFile(filenames[n]);
                 return true;

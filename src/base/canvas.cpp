@@ -762,19 +762,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         fixedObjectRect.SetHeight(fixedObjectRect.GetHeight() - (topBorder + bottomBorder));
 
         // reset all objects' canvas alignments and DPI scaling
-        for (auto fixedObjectsRowPos = GetFixedObjects().begin();
-             fixedObjectsRowPos != GetFixedObjects().end(); ++fixedObjectsRowPos)
+        for (auto& fixedObjectsRow : GetFixedObjects())
             {
-            for (auto objectsPos = fixedObjectsRowPos->begin();
-                 objectsPos != fixedObjectsRowPos->end(); ++objectsPos)
+            for (auto& object : fixedObjectsRow)
                 {
-                if ((*objectsPos) != nullptr)
+                if (object != nullptr)
                     {
-                    (*objectsPos)->SetContentTop(std::nullopt);
-                    (*objectsPos)->SetContentBottom(std::nullopt);
-                    (*objectsPos)->SetContentLeft(std::nullopt);
-                    (*objectsPos)->SetContentRight(std::nullopt);
-                    (*objectsPos)->SetDPIScaleFactor(dc.FromDIP(1));
+                    object->SetContentTop(std::nullopt);
+                    object->SetContentBottom(std::nullopt);
+                    object->SetContentLeft(std::nullopt);
+                    object->SetContentRight(std::nullopt);
+                    object->SetDPIScaleFactor(dc.FromDIP(1));
                     }
                 }
             }
@@ -965,17 +963,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             if (IsRowContentAligned())
                 {
-                for (auto fixedObjectsRowItems = GetFixedObjects().begin();
-                     fixedObjectsRowItems != GetFixedObjects().end(); ++fixedObjectsRowItems)
+                for (auto& fixedObjectsRowItems : GetFixedObjects())
                     {
                     std::vector<wxCoord> topPoints;
                     std::vector<wxCoord> bottomPoints;
-                    for (auto& objectsPos : *fixedObjectsRowItems)
+                    for (auto& object : fixedObjectsRowItems)
                         {
-                        if (objectsPos != nullptr && !objectsPos->GetContentRect().IsEmpty())
+                        if (object != nullptr && !object->GetContentRect().IsEmpty())
                             {
-                            topPoints.push_back(objectsPos->GetContentRect().GetTop());
-                            bottomPoints.push_back(objectsPos->GetContentRect().GetBottom());
+                            topPoints.push_back(object->GetContentRect().GetTop());
+                            bottomPoints.push_back(object->GetContentRect().GetBottom());
                             }
                         }
                     if (!topPoints.empty() && !bottomPoints.empty())
@@ -983,15 +980,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         const auto topPt = *std::ranges::max_element(std::as_const(topPoints));
                         const auto bottomPt =
                             *std::ranges::min_element(std::as_const(bottomPoints));
-                        for (auto& objectsPos : *fixedObjectsRowItems)
+                        for (auto& object : fixedObjectsRowItems)
                             {
-                            if (objectsPos != nullptr && !objectsPos->GetContentRect().IsEmpty() &&
+                            if (object != nullptr && !object->GetContentRect().IsEmpty() &&
                                 topPt <= bottomPt)
                                 {
-                                objectsPos->SetContentTop(topPt);
-                                objectsPos->SetContentBottom(bottomPt);
-                                objectsPos->RecalcSizes(dc);
-                                objectsPos->UpdateSelectedItems();
+                                object->SetContentTop(topPt);
+                                object->SetContentBottom(bottomPt);
+                                object->RecalcSizes(dc);
+                                object->UpdateSelectedItems();
                                 }
                             }
                         }
@@ -1002,7 +999,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         if (IsColumnContentAligned())
             {
-            if (!GetFixedObjects().empty() && GetFixedObjects().at(0).size())
+            if (!GetFixedObjects().empty() && !GetFixedObjects().at(0).empty())
                 {
                 bool noMoreColumns{ false };
                 const auto& topRow = GetFixedObjects().at(0);
@@ -1042,15 +1039,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                      "have more columns than others.");
                         break;
                         }
-                    if (leftPoints.size() && !rightPoints.empty())
+                    if (!leftPoints.empty() && !rightPoints.empty())
                         {
                         // apply the smallest content area to the items in the column
                         const auto leftPt = *std::ranges::max_element(std::as_const(leftPoints));
                         const auto rightPt = *std::ranges::min_element(std::as_const(rightPoints));
-                        for (auto fixedObjectsRowPos = GetFixedObjects().begin();
-                             fixedObjectsRowPos != GetFixedObjects().end(); ++fixedObjectsRowPos)
+                        for (auto& fixedObjectsRowPos : GetFixedObjects())
                             {
-                            auto& objectPos = fixedObjectsRowPos->at(colIndex);
+                            auto& objectPos = fixedObjectsRowPos.at(colIndex);
                             if (objectPos != nullptr && !objectPos->GetContentRect().IsEmpty() &&
                                 rightPt >= leftPt)
                                 {
@@ -1065,12 +1061,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                 const auto rightDiff = std::max(
                                     oldBoundingBox.GetRight() - newBoundingBox.GetRight(), 0);
                                 for (size_t remainingRowsItem = colIndex + 1;
-                                     remainingRowsItem < fixedObjectsRowPos->size();
+                                     remainingRowsItem < fixedObjectsRowPos.size();
                                      ++remainingRowsItem)
                                     {
-                                    if (fixedObjectsRowPos->at(remainingRowsItem) != nullptr)
+                                    if (fixedObjectsRowPos.at(remainingRowsItem) != nullptr)
                                         {
-                                        fixedObjectsRowPos->at(remainingRowsItem)
+                                        fixedObjectsRowPos.at(remainingRowsItem)
                                             ->Offset(-rightDiff, 0);
                                         }
                                     }
@@ -1241,9 +1237,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     void Canvas::SetFixedObjectsGridSize(const size_t rows, const size_t columns)
         {
         m_fixedObjects.resize(rows);
-        for (auto pos = m_fixedObjects.begin(); pos != m_fixedObjects.end(); ++pos)
+        for (auto& fixedObject : m_fixedObjects)
             {
-            pos->resize(columns, nullptr);
+            fixedObject.resize(columns, nullptr);
             }
 
         // a full reset is needed
@@ -1328,9 +1324,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             // resize all (or just non-fixed width) objects to fit
             else
                 {
-                for (size_t item = 0; item < GetFixedObjects().at(row).size(); ++item)
+                for (auto& currentItem : GetFixedObjects().at(row))
                     {
-                    auto& currentItem = GetFixedObjects().at(row).at(item);
                     if (currentItem != nullptr &&
                         // if all object are fixed width, then adjust all of them;
                         // otherwise, just adjust non-fixed ones
@@ -1721,13 +1716,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 currentlyDraggedShape = nullptr;
                 }
             // ...or the fixed items connected to the canvas's grid
-            for (auto& fixedObjectsRowPos : GetFixedObjects())
+            for (auto& fixedObjectsRow : GetFixedObjects())
                 {
-                for (auto fixedObjectsPos = fixedObjectsRowPos.begin();
-                     fixedObjectsPos != fixedObjectsRowPos.end(); ++fixedObjectsPos)
+                for (const auto& object : fixedObjectsRow)
                     {
-                    if ((*fixedObjectsPos) &&
-                        (*fixedObjectsPos)->SelectObjectAtPoint(unscrolledPosition, gdc))
+                    if (object &&
+                        object->SelectObjectAtPoint(unscrolledPosition, gdc))
                         {
                         Refresh(true);
                         Update();

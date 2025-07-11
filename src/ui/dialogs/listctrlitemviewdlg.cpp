@@ -19,7 +19,7 @@ namespace Wisteria::UI
             }
         else if (event.GetId() == wxID_COPY)
             {
-            if (wxCHECK_VERSION(3, 3, 0))
+            if constexpr (wxCHECK_VERSION(3, 3, 0))
                 {
                 m_grid->CopySelection();
                 }
@@ -52,12 +52,10 @@ namespace Wisteria::UI
 
         mainSizer->Add(m_grid, wxSizerFlags{ 1 }.Expand().Border());
 
-        mainSizer->Add(
-            new wxStaticLine(this),
-            wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
+        mainSizer->Add(new wxStaticLine(this), wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
         wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        if (wxCHECK_VERSION(3, 3, 0))
+        if constexpr (wxCHECK_VERSION(3, 3, 0))
             {
             wxButton* button = new wxButton(this, wxID_COPY);
             button->SetBitmap(

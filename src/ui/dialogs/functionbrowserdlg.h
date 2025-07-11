@@ -128,7 +128,7 @@ namespace Wisteria::UI
                             const wxString& secondWindowCaption);
 
         [[nodiscard]]
-        wxString FormatFunctionSignature(wxString signature);
+        wxString FormatFunctionSignature(wxString signature) const;
 
         [[nodiscard]]
         static wxString GetFunctionName(const wxString& signature)
@@ -158,7 +158,7 @@ namespace Wisteria::UI
             }
 
         void OnListSelected(wxCommandEvent& event);
-        void OnHyperlinkClicked(wxHtmlLinkEvent& event);
+        void OnHyperlinkClicked(const wxHtmlLinkEvent& event);
 
         struct CategoryInfo
             {

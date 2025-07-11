@@ -17,7 +17,7 @@ wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
-namespace Wisteria::UI
+    namespace Wisteria::UI
     {
     //------------------------------------------------------
     ListEditTextCtrl::ListEditTextCtrl(
@@ -42,7 +42,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditTextCtrl::OnKillFocus([[maybe_unused]] wxFocusEvent& event)
+    void ListEditTextCtrl::OnKillFocus([[maybe_unused]]
+                                       wxFocusEvent &
+                                       event)
         {
         Hide();
         if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
@@ -55,13 +57,15 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditTextCtrl::OnEnter([[maybe_unused]] wxCommandEvent& event)
+    void ListEditTextCtrl::OnEnter([[maybe_unused]]
+                                   wxCommandEvent &
+                                   event)
         {
         Accept(wxDirection::wxDOWN);
         }
 
     //------------------------------------------------------
-    void ListEditTextCtrl::OnChar(wxKeyEvent& event)
+    void ListEditTextCtrl::OnChar(wxKeyEvent & event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             {
@@ -139,7 +143,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditComboBox::OnKillFocus(wxFocusEvent& event)
+    void ListEditComboBox::OnKillFocus(const wxFocusEvent& event)
         {
         Hide();
         /* The kill focus event is a little quirky when the combobox is not read only.
@@ -161,7 +165,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditComboBox::OnEnter([[maybe_unused]] wxCommandEvent& event)
+    void ListEditComboBox::OnEnter([[maybe_unused]]
+                                   wxCommandEvent &
+                                   event)
         {
         Hide();
         if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
@@ -174,7 +180,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditSpinCtrl::OnChar(wxKeyEvent& event)
+    void ListEditSpinCtrl::OnChar(wxKeyEvent & event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             {
@@ -210,7 +216,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditSpinCtrl::OnEndEditKillFocus(wxFocusEvent& event)
+    void ListEditSpinCtrl::OnEndEditKillFocus(wxFocusEvent & event)
         {
         Accept();
         event.Skip();
@@ -218,7 +224,7 @@ namespace Wisteria::UI
 
     //------------------------------------------------------
     ListEditSpinCtrlDouble::ListEditSpinCtrlDouble(
-        wxWindow* parent, ListCtrlEx* owner, wxWindowID id /*= wxID_ANY*/,
+        wxWindow * parent, ListCtrlEx * owner, wxWindowID id /*= wxID_ANY*/,
         const wxString& value /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
         const wxSize& size /*= wxDefaultSize*/, long style /*= wxSP_ARROW_KEYS*/,
         double Min /* = 1.0*/, double Max /*= 100.0*/, double initial /*= 1.0*/,
@@ -232,7 +238,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditSpinCtrlDouble::OnChar(wxKeyEvent& event)
+    void ListEditSpinCtrlDouble::OnChar(wxKeyEvent & event)
         {
         if (event.GetKeyCode() == WXK_ESCAPE)
             {
@@ -269,14 +275,14 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListEditSpinCtrlDouble::OnEndEditKillFocus(wxFocusEvent& event)
+    void ListEditSpinCtrlDouble::OnEndEditKillFocus(wxFocusEvent & event)
         {
         Accept();
         event.Skip();
         }
 
     //------------------------------------------------------
-    ListCtrlEx::ListCtrlEx(wxWindow* parent, const wxWindowID id,
+    ListCtrlEx::ListCtrlEx(wxWindow * parent, const wxWindowID id,
                            const wxPoint& pos /*= wxDefaultPosition*/,
                            const wxSize& size /*= wxDefaultSize*/, long style /*= 0*/,
                            const wxValidator& validator /*= wxDefaultValidator*/)
@@ -332,7 +338,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnDeleteAllItems(wxListEvent& event)
+    void ListCtrlEx::OnDeleteAllItems(wxListEvent & event)
         {
         if (IsVirtual())
             {
@@ -350,7 +356,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnDeleteItem(wxListEvent& event)
+    void ListCtrlEx::OnDeleteItem(wxListEvent & event)
         {
         // ListCtrl::DeleteItem will decrement the item count
         if (IsVirtual())
@@ -367,10 +373,10 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnIgnoreEvent(wxListEvent& event) { event.Veto(); }
+    void ListCtrlEx::OnIgnoreEvent(wxListEvent & event) { event.Veto(); }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnDblClick(wxMouseEvent& event)
+    void ListCtrlEx::OnDblClick(wxMouseEvent & event)
         {
         SetFocus();
         // see which row is selected
@@ -414,14 +420,16 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnRibbonButton(wxRibbonButtonBarEvent& event)
+    void ListCtrlEx::OnRibbonButton(const wxRibbonButtonBarEvent& event)
         {
         wxCommandEvent cmd(wxEVT_MENU, event.GetId());
         ProcessWindowEvent(cmd);
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnViewItem([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnViewItem([[maybe_unused]]
+                                wxCommandEvent &
+                                event)
         {
         ViewItem(GetFocusedItem());
         }
@@ -548,7 +556,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnMultiColumSort([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnMultiColumSort([[maybe_unused]]
+                                      wxCommandEvent &
+                                      event)
         {
         if (GetColumnCount() == 0)
             {
@@ -580,7 +590,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
+    void ListCtrlEx::OnKeyDown(wxKeyEvent & event)
         {
         // If the listctrl is editable and the user is doing a CTRL+V on the list then paste in
         // text from the clipboard as a new item
@@ -1208,8 +1218,8 @@ namespace Wisteria::UI
                                             { return init + column.m_width; }),
                             m_columnWidths.size());
                         // apply average width to all columns
-                        std::for_each(m_columnWidths.begin(), m_columnWidths.end(),
-                                      [avgWidth](auto& column) { column.m_width = avgWidth; });
+                        std::ranges::for_each(m_columnWidths, [avgWidth](auto& column)
+                                              { column.m_width = avgWidth; });
 
                         // remeasure the height of the longest string from the table
                         // into the average cell's width, this will be our overall line height
@@ -1228,10 +1238,9 @@ namespace Wisteria::UI
                         }
 
                     // grab the widest column and make it less wide
-                    auto longestColumn =
-                        std::max_element(m_columnWidths.begin(), m_columnWidths.end(),
-                                         [](const auto& a, const auto& b) noexcept
-                                         { return a.m_width < b.m_width; });
+                    auto longestColumn = std::ranges::max_element(
+                        m_columnWidths, [](const auto& a, const auto& b) noexcept
+                        { return a.m_width < b.m_width; });
                     if (longestColumn != m_columnWidths.end())
                         {
                         // make the widest column a little more narrow, remeasure,
@@ -1513,7 +1522,9 @@ namespace Wisteria::UI
         };
 
     //------------------------------------------------------
-    void ListCtrlEx::OnPrint([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnPrint([[maybe_unused]]
+                             wxCommandEvent &
+                             event)
         {
         ListCtrlExPrintout* printOut = new ListCtrlExPrintout(this, GetLabel());
 #if defined(__WXMSW__) || defined(__WXOSX__)
@@ -1568,7 +1579,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnPreview([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnPreview([[maybe_unused]]
+                               wxCommandEvent &
+                               event)
         {
             // note that previewing isn't done on macOS or GTK+ as it has its own native previewing
             // built into its print dialog
@@ -1633,7 +1646,12 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnPaste([[maybe_unused]] wxCommandEvent& event) { Paste(); }
+    void ListCtrlEx::OnPaste([[maybe_unused]]
+                             wxCommandEvent &
+                             event)
+        {
+        Paste();
+        }
 
     //------------------------------------------------------
     void ListCtrlEx::Paste()
@@ -1659,7 +1677,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnCopyFirstColumn([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnCopyFirstColumn([[maybe_unused]]
+                                       wxCommandEvent &
+                                       event)
         {
         wxString selectedFormattedText;
         FormatToHtml(selectedFormattedText, false, ExportRowSelection::ExportSelected, 0, -1, 0, 0,
@@ -1682,16 +1702,28 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnCopy([[maybe_unused]] wxCommandEvent& event) { Copy(true, false); }
+    void ListCtrlEx::OnCopy([[maybe_unused]]
+                            wxCommandEvent &
+                            event)
+        {
+        Copy(true, false);
+        }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnCopyWithColumnHeaders([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnCopyWithColumnHeaders([[maybe_unused]]
+                                             wxCommandEvent &
+                                             event)
         {
         Copy(true, true);
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnCopyAll([[maybe_unused]] wxCommandEvent& event) { Copy(false, true); }
+    void ListCtrlEx::OnCopyAll([[maybe_unused]]
+                               wxCommandEvent &
+                               event)
+        {
+        Copy(false, true);
+        }
 
     //------------------------------------------------------
     void ListCtrlEx::Copy(const bool onlyIncludeSelectedRows, const bool includeColumnHeaders)
@@ -1723,7 +1755,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnContextMenu([[maybe_unused]] wxContextMenuEvent& event)
+    void ListCtrlEx::OnContextMenu([[maybe_unused]]
+                                   wxContextMenuEvent &
+                                   event)
         {
         if (m_menu)
             {
@@ -1748,7 +1782,12 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnSelectAll([[maybe_unused]] wxCommandEvent& event) { SelectAll(); }
+    void ListCtrlEx::OnSelectAll([[maybe_unused]]
+                                 wxCommandEvent &
+                                 event)
+        {
+        SelectAll();
+        }
 
     //------------------------------------------------------
     void ListCtrlEx::SelectAll()
@@ -1786,7 +1825,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnFind(wxFindDialogEvent& event)
+    void ListCtrlEx::OnFind(const wxFindDialogEvent& event)
         {
         const wxEventType type = event.GetEventType();
         long result = wxNOT_FOUND;
@@ -1965,7 +2004,7 @@ namespace Wisteria::UI
 
     // resize the columns so that they fit the entire window evenly
     //------------------------------------------------------
-    void ListCtrlEx::OnResize(wxSizeEvent& event)
+    void ListCtrlEx::OnResize(wxSizeEvent & event)
         {
         if (GetColumnCount() == 1)
             {
@@ -1976,7 +2015,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnColClick(wxListEvent& event)
+    void ListCtrlEx::OnColClick(const wxListEvent& event)
         {
         if (!IsSortable())
             {
@@ -2063,8 +2102,8 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void
-    ListCtrlEx::SortColumns(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns)
+    void ListCtrlEx::SortColumns(
+        const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns)
         {
         PROFILE();
         if (columns.empty() || !IsSortable())
@@ -2523,7 +2562,9 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
+    void ListCtrlEx::OnSave([[maybe_unused]]
+                            wxCommandEvent &
+                            event)
         {
         wxArrayString choices, descriptions;
         choices.Add(_DT(L"HTML"));
@@ -2610,7 +2651,7 @@ namespace Wisteria::UI
 
     //------------------------------------------------------
     void ListCtrlEx::FormatToText(
-        wxString& outputText,
+        wxString & outputText,
         const ExportRowSelection rowSelection /*= ExportRowSelection::ExportAll*/,
         long firstRow /*= 0*/, long lastRow /*= -1*/, long firstColumn /*= 0*/,
         long lastColumn /*= -1*/, const bool includeColumnHeader /*= true*/) const
@@ -2714,7 +2755,7 @@ namespace Wisteria::UI
 
     //------------------------------------------------------
     void ListCtrlEx::FormatToHtml(
-        wxString& outputText, bool usePrinterSettings,
+        wxString & outputText, bool usePrinterSettings,
         const ExportRowSelection rowSelection /*= ExportRowSelection::ExportAll*/,
         long firstRow /*= 0*/, long lastRow /*= -1*/, long firstColumn /*= 0*/,
         long lastColumn /*= -1*/, const bool includeColumnHeader /*= true*/,

@@ -13,14 +13,10 @@
 #define ARCHIVE_DLG_H
 
 #include "dialogwithhelp.h"
-#include <wx/artprov.h>
 #include <wx/combobox.h>
 #include <wx/filename.h>
 #include <wx/statline.h>
 #include <wx/string.h>
-#include <wx/tokenzr.h>
-#include <wx/valgen.h>
-#include <wx/valtext.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI

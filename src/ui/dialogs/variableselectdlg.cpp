@@ -7,6 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "variableselectdlg.h"
+#include <wx/artprov.h>
+#include <wx/gbsizer.h>
+#include <wx/stattext.h>
+#include <wx/wupdlock.h>
 
 namespace Wisteria::UI
     {
@@ -20,7 +24,7 @@ namespace Wisteria::UI
                                          long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
         : m_columnInfo(std::move(columnInfo))
         {
-        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+        wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
 
         CreateControls(varInfo);
@@ -41,7 +45,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------------------------
-    void VariableSelectDlg::UpdateButtonStates()
+    void VariableSelectDlg::UpdateButtonStates() const
         {
         // enable/disable the Add/Remove buttons
         for (const auto& varList : m_varLists)
@@ -97,7 +101,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------------------------
-    std::vector<wxString> VariableSelectDlg::GetSelectedVariablesInList(wxListView* list)
+    std::vector<wxString> VariableSelectDlg::GetSelectedVariablesInList(const wxListView* list)
         {
         std::vector<wxString> selStrings;
         long item{ wxNOT_FOUND };
@@ -267,7 +271,7 @@ namespace Wisteria::UI
                 },
                 varList.m_removeId);
 
-            // double clicking var in a list on the right will remove it and send it back
+            // double-clicking var in a list on the right will remove it and send it back
             // to the main list on the left
             varList.m_list->Bind(wxEVT_LEFT_DCLICK,
                                  [&, this]([[maybe_unused]] wxMouseEvent&)
@@ -278,7 +282,7 @@ namespace Wisteria::UI
                                  });
             }
 
-        // double clicking var in the main list will move it to the first list on
+        // double-clicking var in the main list will move it to the first list on
         // the right that doesn't have anything in it (will do nothing if all have
         // something already)
         m_mainVarlist->Bind(wxEVT_LEFT_DCLICK,

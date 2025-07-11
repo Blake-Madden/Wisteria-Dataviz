@@ -24,7 +24,7 @@ namespace Wisteria::UI
         /// @param parent The parent window.
         /// @param id The dialog's ID.
         /// @param bkColor The dialog's background color.
-        HtmlTablePanel(wxWindow* parent, wxWindowID id, const wxColour bkColor);
+        HtmlTablePanel(wxWindow* parent, wxWindowID id, const wxColour& bkColor);
         /// @private
         HtmlTablePanel() = delete;
         /// @private

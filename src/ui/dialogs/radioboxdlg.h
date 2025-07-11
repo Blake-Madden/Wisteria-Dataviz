@@ -12,14 +12,12 @@
 #ifndef RADIOCHOICE_DIALOG_H
 #define RADIOCHOICE_DIALOG_H
 
-#include "../../math/safe_math.h"
 #include "dialogwithhelp.h"
+#include <utility>
 #include <wx/bannerwindow.h>
 #include <wx/dialog.h>
 #include <wx/filename.h>
 #include <wx/html/htmlwin.h>
-#include <wx/htmllbox.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -45,16 +43,16 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
         RadioBoxDlg(wxWindow* parent, wxString bannerLabel, wxString bannerDescription,
-                    wxString optionsLabel, const wxString& caption, const wxArrayString& choices,
-                    const wxArrayString& descriptions, const bool showHelpButton = false,
-                    wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
-                    const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE)
-            : m_choices(choices), m_descriptions(descriptions),
+                    wxString optionsLabel, const wxString& caption, wxArrayString choices,
+                    wxArrayString descriptions, const bool showHelpButton = false,
+                    const wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
+                    const wxSize& size = wxDefaultSize, const long style = wxDEFAULT_DIALOG_STYLE)
+            : m_choices(std::move(choices)), m_descriptions(std::move(descriptions)),
               m_bannerLabel(std::move(bannerLabel)),
               m_bannerDescription(std::move(bannerDescription)),
               m_optionsLabel(std::move(optionsLabel))
             {
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
             DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
             CreateControls(showHelpButton);
@@ -103,7 +101,7 @@ namespace Wisteria::UI
 
       private:
         /// Creates the controls and sizers.
-        void CreateControls(const bool showHelpButton);
+        void CreateControls(bool showHelpButton);
         void OnRadioBoxChange([[maybe_unused]] wxCommandEvent& event);
 
         wxArrayString m_choices;

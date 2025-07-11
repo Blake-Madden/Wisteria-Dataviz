@@ -43,7 +43,8 @@ namespace Wisteria::UI
                              long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN |
                                           wxRESIZE_BORDER)
             {
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
+                                            wxWS_EX_CONTEXTHELP);
             Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
             CreateControls();

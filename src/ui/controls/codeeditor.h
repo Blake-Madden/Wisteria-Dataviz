@@ -20,7 +20,6 @@
 #include <wx/fdrepdlg.h>
 #include <wx/settings.h>
 #include <wx/stc/stc.h>
-#include <wx/validate.h>
 
 /// @brief Namespace for code/formula parsing and editing.
 namespace Wisteria::UI
@@ -217,7 +216,7 @@ namespace Wisteria::UI
 
         /// @brief Can be useful when calling find event from parent container.
         /// @private
-        void OnFind(wxFindDialogEvent& event);
+        void OnFind(const wxFindDialogEvent& event);
 
         /// @brief The style to use for error annotations.
         constexpr static int ERROR_ANNOTATION_STYLE = wxSTC_STYLE_LASTPREDEFINED + 1;
@@ -254,10 +253,10 @@ namespace Wisteria::UI
         [[nodiscard]]
         static wxString GetReturnType(const wxString& function);
 
-        void OnMarginClick(wxStyledTextEvent& event);
+        void OnMarginClick(const wxStyledTextEvent& event);
         void OnCharAdded(wxStyledTextEvent& event);
-        void OnAutoCompletionSelected(wxStyledTextEvent& event);
-        void OnKeyDown(wxKeyEvent& event);
+        void OnAutoCompletionSelected(const wxStyledTextEvent& event);
+        void OnKeyDownEvt(wxKeyEvent& event);
 
         void ResetActiveFunctionMap() noexcept { m_activeFunctionsAndSignaturesMap = nullptr; }
 

@@ -830,7 +830,7 @@ bool FormattedTextCtrl::SaveAsRtf(const wxFileName& path)
     }
 
 //------------------------------------------------------
-void FormattedTextCtrl::OnFind(wxFindDialogEvent& myEvent)
+void FormattedTextCtrl::OnFind(const wxFindDialogEvent& myEvent)
     {
     // if they were just hitting Cancel then close
     if (myEvent.GetEventType() == wxEVT_COMMAND_FIND_CLOSE)
@@ -1058,7 +1058,6 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
     const wxString BACKGROUND_COLOR_TAG = _DT(L"\\chcbpat");
     const wxString BACKGROUND_COLOR_TAG2 = _DT(L"\\highlight");
     const wxString HIGHLIGHT_TAG{ _DT(L"\\cb") };
-    wxString highlightNumber;
     wxString correctedText;
     correctedText.reserve(text.length() * 1.5);
     // add "chcbpat" to each "cb"
@@ -1076,7 +1075,7 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
                 text.find_first_of(L" \n\r\t\\", highlightTag + HIGHLIGHT_TAG.length());
             if (nextSpace != wxNOT_FOUND)
                 {
-                highlightNumber =
+                wxString highlightNumber =
                     text.substr(highlightTag + HIGHLIGHT_TAG.length(),
                                 (nextSpace - (highlightTag + HIGHLIGHT_TAG.length())));
                 correctedText.Append(highlightNumber + BACKGROUND_COLOR_TAG + highlightNumber +
@@ -1121,7 +1120,7 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
         {
         return wxString{};
         }
-    /* Always convert this UTF8 text to unicode in here while we format it. This makes
+    /* Always convert this UTF8 text to Unicode in here while we format it. This makes
        things much easier because the GTK offset functions treat offsets as characters instead
        of bytes.*/
     const wxString bufferedText = wxString::FromUTF8(bufferedUTF8Text);
@@ -1139,7 +1138,7 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
     gtk_text_buffer_get_end_iter(buffer, &end);
     gint offset = 0;
     gint previousStart = 0;
-    // handle the first tag that defines the default formatting for all of the text
+    // handle the first tag that defines the default formatting for all the text
     if (gtk_text_iter_starts_tag(&start, nullptr))
         {
         GSList* tags = gtk_text_iter_get_toggled_tags(&start, true);
@@ -1168,7 +1167,7 @@ wxString FormattedTextCtrl::GtkGetFormattedText(const GtkFormat format,
             {
             break;
             }
-        // get all of the tags at the current iterator (there might be more than one)
+        // get all the tags at the current iterator (there might be more than one)
         GSList *tags = nullptr, *tagp = nullptr;
         tags = gtk_text_iter_get_toggled_tags(&start, false);
         tags = g_slist_concat(tags, gtk_text_iter_get_toggled_tags(&start, true));

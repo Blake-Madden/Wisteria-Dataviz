@@ -12,15 +12,10 @@
 #ifndef PRINTERHEADERFOOTER_DLG_H
 #define PRINTERHEADERFOOTER_DLG_H
 
-#include "../../util/donttranslate.h"
 #include "dialogwithhelp.h"
 #include <set>
 #include <wx/combobox.h>
 #include <wx/regex.h>
-#include <wx/spinctrl.h>
-#include <wx/textdlg.h>
-#include <wx/tooltip.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -68,7 +63,8 @@ namespace Wisteria::UI
               m_centerPrinterFooter(std::move(centerPrinterFooter)),
               m_rightPrinterFooter(std::move(rightPrinterFooter))
             {
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxDIALOG_EX_METAL);
+            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
+                                            wxDIALOG_EX_METAL);
             CreateControls();
 
             Bind(wxEVT_BUTTON, &PrinterHeaderFooterDlg::OnOK, this, wxID_OK);

@@ -12,21 +12,21 @@
 using namespace Wisteria::UI;
 
 //-------------------------------------------------------
-HtmlTablePanel::HtmlTablePanel(wxWindow* parent, wxWindowID id, const wxColour bkColor)
+HtmlTablePanel::HtmlTablePanel(wxWindow* parent, const wxWindowID id, const wxColour& bkColor)
     : wxWindow(parent, id)
     {
-    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
-    SetBackgroundColour(bkColor);
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxWindowBase::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    wxWindow::SetBackgroundColour(bkColor);
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+    auto* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    wxBitmapButton* copyButton = new wxBitmapButton(
+    auto* copyButton = new wxBitmapButton(
         this, wxID_COPY,
         wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
     copyButton->SetToolTip(_(L"Copy selected text"));
     toolbarSizer->Add(copyButton, 0, wxALIGN_CENTER_VERTICAL);
 
-    wxBitmapButton* saveButton = new wxBitmapButton(
+    auto* saveButton = new wxBitmapButton(
         this, wxID_SAVE,
         wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
     saveButton->SetToolTip(_(L"Save"));

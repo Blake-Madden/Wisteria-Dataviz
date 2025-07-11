@@ -8,6 +8,8 @@
 
 #include "radioboxdlg.h"
 #include "../../base/colorbrewer.h"
+#include <wx/htmllbox.h>
+#include <wx/valgen.h>
 
 using namespace Wisteria::UI;
 using namespace Wisteria::Colors;

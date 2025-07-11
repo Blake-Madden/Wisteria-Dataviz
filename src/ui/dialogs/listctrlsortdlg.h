@@ -49,7 +49,7 @@ namespace Wisteria::UI
         /// @brief Sets the column sorting information.
         /// @param sortColumns The columns to sort by.
         void FillSortCriteria(
-            const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns);
+            const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns) const;
 
         /// @returns The columns' names and sorting information.
         [[nodiscard]]
@@ -73,13 +73,13 @@ namespace Wisteria::UI
         void CreateControls();
 
         [[nodiscard]]
-        const static wxString GetAscendingLabel()
+        static wxString GetAscendingLabel()
             {
             return _(L"Smallest to Largest");
             }
 
         [[nodiscard]]
-        const static wxString GetDescendingLabel()
+        static wxString GetDescendingLabel()
             {
             return _(L"Largest to Smallest");
             }
@@ -92,6 +92,6 @@ namespace Wisteria::UI
         };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif // LISTCTRL_SORT_DLG_H

@@ -341,7 +341,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
     }
 
 //----------------------------------------------------------
-void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
+void Wisteria::UI::BaseApp::GenerateReport(const wxDebugReport::Context ctx) const
     {
     auto* report = new wxDebugReportCompress;
 

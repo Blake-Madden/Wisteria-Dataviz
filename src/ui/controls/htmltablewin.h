@@ -18,11 +18,9 @@
 #include <wx/fdrepdlg.h>
 #include <wx/file.h>
 #include <wx/filename.h>
-#include <wx/html/htmlcell.h>
 #include <wx/html/htmlwin.h>
 #include <wx/html/htmprint.h>
 #include <wx/menu.h>
-#include <wx/print.h>
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
 

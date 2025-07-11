@@ -96,12 +96,12 @@ namespace Wisteria::UI
         // item selection
         Bind(
             wxEVT_LIST_ITEM_SELECTED,
-            [this](wxListEvent& selected)
+            [this](const wxListEvent& selected)
             {
-                const wxString selectedFile = m_listCtrl->GetItemFilePath(selected.GetIndex());
                 // file may have been deleted by the user while this dialog is open,
                 // make sure it's actually still there.
-                if (wxFile::Exists(selectedFile))
+                if (const wxString selectedFile = m_listCtrl->GetItemFilePath(selected.GetIndex());
+                    wxFile::Exists(selectedFile))
                     {
                     m_thumbnail->LoadImage(selectedFile);
 

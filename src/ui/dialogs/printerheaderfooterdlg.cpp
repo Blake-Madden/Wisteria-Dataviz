@@ -8,6 +8,9 @@
 
 #include "printerheaderfooterdlg.h"
 #include "../../data/dataset.h"
+#include "../../util/donttranslate.h"
+#include <wx/spinctrl.h>
+#include <wx/valgen.h>
 
 using namespace Wisteria::UI;
 
@@ -81,15 +84,14 @@ bool PrinterHeaderFooterDlg::Validate()
     const auto validateString = [&](wxString processText)
     {
         size_t start{ 0 }, len{ 0 };
-        wxString embeddedTag;
         while (re.Matches(processText))
             {
             // Find the size of the first match
             if (re.GetMatch(&start, &len, 0))
                 {
-                embeddedTag = re.GetMatch(processText, 0).MakeUpper();
 
-                if (supportedTags.find(embeddedTag) == supportedTags.cend())
+                if (const wxString embeddedTag = re.GetMatch(processText, 0).MakeUpper();
+                    !supportedTags.contains(embeddedTag))
                     {
                     wxMessageBox(wxString::Format(_(L"Invalid tag: %s"), embeddedTag),
                                  _(L"Syntax Error"), wxICON_WARNING);

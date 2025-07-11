@@ -70,7 +70,7 @@ wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 
     CallTipUseStyle(40);
 
-    Bind(wxEVT_KEY_DOWN, &CodeEditor::OnKeyDown, this);
+    Bind(wxEVT_KEY_DOWN, &CodeEditor::OnKeyDownEvt, this);
     Bind(wxEVT_FIND, &CodeEditor::OnFind, this, wxID_ANY);
     Bind(wxEVT_FIND_NEXT, &CodeEditor::OnFind, this, wxID_ANY);
     Bind(wxEVT_STC_MARGINCLICK, &CodeEditor::OnMarginClick, this, wxID_ANY);
@@ -240,8 +240,8 @@ bool CodeEditor::Save()
             {
             defaultFileName += L".lua";
             }
-        wxFileDialog dialogSave(this, _(L"Save Script As"), wxString{}, defaultFileName, GetFileFilter(),
-                                wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialogSave(this, _(L"Save Script As"), wxString{}, defaultFileName,
+                                GetFileFilter(), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
         if (dialogSave.ShowModal() != wxID_OK)
             {
@@ -259,7 +259,7 @@ bool CodeEditor::Save()
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnKeyDown(wxKeyEvent& event)
+void CodeEditor::OnKeyDownEvt(wxKeyEvent& event)
     {
     if (event.ControlDown() && event.GetKeyCode() == L'S')
         {
@@ -276,7 +276,7 @@ void CodeEditor::OnKeyDown(wxKeyEvent& event)
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnFind(wxFindDialogEvent& event)
+void CodeEditor::OnFind(const wxFindDialogEvent& event)
     {
     const int flags = event.GetFlags();
     int searchFlags = 0;
@@ -492,7 +492,7 @@ bool CodeEditor::SplitFunctionAndParams(wxString& function, wxString& params)
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnMarginClick(wxStyledTextEvent& event)
+void CodeEditor::OnMarginClick(const wxStyledTextEvent& event)
     {
     if (event.GetMargin() == 1)
         {
@@ -519,7 +519,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             if (nextToken.Lower().find(theWord.Lower()) != wxString::npos)
                 {
                 matchedFuncs.append(L' ').append(nextToken);
-                // set closest match if we can
+                // set the closest match if we can
                 if (!funcStartsWith && nextToken.Lower().starts_with(theWord))
                     {
                     funcStartsWith = true;
@@ -532,7 +532,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
 
     // Given a variable name, searches for the datatype of that variable based
     // on the first place it was assigned a value.
-    const auto findDataType = [this](const int wordStart, const wxString objectName)
+    const auto findDataType = [this](const int wordStart, const wxString& objectName)
     {
         if (objectName.empty())
             {
@@ -850,7 +850,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
     }
 
 //-------------------------------------------------------------
-void CodeEditor::OnAutoCompletionSelected(wxStyledTextEvent& event)
+void CodeEditor::OnAutoCompletionSelected(const wxStyledTextEvent& event)
     {
     wxString selectedString = event.GetText();
 

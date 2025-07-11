@@ -64,7 +64,7 @@ namespace Wisteria::UI
         void OnFatalException() final;
         // this is where we really generate the debug report
         /// @private
-        void GenerateReport(wxDebugReport::Context ctx);
+        void GenerateReport(wxDebugReport::Context ctx) const;
 
         /// @returns The number of active documents.
         [[nodiscard]]
@@ -178,7 +178,7 @@ namespace Wisteria::UI
 
         /// @returns Everything sent to the logging system as a formatted string.
         [[nodiscard]]
-        wxString GetLogReport()
+        wxString GetLogReport() const
             {
             return m_logFile->Read();
             }
@@ -263,10 +263,10 @@ namespace Wisteria::UI
             @param copyrightPrefix A string to insert at the start of the copyright message.
             @returns The decorated splashscreen.*/
         [[nodiscard]]
-        wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
-                                    const wxString& appSubName, const wxString& vendorName,
-                                    const bool includeCopyright,
-                                    const wxString& copyrightPrefix = wxString{});
+        static wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
+                                           const wxString& appSubName, const wxString& vendorName,
+                                           const bool includeCopyright,
+                                           const wxString& copyrightPrefix = wxString{});
 
       private:
         [[nodiscard]]

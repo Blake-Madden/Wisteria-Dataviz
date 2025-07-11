@@ -8,19 +8,22 @@
 
 #include "opacitydlg.h"
 #include "../../math/mathematics.h"
+#include <utility>
+#include <wx/slider.h>
+#include <wx/valgen.h>
 
 using namespace Wisteria::UI;
 
 //-------------------------------------------------------------
-OpacityDlg::OpacityDlg(wxWindow* parent, const uint8_t opacity, const wxBitmap& image,
-                       wxWindowID id /*= wxID_ANY*/,
+OpacityDlg::OpacityDlg(wxWindow* parent, const uint8_t opacity, wxBitmap image,
+                       const wxWindowID id /*= wxID_ANY*/,
                        const wxString& caption /*= _(L"Set Opacity")*/,
                        const wxPoint& pos /*= wxDefaultPosition*/,
                        const wxSize& size /*= wxDefaultSize*/,
-                       long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
-    : m_opacity(opacity), m_image(image)
+                       const long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
+    : m_opacity(opacity), m_image(std::move(image))
     {
-    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+    wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
 
     CreateControls();
@@ -31,9 +34,9 @@ OpacityDlg::OpacityDlg(wxWindow* parent, const uint8_t opacity, const wxBitmap& 
     }
 
 //-------------------------------------------------------------
-void OpacityDlg::OnChangeOpacity(wxScrollEvent& event)
+void OpacityDlg::OnChangeOpacity(const wxScrollEvent& event)
     {
-    if (m_thumb)
+    if (m_thumb != nullptr)
         {
         m_thumb->SetOpacity(static_cast<uint8_t>(event.GetPosition()));
         }

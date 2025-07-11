@@ -69,8 +69,7 @@ namespace Wisteria::UI
         /// @param size The size of the frame.
         /// @param style The window style.
         BaseMainFrame(wxDocManager* manager, wxFrame* frame, wxArrayString defaultFileExtensions,
-                      const wxString& title,
-                      const wxPoint& pos, const wxSize& size, long style);
+                      const wxString& title, const wxPoint& pos, const wxSize& size, long style);
         /// @private
         BaseMainFrame(const BaseMainFrame&) = delete;
         /// @private
@@ -101,18 +100,18 @@ namespace Wisteria::UI
 
         /// @returns The list of file types (extensions) that the app supports.
         [[nodiscard]]
-        const wxArrayString& GetDefaultFileExtentions() const noexcept
+        const wxArrayString& GetDefaultFileExtensions() const noexcept
             {
-            return m_defaultFileExtentions;
+            return m_defaultFileExtensions;
             }
 
         /// @brief Sets the list of file types (extensions) that the app supports.
         /// @details These are what are shown when the client fires a new document event
         ///     (if there are more than one file extension).
         /// @param extensions The supported extensions.
-        void SetDefaultFileExtentions(const wxArrayString& extensions)
+        void SetDefaultFileExtensions(const wxArrayString& extensions)
             {
-            m_defaultFileExtentions = extensions;
+            m_defaultFileExtensions = extensions;
             }
 
         /// @returns The program's logo.
@@ -157,7 +156,7 @@ namespace Wisteria::UI
         wxRibbonBar* m_ribbon{ nullptr };
         wxPrintData* m_printData{ nullptr };
         wxString m_helpFolder;
-        wxArrayString m_defaultFileExtentions;
+        wxArrayString m_defaultFileExtensions;
         wxBitmap m_logo;
         wxDECLARE_CLASS(BaseMainFrame);
         };

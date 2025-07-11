@@ -15,10 +15,8 @@
 #include "../../util/logfile.h"
 #include "../controls/listctrlex.h"
 #include "../controls/searchpanel.h"
-#include <wx/bmpbuttn.h>
 #include <wx/checklst.h>
 #include <wx/dialog.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -79,7 +77,7 @@ namespace Wisteria::UI
             @param size The dialog's size.
             @param style The dialog's style.*/
         ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
-                const wxColour bkColor, const wxColour hoverColor, const wxColour foreColor,
+                const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
                 const long buttonStyle = LD_NO_BUTTONS, wxWindowID id = wxID_ANY,
                 const wxString& caption = wxString{}, const wxString& label = wxString{},
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize{ 600, 250 },
@@ -96,8 +94,8 @@ namespace Wisteria::UI
             @param pos The dialog's position.
             @param size The dialog's size.
             @param style The dialog's style.*/
-        ListDlg(wxWindow* parent, const wxColour bkColor, const wxColour hoverColor,
-                const wxColour foreColor, const long buttonStyle = LD_NO_BUTTONS,
+        ListDlg(wxWindow* parent, const wxColour& bkColor, const wxColour& hoverColor,
+                const wxColour& foreColor, const long buttonStyle = LD_NO_BUTTONS,
                 wxWindowID id = wxID_ANY, const wxString& caption = wxString{},
                 const wxString& label = wxString{}, const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxSize(600, 250),
@@ -191,8 +189,8 @@ namespace Wisteria::UI
         void BindEvents();
         /// Creates the controls and sizers
         void CreateControls();
-        void OnAffirmative(wxCommandEvent& event);
-        void OnNegative(wxCommandEvent& event);
+        void OnAffirmative(const wxCommandEvent& event);
+        void OnNegative(const wxCommandEvent& event);
         void OnSelectAll([[maybe_unused]] wxRibbonButtonBarEvent& event);
         void OnCopy([[maybe_unused]] wxRibbonButtonBarEvent& event);
         void OnSave(wxRibbonButtonBarEvent& event);
@@ -243,6 +241,6 @@ namespace Wisteria::UI
         };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif // LIST_DIALOG_H

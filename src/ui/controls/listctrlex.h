@@ -12,6 +12,7 @@
 #ifndef __LISTCTRL_EX_H__
 #define __LISTCTRL_EX_H__
 
+#include <utility>
 #include <wx/busyinfo.h>
 #include <wx/clipbrd.h>
 #include <wx/dataobj.h>
@@ -85,7 +86,7 @@ namespace Wisteria::UI
         ListEditComboBox& operator=(const ListEditComboBox&) = delete;
 
         void OnEnter([[maybe_unused]] wxCommandEvent& event);
-        void OnKillFocus(wxFocusEvent& event);
+        void OnKillFocus(const wxFocusEvent& event);
 
         void SetCurrentItem(const long row, const long column)
             {
@@ -212,7 +213,7 @@ namespace Wisteria::UI
         ListEditTextCtrl(const ListEditTextCtrl&) = delete;
         ListEditTextCtrl& operator=(const ListEditTextCtrl&) = delete;
 
-        void SetCurrentItem(const long row, const long column);
+        void SetCurrentItem(long row, long column);
 
         void Cancel();
         void Accept(wxDirection direction);
@@ -279,7 +280,7 @@ namespace Wisteria::UI
             @param size The control's size.
             @param style The control's style.
             @param validator A validator for the control.*/
-        ListCtrlEx(wxWindow* parent, const wxWindowID id, const wxPoint& pos = wxDefaultPosition,
+        ListCtrlEx(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition,
                    const wxSize& size = wxDefaultSize, long style = 0,
                    const wxValidator& validator = wxDefaultValidator);
 
@@ -290,14 +291,14 @@ namespace Wisteria::UI
         /// @private
         ~ListCtrlEx();
 
-        /// @brief Specifies whether double clicking an item will show it as a pop-up HTML report.
+        /// @brief Specifies whether double-clicking an item will show it as a pop-up HTML report.
         /// @param enable @c true to enable.
         void EnableItemViewOnDblClick(const bool enable = true) noexcept
             {
             m_enableItemViewable = enable;
             }
 
-        /// @brief Specifies whether items can be added by double clicking
+        /// @brief Specifies whether items can be added by double-clicking
         ///     (if wxLC_EDIT_LABELS is also enabled).
         /// @param enable Whether items can be added in edit mode.
         void EnableItemAdd(const bool enable = true) noexcept { m_enableItemAdd = enable; }
@@ -314,7 +315,7 @@ namespace Wisteria::UI
         /// @param enable Whether items can be deleted.
         /// @param deletePrompt Option prompt that can be shown to the user when
         ///     an item is being deleted. Set this to wxString{} to suppress any prompting.
-        void EnableItemDeletion(const bool enable = true, const wxString deletePrompt = wxString{})
+        void EnableItemDeletion(const bool enable = true, const wxString& deletePrompt = wxString{})
             {
             m_enableItemDelete = enable;
             m_deletePrompt = deletePrompt;
@@ -371,7 +372,7 @@ namespace Wisteria::UI
         /// @brief Enters a cell into edit mode
         /// @param selectedRow The row of the cell to edit.
         /// @param selectedColumn The column of the cell to edit.
-        void EditItem(const long selectedRow, const long selectedColumn);
+        void EditItem(long selectedRow, long selectedColumn);
 
         /// @brief How to export the list.
         enum class ExportRowSelection
@@ -416,10 +417,10 @@ namespace Wisteria::UI
                 {
                 }
 
-            explicit ColumnInfo(const wxArrayString& choices, const bool readOnly = false)
+            explicit ColumnInfo(wxArrayString choices, const bool readOnly = false)
                 : m_editMode(readOnly ? ColumnEditMode::ComboBoxEditReadOnly :
                                         ColumnEditMode::ComboBoxEdit),
-                  m_selectableValues(choices)
+                  m_selectableValues(std::move(choices))
                 {
                 }
 
@@ -440,7 +441,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         const ColumnInfo& GetColumnEditMode(const long column) const
             {
-            std::map<long, ColumnInfo>::const_iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos != m_columnInfo.end())
                 {
                 return pos->second;
@@ -456,7 +457,7 @@ namespace Wisteria::UI
             @param enable @c true to make editable.*/
         void SetColumnEditable(const long column, const bool enable = true)
             {
-            std::map<long, ColumnInfo>::iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos == m_columnInfo.end())
                 {
                 m_columnInfo.insert(std::make_pair(column, ColumnInfo()));
@@ -478,7 +479,7 @@ namespace Wisteria::UI
         template<typename T>
         void SetColumnNumericRange(const long column, const T Min, const T Max)
             {
-            std::map<long, ColumnInfo>::iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos == m_columnInfo.end())
                 {
                 m_columnInfo.insert(std::make_pair(column, ColumnInfo()));
@@ -496,7 +497,7 @@ namespace Wisteria::UI
             @param choices The choices that the user can select (or edit).*/
         void SetColumnTextSelections(const long column, const wxArrayString& choices)
             {
-            std::map<long, ColumnInfo>::iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos == m_columnInfo.end())
                 {
                 m_columnInfo.insert(std::make_pair(column, ColumnInfo()));
@@ -511,7 +512,7 @@ namespace Wisteria::UI
             @param choices The choices that the user can select.*/
         void SetColumnTextSelectionsReadOnly(const long column, const wxArrayString& choices)
             {
-            std::map<long, ColumnInfo>::iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos == m_columnInfo.end())
                 {
                 m_columnInfo.insert(std::make_pair(column, ColumnInfo()));
@@ -528,7 +529,7 @@ namespace Wisteria::UI
         SetColumnFilePathTruncationMode(const long column,
                                         const ColumnInfo::ColumnFilePathTruncationMode TruncMode)
             {
-            std::map<long, ColumnInfo>::iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos == m_columnInfo.end())
                 {
                 m_columnInfo.insert(std::make_pair(column, ColumnInfo()));
@@ -543,7 +544,7 @@ namespace Wisteria::UI
         ColumnInfo::ColumnFilePathTruncationMode
         GetColumnFilePathTruncationMode(const long column) const
             {
-            std::map<long, ColumnInfo>::const_iterator pos = m_columnInfo.find(column);
+            auto pos = m_columnInfo.find(column);
             if (pos == m_columnInfo.end())
                 {
                 return ColumnInfo::ColumnFilePathTruncationMode::NoTruncation;
@@ -561,7 +562,7 @@ namespace Wisteria::UI
         /// @private
         void OnSave([[maybe_unused]] wxCommandEvent& event);
         /// @private
-        void OnColClick(wxListEvent& event);
+        void OnColClick(const wxListEvent& event);
         /// @private
         void OnResize(wxSizeEvent& event);
         /// @private
@@ -577,7 +578,7 @@ namespace Wisteria::UI
         /// @private
         void OnContextMenu([[maybe_unused]] wxContextMenuEvent& event);
         /// @private
-        void OnFind(wxFindDialogEvent& event);
+        void OnFind(const wxFindDialogEvent& event);
         /// @private
         void OnDeleteAllItems(wxListEvent& event);
         /// @private
@@ -593,14 +594,14 @@ namespace Wisteria::UI
         /// @private
         void OnPaste([[maybe_unused]] wxCommandEvent& event);
         /// @private
-        void OnRibbonButton(wxRibbonButtonBarEvent& event);
+        void OnRibbonButton(const wxRibbonButtonBarEvent& event);
         /// @private
         void OnIgnoreEvent(wxListEvent& event);
 
         /// @brief Resizes the columns evenly.
         /// @param maxColumnWidth The maximum width for all columns (in DIPs).\n
         ///     Set to @c -1 to not use a maximum width.
-        void DistributeColumns(const long maxColumnWidth = 300);
+        void DistributeColumns(long maxColumnWidth = 300);
 
         /// @brief Saves the list to a file.
         /// @param path The file path to save the list control's contents.
@@ -614,7 +615,7 @@ namespace Wisteria::UI
         /// @brief Copies the list data to the clipboard.
         /// @param onlyIncludeSelectedRows @c true to only copy selected rows.
         /// @param includeColumnHeaders @c true to include the column names.
-        void Copy(const bool onlyIncludeSelectedRows, const bool includeColumnHeaders);
+        void Copy(bool onlyIncludeSelectedRows, bool includeColumnHeaders);
         /// @brief Pastes clipboard contents into the list (if it is editable).
         void Paste();
 
@@ -633,7 +634,7 @@ namespace Wisteria::UI
         /// @param startIndex The position to start the search.
         /// @returns The index of the row where the item was found, or wxNOT_FOUND if not found.
         [[nodiscard]]
-        long FindEx(const wchar_t* textToFind, const long startIndex = 0);
+        long FindEx(const wchar_t* textToFind, long startIndex = 0);
         /// @brief Finds a column by name.
         /// @param columnName The column name to search for.
         /// @returns The index of column, if found; otherwise, wxNOT_FOUND if column name.
@@ -646,7 +647,7 @@ namespace Wisteria::UI
 
         /// @brief Displays the contents of a given row as an HTML report.
         /// @param selectedRow The row to display.
-        void ViewItem(const long selectedRow);
+        void ViewItem(long selectedRow);
 
         /// @brief Sets the size for data container for a virtual report view.
         /// @param rowSize The number of rows to resize to.
@@ -734,7 +735,7 @@ namespace Wisteria::UI
         /// @param column The column to get text from.
         /// @returns The text from the specified cell.
         [[nodiscard]]
-        wxString GetItemTextFormatted(const long item, const long column) const;
+        wxString GetItemTextFormatted(long item, long column) const;
 
         /// @brief Sets the text in a report view at the given cell.
         /// @param row The row to set text to.
@@ -762,12 +763,12 @@ namespace Wisteria::UI
         ///     on some platforms.
         /// @param column The column to measure.
         [[nodiscard]]
-        long EstimateColumnWidth(const long column);
+        long EstimateColumnWidth(long column);
 
         /// @brief Sets the visual attributes of a cell.
         /// @param item The row to edit.
         /// @param attribs The attributes to apply.
-        void SetRowAttributes(long item, const wxItemAttr& attribs)
+        void SetRowAttributes(const long item, const wxItemAttr& attribs)
             {
             if (IsVirtual() && m_virtualData != nullptr)
                 {
@@ -783,8 +784,8 @@ namespace Wisteria::UI
 
         /// @brief Sets the underlying data provider for a virtual list control.
         /// @param dataProvider The data provider for the list control.
-        void
-        SetVirtualDataProvider(std::shared_ptr<ListCtrlExDataProviderBase> dataProvider) noexcept
+        void SetVirtualDataProvider(
+            const std::shared_ptr<ListCtrlExDataProviderBase>& dataProvider) noexcept
             {
             m_virtualData = dataProvider;
             }
@@ -832,7 +833,7 @@ namespace Wisteria::UI
         /// @brief Sorts by the specified column.
         /// @param nCol The column to sort by.
         /// @param direction The direction to sort (e.g., SortAscending is smallest to largest).
-        void SortColumn(const long nCol, const Wisteria::SortDirection direction);
+        void SortColumn(long nCol, Wisteria::SortDirection direction);
         /// @brief Sorts by the specified columns.
         /// @details Sorts in the order of the columns, when a tie is encountered,
         ///     then the values from the next column specified are compared.
@@ -843,7 +844,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         long GetSortedColumn() const
             {
-            if (m_sortedCols.size())
+            if (!m_sortedCols.empty())
                 {
                 return static_cast<long>(m_sortedCols[0].first);
                 }
@@ -991,10 +992,10 @@ namespace Wisteria::UI
         /// @param tableCaption A caption to be drawn above the data.\n
         ///     Will be inside a div with class "caption" that can be customized via CSS.
         void FormatToHtml(wxString& outputText, bool usePrinterSettings,
-                          const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
+                          ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
                           long firstRow = 0, long lastRow = -1, long firstColumn = 0,
-                          long lastColumn = -1, const bool includeColumnHeader = true,
-                          const bool formatAsStandAloneFile = false,
+                          long lastColumn = -1, bool includeColumnHeader = true,
+                          bool formatAsStandAloneFile = false,
                           const wxString& tableCaption = wxString{}) const;
         /// @brief Formats the list control's contents to LaTeX.
         /// @param rowSelection Specifies how rows and columns should be exported.
@@ -1010,11 +1011,10 @@ namespace Wisteria::UI
         ///     Will be inside a div with class "caption" that can be customized via CSS.
         /// @returns The list control's content, formatted as LaTeX.
         [[nodiscard]]
-        wxString
-        FormatToLaTeX(const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
-                      long firstRow = 0, long lastRow = -1, long firstColumn = 0,
-                      long lastColumn = -1, const bool includeColumnHeader = true,
-                      const wxString& tableCaption = wxString{}) const;
+        wxString FormatToLaTeX(ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
+                               long firstRow = 0, long lastRow = -1, long firstColumn = 0,
+                               long lastColumn = -1, bool includeColumnHeader = true,
+                               const wxString& tableCaption = wxString{}) const;
         /// @brief Formats the list control's contents to tab delimited text.
         /// @param[out] outputText The text buffer to write to.
         /// @param rowSelection Specifies how rows and columns should be exported.
@@ -1027,9 +1027,9 @@ namespace Wisteria::UI
         /// @param includeColumnHeader Specifies whether to include the column headers,
         ///     which will be the first row.
         void FormatToText(wxString& outputText,
-                          const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
+                          ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
                           long firstRow = 0, long lastRow = -1, long firstColumn = 0,
-                          long lastColumn = -1, const bool includeColumnHeader = true) const;
+                          long lastColumn = -1, bool includeColumnHeader = true) const;
         /// @brief Sets the image for a column (shown in the header)
         /// @param col The column to set the image to.
         /// @param image The index into the image list to get the image.
@@ -1040,7 +1040,7 @@ namespace Wisteria::UI
         /// @param row The row of the cell.
         /// @param column The row of the column.
         /// @param image The image (image list index) to use for the cell.
-        void SetItemColumnImageEx(const long row, const long column, const int image);
+        void SetItemColumnImageEx(long row, long column, int image);
 
         /// @returns Whether the user has directly edited an item via a control
         ///     (e.g., floating text box)
@@ -1053,7 +1053,7 @@ namespace Wisteria::UI
         /// @brief Sets whether an item has been edited in the list.
         /// @details This should be called from an external editing control
         ///     (e.g., a floating text control).
-        /// @param edited Whether or not the list has been edited.
+        /// @param edited Whether the list has been edited.
         void SetItemBeenEditedByUser(const bool edited = true) noexcept
             {
             m_hasItemBeenEditedByUser = edited;
@@ -1086,7 +1086,7 @@ namespace Wisteria::UI
         /// @param whichList Which image list to cache
         ///     (e.g., wxIMAGE_LIST_SMALL or wxIMAGE_LIST_NORMAL).
         /// @note This should be called after AssignImageList() or SetImageList().
-        void CacheImageList(const int whichList);
+        void CacheImageList(int whichList);
 
         /// @brief If file deletion is enabled, this is the column representing the
         ///     full file path to delete.
@@ -1109,7 +1109,7 @@ namespace Wisteria::UI
         /// @note The file and folder columns must be specified prior to calling this.
         /// @sa SetFullFilePathColumn(), SetFolderColumn(), SetFileColumn().
         [[nodiscard]]
-        wxString GetItemFilePath(const long item)
+        wxString GetItemFilePath(const long item) const
             {
             // if a single column represents the full file path
             if (m_fullFilePathColumn != wxNOT_FOUND && m_fullFilePathColumn < GetColumnCount())
@@ -1137,7 +1137,7 @@ namespace Wisteria::UI
         wxItemAttr* OnGetItemAttr(long item) const final;
 
       private:
-        bool SortTextItems(const long nCol, const bool ascending, long low = 0, long high = -1);
+        bool SortTextItems(long nCol, bool ascending, long low = 0, long high = -1);
         /// this is just used to help inline GetItemTextEx() and improve
         /// performance for virtual lists
         [[nodiscard]]

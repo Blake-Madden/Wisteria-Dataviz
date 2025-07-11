@@ -22,12 +22,13 @@ SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
     // This will be adjusted in Realize() to take into account the actual height of the
     // text and any loaded icons.
     m_itemHeight = FromDIP(wxSize(16, 16)).GetHeight() + GetPaddingHeight();
-    SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-    SetBackgroundColour(wxColour(200, 211, 231));
-    SetScrollbars(FromDIP(wxSize(30, 30)).GetWidth(), FromDIP(wxSize(30, 30)).GetHeight(), 0, 0);
+    wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+    wxWindow::SetBackgroundColour(wxColour(200, 211, 231));
+    wxScrollHelperBase::SetScrollbars(FromDIP(wxSize(30, 30)).GetWidth(),
+                                      FromDIP(wxSize(30, 30)).GetHeight(), 0, 0);
     ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
     SetVirtualSize(GetSize().GetWidth(), GetSize().GetHeight());
-    SetMinSize(wxSize(GetPaddingWidth(), m_itemHeight));
+    wxWindowBase::SetMinSize(wxSize(GetPaddingWidth(), m_itemHeight));
 
     // bind events
     Bind(wxEVT_KEY_DOWN, &SideBar::OnChar, this);
@@ -39,7 +40,7 @@ SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
     }
 
 //---------------------------------------------------
-void SideBar::DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color)
+void SideBar::DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour& color)
     {
     // fill with the color
     dc.GradientFillLinear(rect, color, color.ChangeLightness(140), wxSOUTH);
@@ -183,7 +184,7 @@ void SideBar::OnChar(wxKeyEvent& event)
                               0);
             }
         }
-    // going right will expanded the selected item
+    // going right will expand the selected item
     else if (event.GetKeyCode() == WXK_RIGHT)
         {
         if (IsFolderSelected() && !m_folders[GetSelectedFolder().value()].m_isExpanded)
@@ -701,7 +702,7 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
     }
 
 //-------------------------------------------
-void SideBar::OnMouseChange(wxMouseEvent& event)
+void SideBar::OnMouseChange(const wxMouseEvent& event)
     {
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
@@ -848,7 +849,7 @@ void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     }
 
 //-------------------------------------------
-void SideBar::OnMouseClick(wxMouseEvent& event)
+void SideBar::OnMouseClick(const wxMouseEvent& event)
     {
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);

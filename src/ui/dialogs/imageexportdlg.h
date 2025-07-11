@@ -134,7 +134,7 @@ namespace Wisteria::UI
 
         void OnOK([[maybe_unused]] wxCommandEvent& event);
         void OnOptionsChanged([[maybe_unused]] wxCommandEvent& event);
-        void OnSizeChanged(wxSpinEvent& event);
+        void OnSizeChanged(const wxSpinEvent& event);
 
         void OnHelpClicked([[maybe_unused]] wxCommandEvent& event)
             {

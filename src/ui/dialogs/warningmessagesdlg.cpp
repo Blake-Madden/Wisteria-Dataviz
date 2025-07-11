@@ -9,6 +9,7 @@
 #include "warningmessagesdlg.h"
 #include "../../util/warningmanager.h"
 #include <map>
+#include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
@@ -28,7 +29,7 @@ namespace Wisteria::UI
             warningsSortedByLabel.insert(
                 std::make_pair(warningIter->GetDescription(), warningIter));
             }
-        for (auto& warningLabel : warningsSortedByLabel)
+        for (const auto& warningLabel : warningsSortedByLabel)
             {
             wxCheckBox* checkBox = new wxCheckBox(
                 checksBoxSizer->GetStaticBox(), wxID_ANY, warningLabel.second->GetDescription(),

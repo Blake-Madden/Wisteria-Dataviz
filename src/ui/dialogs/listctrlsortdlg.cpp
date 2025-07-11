@@ -72,7 +72,7 @@ namespace Wisteria::UI
 
     //------------------------------------------------
     void ListCtrlSortDlg::FillSortCriteria(
-        const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns)
+        const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns) const
         {
         assert(sortColumns.size() <= m_columnChoices.size());
         m_columnList->SetVirtualDataSize(m_columnChoices.Count(), 2);

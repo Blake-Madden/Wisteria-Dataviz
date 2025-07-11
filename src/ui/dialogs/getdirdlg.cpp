@@ -7,6 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "getdirdlg.h"
+#include <wx/artprov.h>
+#include <wx/dirdlg.h>
+#include <wx/tokenzr.h>
+#include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
@@ -18,7 +22,8 @@ namespace Wisteria::UI
         long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
         : m_fullFileFilter(fullFileFilter)
         {
-        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+        wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
+                                        wxWS_EX_CONTEXTHELP);
         DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
         CreateControls();

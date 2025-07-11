@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __HTMLTABLEPRINTOUT_H__
-#define __HTMLTABLEPRINTOUT_H__
+#ifndef HTMLTABLEPRINTOUT_H
+#define HTMLTABLEPRINTOUT_H
 
 #include "../../base/canvas.h"
 #include "../../import/html_encode.h"
@@ -203,4 +203,4 @@ class HtmlTablePrintout final : public wxPrintout
 
     /** @}*/
 
-#endif //__HTMLTABLEPRINTOUT_H__
+#endif // HTMLTABLEPRINTOUT_H

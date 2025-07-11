@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LISTCTRL_DATA_PROVIDERS_H__
-#define __LISTCTRL_DATA_PROVIDERS_H__
+#ifndef LISTCTRL_DATA_PROVIDERS_H
+#define LISTCTRL_DATA_PROVIDERS_H
 
 #include "../../base/graphitems.h"
 #include "../../util/numberformat.h"
@@ -36,7 +36,7 @@ namespace Wisteria::UI
         ListCtrlExDataProviderBase& operator=(ListCtrlExDataProviderBase&) = delete;
 
         /// @private
-        virtual ~ListCtrlExDataProviderBase() {}
+        virtual ~ListCtrlExDataProviderBase() = default;
 
         /// @brief Base class for a cell in a list control.
         struct ListCell
@@ -54,6 +54,11 @@ namespace Wisteria::UI
             /// @private
             ListCell& operator=(const ListCell& that)
                 {
+                if (this == &that)
+                    {
+                    return *this;
+                    }
+
                 wxDELETE(m_attributes);
                 m_attributes = that.m_attributes ? new wxItemAttr(*that.m_attributes) : nullptr;
                 m_format = that.m_format;
@@ -199,7 +204,8 @@ namespace Wisteria::UI
             void assign(const wchar_t* text) { m_strVal.assign(text); }
 
             /// @private
-            size_t find(const wchar_t* text, const size_t position)
+            [[nodiscard]]
+            size_t find(const wchar_t* text, const size_t position) const
                 {
                 return m_strVal.find(text, position);
                 }
@@ -241,20 +247,23 @@ namespace Wisteria::UI
         /// @returns The underlying value of a cell.
         /// @param row The row to access.
         /// @param column The column to access.
-        virtual wxString GetItemText(const size_t row, const size_t column) const = 0;
+        [[nodiscard]]
+        virtual wxString GetItemText(size_t row, size_t column) const = 0;
         /// @returns The (possibly) formatted value of a cell.
         /// @param row The row to access.
         /// @param column The column to access.
-        virtual wxString GetItemTextFormatted(const size_t row, const size_t column) const = 0;
+        [[nodiscard]]
+        virtual wxString GetItemTextFormatted(size_t row, size_t column) const = 0;
         /// @returns The item's index into the image list if it has an icon.
         /// @param row The row to access.
         /// @param column The column to access.
-        virtual int GetItemImage(const size_t row, const size_t column) const = 0;
+        [[nodiscard]]
+        virtual int GetItemImage(size_t row, size_t column) const = 0;
         /// @brief Sets the item's index into the image list.
         /// @param row The row to access.
         /// @param column The column to access.
         /// @param image The image to use (index into the image list).
-        virtual void SetItemImage(const size_t row, const size_t column, const int image) = 0;
+        virtual void SetItemImage(size_t row, size_t column, int image) = 0;
         /** @brief Sets the cell's text.
             @param row The row of the cell.
             @param column The column of the cell.
@@ -263,81 +272,86 @@ namespace Wisteria::UI
             @param sortableValue An underlying value that can be assigned to the cell
                 for when it is compared to other cells during a sort operation.*/
         virtual void
-        SetItemText(const size_t row, const size_t column, const wxString& text,
-                    const Wisteria::NumberFormatInfo format =
+        SetItemText(size_t row, size_t column, const wxString& text,
+                    Wisteria::NumberFormatInfo format =
                         Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
-                    const double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
+                    double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
         /// @private
         virtual void
-        SetItemText(const size_t row, const size_t column, wxString&& text,
-                    const Wisteria::NumberFormatInfo format =
+        SetItemText(size_t row, size_t column, wxString&& text,
+                    Wisteria::NumberFormatInfo format =
                         Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
-                    const double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
+                    double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
         /// @returns The row's attributes (visual look).
         /// @param row The row to return.
-        virtual const wxItemAttr* GetRowAttributes(const size_t row) const = 0;
+        [[nodiscard]]
+        virtual const wxItemAttr* GetRowAttributes(size_t row) const = 0;
         /// @brief Sets the row's attributes (visual look).
         /// @param row The row to edit.
         /// @param attribs The attributes to apply.
-        virtual void SetRowAttributes(const size_t row, const wxItemAttr& attribs) = 0;
+        virtual void SetRowAttributes(size_t row, const wxItemAttr& attribs) = 0;
         /** @brief Sets the number of rows and columns.
             @param rowCount The number of rows.
             @param columnCount The number of columns.
             @warning If @c rowCount is less than the current number of rows or
                 @c columnCount is less than the number of columns, then the data will be shrunk.*/
-        virtual void SetSize(const size_t rowCount, const size_t columnCount) = 0;
+        virtual void SetSize(size_t rowCount, size_t columnCount) = 0;
         /** @brief Sets the number of rows.
             @param rowCount The number of rows.
             @note The number of columns will be preserved.
             @warning If @c rowCount is less than the current number of rows
                 then the data will be shrunk.*/
-        virtual void SetSize(const size_t rowCount) = 0;
+        virtual void SetSize(size_t rowCount) = 0;
         /// @returns The number of rows.
+        [[nodiscard]]
         virtual size_t GetItemCount() const = 0;
         /// @return The number of columns in the data.
+        [[nodiscard]]
         virtual size_t GetColumnCount() const = 0;
         /// @brief Deletes a row.
         /// @param row The row (by index) to delete.
-        virtual void DeleteItem(const size_t row) = 0;
+        virtual void DeleteItem(size_t row) = 0;
         /// @brief Clears all data from the grid.
         virtual void DeleteAllItems() = 0;
         /// @brief Swaps two rows.
         /// @param row1 The first row.
         /// @param row2 The second row.
-        virtual void SwapRows(const size_t row1, const size_t row2) = 0;
+        virtual void SwapRows(size_t row1, size_t row2) = 0;
         /** @brief Compares a cell with a string.
             @param row The cell's row.
             @param col The cell's column.
             @param text The text to compare against.
             @returns The comparison result.*/
-        virtual int CompareItem(const size_t row, const size_t col, const wchar_t* text) const = 0;
+        [[nodiscard]]
+        virtual int CompareItem(size_t row, size_t col, const wchar_t* text) const = 0;
         /** @brief Compares two cells.
             @param row1 The first cell's row.
             @param col1 The first cell's column.
             @param row2 The second cell's row.
             @param col2 The second cell's column.
             @returns The comparison result.*/
-        virtual int CompareItems(const size_t row1, const size_t col1, const size_t row2,
-                                 const size_t col2) const = 0;
+        [[nodiscard]]
+        virtual int CompareItems(size_t row1, size_t col1, size_t row2, size_t col2) const = 0;
         /** @brief Finds a text items as it is displayed to the user
                 (even if it is custom formatted).
             @param textToFind The text to find.
             @param startIndex The row to start the search from.
             @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
-        virtual long Find(const wchar_t* textToFind, const size_t startIndex = 0) const = 0;
+        [[nodiscard]]
+        virtual long Find(const wchar_t* textToFind, size_t startIndex = 0) const = 0;
         /// @brief Sorts a column.
         /// @param column The column to sort.
         /// @param direction The direction to sort.
         /// @param low The starting row to begin the sort.
         /// @param high The ending row for the sort.
-        virtual void Sort(const size_t column, const Wisteria::SortDirection direction,
-                          const size_t low /*= 0*/, const size_t high /*= -1*/) = 0;
+        virtual void Sort(size_t column, Wisteria::SortDirection direction, size_t low /*= 0*/,
+                          size_t high /*= -1*/) = 0;
         /// @brief Sorts multiple columns.
         /// @param columns The columns to sort and their respective directions.
         /// @param low The starting row to begin the sort.
         /// @param high The ending row for the sort.
         virtual void Sort(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns,
-                          const size_t low /*= 0*/, const size_t high /*= -1*/) = 0;
+                          size_t low /*= 0*/, size_t high /*= -1*/) = 0;
 
       protected:
         /// @private
@@ -361,7 +375,7 @@ namespace Wisteria::UI
             // Insert a mapping of empty string to ID #1 before anything else is inserted.
             // If a client wants to create an empty string label, then that will already be in here.
             std::pair<LabelIDMap::const_iterator, bool> insertionPos =
-                m_lablesInUse.insert(std::make_pair(wxString{}, m_currentLabelId));
+                m_labelsInUse.insert(std::make_pair(wxString{}, m_currentLabelId));
             m_labelsMap.insert(std::make_pair(m_currentLabelId, insertionPos.first));
             }
 
@@ -379,7 +393,7 @@ namespace Wisteria::UI
         long CreateLabelId(const wxString& label)
             {
             const auto [iterator, inserted] =
-                m_lablesInUse.insert(std::make_pair(label, m_currentLabelId + 1));
+                m_labelsInUse.insert(std::make_pair(label, m_currentLabelId + 1));
             // if the label is new, then add it to both maps and update the ID counter
             if (inserted)
                 {
@@ -404,7 +418,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         const wxString& GetLabel(const long id) const
             {
-            IDLabelMap::const_iterator pos = m_labelsMap.find(id);
+            auto pos = m_labelsMap.find(id);
             if (pos != m_labelsMap.cend())
                 {
                 return pos->second->first;
@@ -417,7 +431,7 @@ namespace Wisteria::UI
 
       private:
         IDLabelMap m_labelsMap;
-        LabelIDMap m_lablesInUse;
+        LabelIDMap m_labelsInUse;
         long m_currentLabelId{ 0 };
         static const wxString m_emptyCell;
         };
@@ -446,7 +460,7 @@ namespace Wisteria::UI
         /// @returns The label associated with the given @c id.
         /// @param id The ID to lookup.
         [[nodiscard]]
-        const wxString& GetLabel(const long id) const;
+        const wxString& GetLabel(long id) const;
         /// @private
         const std::vector<std::pair<size_t, Wisteria::SortDirection>> m_columnsToCompare;
         /// @private
@@ -475,7 +489,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                    const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
             {
-            assert(m_columnsToCompare.size());
+            assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 const int result =
@@ -492,7 +506,7 @@ namespace Wisteria::UI
                     const int result = Compare(row1[m_columnsToCompare[i].first],
                                                row2[m_columnsToCompare[i].first]);
                     // if the cells are equal, then we need to compare the next
-                    // column as a tie breaker
+                    // column as a tiebreaker
                     if (result == 0)
                         {
                         continue;
@@ -529,7 +543,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                    const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
             {
-            assert(m_columnsToCompare.size());
+            assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return (Compare(row1[m_columnsToCompare[0].first],
@@ -542,8 +556,8 @@ namespace Wisteria::UI
                     {
                     const int result = Compare(row1[m_columnsToCompare[i].first],
                                                row2[m_columnsToCompare[i].first]);
-                    // if the cells are equal, then we need to compare the next column as a tie
-                    // breaker
+                    // if the cells are equal, then we need to compare the next column as a
+                    // tiebreaker
                     if (result == 0)
                         {
                         continue;
@@ -594,7 +608,7 @@ namespace Wisteria::UI
                     const int result = Compare(row1[m_columnsToCompare[i].first],
                                                row2[m_columnsToCompare[i].first]);
                     // if the cells are equal, then we need to compare the next
-                    // column as a tie breaker
+                    // column as a tiebreaker
                     if (result == 0)
                         {
                         continue;
@@ -649,7 +663,7 @@ namespace Wisteria::UI
                     const int result = row1[m_columnsToCompare[i].first].Compare(
                         row2[m_columnsToCompare[i].first]);
                     // if the cells are equal, then we need to compare the next
-                    // column as a tie breaker
+                    // column as a tiebreaker
                     if (result == 0)
                         {
                         continue;
@@ -703,7 +717,7 @@ namespace Wisteria::UI
                     const int result =
                         row1[m_columnsToCompare[i]].Compare(row2[m_columnsToCompare[i]]);
                     // if the cells are equal, then we need to compare the next
-                    // column as a tie breaker
+                    // column as a tiebreaker
                     if (result == 0)
                         {
                         continue;
@@ -753,7 +767,7 @@ namespace Wisteria::UI
                     const int result =
                         row1[m_columnsToCompare[i]].Compare(row2[m_columnsToCompare[i]]);
                     // if the cells are equal, then we need to compare the next
-                    // column as a tie breaker
+                    // column as a tiebreaker
                     if (result == 0)
                         {
                         continue;
@@ -803,9 +817,10 @@ namespace Wisteria::UI
             else
                 {
                 assert(m_formatNumber);
-                return m_formatNumber ? m_formatNumber->GetFormattedValue(
-                                            cell.m_strVal.c_str(), cell.GetNumberFormatType()) :
-                                        wxString(cell.m_strVal.c_str());
+                return (m_formatNumber != nullptr) ?
+                           m_formatNumber->GetFormattedValue(cell.m_strVal.c_str(),
+                                                             cell.GetNumberFormatType()) :
+                           wxString(cell.m_strVal.c_str());
                 }
             }
 
@@ -922,7 +937,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         size_t GetColumnCount() const final
             {
-            return m_virtualData.size() ? m_virtualData.begin()->size() : 0;
+            return !m_virtualData.empty() ? m_virtualData.begin()->size() : 0;
             }
 
         /// @brief Deletes a row.
@@ -1020,7 +1035,7 @@ namespace Wisteria::UI
                 {
                 return;
                 }
-            StringMatrix::iterator dataEndToSortTo = m_virtualData.end();
+            auto dataEndToSortTo = m_virtualData.end();
             // if the starting point is beyond the range of rows, then nothing to sort
             if (low >= m_virtualData.size())
                 {
@@ -1056,7 +1071,7 @@ namespace Wisteria::UI
                     return;
                     }
                 }
-            StringMatrix::iterator dataEndToSortTo = m_virtualData.end();
+            auto dataEndToSortTo = m_virtualData.end();
             // if the starting point is beyond the range of rows, then nothing to sort
             if (low >= m_virtualData.size())
                 {
@@ -1071,7 +1086,7 @@ namespace Wisteria::UI
             }
 
         /// @brief Frees memory by shrinking the matrix size to its content.
-        void ShrinkToFit() { StringMatrix(m_virtualData).swap(m_virtualData); }
+        void ShrinkToFit() { m_virtualData.shrink_to_fit(); }
 
       private:
         StringMatrix m_virtualData;
@@ -1103,7 +1118,7 @@ namespace Wisteria::UI
                     return;
                     }
                 }
-            DoubleWithLabelMatrix::iterator dataEndToSortTo = m_virtualData.end();
+            auto dataEndToSortTo = m_virtualData.end();
             // if the starting point is beyond the range of rows, then nothing to sort
             if (low >= m_virtualData.size())
                 {
@@ -1129,7 +1144,7 @@ namespace Wisteria::UI
                 {
                 return;
                 }
-            DoubleWithLabelMatrix::iterator dataEndToSortTo = m_virtualData.end();
+            auto dataEndToSortTo = m_virtualData.end();
             // if the starting point is beyond the range of rows, then nothing to sort
             if (low >= m_virtualData.size())
                 {
@@ -1193,7 +1208,7 @@ namespace Wisteria::UI
             {
             if (m_virtualData.empty())
                 {
-                return wxString{};
+                return {};
                 }
             assert(row < m_virtualData.size());
             assert(column < m_virtualData.operator[](row).size());
@@ -1216,7 +1231,7 @@ namespace Wisteria::UI
                     {
                     if (std::isnan(cell.m_numericValue))
                         {
-                        return wxString{};
+                        return {};
                         }
                     return wxNumberFormatter::ToString(
                                cell.m_numericValue, cell.GetNumberFormatType().m_precision,
@@ -1241,7 +1256,7 @@ namespace Wisteria::UI
                     {
                     if (std::isnan(cell.m_numericValue))
                         {
-                        return wxString{};
+                        return {};
                         }
                     return m_formatNumber ? m_formatNumber->GetFormattedValue(
                                                 cell.m_numericValue, cell.GetNumberFormatType()) :
@@ -1392,7 +1407,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         size_t GetColumnCount() const final
             {
-            return m_virtualData.size() ? m_virtualData.begin()->size() : 0;
+            return !m_virtualData.empty() ? m_virtualData.begin()->size() : 0;
             }
 
         /// @brief Deletes a row.
@@ -1468,7 +1483,7 @@ namespace Wisteria::UI
             }
 
         /// @brief Frees memory by shrinking the matrix size to its content.
-        void ShrinkToFit() { DoubleWithLabelMatrix(m_virtualData).swap(m_virtualData); }
+        void ShrinkToFit() { m_virtualData.shrink_to_fit(); }
 
         /// @returns The summation of a numeric column.
         /// @param column The column to sum.
@@ -1495,4 +1510,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__LISTCTRL_DATA_PROVIDERS_H__
+#endif // LISTCTRL_DATA_PROVIDERS_H

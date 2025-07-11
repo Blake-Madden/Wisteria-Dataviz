@@ -11,7 +11,7 @@
 namespace Wisteria::UI
     {
     //------------------------------------------------
-    void FunctionBrowserCtrl::OnHyperlinkClicked(wxHtmlLinkEvent& event)
+    void FunctionBrowserCtrl::OnHyperlinkClicked(const wxHtmlLinkEvent& event)
         {
         const auto [parentPos, childPos] =
             m_categoryList->FindSubItem(event.GetLinkInfo().GetHref());
@@ -174,7 +174,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------
-    wxString FunctionBrowserCtrl::FormatFunctionSignature(wxString signature)
+    wxString FunctionBrowserCtrl::FormatFunctionSignature(wxString signature) const
         {
         lily_of_the_valley::html_encode_text encode;
         signature = encode({ signature.wc_str(), signature.length() }, true);
@@ -198,7 +198,7 @@ namespace Wisteria::UI
         while (tkz.HasMoreTokens())
             {
             const wxString param = tkz.GetNextToken();
-            if (m_categoryNames.find(param.wc_str()) != m_categoryNames.cend())
+            if (m_categoryNames.contains(param.wc_str()))
                 {
                 formattedSignature +=
                     wxString::Format(L"<a href=\"%s\">%s</a>%c", param, param, m_paramSeparator);
@@ -325,13 +325,13 @@ namespace Wisteria::UI
         SetSizerAndFit(mainSizer);
 
         wxWindow* insertButton = FindWindow(wxID_OK);
-        if (insertButton)
+        if (insertButton != nullptr)
             {
             insertButton->SetId(ID_INSERT_BUTTON);
             insertButton->SetLabel(_(L"&Insert"));
             }
         wxWindow* closeButton = FindWindow(wxID_CANCEL);
-        if (closeButton)
+        if (closeButton != nullptr)
             {
             closeButton->SetLabel(_(L"&Close"));
             }

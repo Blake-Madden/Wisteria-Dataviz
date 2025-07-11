@@ -10,6 +10,7 @@
 #include "../../import/html_encode.h"
 #include "../../import/html_extract_text.h"
 #include "htmltablewinprintout.h"
+#include <wx/print.h>
 
 using namespace Wisteria::UI;
 

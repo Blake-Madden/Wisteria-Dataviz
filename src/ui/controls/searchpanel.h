@@ -12,15 +12,8 @@
 #ifndef __SEARCH_PANEL_H__
 #define __SEARCH_PANEL_H__
 
-#include <wx/artprov.h>
-#include <wx/bmpbuttn.h>
-#include <wx/checkbox.h>
-#include <wx/control.h>
-#include <wx/fdrepdlg.h>
 #include <wx/srchctrl.h>
-#include <wx/string.h>
 #include <wx/wx.h>
-#include <wx/xrc/xmlres.h>
 
 namespace Wisteria::UI
     {

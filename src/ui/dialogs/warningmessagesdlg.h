@@ -14,7 +14,6 @@
 
 #include "dialogwithhelp.h"
 #include <wx/string.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI

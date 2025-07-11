@@ -7,6 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "thumbnail.h"
+#include <utility>
+#include <wx/dc.h>
+#include <wx/statline.h>
 
 wxDEFINE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
 
@@ -14,13 +17,13 @@ namespace Wisteria::UI
     {
     //----------------------------------
     EnlargedImageWindow::EnlargedImageWindow(
-        const wxBitmap& bitmap, wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
+        wxBitmap bitmap, wxWindow* parent, const wxWindowID id /*= wxID_ANY*/,
         const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
-        long style /*= wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP|wxFULL_REPAINT_ON_RESIZE*/)
+        const long style /*= wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP|wxFULL_REPAINT_ON_RESIZE*/)
         : wxDialog(parent, id, wxString{}, pos, size, style, L"EnlargedImageWindow"),
-          m_bitmap(bitmap)
+          m_bitmap(std::move(bitmap))
         {
-        SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+        wxNonOwnedWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetSize(GetBitmap().GetSize());
         Centre();
 
@@ -31,7 +34,7 @@ namespace Wisteria::UI
         }
 
     //----------------------------------
-    void EnlargedImageWindow::OnClick(wxMouseEvent& event)
+    void EnlargedImageWindow::OnClick(const wxMouseEvent& event)
         {
         if (event.LeftDown() || event.RightDown())
             {
@@ -72,10 +75,9 @@ namespace Wisteria::UI
     bool DropThumbnailImageFile::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_unused]] wxCoord y,
                                              const wxArrayString& filenames)
         {
-        if (filenames.size() && wxFileName::FileExists(filenames[0]))
+        if (!filenames.empty() && wxFileName::FileExists(filenames[0]))
             {
-            wxImage img(filenames[0]);
-            if (m_pOwner && img.IsOk())
+            if (wxImage img(filenames[0]); m_pOwner && img.IsOk())
                 {
                 m_pOwner->SetBitmap(img);
                 }
@@ -97,9 +99,9 @@ namespace Wisteria::UI
                          const wxString& name /*= L"Thumbnail"*/)
         : wxWindow(parent, id, pos, wxDefaultSize, style, name),
           m_img(bmp.IsOk() ? bmp.ConvertToImage() : wxNullImage), m_clickMode(clickMode),
-          m_opactity(wxALPHA_OPAQUE)
+          m_opacity(wxALPHA_OPAQUE)
         {
-        SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+        wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
         // User-defined size should have been DIP adjusted by the
         // but our default value will need to be adjusted if that is what will be used.
@@ -120,29 +122,29 @@ namespace Wisteria::UI
             (bmp.GetSize().GetWidth() > GetSize().GetWidth() ||
              bmp.GetSize().GetHeight() > GetSize().GetHeight()))
             {
-            SetCursor(wxCURSOR_HAND);
+            wxWindow::SetCursor(wxCURSOR_HAND);
             SetToolTip(_(L"Click to enlarge..."));
             }
         else if (m_clickMode == ClickMode::BrowseForImageFile)
             {
-            SetCursor(wxCURSOR_HAND);
+            wxWindow::SetCursor(wxCURSOR_HAND);
             SetToolTip(_(L"Click to browse for image..."));
             }
         if (allowFileDrop)
             {
-            DragAcceptFiles(true);
-            SetDropTarget(new DropThumbnailImageFile(this));
+            wxWindowBase::DragAcceptFiles(true);
+            wxWindow::SetDropTarget(new DropThumbnailImageFile(this));
             }
 
         Bind(wxEVT_SIZE, &Thumbnail::OnResize, this);
         Bind(wxEVT_LEFT_DOWN, &Thumbnail::OnClick, this);
         Bind(wxEVT_PAINT, &Thumbnail::OnPaint, this);
 
-        Refresh();
-        Update();
+        wxWindow::Refresh();
+        wxWindow::Update();
         }
 
-   //----------------------------------
+    //----------------------------------
     void Thumbnail::SetMinSize(const wxSize& size)
         {
         m_img.SetSize(size);
@@ -290,15 +292,15 @@ namespace Wisteria::UI
             memDC.SelectObject(wxNullBitmap);
 
             EnlargedImageWindow enlargedImage(canvasBmp, this);
-            // would be nice to show with wxSHOW_EFFECT_EXPAND, but it looks really bad on Windows
+            // would be nice to show with wxSHOW_EFFECT_EXPAND, but it looks awful on Windows
             enlargedImage.ShowModal();
             }
         else if (m_clickMode == ClickMode::BrowseForImageFile)
             {
-            wxFileDialog fileDlg(this, _(L"Select an Image"), wxString{}, wxString{},
-                                 wxString::Format(L"%s %s",
-                                 _(L"Image Files"), wxImage::GetImageExtWildcard()),
-                                 wxFD_OPEN | wxFD_PREVIEW);
+            wxFileDialog fileDlg(
+                this, _(L"Select an Image"), wxString{}, wxString{},
+                wxString::Format(L"%s %s", _(L"Image Files"), wxImage::GetImageExtWildcard()),
+                wxFD_OPEN | wxFD_PREVIEW);
             if (fileDlg.ShowModal() == wxID_OK)
                 {
                 SetBitmap(wxBitmap(GraphItems::Image::LoadFile(fileDlg.GetPath())));

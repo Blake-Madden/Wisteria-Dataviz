@@ -9,6 +9,7 @@
 #include "listdlg.h"
 #include "../../import/text_matrix.h"
 #include "../ribbon/artmetro.h"
+#include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
@@ -79,12 +80,11 @@ namespace Wisteria::UI
         if (m_useCheckBoxes && m_checkList)
             {
             wxString selectedText;
-            wxString currentSelectedItem;
             for (size_t i = 0; i < m_checkList->GetCount(); ++i)
                 {
                 if (m_checkList->IsSelected(i))
                     {
-                    currentSelectedItem = m_checkList->GetString(i);
+                    wxString currentSelectedItem = m_checkList->GetString(i);
                     // unescape mnemonics
                     currentSelectedItem.Replace(L"&&", L"&", true);
                     selectedText += currentSelectedItem + wxString(L"\n");
@@ -108,24 +108,24 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool usecheckBoxes,
-                     const wxColour bkColor, const wxColour hoverColor, const wxColour foreColor,
+    ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
+                     const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
                      const long buttonStyle /*= LD_NO_BUTTONS*/, wxWindowID id /*= wxID_ANY*/,
                      const wxString& caption /*= wxString{}*/,
                      const wxString& label /*= wxString{}*/,
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
-        : m_useCheckBoxes(usecheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
+        : m_useCheckBoxes(useCheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
           m_hoverColor(hoverColor), m_values(values), m_realTimeTimer(this)
         {
         GetData()->SetValues(values);
-        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+        wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
-        SetMinSize(FromDIP(wxSize(600, 250)));
+        wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(600, 250)));
 
-        SetBackgroundColour(bkColor);
-        SetForegroundColour(foreColor);
+        wxNonOwnedWindow::SetBackgroundColour(bkColor);
+        wxWindow::SetForegroundColour(foreColor);
 
         CreateControls();
         Centre();
@@ -134,22 +134,22 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    ListDlg::ListDlg(wxWindow* parent, const wxColour bkColor, const wxColour hoverColor,
-                     const wxColour foreColor, const long buttonStyle /*= LD_NO_BUTTONS*/,
+    ListDlg::ListDlg(wxWindow* parent, const wxColour& bkColor, const wxColour& hoverColor,
+                     const wxColour& foreColor, const long buttonStyle /*= LD_NO_BUTTONS*/,
                      wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
                      const wxString& label /*= wxString{}*/,
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
-                     long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
+                     const long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
         : m_useCheckBoxes(false), m_buttonStyle(buttonStyle), m_label(label),
           m_hoverColor(hoverColor), m_realTimeTimer(this)
         {
-        SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
+        wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         wxDialog::Create(parent, id, caption, pos, size, style);
-        SetMinSize(FromDIP(wxSize(600, 250)));
+        wxTopLevelWindowBase::SetMinSize(FromDIP(wxSize(600, 250)));
 
-        SetBackgroundColour(bkColor);
-        SetForegroundColour(foreColor);
+        wxNonOwnedWindow::SetBackgroundColour(bkColor);
+        wxWindow::SetForegroundColour(foreColor);
 
         CreateControls();
         Centre();
@@ -191,7 +191,8 @@ namespace Wisteria::UI
         Bind(wxEVT_TIMER, &ListDlg::OnRealTimeTimer, this);
         Bind(
             wxEVT_RIBBONBUTTONBAR_CLICKED,
-            [this]([[maybe_unused]] wxRibbonButtonBarEvent& evt)
+            [this]([[maybe_unused]]
+                   wxRibbonButtonBarEvent& evt)
             {
                 m_isLogVerbose = !m_isLogVerbose;
                 if (m_logFile != nullptr)
@@ -281,18 +282,20 @@ namespace Wisteria::UI
                 if (m_buttonStyle & LD_SELECT_ALL_BUTTON)
                     {
                     m_editButtonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
-                                         wxArtProvider::GetBitmap(L"ID_SELECT_ALL", wxART_BUTTON,
-                                                                  FromDIP(wxSize(32, 32)))
-                                             .ConvertToImage(),
-                                         _(L"Select the entire list."));
+                                               wxArtProvider::GetBitmap(L"ID_SELECT_ALL",
+                                                                        wxART_BUTTON,
+                                                                        FromDIP(wxSize(32, 32)))
+                                                   .ConvertToImage(),
+                                               _(L"Select the entire list."));
                     }
                 if (m_buttonStyle & LD_SORT_BUTTON)
                     {
                     m_editButtonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
-                                         wxArtProvider::GetBitmap(L"ID_LIST_SORT", wxART_BUTTON,
-                                                                  FromDIP(wxSize(32, 32)))
-                                             .ConvertToImage(),
-                                         _(L"Sort the list."));
+                                               wxArtProvider::GetBitmap(L"ID_LIST_SORT",
+                                                                        wxART_BUTTON,
+                                                                        FromDIP(wxSize(32, 32)))
+                                                   .ConvertToImage(),
+                                               _(L"Sort the list."));
                     }
                 if (m_buttonStyle & LD_CLEAR_BUTTON)
                     {
@@ -305,29 +308,27 @@ namespace Wisteria::UI
                 if (m_buttonStyle & LD_REFRESH_BUTTON)
                     {
                     m_editButtonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
-                                         wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
-                                                                  FromDIP(wxSize(32, 32)))
-                                             .ConvertToImage(),
-                                         _(L"Refresh the log report."));
-                    m_editButtonBar->AddToggleButton(
-                        XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
-                                               wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE",
-                                                                        wxART_BUTTON,
+                                               wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
                                                                         FromDIP(wxSize(32, 32)))
                                                    .ConvertToImage(),
-                                               _(L"Refresh the log report automatically."));
+                                               _(L"Refresh the log report."));
+                    m_editButtonBar->AddToggleButton(
+                        XRCID("ID_REALTIME_UPDATE"), _(L"Auto Refresh"),
+                        wxArtProvider::GetBitmap(L"ID_REALTIME_UPDATE", wxART_BUTTON,
+                                                 FromDIP(wxSize(32, 32)))
+                            .ConvertToImage(),
+                        _(L"Refresh the log report automatically."));
                     m_editButtonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
                     }
                 if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON)
                     {
                     m_editButtonBar->AddToggleButton(
                         XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
-                                               wxArtProvider::GetBitmap(wxART_INFORMATION,
-                                                                        wxART_BUTTON,
-                                                                        FromDIP(wxSize(32, 32)))
-                                                   .ConvertToImage(),
-                                               _(L"Toggles whether the logging system includes "
-                                                 "more detailed information."));
+                        wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_BUTTON,
+                                                 FromDIP(wxSize(32, 32)))
+                            .ConvertToImage(),
+                        _(L"Toggles whether the logging system includes "
+                          "more detailed information."));
                     m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                     }
                 }
@@ -527,7 +528,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListDlg::OnNegative(wxCommandEvent& event)
+    void ListDlg::OnNegative(const wxCommandEvent& event)
         {
         // search control locks up app if it has the focus here, so remove the focus from it
         SetFocusIgnoringChildren();
@@ -561,7 +562,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void ListDlg::OnAffirmative(wxCommandEvent& event)
+    void ListDlg::OnAffirmative(const wxCommandEvent& event)
         {
         // search control locks up app if it has the focus here, so remove the focus from it
         SetFocusIgnoringChildren();
@@ -569,12 +570,11 @@ namespace Wisteria::UI
         // record what is checked or selected
         if (m_useCheckBoxes)
             {
-            wxString currentSelectedItem;
             for (size_t i = 0; i < m_checkList->GetCount(); ++i)
                 {
                 if (m_checkList->IsChecked(i))
                     {
-                    currentSelectedItem = m_checkList->GetString(i);
+                    wxString currentSelectedItem = m_checkList->GetString(i);
                     // unescape mnemonics
                     currentSelectedItem.Replace(L"&&", L"&", true);
                     m_selectedItems.Add(currentSelectedItem);

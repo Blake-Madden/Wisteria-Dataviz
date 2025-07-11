@@ -8,7 +8,7 @@
 
 #include "excelpreviewdlg.h"
 #include <wx/spinctrl.h>
-#include <wx/busyinfo.h>
+#include <wx/valgen.h>
 
 namespace Wisteria::UI
     {

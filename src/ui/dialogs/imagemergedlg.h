@@ -18,8 +18,6 @@
 #include <vector>
 #include <wx/filename.h>
 #include <wx/infobar.h>
-#include <wx/radiobox.h>
-#include <wx/richmsgdlg.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/wx.h>
@@ -49,7 +47,8 @@ namespace Wisteria::UI
                                             wxRESIZE_BORDER)
             : m_orientRadio((orientation == wxOrientation::wxHORIZONTAL) ? 0 : 1)
             {
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+            wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
+                                            wxWS_EX_CONTEXTHELP);
             Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
             CreateControls(imgPaths);
@@ -84,6 +83,6 @@ namespace Wisteria::UI
         };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif // IMAGEMERGE_DLG_H
