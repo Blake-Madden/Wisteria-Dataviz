@@ -34,15 +34,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         GetOppositeBarAxis().SetCustomLabel(2, GraphItems::Label{ _(L"Scores") });
 
         GetBarAxis().Show(false);
+        SetBinLabelDisplay(BinLabelDisplay::NoDisplay);
         GetScalingAxis().Show(false);
         GetOppositeScalingAxis().Show(false);
         GetOppositeBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         }
 
     //----------------------------------------------------------------
-    void ScaleChart::SetData(
-        const std::shared_ptr<const Data::Dataset>& data, const wxString& scoreColumnName,
-        const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
+    void ScaleChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
+                             const wxString& scoreColumnName,
+                             const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         ResetGrouping();

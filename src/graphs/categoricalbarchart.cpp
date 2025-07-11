@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "categoricalbarchart.h"
-#include "../math/statistics.h"
 #include "../util/frequencymap.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graphs::BarChart)
