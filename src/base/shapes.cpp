@@ -2412,14 +2412,15 @@ namespace Wisteria::GraphItems
             {
             const wxPen outlinePen(wxTransparentColour, ScaleToScreenAndCanvas(1));
 
+            const wxColour bodyColor{ L"#171721" }; // dark blue
+
             const auto bodyBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(dcRect, -math_constants::full),
                 GetYPosFromTop(dcRect, math_constants::half),
                 GetXPosFromLeft(dcRect, math_constants::full),
                 GetYPosFromTop(dcRect, math_constants::half),
-                ApplyColorOpacity(
-                    ColorContrast::Shade(GetGraphItemInfo().GetBrush().GetColour(), 0.4)),
-                ApplyColorOpacity(GetGraphItemInfo().GetBrush().GetColour()));
+                ApplyColorOpacity(ColorContrast::Shade(bodyColor, 0.4)),
+                ApplyColorOpacity(bodyColor));
             gc->SetPen(outlinePen);
             gc->SetBrush(bodyBrush);
             // body of car
@@ -2507,7 +2508,7 @@ namespace Wisteria::GraphItems
             gc->SetBrush(bodyBrush);
 
             // divider between windows
-            gc->SetPen(wxPenInfo(ColorContrast::Shade(GetGraphItemInfo().GetBrush().GetColour()),
+            gc->SetPen(wxPenInfo(ColorContrast::Shade(bodyColor),
                                  dcRect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
                                      ScaleToScreenAndCanvas(1) :
                                      ScaleToScreenAndCanvas(2))
