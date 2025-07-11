@@ -132,7 +132,7 @@ namespace Wisteria::UI
             }
         if (allowFileDrop)
             {
-            wxWindowBase::DragAcceptFiles(true);
+            wxWindow::DragAcceptFiles(true);
             wxWindow::SetDropTarget(new DropThumbnailImageFile(this));
             }
 
