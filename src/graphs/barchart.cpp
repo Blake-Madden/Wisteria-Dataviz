@@ -1086,6 +1086,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                        L"Non-rectangular shapes not currently "
                        "supported with stipple bar effect.");
                 auto shapeWidth{ barRenderInfo.m_barWidth };
+                auto shapeHeight{ barRenderInfo.m_barWidth };
                 // These particular icons are drawn with a ratio where the width
                 // is 60% of the height if the drawing area is square. To prevent
                 // having large gaps between the icons, adjust the width of the icons'
@@ -1101,15 +1102,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     shapeWidth *= 0.4;
                     }
                 // likewise, handle icons that are wider than others
-                if (GetStippleShape() == Icons::IconShape::Car ||
-                    GetStippleShape() == Icons::IconShape::Blackboard)
+                if (GetStippleShape() == Icons::IconShape::Blackboard)
                     {
-                    shapeWidth *= 1.25;
+                    shapeHeight *= 0.6;
+                    }
+                else if (GetStippleShape() == Icons::IconShape::Car)
+                    {
+                    shapeHeight *= 0.9;
                     }
                 auto currentXLeft = lineXStart;
                 while (currentXLeft < (lineXStart + barLength))
                     {
-                    const wxSize stippleImgSize(shapeWidth, barRenderInfo.m_barWidth);
+                    const wxSize stippleImgSize(shapeWidth, shapeHeight);
                     auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
                         Wisteria::GraphItems::GraphItemInfo{}
                             .Pen(wxNullPen)
@@ -1120,11 +1124,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                             .DPIScaling(GetDPIScaleFactor())
                             .Scaling(GetScaling()),
                         GetStippleShape(), stippleImgSize);
-                    shape->SetBoundingBox(
-                        wxRect{ wxPoint{ currentXLeft, lineYStart },
-                                wxSize{ static_cast<int>(shapeWidth),
-                                        static_cast<int>(barRenderInfo.m_barWidth) } },
-                        barRenderInfo.m_dc, GetScaling());
+                    shape->SetBoundingBox(wxRect{ wxPoint{ currentXLeft, lineYStart },
+                                                  wxSize{ static_cast<int>(shapeWidth),
+                                                          static_cast<int>(shapeHeight) } },
+                                          barRenderInfo.m_dc, GetScaling());
                     shape->SetClippingRect(barRenderInfo.m_barRect);
                     AddObject(std::move(shape));
                     currentXLeft += stippleImgSize.GetWidth();
