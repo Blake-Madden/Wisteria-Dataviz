@@ -21,6 +21,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::UpdateBarLabel(Bar & bar)
         {
+        if (GetBinLabelDisplay() == BinLabelDisplay::NoDisplay)
+            {
+            bar.GetLabel().SetText(wxString{});
+            return;
+            }
+
         const auto defaultPrecision{ GetScalingAxis().GetPrecision() };
 
         const double grandTotal = std::accumulate(GetBars().cbegin(), GetBars().cend(), 0.0,
