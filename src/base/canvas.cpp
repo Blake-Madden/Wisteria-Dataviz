@@ -486,8 +486,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         SetCanvasMinHeightDIPs(GetDefaultCanvasHeightDIPs());
         wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         wxWindow::SetBackgroundColour(*wxWHITE);
-        wxScrollHelperBase::SetScrollbars(10, 10, 0, 0);
         SetVirtualSize(size);
+        SetScrollRate(10, 10);
         wxGCDC gdc(this);
         CalcAllSizes(gdc);
 
