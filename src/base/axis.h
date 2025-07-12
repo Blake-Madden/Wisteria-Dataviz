@@ -496,6 +496,28 @@ namespace Wisteria::GraphItems
                 return m_value;
                 }
 
+            /// @brief Sets the point's axis label to be translucent.
+            /// @param ghost @c true to make the label translucent.
+            void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
+
+            /// @returns @c true if the label is being made translucent.
+            [[nodiscard]]
+            bool IsGhosted() const noexcept
+                {
+                return m_ghost;
+                }
+
+            /// @returns The opacity level applied to "ghosted" label.
+            [[nodiscard]]
+            uint8_t GetGhostOpacity() const noexcept
+                {
+                return m_ghostOpacity;
+                }
+
+            /** @brief Sets the opacity level for "ghosted" label.
+                @param opacity The opacity level (should be between @c 0 and @c 255).*/
+            void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
+
             /// @private
             [[nodiscard]]
             bool operator==(const AxisPoint& that) const noexcept
@@ -559,6 +581,8 @@ namespace Wisteria::GraphItems
             bool m_show{ false };
             double m_physicalCoordinate{ -1 };
             double m_value{ 0 };
+            bool m_ghost{ false };
+            uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
             };
 
         /// @brief Constructor.
@@ -1099,6 +1123,31 @@ namespace Wisteria::GraphItems
             return m_labelOrientation;
             }
 
+        /** @brief Sets the axis label at the specified position to be translucent.
+            @param axisPosition The label's position on the axis.
+            @param ghost @c true to make the label translucent.
+            @warning This should be called after the axis range (and any custom labels)
+                have been assigned.
+            @sa Ghost() for ghosting the axis lines.
+        */
+        void GhostAxisPoint(const double axisPosition, const bool ghost);
+        /** @brief Sets all axis labels to be translucent.
+            @param ghost @c true to make the labels translucent.
+            @warning This should be called after the axis range (and any custom labels)
+                have been assigned.
+            @sa Ghost() for ghosting the axis lines.
+        */
+        void GhostAllAxisPoints(const bool ghost);
+
+        /** @brief Sets the specified axis labels (by axis position) to be fully opaque,
+                and all others to a lighter opacity.
+            @param positions The axis positions of the labels to showcase.
+            @warning This should be called after the axis range (and any custom labels)
+                have been assigned.
+            @sa SetGhostOpacity().
+        */
+        void ShowcaseAxisPoints(const std::vector<double>& positions);
+
         /// @}
 
         /** @name Padding Functions
@@ -1206,6 +1255,30 @@ namespace Wisteria::GraphItems
         /** @brief Sets how the end of the axis line is being drawn.
             @param capStyle The cap style to use.*/
         void SetCapStyle(const AxisCapStyle capStyle) noexcept { m_capStyle = capStyle; }
+
+        /// @brief Sets the axis line and tickmarks to be translucent.
+        /// @param ghost @c true to make the lines translucent.
+        /// @note Titles, headers, footers, labels, and brackets will not be affected.
+        /// @sa GhostAxisPoint() and ShowcaseAxisPoints() for ghosting axis labels.
+        void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
+
+        /// @returns @c true if the lines are being made translucent.
+        [[nodiscard]]
+        bool IsGhosted() const noexcept
+            {
+            return m_ghost;
+            }
+
+        /// @returns The opacity level applied to "ghosted" lines.
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
+            {
+            return m_ghostOpacity;
+            }
+
+        /** @brief Sets the opacity level for "ghosted" lines and brackets.
+            @param opacity The opacity level (should be between @c 0 and @c 255).*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
 
         /// @}
 

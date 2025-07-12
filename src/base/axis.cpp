@@ -2091,7 +2091,14 @@ namespace Wisteria::GraphItems
                         }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
                     axisLabel.SetScaling(GetAxisLabelScaling());
+                    if (axisPtIter->IsGhosted())
+                        {
+                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(axisLabel.GetFontColor(), GetGhostOpacity()));
+                        }
+                    else
+                        {
                     axisLabel.SetFontColor(GetFontColor());
+                        }
                     axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
                     axisLabel.GetFont() = GetFont();
                     axisLabel.SetTextAlignment(GetTextAlignment());
@@ -2285,10 +2292,9 @@ namespace Wisteria::GraphItems
                         const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x =
-                                GetTopPoint().x -
-                                (ScaleToScreenAndCanvas(
-                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
+                            wxCoord x = GetTopPoint().x -
+                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
+                                        CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -2402,7 +2408,14 @@ namespace Wisteria::GraphItems
                         }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
                     axisLabel.SetScaling(GetAxisLabelScaling());
+                    if (axisPtIter->IsGhosted())
+                        {
+                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(axisLabel.GetFontColor(), GetGhostOpacity()));
+                        }
+                    else
+                        {
                     axisLabel.SetFontColor(GetFontColor());
+                        }
                     axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
                     axisLabel.GetFont() = GetFont();
                     axisLabel.SetTextAlignment(GetTextAlignment());
@@ -4252,6 +4265,45 @@ namespace Wisteria::GraphItems
         size += (parentAxisOrientation == Orientation::Vertical) ? labelSize.GetWidth() :
                                                                    labelSize.GetHeight();
         return size;
+        }
+
+    //-------------------------------------------
+    void Axis::GhostAxisPoint(const double axisPosition, const bool ghost)
+        {
+        auto axisPt = std::ranges::find(GetAxisPoints(), AxisPoint{ axisPosition, wxString{} });
+        if (axisPt != GetAxisPoints().cend())
+            {
+            axisPt->SetGhostOpacity(GetGhostOpacity());
+            axisPt->Ghost(ghost);
+            }
+        }
+
+    //-------------------------------------------
+    void Axis::GhostAllAxisPoints(const bool ghost)
+        {
+        for (auto& axisPt : GetAxisPoints())
+            {
+            axisPt.SetGhostOpacity(GetGhostOpacity());
+            axisPt.Ghost(ghost);
+            }
+        }
+
+    //-------------------------------------------
+    void Axis::ShowcaseAxisPoints(const std::vector<double>& positions)
+        {
+        GhostAllAxisPoints(true);
+        for (auto& axisPt : GetAxisPoints())
+            {
+            for (const auto& position : positions)
+                {
+                if (axisPt == position)
+                    {
+                    axisPt.SetGhostOpacity(GetGhostOpacity());
+                    axisPt.Ghost(false);
+                    break;
+                    }
+                }
+            }
         }
 
     //-------------------------------------------
