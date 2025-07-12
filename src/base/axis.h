@@ -215,7 +215,8 @@ namespace Wisteria::GraphItems
             friend class Axis;
 
           public:
-            /** @brief Constructor.
+            /** @brief Constructor, which sets the range (and positions),
+                    along with initial label and line settings.
                 @param pos1 The starting position (relative to its parent axis) of
                     where to place the bracket.
                 @param pos2 The ending position (relative to its parent axis) of
@@ -226,12 +227,12 @@ namespace Wisteria::GraphItems
                 @param pen The pen for the lines.\n
                     The color of the pen will be applied to the label as well.\n
                 @param lineStyle The style to use for the bracket's lines.*/
-            AxisBracket(const double pos1, const double pos2, const double labelPos,
-                        const wxString& label, const wxPen& pen = wxPenInfo(*wxBLACK, 2),
+            AxisBracket(const double pos1, const double pos2, const double labelPos, wxString label,
+                        const wxPen& pen = wxPenInfo(*wxBLACK, 2),
                         const BracketLineStyle lineStyle = BracketLineStyle::CurlyBraces)
                 : m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
-                  m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(pen),
-                  m_bracketLineStyle(lineStyle)
+                  m_label(GraphItems::GraphItemInfo(std::move(label)).Pen(wxNullPen)),
+                  m_linePen(pen), m_bracketLineStyle(lineStyle)
                 {
                 m_label.SetFontColor(pen.GetColour());
                 m_label.SetTextOrientation(Orientation::Horizontal);
@@ -308,7 +309,8 @@ namespace Wisteria::GraphItems
                 return m_label;
                 }
 
-            /// @returns The label position (relative to the parent axis).
+            /// @brief The label position (relative to the parent axis).
+              /// @returns The label position.
             [[nodiscard]]
             double GetLabelPosition() const noexcept
                 {
@@ -362,7 +364,7 @@ namespace Wisteria::GraphItems
             /// @brief Sets the length of the connection line between the bracket label
             ///     and the parent axis.
             /// @param length The length of the tickmarks.
-            ///     This is a pixel value that the framework will scale to the screen for you.
+            ///     This is a pixel value that the framework will scale to the screen for you.\n
             ///     (The parent axis will also scale this as the graph's scaling changes.)
             void SetTickmarkLength(const wxCoord length) noexcept { m_tickMarkLength = length; }
 
@@ -409,7 +411,7 @@ namespace Wisteria::GraphItems
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.\n
                     This scaling should include the screen and DPI scaling, since the brackets
-                    will not have access to that information from the parent axis.
+                    will not have access to that information from the parent axis.\n
                     Also, note that scaling does not relate to the line length along the parent axis
                     since two explicit points are used here. If the line length needs to be scaled,
                     then caller must apply that transformation to the points.
@@ -437,7 +439,7 @@ namespace Wisteria::GraphItems
             wxCoord m_tickMarkLength{ 15 };
             wxCoord m_padding{ 5 };
             Label m_label;
-            wxPen m_linePen{ wxPenInfo(*wxBLACK, 2) };
+            wxPen m_linePen{ *wxBLACK, 2 };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
             BracketLineStyle m_bracketLineStyle{ BracketLineStyle::CurlyBraces };
             };
@@ -456,13 +458,7 @@ namespace Wisteria::GraphItems
                 @param value The value on the axis that this point should be at.
                 @param displayValue The label to be display on the axis for this point.
                 @param display Whether to draw this label on the parent axis.*/
-            AxisPoint(const double value, const wxString& displayValue, bool display = true)
-                : m_displayValue(displayValue), m_show(display), m_value(value)
-                {
-                }
-
-            /// @private
-            AxisPoint(const double value, wxString&& displayValue, bool display = true)
+            AxisPoint(const double value, wxString displayValue, bool display = true)
                 : m_displayValue(std::move(displayValue)), m_show(display), m_value(value)
                 {
                 }
@@ -478,9 +474,6 @@ namespace Wisteria::GraphItems
             /// @param label The label of the axis point.
             void SetDisplayValue(const wxString& label) { m_displayValue = label; }
 
-            /// @private
-            void SetDisplayValue(wxString&& label) { m_displayValue = std::move(label); }
-
             /// @returns Whether the point is being drawn on the axis.
             [[nodiscard]]
             bool IsShown() const noexcept
@@ -488,14 +481,15 @@ namespace Wisteria::GraphItems
                 return m_show;
                 }
 
-            /// @param display Sets whether to display the axis label.
+            /// @brief Sets whether to display the axis label.
+            /// @param display @c true to display the axis label.
             void Show(const bool display) noexcept { m_show = display; }
 
-            /// @brief Sets the value on the parent axis at the specified value.
+            /// @brief Positions the point along the parent axis at the specified value.
             /// @param value The value to set the axis point to.
             void SetValue(const double value) noexcept { m_value = value; }
 
-            /// @returns The point's value along the parent axis.
+            /// @returns The point's position along the parent axis.
             [[nodiscard]]
             double GetValue() const noexcept
                 {
@@ -673,8 +667,11 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Flips the axis.
-            @note Call this after setting up the range, intervals, brackets, etc.
-            @param reverse @c true to reverse the scale, @c false to reset it.*/
+            @param reverse @c true to reverse the scale, @c false to reset it.
+            @note The range will remain the same (lowest-to-highest value); calling this
+                simply reverses the order that the values/labels are rendered along the axis.
+            @warning Call this after setting up the range, intervals, brackets, etc.
+        */
         void Reverse(bool reverse = true);
         /// @}
 
@@ -880,12 +877,14 @@ namespace Wisteria::GraphItems
             @param value The tick value to retrieve the custom label for.*/
         [[nodiscard]]
         const Label& GetCustomLabel(const double value) const;
+
         /** @brief Finds a custom label along the axis, returning its numeric position.
             @param label The string to look for.
             @returns The numeric position on the axis of where the label is,
                 or @c std::nullopt if not found.*/
         [[nodiscard]]
         std::optional<double> FindCustomLabelPosition(const wxString& label) const;
+
         /// @brief Finds a date along the axis, returning its numeric position.
         /// @returns The point on the axis corresponding to the provided date,
         ///     or @c std::nullopt if not found.
@@ -955,7 +954,7 @@ namespace Wisteria::GraphItems
             SetLabelDisplay(GetLabelDisplay());
             }
 
-        /// @brief Sets how the labels are aligned, either flush right against the axis line,
+        /// @brief Sets how the labels are aligned, either flush with the axis line,
         ///     flush left against the edge of the axis area, or centered on the axis line itself.
         /// @param alignment How to align the labels against the axis.
         /// @note Has no effect if axis labels are parallel to the axis.
@@ -1250,7 +1249,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Sets the length of the minor tick marks (i.e., tick marks between axis labels).
         /// @param length The length of the minor tickmarks.
-        ///     This is a pixel value that the framework will scale to the screen for you.
+        ///     This is a pixel value that the framework will scale to the screen for you.\n
         ///     (The parent axis will also scale this as the graph's scaling changes.)
         void SetMinorTickMarkLength(const int length) noexcept { m_minorTickMarkLength = length; }
 
@@ -2105,7 +2104,7 @@ namespace Wisteria::GraphItems
         DateInterval m_dateDisplayInterval{ DateInterval::FiscalQuarterly };
 
         // ghosting settings
-        uint8_t m_ghostOpacity{ 32 };
+        uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         bool m_ghost{ false };
 
         // scale information
