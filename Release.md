@@ -1,12 +1,19 @@
-Wisteria Dataviz 0.9.1 Release
-=============================
+# Releases
+
+## 1.0 Release
+
+- Added JSON syntax for building multi-page reports
+- Added numerous vector-based shapes to use as stipples and icons
+- Various improvements
+
+## 0.9.1 Release
 
 - WARNING: icon classes and schemes have been moved into @c Wisteria::Icons and @c Wisteria::Icons::Schemes
   namespaces, respectively.
 - WARNING: the common axis functions have been renamed to @c CommonAxisBuilder::BuildYAxis and
   @c CommonAxisBuilder::BuildXAxis
 - Added Linear Regression Roadmap
-- Added Pros & Cons Roadmap
+- Added Pros \& Cons Roadmap
 - Added Table (i.e., presentation of tabular data, with aggregation and annotation support)
 - Added ability to stretch content to fit the entire page when printing
 - Simplified layout of canvas rows when they are fitting their content (see Canvas::CalcRowDimensions())
@@ -18,7 +25,6 @@ Wisteria Dataviz 0.9.1 Release
   resulting in a banner appearance
 - Improved layout of legends appearing above or below a graph
 
-Wisteria Dataviz 0.9 Release
-=============================
+## 0.9 Release
 
 Initial public release.
