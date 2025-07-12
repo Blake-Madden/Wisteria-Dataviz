@@ -205,7 +205,7 @@ namespace Wisteria
     ///     going from top-to-bottom.
     /// @note This is only relevant if a Label is using a minimum user-defined size,
     ///     and only if the user-defined size is taller than the text.
-    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
+    /// @sa Wisteria::GraphItems::GraphItemBase::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageVerticalAlignment
         {
         TopAligned,   /*!< Text is aligned to the top of the label's bounding box.*/
@@ -217,7 +217,7 @@ namespace Wisteria
     ///     going from left-to-right.
     /// @note This is only relevant if a Label is using a minimum user-defined size,
     ///     and only if the user-defined size is wider than the text.
-    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
+    /// @sa Wisteria::GraphItems::GraphItemBase::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageHorizontalAlignment
         {
         LeftAligned, /*!< Text is aligned to the left of the label's bounding box.
@@ -341,10 +341,14 @@ namespace Wisteria
     /// @brief How to align perpendicular labels with their parent axis or bracket.
     enum class AxisLabelAlignment
         {
-        AlignWithAxisLine, /*!< The labels will be flush right against the axis line.*/
+        AlignWithAxisLine, /*!< The labels will be flush with the axis line.\n
+                                For example, for a left Y axis, the labels will appear
+                                flush right (ragged left).*/
         AlignWithBoundary, /*!< If the labels are perpendicular against the axis and some are wider
                                 than others, then align the labels against the outer parameter of
-                                the axis area.
+                                the axis area.\n
+                                For example, for a left Y axis, the labels will appear
+                                flush left (ragged right).
                                 @note Has no effect with parallel axes.*/
         CenterOnAxisLine   /*!< The labels will be centered on the axis line.
                                 @note Has no effect on bracket labels.
@@ -408,7 +412,7 @@ namespace Wisteria
         ///     Note that if an outline pen is in use, it will be drawn over the
         ///     fill color, giving the look that it is showing through the "watercolor".
         WaterColor = 6,
-        /// @brief Same as WaterColor, but applies a second coat of paint, making
+        /// @brief Same as @c WaterColor, but applies a second coat of paint, making
         ///     it appear thicker.
         ThickWaterColor = 7,
         /// @brief A subimage of a larger image shared by all boxes.

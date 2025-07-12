@@ -1320,7 +1320,7 @@ namespace Wisteria::Graphs
         /// @param display The numeric display method.
         /// @note This will only apply if GetBinLabelDisplay() is using a type that includes
         ///     only the numeric value of the bar. In other words, this will only apply for
-        ///     BinLabelDisplay::BinValue.\m
+        ///     BinLabelDisplay::BinValue.\n
         ///     Also, only NumberDisplay::Currency and NumberDisplay::Value are supported.
         void SetNumerDisplay(const NumberDisplay display)
             {

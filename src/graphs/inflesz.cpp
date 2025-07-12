@@ -66,27 +66,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
                     Wisteria::Graphs::BarChart::BarBlockInfo(39)
                         .Brush(wxColour{ L"#CBE9E3" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY DIFÍCIL") }
-                                                     .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                                     .LabelFitting(LabelFit::DisplayAsIs))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(15)
                         .Brush(wxColour{ L"#CCAAD0" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"ALGO DIFÍCIL") }
-                                                     .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                                     .LabelFitting(LabelFit::DisplayAsIs))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
                         .Brush(wxColour{ L"#FFFBD5" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"NORMAL") }
-                                                     .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                                     .LabelFitting(LabelFit::DisplayAsIs))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(15)
                         .Brush(wxColour{ L"#F7A770" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"BASTANTE FÁCIL") }
-                                                     .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                                     .LabelFitting(LabelFit::DisplayAsIs))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(21)
                         .Brush(wxColour{ L"#67C7C0" })
                         .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
-                                                     .LabelFitting(LabelFit::ScaleFontToFit))) } },
+                                                     .LabelFitting(LabelFit::DisplayAsIs))) } },
             0, L"INFLESZ");
 
         // SZIGRISZT scale
@@ -98,38 +98,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
                                             .Brush(wxColour{ L"#CBE9E3" })
                                             .Decal(GraphItems::Label(
                                                 GraphItems::GraphItemInfo{ _DT(L"MUY DIFÍCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(20)
-                                            .Brush(wxColour{ L"#F8D3DD" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"DIFÍCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                                    .LabelFitting(LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(20)
+                            .Brush(wxColour{ L"#F8D3DD" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"DIFÍCIL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{
                         Wisteria::Graphs::BarChart::BarBlockInfo(15)
                             .Brush(wxColour{ L"#C4CAE6" })
                             .Decal(GraphItems::Label(
                                 GraphItems::GraphItemInfo{ _DT(L"BASTANTE DIFÍCIL") }.LabelFitting(
-                                    LabelFit::ScaleFontToFit))) },
+                                    LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(15)
                                             .Brush(wxColour{ L"#FFFBD5" })
                                             .Decal(GraphItems::Label(
                                                 GraphItems::GraphItemInfo{ L"NORMAL" }.LabelFitting(
-                                                    LabelFit::ScaleFontToFit))) },
+                                                    LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
                                             .Brush(wxColour{ L"#F7A770" })
                                             .Decal(GraphItems::Label(
                                                 GraphItems::GraphItemInfo{ _DT(L"BASTANTE FÁCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                                            .Brush(wxColour{ L"#F4908B" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"FÁCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(16)
-                                            .Brush(wxColour{ L"#67C7C0" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) } },
+                                                    .LabelFitting(LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                            .Brush(wxColour{ L"#F4908B" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"FÁCIL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(16)
+                            .Brush(wxColour{ L"#67C7C0" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) } },
                 0, L"SZIGRISZT");
             }
 
@@ -142,38 +142,38 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
                                             .Brush(wxColour{ L"#CBE9E3" })
                                             .Decal(GraphItems::Label(
                                                 GraphItems::GraphItemInfo{ _DT(L"MUY DIFÍCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(20)
-                                            .Brush(wxColour{ L"#F8D3DD" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"DIFÍCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                                    .LabelFitting(LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(20)
+                            .Brush(wxColour{ L"#F8D3DD" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"DIFÍCIL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{
                         Wisteria::Graphs::BarChart::BarBlockInfo(10)
                             .Brush(wxColour{ L"#C4CAE6" })
                             .Decal(GraphItems::Label(
                                 GraphItems::GraphItemInfo{ _DT(L"BASTANTE DIFÍCIL") }.LabelFitting(
-                                    LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                                            .Brush(wxColour{ L"#FFFBD5" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"NORMAL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
+                                    LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                            .Brush(wxColour{ L"#FFFBD5" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"NORMAL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
                                             .Brush(wxColour{ L"#F7A770" })
                                             .Decal(GraphItems::Label(
                                                 GraphItems::GraphItemInfo{ _DT(L"BASTANTE FÁCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                                            .Brush(wxColour{ L"#F4908B" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"FÁCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(11)
-                                            .Brush(wxColour{ L"#67C7C0" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
-                                                    .LabelFitting(LabelFit::ScaleFontToFit))) } },
+                                                    .LabelFitting(LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(10)
+                            .Brush(wxColour{ L"#F4908B" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"FÁCIL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(11)
+                            .Brush(wxColour{ L"#67C7C0" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"MUY FÁCIL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) } },
                 0, L"FLESCH");
             }
 

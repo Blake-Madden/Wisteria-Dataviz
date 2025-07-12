@@ -212,7 +212,7 @@ namespace Wisteria
             };
         } // namespace Colors
 
-    /// @brief Base items that can be drawn on a plot or canvas.
+    /// @brief Base items that can be drawn on a plot or canvas, such as Label, Axis, Image, etc.
     namespace GraphItems
         {
         /// @brief Options for setting and customizing the top line of a label as its header.

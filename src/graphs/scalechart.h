@@ -275,10 +275,12 @@ namespace Wisteria::Graphs
             return m_showcaseScore;
             }
 
-        /// @brief Makes most areas of the graph translucent except for where the score is,
-        ///     drawing attention to it.
+        /// @brief Makes most areas of the graph translucent, except for where the score is.
+        ///     This helps draw attention to the areas of the scales that have scores falling
+        ///     into them.
         /// @param showcase @c true to showcase where the score is.
-        /// @note This will have no effect if multiple scores are shown.
+        /// @note If there are multiple scores, then every area that has a score in it
+        ///     will be showcased.
         void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
 
       private:
