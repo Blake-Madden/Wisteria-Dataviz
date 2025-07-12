@@ -1050,7 +1050,8 @@ EXCLUDE                = ../../src/easyexif \
                          doxygen-awesome-css \
                          ../../CMakeLists.txt \
                          ../../build \
-                         ../../src/i18n-check \
+                         ../../src/util/xml_format.h \
+                         ../../src/util/xml_format.cpp \
                          ../../src/wxSimpleJSON \
                          ../../src/wxStartPage \
                          ../../src/CRCpp \
