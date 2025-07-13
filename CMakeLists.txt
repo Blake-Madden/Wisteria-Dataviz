@@ -50,12 +50,10 @@ set(WISTERIA_COPYRIGHT "Copyright (c) 2005-${BUILD_YEAR} Blake Madden")
 # Build the documentation
 #########################
 find_package(Doxygen)
-if(TARGET doxygen-docs)
-    if(NOT DOXYGEN_FOUND)
-        message(STATUS "Doxygen not found. API documentation cannot be generated.")
-    else()
-        set(ALL_OPTION_MAYBE_UNAVAILABLE ALL)
-    endif()
+if(NOT DOXYGEN_FOUND)
+    message(STATUS "Doxygen not found. API documentation cannot be generated.")
+else()
+    set(ALL_OPTION_MAYBE_UNAVAILABLE ALL)
 endif()
 
 add_custom_target(doxygen-docs
