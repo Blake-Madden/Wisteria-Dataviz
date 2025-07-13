@@ -2100,7 +2100,8 @@ namespace Wisteria::GraphItems
                     axisLabel.SetScaling(GetAxisLabelScaling());
                     if (axisPtIter->IsGhosted())
                         {
-                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(axisLabel.GetFontColor(), GetGhostOpacity()));
+                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                            axisLabel.GetFontColor(), GetGhostOpacity()));
                         }
                     else
                         {
@@ -2299,9 +2300,10 @@ namespace Wisteria::GraphItems
                         const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x = GetTopPoint().x -
-                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
-                                        CalcTickMarkOuterWidth();
+                            wxCoord x =
+                                GetTopPoint().x -
+                                (ScaleToScreenAndCanvas(
+                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -2417,7 +2419,8 @@ namespace Wisteria::GraphItems
                     axisLabel.SetScaling(GetAxisLabelScaling());
                     if (axisPtIter->IsGhosted())
                         {
-                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(axisLabel.GetFontColor(), GetGhostOpacity()));
+                        axisLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                            axisLabel.GetFontColor(), GetGhostOpacity()));
                         }
                     else
                         {
