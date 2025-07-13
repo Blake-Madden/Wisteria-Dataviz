@@ -75,12 +75,30 @@ namespace Wisteria::Graphs
                      const wxString& scoreColumnName,
                      const std::optional<wxString>& groupColumnName = std::nullopt);
 
+        /// @returns Whether the score is being showcased.
+        /// @sa ShowcaseScore().
+        [[nodiscard]]
+        bool IsShowcasingScore() const noexcept
+            {
+            return m_showcaseScore;
+            }
+
+        /// @brief Makes most areas of the graph translucent, except for where the score is.
+        ///     This helps draw attention to the areas of the scales that have scores falling
+        ///     into them.
+        /// @param showcase @c true to showcase where the score is.
+        /// @note If there are multiple scores, then every area that has a score in it
+        ///     will be showcased.
+        void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
+
       private:
         void RecalcSizes(wxDC& dc) override final;
         void AdjustAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
+
+        bool m_showcaseScore{ false };
         };
     } // namespace Wisteria::Graphs
 
