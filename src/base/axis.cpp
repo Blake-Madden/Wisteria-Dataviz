@@ -1444,6 +1444,9 @@ namespace Wisteria::GraphItems
             // non-existent labels when positioning the brackets
             const auto spaceAreasNeeded = !IsShowingLabels() ? 1 : 2;
 
+            const uint8_t bracketOpacity{ bracket.IsGhosted() ? bracket.GetGhostOpacity() :
+                                                                wxALPHA_OPAQUE };
+
             if (GetAxisType() == AxisType::LeftYAxis)
                 {
                 // cppcheck-suppress duplicateAssignExpression
@@ -1515,7 +1518,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
-                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                        bracketLabel.GetFontColor(), bracketOpacity));
                     bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelWidth = bracketLabelSize.GetWidth();
@@ -1670,7 +1674,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
-                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                        bracketLabel.GetFontColor(), bracketOpacity));
                     bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelWidth = bracketLabelSize.GetWidth();
@@ -1825,7 +1830,8 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
-                    bracketLabel.SetFontColor(GetFontColor());
+                    bracketLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                        bracketLabel.GetFontColor(), bracketOpacity));
                     bracketLabel.SetFont(GetFont());
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelHeight = bracketLabelSize.GetHeight();
@@ -1977,8 +1983,9 @@ namespace Wisteria::GraphItems
 
                     Label bracketLabel(bracket.GetLabel());
                     bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
-                    bracketLabel.SetFontColor(GetFontColor());
                     bracketLabel.SetFont(GetFont());
+                    bracketLabel.SetFontColor(Colors::ColorContrast::ChangeOpacity(
+                        bracketLabel.GetFontColor(), bracketOpacity));
                     const wxSize bracketLabelSize = bracketLabel.GetBoundingBox(dc).GetSize();
                     labelHeight = bracketLabelSize.GetHeight();
                     if (bracket.GetPerpendicularLabelConnectionLinesAlignment() ==
@@ -2097,7 +2104,7 @@ namespace Wisteria::GraphItems
                         }
                     else
                         {
-                    axisLabel.SetFontColor(GetFontColor());
+                        axisLabel.SetFontColor(GetFontColor());
                         }
                     axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
                     axisLabel.GetFont() = GetFont();
@@ -2414,7 +2421,7 @@ namespace Wisteria::GraphItems
                         }
                     else
                         {
-                    axisLabel.SetFontColor(GetFontColor());
+                        axisLabel.SetFontColor(GetFontColor());
                         }
                     axisLabel.SetFontBackgroundColor(GetFontBackgroundColor());
                     axisLabel.GetFont() = GetFont();
@@ -4265,6 +4272,50 @@ namespace Wisteria::GraphItems
         size += (parentAxisOrientation == Orientation::Vertical) ? labelSize.GetWidth() :
                                                                    labelSize.GetHeight();
         return size;
+        }
+
+    //-------------------------------------------
+    void Axis::ShowcaseBrackets(const std::vector<wxString>& labels)
+        {
+        for (auto& bracket : GetBrackets())
+            {
+            bracket.Ghost(true);
+            }
+
+        for (auto& bracket : GetBrackets())
+            {
+            for (const auto& label : labels)
+                {
+                if (bracket.GetLabel().GetText().CmpNoCase(label) != 0)
+                    {
+                    bracket.SetGhostOpacity(GetGhostOpacity());
+                    bracket.Ghost(false);
+                    break;
+                    }
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void Axis::ShowcaseBrackets(const std::vector<double>& positions)
+        {
+        for (auto& bracket : GetBrackets())
+            {
+            bracket.Ghost(true);
+            }
+
+        for (auto& bracket : GetBrackets())
+            {
+            for (const auto& position : positions)
+                {
+                if (compare_doubles(bracket.GetLabelPosition(), position))
+                    {
+                    bracket.SetGhostOpacity(GetGhostOpacity());
+                    bracket.Ghost(false);
+                    break;
+                    }
+                }
+            }
         }
 
     //-------------------------------------------

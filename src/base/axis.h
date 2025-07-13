@@ -238,6 +238,53 @@ namespace Wisteria::GraphItems
                 m_label.SetTextOrientation(Orientation::Horizontal);
                 }
 
+            /// @name Style Functions
+            /// @brief Functions relating to the bracket's general appearance.
+            /// @{
+
+            /// @brief Sets the bracket to be translucent.
+            /// @details This includes the bracket lines, as well as the label.
+            /// @param ghost @c true to make the bracket translucent.
+            void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
+
+            /// @returns @c true if the bracket is being made translucent.
+            [[nodiscard]]
+            bool IsGhosted() const noexcept
+                {
+                return m_ghost;
+                }
+
+            /// @returns The opacity level applied if "ghosted".
+            [[nodiscard]]
+            uint8_t GetGhostOpacity() const noexcept
+                {
+                return m_ghostOpacity;
+                }
+
+            /** @brief Sets the opacity level for "ghosting".
+                @param opacity The opacity level (should be between @c 0 and @c 255).
+                @sa Ghost().*/
+            void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
+
+            /// @returns The width of the padding between the bracket label and the parent axis
+            ///     (not including the connection line).
+            /// @warning This will need to be scaled when being drawn or measured.
+            ///     (This is normally managed by the parent axis.)
+            [[nodiscard]]
+            wxCoord GetPadding() const noexcept
+                {
+                return m_padding;
+                }
+
+            /// @brief Sets the width of the padding between the bracket label and the parent axis
+            ///     (not including the connection line).
+            /// @param padding The width of the padding. This is a pixel value that the framework
+            ///     will scale to the screen for you.
+            ///  (The parent axis will also scale this as the graph's scaling changes.)
+            void SetPadding(const wxCoord padding) noexcept { m_padding = padding; }
+
+            /// @}
+
             /// @name Range Functions
             /// @brief Functions relating to the bracket's starting and ending point
             ///     (relative to its parent axis).
@@ -259,50 +306,14 @@ namespace Wisteria::GraphItems
 
             /// @}
 
-            /** @brief Indicates whether the bracket is only pointing to one spot on the axis.
-                @returns @c true if the bracket is really just a single line pointing from a
-                    bracket label to the axis.
-                @note This is true if the start and end points of the bracket are the same.
-                @sa GetStartPosition(), GetEndPosition().*/
-            [[nodiscard]]
-            bool IsSingleLine() const noexcept
-                {
-                return compare_doubles(GetStartPosition(), GetEndPosition());
-                }
-
-            /// @returns @c true if the lines being drawn are straight lines
-            ///     (as opposed to curly braces).
-            [[nodiscard]]
-            bool IsStraightLines() const noexcept
-                {
-                return (m_bracketLineStyle == BracketLineStyle::Arrow ||
-                        m_bracketLineStyle == BracketLineStyle::Lines ||
-                        m_bracketLineStyle == BracketLineStyle::ReverseArrow);
-                }
-
-            /// @returns The width of the padding between the bracket label and the parent axis
-            ///     (not including the connection line).
-            /// @warning This will need to be scaled when being drawn or measured.
-            ///     (This is normally managed by the parent axis.)
-            [[nodiscard]]
-            wxCoord GetPadding() const noexcept
-                {
-                return m_padding;
-                }
-
-            /// @brief Sets the width of the padding between the bracket label and the parent axis
-            ///     (not including the connection line).
-            /// @param padding The width of the padding. This is a pixel value that the framework
-            ///     will scale to the screen for you.
-            ///  (The parent axis will also scale this as the graph's scaling changes.)
-            void SetPadding(const wxCoord padding) noexcept { m_padding = padding; }
-
             /// @name Label Functions
             /// @brief Functions relating to the bracket's labels.
             /// @{
 
             /// @returns The bracket's label.
             ///     Call this to edit the label's font, color, etc.
+            /// @note If the bracket is ghosted, then any color assigned here
+            ///     will have a translucency applied to it dynamically.
             [[nodiscard]]
             Label& GetLabel() noexcept
                 {
@@ -342,9 +353,12 @@ namespace Wisteria::GraphItems
             /// @{
 
             /** @brief Gets/sets the line pen.
+                @details Call this to edit the line's color, style, width, etc.
+                    (e.g., `GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT)`)
                 @returns The pen used to draw the bracket's line.
-                    Call this to edit the line's color, style, width, etc.
-                    (e.g., `GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT)`)*/
+                @note If the bracket is ghosted, then any color assigned here
+                    will have a translucency applied to it dynamically.
+            */
             [[nodiscard]]
             wxPen& GetLinePen() noexcept
                 {
@@ -382,6 +396,27 @@ namespace Wisteria::GraphItems
                 m_bracketLineStyle = lineType;
                 }
 
+            /** @brief Indicates whether the bracket is only pointing to one spot on the axis.
+                @returns @c true if the bracket is really just a single line pointing from a
+                    bracket label to the axis.
+                @note This is @c true if the start and end points of the bracket are the same.
+                @sa GetStartPosition(), GetEndPosition().*/
+            [[nodiscard]]
+            bool IsSingleLine() const noexcept
+                {
+                return compare_doubles(GetStartPosition(), GetEndPosition());
+                }
+
+            /// @returns @c true if the lines being drawn are straight lines
+            ///     (as opposed to curly braces).
+            [[nodiscard]]
+            bool IsStraightLines() const noexcept
+                {
+                return (m_bracketLineStyle == BracketLineStyle::Arrow ||
+                        m_bracketLineStyle == BracketLineStyle::Lines ||
+                        m_bracketLineStyle == BracketLineStyle::ReverseArrow);
+                }
+
             /// @}
 
             /// @private
@@ -393,9 +428,12 @@ namespace Wisteria::GraphItems
 
             /// @private
             [[nodiscard]]
-            const wxPen& GetLinePen() const noexcept
+            wxPen GetLinePen() const
                 {
-                return m_linePen;
+                return IsGhosted() ? wxPen{ Colors::ColorContrast::ChangeOpacity(
+                                                m_linePen.GetColour(), GetGhostOpacity()),
+                                            m_linePen.GetWidth() } :
+                                     m_linePen;
                 }
 
           private:
@@ -442,6 +480,8 @@ namespace Wisteria::GraphItems
             wxPen m_linePen{ *wxBLACK, 2 };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
             BracketLineStyle m_bracketLineStyle{ BracketLineStyle::CurlyBraces };
+            bool m_ghost{ false };
+            uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
             };
 
         /// @brief A point on an axis.
@@ -1362,29 +1402,6 @@ namespace Wisteria::GraphItems
             @param that The other axis to copy settings from.*/
         void CopySettings(const Axis& that);
 
-        /// @returns The opacity level applied to "ghosted" lines.
-        [[nodiscard]]
-        uint8_t GetGhostOpacity() const noexcept
-            {
-            return m_ghostOpacity;
-            }
-
-        /** @brief Sets the opacity level for "ghosted" lines.
-            @param opacity The opacity level (should be between @c 0 and @c 255).*/
-        void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
-
-        /// @returns @c true if the lines are being made translucent.
-        [[nodiscard]]
-        bool IsGhosted() const noexcept
-            {
-            return m_ghost;
-            }
-
-        /// @brief Sets the axis line and tickmarks to be translucent.
-        /// @param ghost @c true to make the lines translucent.
-        /// @note Titles, headers, footers, labels, and brackets will not be affected.
-        void Ghost(const bool ghost) noexcept { m_ghost = ghost; }
-
         /// @brief If colors in the axes are the same as @c bkColor, then set them
         ///     to black or white, contrasting against @c bkColor.
         /// @param bkColor The background color to contrast against.
@@ -1522,6 +1539,22 @@ namespace Wisteria::GraphItems
             {
             return m_brackets;
             }
+
+        /** @brief Sets the specified brackets (by label) to be fully opaque,
+                and all others to a lighter opacity.
+            @param labels The brackets to showcase.
+            @note Call SetGhostOpacity() prior to this to control how translucent
+                the non-showcased (i.e., "ghosted") brackets are.
+            @sa SetGhostOpacity().*/
+        void ShowcaseBrackets(const std::vector<wxString>& labels);
+
+        /** @brief Sets the specified brackets (by their labels' axis position) to be fully opaque,
+                and all others to a lighter opacity.
+            @param positions The brackets (by axis position) to showcase.
+            @note Call SetGhostOpacity() prior to this to control how translucent
+                the non-showcased (i.e., "ghosted") brackets are.
+            @sa SetGhostOpacity().*/
+        void ShowcaseBrackets(const std::vector<double>& positions);
 
         /** @brief Simplifies the labels along the brackets.
             @note This should be called after all brackets have been added.
