@@ -4322,6 +4322,16 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    void Axis::GhostAllBrackets(const bool ghost)
+        {
+        for (auto& bracket : GetBrackets())
+            {
+            bracket.SetGhostOpacity(GetGhostOpacity());
+            bracket.Ghost(ghost);
+            }
+        }
+
+    //-------------------------------------------
     void Axis::GhostAxisPoint(const double axisPosition, const bool ghost)
         {
         auto axisPt = std::ranges::find(GetAxisPoints(), AxisPoint{ axisPosition, wxString{} });

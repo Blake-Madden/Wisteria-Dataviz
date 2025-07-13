@@ -94,6 +94,7 @@ namespace Wisteria::Graphs
       private:
         void RecalcSizes(wxDC& dc) override final;
         void AdjustAxes();
+        void UpdateCustomAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };

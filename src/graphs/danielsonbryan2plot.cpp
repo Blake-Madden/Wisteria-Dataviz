@@ -169,8 +169,49 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         }
 
     //----------------------------------------------------------------
+    void DanielsonBryan2Plot::UpdateCustomAxes()
+        {
+        std::vector<double> activeScoreAreas;
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+            {
+            if (std::isnan(m_scoresColumn->GetValue(i)))
+                {
+                continue;
+                }
+            const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto yAxisPos = is_within<size_t>(std::make_pair(0, 29), currentScore)   ? 2 :
+                                  is_within<size_t>(std::make_pair(30, 49), currentScore)  ? 3 :
+                                  is_within<size_t>(std::make_pair(50, 59), currentScore)  ? 4 :
+                                  is_within<size_t>(std::make_pair(60, 69), currentScore)  ? 5 :
+                                  is_within<size_t>(std::make_pair(70, 79), currentScore)  ? 6 :
+                                  is_within<size_t>(std::make_pair(80, 89), currentScore)  ? 7 :
+                                  is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
+                                                                                             8;
+            activeScoreAreas.push_back(yAxisPos);
+            }
+        if (IsShowcasingScore())
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.ShowcaseAxisPoints(activeScoreAreas);
+                customAxis.ShowcaseBrackets(activeScoreAreas);
+                }
+            }
+        // reset if previously showcasing items
+        else
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.GhostAllAxisPoints(false);
+                customAxis.GhostAllBrackets(false);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void DanielsonBryan2Plot::RecalcSizes(wxDC & dc)
         {
+        UpdateCustomAxes();
         Graph2D::RecalcSizes(dc);
 
         if (GetDataset() == nullptr)
@@ -189,7 +230,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
-        std::vector<double> activeScoreAreas;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(m_scoresColumn->GetValue(i)))
@@ -219,7 +259,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
 
             if (middleRuler.GetPhysicalCoordinate(yAxisPos, yPt))
                 {
-                activeScoreAreas.push_back(yAxisPos);
                 wxPoint pt(middleRuler.GetPhysicalCustomXPosition(), yPt);
                 m_jitter.JitterPoint(pt);
                 // points on the middle ruler
@@ -235,14 +274,5 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                 }
             }
         AddObject(std::move(points));
-
-        if (IsShowcasingScore())
-            {
-            for (auto& customAxis : GetCustomAxes())
-                {
-                customAxis.ShowcaseAxisPoints(activeScoreAreas);
-                customAxis.ShowcaseBrackets(activeScoreAreas);
-                }
-            }
         }
     } // namespace Wisteria::Graphs

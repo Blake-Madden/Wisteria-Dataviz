@@ -1540,6 +1540,14 @@ namespace Wisteria::GraphItems
             return m_brackets;
             }
 
+        /** @brief Sets all axis brackets to be translucent.
+            @param ghost @c true to make the brackets translucent.
+            @warning This should be called after the axis range (and any custom labels)
+                have been assigned.
+            @sa Ghost() for ghosting the axis lines.
+        */
+        void GhostAllBrackets(const bool ghost);
+
         /** @brief Sets the specified brackets (by label) to be fully opaque,
                 and all others to a lighter opacity.
             @param labels The brackets to showcase.
