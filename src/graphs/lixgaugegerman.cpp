@@ -112,7 +112,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             GraphItems::Axis leftRuler(AxisType::LeftYAxis);
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            leftRuler.SetCustomXPosition(0.9f);
+            leftRuler.SetCustomXPosition(0.9F);
             leftRuler.SetCustomYPosition(maxYAxis);
             leftRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
@@ -155,7 +155,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 bracket.SetBracketLineStyle(BracketLineStyle::ReverseArrow);
                 bracket.SetPerpendicularLabelConnectionLinesAlignment(
                     AxisLabelAlignment::AlignWithBoundary);
-                bracket.GetLabel().SetFontColor(*wxBLACK);
+                bracket.GetLabel().SetFontColor(GetLeftYAxis().GetFontColor());
                 bracket.GetLabel().SetTextAlignment(TextAlignment::FlushLeft);
                 }
             AddCustomAxis(leftRuler);
@@ -179,7 +179,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             GraphItems::Axis rightRuler(Wisteria::AxisType::RightYAxis);
             rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            rightRuler.SetCustomXPosition(1.1f);
+            rightRuler.SetCustomXPosition(1.1F);
             rightRuler.SetCustomYPosition(maxYAxis);
             rightRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             rightRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
@@ -216,7 +216,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 bracket.GetLinePen().SetWidth(2);
                 bracket.SetTickmarkLength(30);
                 bracket.SetBracketLineStyle(BracketLineStyle::ReverseArrow);
-                bracket.GetLabel().SetFontColor(*wxBLACK);
+                bracket.GetLabel().SetFontColor(GetLeftYAxis().GetFontColor());
                 bracket.GetLabel().SetTextAlignment(TextAlignment::FlushRight);
                 // English labels are multi-line and pushed over to the far right
                 if (IsUsingEnglishLabels())

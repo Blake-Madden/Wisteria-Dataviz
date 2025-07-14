@@ -81,7 +81,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 79, 70, 75, _(L"Fairly Easy"),
                 Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue)));
             scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
-                69, 60, 65, _(L"Standard"), Colors::ColorBrewer::GetColor(Colors::Color::Black)));
+                69, 60, 65, _(L"Standard"),
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())));
             scoreRuler.AddBracket(GraphItems::Axis::AxisBracket(
                 59, 50, 55, _(L"Fairly Difficult"),
                 Colors::ColorBrewer::GetColor(Colors::Color::RedTomato)));
@@ -93,8 +94,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 Colors::ColorBrewer::GetColor(Colors::Color::RedTomato)));
             for (auto& bracket : scoreRuler.GetBrackets())
                 {
-                bracket.GetLabel().SetFontColor(
-                    Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                bracket.GetLabel().SetFontColor(GetLeftYAxis().GetFontColor());
                 }
             scoreRuler.GetHeader().SetText(_(L"READABILITY\nSCORE"));
             scoreRuler.GetHeader().GetPen() = wxNullPen;
@@ -290,6 +290,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
             customAxis.GetHeader().SetFontColor(GetLeftYAxis().GetFontColor());
             }
 
+        const auto legendColor =
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
+        const auto legendBkColor =
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(legendColor);
+
         // add instruction label
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo(
@@ -299,8 +304,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                   "\U0000201CSyllables per 100 Words\U0000201D figure (right).  The\n"
                   "intersection of the pencil or ruler with the\n"
                   "center line shows your \U0000201CReading Ease\U0000201D score."))
-                .Pen(*wxBLACK_PEN)
-                .FontBackgroundColor(*wxWHITE)
+                .Pen(legendColor)
+                .FontBackgroundColor(legendBkColor)
+                .FontColor(legendColor)
                 .Scaling(GetScaling())
                 .Font(wxFont(GetBottomXAxis().GetFont()).MakeSmaller())
                 .LabelAlignment(TextAlignment::JustifiedAtWord)
@@ -310,12 +316,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         legend->GetHeaderInfo()
             .Enable(true)
             .LabelAlignment(TextAlignment::Centered)
+            .FontColor(legendColor)
             .GetFont()
             .MakeBold()
             .MakeSmaller();
         legend->SetBoxCorners(BoxCorners::Straight);
         legend->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         AddObject(std::move(legend));
+
+        // make "Standard" bracket white or black
+        if (GetCustomAxes().size() >= 1 && GetCustomAxes().at(1).GetBrackets().size() >= 3)
+            {
+            GetCustomAxes().at(1).GetBrackets().at(3).GetLinePen().SetColour(
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+            }
 
         if (GetDataset() == nullptr)
             {

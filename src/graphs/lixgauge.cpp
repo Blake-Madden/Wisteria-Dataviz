@@ -118,7 +118,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             GraphItems::Axis leftRuler(Wisteria::AxisType::LeftYAxis);
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            leftRuler.SetCustomXPosition(0.9f);
+            leftRuler.SetCustomXPosition(0.9F);
             leftRuler.SetCustomYPosition(maxYAxis);
             leftRuler.SetRange(minYAxis, maxYAxis, 0, 10, 1);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -132,15 +132,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(20, 20, 20, _(L"Very easy text"),
-                                                               wxColour(66, 51, 251)));
+                                                               wxColour{ 66, 51, 251 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(30, 30, 30, _(L"Easy text"),
-                                                               wxColour(163, 182, 250)));
+                                                               wxColour{ 163, 182, 250 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(40, 40, 40, _(L"Average text"),
-                                                               wxColour(239, 173, 186)));
+                                                               wxColour{ 239, 173, 186 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(50, 50, 50, _(L"Difficult text"),
-                                                               wxColour(237, 27, 37)));
+                                                               wxColour{ 237, 27, 37 }));
             leftRuler.AddBracket(GraphItems::Axis::AxisBracket(
-                60, 60, 60, _(L"Very difficult text"), wxColour(250, 0, 0)));
+                60, 60, 60, _(L"Very difficult text"), wxColour{ 250, 0, 0 }));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT);
@@ -148,7 +148,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
                 bracket.SetTickmarkLength(30);
                 bracket.SetPerpendicularLabelConnectionLinesAlignment(
                     AxisLabelAlignment::AlignWithBoundary);
-                bracket.GetLabel().SetFontColor(*wxBLACK);
+                bracket.GetLabel().SetFontColor(GetLeftYAxis().GetFontColor());
                 }
             AddCustomAxis(leftRuler);
             }
@@ -169,7 +169,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             GraphItems::Axis rightRuler(Wisteria::AxisType::RightYAxis);
             rightRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            rightRuler.SetCustomXPosition(1.1f);
+            rightRuler.SetCustomXPosition(1.1F);
             rightRuler.SetCustomYPosition(maxYAxis);
             rightRuler.SetRange(minYAxis, maxYAxis, 0, 5, 1);
             rightRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -181,18 +181,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             rightRuler.SetId(102);
             rightRuler.GetAxisLinePen() = wxNullPen;
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
-                25, 25, 25, _(L"Books for children"), wxColour(138, 163, 249)));
-            rightRuler.AddBracket(
-                GraphItems::Axis::AxisBracket(35, 35, 35, _(L"Fiction"), wxColour(207, 217, 252)));
+                25, 25, 25, _(L"Books for children"), wxColour{ 138, 163, 249 }));
+            rightRuler.AddBracket(GraphItems::Axis::AxisBracket(35, 35, 35, _(L"Fiction"),
+                                                                wxColour{ 207, 217, 252 }));
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(45, 45, 45, _(L"Factual prose"),
-                                                                wxColour(245, 126, 133)));
+                                                                wxColour{ 245, 126, 133 }));
             rightRuler.AddBracket(GraphItems::Axis::AxisBracket(
-                55, 55, 55, _(L"Technical literature"), wxColour(237, 10, 10)));
+                55, 55, 55, _(L"Technical literature"), wxColour{ 237, 10, 10 }));
             for (auto& bracket : rightRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT);
                 bracket.GetLinePen().SetWidth(2);
                 bracket.SetTickmarkLength(30);
+                bracket.GetLabel().SetFontColor(GetLeftYAxis().GetFontColor());
                 }
             AddCustomAxis(rightRuler);
             }
