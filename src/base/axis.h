@@ -1407,35 +1407,7 @@ namespace Wisteria::GraphItems
         /// @param bkColor The background color to contrast against.
         /// @note This will not do anything for the text elements of the axis if it
         ///     has a font background color overriding any underlying canvas color.
-        void ContrastAgainstColor(const wxColour& bkColor)
-            {
-            const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                bkColor) };
-            if (GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour() == bkColor)
-                {
-                GetAxisLinePen().SetColour(contrastingColor);
-                }
-            if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor().GetAlpha() > 0)
-                {
-                return;
-                }
-            if (GetFontColor().IsOk() && GetFontColor() == bkColor)
-                {
-                SetFontColor(contrastingColor);
-                }
-            if (GetTitle().GetFontColor().IsOk() && GetTitle().GetFontColor() == bkColor)
-                {
-                GetTitle().SetFontColor(contrastingColor);
-                }
-            if (GetHeader().GetFontColor().IsOk() && GetHeader().GetFontColor() == bkColor)
-                {
-                GetHeader().SetFontColor(contrastingColor);
-                }
-            if (GetFooter().GetFontColor().IsOk() && GetFooter().GetFontColor() == bkColor)
-                {
-                GetFooter().SetFontColor(contrastingColor);
-                }
-            }
+        void ContrastAgainstColor(const wxColour& bkColor);
 
         /** @name Title Functions
             @brief Functions related to the axis's title.*/

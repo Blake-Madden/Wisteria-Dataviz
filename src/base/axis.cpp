@@ -2300,10 +2300,9 @@ namespace Wisteria::GraphItems
                         const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x =
-                                GetTopPoint().x -
-                                (ScaleToScreenAndCanvas(
-                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
+                            wxCoord x = GetTopPoint().x -
+                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
+                                        CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -4396,6 +4395,55 @@ namespace Wisteria::GraphItems
         else
             {
             dc.DrawLine(axisPoint, bracketPoint);
+            }
+        }
+
+    //-------------------------------------------
+    void Axis::ContrastAgainstColor(const wxColour& bkColor)
+        {
+        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            bkColor) };
+        if (GetAxisLinePen().IsOk() && GetAxisLinePen().GetColour() == bkColor)
+            {
+            GetAxisLinePen().SetColour(contrastingColor);
+            }
+        if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor().GetAlpha() > 0)
+            {
+            return;
+            }
+        if (GetFontColor().IsOk() && GetFontColor() == bkColor)
+            {
+            SetFontColor(contrastingColor);
+            }
+        if (GetTitle().GetFontColor().IsOk() && GetTitle().GetFontColor() == bkColor)
+            {
+            GetTitle().SetFontColor(contrastingColor);
+            }
+        if (GetHeader().GetFontColor().IsOk() && GetHeader().GetFontColor() == bkColor)
+            {
+            GetHeader().SetFontColor(contrastingColor);
+            }
+        if (GetFooter().GetFontColor().IsOk() && GetFooter().GetFontColor() == bkColor)
+            {
+            GetFooter().SetFontColor(contrastingColor);
+            }
+
+        for (auto& bracket : GetBrackets())
+            {
+            if (bracket.GetLinePen().IsOk() && bracket.GetLinePen().GetColour() == bkColor)
+                {
+                bracket.GetLinePen().SetColour(contrastingColor);
+                }
+            if (bracket.GetLabel().GetFontBackgroundColor().IsOk() &&
+                bracket.GetLabel().GetFontBackgroundColor().GetAlpha() > 0)
+                {
+                break;
+                }
+            if (bracket.GetLabel().GetFontColor().IsOk() &&
+                bracket.GetLabel().GetFontColor() == bkColor)
+                {
+                bracket.GetLabel().SetFontColor(contrastingColor);
+                }
             }
         }
     } // namespace Wisteria::GraphItems
