@@ -151,14 +151,6 @@ namespace Wisteria::Graphs
         /// @param magnitude The maximum influence of the road stops.
         void SetMagnitude(const double magnitude) noexcept { m_magnitude = magnitude; }
 
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint,
-                                                        const bool includeHeader)
-            {
-            return CreateLegend(LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
-            }
-
       protected:
         /// @brief Description of icon used for a road stop.
         using RoadStopIcon = std::pair<Wisteria::Icons::IconShape, wxColour>;
