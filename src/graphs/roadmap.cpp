@@ -116,12 +116,13 @@ namespace Wisteria::Graphs
                                          wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                     GetRoadStops()[i].GetName();
 
-            auto markerLabel = std::make_unique<GraphItems::Label>(
-                GraphItems::GraphItemInfo(GraphItems::GraphItemInfo(markerText)
-                                              .Scaling(GetScaling())
-                                              .DPIScaling(GetDPIScaleFactor())
-                                              .Pen(wxNullPen)
-                                              .FontBackgroundColor(*wxWHITE)));
+            auto markerLabel = std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(
+                GraphItems::GraphItemInfo(markerText)
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                        GetPlotOrCanvasColor()))
+                    .Pen(wxNullPen)));
             markerLabel->ShowLabelWhenSelected(true);
             if (GetLabelPlacement() == LabelPlacement::NextToParent)
                 {
@@ -160,6 +161,10 @@ namespace Wisteria::Graphs
         assert(m_roadPen.IsOk() && L"Valid road pen needed to draw road!");
         wxPen scaledRoadPen = m_roadPen;
         scaledRoadPen.SetWidth(ScaleToScreenAndCanvas(scaledRoadPen.GetWidth()));
+        // road will usually be black, but if background is dark ("driving at night"),
+        // then make it gray so that you can see it
+        scaledRoadPen.SetColour(Colors::ColorContrast::ShadeOrTintIfClose(scaledRoadPen.GetColour(),
+                                                                          GetPlotOrCanvasColor()));
 
             {
             auto pavement = std::make_unique<GraphItems::Points2D>(scaledRoadPen);
@@ -282,13 +287,19 @@ namespace Wisteria::Graphs
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
+                .FontColor(
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                 .DPIScaling(GetDPIScaleFactor()));
 
         wxString legendText = GetPositiveLegendLabel() + L"\n" + GetNegativeLegendLabel();
-        legend->GetLegendIcons().emplace_back(GetPositiveIcon().first, *wxBLACK,
-                                              GetPositiveIcon().second);
-        legend->GetLegendIcons().emplace_back(GetNegativeIcon().first, *wxBLACK,
-                                              GetNegativeIcon().second);
+        legend->GetLegendIcons().emplace_back(
+            GetPositiveIcon().first,
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+            GetPositiveIcon().second);
+        legend->GetLegendIcons().emplace_back(
+            GetNegativeIcon().first,
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+            GetNegativeIcon().second);
 
         if (options.IsIncludingHeader())
             {
@@ -296,6 +307,8 @@ namespace Wisteria::Graphs
             legend->GetHeaderInfo()
                 .Enable(true)
                 .LabelAlignment(TextAlignment::Centered)
+                .FontColor(
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                 .GetFont()
                 .MakeBold()
                 .MakeLarger();

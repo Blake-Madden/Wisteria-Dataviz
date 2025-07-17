@@ -2171,7 +2171,8 @@ namespace Wisteria::Graphs
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
-                .DPIScaling(GetDPIScaleFactor()));
+                .DPIScaling(GetDPIScaleFactor())
+                .FontColor(GetLeftYAxis().GetFontColor()));
 
         size_t currentLine{ 0 };
 
@@ -2180,11 +2181,15 @@ namespace Wisteria::Graphs
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
         legend->GetLegendIcons().emplace_back(
-            Icons::IconShape::HorizontalLine, *wxBLACK_PEN, GetBrushScheme()->GetBrush(0),
+            Icons::IconShape::HorizontalLine,
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+            GetBrushScheme()->GetBrush(0),
             GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(0)) :
                                std::nullopt);
-        legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator, *wxBLACK_PEN,
-                                              *wxBLACK_BRUSH);
+        legend->GetLegendIcons().emplace_back(
+            Icons::IconShape::HorizontalSeparator,
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
         size_t currentParentSliceIndex{ 0 };
         std::optional<wxColour> sliceColor{
@@ -2239,17 +2244,23 @@ namespace Wisteria::Graphs
                     .append(L"\n \n");
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
-                legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
-                                                      *wxBLACK_PEN, *wxBLACK_BRUSH);
-                legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator,
-                                                      *wxBLACK_PEN, *wxBLACK_BRUSH);
+                legend->GetLegendIcons().emplace_back(
+                    Icons::IconShape::HorizontalLine,
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                legend->GetLegendIcons().emplace_back(
+                    Icons::IconShape::HorizontalSeparator,
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                    Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
                 }
 
             // add icon and text (after group separator, if needed)
             legendText.append(currentLabel.c_str()).append(L"\n");
             ++currentLine;
-            legend->GetLegendIcons().emplace_back(Icons::IconShape::TriangleRight, *wxBLACK_PEN,
-                                                  sliceBrush, sliceColor);
+            legend->GetLegendIcons().emplace_back(
+                Icons::IconShape::TriangleRight,
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                sliceBrush, sliceColor);
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
@@ -2270,7 +2281,8 @@ namespace Wisteria::Graphs
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
-                .DPIScaling(GetDPIScaleFactor()));
+                .DPIScaling(GetDPIScaleFactor())
+                .FontColor(GetLeftYAxis().GetFontColor()));
 
         wxString legendText;
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
@@ -2290,7 +2302,9 @@ namespace Wisteria::Graphs
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
-                Icons::IconShape::TriangleRight, *wxBLACK_PEN, GetBrushScheme()->GetBrush(i),
+                Icons::IconShape::TriangleRight,
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                GetBrushScheme()->GetBrush(i),
                 GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(i)) :
                                    std::nullopt);
             }

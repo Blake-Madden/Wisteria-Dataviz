@@ -84,7 +84,8 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOption
     auto legend =
         std::make_unique<GraphItems::Label>(GraphItemInfo()
                                                 .Padding(0, 0, 0, Label::GetMinLegendWidthDIPs())
-                                                .DPIScaling(GetDPIScaleFactor()));
+                                                .DPIScaling(GetDPIScaleFactor())
+                                                .FontColor(GetLeftYAxis().GetFontColor()));
 
     constexpr std::wstring_view ELLIPSIS{ L"\u2026" };
 
@@ -132,7 +133,7 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOption
                                                *wxTRANSPARENT_BRUSH);
         legend->GetLegendIcons().emplace_back(
             (GetShapeScheme() ? GetShapeScheme()->GetShape(schemeIndex) : m_defaultLegendShape),
-            *wxBLACK_PEN, br,
+            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), br,
             GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(schemeIndex)) :
                                std::nullopt);
 
@@ -153,19 +154,24 @@ std::unique_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(const LegendOption
                 (GetBrushScheme() ? GetBrushScheme()->GetBrush(mdSchemeIndex) :
                  GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
                                     *wxTRANSPARENT_BRUSH);
-            legend->GetLegendIcons().emplace_back((GetShapeScheme() ? GetShapeScheme()->GetShape(mdSchemeIndex) :
-                                               m_defaultLegendShape),
-                           *wxBLACK_PEN, brush,
-                           GetColorScheme() ?
-                               std::optional<wxColour>(GetColorScheme()->GetColor(mdSchemeIndex)) :
-                               std::nullopt);
+            legend->GetLegendIcons().emplace_back(
+                (GetShapeScheme() ? GetShapeScheme()->GetShape(mdSchemeIndex) :
+                                    m_defaultLegendShape),
+                Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
+                brush,
+                GetColorScheme() ?
+                    std::optional<wxColour>(GetColorScheme()->GetColor(mdSchemeIndex)) :
+                    std::nullopt);
             }
         }
 
     if (options.IsIncludingHeader())
         {
         legendText.Prepend(wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
-        legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
+        legend->GetHeaderInfo()
+            .Enable(true)
+            .LabelAlignment(TextAlignment::FlushLeft)
+            .FontColor(GetLeftYAxis().GetFontColor());
         }
     legend->SetText(legendText.Trim());
 

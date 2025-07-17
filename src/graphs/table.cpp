@@ -1144,7 +1144,7 @@ namespace Wisteria::Graphs
                                      wxDC& dc) const
         {
         Label measuringLabel(GraphItemInfo()
-                                 .Pen(*wxBLACK_PEN)
+                                 .Pen(wxPen{})
                                  .Padding(5, 5, 5, 5)
                                  .Scaling(GetScaling())
                                  .DPIScaling(GetDPIScaleFactor()));
@@ -1437,9 +1437,11 @@ namespace Wisteria::Graphs
                         .Scaling(GetScaling())
                         .DPIScaling(GetDPIScaleFactor())
                         .Font(cell.m_font)
-                        .FontColor((cell.m_bgColor.IsOk() ?
+                        .FontColor(((cell.m_bgColor.IsOk() &&
+                                     cell.m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
                                         ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
-                                        *wxBLACK))
+                                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                            GetPlotOrCanvasColor())))
                         .FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE)
                         .Anchoring(Anchoring::TopLeftCorner)
                         .AnchorPoint(boxRect.GetTopLeft()));
@@ -1476,9 +1478,11 @@ namespace Wisteria::Graphs
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
                             .Font(cell.m_font)
-                            .FontColor((cell.m_bgColor.IsOk() ?
+                            .FontColor(((cell.m_bgColor.IsOk() &&
+                                         cell.m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
                                             ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
-                                            *wxBLACK))
+                                            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                                GetPlotOrCanvasColor())))
                             .FontBackgroundColor(wxTransparentColour)
                             .Anchoring(Anchoring::TopLeftCorner)
                             .AnchorPoint(boxRect.GetLeftTop()));
@@ -1787,8 +1791,9 @@ namespace Wisteria::Graphs
                 auto noteLabel = std::make_unique<Label>(
                     GraphItemInfo(note.m_note)
                         .Pen(wxNullPen)
-                        // use same text scale as the table (or 1.0 if the table font
-                        // is tiny)
+                        .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                            GetPlotOrCanvasColor()))
+                        // use same text scale as the table (or 1.0 if the table font is tiny)
                         .Scaling(std::max(1.0, smallestTextScaling))
                         .DPIScaling(GetDPIScaleFactor())
                         .Anchoring(Anchoring::BottomLeftCorner)

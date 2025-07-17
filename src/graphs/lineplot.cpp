@@ -289,7 +289,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo()
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
-                .DPIScaling(GetDPIScaleFactor()));
+                .DPIScaling(GetDPIScaleFactor())
+                .FontColor(GetLeftYAxis().GetFontColor()));
 
         const bool showingMarkers =
             (GetShapeScheme()->GetShapes().size() >= GetLines().size() &&
@@ -328,7 +329,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
         if (options.IsIncludingHeader())
             {
             legendText.Prepend(wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
-            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
+            legend->GetHeaderInfo()
+                .Enable(true)
+                .LabelAlignment(TextAlignment::FlushLeft)
+                .FontColor(GetLeftYAxis().GetFontColor());
             }
         legend->SetText(legendText.Trim());
 

@@ -469,12 +469,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs() * 1.5)
                 .DPIScaling(GetDPIScaleFactor())
                 .Anchoring(Anchoring::TopLeftCorner)
-                .LabelAlignment(TextAlignment::FlushLeft));
+                .LabelAlignment(TextAlignment::FlushLeft)
+                .FontColor(GetLeftYAxis().GetFontColor()));
         if (options.IsIncludingHeader())
             {
             legend->SetText(wxString::Format(L"%s\n", m_continuousColumn->GetName()) +
                             legend->GetText());
-            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
+            legend->GetHeaderInfo()
+                .Enable(true)
+                .LabelAlignment(TextAlignment::FlushLeft)
+                .FontColor(GetLeftYAxis().GetFontColor());
             }
         legend->GetLegendIcons().emplace_back(m_reversedColorSpectrum);
 
