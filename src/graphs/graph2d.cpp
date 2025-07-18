@@ -36,26 +36,25 @@ namespace Wisteria::Graphs
             // contrast a label if its font color (or background color, if in use)
             // is the same as the background
             if (label.GetFontBackgroundColor().IsOk() &&
-                label.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
+                !label.GetFontBackgroundColor().IsTransparent())
                 {
                 if (label.GetFontBackgroundColor() == GetPlotOrCanvasColor())
                     {
                     label.SetFontBackgroundColor(contrastingColor);
                     }
                 }
-            else if (label.GetFontColor().IsOk() &&
-                     label.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+            else if (label.GetFontColor().IsOk() && !label.GetFontColor().IsTransparent() &&
                      label.GetFontColor() == GetPlotOrCanvasColor())
                 {
                 label.SetFontColor(contrastingColor);
                 }
 
             if (label.GetHeaderInfo().IsEnabled() && label.GetHeaderInfo().GetFontColor().IsOk() &&
-                label.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                !label.GetHeaderInfo().GetFontColor().IsTransparent() &&
                 label.GetHeaderInfo().GetFontColor() == GetPlotOrCanvasColor() &&
                 // if a font background color is valid, then don't adjust the font color
                 !(label.GetFontBackgroundColor().IsOk() &&
-                  label.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT))
+                  !label.GetFontBackgroundColor().IsTransparent()))
                 {
                 label.GetHeaderInfo().FontColor(contrastingColor);
                 }
@@ -794,8 +793,7 @@ namespace Wisteria::Graphs
         AdjustPlotArea(dc);
 
         // fill in the plot area's color (if being used, by default it is transparent)
-        if (GetPlotBackgroundColor().IsOk() &&
-            GetPlotBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
+        if (GetPlotBackgroundColor().IsOk() && !GetPlotBackgroundColor().IsTransparent())
             {
             wxPoint boxPoints[4]{ { 0, 0 } };
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);

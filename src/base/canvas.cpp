@@ -550,26 +550,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         {
         const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
             GetBackgroundColor()) };
-        if (title.GetFontBackgroundColor().IsOk() &&
-            title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
+        if (title.GetFontBackgroundColor().IsOk() && !title.GetFontBackgroundColor().IsTransparent())
             {
             if (title.GetFontBackgroundColor() == GetBackgroundColor())
                 {
                 title.SetFontBackgroundColor(contrastingColor);
                 }
             }
-        else if (title.GetFontColor().IsOk() &&
-                 title.GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+        else if (title.GetFontColor().IsOk() && !title.GetFontColor().IsTransparent() &&
                  title.GetFontColor() == GetBackgroundColor())
             {
             title.SetFontColor(contrastingColor);
             }
         if (title.GetHeaderInfo().IsEnabled() && title.GetHeaderInfo().GetFontColor().IsOk() &&
-            title.GetHeaderInfo().GetFontColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+            !title.GetHeaderInfo().GetFontColor().IsTransparent() &&
             title.GetHeaderInfo().GetFontColor() == GetBackgroundColor() &&
             // if a font background color is valid, then don't adjust the font color
             !(title.GetFontBackgroundColor().IsOk() &&
-              title.GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT))
+              !title.GetFontBackgroundColor().IsTransparent()))
             {
             title.GetHeaderInfo().FontColor(contrastingColor);
             }

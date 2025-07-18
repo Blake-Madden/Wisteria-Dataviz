@@ -1164,8 +1164,7 @@ namespace Wisteria::GraphItems
         else if (IsSelected())
             {
             const bool penIsLight{
-                (GetFontBackgroundColor().IsOk() &&
-                 GetFontBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT &&
+                (GetFontBackgroundColor().IsOk() && !GetFontBackgroundColor().IsTransparent() &&
                  Wisteria::Colors::ColorContrast::IsLight(GetFontBackgroundColor())) ||
                 (GetFontColor().IsOk() && Wisteria::Colors::ColorContrast::IsLight(GetFontColor()))
             };

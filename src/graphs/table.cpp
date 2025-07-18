@@ -1438,7 +1438,7 @@ namespace Wisteria::Graphs
                         .DPIScaling(GetDPIScaleFactor())
                         .Font(cell.m_font)
                         .FontColor(((cell.m_bgColor.IsOk() &&
-                                     cell.m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
+                                     !cell.m_bgColor.IsTransparent()) ?
                                         ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
                                         Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                             GetPlotOrCanvasColor())))
@@ -1478,8 +1478,7 @@ namespace Wisteria::Graphs
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
                             .Font(cell.m_font)
-                            .FontColor(((cell.m_bgColor.IsOk() &&
-                                         cell.m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
+                            .FontColor(((cell.m_bgColor.IsOk() && !cell.m_bgColor.IsTransparent()) ?
                                             ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
                                             Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                                 GetPlotOrCanvasColor())))

@@ -384,8 +384,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxColour GetPlotOrCanvasColor() const noexcept
             {
-            return (GetPlotBackgroundColor().IsOk() &&
-                    GetPlotBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT) ?
+            return (GetPlotBackgroundColor().IsOk() && !GetPlotBackgroundColor().IsTransparent()) ?
                        GetPlotBackgroundColor() :
                    GetCanvas() != nullptr ? GetCanvas()->GetBackgroundColor() :
                                             GetPlotBackgroundColor();
