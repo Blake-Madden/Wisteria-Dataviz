@@ -164,35 +164,6 @@ int Wisteria::UI::BaseApp::OnExit()
     wxDELETE(m_docManager);
     wxDELETE(m_locale);
 
-// dump max memory usage
-#ifndef NDEBUG
-    #ifdef __WXMSW__
-    // https://docs.microsoft.com/en-us/windows/win32/psapi/collecting-memory-usage-information-for-a-process?redirectedfrom=MSDN
-    PROCESS_MEMORY_COUNTERS memCounter;
-    ::ZeroMemory(&memCounter, sizeof(PROCESS_MEMORY_COUNTERS));
-    if (::GetProcessMemoryInfo(::GetCurrentProcess(), &memCounter, sizeof(memCounter)))
-        {
-        const wxString memMsg = wxString::Format(
-            L"Peak Memory Usage: %.02f Gbs.",
-            // PeakWorkingSetSize is in bytes
-            safe_divide<double>(memCounter.PeakWorkingSetSize, 1024 * 1024 * 1024));
-        wxLogDebug(memMsg);
-        wxPrintf(memMsg + L"\n");
-        OutputDebugString(wxString{ memMsg + L"\n" }.wc_str());
-        }
-    #elif defined(__UNIX__)
-    rusage usage{};
-    memset(&usage, 0, sizeof(rusage));
-    if (getrusage(RUSAGE_SELF, &usage) == 0)
-        {
-        const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02f Gbs.",
-                                                 // ru_maxrss is in kilobytes
-                                                 safe_divide<double>(usage.ru_maxrss, 1024 * 1024));
-        wxLogDebug(memMsg);
-        wxPrintf(memMsg + L"\n");
-        }
-    #endif
-#endif
     return wxApp::OnExit();
     }
 

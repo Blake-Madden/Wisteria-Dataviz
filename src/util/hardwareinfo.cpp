@@ -24,6 +24,7 @@
 #endif // WX_PRECOMP
 
 #ifdef __WXMSW__
+    #include <psapi.h>
     #include <sysinfoapi.h>
     #include <windows.h>
 #elif defined(__APPLE__)
@@ -35,32 +36,53 @@
 
 namespace wxSystemHardwareInfo
     {
+    wxMemorySize GetPeakUsedMemory()
+        {
+#ifdef __WXMSW__
+        // https://docs.microsoft.com/en-us/windows/win32/psapi/collecting-memory-usage-information-for-a-process?redirectedfrom=MSDN
+        PROCESS_MEMORY_COUNTERS memCounter;
+        ::ZeroMemory(&memCounter, sizeof(PROCESS_MEMORY_COUNTERS));
+        if (::GetProcessMemoryInfo(::GetCurrentProcess(), &memCounter, sizeof(memCounter)))
+            {
+            // PeakWorkingSetSize is in bytes
+            return memCounter.PeakWorkingSetSize;
+            }
+#elif defined(__UNIX__)
+        rusage usage{};
+        memset(&usage, 0, sizeof(rusage));
+        if (getrusage(RUSAGE_SELF, &usage) == 0)
+            {
+            // ru_maxrss is in kilobytes
+            return usage.ru_maxrss * 1024;
+            }
+#endif
+        return -1;
+        }
+
     wxMemorySize GetMemory()
         {
-        wxMemorySize physicalMemory = -1;
-
 #ifdef __WXMSW__
         MEMORYSTATUSEX status{};
         status.dwLength = sizeof(status);
         if (::GlobalMemoryStatusEx(&status))
             {
-            physicalMemory = status.ullTotalPhys;
+            return status.ullTotalPhys;
             }
 #elif defined(__APPLE__)
         int64_t memSize = 0;
         size_t sizeOfRetVal = sizeof(memSize);
         if (sysctlbyname("hw.memsize", &memSize, &sizeOfRetVal, nullptr, 0) != -1)
             {
-            physicalMemory = memSize;
+            return memSize;
             }
 #elif defined(__UNIX__)
         struct sysinfo status{};
         if (sysinfo(&status) == 0)
             {
-            physicalMemory = status.totalram;
+            return status.totalram;
             }
 #endif
 
-        return physicalMemory;
+        return -1;
         }
     } // namespace wxSystemHardwareInfo

@@ -34,6 +34,8 @@ namespace wxSystemHardwareInfo
 
     wxMemorySize GetMemory();
 
+    wxMemorySize GetPeakUsedMemory();
+
     inline wxMemorySize GetFreeMemory() { return wxGetFreeMemory(); }
     } // namespace wxSystemHardwareInfo
 
