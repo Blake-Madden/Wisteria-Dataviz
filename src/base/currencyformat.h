@@ -38,13 +38,7 @@ namespace Wisteria
                     // to manually chop that off as best we can
                     if (noTrailingZeroes)
                         {
-                        /// @todo use wxNumberFormatter::RemoveTrailingZeroes if ever public
-                        const auto decimalPosition = result.rfind(
-                            wxString{ wxNumberFormatter::GetDecimalSeparator() }.append("00"));
-                        if (decimalPosition != wxString::npos)
-                            {
-                            result.erase(decimalPosition, 3);
-                            }
+                        wxNumberFormatter::RemoveTrailingZeroes(result);
                         }
                     return result;
                     }
