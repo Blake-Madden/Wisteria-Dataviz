@@ -1146,8 +1146,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     // Also, only use a shadow if the fill color is opaque and
                     // the bar block isn't too small.
                     if (GetShadowType() != ShadowType::NoDisplay && blockBrush.GetColour().IsOk() &&
-                        blockBrush.GetColour().IsOpaque() &&
-                        barBlock.GetLength() > rangeStart)
+                        blockBrush.GetColour().IsOpaque() && barBlock.GetLength() > rangeStart)
                         {
                         // in case this bar is way too small because of the
                         // scaling then don't bother with the shadow
@@ -1293,10 +1292,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
                     box->GetPen() != *wxTRANSPARENT_PEN)
                     {
-                    box->GetPen().SetColour(
-                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            *wxBLACK :
-                            *wxWHITE);
+                    box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                        GetPlotOrCanvasColor()));
                     }
 
                 // if the box is really thin, then don't use the outline pen on its sides
@@ -1332,9 +1329,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     if (!barBlock.GetOutlinePen().IsOk())
                         {
                         box->GetPen().SetColour(
-                            Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                                *wxBLACK :
-                                *wxWHITE);
+                            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()));
                         }
                     SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
                     }
@@ -1730,8 +1726,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     // polygons don't support drop shadows,
                     // so need to manually add a shadow as another polygon
                     if (GetShadowType() != ShadowType::NoDisplay && blockBrush.GetColour().IsOk() &&
-                        blockBrush.GetColour().IsOpaque() &&
-                        barBlock.GetLength() > rangeStart)
+                        blockBrush.GetColour().IsOpaque() && barBlock.GetLength() > rangeStart)
                         {
                         // in case this bar is way too small because of the scaling,
                         // then don't bother with the shadow
@@ -1875,10 +1870,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
                     box->GetPen() != *wxTRANSPARENT_PEN)
                     {
-                    box->GetPen().SetColour(
-                        Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            *wxBLACK :
-                            *wxWHITE);
+                    box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                        GetPlotOrCanvasColor()));
                     }
 
                 // if the box is really thin, then don't use the outline pen on the
@@ -1915,9 +1908,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     if (!barBlock.GetOutlinePen().IsOk())
                         {
                         box->GetPen().SetColour(
-                            Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                                *wxBLACK :
-                                *wxWHITE);
+                            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                GetPlotOrCanvasColor()));
                         }
                     SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
                     }
