@@ -46,6 +46,17 @@ add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
 set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 
+if(UNIX AND NOT APPLE)
+    # GTK 3 dependency
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+
+    # Setup CMake to use GTK+, tell the compiler where to look for headers
+    # and to the linker where to look for libraries
+    include_directories(${GTK3_INCLUDE_DIRS})
+    link_directories(${GTK3_LIBRARY_DIRS})
+endif()
+
 if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
     # OS version (this has to be set before the first project() call)
