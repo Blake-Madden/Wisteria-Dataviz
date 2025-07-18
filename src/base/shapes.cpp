@@ -3243,7 +3243,7 @@ namespace Wisteria::GraphItems
             gc->SetPen(*wxTRANSPARENT_PEN);
             wxBrush br{ GetGraphItemInfo().GetBrush() };
             // make the brush translucent (if not already so) to make it a watercolor brush
-            if (br.GetColour().Alpha() == wxALPHA_OPAQUE)
+            if (br.GetColour().IsOpaque())
                 {
                 br.SetColour(
                     ColorContrast::ChangeOpacity(br.GetColour(), Settings::GetTranslucencyValue()));

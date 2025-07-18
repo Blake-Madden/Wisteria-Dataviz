@@ -1003,7 +1003,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 barBlock.IsGhosted() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
                                                                    GetGhostOpacity()) :
-                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                barBlock.GetBrush().GetColour().IsOpaque() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
                                                                    bar.GetOpacity()) :
                     barBlock.GetBrush().GetColour();
@@ -1011,7 +1011,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 barBlock.IsGhosted() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
                                                                    GetGhostOpacity()) :
-                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                barBlock.GetBrush().GetColour().IsOpaque() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
                                                                    bar.GetOpacity()) :
                     barBlock.GetLightenedColor();
@@ -1146,7 +1146,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     // Also, only use a shadow if the fill color is opaque and
                     // the bar block isn't too small.
                     if (GetShadowType() != ShadowType::NoDisplay && blockBrush.GetColour().IsOk() &&
-                        blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
+                        blockBrush.GetColour().IsOpaque() &&
                         barBlock.GetLength() > rangeStart)
                         {
                         // in case this bar is way too small because of the
@@ -1317,7 +1317,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // along with a second coat, we will make the thick water color
                 // brush use a more opaque value than the system's default
                 if (bar.GetEffect() == BoxEffect::ThickWaterColor && box->GetBrush().IsOk() &&
-                    box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                    box->GetBrush().GetColour().IsOpaque() &&
                     Settings::GetTranslucencyValue() < 200)
                     {
                     box->GetBrush().SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(
@@ -1604,7 +1604,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 barBlock.IsGhosted() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
                                                                    GetGhostOpacity()) :
-                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                barBlock.GetBrush().GetColour().IsOpaque() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
                                                                    bar.GetOpacity()) :
                     barBlock.GetBrush().GetColour();
@@ -1612,7 +1612,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 barBlock.IsGhosted() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
                                                                    GetGhostOpacity()) :
-                barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                barBlock.GetBrush().GetColour().IsOpaque() ?
                     Wisteria::Colors::ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
                                                                    bar.GetOpacity()) :
                     barBlock.GetLightenedColor();
@@ -1730,7 +1730,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     // polygons don't support drop shadows,
                     // so need to manually add a shadow as another polygon
                     if (GetShadowType() != ShadowType::NoDisplay && blockBrush.GetColour().IsOk() &&
-                        blockBrush.GetColour().GetAlpha() == wxALPHA_OPAQUE &&
+                        blockBrush.GetColour().IsOpaque() &&
                         barBlock.GetLength() > rangeStart)
                         {
                         // in case this bar is way too small because of the scaling,
@@ -1900,7 +1900,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 // along with a second coat, we will make the thick water color
                 // brush use a more opaque value than the system's default
                 if (bar.GetEffect() == BoxEffect::ThickWaterColor && box->GetBrush().IsOk() &&
-                    box->GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE &&
+                    box->GetBrush().GetColour().IsOpaque() &&
                     Settings::GetTranslucencyValue() < 200)
                     {
                     box->GetBrush().SetColour(Wisteria::Colors::ColorContrast::ChangeOpacity(
