@@ -65,6 +65,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/variableselectdlg.cpp
     src/util/fileutil.cpp
     src/util/formulaformat.cpp
+    src/util/hardwareinfo.cpp
     src/util/i18n_string_util.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp

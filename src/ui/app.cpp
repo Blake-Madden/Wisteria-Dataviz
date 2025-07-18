@@ -8,15 +8,7 @@
 
 #include "app.h"
 #include "../base/label.h"
-#ifdef __WXMSW__
-    #include <debugapi.h>
-    #include <psapi.h>
-#elif defined(__APPLE__)
-    #include <sys/sysctl.h>
-#elif defined(__UNIX__)
-    #include <sys/resource.h>
-    #include <sys/sysinfo.h>
-#endif
+#include "../src/util/hardwareinfo.h"
 #include <wx/stc/stc.h>
 #include <wx/xml/xml.h>
 
@@ -72,33 +64,8 @@ bool Wisteria::UI::BaseApp::OnInit()
 #ifdef _OPENMP
     wxLogMessage(L"OpenMP Version: %s", std::to_wstring(_OPENMP));
 #endif
-#ifdef __WXMSW__
-    MEMORYSTATUSEX status{};
-    status.dwLength = sizeof(status);
-    if (::GlobalMemoryStatusEx(&status))
-        {
-        wxLogMessage(L"Physical Memory (Total): %.02f Gbs.",
-                     safe_divide<double>(status.ullTotalPhys, 1024 * 1024 * 1024));
-        wxLogMessage(L"Physical Memory (Available): %.02f Gbs.",
-                     safe_divide<double>(status.ullAvailPhys, 1024 * 1024 * 1024));
-        }
-#elif defined(__APPLE__)
-    int64_t retVal{ 0 };
-    size_t sizeOfRetVal{ sizeof(retVal) };
-    if (sysctlbyname("hw.memsize", &retVal, &sizeOfRetVal, nullptr, 0) != -1)
-        {
-        wxLogMessage(L"Physical Memory: %.02f Gbs.",
-                     safe_divide<double>(retVal, 1024 * 1024 * 1024));
-        }
-#elif defined(__UNIX__)
-    struct sysinfo status{};
-
-    if (sysinfo(&status) == 0)
-        {
-        wxLogMessage(L"Physical Memory: %.02f Gbs.",
-                     safe_divide<double>(status.totalram, 1024 * 1024 * 1024));
-        }
-#endif
+    wxLogMessage(L"Physical Memory: %.02f Gbs.",
+                 safe_divide<double>(wxSystemHardwareInfo::GetMemory(), 1024 * 1024 * 1024));
     if (wxGraphicsRenderer::GetDefaultRenderer())
         {
         wxLogMessage(L"Graphics Renderer: %s", wxGraphicsRenderer::GetDefaultRenderer()->GetName());
