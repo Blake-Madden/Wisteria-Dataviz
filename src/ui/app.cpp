@@ -8,7 +8,7 @@
 
 #include "app.h"
 #include "../base/label.h"
-#include "../src/util/hardwareinfo.h"
+#include "../util/hardwareinfo.h"
 #include <wx/stc/stc.h>
 #include <wx/xml/xml.h>
 
