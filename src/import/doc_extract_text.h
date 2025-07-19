@@ -579,7 +579,7 @@ namespace lily_of_the_valley
         ///     of the values was invalid.
         template<typename T>
         [[nodiscard]]
-        static inline constexpr T safe_modulus(const T dividend, const T divisor) noexcept
+        inline constexpr static T safe_modulus(const T dividend, const T divisor) noexcept
             {
             if (dividend == 0 || divisor == 0)
                 {
@@ -598,7 +598,7 @@ namespace lily_of_the_valley
         ///     then the result will retain its precision.
         template<typename T>
         [[nodiscard]]
-        static inline constexpr T safe_divide(const T dividend, const T divisor) noexcept
+        inline constexpr static T safe_divide(const T dividend, const T divisor) noexcept
             {
             if (dividend == 0 || divisor == 0)
                 {

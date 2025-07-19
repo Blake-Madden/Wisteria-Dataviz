@@ -97,8 +97,7 @@ namespace Wisteria
 
     //------------------------------------------------
     bool TextStream::CharStreamToUnicode(wchar_t* dest, const size_t destLength, const char* text,
-                                         const size_t length,
-                                         wxString srcCharSet /*= wxString{}*/)
+                                         const size_t length, wxString srcCharSet /*= wxString{}*/)
         {
         if (length == 0 || text == nullptr || destLength == 0 || dest == nullptr)
             {

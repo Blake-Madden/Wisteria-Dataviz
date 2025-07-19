@@ -248,7 +248,7 @@ namespace html_utilities
             @param ch The character to review.
             @returns Whether the character is illegal and needs to be encoded.*/
         [[nodiscard]]
-        constexpr static inline bool is_legal_url_character(const wchar_t ch)
+        inline constexpr static bool is_legal_url_character(const wchar_t ch)
             {
             return (((ch >= 0x41) && (ch <= 0x5A)) || // A-Z
                     ((ch >= 0x61) && (ch <= 0x7A)) || // a-1
@@ -505,7 +505,7 @@ namespace html_utilities
     /// @returns @c true if character is not safe to use in an URL.
     /// @param character The character to review.
     [[nodiscard]]
-    constexpr inline bool is_unsafe_uri_char(const wchar_t character)
+    inline constexpr bool is_unsafe_uri_char(const wchar_t character)
         {
         return (character > 127 /*extended ASCII*/ ||
                 character < 33 /*control characters and space*/);

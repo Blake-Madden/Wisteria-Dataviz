@@ -69,7 +69,7 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
                 return wxNullBitmap;
                 }
             wxLogDebug(L"%s extracted from file. Width=%d, Height=%d", filePath, img.GetWidth(),
-                         img.GetHeight());
+                       img.GetHeight());
             return m_imageMap[filePath] = wxBitmap(img);
             }
         // ...otherwise, load from the resource zip file
@@ -78,7 +78,7 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
             wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
             assert(bmp.IsOk() && "Failed to load image from resources!");
             wxLogDebug(L"%s extracted from resource file. Width=%d, Height=%d", filePath,
-                         bmp.GetWidth(), bmp.GetHeight());
+                       bmp.GetWidth(), bmp.GetHeight());
             return m_imageMap[filePath] = bmp;
             }
         }

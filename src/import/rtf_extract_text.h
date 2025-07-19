@@ -596,7 +596,7 @@ namespace lily_of_the_valley
                 (English alphabet only, and no full-width characters).
             @param ch The letter to be reviewed.*/
         [[nodiscard]]
-        static constexpr bool is_alpha_7bit(const wchar_t ch) noexcept
+        constexpr static bool is_alpha_7bit(const wchar_t ch) noexcept
             {
             return (((ch >= 0x41 /*'A'*/) && (ch <= 0x5A /*'Z'*/)) ||
                     ((ch >= 0x61 /*'a'*/) && (ch <= 0x7A /*'z'*/)));
@@ -605,7 +605,7 @@ namespace lily_of_the_valley
         /** @returns Whether a character is a number (narrow [0-9] characters only).
             @param ch The letter to be reviewed.*/
         [[nodiscard]]
-        static constexpr bool is_numeric_7bit(const wchar_t ch) noexcept
+        constexpr static bool is_numeric_7bit(const wchar_t ch) noexcept
             {
             return (ch >= L'0' && ch <= L'9') ? true : false;
             }
