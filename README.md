@@ -23,8 +23,8 @@ Wisteria Dataviz
 About
 =============================
 
-Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets). It includes features
-such as:
+Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets), with a focus on statistics and social sciences.
+It includes features such as:
 
 - Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
 - Interface for displaying tabular data

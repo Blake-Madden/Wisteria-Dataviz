@@ -200,9 +200,51 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
         }
 
     //----------------------------------------------------------------
+    void LixGauge::UpdateCustomAxes()
+        {
+        std::vector<double> activeScoreAreas;
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+            {
+            if (std::isnan(m_scoresColumn->GetValue(i)))
+                {
+                continue;
+                }
+            const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            const auto leftRulerAxisPos =
+                is_within<size_t>(std::make_pair(0, 19), currentScore)   ? 20 :
+                is_within<size_t>(std::make_pair(20, 29), currentScore)  ? 30 :
+                is_within<size_t>(std::make_pair(30, 39), currentScore)  ? 40 :
+                is_within<size_t>(std::make_pair(40, 49), currentScore)  ? 50 :
+                is_within<size_t>(std::make_pair(50, 100), currentScore) ? 60 :
+                                                                           60;
+            activeScoreAreas.push_back(leftRulerAxisPos);
+            // labels on the other side of the score
+            activeScoreAreas.push_back(leftRulerAxisPos - 5);
+            }
+        if (IsShowcasingScore())
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.ShowcaseAxisPoints(activeScoreAreas);
+                customAxis.ShowcaseBrackets(activeScoreAreas);
+                }
+            }
+        // reset if previously showcasing items
+        else
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.GhostAllAxisPoints(false);
+                customAxis.GhostAllBrackets(false);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void LixGauge::RecalcSizes(wxDC & dc)
         {
         AdjustAxes();
+        UpdateCustomAxes();
 
         Graph2D::RecalcSizes(dc);
 
