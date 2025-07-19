@@ -64,8 +64,11 @@ bool Wisteria::UI::BaseApp::OnInit()
 #ifdef _OPENMP
     wxLogMessage(L"OpenMP Version: %s", std::to_wstring(_OPENMP));
 #endif
-    wxLogMessage(L"Physical Memory: %.02f Gbs.",
-                 safe_divide<double>(wxSystemHardwareInfo::GetMemory(), 1024 * 1024 * 1024));
+    if (const auto physicalMemory = wxSystemHardwareInfo::GetMemory(); physicalMemory != -1)
+        {
+        wxLogMessage(L"Physical Memory: %s",
+                     wxFileName::GetHumanReadableSize(static_cast<wxULongLong>(physicalMemory)));
+        }
     if (wxGraphicsRenderer::GetDefaultRenderer())
         {
         wxLogMessage(L"Graphics Renderer: %s", wxGraphicsRenderer::GetDefaultRenderer()->GetName());
