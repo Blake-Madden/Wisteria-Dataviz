@@ -10,7 +10,6 @@
 #include "../base/label.h"
 #include "../util/hardwareinfo.h"
 #include <wx/stc/stc.h>
-#include <wx/webrequest.h>
 #include <wx/xml/xml.h>
 
 /// @brief Temporarily turn off AppName being appended to @c wxStandardPaths calls.
