@@ -10,6 +10,7 @@
 #include "../base/label.h"
 #include "../util/hardwareinfo.h"
 #include <wx/stc/stc.h>
+#include <wx/webrequest.h>
 #include <wx/xml/xml.h>
 
 /// @brief Temporarily turn off AppName being appended to @c wxStandardPaths calls.
@@ -66,8 +67,9 @@ bool Wisteria::UI::BaseApp::OnInit()
 #endif
     if (const auto physicalMemory = wxSystemHardwareInfo::GetMemory(); physicalMemory != -1)
         {
-        wxLogMessage(L"Physical Memory: %s",
-                     wxFileName::GetHumanReadableSize(static_cast<wxULongLong>(physicalMemory)));
+        wxLogMessage(
+            L"Physical Memory: %s",
+            wxFileName::GetHumanReadableSize(static_cast<wxULongLong>(physicalMemory.GetValue())));
         }
     if (wxGraphicsRenderer::GetDefaultRenderer())
         {
