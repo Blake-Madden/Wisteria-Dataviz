@@ -39,9 +39,8 @@ namespace lily_of_the_valley
             @param skipRows The number of rows to skip before reading the text.
             @warning Setting @c storeRowInfo to @c true will impact the preview's performance.*/
         [[nodiscard]]
-        size_t
-        operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
-                   const bool ignoreBlankLines, const bool storeRowInfo, size_t skipRows = 0)
+        size_t operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
+                          const bool ignoreBlankLines, const bool storeRowInfo, size_t skipRows = 0)
             {
             assert(text);
             m_header_names.clear();

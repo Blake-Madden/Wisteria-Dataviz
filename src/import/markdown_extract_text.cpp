@@ -84,7 +84,8 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
         std::advance(endOfTag, 1);
         }
 
-    [[maybe_unused]] auto retval = m_subParser->operator()(
+    [[maybe_unused]]
+    auto retval = m_subParser->operator()(
         { m_currentStart, static_cast<size_t>(std::distance(m_currentStart, endOfTag)) });
     add_characters({ m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
     m_currentStart = endOfTag;
@@ -376,8 +377,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     {
                     m_currentStart = endOfTag + 3;
                     }
-                else if (const auto echoFalse =
-                             std::wcsstr(m_currentStart, L"#| echo: false");
+                else if (const auto echoFalse = std::wcsstr(m_currentStart, L"#| echo: false");
                          echoFalse != nullptr && echoFalse < endOfTag)
                     {
                     m_currentStart = endOfTag + 3;
@@ -454,7 +454,8 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                             log_message(L"Bad 'r keys' code block in markdown file.");
                             break;
                             }
-                        [[maybe_unused]] auto retval = m_subParser->operator()(
+                        [[maybe_unused]]
+                        auto retval = m_subParser->operator()(
                             { m_currentStart,
                               static_cast<size_t>(std::distance(m_currentStart, endOfTag)) });
                         add_character(L'"');
@@ -500,7 +501,8 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                             log_message(L"Bad 'r dropcap' code block in markdown file.");
                             break;
                             }
-                        [[maybe_unused]] auto retval = m_subParser->operator()(
+                        [[maybe_unused]]
+                        auto retval = m_subParser->operator()(
                             { m_currentStart,
                               static_cast<size_t>(std::distance(m_currentStart, endOfTag)) });
                         add_character(L'"');
@@ -542,7 +544,8 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                             log_message(L"Bad 'r menu' code block in markdown file.");
                             break;
                             }
-                        [[maybe_unused]] auto retval = m_subParser->operator()(
+                        [[maybe_unused]]
+                        auto retval = m_subParser->operator()(
                             { m_currentStart,
                               static_cast<size_t>(std::distance(m_currentStart, endOfTag - 1)) });
                         add_characters({ m_subParser->get_filtered_text(),
@@ -693,7 +696,8 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     m_currentStart = ++endOfTag;
                     if (labelStart < labelEnd)
                         {
-                        [[maybe_unused]] auto retval = m_subParser->operator()(
+                        [[maybe_unused]]
+                        auto retval = m_subParser->operator()(
                             { labelStart,
                               static_cast<size_t>(std::distance(labelStart, labelEnd)) });
                         add_characters({ m_subParser->get_filtered_text(),

@@ -1322,10 +1322,7 @@ namespace Wisteria::Graphs
         ///     only the numeric value of the bar. In other words, this will only apply for
         ///     BinLabelDisplay::BinValue.\n
         ///     Also, only NumberDisplay::Currency and NumberDisplay::Value are supported.
-        void SetNumerDisplay(const NumberDisplay display)
-            {
-            m_numberLabelDisplay = display;
-            }
+        void SetNumerDisplay(const NumberDisplay display) { m_numberLabelDisplay = display; }
 
         /// @returns The suffix being added to each bar label.
         [[nodiscard]]

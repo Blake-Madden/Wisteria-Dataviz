@@ -619,7 +619,8 @@ namespace Wisteria::Graphs
 
         /// @private
         [[deprecated("Use AddAnnotation() instead.")]]
-        void AddEmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object, const wxPoint pt,
+        void AddEmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
+                               const wxPoint pt,
                                const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             {
             AddAnnotation(object, pt, interestPts);

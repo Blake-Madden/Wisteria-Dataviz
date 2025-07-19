@@ -464,7 +464,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Mirrors percentages passed to GetXPosFromLeft() or GetYPosFromTop().
         [[nodiscard]]
-        static constexpr double Mirror(const double percent) noexcept
+        constexpr static double Mirror(const double percent) noexcept
             {
             return 1.0 - percent;
             }

@@ -1244,8 +1244,7 @@ namespace string_util
         /// @returns @c true if initial value is the same the pair's key.
         /// @param val The pair to compare against.
         [[nodiscard]]
-        bool
-        operator()(const std::pair<TKey, TVal>& val) const noexcept
+        bool operator()(const std::pair<TKey, TVal>& val) const noexcept
             {
             return (string_util::stricmp(val.first.c_str(), m_key.c_str()) == 0);
             }
@@ -1259,8 +1258,7 @@ namespace string_util
         {
       public:
         [[nodiscard]]
-        bool
-        operator()(const T& a_, const T& b_) const
+        bool operator()(const T& a_, const T& b_) const
             {
             return (a_.compare(b_) < 0);
             }
@@ -1271,8 +1269,7 @@ namespace string_util
         {
       public:
         [[nodiscard]]
-        bool
-        operator()(const T& a_, const T& b_) const noexcept
+        bool operator()(const T& a_, const T& b_) const noexcept
             {
             return (string_util::stricmp(a_.c_str(), b_.c_str()) < 0);
             }
@@ -1283,8 +1280,7 @@ namespace string_util
         {
       public:
         [[nodiscard]]
-        bool
-        operator()(const T* a_, const T* b_) const
+        bool operator()(const T* a_, const T* b_) const
             {
             return (string_util::strnatordncasecmp(a_, b_) < 0);
             }
@@ -1334,9 +1330,8 @@ namespace string_util
     template<typename string_typeT>
     void ltrim(string_typeT& str)
         {
-        str.erase(str.begin(),
-                  std::find_if(str.begin(), str.end(),
-                               [](wchar_t ch) noexcept { return !std::iswspace(ch); }));
+        str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](wchar_t ch) noexcept
+                                            { return !std::iswspace(ch); }));
         }
 
     /// @brief Trims right side of @c str (in-place).
@@ -1785,16 +1780,14 @@ namespace string_util
       public:
         /// @private
         [[nodiscard]]
-        bool
-        operator()(const std::wstring_view lhs, const std::wstring_view rhs) const noexcept
+        bool operator()(const std::wstring_view lhs, const std::wstring_view rhs) const noexcept
             {
             return string_util::stricmp(lhs.data(), rhs.data()) < 0;
             }
 
         /// @private
         [[nodiscard]]
-        bool
-        operator()(const std::wstring& lhs, const std::wstring& rhs) const noexcept
+        bool operator()(const std::wstring& lhs, const std::wstring& rhs) const noexcept
             {
             return string_util::stricmp(lhs.c_str(), rhs.c_str()) < 0;
             }

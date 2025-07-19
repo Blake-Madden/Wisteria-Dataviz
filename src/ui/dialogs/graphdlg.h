@@ -86,9 +86,8 @@ namespace Wisteria::UI
             m_canvas->SetFixedObjectsGridSize(1, 1);
             mainSizer->Add(m_canvas, wxSizerFlags{ 1 }.Expand().Border());
 
-            mainSizer->Add(
-                new wxStaticLine(this),
-                wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
+            mainSizer->Add(new wxStaticLine(this),
+                           wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
             wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
                 {
                 wxButton* button = new wxButton(this, wxID_PRINT);

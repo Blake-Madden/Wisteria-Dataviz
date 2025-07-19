@@ -10,6 +10,7 @@
 
 namespace lily_of_the_valley
     {
+    // clang-format off
     rtf_to_text_symbol_table::rtf_to_text_symbol_table()
         {
         // keyword     dflt    fPassDflt   kwd         idx         printString
@@ -226,7 +227,7 @@ namespace lily_of_the_valley
             rtf_symbol("row", 0, false, KWD::kwdChar, 0x0a, L""),
             rtf_symbol("nestrow", 0, false, KWD::kwdChar, 0x0a, L"") };
         }
-
+        
     /// @private
     const rtf_to_text_symbol_table rtf_extract_text::RTF_TO_TEXT_TABLE;
     /// @private
@@ -262,25 +263,28 @@ namespace lily_of_the_valley
         {ACTN::actnSpec,   PROPTYPE::propChp,    0},                          // ipropPlain
         {ACTN::actnSpec,   PROPTYPE::propSep,    0}                           // ipropSectd
         };
-
+    // clang-format on
     //------------------------------------------------
+
     rtf_extract_text::rtf_extract_text(
-        const rtf_extraction_type& extraction_type /*= rtf_extraction_type::rtf_to_text*/) noexcept :
-        m_extraction_type(extraction_type),
-        m_ris(RIS::risNorm), m_rds(RDS::rdsNorm),
-        m_cGroup(0), m_psave(nullptr),
-        m_fSkipDestIfUnk(0), m_cbBin(0), m_lParam(0),
-        m_rtf_text(nullptr), m_paragraphCount(0), m_font_size(12),
-        m_keyword_command_table(nullptr), m_in_bullet_state(false)
+        const rtf_extraction_type& extraction_type /*= rtf_extraction_type::rtf_to_text*/) noexcept
+        : m_extraction_type(extraction_type), m_ris(RIS::risNorm), m_rds(RDS::rdsNorm), m_cGroup(0),
+          m_psave(nullptr), m_fSkipDestIfUnk(0), m_cbBin(0), m_lParam(0), m_rtf_text(nullptr),
+          m_paragraphCount(0), m_font_size(12), m_keyword_command_table(nullptr),
+          m_in_bullet_state(false)
         {
         reset_property(m_chp);
         reset_property(m_pap);
         reset_property(m_sep);
         reset_property(m_dop);
         if (extraction_type == rtf_extraction_type::rtf_to_text)
-            { m_keyword_command_table = &RTF_TO_TEXT_TABLE; }
+            {
+            m_keyword_command_table = &RTF_TO_TEXT_TABLE;
+            }
         else
-            { m_keyword_command_table = &RTF_TO_HTML_TABLE; }
+            {
+            m_keyword_command_table = &RTF_TO_HTML_TABLE;
+            }
         }
 
     //------------------------------------------------
@@ -296,7 +300,7 @@ namespace lily_of_the_valley
             return nullptr;
             }
         const char* const endSentinel = text + text_length;
-        // read the metadata
+            // read the metadata
             {
             rtf_extract_text parseRtfMetaData;
             const char* infoSection = std::strstr(text, "{\\info");
@@ -311,15 +315,15 @@ namespace lily_of_the_valley
                         {
                         // title
                         const char* titleSection = std::strstr(infoSection, "{\\title");
-                        if (titleSection && titleSection+7 < infoSectionEnd)
+                        if (titleSection && titleSection + 7 < infoSectionEnd)
                             {
                             titleSection += 7;
                             const char* const titleSectionEnd =
                                 string_util::find_unescaped_char(titleSection, '}');
                             if (titleSectionEnd && titleSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(titleSection,
-                                                                  titleSectionEnd-titleSection);
+                                auto metaValue =
+                                    parseRtfMetaData(titleSection, titleSectionEnd - titleSection);
                                 if (metaValue)
                                     {
                                     m_title.assign(metaValue);
@@ -330,15 +334,15 @@ namespace lily_of_the_valley
                             }
                         // subject
                         const char* subjectSection = std::strstr(infoSection, "{\\subject");
-                        if (subjectSection && subjectSection+9 < infoSectionEnd)
+                        if (subjectSection && subjectSection + 9 < infoSectionEnd)
                             {
                             subjectSection += 9;
                             const char* const subjectSectionEnd =
                                 string_util::find_unescaped_char(subjectSection, '}');
                             if (subjectSectionEnd && subjectSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(subjectSection,
-                                                                  subjectSectionEnd-subjectSection);
+                                auto metaValue = parseRtfMetaData(
+                                    subjectSection, subjectSectionEnd - subjectSection);
                                 if (metaValue)
                                     {
                                     m_subject.assign(metaValue);
@@ -349,7 +353,7 @@ namespace lily_of_the_valley
                             }
                         // author
                         const char* authorSection = std::strstr(infoSection, "{\\author");
-                        if (authorSection && authorSection+8 < infoSectionEnd)
+                        if (authorSection && authorSection + 8 < infoSectionEnd)
                             {
                             authorSection += 8;
                             const char* const authorSectionEnd =
@@ -357,7 +361,7 @@ namespace lily_of_the_valley
                             if (authorSectionEnd && authorSectionEnd < infoSectionEnd)
                                 {
                                 auto metaValue = parseRtfMetaData(authorSection,
-                                                                  authorSectionEnd-authorSection);
+                                                                  authorSectionEnd - authorSection);
                                 if (metaValue)
                                     {
                                     m_author.assign(metaValue);
@@ -368,15 +372,15 @@ namespace lily_of_the_valley
                             }
                         // keywords
                         const char* keywordsSection = std::strstr(infoSection, "{\\keywords");
-                        if (keywordsSection && keywordsSection+10 < infoSectionEnd)
+                        if (keywordsSection && keywordsSection + 10 < infoSectionEnd)
                             {
                             keywordsSection += 10;
                             const char* const keywordsSectionEnd =
                                 string_util::find_unescaped_char(keywordsSection, '}');
                             if (keywordsSectionEnd && keywordsSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(keywordsSection,
-                                                                  keywordsSectionEnd-keywordsSection);
+                                auto metaValue = parseRtfMetaData(
+                                    keywordsSection, keywordsSectionEnd - keywordsSection);
                                 if (metaValue)
                                     {
                                     m_keywords.assign(metaValue);
@@ -387,15 +391,15 @@ namespace lily_of_the_valley
                             }
                         // comments
                         const char* commentsSection = std::strstr(infoSection, "{\\doccomm");
-                        if (commentsSection && commentsSection+9 < infoSectionEnd)
+                        if (commentsSection && commentsSection + 9 < infoSectionEnd)
                             {
                             commentsSection += 9;
                             const char* const commentsSectionEnd =
                                 string_util::find_unescaped_char(commentsSection, '}');
                             if (commentsSectionEnd && commentsSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(commentsSection,
-                                                                  commentsSectionEnd-commentsSection);
+                                auto metaValue = parseRtfMetaData(
+                                    commentsSection, commentsSectionEnd - commentsSection);
                                 if (metaValue)
                                     {
                                     m_comments.assign(metaValue);
@@ -406,7 +410,9 @@ namespace lily_of_the_valley
                             }
                         }
                     catch (...)
-                        { log_message(L"Error reading metadata from RTF."); }
+                        {
+                        log_message(L"Error reading metadata from RTF.");
+                        }
                     }
                 }
             }
@@ -428,16 +434,22 @@ namespace lily_of_the_valley
                         // see where this current font ends
                         const char* endOfFont = std::strchr(currentChar, ';');
                         if (!endOfFont || endOfFont >= fontTableEnd)
-                            { break; }
-                        std::string fontText(currentChar, endOfFont-currentChar);
+                            {
+                            break;
+                            }
+                        std::string fontText(currentChar, endOfFont - currentChar);
                         // the face name is at the end after the charset, so substring that out
                         size_t lastSection = fontText.rfind('\\');
                         if (lastSection == std::string::npos)
-                            { break; }
+                            {
+                            break;
+                            }
                         lastSection = fontText.find(' ', lastSection);
                         if (lastSection == std::string::npos)
-                            { break; }
- 
+                            {
+                            break;
+                            }
+
                         m_font_table.push_back(fontText.substr(++lastSection));
 
                         currentChar = std::strchr(endOfFont, '{');
@@ -461,27 +473,32 @@ namespace lily_of_the_valley
                         // red component
                         currentChar = std::strstr(currentChar, "red");
                         if (!currentChar || currentChar >= colorTableEnd)
-                            { break; }
-                        color.red = std::atoi(currentChar+3);
+                            {
+                            break;
+                            }
+                        color.red = std::atoi(currentChar + 3);
                         // green component
                         currentChar = std::strstr(currentChar, "green");
                         if (!currentChar || currentChar >= colorTableEnd)
-                            { break; }
-                        color.green = std::atoi(currentChar+5);
+                            {
+                            break;
+                            }
+                        color.green = std::atoi(currentChar + 5);
                         // blue component
                         currentChar = std::strstr(currentChar, "blue");
                         if (!currentChar || currentChar >= colorTableEnd)
-                            { break; }
-                        color.blue = std::atoi(currentChar+4);
+                            {
+                            break;
+                            }
+                        color.blue = std::atoi(currentChar + 4);
                         // format the color for the HTML converter
                         /// @todo Use new format library from C++20 when the time comes
                         std::wstringstream webColorFormatStream;
-                        webColorFormatStream << std::uppercase << std::setfill(L'0') << std::hex << std::setw(2)
-                            << color.red
-                            << std::uppercase << std::setfill(L'0') << std::hex << std::setw(2)
-                            << color.green
-                            << std::uppercase << std::setfill(L'0') << std::hex << std::setw(2)
-                            << color.blue;
+                        webColorFormatStream << std::uppercase << std::setfill(L'0') << std::hex
+                                             << std::setw(2) << color.red << std::uppercase
+                                             << std::setfill(L'0') << std::hex << std::setw(2)
+                                             << color.green << std::uppercase << std::setfill(L'0')
+                                             << std::hex << std::setw(2) << color.blue;
                         color.web_color = webColorFormatStream.str();
                         m_color_table.push_back(color);
 
@@ -493,15 +510,15 @@ namespace lily_of_the_valley
             // (note this is pre-filled with default white background and black foreground styles).
             m_style_section += L"." + m_style_prefix + L"bc0 {background-color:#FFFFFF;}\n." +
                                m_style_prefix + L"fc0 {color:#000000;}";
-            for (auto colorPos = m_color_table.cbegin();
-                 colorPos != m_color_table.cend(); ++colorPos)
+            for (auto colorPos = m_color_table.cbegin(); colorPos != m_color_table.cend();
+                 ++colorPos)
                 {
                 m_style_section += L"\n." + m_style_prefix + L"bc" +
-                    std::to_wstring((colorPos-m_color_table.begin())+1) +
-                    L" {background-color:#" + colorPos->web_color + L";}\n" +
-                    L"." + m_style_prefix + L"fc" +
-                    std::to_wstring((colorPos-m_color_table.begin())+1) + L" {color:#" +
-                    colorPos->web_color + L";}";
+                                   std::to_wstring((colorPos - m_color_table.begin()) + 1) +
+                                   L" {background-color:#" + colorPos->web_color + L";}\n" + L"." +
+                                   m_style_prefix + L"fc" +
+                                   std::to_wstring((colorPos - m_color_table.begin()) + 1) +
+                                   L" {color:#" + colorPos->web_color + L";}";
                 }
             // find the first paragraph color and we will just use this for the rest of the document
             const char* textColor = std::strstr(text, "\\par");
@@ -511,10 +528,12 @@ namespace lily_of_the_valley
                 textColor = std::strstr(textColor, "\\cf");
                 if (textColor && nextSpace && (textColor < nextSpace))
                     {
-                    const int idx = std::atoi(textColor+3);
+                    const int idx = std::atoi(textColor + 3);
                     // color table is one-base indexed
                     if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
-                        { m_text_color = m_color_table[static_cast<size_t>(idx)-1]; }
+                        {
+                        m_text_color = m_color_table[static_cast<size_t>(idx) - 1];
+                        }
                     }
                 }
             }
@@ -529,7 +548,9 @@ namespace lily_of_the_valley
             {
             int ch = *(m_rtf_text);
             if (m_cGroup < 0)
-                { throw rtfparse_stack_underflow(); }
+                {
+                throw rtfparse_stack_underflow();
+                }
 
             if (m_ris == RIS::risBin) // if we're parsing binary data, handle it directly
                 {
@@ -566,7 +587,9 @@ namespace lily_of_the_valley
                         {
                         // parsing hex data
                         if (m_ris != RIS::risHex)
-                            { throw rtfparse_assertion(); }
+                            {
+                            throw rtfparse_assertion();
+                            }
                         ++m_rtf_text;
                         // copy over the next two bytes
                         char hexBuffer[3]{ 0 };
@@ -577,12 +600,12 @@ namespace lily_of_the_valley
                         ch = static_cast<int>(std::strtol(hexBuffer, &dummy, 16));
                         ecParseChar(ch);
                         m_ris = RIS::risNorm;
-                        }// end else (m_ris != risNorm)
+                        } // end else (m_ris != risNorm)
                     break;
-                    }// switch
-                }// else (m_ris != risBin)
+                    } // switch
+                } // else (m_ris != risBin)
             ++m_rtf_text;
-            }// while
+            } // while
         if (m_cGroup < 0)
             {
             throw rtfparse_stack_underflow();
@@ -619,7 +642,9 @@ namespace lily_of_the_valley
     void rtf_extract_text::ecPopRtfState()
         {
         if (!m_psave)
-            { throw rtfparse_stack_underflow(); }
+            {
+            throw rtfparse_stack_underflow();
+            }
 
         m_chp = m_psave->chp;
         m_pap = m_psave->pap;
@@ -635,7 +660,9 @@ namespace lily_of_the_valley
 
         const auto closedStackSpans = m_command_stacks.close_stack();
         if (m_extraction_type == rtf_extraction_type::rtf_to_html)
-            { ecPrintString(closedStackSpans.c_str(), closedStackSpans.length()); }
+            {
+            ecPrintString(closedStackSpans.c_str(), closedStackSpans.length());
+            }
         }
 
     //------------------------------------------------
@@ -650,7 +677,9 @@ namespace lily_of_the_valley
 
         ++m_rtf_text;
         if (*m_rtf_text == 0)
-            { return; }
+            {
+            return;
+            }
         int ch = *m_rtf_text;
 
         if (!is_alpha_7bit(static_cast<wchar_t>(ch))) // a control symbol; no delimiter.
@@ -660,12 +689,12 @@ namespace lily_of_the_valley
             ecTranslateKeyword(szKeyword, 0, fParam);
             return;
             }
-        for (pch = szKeyword;
-            is_alpha_7bit(static_cast<wchar_t>(ch));
-            ch = *(++m_rtf_text))
+        for (pch = szKeyword; is_alpha_7bit(static_cast<wchar_t>(ch)); ch = *(++m_rtf_text))
             {
             if (*m_rtf_text == 0)
-                { return; }
+                {
+                return;
+                }
             *pch++ = static_cast<char>(ch);
             }
 
@@ -675,29 +704,37 @@ namespace lily_of_the_valley
             fNeg = true;
             ch = *(++m_rtf_text);
             if (*m_rtf_text == 0)
-                { return; }
+                {
+                return;
+                }
             }
         if (is_numeric_7bit(static_cast<wchar_t>(ch)))
             {
             fParam = true; // a digit after the control means we have a parameter
-            for (pch = szParameter;
-                is_numeric_7bit(static_cast<wchar_t>(ch));
-                ch = *(++m_rtf_text))
+            for (pch = szParameter; is_numeric_7bit(static_cast<wchar_t>(ch)); ch = *(++m_rtf_text))
                 {
                 if (*m_rtf_text == 0)
-                    { return; }
+                    {
+                    return;
+                    }
                 *pch++ = static_cast<char>(ch);
                 }
             *pch = 0;
             param = std::atoi(szParameter);
             if (fNeg)
-                { param = -param; }
+                {
+                param = -param;
+                }
             m_lParam = std::atol(szParameter);
             if (fNeg)
-                { m_lParam = -m_lParam; }
+                {
+                m_lParam = -m_lParam;
+                }
             }
         if (ch != ' ')
-            { --m_rtf_text;}
+            {
+            --m_rtf_text;
+            }
 
         if (m_extraction_type == rtf_extraction_type::rtf_to_html &&
             (std::strcmp(szKeyword, "par") == 0 || std::strcmp(szKeyword, "pard") == 0))
@@ -718,9 +755,10 @@ namespace lily_of_the_valley
                 while (++nextKeyword)
                     {
                     // eat up the whitespace
-                    if (nextKeyword[0] == 0 ||
-                        !std::iswspace(static_cast<wchar_t>(nextKeyword[0])))
-                        { break; }
+                    if (nextKeyword[0] == 0 || !std::iswspace(static_cast<wchar_t>(nextKeyword[0])))
+                        {
+                        break;
+                        }
                     }
                 /* if the next keyword is a new paragraph then this one must be empty
                    (and not properly terminated!), so change it to a line break*/
@@ -769,33 +807,54 @@ namespace lily_of_the_valley
                     ecPrintChar(static_cast<wchar_t>(ch));
                     }
                 else if (ch == '<')
-                    { ecPrintString(L"&#60;", 5); }
+                    {
+                    ecPrintString(L"&#60;", 5);
+                    }
                 else if (ch == '>')
-                    { ecPrintString(L"&#62;", 5); }
+                    {
+                    ecPrintString(L"&#62;", 5);
+                    }
                 else if (ch == '\"')
-                    { ecPrintString(L"&#34;", 5); }
+                    {
+                    ecPrintString(L"&#34;", 5);
+                    }
                 else if (ch == '&')
-                    { ecPrintString(L"&#38;", 5); }
+                    {
+                    ecPrintString(L"&#38;", 5);
+                    }
                 else if (ch == '\'')
-                    { ecPrintString(L"&#39;", 5); }
+                    {
+                    ecPrintString(L"&#39;", 5);
+                    }
                 else if (ch == ' ')
                     {
-                    // if following another space or a no break space, then encode it as a no break space
+                    // if following another space or a no break space, then encode it as a no break
+                    // space
                     if (get_filtered_text_length() > 0 &&
-                        get_filtered_text()[get_filtered_text_length() -1] == L' ')
-                        { ecPrintString(L"&nbsp;", 6); }
+                        get_filtered_text()[get_filtered_text_length() - 1] == L' ')
+                        {
+                        ecPrintString(L"&nbsp;", 6);
+                        }
                     else if (get_filtered_text_length() >= 6 &&
-                                std::wcsncmp(get_filtered_text() +
-                                (get_filtered_text_length()-6), L"&nbsp;", 6) == 0)
-                        { ecPrintString(L"&nbsp;", 6); }
+                             std::wcsncmp(get_filtered_text() + (get_filtered_text_length() - 6),
+                                          L"&nbsp;", 6) == 0)
+                        {
+                        ecPrintString(L"&nbsp;", 6);
+                        }
                     else
-                        { ecPrintChar(static_cast<wchar_t>(ch)); }
+                        {
+                        ecPrintChar(static_cast<wchar_t>(ch));
+                        }
                     }
                 else
-                    { ecPrintChar(static_cast<wchar_t>(ch)); }
+                    {
+                    ecPrintChar(static_cast<wchar_t>(ch));
+                    }
                 }
             else
-                { ecPrintChar(static_cast<wchar_t>(ch)); }
+                {
+                ecPrintChar(static_cast<wchar_t>(ch));
+                }
             break;
         default:
             // handle other destinations....
@@ -832,7 +891,9 @@ namespace lily_of_the_valley
         assert(htmlCmd && std::wcslen(htmlCmd) == htmlCmdLength);
 
         if (m_ris == RIS::risBin && --m_cbBin <= 0)
-            { m_ris = RIS::risNorm; }
+            {
+            m_ris = RIS::risNorm;
+            }
         switch (m_rds)
             {
         case RDS::rdsSkip:
@@ -855,7 +916,9 @@ namespace lily_of_the_valley
     void rtf_extract_text::ecProcessFontColor(const int idx)
         {
         if (m_ris == RIS::risBin && --m_cbBin <= 0)
-            { m_ris = RIS::risNorm; }
+            {
+            m_ris = RIS::risNorm;
+            }
         switch (m_rds)
             {
         case RDS::rdsSkip:
@@ -870,8 +933,8 @@ namespace lily_of_the_valley
                 // first color in the table.
                 if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
                     {
-                    const std::wstring colorCmd = L"<span class=\"" + m_style_prefix +
-                                                  L"fc" + std::to_wstring(idx) + L"\">";
+                    const std::wstring colorCmd =
+                        L"<span class=\"" + m_style_prefix + L"fc" + std::to_wstring(idx) + L"\">";
                     ecPrintString(colorCmd.c_str(), colorCmd.length());
                     m_command_stacks.add_command();
                     }
@@ -887,7 +950,9 @@ namespace lily_of_the_valley
     void rtf_extract_text::ecProcessHighlight(const int idx)
         {
         if (m_ris == RIS::risBin && --m_cbBin <= 0)
-            { m_ris = RIS::risNorm; }
+            {
+            m_ris = RIS::risNorm;
+            }
         switch (m_rds)
             {
         case RDS::rdsSkip:
@@ -902,8 +967,8 @@ namespace lily_of_the_valley
                 // first color in the table.
                 if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
                     {
-                    const std::wstring colorCmd = L"<span class=\"" + m_style_prefix +
-                                                  L"bc" + std::to_wstring(idx) + L"\">";
+                    const std::wstring colorCmd =
+                        L"<span class=\"" + m_style_prefix + L"bc" + std::to_wstring(idx) + L"\">";
                     ecPrintString(colorCmd.c_str(), colorCmd.length());
                     m_command_stacks.add_command();
                     }
@@ -918,10 +983,12 @@ namespace lily_of_the_valley
     //------------------------------------------------
     void rtf_extract_text::ecApplyPropChange(IPROP iprop, int val)
         {
-        char *pb = nullptr;
+        char* pb = nullptr;
 
-        if (m_rds == RDS::rdsSkip)     // If we're skipping text,
-            return;                    // don't do anything.
+        if (m_rds == RDS::rdsSkip) // If we're skipping text,
+            {
+            return; // don't do anything.
+            }
 
         switch (static_cast<int>(rgprop[static_cast<int>(iprop)].prop))
             {
@@ -939,12 +1006,16 @@ namespace lily_of_the_valley
             break;
         default:
             if (rgprop[static_cast<int>(iprop)].actn != ACTN::actnSpec)
-                { throw rtfparse_bad_table(); }
+                {
+                throw rtfparse_bad_table();
+                }
             break;
             }
 
         if (pb == nullptr)
-            { return; }
+            {
+            return;
+            }
 
         switch (rgprop[static_cast<int>(iprop)].actn)
             {
@@ -952,7 +1023,7 @@ namespace lily_of_the_valley
             pb[rgprop[static_cast<int>(iprop)].offset] = static_cast<unsigned char>(val);
             break;
         case ACTN::actnWord:
-            (*(int*) (pb+rgprop[static_cast<int>(iprop)].offset)) = val;
+            (*(int*)(pb + rgprop[static_cast<int>(iprop)].offset)) = val;
             break;
         case ACTN::actnSpec:
             ecParseSpecialProperty(iprop);
@@ -1003,7 +1074,9 @@ namespace lily_of_the_valley
             }
         // set the documents font to the current font (for RTF->HTML conversion)
         else if (fParam && std::strcmp(szKeyword, "fs") == 0)
-            { m_font_size = param/2/*RTF font size is in half points*/; }
+            {
+            m_font_size = param / 2 /*RTF font size is in half points*/;
+            }
         // this command causes a paragraph to be indented or bulleted
         else if (std::strcmp(szKeyword, "pntext") == 0)
             {
@@ -1013,11 +1086,15 @@ namespace lily_of_the_valley
                 ecPrintString(L"&nbsp;&nbsp;&nbsp;&nbsp;", 24);
                 }
             else
-                { ecPrintChar(L'\t'); }
+                {
+                ecPrintChar(L'\t');
+                }
             // this is usually some bullet definition in here, just skip that
             const char* endOfBulletDescription = std::strchr(m_rtf_text, '}');
             if (endOfBulletDescription)
-                { m_rtf_text = endOfBulletDescription-1; }
+                {
+                m_rtf_text = endOfBulletDescription - 1;
+                }
             return;
             }
         // if we are in an indented section then override the "line"
@@ -1029,19 +1106,25 @@ namespace lily_of_the_valley
                 ecPrintString(L"<br />\n&nbsp;&nbsp;&nbsp;&nbsp;", 31);
                 }
             else
-                { ecPrintString(L"\n\t", 2); }
+                {
+                ecPrintString(L"\n\t", 2);
+                }
             return;
             }
-        //paragraph commands turns off indented/bulleted state
+        // paragraph commands turns off indented/bulleted state
         else if (std::strcmp(szKeyword, "par") == 0 || std::strcmp(szKeyword, "pard") == 0)
-            { m_in_bullet_state = false; }
+            {
+            m_in_bullet_state = false;
+            }
 
         // search for szKeyword in rgsymRtf
         std::set<rtf_symbol>::const_iterator symbolIter = m_keyword_command_table->find(szKeyword);
         if (m_keyword_command_table->is_not_found(symbolIter)) // control word not found
             {
-            if (m_fSkipDestIfUnk)             // if this is a new destination
-                { m_rds = RDS::rdsSkip; }     // skip the destination
+            if (m_fSkipDestIfUnk) // if this is a new destination
+                {
+                m_rds = RDS::rdsSkip;
+                } // skip the destination
             // else just discard it
             m_fSkipDestIfUnk = false;
             return;
@@ -1055,7 +1138,9 @@ namespace lily_of_the_valley
             {
         case KWD::kwdProp:
             if (symbolIter->fPassDflt || !fParam)
+                {
                 param = symbolIter->dflt;
+                }
             ecApplyPropChange(static_cast<IPROP>(symbolIter->idx), param);
             break;
         // command is actually text being copied to the output
@@ -1074,10 +1159,14 @@ namespace lily_of_the_valley
             // caller will increment m_rtf_text, so step back 1 so that it won't consume this '}'
             // and result in a grouping stack mismatch
             if (m_rtf_text && m_rtf_text > rtfStart)
-                { --m_rtf_text; }
+                {
+                --m_rtf_text;
+                }
             // couldn't find the '}' or we are on a weird spot, so reset to where we were
             else
-                { m_rtf_text = rtfStart ;}
+                {
+                m_rtf_text = rtfStart;
+                }
             break;
         case KWD::kwdSpec:
             ecParseSpecialKeyword(static_cast<IPFN>(symbolIter->idx));
@@ -1094,9 +1183,13 @@ namespace lily_of_the_valley
         case KWD::kwdUnderline:
             // 'ulnone' turns off 'ul'
             if (std::strncmp(szKeyword, "ulnone", 6) == 0)
-                { ecProcessFontProperty(L"<span style='text-decoration:none;'>", 36); }
+                {
+                ecProcessFontProperty(L"<span style='text-decoration:none;'>", 36);
+                }
             else
-                { ecProcessFontProperty(L"<span style='text-decoration:underline;'>", 41); }
+                {
+                ecProcessFontProperty(L"<span style='text-decoration:underline;'>", 41);
+                }
             break;
         case KWD::kwdItalic:
             ecProcessFontProperty(L"<span style='font-style:italic;'>", 33);
@@ -1115,7 +1208,9 @@ namespace lily_of_the_valley
         // if we're skipping, and it's not
         // the \bin keyword, ignore it.
         if (m_rds == RDS::rdsSkip && ipfn != IPFN::ipfnBin)
+            {
             return;
+            }
 
         switch (ipfn)
             {
@@ -1133,4 +1228,4 @@ namespace lily_of_the_valley
             throw rtfparse_bad_table();
             }
         }
-    }
+    } // namespace lily_of_the_valley

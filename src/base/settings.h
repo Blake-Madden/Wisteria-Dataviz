@@ -210,7 +210,7 @@ namespace Wisteria
         /// @note Calls to this can be `if constexpr`ed so that the @c if block's code
         ///     will be compiled out when the flag is not enabled.
         [[nodiscard]]
-        static constexpr bool IsDebugFlagEnabled(const int flag) noexcept
+        constexpr static bool IsDebugFlagEnabled(const int flag) noexcept
             {
             return (m_debugSettings & flag) == flag;
             }

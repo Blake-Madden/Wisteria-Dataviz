@@ -141,6 +141,6 @@ namespace Wisteria::UI
         };
     } // namespace Wisteria::UI
 
-    /** @}*/
+/** @}*/
 
 #endif // LISTCTRL_ITEM_VIEW_DLG_H

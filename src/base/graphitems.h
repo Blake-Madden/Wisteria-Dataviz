@@ -980,7 +980,7 @@ namespace Wisteria
             /// @returns The size of the shadow.
             /// @warning This will need to be scaled with being drawn or measured.
             [[nodiscard]]
-            static constexpr double GetShadowOffset() noexcept
+            constexpr static double GetShadowOffset() noexcept
                 {
                 return 2;
                 }

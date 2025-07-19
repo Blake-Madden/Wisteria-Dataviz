@@ -40,8 +40,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WCurvePlot, Wisteria::Graphs::LinePl
 
     //----------------------------------------------------------------
     void WCurvePlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                             const wxString& yColumnName,
-                             const wxString& xColumnName,
+                             const wxString& yColumnName, const wxString& xColumnName,
                              const std::optional<wxString>& groupColumnName)
         {
         if (data == nullptr)

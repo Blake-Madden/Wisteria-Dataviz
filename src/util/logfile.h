@@ -55,6 +55,7 @@
      | @emoji :bug:         | Debug     |
     */
 // clang-format on
+
 class LogFile : public wxLog
     {
   public:

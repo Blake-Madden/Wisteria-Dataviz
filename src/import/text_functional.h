@@ -58,8 +58,7 @@ namespace lily_of_the_valley
                 Call get_trimmed_string_length() to see how much to read from there to
                 see where the last non-space is at the end.*/
         [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* value, size_t length = std::wstring::npos) noexcept
+        const wchar_t* operator()(const wchar_t* value, size_t length = std::wstring::npos) noexcept
             {
             m_trimmed_string_length = 0;
             if (value == nullptr)
@@ -130,8 +129,7 @@ namespace lily_of_the_valley
         /// @param character The character to review.
         /// @returns @c true if character is either CR or LF.
         [[nodiscard]]
-        inline constexpr bool
-        operator()(const wchar_t character) const noexcept
+        inline constexpr bool operator()(const wchar_t character) const noexcept
             {
             return (character == 10 || character == 13);
             }
@@ -146,8 +144,7 @@ namespace lily_of_the_valley
         /// @param character The character to review.
         /// @returns @c true if character is either whitespace, a semicolon, or comma.
         [[nodiscard]]
-        inline bool
-        operator()(const wchar_t character) const noexcept
+        inline bool operator()(const wchar_t character) const noexcept
             {
             return (std::iswspace(character) || character == L';' || character == L',');
             }
@@ -168,8 +165,7 @@ namespace lily_of_the_valley
         /// @param character The character to review.
         /// @returns @c true if character is a delimiter.
         [[nodiscard]]
-        inline constexpr bool
-        operator()(const wchar_t character) const noexcept
+        inline constexpr bool operator()(const wchar_t character) const noexcept
             {
             return (character == m_delim);
             }
@@ -193,8 +189,7 @@ namespace lily_of_the_valley
         /// @param character The character to review.
         /// @returns @c true if character is a delimiter.
         [[nodiscard]]
-        inline bool
-        operator()(const wchar_t character) const noexcept
+        inline bool operator()(const wchar_t character) const noexcept
             {
             return (m_delims.find(character) != std::wstring::npos);
             }

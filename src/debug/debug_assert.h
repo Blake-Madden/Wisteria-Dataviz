@@ -15,7 +15,8 @@
 /**
 \def NON_UNIT_TEST_ASSERT(expression)
     If unit test symbol (`__UNITTEST`) is defined, then does nothing; otherwise asserts.
-    This is useful for suppressing asserts when unit testing, but enabling them in regular debug builds.
+    This is useful for suppressing asserts when unit testing,
+    but enabling them in regular debug builds.
 * @} */
 
 //----------------------------------------------------------------------

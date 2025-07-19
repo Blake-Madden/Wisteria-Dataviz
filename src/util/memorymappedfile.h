@@ -13,10 +13,10 @@
 #define __MEMMAPPEDFILE_H__
 
 #ifndef __WXMSW__
-#include <sys/fcntl.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <unistd.h>
+    #include <sys/fcntl.h>
+    #include <sys/mman.h>
+    #include <sys/types.h>
+    #include <unistd.h>
 #endif
 #include <cstring>
 #include <exception>

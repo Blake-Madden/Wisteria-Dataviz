@@ -65,7 +65,7 @@ namespace Wisteria::Colors
         /// @param alpha The alpha channel.
         /// @returns The value to pass to @c wxColour::SetRGBA().
         [[nodiscard]]
-        static constexpr wxUint32 RGBA(const unsigned char red, const unsigned char green,
+        constexpr static wxUint32 RGBA(const unsigned char red, const unsigned char green,
                                        const unsigned char blue, const unsigned char alpha) noexcept
             {
             wxUint32 color = 0;

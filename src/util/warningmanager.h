@@ -43,24 +43,21 @@ struct WarningMessage
 
     /// @private
     [[nodiscard]]
-    bool
-    operator<(const WarningMessage& that) const
+    bool operator<(const WarningMessage& that) const
         {
         return m_Id < that.m_Id;
         }
 
     /// @private
     [[nodiscard]]
-    bool
-    operator==(const WarningMessage& that) const
+    bool operator==(const WarningMessage& that) const
         {
         return m_Id == that.m_Id;
         }
 
     /// @private
     [[nodiscard]]
-    bool
-    operator==(const wxString& id) const
+    bool operator==(const wxString& id) const
         {
         return m_Id == id;
         }

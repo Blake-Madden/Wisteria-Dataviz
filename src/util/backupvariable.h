@@ -29,40 +29,35 @@ class BackupVariable
 
     /// @private
     [[nodiscard]]
-    bool
-    operator==(const T& value) const noexcept
+    bool operator==(const T& value) const noexcept
         {
         return m_value == value;
         }
 
     /// @private
     [[nodiscard]]
-    bool
-    operator<(const T& value) const noexcept
+    bool operator<(const T& value) const noexcept
         {
         return m_value < value;
         }
 
     /// @private
     [[nodiscard]]
-    bool
-    operator<=(const T& value) const noexcept
+    bool operator<=(const T& value) const noexcept
         {
         return m_value <= value;
         }
 
     /// @private
     [[nodiscard]]
-    bool
-    operator>(const T& value) const noexcept
+    bool operator>(const T& value) const noexcept
         {
         return m_value > value;
         }
 
     /// @private
     [[nodiscard]]
-    bool
-    operator>=(const T& value) const noexcept
+    bool operator>=(const T& value) const noexcept
         {
         return m_value >= value;
         }
@@ -84,8 +79,7 @@ class BackupVariable
 
     /// @private
     [[nodiscard]]
-    T*
-    operator&() noexcept
+    T* operator&() noexcept
         {
         return &m_value;
         }

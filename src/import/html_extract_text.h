@@ -52,8 +52,7 @@ namespace html_utilities
         /** @returns The unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.*/
         [[nodiscard]]
-        wchar_t
-        operator[](const std::wstring_view html_entity) const
+        wchar_t operator[](const std::wstring_view html_entity) const
             {
             return find(html_entity);
             }
@@ -157,8 +156,7 @@ namespace html_utilities
         /** @brief Main function that returns the next link in the file.
             @returns either the next link or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t*
-        operator()();
+        const wchar_t* operator()();
 
         /** @returns The length of the current hyperlink.*/
         [[nodiscard]]
@@ -202,8 +200,7 @@ namespace html_utilities
         /** @brief Main function that returns the next link in the file.
             @returns Either the next link or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t*
-        operator()();
+        const wchar_t* operator()();
 
         /** @returns The length of the current hyperlink.*/
         [[nodiscard]]
@@ -309,8 +306,7 @@ namespace html_utilities
         /** @brief Main function that returns the next link in the file.
             @returns A pointer to the next link, or null when there are no more links.*/
         [[nodiscard]]
-        const wchar_t*
-        operator()()
+        const wchar_t* operator()()
             {
             return (get_parse_method() == hyperlink_parse_method::html) ?
                        m_html_hyperlink_parse() :
@@ -503,8 +499,7 @@ namespace html_utilities
             @param text_length The length of the HTML text.
             @returns The HTML stream with the hyperlinks removed from it.*/
         [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* html_text, const size_t text_length);
+        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length);
         };
 
     /// @returns @c true if character is not safe to use in an URL.
@@ -774,8 +769,8 @@ namespace lily_of_the_valley
             @returns The start of the element (i.e., "<a name="citation" /></> and the
                 bookmark name (e.g., "citation").*/
         [[nodiscard]]
-        static std::pair<const wchar_t*, std::wstring>
-        find_bookmark(const wchar_t* sectionStart, const wchar_t* sectionEnd);
+        static std::pair<const wchar_t*, std::wstring> find_bookmark(const wchar_t* sectionStart,
+                                                                     const wchar_t* sectionEnd);
         /** @brief Searches a buffer range for an ID (e.g., "<div id="citation" />").
             @param[in,out] htmlText The the HTML buffer. Its "suffix" will be trimmed past
                 the last read ID section. Will be empty if no more IDs could be found.

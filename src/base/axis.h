@@ -321,7 +321,7 @@ namespace Wisteria::GraphItems
                 }
 
             /// @brief The label position (relative to the parent axis).
-              /// @returns The label position.
+            /// @returns The label position.
             [[nodiscard]]
             double GetLabelPosition() const noexcept
                 {

@@ -32,8 +32,7 @@ namespace Wisteria
             @param str The string to make replacements within.
             @returns The altered string.*/
         [[nodiscard]]
-        wxString
-        operator()(const wxString& str) const;
+        wxString operator()(const wxString& str) const;
 
         /** @brief Adds a replacement item to the catalog.
             @param regExToReplace A regular expression to search for in text.

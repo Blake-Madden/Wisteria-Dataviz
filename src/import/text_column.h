@@ -29,8 +29,7 @@ namespace lily_of_the_valley
             @param text The current row of text to parse.
             @returns The text after the column(s) that were just read.*/
         [[nodiscard]]
-        virtual const wchar_t*
-        operator()(const wchar_t* text) const noexcept
+        virtual const wchar_t* operator()(const wchar_t* text) const noexcept
             {
             if (text == nullptr || text[0] == 0)
                 {
@@ -104,8 +103,7 @@ namespace lily_of_the_valley
         /// @param text The text from the current row to splice.
         /// @returns The position in the current row of text after the next column.
         [[nodiscard]]
-        inline const wchar_t*
-        operator()(const wchar_t* text) const noexcept final
+        inline const wchar_t* operator()(const wchar_t* text) const noexcept final
             {
             if (text == nullptr || text[0] == 0)
                 {
@@ -229,8 +227,7 @@ namespace lily_of_the_valley
             @param text The current row of text to read.
             @returns The start of the next row.*/
         [[nodiscard]]
-        inline const wchar_t*
-        operator()(const wchar_t* text) const noexcept final
+        inline const wchar_t* operator()(const wchar_t* text) const noexcept final
             {
             if (text == nullptr || text[0] == 0)
                 {

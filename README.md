@@ -15,10 +15,11 @@ Wisteria Dataviz
 | MS PREfast | [![Microsoft C++ Code Analysis](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/msvc.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/msvc.yml) |
 | Quneiform | [![Quneiform](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/i18n-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/i18n-check.yml) |
 
-| Documentation Checks  | Result        |
+| Documentation & Formatting | Result        |
 | --------------------  | ------------- |
 | Doxygen | [![doxygen](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/doxygen.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/doxygen.yml) |
 | Spellcheck | [![Spell Check](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml) |
+| clang-format | [![clang-format](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/clang-format-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/clang-format-check.yml) |
 
 About
 =============================

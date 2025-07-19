@@ -31,7 +31,8 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param message The warning/error message.
         /// @param icon The icon to show (if presented in a message box).
-        ArchiveMessage(wxString message, const int icon) : m_message(std::move(message)), m_icon(icon)
+        ArchiveMessage(wxString message, const int icon)
+            : m_message(std::move(message)), m_icon(icon)
             {
             }
 

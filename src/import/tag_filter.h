@@ -41,8 +41,7 @@ namespace lily_of_the_valley
         /// @param text The block of text to review.
         /// @returns @c true if @c text is the start of a filtered section.
         [[nodiscard]]
-        bool
-        operator==(const wchar_t* text) const noexcept
+        bool operator==(const wchar_t* text) const noexcept
             {
             return std::wcsncmp(m_start_tag.c_str(), text, m_start_tag.length()) == 0;
             }
@@ -85,8 +84,7 @@ namespace lily_of_the_valley
             @returns The text stream, with any sections within the filter tags removed.
             @sa add_filter_tag().*/
         [[nodiscard]]
-        const wchar_t*
-        operator()(const wchar_t* text, const size_t length)
+        const wchar_t* operator()(const wchar_t* text, const size_t length)
             {
             if (text == nullptr || length == 0)
                 {

@@ -38,6 +38,7 @@ namespace lily_of_the_valley
         https://docs.microsoft.com/en-us/windows/win32/stg/the-summary-information-property-set
     */
     // clang-format on
+
     class word1997_extract_text final : public extract_text
         {
       public:

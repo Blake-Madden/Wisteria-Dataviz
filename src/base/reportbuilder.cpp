@@ -4895,7 +4895,8 @@ namespace Wisteria
         while (re.Matches(processText.data()))
             {
             // catalog all the placeholders and their replacements
-            [[maybe_unused]] const auto fullMatchResult = re.GetMatch(&start, &len, 0);
+            [[maybe_unused]]
+            const auto fullMatchResult = re.GetMatch(&start, &len, 0);
             const auto foundVal = m_values.find(re.GetMatch(processText.data(), 1));
             if (foundVal != m_values.cend())
                 {

@@ -550,7 +550,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         {
         const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
             GetBackgroundColor()) };
-        if (title.GetFontBackgroundColor().IsOk() && !title.GetFontBackgroundColor().IsTransparent())
+        if (title.GetFontBackgroundColor().IsOk() &&
+            !title.GetFontBackgroundColor().IsTransparent())
             {
             if (title.GetFontBackgroundColor() == GetBackgroundColor())
                 {
@@ -1718,8 +1719,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 {
                 for (const auto& object : fixedObjectsRow)
                     {
-                    if (object &&
-                        object->SelectObjectAtPoint(unscrolledPosition, gdc))
+                    if (object && object->SelectObjectAtPoint(unscrolledPosition, gdc))
                         {
                         Refresh(true);
                         Update();

@@ -150,7 +150,7 @@ namespace Wisteria::Icons
         /// @note This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
         ///     which use DIPs.
         [[nodiscard]]
-        static constexpr double GetIconWidthDIPs() noexcept
+        constexpr static double GetIconWidthDIPs() noexcept
             {
             return 16;
             }

@@ -9,7 +9,7 @@ jobs:
       - uses: DoozyX/clang-format-lint-action@v0.20
         with:
           source: "src"
-          exclude: "src/CRCpp src/easyexif src/utfcpp src/wxSimpleJSON"
+          exclude: "src/CRCpp src/easyexif src/utfcpp src/wxSimpleJSON src/ui/controls/gtk src/ui/ribbon src/debug/track_new.h src/base/colors.h src/base/colors.cpp src/base/reportbuildercolors.cpp"
           extensions: 'h,cpp'
           style: file
           clangFormatVersion: 20

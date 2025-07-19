@@ -28,8 +28,7 @@ namespace lily_of_the_valley
             @returns A string encoded to RTF.
             @todo Replace @c swprintf() code with `std::format()` when upgrading to C++20.*/
         [[nodiscard]]
-        std::wstring
-        operator()(const std::wstring_view text) const
+        std::wstring operator()(const std::wstring_view text) const
             {
             std::wstring encoded_text;
             if (text.empty())
@@ -108,8 +107,7 @@ namespace lily_of_the_valley
                 return false;
                 }
             const auto foundPos =
-                std::find_if(text.cbegin(), text.cend(),
-                             [](const auto& ch) noexcept
+                std::find_if(text.cbegin(), text.cend(), [](const auto& ch) noexcept
                              { return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t")); });
             return (foundPos != text.cend());
             }

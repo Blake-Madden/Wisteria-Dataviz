@@ -223,7 +223,7 @@ constexpr T coalesce(std::initializer_list<T> list)
     @returns The value, rescaled to the new data range.
     @todo needs unit tests.*/
 [[nodiscard]]
-constexpr inline double scale_within(double unscaledValue,
+inline constexpr double scale_within(double unscaledValue,
                                      const std::pair<double, double>& dataRange,
                                      const std::pair<double, double>& newDataRange)
     {
@@ -243,7 +243,7 @@ constexpr inline double scale_within(double unscaledValue,
      - 4 -> 1,000
     @todo needs a unit test.*/
 [[nodiscard]]
-constexpr inline double next_interval(const double value, const uint8_t intervalSize) noexcept
+inline constexpr double next_interval(const double value, const uint8_t intervalSize) noexcept
     {
     return (intervalSize == 0) ?
                value :
@@ -261,7 +261,7 @@ constexpr inline double next_interval(const double value, const uint8_t interval
      - 4 -> 0
     @todo needs a unit test.*/
 [[nodiscard]]
-constexpr inline double previous_interval(const double value, const uint8_t intervalSize) noexcept
+inline constexpr double previous_interval(const double value, const uint8_t intervalSize) noexcept
     {
     return (intervalSize == 0) ? value :
                                  (std::floor(value / std::pow(10, intervalSize - 1)) *
@@ -275,7 +275,7 @@ constexpr inline double previous_interval(const double value, const uint8_t inte
      - 0.75 & 4.2 -> 0-5
     @todo needs a unit test.*/
 [[nodiscard]]
-constexpr inline std::pair<double, double> adjust_intervals(const double start,
+inline constexpr std::pair<double, double> adjust_intervals(const double start,
                                                             const double end) noexcept
     {
     const auto rangeSize = (end - start);
@@ -325,7 +325,7 @@ constexpr inline std::pair<double, double> adjust_intervals(const double start,
     @param lowHalf The 32-bit integer to go into the lower half of the returned 64-bit integer.
     @param highHalf The 32-bit integer to go into the higher half of the returned 64-bit integer.*/
 [[nodiscard]]
-constexpr inline uint64_t join_int32s(const uint32_t lowHalf, const uint32_t highHalf) noexcept
+inline constexpr uint64_t join_int32s(const uint32_t lowHalf, const uint32_t highHalf) noexcept
     {
     uint64_t sum = highHalf;
     sum = sum << 32;
@@ -540,7 +540,7 @@ namespace geometry
         @param circumference The circumference of the circle.
         @returns The radius of the circle.*/
     [[nodiscard]]
-    constexpr inline double circumference_to_radius(const double circumference) noexcept
+    inline constexpr double circumference_to_radius(const double circumference) noexcept
         {
         return safe_divide<double>(safe_divide<double>(circumference, std::numbers::pi), 2);
         }
@@ -549,7 +549,7 @@ namespace geometry
         @param degrees The degrees to convert.
         @returns The degrees (angle), converted to radians.*/
     [[nodiscard]]
-    constexpr inline double degrees_to_radians(const double degrees) noexcept
+    inline constexpr double degrees_to_radians(const double degrees) noexcept
         {
         return degrees * std::numbers::pi / static_cast<double>(180);
         }
@@ -558,7 +558,7 @@ namespace geometry
         @param radians The radians to convert.
         @returns The radians, converted to degrees.*/
     [[nodiscard]]
-    constexpr inline double radians_to_degrees(const double radians) noexcept
+    inline constexpr double radians_to_degrees(const double radians) noexcept
         {
         return radians * 180 / static_cast<double>(std::numbers::pi);
         }
@@ -570,7 +570,7 @@ namespace geometry
             drawn from 3 o'clock going counterclockwise.
         @returns The end point of the arc.*/
     [[nodiscard]]
-    constexpr inline std::pair<double, double> arc_vertex(const std::pair<double, double>& areaSize,
+    inline constexpr std::pair<double, double> arc_vertex(const std::pair<double, double>& areaSize,
                                                           const double degrees) noexcept
         {
         return std::make_pair(
