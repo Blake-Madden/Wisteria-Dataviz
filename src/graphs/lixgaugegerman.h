@@ -91,13 +91,32 @@ namespace Wisteria::Graphs
                 @c false to use the German labels from the article.*/
         void UseEnglishLabels(const bool useEnglish) noexcept { m_useEnglishLabels = useEnglish; }
 
+        /// @returns Whether the score is being showcased.
+        /// @returns Whether the score is being showcased.
+        /// @sa ShowcaseScore().
+        [[nodiscard]]
+        bool IsShowcasingScore() const noexcept
+            {
+            return m_showcaseScore;
+            }
+
+        /// @brief Makes most areas of the graph translucent, except for where the score is.
+        ///     This helps draw attention to the areas of the scales that have scores falling
+        ///     into them.
+        /// @param showcase @c true to showcase where the score is.
+        /// @note If there are multiple scores, then every area that has a score in it
+        ///     will be showcased.
+        void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
+
       private:
         void RecalcSizes(wxDC& dc) override final;
         void AdjustAxes();
+        void UpdateCustomAxes();
 
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
         bool m_useEnglishLabels{ false }; // use translated labels from Schulz article
+        bool m_showcaseScore{ false };
         };
     } // namespace Wisteria::Graphs
 

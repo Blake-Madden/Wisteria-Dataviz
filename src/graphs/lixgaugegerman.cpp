@@ -230,9 +230,78 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
         }
 
     //----------------------------------------------------------------
+    void LixGaugeGerman::UpdateCustomAxes()
+        {
+        std::vector<double> activeScoreAreas;
+        std::vector<double> activeScoreAreasMainAxis;
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+            {
+            if (std::isnan(m_scoresColumn->GetValue(i)))
+                {
+                continue;
+                }
+            const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
+            auto leftRulerAxisPos = is_within<size_t>(std::make_pair(0, 24), currentScore)   ? 25 :
+                                    is_within<size_t>(std::make_pair(25, 34), currentScore)  ? 35 :
+                                    is_within<size_t>(std::make_pair(35, 44), currentScore)  ? 45 :
+                                    is_within<size_t>(std::make_pair(45, 54), currentScore)  ? 55 :
+                                    is_within<size_t>(std::make_pair(55, 100), currentScore) ? 65 :
+                                                                                               65;
+            activeScoreAreas.push_back(leftRulerAxisPos);
+            // labels on the right side of the score
+            activeScoreAreas.push_back(leftRulerAxisPos - 5);
+
+            // center labels along the main axis;
+            // handle the labels extending beyond the first and last labels
+            activeScoreAreasMainAxis.push_back(leftRulerAxisPos - 5);
+            // The axis in the middle is the true value ranges, so 55 or higher
+            // is the most difficult. Hence, 55 should be lit up if the score is 55.
+            // However, the label to the left is for the area below 55, so it should not
+            // be lit up. Thus, we need to showcase 55 for the axis points later, but
+            // but don't light up the bracket at 55 on the left axis.
+            activeScoreAreasMainAxis.push_back(leftRulerAxisPos - 10);
+            if (leftRulerAxisPos == 25)
+                {
+                leftRulerAxisPos -= 10; // leftRulerAxisPos - 5 already added
+                while (leftRulerAxisPos >= 0)
+                    {
+                    activeScoreAreasMainAxis.push_back(leftRulerAxisPos);
+                    leftRulerAxisPos -= 5;
+                    }
+                }
+            else if (leftRulerAxisPos == 65)
+                {
+                while (leftRulerAxisPos <= 100)
+                    {
+                    activeScoreAreasMainAxis.push_back(leftRulerAxisPos);
+                    leftRulerAxisPos += 5;
+                    }
+                }
+            }
+        if (IsShowcasingScore())
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.ShowcaseAxisPoints(activeScoreAreasMainAxis);
+                customAxis.ShowcaseBrackets(activeScoreAreas);
+                }
+            }
+        // reset if previously showcasing items
+        else
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                customAxis.GhostAllAxisPoints(false);
+                customAxis.GhostAllBrackets(false);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void LixGaugeGerman::RecalcSizes(wxDC & dc)
         {
         AdjustAxes();
+        UpdateCustomAxes();
 
         Graph2D::RecalcSizes(dc);
 
