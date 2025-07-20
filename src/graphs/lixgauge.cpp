@@ -203,6 +203,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
     void LixGauge::UpdateCustomAxes()
         {
         std::vector<double> activeScoreAreas;
+        std::vector<double> activeScoreAreasMainAxis;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(m_scoresColumn->GetValue(i)))
@@ -210,7 +211,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
                 continue;
                 }
             const auto currentScore = std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
-            const auto leftRulerAxisPos =
+            auto leftRulerAxisPos =
                 is_within<size_t>(std::make_pair(0, 19), currentScore)   ? 20 :
                 is_within<size_t>(std::make_pair(20, 29), currentScore)  ? 30 :
                 is_within<size_t>(std::make_pair(30, 39), currentScore)  ? 40 :
@@ -220,12 +221,37 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             activeScoreAreas.push_back(leftRulerAxisPos);
             // labels on the other side of the score
             activeScoreAreas.push_back(leftRulerAxisPos - 5);
+
+            // axis point numbers (range cut-off points)
+            // The axis points are the true values of the ranges, while the label
+            // on the left is the label for area below (numerically) that range.
+            // So a score of 30 should light up the "30" axis point, but the label
+            // next to it should be ghosted (because it refers to the area before 30).
+            activeScoreAreasMainAxis.push_back(leftRulerAxisPos - 5);
+            activeScoreAreasMainAxis.push_back(leftRulerAxisPos - 10);
+            if (leftRulerAxisPos == 20)
+                {
+                leftRulerAxisPos -= 10;
+                while (leftRulerAxisPos >= 0)
+                    {
+                    activeScoreAreasMainAxis.push_back(leftRulerAxisPos);
+                    leftRulerAxisPos -= 10;
+                    }
+                }
+            else if (leftRulerAxisPos == 60)
+                {
+                while (leftRulerAxisPos <= 100)
+                    {
+                    activeScoreAreasMainAxis.push_back(leftRulerAxisPos);
+                    leftRulerAxisPos += 10;
+                    }
+                }
             }
         if (IsShowcasingScore())
             {
             for (auto& customAxis : GetCustomAxes())
                 {
-                customAxis.ShowcaseAxisPoints(activeScoreAreas);
+                customAxis.ShowcaseAxisPoints(activeScoreAreasMainAxis);
                 customAxis.ShowcaseBrackets(activeScoreAreas);
                 }
             }
