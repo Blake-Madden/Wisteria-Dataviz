@@ -452,10 +452,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawThermometer(const wxRect rect, wxDC& dc, const Temperature temp) const
         {
-        wxPen scaledPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(
-                                       rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                                           math_constants::half :
-                                           math_constants::full)) };
+        wxPen scaledPen{ ApplyColorOpacity(*wxBLACK),
+                         static_cast<int>(
+                             ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                                                        math_constants::half :
+                                                        math_constants::full)) };
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
         wxRect drawRect{ rect };
@@ -491,7 +492,7 @@ namespace Wisteria::GraphItems
             // stem
             {
                 {
-                const wxDCBrushChanger bc(dc, *wxWHITE);
+                const wxDCBrushChanger bc(dc, ApplyColorOpacity(*wxWHITE));
                 dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
                 drawRect.Deflate(static_cast<int>(ScaleToScreenAndCanvas(1.5)));
                 }
@@ -503,13 +504,15 @@ namespace Wisteria::GraphItems
                     mercuryRect.SetHeight(mercuryRect.GetHeight() * math_constants::third);
                     mercuryRect.Offset(0, drawRect.GetHeight() * math_constants::two_thirds);
                     const wxDCBrushChanger bc(
-                        dc, Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::Ice));
+                        dc, ApplyColorOpacity(
+                                Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::Ice)));
                     dc.DrawRectangle(mercuryRect);
                     }
                 else
                     {
                     const wxDCBrushChanger bc(
-                        dc, Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::TractorRed));
+                        dc, ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(
+                                Colors::Color::TractorRed)));
                     dc.DrawRectangle(mercuryRect);
                     }
                 }
@@ -517,7 +520,8 @@ namespace Wisteria::GraphItems
 
         if (temp == Temperature::Hot)
             {
-            scaledPen.SetColour(Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::LightGray));
+            scaledPen.SetColour(ApplyColorOpacity(
+                Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::LightGray)));
             }
         const DCPenChangerIfDifferent pc2(dc, scaledPen);
         // measuring lines along stem
@@ -671,6 +675,8 @@ namespace Wisteria::GraphItems
             chimneyRect.SetWidth(chimneyRect.GetWidth() * math_constants::fifth);
             chimneyRect.SetHeight(chimneyRect.GetHeight() * 0.9);
 
+            gc->SetPen(
+                wxPen{ ApplyColorOpacity(*wxBLACK), static_cast<int>(ScaleToScreenAndCanvas(1)) });
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(chimneyRect, -math_constants::quarter),
                 GetYPosFromTop(chimneyRect, math_constants::half),
@@ -696,8 +702,8 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(chimneyRect, math_constants::half),
                 GetXPosFromLeft(chimneyRect, math_constants::full),
                 GetYPosFromTop(chimneyRect, math_constants::half),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(
+                TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)),
+                TintIfUsingOpacity(ColorContrast::ShadeOrTint(
                     Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)))));
 
             wxGraphicsPath roofPath = gc->CreatePath();
@@ -733,8 +739,8 @@ namespace Wisteria::GraphItems
             smokeRect.SetWidth(smokeRect.GetWidth() * math_constants::fifth * 2);
             smokeRect.SetHeight(rect.GetHeight() * .2);
 
-            gc->SetPen(
-                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+            gc->SetPen(wxPen{ ApplyColorOpacity(*wxBLACK),
+                              static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, math_constants::full),
                 GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, 0),
@@ -784,9 +790,9 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(chimneyRect, math_constants::half),
                 GetXPosFromLeft(chimneyRect, math_constants::full),
                 GetYPosFromTop(chimneyRect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(
+                TintIfUsingOpacity(ColorContrast::ShadeOrTint(
                     Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
+                TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
             gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
                               chimneyRect.GetHeight());
             const auto yOffset{ chimneyRect.GetHeight() * math_constants::fifth };
@@ -816,7 +822,7 @@ namespace Wisteria::GraphItems
             {
             const auto drawWindow = [&gc, this](const wxRect drawingRect)
             {
-                gc->SetPen(wxPen{ *wxBLACK,
+                gc->SetPen(wxPen{ ApplyColorOpacity(*wxBLACK),
                                   static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
 
                 gc->SetBrush(gc->CreateLinearGradientBrush(
@@ -840,15 +846,15 @@ namespace Wisteria::GraphItems
                                GetYPosFromTop(drawingRect, math_constants::full));
             };
 
-            gc->SetPen(
-                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+            gc->SetPen(wxPen{ ApplyColorOpacity(*wxBLACK),
+                              static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
 
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(rect, -math_constants::quarter),
                 GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::full),
                 GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(color)), ApplyColorOpacity(color)));
+                TintIfUsingOpacity(ColorContrast::ShadeOrTint(color)), TintIfUsingOpacity(color)));
 
             wxRect mainBuildingRect{ drawRect };
             const auto yOffset{ mainBuildingRect.GetHeight() * math_constants::third };
@@ -907,8 +913,8 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for barn!");
         if (gc != nullptr)
             {
-            gc->SetPen(
-                wxPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
+            gc->SetPen(wxPen{ ApplyColorOpacity(*wxBLACK),
+                              static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) });
 
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
@@ -979,8 +985,9 @@ namespace Wisteria::GraphItems
                 }
 
             // roof
-            gc->SetPen(wxPenInfo{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(1.5)) }.Join(
-                wxPenJoin::wxJOIN_MITER));
+            gc->SetPen(wxPenInfo{ TintIfUsingOpacity(*wxBLACK),
+                                  static_cast<int>(ScaleToScreenAndCanvas(1.5)) }
+                           .Join(wxPenJoin::wxJOIN_MITER));
             gc->StrokeLine(barnPoints[1].x, barnPoints[1].y, barnPoints[2].x, barnPoints[2].y);
             gc->StrokeLine(barnPoints[2].x, barnPoints[2].y, barnPoints[3].x, barnPoints[3].y);
             gc->StrokeLine(barnPoints[3].x, barnPoints[3].y, barnPoints[4].x, barnPoints[4].y);
@@ -1016,7 +1023,7 @@ namespace Wisteria::GraphItems
 
             // loft opening
             gc->SetPen(*wxTRANSPARENT_PEN);
-            gc->SetBrush(*wxBLACK);
+            gc->SetBrush(ApplyColorOpacity(*wxBLACK));
             const wxSize originalSize{ doorRect.GetSize() };
             doorRect.SetWidth(doorRect.GetWidth() * math_constants::half);
             doorRect.SetHeight(doorRect.GetHeight() * math_constants::half);
@@ -1041,7 +1048,7 @@ namespace Wisteria::GraphItems
             gc->DrawRectangle(hayRect.x, hayRect.y, hayRect.GetWidth(), hayRect.GetHeight());
 
             // draw the loft opening's frame
-            gc->SetPen(wxPenInfo{ *wxWHITE,
+            gc->SetPen(wxPenInfo{ ApplyColorOpacity(*wxWHITE),
                                   static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
                            .Join(wxPenJoin::wxJOIN_MITER));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
@@ -1065,7 +1072,7 @@ namespace Wisteria::GraphItems
         if (gc != nullptr)
             {
             // silo
-            gc->SetPen(wxPenInfo{ *wxBLACK,
+            gc->SetPen(wxPenInfo{ ApplyColorOpacity(*wxBLACK),
                                   static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
                            .Cap(wxPenCap::wxCAP_BUTT));
 
@@ -1329,7 +1336,7 @@ namespace Wisteria::GraphItems
             monitorRect.Deflate(ScaleToScreenAndCanvas(math_constants::half));
 
             // stand pole
-            // (Note that we do not apply an translucency to the white backgrounds
+            // (Note that we do not apply a translucency to the white backgrounds
             //  as that would allow the monitor stand to show through it.
             //  Instead, we only make the outline and monitor content translucent.)
             gc->SetBrush(ColorBrewer::GetColor(Color::White));
@@ -1535,10 +1542,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRuler(const wxRect rect, wxDC& dc) const
         {
-        const wxPen scaledPen{ *wxBLACK, static_cast<int>(ScaleToScreenAndCanvas(
-                                             rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                                                 math_constants::half :
-                                                 math_constants::full)) };
+        const wxPen scaledPen{ ApplyColorOpacity(*wxBLACK),
+                               static_cast<int>(ScaleToScreenAndCanvas(
+                                   rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
+                                       math_constants::half :
+                                       math_constants::full)) };
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
         wxRect drawRect{ rect };
@@ -1562,9 +1570,11 @@ namespace Wisteria::GraphItems
             }
 
         dc.GradientFillLinear(
-            drawRect, Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
-            ColorContrast::Shade(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
-                                 math_constants::three_fourths),
+            drawRect,
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow)),
+            ApplyColorOpacity(Colors::ColorContrast::Shade(
+                Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
+                math_constants::three_fourths)),
             wxWEST);
         const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(drawRect);
@@ -1671,6 +1681,9 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pcReset(dc, *wxBLACK_PEN);
         const wxDCBrushChanger bcReset(dc, *wxBLACK_BRUSH);
 
+        const wxColour bookColor{ TintIfUsingOpacity(Colors::ColorContrast::ChangeOpacity(
+            GetGraphItemInfo().GetBrush().GetColour(), wxALPHA_OPAQUE)) };
+
         const std::array<wxPoint, 4> bookCover = {
             wxPoint(GetXPosFromLeft(rect, 0.1), GetYPosFromTop(rect, math_constants::half)),
             wxPoint(GetXPosFromLeft(rect, 0.6), GetYPosFromTop(rect, .1)),
@@ -1720,7 +1733,7 @@ namespace Wisteria::GraphItems
             wxPoint(sideOfPagesBottomRight.first, sideOfPagesBottomRight.second), pagesFront[2]
         };
 
-        wxPen scaledPenMain(*wxRED, ScaleToScreenAndCanvas(1));
+        wxPen scaledPenMain(ApplyColorOpacity(*wxRED), ScaleToScreenAndCanvas(1));
         scaledPenMain.SetCap(wxPenCap::wxCAP_BUTT);
         const DCPenChangerIfDifferent pcMain{ dc, scaledPenMain };
 
@@ -1728,8 +1741,8 @@ namespace Wisteria::GraphItems
             {
             wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
             const DCPenChangerIfDifferent pc{ dc, scaledPen };
-            DrawWithBaseColorAndBrush(
-                dc, [&]() { dc.DrawPolygon(bookCoverBottom.size(), bookCoverBottom.data()); });
+            const DCBrushChangerIfDifferent bc(dc, bookColor);
+            dc.DrawPolygon(bookCoverBottom.size(), bookCoverBottom.data());
             // a highlight along the bottom edge
             scaledPen.SetColour(
                 ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
@@ -1740,7 +1753,7 @@ namespace Wisteria::GraphItems
 
             // gold trim on edges of book
             scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
-            scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
+            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::GoldLeaf)));
             const DCPenChangerIfDifferent pc3{ dc, scaledPen };
             auto topCornerLeft = geometry::point_along_line(
                 std::make_pair(bookCoverBottom[1].x, bookCoverBottom[1].y),
@@ -1766,7 +1779,7 @@ namespace Wisteria::GraphItems
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
 
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
-            scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
+            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::Gold)));
             const DCPenChangerIfDifferent pc4{ dc, scaledPen };
             dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
@@ -1776,7 +1789,8 @@ namespace Wisteria::GraphItems
             {
             wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
             const DCPenChangerIfDifferent pc{ dc, scaledPen };
-            DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(spine.size(), spine.data()); });
+            const DCBrushChangerIfDifferent bc(dc, bookColor);
+            dc.DrawPolygon(spine.size(), spine.data());
             // a highlight along the edge
             scaledPen.SetColour(
                 ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
@@ -1789,14 +1803,14 @@ namespace Wisteria::GraphItems
             // draw the pages
             {
             const DCBrushChangerIfDifferent bc(
-                dc, ApplyColorOpacity(ColorBrewer::GetColor(Color::AntiqueWhite)));
+                dc, TintIfUsingOpacity(ColorBrewer::GetColor(Color::AntiqueWhite)));
             const DCPenChangerIfDifferent pc{ dc, *wxTRANSPARENT_PEN };
             dc.DrawPolygon(pagesFront.size(), pagesFront.data());
             }
 
             {
             const DCBrushChangerIfDifferent bc(
-                dc, ApplyColorOpacity(ColorBrewer::GetColor(Color::LightGray)));
+                dc, TintIfUsingOpacity(ColorBrewer::GetColor(Color::LightGray)));
             const DCPenChangerIfDifferent pc{ dc, *wxTRANSPARENT_PEN };
             dc.DrawPolygon(pagesSide.size(), pagesSide.data());
             }
@@ -1805,8 +1819,8 @@ namespace Wisteria::GraphItems
             {
             wxPen scaledPen(GetGraphItemInfo().GetBrush().GetColour(), ScaleToScreenAndCanvas(1));
             const DCPenChangerIfDifferent pc{ dc, scaledPen };
-            DrawWithBaseColorAndBrush(dc, [&]()
-                                      { dc.DrawPolygon(bookCover.size(), bookCover.data()); });
+            const DCBrushChangerIfDifferent bc(dc, bookColor);
+            dc.DrawPolygon(bookCover.size(), bookCover.data());
             // a highlight along the bottom edge
             scaledPen.SetColour(
                 ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
@@ -1833,14 +1847,14 @@ namespace Wisteria::GraphItems
                     wxPoint(goldLeafPoints[0].first, goldLeafPoints[0].second)
                 };
                 scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
-                scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
+                scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::GoldLeaf)));
                 const DCPenChangerIfDifferent pc3{ dc, scaledPen };
                 dc.DrawLines(goldLeafPointsPt.size(), goldLeafPointsPt.data());
                 }
 
             // gold trim on edges of book
             scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
-            scaledPen.SetColour(ColorBrewer::GetColor(Color::GoldLeaf));
+            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::GoldLeaf)));
             const DCPenChangerIfDifferent pc3{ dc, scaledPen };
             auto topCornerLeft =
                 geometry::point_along_line(std::make_pair(bookCover[1].x, bookCover[1].y),
@@ -1866,7 +1880,7 @@ namespace Wisteria::GraphItems
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
 
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::quarter));
-            scaledPen.SetColour(ColorBrewer::GetColor(Color::Gold));
+            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::Gold)));
             const DCPenChangerIfDifferent pc4{ dc, scaledPen };
             dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
@@ -1876,7 +1890,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawIVBag(const wxRect rect, wxDC& dc) const
         {
-        const wxPen scaledPen{ *wxBLACK,
+        const wxPen scaledPen{ ApplyColorOpacity(*wxBLACK),
                                static_cast<int>(ScaleToScreenAndCanvas(
                                    rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 0.5 : 1.0)) };
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
@@ -1896,14 +1910,14 @@ namespace Wisteria::GraphItems
 
             // outside bag
             {
-            const wxDCBrushChanger bc(dc, *wxWHITE);
+            const wxDCBrushChanger bc(dc, ApplyColorOpacity(*wxWHITE));
             dc.DrawRoundedRectangle(drawRect, ScaleToScreenAndCanvas(2));
             }
 
             // IV line going from bag
             {
             const wxDCPenChanger pc2(
-                dc, wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
                            static_cast<int>(drawRect.GetWidth() * math_constants::fifth) });
             wxPoint lineTop{ rect.GetLeftTop() };
             lineTop.x += rect.GetWidth() * 0.6;
@@ -1916,9 +1930,9 @@ namespace Wisteria::GraphItems
             const wxDCClipper clip(dc, lineRect);
             dc.DrawLine(lineTop, lineBottom);
                 {
-                const wxDCPenChanger pc3(
-                    dc, wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::RedTomato),
-                               static_cast<int>(drawRect.GetWidth() * 0.15) });
+                const wxDCPenChanger pc3(dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(
+                                                        Colors::Color::RedTomato)),
+                                                    static_cast<int>(drawRect.GetWidth() * 0.15) });
                 dc.DrawLine(lineTop, lineBottom);
                 }
             }
@@ -1926,7 +1940,8 @@ namespace Wisteria::GraphItems
         // fill the bag with blood
         drawRect.Deflate(static_cast<wxCoord>(ScaleToScreenAndCanvas(1.5)));
             {
-            const wxDCBrushChanger bc(dc, Colors::ColorBrewer::GetColor(Colors::Color::RedTomato));
+            const wxDCBrushChanger bc(
+                dc, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::RedTomato)));
             wxRect liquidRect{ drawRect };
             liquidRect.SetHeight(liquidRect.GetHeight() * math_constants::half);
             liquidRect.Offset(0, liquidRect.GetHeight());
@@ -2036,7 +2051,7 @@ namespace Wisteria::GraphItems
         dc.DrawPolygon(tassel.size(), tassel.data());
 
         scaledPen.SetColour(
-            ApplyColorOpacity(ColorContrast::Shade(ColorBrewer::GetColor(Colors::Color::Silver))));
+            TintIfUsingOpacity(ColorContrast::Shade(ColorBrewer::GetColor(Colors::Color::Silver))));
         scaledPen.SetCap(wxPenCap::wxCAP_BUTT);
         scaledPen.SetWidth(scaledPen.GetWidth() + ScaleToScreenAndCanvas(1.5));
         const DCPenChangerIfDifferent pc4{ dc, scaledPen };
@@ -2412,15 +2427,14 @@ namespace Wisteria::GraphItems
             {
             const wxPen outlinePen(wxTransparentColour, ScaleToScreenAndCanvas(1));
 
-            const wxColour bodyColor{ L"#171721" }; // dark blue
+            const wxColour bodyColor{ TintIfUsingOpacity(wxColour{ L"#171721" }) }; // dark blue
 
-            const auto bodyBrush = gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(dcRect, -math_constants::full),
-                GetYPosFromTop(dcRect, math_constants::half),
-                GetXPosFromLeft(dcRect, math_constants::full),
-                GetYPosFromTop(dcRect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::Shade(bodyColor, 0.4)),
-                ApplyColorOpacity(bodyColor));
+            const auto bodyBrush =
+                gc->CreateLinearGradientBrush(GetXPosFromLeft(dcRect, -math_constants::full),
+                                              GetYPosFromTop(dcRect, math_constants::half),
+                                              GetXPosFromLeft(dcRect, math_constants::full),
+                                              GetYPosFromTop(dcRect, math_constants::half),
+                                              ColorContrast::Shade(bodyColor, 0.4), bodyColor);
             gc->SetPen(outlinePen);
             gc->SetBrush(bodyBrush);
             // body of car
@@ -2591,7 +2605,7 @@ namespace Wisteria::GraphItems
             gc->SetPen(scaledPen);
             // the tire
             const wxRect tireRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
-            auto tireBrush = gc->CreateLinearGradientBrush(
+            const auto tireBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(tireRect, 0), GetYPosFromTop(tireRect, 0),
                 GetXPosFromLeft(tireRect, 1.5), GetYPosFromTop(tireRect, 1.5),
                 ApplyColorOpacity(ColorBrewer::GetColor(Color::SmokyBlack)),
@@ -2603,7 +2617,7 @@ namespace Wisteria::GraphItems
 
             // hubcap
             wxRect hubCapRect = wxRect(rect).Deflate(rect.GetWidth() * math_constants::quarter);
-            auto hubCapBrush = gc->CreateLinearGradientBrush(
+            const auto hubCapBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(hubCapRect, 0), GetYPosFromTop(hubCapRect, 0),
                 GetXPosFromLeft(hubCapRect, 1.5), GetYPosFromTop(hubCapRect, 1.5),
                 ApplyColorOpacity(ColorBrewer::GetColor(Color::Silver)),
@@ -2614,7 +2628,7 @@ namespace Wisteria::GraphItems
                             hubCapRect.GetWidth(), hubCapRect.GetHeight());
 
             hubCapRect.Deflate(hubCapRect.GetWidth() * math_constants::eighth);
-            const wxPen blackPen(*wxBLACK, scaledPen.GetWidth());
+            const wxPen blackPen(ApplyColorOpacity(*wxBLACK), scaledPen.GetWidth());
             gc->SetPen(blackPen);
 
             DrawAsterisk(hubCapRect, gc);
@@ -2735,27 +2749,30 @@ namespace Wisteria::GraphItems
         const wxPoint centerPt(GetXPosFromLeft(dcRect, math_constants::half),
                                GetYPosFromTop(dcRect, math_constants::half));
         // draw the frame
-        const DCPenChangerIfDifferent pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
+        const DCPenChangerIfDifferent pc(
+            dc, wxPen(ApplyColorOpacity(*wxBLACK), ScaleToScreenAndCanvas(2)));
         dc.DrawCircle(centerPt, dcRect.GetWidth() * math_constants::half);
 
         // draw the minutes
         wxRect intervalsRect{ rect };
         intervalsRect.Deflate(dcRect.GetWidth() * math_constants::fifth);
         const DCPenChangerIfDifferent pc2(
-            dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+            dc, wxPenInfo(ApplyColorOpacity(*wxBLACK), ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
         dc.DrawCircle(centerPt, intervalsRect.GetWidth() * math_constants::half);
 
         // draw the arms (at 4:30)
         wxRect armsRect{ rect };
         armsRect.Deflate(dcRect.GetWidth() * math_constants::quarter);
-        const DCPenChangerIfDifferent pc3(dc, wxPenInfo(*wxBLACK, ScaleToScreenAndCanvas(2)));
+        const DCPenChangerIfDifferent pc3(
+            dc, wxPenInfo(ApplyColorOpacity(*wxBLACK), ScaleToScreenAndCanvas(2)));
         dc.DrawLine(centerPt, wxPoint(centerPt.x + armsRect.GetWidth() * math_constants::quarter,
                                       armsRect.GetBottom() -
                                           (armsRect.GetHeight() * math_constants::quarter)));
         dc.DrawLine(centerPt, wxPoint(centerPt.x, armsRect.GetBottom()));
 
         // seconds hand
-        const DCPenChangerIfDifferent pc4(dc, wxPenInfo(*wxRED, ScaleToScreenAndCanvas(1)));
+        const DCPenChangerIfDifferent pc4(
+            dc, wxPenInfo(ApplyColorOpacity(*wxRED), ScaleToScreenAndCanvas(1)));
         dc.DrawLine(wxPoint(centerPt.x + (armsRect.GetWidth() * math_constants::tenth), centerPt.y),
                     wxPoint(centerPt.x - (armsRect.GetWidth() * math_constants::half), centerPt.y));
         }
@@ -2866,11 +2883,13 @@ namespace Wisteria::GraphItems
 
         const wxCoord frameWidth = dcRect.GetWidth() * math_constants::tenth;
 
-        dc.GradientFillLinear(dcRect, ColorBrewer::GetColor(Colors::Color::WarmGray), *wxBLACK,
-                              wxEAST);
+        dc.GradientFillLinear(dcRect,
+                              TintIfUsingOpacity(ColorBrewer::GetColor(Colors::Color::WarmGray)),
+                              TintIfUsingOpacity(*wxBLACK), wxEAST);
 
         const wxDCPenChanger pc(
-            dc, wxPen(ColorBrewer::GetColor(Colors::Color::YellowPepper), frameWidth));
+            dc, wxPen(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::YellowPepper)),
+                      frameWidth));
         const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(dcRect);
 
@@ -2883,7 +2902,7 @@ namespace Wisteria::GraphItems
         Label boardText(GraphItemInfo(
                             /* TRANSLATORS: Simple placeholder text of any sort */
                             _("ABC"))
-                            .FontColor(*wxWHITE)
+                            .FontColor(ApplyColorOpacity(*wxWHITE))
                             .Pen(wxNullPen)
                             .DPIScaling(GetDPIScaleFactor())
                             .Scaling(GetScaling()));
@@ -2892,7 +2911,8 @@ namespace Wisteria::GraphItems
         boardText.Draw(dc);
 
         // draw a piece of chalk
-        const wxDCPenChanger pc2(dc, wxPenInfo(*wxWHITE, frameWidth / 2).Cap(wxCAP_BUTT));
+        const wxDCPenChanger pc2(
+            dc, wxPenInfo(ApplyColorOpacity(*wxWHITE), frameWidth / 2).Cap(wxCAP_BUTT));
         wxPoint chalkRight{ dcRect.GetBottomRight() };
         chalkRight.y -= frameWidth - (frameWidth / 4);
         chalkRight.x -= ScaleToScreenAndCanvas(2);
@@ -3113,9 +3133,9 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc != nullptr)
             {
-            const wxPen bodyPen(ColorBrewer::GetColor(Colors::Color::Ice),
+            const wxPen bodyPen(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::Ice)),
                                 ScaleToScreenAndCanvas(1));
-            const wxPen crystalPen(ColorBrewer::GetColor(Colors::Color::Ice),
+            const wxPen crystalPen(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::Ice)),
                                    ScaleToScreenAndCanvas(1));
 
             const auto centerPt =
