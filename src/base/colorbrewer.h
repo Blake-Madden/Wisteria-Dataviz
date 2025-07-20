@@ -81,7 +81,7 @@ namespace Wisteria::Colors
             @returns A color from a list of known colors.
             @param color The color ID to use.*/
         [[nodiscard]]
-        static wxColour GetColor(const Colors::Color color);
+        static wxColour GetColor(Colors::Color color);
 
         /** @brief Creates a color from a Colors::Color value and applies an opacity to it.
             @returns A color from a list of known colors.
@@ -192,7 +192,7 @@ namespace Wisteria::Colors
             @note This code is adapted from
            http://andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients.*/
         [[nodiscard]]
-        wxColour BrewColor(const double value) const;
+        wxColour BrewColor(double value) const;
 
       private:
         std::pair<double, double> m_range{ 0, 0 };
@@ -259,15 +259,34 @@ namespace Wisteria::Colors
         /// @param minimumLuminance The minimum darkness of the color,
         ///     ranging from @c 0.0 to @c 1.0 (the lower, the darker).
         [[nodiscard]]
-        static wxColour Shade(wxColour color, const double minimumLuminance = math_constants::half)
+        static wxColour Shade(wxColour color, double minimumLuminance = math_constants::half)
             {
             assert(color.IsOk() && L"Invalid color passed to Shade().");
+            minimumLuminance =
+                std::clamp(minimumLuminance, math_constants::empty, math_constants::full);
             int darkenValue{ 100 };
-            while (color.GetLuminance() >
-                       std::clamp(minimumLuminance, math_constants::empty, math_constants::full) &&
-                   darkenValue > 0)
+            while (color.GetLuminance() > minimumLuminance && darkenValue > 0)
                 {
                 color = color.ChangeLightness(--darkenValue);
+                }
+            return color;
+            }
+
+        /// @returns A lightened version of a color.
+        /// @param color The base color to darken.
+        /// @param maximumLuminance The maximum lightness of the color,
+        ///     ranging from @c 0.0 to @c 1.0 (the higher, the lighter).
+        [[nodiscard]]
+        static wxColour Tint(wxColour color,
+                             double maximumLuminance = math_constants::three_quarters)
+            {
+            assert(color.IsOk() && L"Invalid color passed to Shade().");
+            maximumLuminance =
+                std::clamp(maximumLuminance, math_constants::empty, math_constants::half);
+            int lightenValue{ 100 };
+            while (color.GetLuminance() < maximumLuminance)
+                {
+                color = color.ChangeLightness(++lightenValue);
                 }
             return color;
             }
