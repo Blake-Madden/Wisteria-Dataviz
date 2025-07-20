@@ -5,7 +5,8 @@ jobs:
   check-unix:
     runs-on: ubuntu-latest
     name: Check Spelling
-
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
