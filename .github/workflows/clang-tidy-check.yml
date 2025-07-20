@@ -1,0 +1,15 @@
+# Run clang-tidy
+name: clang-tidy
+on: [push, pull_request]
+
+jobs:
+  checkout-and-check-formatting:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run clang-tidy
+      uses: HorstBaerbel/action-clang-tidy@1.2
+      with:
+        excludedirs: 'src/CRCpp,src/easyexif,src/utfcpp,src/wxSimpleJSON,src/ui/controls/gtk,src/ui/ribbon'
