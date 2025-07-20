@@ -1683,15 +1683,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                        L"Non-rectangular shapes not currently "
                        "supported with stipple bar effect.");
                 auto shapeHeight{ barRenderInfo.m_barWidth };
-                // These particular icons are drawn with a ratio where the height
-                // is 75% of the width if the drawing area is square. To prevent
-                // having large gaps between the icons, adjust the height of the icons'
-                // drawing areas so that they aren't drawn inside squares.
-                if (GetStippleShape() == Icons::IconShape::Car ||
-                    GetStippleShape() == Icons::IconShape::Blackboard)
-                    {
-                    shapeHeight *= 0.75;
-                    }
                 auto currentYTop = lineYStart - shapeHeight;
                 while ((currentYTop + shapeHeight) > lineYEnd)
                     {
