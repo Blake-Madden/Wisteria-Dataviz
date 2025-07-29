@@ -242,6 +242,12 @@ namespace Wisteria::Graphs
                 return *this;
                 }
 
+            [[nodiscard]]
+            AggregateType GetType() const noexcept
+                {
+                return m_type;
+                }
+
           private:
             AggregateType m_type{ AggregateType::Total };
             std::optional<size_t> m_cell1;

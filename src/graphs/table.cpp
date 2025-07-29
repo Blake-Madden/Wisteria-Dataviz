@@ -627,14 +627,23 @@ namespace Wisteria::Graphs
                              cell.GetDoubleValue() < cell.GetSuppressionThreshold()) ?
                                 std::numeric_limits<double>::quiet_NaN() :
                                 cell.GetDoubleValue();
-                        // throw out unused precision
+                        // aggregating percentages only makes sense for differencing
                         if (cell.GetFormat() == TableCellFormat::Percent ||
                             cell.GetFormat() == TableCellFormat::PercentChange)
                             {
-                            colValues.push_back(round_decimal_place(
-                                valueOrSuppressed * 100, (cell.GetPrecision() == 0) ?
-                                                             0 :
-                                                             std::pow(10, cell.GetPrecision())));
+                            if (aggInfo.GetType() == AggregateType::Change)
+                                {
+                                colValues.push_back(
+                                    round_decimal_place(valueOrSuppressed * 100,
+                                                        (cell.GetPrecision() == 0) ?
+                                                            0 :
+                                                            std::pow(10, cell.GetPrecision())));
+                                }
+                            else
+                                {
+                                GetCell(rIndex, currentCol).SetValue(wxString{});
+                                break;
+                                }
                             }
                         else
                             {
@@ -737,14 +746,23 @@ namespace Wisteria::Graphs
                              cell.GetDoubleValue() < cell.GetSuppressionThreshold()) ?
                                 std::numeric_limits<double>::quiet_NaN() :
                                 cell.GetDoubleValue();
-                        // throw out unused precision
+                        // aggregating percentages only makes sense for differencing
                         if (cell.GetFormat() == TableCellFormat::Percent ||
                             cell.GetFormat() == TableCellFormat::PercentChange)
                             {
-                            rowValues.push_back(round_decimal_place(
-                                valueOrSuppressed * 100, (cell.GetPrecision() == 0) ?
-                                                             0 :
-                                                             std::pow(10, cell.GetPrecision())));
+                            if (aggInfo.GetType() == AggregateType::Change)
+                                {
+                                rowValues.push_back(
+                                    round_decimal_place(valueOrSuppressed * 100,
+                                                        (cell.GetPrecision() == 0) ?
+                                                            0 :
+                                                            std::pow(10, cell.GetPrecision())));
+                                }
+                            else
+                                {
+                                GetCell(rowCounter, columnIndex).SetValue(wxString{});
+                                break;
+                                }
                             }
                         else
                             {
