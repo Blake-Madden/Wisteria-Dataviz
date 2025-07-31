@@ -777,11 +777,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
 
         GetBarAxis().ShowOuterLabels(isDisplayingOuterLabels);
-        if (GetCanvas() != nullptr)
-            {
-            wxMemoryDC measureDC;
-            GetCanvas()->CalcAllSizes(measureDC);
-            }
         }
 
     //-----------------------------------
@@ -854,11 +849,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                   GetBarAxis().GetDisplayInterval());
             }
         GetBarAxis().ShowOuterLabels(isDisplayingOuterLabels);
-        if (GetCanvas() != nullptr)
-            {
-            wxMemoryDC measureDC;
-            GetCanvas()->CalcAllSizes(measureDC);
-            }
         }
 
     //-----------------------------------
