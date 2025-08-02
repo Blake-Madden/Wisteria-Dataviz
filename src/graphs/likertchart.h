@@ -722,7 +722,7 @@ namespace Wisteria::Graphs
         /// @param label The label to display.
         void SetPositiveHeader(const wxString& label)
             {
-            if (label.length())
+            if (!label.empty())
                 {
                 m_positiveHeaderLabel = label;
                 }
@@ -740,7 +740,7 @@ namespace Wisteria::Graphs
         /// @param label The label to display.
         void SetNegativeHeader(const wxString& label)
             {
-            if (label.length())
+            if (!label.empty())
                 {
                 m_negativeHeaderLabel = label;
                 }
@@ -757,9 +757,43 @@ namespace Wisteria::Graphs
         /// @param label The label to display.
         void SetNoResponseHeader(const wxString& label)
             {
-            if (label.length())
+            if (!label.empty())
                 {
                 m_noHeaderLabel = label;
+                }
+            }
+
+        /// @returns The left arrow prepended to the negative header.
+        [[nodiscard]]
+        const wxString& GetLeftArrow() const noexcept
+            {
+            return m_leftArrow;
+            }
+
+        /// @brief Sets the left arrow prepended to the negative header.
+        /// @param label The arrow character to display.
+        void SetLeftArrow(const wxString& label)
+            {
+            if (!label.empty())
+                {
+                m_leftArrow = label;
+                }
+            }
+
+        /// @returns The right arrow appended to the positive header.
+        [[nodiscard]]
+        const wxString& GetRightArrow() const noexcept
+            {
+            return m_rightArrow;
+            }
+
+        /// @brief Sets the right arrow appended to the positive header.
+        /// @param label The arrow character to display.
+        void SetRightArrow(const wxString& label)
+            {
+            if (!label.empty())
+                {
+                m_rightArrow = label;
                 }
             }
 
@@ -1133,7 +1167,7 @@ namespace Wisteria::Graphs
         /// @param label The label to display.
         void SetNeutralLabel(const wxString& label)
             {
-            if (label.length())
+            if (!label.empty())
                 {
                 m_neutralLabel = label;
                 }
@@ -1286,6 +1320,8 @@ namespace Wisteria::Graphs
         wxString m_positiveHeaderLabel{ _(L"Agree") };
         wxString m_negativeHeaderLabel{ _(L"Disagree") };
         wxString m_noHeaderLabel{ _(L"No Response") };
+        wxString m_leftArrow{ _(L"«") };
+        wxString m_rightArrow{ _(L"»") };
 
         wxString m_nullString;
 

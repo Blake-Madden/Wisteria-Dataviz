@@ -2559,7 +2559,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             neutralDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
-                neutralDividerLine.GetHeader().SetText(GetNeutralLabel() + L"\U0001F816");
+                neutralDividerLine.GetHeader().SetText(GetNeutralLabel() + L" " + GetRightArrow());
                 neutralDividerLine.GetHeader().GetFont().MakeBold();
                 neutralDividerLine.GetHeader().SetFontColor(
                     Colors::ColorContrast::Shade(GetNeutralColor()));
@@ -2605,7 +2605,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             naDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
-                naDividerLine.GetFooter().SetText(GetNoResponseHeader() + L"\U0001F816");
+                naDividerLine.GetFooter().SetText(GetNoResponseHeader() + L" " + GetRightArrow());
                 naDividerLine.GetFooter().GetFont().MakeBold();
                 naDividerLine.GetFooter().SetRelativeAlignment(RelativeAlignment::FlushLeft);
                 naDividerLine.GetFooter().SetLeftPadding(5);
@@ -2646,7 +2646,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         agreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
-            agreeDividerLine.GetHeader().SetText(GetPositiveHeader() + L"\U0001F816");
+            agreeDividerLine.GetHeader().SetText(GetPositiveHeader() + L" " + GetRightArrow());
             agreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushLeft);
             agreeDividerLine.GetHeader().GetPen() = wxNullPen;
             agreeDividerLine.GetHeader().GetFont().MakeBold();
@@ -2665,7 +2665,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         disagreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
-            disagreeDividerLine.GetHeader().SetText(L"\U0001F814 " + GetNegativeHeader());
+            disagreeDividerLine.GetHeader().SetText(GetLeftArrow() + L" " +
+                                                    GetNegativeHeader());
             disagreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushRight);
             disagreeDividerLine.GetHeader().GetPen() = wxNullPen;
             disagreeDividerLine.GetHeader().GetFont().MakeBold();
