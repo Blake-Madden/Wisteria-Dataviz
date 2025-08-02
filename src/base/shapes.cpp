@@ -375,16 +375,15 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for flower icon!");
         if (gc != nullptr)
             {
-            gc->SetPen(wxPen(
-                ColorContrast::Shade(Wisteria::Colors::ColorBrewer::GetColor(Color::Wisteria)),
-                ScaleToScreenAndCanvas(1)));
+            gc->SetPen(wxNullPen);
             gc->SetBrush(
-                ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::Wisteria)));
+                ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::ChapelBlue)));
             // a line going from the middle of the left side to the middle of the right
-            wxRect petalRect(centerPt, wxSize((rect.GetWidth() * math_constants::half) -
-                                                  ScaleToScreenAndCanvas(1),
-                                              rect.GetHeight() / 6));
-            petalRect.Offset(wxPoint(0, -(petalRect.GetHeight() / 2)));
+            wxRect petalRect(centerPt,
+                             wxSize{ static_cast<int>((rect.GetWidth() * math_constants::half) -
+                                                      ScaleToScreenAndCanvas(1)),
+                                     rect.GetHeight() / 6 });
+            petalRect.Offset(wxPoint{ 0, -(petalRect.GetHeight() / 2) });
 
             // save current transform matrix state
             gc->PushState();
@@ -409,7 +408,8 @@ namespace Wisteria::GraphItems
             // draw the middle of flower
             gc->SetBrush(
                 ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::GoldenYellow)));
-            const wxRect flowerRect = wxRect(rect).Deflate(rect.GetWidth() / 3);
+            const wxRect flowerRect =
+                wxRect{ rect }.Deflate(safe_divide<double>(rect.GetWidth(), 2.5));
             gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
                             flowerRect.GetWidth(), flowerRect.GetHeight());
             }
@@ -1219,19 +1219,25 @@ namespace Wisteria::GraphItems
         flameRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
         DrawFlame(flameRect, dc);
 
-        wxRect flowerRect = heartRect;
-        flowerRect.SetHeight(rect.GetHeight() * math_constants::fifth);
-        flowerRect.SetWidth(rect.GetWidth() * math_constants::fifth);
-        flowerRect.Offset(safe_divide<double>(rect.GetWidth() * math_constants::fifth, 2),
+        // the heart drawing Bezier curves means it doesn't consume all of the
+        // rect it was give, so scale down the heart's bounding box to the area
+        // that actually has content
+        heartRect.SetWidth(heartRect.GetWidth() * 0.75);
+        heartRect.Offset((rect.GetWidth() - heartRect.GetWidth()) / 2, 0);
+
+        wxRect flowerRect{ heartRect };
+        flowerRect.SetHeight(heartRect.GetHeight() * math_constants::quarter);
+        flowerRect.SetWidth(heartRect.GetWidth() * math_constants::quarter);
+        const auto flowerOverlayTolerance{ (flowerRect.GetWidth() * math_constants::half) };
+        flowerRect.Offset(-flowerOverlayTolerance,
                           safe_divide<double>(heartRect.GetHeight(), 2) -
                               safe_divide<double>(flowerRect.GetHeight(), 2));
         if (flowerRect.GetWidth() > 0)
             {
-            while ((flowerRect.GetRight() - flowerRect.GetWidth() * math_constants::tenth) <
-                   rect.GetRight())
+            while (flowerRect.GetRight() - flowerOverlayTolerance < heartRect.GetRight())
                 {
                 DrawFlower(flowerRect, dc);
-                flowerRect.Offset(flowerRect.GetWidth() * math_constants::three_quarters, 0);
+                flowerRect.Offset(flowerRect.GetWidth() * math_constants::half, 0);
                 }
             }
         }
