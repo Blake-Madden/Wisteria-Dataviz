@@ -110,28 +110,9 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the diagram on.
             @param brushes The brush scheme to draw with.*/
-        explicit SankeyDiagram(Canvas* canvas,
-                               std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr)
-            : Graph2D(canvas)
-            {
-            SetBrushScheme(brushes != nullptr ? std::move(brushes) :
-                                                std::make_shared<Brushes::Schemes::BrushScheme>(
-                                                    Wisteria::Colors::Schemes::IceCream{}));
-
-            GetLeftYAxis().SetRange(0, 100, 0, 1, 10);
-            GetLeftYAxis().GetGridlinePen() = wxNullPen;
-            GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            GetLeftYAxis().GetAxisLinePen() = wxNullPen;
-
-            GetRightYAxis().SetRange(0, 100, 0, 1, 10);
-            GetRightYAxis().GetGridlinePen() = wxNullPen;
-            GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            GetRightYAxis().GetAxisLinePen() = wxNullPen;
-
-            GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
-            GetBottomXAxis().Show(false);
-            GetTopXAxis().Show(false);
-            }
+        explicit SankeyDiagram(
+            Canvas* canvas,
+            const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr);
 
         /** @brief Sets the data.
             @param data The data to use for the plot.

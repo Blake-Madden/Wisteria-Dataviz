@@ -13,6 +13,30 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
+    SankeyDiagram::SankeyDiagram(
+        Canvas * canvas, const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr)
+        : Graph2D(canvas)
+        {
+        SetBrushScheme(brushes != nullptr ? brushes :
+                                            std::make_shared<Brushes::Schemes::BrushScheme>(
+                                                Wisteria::Colors::Schemes::IceCream{}));
+
+        GetLeftYAxis().SetRange(0, 100, 0, 1, 10);
+        GetLeftYAxis().GetGridlinePen() = wxNullPen;
+        GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetLeftYAxis().GetAxisLinePen() = wxNullPen;
+
+        GetRightYAxis().SetRange(0, 100, 0, 1, 10);
+        GetRightYAxis().GetGridlinePen() = wxNullPen;
+        GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetRightYAxis().GetAxisLinePen() = wxNullPen;
+
+        GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
+        GetBottomXAxis().Show(false);
+        GetTopXAxis().Show(false);
+        }
+
+    //----------------------------------------------------------------
     void SankeyDiagram::SetData(const std::shared_ptr<const Data::Dataset>& data,
                                 const wxString& fromColumnName, const wxString& toColumnName,
                                 const std::optional<wxString>& fromWeightColumnName,
