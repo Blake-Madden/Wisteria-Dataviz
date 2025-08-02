@@ -47,11 +47,11 @@ namespace Wisteria
         void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom,
                          int* selPageTo) override final
             {
-            assert(m_canvases.size() && L"No pages in ReportPrintout!");
-            *minPage = (m_canvases.size() ? 1 : 0);
-            *maxPage = (m_canvases.size() ? m_canvases.size() : 0);
-            *selPageFrom = (m_canvases.size() ? 1 : 0);
-            *selPageTo = (m_canvases.size() ? m_canvases.size() : 0);
+            assert(!m_canvases.empty() && L"No pages in ReportPrintout!");
+            *minPage = (!m_canvases.empty() ? 1 : 0);
+            *maxPage = (!m_canvases.empty() ? m_canvases.size() : 0);
+            *selPageFrom = (!m_canvases.empty() ? 1 : 0);
+            *selPageTo = (!m_canvases.empty() ? m_canvases.size() : 0);
             }
 
         /** @brief Prints the specified page number.
@@ -73,7 +73,7 @@ namespace Wisteria
 
         /// @returns A header or footer with dynamic constants expanded in them.
         [[nodiscard]]
-        wxString ExpandPrintString(const wxString& printString, const int pageNumber) const;
+        wxString ExpandPrintString(const wxString& printString, int pageNumber) const;
 
         /// @brief Gets the canvas associated with a page #.
         /// @details Page numbers are 1-indexed, so we need to take that into account.
@@ -134,7 +134,7 @@ namespace Wisteria
         ///     and then adjusts it to fit the specified size.
         /// @param canvas The canvas to adjust.
         /// @param newSize The dimensions (in DIPs) to save the image to.
-        FitToSaveOptionsChanger(Canvas* canvas, const wxSize newSize);
+        FitToSaveOptionsChanger(Canvas* canvas, wxSize newSize);
         /// @brief Destructor, which resets the canvas back to its original size.
         /// @private
         ~FitToSaveOptionsChanger();

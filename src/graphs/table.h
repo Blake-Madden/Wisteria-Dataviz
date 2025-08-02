@@ -14,6 +14,7 @@
 
 #include "../math/mathematics.h"
 #include "graph2d.h"
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -302,12 +303,12 @@ namespace Wisteria::Graphs
             /// @param showRightBorder Whether to show the right border.
             /// @param showBottomBorder Whether to show the bottom border.
             /// @param showLeftBorder Whether to show the left border.
-            TableCell(CellValueType value, const wxColour& bgColor, const bool showTopBorder = true,
+            TableCell(CellValueType value, wxColour bgColor, const bool showTopBorder = true,
                       const bool showRightBorder = true, const bool showBottomBorder = true,
                       const bool showLeftBorder = true)
-                : m_value(std::move(value)), m_bgColor(bgColor), m_showTopBorder(showTopBorder),
-                  m_showRightBorder(showRightBorder), m_showBottomBorder(showBottomBorder),
-                  m_showLeftBorder(showLeftBorder)
+                : m_value(std::move(value)), m_bgColor(std::move(bgColor)),
+                  m_showTopBorder(showTopBorder), m_showRightBorder(showRightBorder),
+                  m_showBottomBorder(showBottomBorder), m_showLeftBorder(showLeftBorder)
                 {
                 }
 
@@ -510,7 +511,7 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the display format of the cell.
             /// @param cellFormat The format settings to apply.
-            void SetFormat(const TableCellFormat cellFormat) noexcept;
+            void SetFormat(TableCellFormat cellFormat) noexcept;
 
           private:
             /// @brief Returns a double value representing the cell.
@@ -597,7 +598,7 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     const std::vector<wxString>& columns, const bool transpose = false);
+                     const std::vector<wxString>& columns, bool transpose = false);
 
         /// @name Sort Functions
         /// @brief Functions relating to sorting the table.
@@ -608,7 +609,7 @@ namespace Wisteria::Graphs
             @param direction The direction to sort by.
             @warning Call this immediately after calling SetData and before any other functions.\n
                 Calling this will clear all aggregations, footnotes, formatting commands, etc.*/
-        void Sort(const size_t columnToSort, const SortDirection direction);
+        void Sort(size_t columnToSort, SortDirection direction);
 
         /// @brief Sorts the table by the provided column
         ///     (based on a specified order of labels in the column).
@@ -623,8 +624,7 @@ namespace Wisteria::Graphs
         ///     for the label ordering to work;
         ///     otherwise, the sort could not be deterministic. If there are multiple cells
         ///     with the same label, then this will return without sorting.
-        void Sort(const size_t columnToSort, std::vector<wxString> labels,
-                  const SortDirection direction);
+        void Sort(size_t columnToSort, std::vector<wxString> labels, SortDirection direction);
 
         /// @}
 
@@ -950,10 +950,10 @@ namespace Wisteria::Graphs
                 and may affect the aggregate accordingly.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
                                    const std::optional<wxString>& colName = std::nullopt,
-                                   const std::optional<size_t> colIndex = std::nullopt,
-                                   const std::optional<bool> useAdjacentColors = std::nullopt,
+                                   std::optional<size_t> colIndex = std::nullopt,
+                                   std::optional<bool> useAdjacentColors = std::nullopt,
                                    const std::optional<wxColour>& bkColor = std::nullopt,
-                                   const std::optional<std::bitset<4>> borders = std::nullopt);
+                                   std::optional<std::bitset<4>> borders = std::nullopt);
         /** @brief Inserts total (and possibly subtotal) rows into a table.
             @details If the first column contains grouped labels (see GroupColumn())
                 and the second column contains labels, then subtotal rows will be inserted
@@ -970,7 +970,7 @@ namespace Wisteria::Graphs
         /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void
-        SetRowBackgroundColor(const size_t row, const wxColour& color,
+        SetRowBackgroundColor(size_t row, const wxColour& color,
                               const std::optional<std::set<size_t>>& columnStops = std::nullopt);
 
         /// @brief Sets the background color for a given column.
@@ -1406,7 +1406,7 @@ namespace Wisteria::Graphs
                 then this will combine them one with "FY1982" centered in it.\n
                 This can be useful for showing grouped data.
             @param row The row to combine cells within.*/
-        void GroupRow(const size_t row);
+        void GroupRow(size_t row);
         /** @brief Down a given column, combines consecutive cells with the same label
                 into one cell.
             @details For example, if the far-left column has three consecutive cells
@@ -1414,7 +1414,7 @@ namespace Wisteria::Graphs
                 centered in it.\n
                 This can be useful for showing grouped data.
             @param column The column to combine cells within.*/
-        void GroupColumn(const size_t column);
+        void GroupColumn(size_t column);
 
         /** @brief Finds the outliers from the specified column.
             @details This can be used for highlighting outliers (and possibly annotating them).
@@ -1430,8 +1430,7 @@ namespace Wisteria::Graphs
                 will make the returned positions incorrect. This should be
                 called after all structural changes to the table have been made
                 (including the addition of aggregates).*/
-        std::vector<CellPosition> GetOutliers(const size_t column,
-                                              const double outlierThreshold = 3.0);
+        std::vector<CellPosition> GetOutliers(size_t column, double outlierThreshold = 3.0);
 
         /** @brief Finds the top N values from the specified column.
             @details This can be used for highlighting max items (and possibly annotating them).
@@ -1444,7 +1443,7 @@ namespace Wisteria::Graphs
                 will make the returned positions incorrect. This should be
                 called after all structural changes to the table have been made
                 (including the addition of aggregates).*/
-        std::vector<CellPosition> GetTopN(const size_t column, const size_t N = 1);
+        std::vector<CellPosition> GetTopN(size_t column, size_t N = 1);
 
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
         /// @param baseColor The base background color, where a shaded or tinted version will
@@ -1456,7 +1455,7 @@ namespace Wisteria::Graphs
         /// @warning This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void
-        ApplyAlternateRowColors(const wxColour& baseColor, const size_t startRow = 0,
+        ApplyAlternateRowColors(const wxColour& baseColor, size_t startRow = 0,
                                 const std::optional<std::set<size_t>>& columnStops = std::nullopt);
         /// @}
 
@@ -1473,7 +1472,7 @@ namespace Wisteria::Graphs
         ///     The exception's @c what() message is UTF-8 encoded, so pass it to
         ///     @c wxString::FromUTF8() when formatting it for an error message.
         [[nodiscard]]
-        TableCell& GetCell(const size_t row, const size_t column);
+        TableCell& GetCell(size_t row, size_t column);
 
         /// @brief Highlights the specified cell(s) and adds a note pointing to them.
         /// @param cellNote Information about the cell(s) to highlight,
@@ -1539,7 +1538,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxRect GetContentRect() const noexcept override final
             {
-            return wxRect();
+            return {};
             }
 
         void RecalcSizes(wxDC& dc) override final;
@@ -1585,20 +1584,20 @@ namespace Wisteria::Graphs
         /// @param column The column index of the cell.
         /// @warning This should only be called during or after a call to RecalcSizes().
         [[nodiscard]]
-        wxRect GetCachedCellRect(const size_t row, const size_t column) const;
+        wxRect GetCachedCellRect(size_t row, size_t column) const;
 
         /// @returns If a cell is being eclipsed vertically by the cell above it,
         ///     then return that cell. Otherwise, return @c std::nullopt.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
         [[nodiscard]]
-        std::optional<TableCell> GetEclipsingRowWiseCell(const size_t row, const size_t column);
+        std::optional<TableCell> GetEclipsingRowWiseCell(size_t row, size_t column);
         /// @returns If a cell is being eclipsed horizontally by the cell left of it,
         ///     then return that cell. Otherwise, return @c std::nullopt.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
         [[nodiscard]]
-        std::optional<TableCell> GetEclipsingColumnWiseCell(const size_t row, const size_t column);
+        std::optional<TableCell> GetEclipsingColumnWiseCell(size_t row, size_t column);
 
         /** @brief Calculates an aggregation from a series of values.
             @param aggInfo Which type of aggregate calculation to perform.

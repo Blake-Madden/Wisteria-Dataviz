@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "graph2d.h"
+#include <ranges>
 
 wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::Graphs::Graph2D, Wisteria::GraphItems::GraphItemBase);
 
@@ -78,8 +79,8 @@ namespace Wisteria::Graphs
             return;
             }
 
-        legend.GetLegendIcons().push_back(
-            LegendIcon(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2), *wxTRANSPARENT_BRUSH));
+        legend.GetLegendIcons().emplace_back(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2),
+                                             *wxTRANSPARENT_BRUSH);
         wxString textLines;
 
         // combine lines with the same color and label
@@ -100,11 +101,11 @@ namespace Wisteria::Graphs
         for (const auto& refLine : refLines)
             {
             textLines += refLine.m_label + L"\n";
-            legend.GetLegendIcons().push_back(
-                LegendIcon(IconShape::HorizontalLine,
-                           wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()),
-                           ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
-                                                        Settings::GetTranslucencyValue())));
+            legend.GetLegendIcons().emplace_back(
+                IconShape::HorizontalLine,
+                wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()),
+                ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
+                                             Settings::GetTranslucencyValue()));
             }
 
         // combine areas with the same color and label
@@ -125,10 +126,10 @@ namespace Wisteria::Graphs
         for (const auto& refArea : refAreas)
             {
             textLines += refArea.m_label + L"\n";
-            legend.GetLegendIcons().push_back(LegendIcon(
+            legend.GetLegendIcons().emplace_back(
                 IconShape::Square, wxPen{ refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle() },
                 wxBrush{ ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                      Settings::GetTranslucencyValue()) }));
+                                                      Settings::GetTranslucencyValue()) });
             }
         legend.SetText(legend.GetText() + L"\n \n" + textLines.Trim());
         }
@@ -467,7 +468,7 @@ namespace Wisteria::Graphs
             m_plotRect.SetHeight(m_plotRect.GetHeight() - lineSpacing);
             }
         // and caption at the bottom
-        if (GetCaption().GetText().length() && GetCaption().IsShown())
+        if (!GetCaption().GetText().empty() && GetCaption().IsShown())
             {
             auto titleRect = GetCaption().GetBoundingBox(dc);
             // if too wide, shrink down its scaling
@@ -670,7 +671,7 @@ namespace Wisteria::Graphs
         const double smallestMainAxesLabelScaling = std::min(
             { bottomXLabelScaling, topXLabelScaling, leftYLabelScaling, rightYLabelScaling });
         double smallestCustomAxisLabelScaling = smallestMainAxesLabelScaling;
-        if (GetCustomAxes().size())
+        if (!GetCustomAxes().empty())
             {
             const auto& smallestScaledCustomAxis = *std::ranges::min_element(
                 std::as_const(GetCustomAxes()),
@@ -943,7 +944,7 @@ namespace Wisteria::Graphs
             }
 
         // draw the caption
-        if (GetCaption().GetText().length())
+        if (!GetCaption().GetText().empty())
             {
             auto caption = std::make_unique<GraphItems::Label>(GetCaption());
             if (caption->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
@@ -1328,51 +1329,48 @@ namespace Wisteria::Graphs
 
         // the embedded objects, added by client, that would be sitting
         // on top of everything else
-        for (auto plotObject = m_embeddedObjects.rbegin(); plotObject != m_embeddedObjects.rend();
-             ++plotObject)
+        for (auto& embeddedObject : std::ranges::reverse_view(m_embeddedObjects))
             {
-            if (plotObject->GetObject()->IsSelectable() && plotObject->GetObject()->HitTest(pt, dc))
+            if (embeddedObject.GetObject()->IsSelectable() &&
+                embeddedObject.GetObject()->HitTest(pt, dc))
                 {
-                plotObject->GetObject()->SetSelected(!plotObject->GetObject()->IsSelected());
+                embeddedObject.GetObject()->SetSelected(!embeddedObject.GetObject()->IsSelected());
                 return true;
                 }
             }
         // the standard graph objects (added via AddObject())
-        for (auto plotObject = m_plotObjects.rbegin(); plotObject != m_plotObjects.rend();
-             ++plotObject)
+        for (const auto& plotObject : std::ranges::reverse_view(m_plotObjects))
             {
-            if ((*plotObject)->IsSelectable() && (*plotObject)->HitTest(pt, dc))
+            if (plotObject->IsSelectable() && plotObject->HitTest(pt, dc))
                 {
                 // toggle selection (or if it has subitems, then set it to selected
                 // and let it perform its own selection logic)
-                (*plotObject)
-                    ->SetSelected((*plotObject)->GetSelectedIds().size() ?
-                                      true :
-                                      !(*plotObject)->IsSelected());
+                plotObject->SetSelected(
+                    !plotObject->GetSelectedIds().empty() ? true : !plotObject->IsSelected());
                 // update list of selected items
                 // (based on whether this is newly selected or just unselected)
-                if ((*plotObject)->IsSelected())
+                if (plotObject->IsSelected())
                     {
-                    GetSelectedIds().insert((*plotObject)->GetId());
+                    GetSelectedIds().insert(plotObject->GetId());
                     // if object has subitems, then record that for when we
                     // need to reselect items after recreating managed objects
-                    if ((*plotObject)->GetSelectedIds().size())
+                    if (!plotObject->GetSelectedIds().empty())
                         {
-                        m_selectedItemsWithSubitems.insert_or_assign(
-                            (*plotObject)->GetId(), (*plotObject)->GetSelectedIds());
+                        m_selectedItemsWithSubitems.insert_or_assign(plotObject->GetId(),
+                                                                     plotObject->GetSelectedIds());
                         }
                     }
                 else
                     {
                     // update our selection info if the object (and possibly, its sub-objects)
                     // were deselected
-                    const auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
+                    const auto unselectedItem = GetSelectedIds().find(plotObject->GetId());
                     if (unselectedItem != GetSelectedIds().end())
                         {
                         GetSelectedIds().erase(unselectedItem);
                         }
                     const auto unselectedItemWithSubitems =
-                        m_selectedItemsWithSubitems.find((*plotObject)->GetId());
+                        m_selectedItemsWithSubitems.find(plotObject->GetId());
                     if (unselectedItemWithSubitems != m_selectedItemsWithSubitems.end())
                         {
                         m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems);

@@ -284,7 +284,7 @@ namespace Wisteria::Graphs
         using SankeyColumn = std::vector<SankeyGroup>;
 
         [[nodiscard]]
-        wxString ExpandColumnHeader(const size_t index)
+        wxString ExpandColumnHeader(const size_t index) const
             {
             wxString expandedStr{ m_columnHeaders[index] };
             expandedStr.Replace(L"@COLUMNNAME@", m_columnsNames[index]);

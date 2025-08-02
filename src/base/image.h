@@ -161,7 +161,7 @@ namespace Wisteria::GraphItems
             @returns The original size, either upscaled or downscaled to fit within
                 the suggested size, with the original's aspect ratio maintained.*/
         [[nodiscard]]
-        static wxSize ToBestSize(const wxSize originalSz, const wxSize suggestedSz);
+        static wxSize ToBestSize(wxSize originalSz, wxSize suggestedSz);
         /** @returns A bitmap type from a file extension.
             @param[in,out] ext The file extension to review
                 (can be either the extension or full file path).
@@ -213,7 +213,7 @@ namespace Wisteria::GraphItems
             @returns The shrunk image, or the original image if
                 smaller than the rect.*/
         [[nodiscard]]
-        static wxImage ShrinkImageToRect(const wxImage& img, const wxRect rect);
+        static wxImage ShrinkImageToRect(const wxImage& img, wxRect rect);
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
             @details The image must be larger than the target rect; otherwise, an invalid
                 image will be returned.\n
@@ -226,8 +226,7 @@ namespace Wisteria::GraphItems
             @returns The cropped image, or an invalid image if the original image if
                 smaller than the rect.*/
         [[nodiscard]]
-        static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
-                                       const bool centerImage);
+        static wxImage CropImageToRect(const wxImage& img, wxRect rect, bool centerImage);
 
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
@@ -323,16 +322,15 @@ namespace Wisteria::GraphItems
                 scaled for canvas scaling and DPI.
             @returns The image with the stipple drawn across it.*/
         [[nodiscard]]
-        static wxImage CreateStippledImage(wxImage stipple, const wxSize fillSize,
-                                           const Orientation direction, const bool includeShadow,
-                                           const wxCoord shadowSize);
+        static wxImage CreateStippledImage(wxImage stipple, wxSize fillSize, Orientation direction,
+                                           bool includeShadow, wxCoord shadowSize);
         /** @brief Creates a silhouette (all black copy) of an image.
             @param image The image to create the silhouette from.
             @param opaque Whether the silhouette should be a fully opaque shadow.
                 If @c false, then it will be translucent.
             @returns The silhouette of the image.*/
         [[nodiscard]]
-        static wxImage CreateSilhouette(const wxImage& image, const bool opaque = true);
+        static wxImage CreateSilhouette(const wxImage& image, bool opaque = true);
         /** @brief Creates a copy of an image with a color filter applied across it.
             @details For example, applying a light blue will make the image look
                 "cooler," while applying an orange or red filter will make it
@@ -343,35 +341,32 @@ namespace Wisteria::GraphItems
             @returns The color-filtered of the image.*/
         [[nodiscard]]
         static wxImage CreateColorFilteredImage(const wxImage& image, const wxColour& color,
-                                                const uint8_t opacity = 100);
+                                                uint8_t opacity = 100);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
             @param opacity The opacity to set the bitmap to.
             @param preserveTransparentPixels Set to @c true to not alter pixels
                 that are already transparent in the image.*/
-        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                               const bool preserveTransparentPixels = false);
+        static void SetOpacity(wxBitmap& bmp, uint8_t opacity,
+                               bool preserveTransparentPixels = false);
         /** @brief Sets the opacity of an image.
             @param image The image to edit.
             @param opacity The opacity to set the bitmap to.
             @param preserveTransparentPixels Set to @c true to not alter pixels that
                 are already transparent in the image.*/
-        static void SetOpacity(wxImage& image, const uint8_t opacity,
-                               const bool preserveTransparentPixels);
+        static void SetOpacity(wxImage& image, uint8_t opacity, bool preserveTransparentPixels);
         /** @brief Sets the opacity of a bitmap.
             @param image The image to edit.
             @param opacity The opacity to set the bitmap to.
             @param colorToPreserve Color which will not have its opacity altered.
                 This is useful for preserving highlights in an image.*/
-        static void SetOpacity(wxImage& image, const uint8_t opacity,
-                               const wxColour& colorToPreserve);
+        static void SetOpacity(wxImage& image, uint8_t opacity, const wxColour& colorToPreserve);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
             @param opacity The opacity to set the bitmap to.
             @param colorToPreserve Color which will not have its opacity altered.
                 This is useful for preserving highlights in an image.*/
-        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                               const wxColour& colorToPreserve);
+        static void SetOpacity(wxBitmap& bmp, uint8_t opacity, const wxColour& colorToPreserve);
         /** @brief Set the specified color in an image to transparent.
             @details Any pixel of this color will be set to transparent in the alpha channel.
             @param image The image to edit.
@@ -404,8 +399,7 @@ namespace Wisteria::GraphItems
                 source for the explanations for @c radius and @c intensity.\n
                 This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
-        static wxImage OilPainting(const wxImage& image, const uint8_t radius = 10,
-                                   const float intensity = 40);
+        static wxImage OilPainting(const wxImage& image, uint8_t radius = 10, float intensity = 40);
         /** @brief Applies a sepia (i.e., faded photograph) effect to an image.
             @param image The original image.
             @param magnitude The strength of the effect.
@@ -414,7 +408,7 @@ namespace Wisteria::GraphItems
                 by Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata.\n
                 This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
-        static wxImage Sepia(const wxImage& image, const uint8_t magnitude = 75);
+        static wxImage Sepia(const wxImage& image, uint8_t magnitude = 75);
         /** @brief Applies a frosted glass window effect to an image.
             @param image The original image.
             @param orientation The direction(s) of the frosting effect.
@@ -428,13 +422,13 @@ namespace Wisteria::GraphItems
                 This article is licensed under the Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage FrostedGlass(const wxImage& image,
-                                    const Wisteria::Orientation orientation = Orientation::Both,
-                                    const uint8_t coarseness = 50);
+                                    Wisteria::Orientation orientation = Orientation::Both,
+                                    uint8_t coarseness = 50);
         /** @returns Returns an image with an effect applied to it.
             @param effect The effect to apply.
             @param img The basis image to apply the effect to.*/
         [[nodiscard]]
-        static wxImage ApplyEffect(const Wisteria::ImageEffect effect, const wxImage& img);
+        static wxImage ApplyEffect(Wisteria::ImageEffect effect, const wxImage& img);
         /// @}
 
         /** @name Size Functions
@@ -446,22 +440,22 @@ namespace Wisteria::GraphItems
         /** @brief Sets the image's width.
             @param width The new width.
             @note The aspect ratio of the image will be maintained.*/
-        void SetWidth(const wxCoord width);
+        void SetWidth(wxCoord width);
         /** @brief Sets the image's height.
             @param height The new height.
             @note The aspect ratio of the image will be maintained.*/
-        void SetHeight(const wxCoord height);
+        void SetHeight(wxCoord height);
         /** @brief Explicitly sets the image's size.
             @param sz The new size.
             @warning The image will be stretched to fit in this size, distorting its appearance.\n
                 Prefer using SetWidth(), SetHeight(), or SetBestSize() to maintain aspect ratio.*/
-        void SetSize(const wxSize sz);
+        void SetSize(wxSize sz);
         /** @brief Sets the image's size to fit inside the specified bounding box.
             @param suggestedSz The suggested bounding box size.
             @returns The new size of the image based on the suggested size.
             @note The image's new size may be different from the suggested size here, as it will
                 maintain the image's aspect ratio.*/
-        wxSize SetBestSize(const wxSize suggestedSz);
+        wxSize SetBestSize(wxSize suggestedSz);
 
         /** @brief Calculates the image's size to fit inside the specified bounding box.
             @param suggestedSz The suggested bounding box size.
@@ -469,7 +463,7 @@ namespace Wisteria::GraphItems
             @note The image's new size may be different from the suggested size here, as it will
                 maintain the image's aspect ratio.*/
         [[nodiscard]]
-        wxSize GetBestSize(const wxSize suggestedSz) const;
+        wxSize GetBestSize(wxSize suggestedSz) const;
 
         /// @returns How the image's size is adjusted when its bounding box is changed.
         [[nodiscard]]
@@ -535,7 +529,7 @@ namespace Wisteria::GraphItems
                 Call SetPageVerticalAlignment() and SetPageHorizontalAlignment()
                 to control how it is positioned inside its bounding box.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) override final;
 
         /** @brief Moves the item by the specified x and y values.
             @param xToMove the amount to move horizontally.

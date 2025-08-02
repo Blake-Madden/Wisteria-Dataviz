@@ -88,10 +88,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 {
                 const auto [minVal, maxVal] = std::minmax_element(
                     m_scoresColumn->GetValues().cbegin(), m_scoresColumn->GetValues().cend());
-                const auto minYAxis = m_scoresColumn->GetValues().size() ?
+                const auto minYAxis = !m_scoresColumn->GetValues().empty() ?
                                           std::min(20.0, previous_interval(*minVal, 2)) :
                                           20.0;
-                const auto maxYAxis = m_scoresColumn->GetValues().size() ?
+                const auto maxYAxis = !m_scoresColumn->GetValues().empty() ?
                                           std::max(70.0, next_interval(*maxVal, 2)) :
                                           70.0;
                 return std::make_pair(minYAxis, maxYAxis);
@@ -257,7 +257,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             // The axis in the middle is the true value ranges, so 55 or higher
             // is the most difficult. Hence, 55 should be lit up if the score is 55.
             // However, the label to the left is for the area below 55, so it should not
-            // be lit up. Thus, we need to showcase 55 for the axis points later, but
+            // be lit up. Thus, we need to showcase 55 for the axis points later,
             // but don't light up the bracket at 55 on the left axis.
             activeScoreAreasMainAxis.push_back(leftRulerAxisPos - 10);
             if (leftRulerAxisPos == 25)

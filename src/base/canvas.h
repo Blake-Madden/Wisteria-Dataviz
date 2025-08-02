@@ -162,7 +162,7 @@ namespace Wisteria
             @param flags Window flags passed to wxScrolledWindow.*/
         explicit Canvas(wxWindow* parent, int itemId = wxID_ANY,
                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                        const long flags = 0);
+                        long flags = 0);
         /// @private
         Canvas() = default;
         /// @private
@@ -223,7 +223,7 @@ namespace Wisteria
              canvas->SetBackgroundImage(bb);
             @endcode*/
         void SetBackgroundImage(const wxBitmapBundle& backgroundImage,
-                                const uint8_t opacity = wxALPHA_OPAQUE) noexcept;
+                                uint8_t opacity = wxALPHA_OPAQUE) noexcept;
 
         /// @}
 
@@ -308,7 +308,7 @@ namespace Wisteria
         /** @brief Sets the minimum height that the canvas can be. It will be forced to be this
                 tall even as its parent is resized.
             @param minHeight The minimum height to use.*/
-        void SetCanvasMinHeightDIPs(const int minHeight);
+        void SetCanvasMinHeightDIPs(int minHeight);
 
         /// @returns The default minimum width used for canvas.
         ///     Can be overridden by SetCanvasMinWidthDIPs().
@@ -405,7 +405,7 @@ namespace Wisteria
             @note Contents currently in the grid will be preserved,
                 unless @c rows or @c columns is smaller than the current size.\n
                 Call ClearFixedObjects() if you need to clear the current contents.*/
-        void SetFixedObjectsGridSize(const size_t rows, const size_t columns);
+        void SetFixedObjectsGridSize(size_t rows, size_t columns);
         /// @returns The size of the fixed object grid (number of rows x columns).
         [[nodiscard]]
         std::pair<size_t, size_t> GetFixedObjectsGridSize() const;
@@ -417,18 +417,17 @@ namespace Wisteria
             @param row The row location of the item being set.
             @param column The column location of the item being set.
             @param object The object being added to the location.*/
-        void SetFixedObject(const size_t row, const size_t column,
+        void SetFixedObject(size_t row, size_t column,
                             const std::shared_ptr<GraphItems::GraphItemBase>& object);
         /// @returns The fixed object at @c row and @c column.
         /// @param row The row of the object.
         /// @param column The column of the object.
         [[nodiscard]]
-        std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row,
-                                                                  const size_t column);
+        std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(size_t row, size_t column);
         /// @returns The fixed object with the given ID, or null if not found.
         /// @param itemId The ID of the object to look for.
         [[nodiscard]]
-        std::shared_ptr<GraphItems::GraphItemBase> FindFixedObject(const long itemId) noexcept;
+        std::shared_ptr<GraphItems::GraphItemBase> FindFixedObject(long itemId) noexcept;
 
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots
@@ -742,8 +741,7 @@ namespace Wisteria
             @param dc The device context to draw on.
             @param drawingRect The rect within the DC to draw within.
             @param watermark The label to draw across the canvas.*/
-        static void DrawWatermarkLabel(wxDC& dc, const wxRect drawingRect,
-                                       const Watermark& watermark);
+        static void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, const Watermark& watermark);
         /** @brief Draws a watermark logo on the corner of a canvas.
             @param dc The device context to draw on.*/
         void DrawWatermarkLogo(wxDC& dc) const;
@@ -763,21 +761,6 @@ namespace Wisteria
         const wxPrintData& GetPrinterSettings() const noexcept
             {
             return m_printData;
-            }
-
-        /// @private
-        void SetBackgroundImage(wxBitmapBundle&& backgroundImage,
-                                const uint8_t opacity = wxALPHA_OPAQUE) noexcept
-            {
-            m_bgImage = std::move(backgroundImage);
-            m_bgOpacity = opacity;
-            }
-
-        /// @private
-        void SetWatermarkLogo(wxBitmapBundle&& watermark, const wxSize sz) noexcept
-            {
-            m_watermarkImg = std::move(watermark);
-            m_watermarkImgSizeDIPs = sz;
             }
 
         /// @private
@@ -810,14 +793,13 @@ namespace Wisteria
 
         /// @private
         [[nodiscard]]
-        std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row,
-                                                                  const size_t column) const;
+        std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(size_t row, size_t column) const;
 
       private:
         /// @brief Divides the width of a row into columns, taking into account items
         ///     whose width should not be more than its content (at default scaling).
         /// @param row The row to calculate.
-        void CalcColumnWidths(const size_t row);
+        void CalcColumnWidths(size_t row);
 
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]]
@@ -831,25 +813,25 @@ namespace Wisteria
             @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the left margin.*/
         [[nodiscard]]
-        long CalcLeftTitles(wxDC& dc, const long spacingWidth);
+        long CalcLeftTitles(wxDC& dc, long spacingWidth);
         /** @brief Draws the right titles.
             @returns How much of the right margin of the plot those title take up.
             @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the right margin.*/
         [[nodiscard]]
-        long CalcRightTitles(wxDC& dc, const long spacingWidth);
+        long CalcRightTitles(wxDC& dc, long spacingWidth);
         /** @brief Draws the top titles.
             @returns How much of the top margin of the plot those title take up.
             @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the top margin.*/
         [[nodiscard]]
-        long CalcTopTitles(wxDC& dc, const long spacingWidth);
+        long CalcTopTitles(wxDC& dc, long spacingWidth);
         /** @brief Draws the bottom titles.
             @returns How much of the bottom margin of the plot those title take up.
             @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the bottom margin.*/
         [[nodiscard]]
-        long CalcBottomTitles(wxDC& dc, const long spacingWidth);
+        long CalcBottomTitles(wxDC& dc, long spacingWidth);
 
         /** @brief Contrasts a title label against the canvas.
             @param[in,out] title The title label to contrast.*/

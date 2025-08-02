@@ -105,7 +105,7 @@ namespace Wisteria::GraphItems
             @param parentScaling This parameter is ignored.
             @note The scaling of the point will be adjusted to this box.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) override final;
 
         Wisteria::Icons::IconShape m_shape{ Wisteria::Icons::IconShape::Circle };
         const wxBitmapBundle* m_iconImage{ nullptr };
@@ -246,7 +246,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets whether the points are selected.
             @param selected Whether the last hit point
                 (or all points if there was no previous hit) should be selected.*/
-        void SetSelected(const bool selected) override final;
+        void SetSelected(bool selected) override final;
         /** @brief Draws the selected points' labels.
             @param dc The DC to render with.
             @param scaling The scaling to draw the text with. This may be different from
@@ -254,8 +254,7 @@ namespace Wisteria::GraphItems
            caller.
             @param boundingBox The bounding box to constrain the label inside.
                 Default is an empty rect, which will cause this parameter to be ignored.*/
-        void DrawSelectionLabel(wxDC& dc, const double scaling,
-                                const wxRect boundingBox = wxRect{}) const override final;
+        void DrawSelectionLabel(wxDC& dc, double scaling, wxRect boundingBox) const override final;
 
         /** @warning Should not be called. Points should be explicitly set at
                 specific coordinates, and cannot be scaled to fit in an arbitrary bounding box.
@@ -309,7 +308,7 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const override final;
+        bool HitTest(wxPoint pt, wxDC& dc) const override final;
 
         [[nodiscard]]
         wxColour GetMaybeGhostedColor(const wxColour& color) const

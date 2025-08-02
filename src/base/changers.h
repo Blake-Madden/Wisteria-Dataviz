@@ -12,8 +12,6 @@
 #ifndef WISTERIA_CHANGERS_H
 #define WISTERIA_CHANGERS_H
 
-#include <wx/dcgraph.h>
-#include <wx/gdicmn.h>
 #include <wx/wx.h>
 
 namespace Wisteria

@@ -225,7 +225,7 @@ namespace Wisteria::GraphItems
 
         // Border pixels (depends on radius) will become black.
         // On increasing radius boundary pixels should set as black.
-        std::memset(imgOutData, 0, static_cast<size_t>(image.GetWidth() * image.GetHeight() * 3));
+        std::memset(imgOutData, 0, image.GetWidth() * image.GetHeight() * 3);
 
         // If total bytes in a row of image is not divisible by four,
         // blank bytes will be padded to the end of the row.
@@ -945,7 +945,7 @@ namespace Wisteria::GraphItems
     wxBitmapType Image::GetImageFileTypeFromExtension(wxString& ext)
         {
         ext = (ext.find(L'.') == std::wstring::npos) ? ext : wxFileName(ext).GetExt();
-        wxBitmapType imageType{};
+        wxBitmapType imageType{ wxBITMAP_TYPE_PNG };
         if (ext.CmpNoCase(L"jpg") == 0 || ext.CmpNoCase(L"jpeg") == 0 || ext.CmpNoCase(L"jpe") == 0)
             {
             imageType = wxBITMAP_TYPE_JPEG;
@@ -982,10 +982,6 @@ namespace Wisteria::GraphItems
         else if (ext.CmpNoCase(L"svg") == 0)
             {
             imageType = wxBITMAP_TYPE_ANY;
-            }
-        else
-            {
-            imageType = wxBITMAP_TYPE_PNG;
             }
         return imageType;
         }

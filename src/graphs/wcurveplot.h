@@ -172,7 +172,7 @@ namespace Wisteria::Graphs
       private:
         void ResetTimeLabels();
         [[nodiscard]]
-        wxString FormatTimeLabel(const uint8_t step) const;
+        wxString FormatTimeLabel(uint8_t step) const;
 
         wxString m_timeLabel{ _(L"year") };
         };

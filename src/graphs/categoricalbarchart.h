@@ -135,7 +135,7 @@ namespace Wisteria::Graphs
                      const wxString& categoricalColumnName,
                      const std::optional<wxString>& weightColumnName = std::nullopt,
                      const std::optional<wxString>& groupColumnName = std::nullopt,
-                     const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
+                     BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
 
       private:
         struct CatBarBlock

@@ -79,7 +79,7 @@ namespace Wisteria::GraphItems
             };
 
         /// @private
-        Polygon() { GetGraphItemInfo().Outline(true, true, true, true); }
+        Polygon() { GraphItemBase::GetGraphItemInfo().Outline(true, true, true, true); }
 
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
@@ -122,7 +122,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the points of the polygon.
             @param polygon The points in the polygon.
             @param N The number of points in the polygon.*/
-        void SetPoints(const wxPoint* polygon, const size_t N);
+        void SetPoints(const wxPoint* polygon, size_t N);
 
         /** @brief Sets the points of the polygon.
             @param polygon An array of points (e.g., `std::array<wxPoint, 5>`).*/
@@ -251,7 +251,7 @@ namespace Wisteria::GraphItems
             @param N The number of points in the polygon.
             @returns Whether the point is inside the polygon.*/
         [[nodiscard]]
-        static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N);
+        static bool IsInsidePolygon(wxPoint p, const wxPoint* polygon, int N);
 
         /** @brief Determines if a rectangle is inside a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
@@ -275,7 +275,7 @@ namespace Wisteria::GraphItems
             @param outerRect the larger rect.
             @returns @c true if @c innerRect is inside @c outerRect.*/
         [[nodiscard]]
-        static bool IsRectInsideRect(const wxRect innerRect, const wxRect outerRect);
+        static bool IsRectInsideRect(wxRect innerRect, wxRect outerRect);
         /** @brief Determines how much of a rectangle fits into another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
@@ -284,8 +284,7 @@ namespace Wisteria::GraphItems
                 For example, if 3/4 of the smaller rect's width is inside the larger rect
                 and 1/2 of its height fits, then this will return @c 0.75 and @c 0.5.*/
         [[nodiscard]]
-        static std::pair<double, double> GetPercentInsideRect(const wxRect innerRect,
-                                                              const wxRect outerRect);
+        static std::pair<double, double> GetPercentInsideRect(wxRect innerRect, wxRect outerRect);
         /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
             @details The line is drawn with the current pen and the arrowhead is filled
                 with the current brush. Adapted from code by Adrian McCarthy.
@@ -294,8 +293,7 @@ namespace Wisteria::GraphItems
             @param pt2 The ending point of the line
                 (and where the arrowhead will be pointing at).
             @param arrowHeadSize The width and height of the arrowhead.*/
-        static void DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
-                              const wxSize arrowHeadSize);
+        static void DrawArrow(wxDC& dc, wxPoint pt1, wxPoint pt2, wxSize arrowHeadSize);
 
         /** @brief Shrinks a rectangle by a given scaling.
             @param theRect The rectangle to downscale.
@@ -305,8 +303,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxRect DownScaleRect(const wxRect& theRect, const double scaling)
             {
-            return wxRect(wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
-                                 safe_divide<double>(theRect.GetHeight(), scaling)));
+            return { wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
+                            safe_divide<double>(theRect.GetHeight(), scaling)) };
             }
 
         /** @brief Determines the four corners of a rectangle.
@@ -324,7 +322,7 @@ namespace Wisteria::GraphItems
             @returns The rectangle that the polygon would need to fit in.
             @todo needs unit testing*/
         [[nodiscard]]
-        static wxRect GetPolygonBoundingBox(const wxPoint* polygon, const size_t N);
+        static wxRect GetPolygonBoundingBox(const wxPoint* polygon, size_t N);
         /** @brief Determines the bounding box that a polygon requires to fit inside.
             @param polygon The polygon's points.
             @returns The rectangle that the polygon would need to fit in.
@@ -356,7 +354,7 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const override final;
+        bool HitTest(wxPoint pt, wxDC& dc) const override final;
         /** @brief Draws the polygon.
             @param dc The canvas to draw the point on.
             @returns The box that the polygon is being drawn within.*/
@@ -373,14 +371,14 @@ namespace Wisteria::GraphItems
         /** @brief Moves the polygon by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) override final;
+        void Offset(int xToMove, int yToMove) override final;
         /** @brief Bounds the polygon to the given rectangle.
             @param rect The rectangle to bound the polygon to.
             @param dc The rendering DC.
             @param parentScaling This parameter is not used in this implementation.
             @todo Add support for this; not currently implemented.*/
         void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) override final;
         /** @returns A rectangle from four points.
             @param points The four points to construct the rectangle.
             @warning It is assumed that there are four elements in @c points.*/

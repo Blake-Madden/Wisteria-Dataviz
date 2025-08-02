@@ -13,7 +13,6 @@
 #define WISTERIA_AXIS_H
 
 #include "../data/dataset.h"
-#include "currencyformat.h"
 #include "label.h"
 #include "polygon.h"
 #include "shapes.h"
@@ -444,7 +443,7 @@ namespace Wisteria::GraphItems
                 @param parentAxisOrientation The orientation of the bracket's parent axis.*/
             [[nodiscard]]
             wxCoord CalcSpaceRequired(wxDC& dc, const Axis& parentAxis,
-                                      const Orientation parentAxisOrientation) const;
+                                      Orientation parentAxisOrientation) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.\n
@@ -457,8 +456,8 @@ namespace Wisteria::GraphItems
                 @param bracketPoint The ending point, connecting to the bracket label area.
                 @note This function is only meant to be called from the parent axis when rendering
                     the brackets.*/
-            void DrawConnectionLine(wxDC& dc, const double scaling, const wxPoint axisPoint,
-                                    const wxPoint bracketPoint) const;
+            void DrawConnectionLine(wxDC& dc, double scaling, wxPoint axisPoint,
+                                    wxPoint bracketPoint) const;
 
             /// @returns The connecting line length and space between that and the bracket label.
             /// @note If lines aren't being drawn, then will return a recommended amount of padding
@@ -667,7 +666,7 @@ namespace Wisteria::GraphItems
         /** @private
             @brief Sets the scaling of the axis.
             @param scaling The scaling to use.*/
-        void SetScaling(const double scaling) override final;
+        void SetScaling(double scaling) override final;
 
         /// @brief Which parts of the axis should be reset when Reset() is called.
         enum class AxisResetLevel
@@ -685,7 +684,7 @@ namespace Wisteria::GraphItems
             };
         /** @brief Resets the settings for the axis.
             @param level Which level of settings and values should be reset.*/
-        void Reset(const AxisResetLevel level = AxisResetLevel::RangeAndLabelValues);
+        void Reset(AxisResetLevel level = AxisResetLevel::RangeAndLabelValues);
 
         /** @name Axis Type Functions
             @brief Functions related to specifying the type of axis that this is.*/
@@ -725,7 +724,7 @@ namespace Wisteria::GraphItems
             @param reverse @c true to reverse the scale, @c false to reset it.
             @deprecated Use Reverse() instead.*/
         [[deprecated("Use Reverse() instead.")]]
-        void ReverseScale(bool reverse)
+        void ReverseScale(const bool reverse)
             {
             Reverse(reverse);
             }
@@ -753,7 +752,7 @@ namespace Wisteria::GraphItems
             @param interval How often a tickmark should be placed along the axis range.
             @param displayInterval How often a label should be shown along the tickmarks.*/
         void SetRange(double rangeStart, double rangeEnd, uint8_t precision, double interval,
-                      const size_t displayInterval = 1);
+                      size_t displayInterval = 1);
         /** @brief This sets the axis if you are not sure what the interval size should be.
             @details This function will come up with an intelligent interval size for you.
                 It will also adjust the range to make them "neat."
@@ -762,7 +761,7 @@ namespace Wisteria::GraphItems
             @param precision The floating-point precision to show on the axis labels.
             @param includeExtraInterval Useful for including point labels that take up unexpected
                 space on the plot.*/
-        void SetRange(double rangeStart, double rangeEnd, const uint8_t precision,
+        void SetRange(double rangeStart, double rangeEnd, uint8_t precision,
                       bool includeExtraInterval = false);
         /** @brief Sets the range of data for the axis, using a series of dates.
             @param startDate The start date of the range.
@@ -778,7 +777,7 @@ namespace Wisteria::GraphItems
                 axis values (which may be something like 0-365 if the date range is a year).
             @sa GetRangeDates().*/
         void SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
-                      const DateInterval displayInterval, const FiscalYear fyType);
+                      DateInterval displayInterval, FiscalYear fyType);
         /** @brief Sets the range of data for the axis, using a series of dates.
             @param startDate The start date of the range.
             @param endDate The end date of the range.
@@ -828,7 +827,7 @@ namespace Wisteria::GraphItems
                 points. Also, call AdjustRangeToLabels() after you are finished adding your
                 axis values to adjust the range.
             @sa AdjustRangeToLabels().*/
-        void AddUnevenAxisPoint(const double value, const wxString& label = wxString{});
+        void AddUnevenAxisPoint(double value, const wxString& label = wxString{});
         /// @brief Adjusts the start and end of the range based on min and max range of the labels.
         /// @details This should be called if new points have been added via
         ///     GetAxisPoints() or AddUnevenAxisPoint().
@@ -876,7 +875,7 @@ namespace Wisteria::GraphItems
             @param offset The starting point on the axis from where to start labeling ticks.
             @warning This must be called after setting the axis labels. Also, this will override
                 ShowDefaultLabels() if it had been set to @c false.*/
-        void SetDisplayInterval(const size_t interval, const size_t offset = 0);
+        void SetDisplayInterval(size_t interval, size_t offset = 0);
 
         /// @}
 
@@ -934,13 +933,13 @@ namespace Wisteria::GraphItems
         /** @brief Sets the text of an axis tick label (overriding any default calculated label).
             @param tickValue The tick on the axis to label.
             @param label The label to show on the tick.*/
-        void SetCustomLabel(const double tickValue, const Label& label);
+        void SetCustomLabel(double tickValue, const Label& label);
         /** @returns The custom label for a specific tick, or empty string if one hasn't
                 been assigned.\n Will return an invalid label object if not found,
                 so check it with @c IsOk().
             @param value The tick value to retrieve the custom label for.*/
         [[nodiscard]]
-        const Label& GetCustomLabel(const double value) const;
+        const Label& GetCustomLabel(double value) const;
 
         /** @brief Finds a custom label along the axis, returning its numeric position.
             @param label The string to look for.
@@ -969,7 +968,7 @@ namespace Wisteria::GraphItems
         /// @param suggestedMaxLengthPerLine The length that each line should be
         ///     shortened to. If any line is longer, then the axis label will be split
         ///     into multiple lines.
-        void SetLabelLineLength(const size_t suggestedMaxLengthPerLine);
+        void SetLabelLineLength(size_t suggestedMaxLengthPerLine);
         /// @brief Attempts to split longer (> 20 characters) axis labels into multiple lines.
         /// @details Attempts will be made to split lengthy labels if they contain various
         ///     separators (e.g., parentheses, slashes), appear to be a comma-separated list, or
@@ -979,7 +978,7 @@ namespace Wisteria::GraphItems
         /// @param suggestedMaxLength The suggested maximum length that an axis label should be.\n
         ///     If any label is longer, then an attempt to split it into
         ///     multiple lines will be made.
-        void SetLabelLengthAuto(const size_t suggestedMaxLength = 20);
+        void SetLabelLengthAuto(size_t suggestedMaxLength = 20);
         /// @returns Whether the axis labels need to be stacked so that they don't overlap.
         /// @param dc The DC to measure the text with.
         [[nodiscard]]
@@ -988,10 +987,10 @@ namespace Wisteria::GraphItems
         ///     This checks for both generated labels and custom labels.
         /// @param value The axis value to check.
         [[nodiscard]]
-        bool PointHasLabel(const double value) const;
+        bool PointHasLabel(double value) const;
         /// @brief Sets how the numbers and custom labels should be shown.
         /// @param display How the tick labels should be displayed.
-        void SetLabelDisplay(const AxisLabelDisplay display);
+        void SetLabelDisplay(AxisLabelDisplay display);
 
         /// @returns How the tick labels are displayed.
         [[nodiscard]]
@@ -1170,14 +1169,14 @@ namespace Wisteria::GraphItems
                 have been assigned.
             @sa Ghost() for ghosting the axis lines.
         */
-        void GhostAxisPoint(const double axisPosition, const bool ghost);
+        void GhostAxisPoint(double axisPosition, bool ghost);
         /** @brief Sets all axis labels to be translucent.
             @param ghost @c true to make the labels translucent.
             @warning This should be called after the axis range (and any custom labels)
                 have been assigned.
             @sa Ghost() for ghosting the axis lines.
         */
-        void GhostAllAxisPoints(const bool ghost);
+        void GhostAllAxisPoints(bool ghost);
 
         /** @brief Sets the specified axis labels (by axis position) to be fully opaque,
                 and all others to a lighter opacity.
@@ -1258,7 +1257,7 @@ namespace Wisteria::GraphItems
                 relative to the parent plot.
             @returns @c true if the physical coordinate is found
                 (@c false when value isn't on the axis).*/
-        bool GetPhysicalCoordinate(const double value, wxCoord& result) const;
+        bool GetPhysicalCoordinate(double value, wxCoord& result) const;
 
         /// @}
 
@@ -1488,7 +1487,7 @@ namespace Wisteria::GraphItems
             @param bracketType The type of bracket series to add.
             @note If using fiscal year related brackets, you can specify how to define the fiscal
                 year's dates via @c SetFiscalYearType() or @c SetFiscalYearStart().*/
-        void AddBrackets(const BracketType bracketType);
+        void AddBrackets(BracketType bracketType);
         /** @brief Adds a series of brackets, based on two columns from a dataset.
             @details The first column is the labels for the brackets, and the second column
                 will be the values associated with the labels. Each unique label from the first
@@ -1518,7 +1517,7 @@ namespace Wisteria::GraphItems
                 have been assigned.
             @sa Ghost() for ghosting the axis lines.
         */
-        void GhostAllBrackets(const bool ghost);
+        void GhostAllBrackets(bool ghost);
 
         /** @brief Sets the specified brackets (by label) to be fully opaque,
                 and all others to a lighter opacity.
@@ -1926,7 +1925,7 @@ namespace Wisteria::GraphItems
 
         /// @brief If labels have a background color, then make their boxes wide enough
         ///     to fill the entire place available to them.
-        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, const bool useMaxWidth) const;
+        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, bool useMaxWidth) const;
 
         /** @brief Retrieves the value along the axis from a physical
                 (relative to parent plot) coordinate.
@@ -1935,7 +1934,7 @@ namespace Wisteria::GraphItems
             @returns @c true if coordinate is on the axis and a value can be found;
                 @c false otherwise.*/
         [[nodiscard]]
-        bool GetValueFromPhysicalCoordinate(const wxCoord coordinate, double& value) const noexcept;
+        bool GetValueFromPhysicalCoordinate(wxCoord coordinate, double& value) const noexcept;
 
         /// @brief Sets the width of spacing between labels.
         /// @param width The width of spacing between labels.
@@ -2001,7 +2000,7 @@ namespace Wisteria::GraphItems
             @param pt1 The first point.
             @param pt2 The second point.
             @param dc The rendering DC.*/
-        void SetPoints(const wxPoint pt1, const wxPoint pt2, wxDC& dc);
+        void SetPoints(wxPoint pt1, wxPoint pt2, wxDC& dc);
 
         /// @returns The top physical (relative to the parent canvas) point of the axis line
         ///     (for vertical axes).
@@ -2126,7 +2125,7 @@ namespace Wisteria::GraphItems
         /// @brief Calculates how much space is available for the labels within the plot area.
         void CalcMaxLabelWidth();
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) override final;
 
         /// @returns The physical (relative to the parent canvas) starting and ending points
         ///     for the axis.

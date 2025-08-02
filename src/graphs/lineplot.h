@@ -541,7 +541,7 @@ namespace Wisteria::Graphs
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]]
         bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
-                                   const Data::GroupIdType group) const noexcept;
+                                   Data::GroupIdType group) const noexcept;
 
         [[nodiscard]]
         wxColour GetMaybeGhostedColor(const wxColour& color, const bool isGhosted) const

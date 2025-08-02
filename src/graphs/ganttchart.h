@@ -161,8 +161,8 @@ namespace Wisteria::Graphs
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(const std::shared_ptr<const Data::Dataset>& data, const DateInterval interval,
-                     const FiscalYear FYType, const wxString& taskColumnName,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data, DateInterval interval,
+                     FiscalYear FYType, const wxString& taskColumnName,
                      const wxString& startDateColumnName, const wxString& endDateColumnName,
                      const std::optional<const wxString>& resourceColumnName = std::nullopt,
                      const std::optional<const wxString>& descriptionColumnName = std::nullopt,

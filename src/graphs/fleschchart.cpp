@@ -325,7 +325,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         AddObject(std::move(legend));
 
         // make "Standard" bracket white or black
-        if (GetCustomAxes().size() >= 1 && GetCustomAxes().at(1).GetBrackets().size() >= 3)
+        if (!GetCustomAxes().empty() && GetCustomAxes().at(1).GetBrackets().size() >= 3)
             {
             GetCustomAxes().at(1).GetBrackets().at(3).GetLinePen().SetColour(
                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));

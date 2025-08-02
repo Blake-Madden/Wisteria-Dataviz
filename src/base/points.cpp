@@ -227,7 +227,7 @@ namespace Wisteria::GraphItems
             const wxDCPenChanger pc{ dc, scaledPen };
 
             const auto okPointsCount =
-                std::ranges::count_if(m_points, [](const auto pt) noexcept { return pt.IsOk(); });
+                std::ranges::count_if(m_points, [](const auto& pt) noexcept { return pt.IsOk(); });
             if (okPointsCount == 0)
                 {
                 return {};
@@ -238,13 +238,12 @@ namespace Wisteria::GraphItems
             if (okPointsCount == 1)
                 {
                 // find the valid point, draw it, then we're done
-                for (size_t i = 0; i < m_points.size(); ++i)
+                for (const auto& point : m_points)
                     {
-                    if (m_points[i].IsOk() &&
-                        m_points[i].m_shape == Wisteria::Icons::IconShape::Blank)
+                    if (point.IsOk() && point.m_shape == Wisteria::Icons::IconShape::Blank)
                         {
                         const wxDCBrushChanger bc{ dc, scaledPen.GetColour() };
-                        dc.DrawCircle(m_points[i].GetAnchorPoint(), m_points[i].GetRadius());
+                        dc.DrawCircle(point.GetAnchorPoint(), point.GetRadius());
                         break;
                         }
                     }

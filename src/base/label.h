@@ -127,7 +127,7 @@ namespace Wisteria::GraphItems
             @param line The line number to change.
             @param lineText The text to replace the specified line number with.
             @note If the provided line index is out of range, then nothing is updated.*/
-        void SetLine(const size_t line, const wxString& lineText);
+        void SetLine(size_t line, const wxString& lineText);
 
         /** @brief Chop the label's text up so that it will fit within a bounding box.
             @param dc The device context to measure with.
@@ -140,7 +140,7 @@ namespace Wisteria::GraphItems
              the suggested length argument.
             @details String will be split on these delimiters: spaces and hyphens.
             @param suggestedLineLength The suggested length (character count) for each new line.*/
-        void SplitTextToFitLength(const size_t suggestedLineLength);
+        void SplitTextToFitLength(size_t suggestedLineLength);
 
         /** @brief Attempts to split the label into two lines if a logical break in the text
                 can be found.
@@ -293,7 +293,7 @@ namespace Wisteria::GraphItems
                 Call SetAnchoring() to control how it is anchored.
             @sa SetBoundingBoxToContentAdjustment().*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) override final;
 
         /// @brief When calling SetBoundingBox(), calling this first will prevent the scaling
         ///     from being adjusted to the new bounding box.
@@ -363,7 +363,7 @@ namespace Wisteria::GraphItems
                 (not the parent's).*/
         [[nodiscard]]
         static int CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
-                                        const double angleInDegrees, const wxString& text);
+                                        double angleInDegrees, const wxString& text);
 
         /// @private
         /// @internal Deprecated overload.
@@ -443,13 +443,13 @@ namespace Wisteria::GraphItems
         ///     may be smaller than @c textHeight.
         /// @param textHeight The current height of the label.
         [[nodiscard]]
-        wxSize CalcLeftImageSize(const wxCoord textHeight) const;
+        wxSize CalcLeftImageSize(wxCoord textHeight) const;
         /// @returns The size that the top image will be if the provided width is given.
         /// @note This will maintain the image's aspect ratio and the calculated width
         ///     may be smaller than @c textWidth.
         /// @param textWidth The current width of the label.
         [[nodiscard]]
-        wxSize CalcTopImageSize(const wxCoord textWidth) const;
+        wxSize CalcTopImageSize(wxCoord textWidth) const;
 
         /** @returns @c true if the given point is inside the label.
             @param pt The point to check.

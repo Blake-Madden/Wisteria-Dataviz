@@ -134,10 +134,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             // add "from" values to second column
             for (const auto& subVal : subValues.first.get_data())
                 {
-                auto subColGroupPos =
-                    std::find(m_sankeyColumns[1].begin(), m_sankeyColumns[1].end(),
-                              SankeyGroup{ subVal.first, subVal.second.second,
-                                           SankeyGroup::DownStreamGroups{} });
+                auto subColGroupPos = std::ranges::find(
+                    m_sankeyColumns[1], SankeyGroup{ subVal.first, subVal.second.second,
+                                                     SankeyGroup::DownStreamGroups{} });
                 if (subColGroupPos != m_sankeyColumns[1].end())
                     {
                     subColGroupPos->m_frequency += subVal.second.second;
@@ -162,8 +161,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 groupOffset += groups.second.first.size();
                 for (const auto& gr : groups.second.first)
                     {
-                    const auto subGroupPos = std::find(
-                        m_sankeyColumns[0].cbegin(), m_sankeyColumns[0].cend(), SankeyGroup{ gr });
+                    const auto subGroupPos =
+                        std::ranges::find(std::as_const(m_sankeyColumns[0]), SankeyGroup{ gr });
                     assert(subGroupPos != m_sankeyColumns[0].cend() &&
                            L"Unable to find group in Sankey column!");
                     if (subGroupPos != m_sankeyColumns[0].cend())
@@ -187,7 +186,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         for (const auto& col : m_sankeyColumns)
             {
             const auto groupTotal = std::accumulate(col.cbegin(), col.cend(), 0.0,
-                                                    [](const auto initVal, const auto val) noexcept
+                                                    [](const auto initVal, const auto& val) noexcept
                                                     { return val.m_frequency + initVal; });
             maxGroupTotal = std::max(maxGroupTotal, groupTotal);
             }
@@ -195,7 +194,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         for (auto& col : m_sankeyColumns)
             {
             const auto groupTotal = std::accumulate(col.cbegin(), col.cend(), 0.0,
-                                                    [](const auto initVal, const auto val) noexcept
+                                                    [](const auto initVal, const auto& val) noexcept
                                                     { return val.m_frequency + initVal; });
             // Column lost some observations for the upstream groups, so add
             // an empty group on top of it and flag it as not having any upstream
@@ -212,7 +211,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         for (auto& col : m_sankeyColumns)
             {
             const auto groupTotal = std::accumulate(col.cbegin(), col.cend(), 0.0,
-                                                    [](const auto initVal, const auto val) noexcept
+                                                    [](const auto initVal, const auto& val) noexcept
                                                     { return val.m_frequency + initVal; });
             for (auto& group : col)
                 {
@@ -288,9 +287,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 auto currentColor{ GetBrushScheme()->GetBrush(currentColorIndex++).GetColour() };
                 for (const auto& downstreamGroup : group.m_downStreamGroups.get_data())
                     {
-                    auto downstreamGroupPos = std::find(m_sankeyColumns[colIndex + 1].begin(),
-                                                        m_sankeyColumns[colIndex + 1].end(),
-                                                        SankeyGroup{ downstreamGroup.first });
+                    auto downstreamGroupPos = std::ranges::find(
+                        m_sankeyColumns[colIndex + 1], SankeyGroup{ downstreamGroup.first });
                     if (downstreamGroupPos != m_sankeyColumns[colIndex + 1].end())
                         {
                         const auto percentOfDownstreamGroup = safe_divide<double>(
@@ -385,8 +383,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         {
             const auto lowestYPosition = [&, this]()
             {
-                const auto lowestHangingColumn = std::min_element(
-                    m_sankeyColumns.cbegin(), m_sankeyColumns.cend(),
+                const auto lowestHangingColumn = std::ranges::min_element(
+                    std::as_const(m_sankeyColumns),
                     [](const auto& lhv, const auto& rhv)
                     {
                         return lhv.back().m_yAxisBottomPosition < rhv.back().m_yAxisBottomPosition;
@@ -410,8 +408,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             const auto outerOffset{ lowestYPosition * math_constants::half };
             for (auto& col : m_sankeyColumns)
                 {
-                std::for_each(col.begin(), col.end(),
-                              [&outerOffset](auto& group) { group.OffsetY(-outerOffset); });
+                std::ranges::for_each(col,
+                                      [&outerOffset](auto& group) { group.OffsetY(-outerOffset); });
                 }
         };
 
@@ -549,7 +547,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             // look for overlapping labels
             if (labels.size() > 1)
                 {
-                constexpr double MIN_FONT_SCALE{ 1.0 };
                 std::optional<double> smallestFontScale{ std::nullopt };
                 for (size_t i = 0; i < (labels.size() - 1); ++i)
                     {
@@ -557,6 +554,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                     const auto nextBBox = labels[i + 1]->GetBoundingBox(dc);
                     if (bBox.Intersects(nextBBox))
                         {
+                        constexpr double MIN_FONT_SCALE{ 1.0 };
                         const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
                         const auto percentEclipsed =
                             safe_divide<double>(heightEclipsed, bBox.GetHeight());

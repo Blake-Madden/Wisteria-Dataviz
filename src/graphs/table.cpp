@@ -481,7 +481,7 @@ namespace Wisteria::Graphs
     void Table::CalculateAggregate(const AggregateInfo& aggInfo, Table::TableCell& aggCell,
                                    const std::vector<double>& values)
         {
-        if (values.size())
+        if (!values.empty())
             {
             if (aggInfo.m_type == AggregateType::Total)
                 {
@@ -533,14 +533,14 @@ namespace Wisteria::Graphs
                  rowIndex < GetRowCount(); ++rowIndex)
                 {
                 const auto& row = m_table[rowIndex];
-                if (row.size() && row[0].m_rowCount >= 1)
+                if (!row.empty() && row[0].m_rowCount >= 1)
                     {
-                    indexAndRowCounts.push_back(std::make_pair(rowIndex, row[0].m_rowCount));
+                    indexAndRowCounts.emplace_back(rowIndex, row[0].m_rowCount);
                     }
                 }
 
             // has groups, so add grand total and group subtotals
-            if (indexAndRowCounts.size() &&
+            if (!indexAndRowCounts.empty() &&
                 // parent group, sub group, then value columns
                 GetColumnCount() > 2 &&
                 // first two columns in the first row of data appear to be grouping labels
@@ -897,7 +897,7 @@ namespace Wisteria::Graphs
         const size_t row, const wxColour& color,
         const std::optional<std::set<size_t>>& columnStops /*= std::nullopt*/)
         {
-        if (row < GetRowCount() && m_table[row].size() > 0)
+        if (row < GetRowCount() && !m_table[row].empty())
             {
             auto& currentRow = m_table[row];
             for (size_t i = 0; i < currentRow.size(); ++i)
@@ -1002,7 +1002,7 @@ namespace Wisteria::Graphs
 
         if (column < GetColumnCount())
             {
-            std::set<double, std::greater<double>> values;
+            std::set<double, std::greater<>> values;
             for (size_t row = 0; row < GetRowCount(); ++row)
                 {
                 // skip over aggregate rows (i.e., subtotals)
@@ -1060,7 +1060,7 @@ namespace Wisteria::Graphs
                     }
                 if (auto val = GetCell(row, column).GetDoubleValue(); !std::isnan(val))
                     {
-                    values.push_back(std::move(val));
+                    values.push_back(val);
                     }
                 }
             const auto meanVal = statistics::mean(values);
@@ -1105,13 +1105,13 @@ namespace Wisteria::Graphs
                 // make empty cells at least a space so that an empty
                 // row or column will at least have some width or height
                 const auto cellText = cell.GetDisplayValue();
-                measuringLabel.SetText((cellText.length() ? cellText : wxString(L" ")) +
+                measuringLabel.SetText((!cellText.empty() ? cellText : wxString(L" ")) +
                                        cell.GetPrefix());
 
                 AdjustTextLabelToCell(cell, measuringLabel);
                 auto bBox = measuringLabel.GetBoundingBox(dc);
                 // prefix will need 5 DIPs added to each side
-                if (cell.GetPrefix().length())
+                if (!cell.GetPrefix().empty())
                     {
                     bBox.Inflate(wxSize(ScaleToScreenAndCanvas(10), 0));
                     }
@@ -1286,7 +1286,7 @@ namespace Wisteria::Graphs
                             tableWidth + widestLeftNote + widestRightNote + extraSpaceForCentering),
                    tableHeight));
 
-        return wxSize(tableWidth, tableHeight);
+        return { tableWidth, tableHeight };
         }
 
     //----------------------------------------------------------------
@@ -1449,7 +1449,7 @@ namespace Wisteria::Graphs
                 const auto cellText = cell.GetDisplayValue();
                 auto cellLabel = std::make_unique<Label>(
                     GraphItemInfo((isPrefixSeparateLabel ? wxString{} : cell.GetPrefix()) +
-                                  (cellText.length() ? cellText : wxString(L" ")))
+                                  (!cellText.empty() ? cellText : wxString(L" ")))
                         .Pen(wxNullPen)
                         .Padding(5, 5, 5, 5)
                         .Scaling(GetScaling())
@@ -1476,7 +1476,7 @@ namespace Wisteria::Graphs
                     std::move(cellLabel)); // need to homogenize scaling of text later
 
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
-                if (cell.GetPrefix().length() && isPrefixSeparateLabel)
+                if (!cell.GetPrefix().empty() && isPrefixSeparateLabel)
                     {
                     const wxString prefix =
                         ((cell.m_valueFormat == TableCellFormat::PercentChange ||
@@ -2074,7 +2074,7 @@ namespace Wisteria::Graphs
         wxString footnoteCaption;
         for (size_t i = 0; i < m_footnotes.size(); ++i)
             {
-            if (m_footnotes[i].length())
+            if (!m_footnotes[i].empty())
                 {
                 footnoteCaption += wxString::Format(L"%zu. %s\n", i + 1, m_footnotes[i]);
                 }

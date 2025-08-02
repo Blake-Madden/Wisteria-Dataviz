@@ -236,7 +236,7 @@ namespace Wisteria::Graphs
             void SetData(const std::shared_ptr<const Data::Dataset>& data,
                          const wxString& continuousColumnName,
                          const std::optional<const wxString>& groupColumnName,
-                         const Data::GroupIdType groupId, const size_t schemeIndex);
+                         Data::GroupIdType groupId, size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
             [[nodiscard]]

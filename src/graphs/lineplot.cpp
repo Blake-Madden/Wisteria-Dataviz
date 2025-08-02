@@ -202,7 +202,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1), false);
 
             // if we have a string table to work with, use that for the X axis labels
-            if (IsXCategorical() && m_xColumnCategorical->GetStringTable().size() > 0)
+            if (IsXCategorical() && !m_xColumnCategorical->GetStringTable().empty())
                 {
                 GetBottomXAxis().ClearCustomLabels();
                 GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
@@ -316,13 +316,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             legendText.append(currentLabel.c_str()).append(L"\n");
             if (showingMarkers)
                 {
-                legend->GetLegendIcons().push_back(
-                    Icons::LegendIcon(line.m_shape, *wxBLACK, line.GetPen().GetColour()));
+                legend->GetLegendIcons().emplace_back(line.m_shape, *wxBLACK,
+                                                      line.GetPen().GetColour());
                 }
             else
                 {
-                legend->GetLegendIcons().push_back(Icons::LegendIcon(
-                    Icons::IconShape::HorizontalLine, line.GetPen(), line.GetPen().GetColour()));
+                legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
+                                                      line.GetPen(), line.GetPen().GetColour());
                 }
             ++lineCount;
             }

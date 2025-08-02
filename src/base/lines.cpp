@@ -8,16 +8,17 @@
 
 #include "lines.h"
 #include "polygon.h"
+#include <algorithm>
 
 namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------------
     void Lines::Offset(const int xToMove, const int yToMove)
         {
-        for (auto& line : m_lines)
+        for (auto& [fst, snd] : m_lines)
             {
-            line.first += wxPoint(xToMove, yToMove);
-            line.second += wxPoint(xToMove, yToMove);
+            fst += wxPoint(xToMove, yToMove);
+            snd += wxPoint(xToMove, yToMove);
             }
         }
 
@@ -83,13 +84,17 @@ namespace Wisteria::GraphItems
         double minY{ static_cast<double>(m_lines[0].first.y) };
         double maxY{ static_cast<double>(m_lines[0].first.y) };
 
-        for (const auto& line : m_lines)
+        for (const auto& [fst, snd] : m_lines)
             {
-            minX = std::min<double>(minX, std::min(line.first.x, line.second.x));
-            maxX = std::max<double>(maxX, std::max(line.first.x, line.second.x));
+            minX =
+                std::min<double>({ minX, static_cast<double>(fst.x), static_cast<double>(snd.x) });
+            maxX =
+                std::max<double>({ maxX, static_cast<double>(fst.x), static_cast<double>(snd.x) });
 
-            minY = std::min<double>(minY, std::min(line.first.y, line.second.y));
-            maxY = std::max<double>(maxY, std::max(line.first.y, line.second.y));
+            minY =
+                std::min<double>({ minY, static_cast<double>(fst.y), static_cast<double>(snd.y) });
+            maxY =
+                std::max<double>({ maxY, static_cast<double>(fst.y), static_cast<double>(snd.y) });
             }
         return { wxRealPoint(minX, minY), wxRealPoint(maxX, maxY) };
         }

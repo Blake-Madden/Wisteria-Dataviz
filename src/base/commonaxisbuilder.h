@@ -101,7 +101,7 @@ namespace Wisteria
         [[nodiscard]]
         static std::unique_ptr<GraphItems::Axis>
         BuildXAxis(Canvas* canvas, const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
-                   AxisType axisType, const bool useCommonLeftAxis = false);
+                   AxisType axisType, bool useCommonLeftAxis = false);
         };
     } // namespace Wisteria
 

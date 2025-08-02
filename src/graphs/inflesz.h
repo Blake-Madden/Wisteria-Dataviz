@@ -67,7 +67,7 @@ namespace Wisteria::Graphs
             Wisteria::Canvas* canvas,
             const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,
             const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes = nullptr,
-            const bool includeSzigriszt = true, const bool includeFlesch = true);
+            bool includeSzigriszt = true, bool includeFlesch = true);
         };
     } // namespace Wisteria::Graphs
 

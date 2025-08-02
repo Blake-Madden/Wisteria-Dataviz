@@ -508,11 +508,11 @@ namespace Wisteria::Graphs
         ///     and negative responses (e.g., "strongly agree") will be shades or tints of the
         ///     base color. For example, if negative is set to red, then other levels of negative
         ///     will be tinted versions of red.
-        LikertChart(Wisteria::Canvas* canvas, const LikertSurveyQuestionFormat type,
-                    std::optional<wxColour> negativeColor = std::nullopt,
-                    std::optional<wxColour> positiveColor = std::nullopt,
-                    std::optional<wxColour> neutralColor = std::nullopt,
-                    std::optional<wxColour> noResponseColor = std::nullopt);
+        LikertChart(Wisteria::Canvas* canvas, LikertSurveyQuestionFormat type,
+                    const std::optional<wxColour>& negativeColor = std::nullopt,
+                    const std::optional<wxColour>& positiveColor = std::nullopt,
+                    const std::optional<wxColour>& neutralColor = std::nullopt,
+                    const std::optional<wxColour>& noResponseColor = std::nullopt);
 
         /** @brief Adds questions (and their responses) to the chart.
             @details The data is analyzed as such:
@@ -553,9 +553,9 @@ namespace Wisteria::Graphs
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                  The exception's @c what() message is UTF-8 encoded, so pass it to
                  @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<Data::Dataset>& data,
                      const std::vector<wxString>& questionColumns,
-                     const std::optional<wxString> groupColumnName = std::nullopt);
+                     const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /** @brief Sets a common string table to the specified categorical columns
                 (i.e., questions) in a dataset.
@@ -565,7 +565,7 @@ namespace Wisteria::Graphs
             @param codes The string table to use. This should at least start at 0 (no response)
                 and then go from 1 to the highest level of the Likert scale.
             @sa CreateLabels().*/
-        static void SetLabels(std::shared_ptr<Data::Dataset>& data,
+        static void SetLabels(const std::shared_ptr<Data::Dataset>& data,
                               const std::vector<wxString>& questionColumns,
                               const Data::ColumnWithStringTable::StringTableType& codes);
 
@@ -873,7 +873,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void
-        Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
+        Collapse4PointsTo2(const std::shared_ptr<Data::Dataset>& data,
                            const std::vector<wxString>& questionColumns,
                            const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 5-point scale dataset to 3-point.

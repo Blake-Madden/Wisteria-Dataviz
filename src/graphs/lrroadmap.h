@@ -136,8 +136,8 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& predictorColumnName, const wxString& coefficientColumnName,
                      const std::optional<wxString>& pValueColumnName = std::nullopt,
-                     const std::optional<double> pLevel = std::nullopt,
-                     const std::optional<Influence> predictorsToIncludes = std::nullopt,
+                     std::optional<double> pLevel = std::nullopt,
+                     std::optional<Influence> predictorsToIncludes = std::nullopt,
                      const std::optional<wxString>& dvName = std::nullopt);
 
         /// @brief Adds a caption explaining how to interpret the graph.

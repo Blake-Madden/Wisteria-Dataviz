@@ -36,22 +36,21 @@ namespace Wisteria
         Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetLeftYAxis() };
         for (const auto& graph : graphs)
             {
-            if (graph.get()->GetLeftYAxis().GetRange().second >
-                axisWithMaxRangeEnd.GetRange().second)
+            if (graph->GetLeftYAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
                 {
-                axisWithMaxRangeEnd.CopySettings(graph.get()->GetLeftYAxis());
+                axisWithMaxRangeEnd.CopySettings(graph->GetLeftYAxis());
                 }
             }
         for (const auto& graph : graphs)
             {
             // copy the left axis range from the tallest plot to this one,
             // then turn off the labels
-            graph.get()->GetLeftYAxis().CopySettings(axisWithMaxRangeEnd);
-            graph.get()->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graph.get()->GetLeftYAxis().GetTitle().Show(false);
+            graph->GetLeftYAxis().CopySettings(axisWithMaxRangeEnd);
+            graph->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph->GetLeftYAxis().GetTitle().Show(false);
             // turn off right too
-            graph.get()->GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graph.get()->GetRightYAxis().GetTitle().Show(false);
+            graph->GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph->GetRightYAxis().GetTitle().Show(false);
             }
         // create a common axis, also copied from the tallest plot's left axis
         auto commonAxis = std::make_unique<Axis>(axisType);
@@ -94,22 +93,21 @@ namespace Wisteria
         Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetBottomXAxis() };
         for (const auto& graph : graphs)
             {
-            if (graph.get()->GetBottomXAxis().GetRange().second >
-                axisWithMaxRangeEnd.GetRange().second)
+            if (graph->GetBottomXAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
                 {
-                axisWithMaxRangeEnd.CopySettings(graph.get()->GetBottomXAxis());
+                axisWithMaxRangeEnd.CopySettings(graph->GetBottomXAxis());
                 }
             }
         for (const auto& graph : graphs)
             {
             // copy the bottom axis range from the widest plot to this one,
             // then turn off the labels
-            graph.get()->GetBottomXAxis().CopySettings(axisWithMaxRangeEnd);
-            graph.get()->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graph.get()->GetBottomXAxis().GetTitle().Show(false);
+            graph->GetBottomXAxis().CopySettings(axisWithMaxRangeEnd);
+            graph->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph->GetBottomXAxis().GetTitle().Show(false);
             // turn off top too
-            graph.get()->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graph.get()->GetTopXAxis().GetTitle().Show(false);
+            graph->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph->GetTopXAxis().GetTitle().Show(false);
             }
         // create a common axis, also copied from the widest plot's bottom axis
         auto commonAxis = std::make_unique<Axis>(axisType);

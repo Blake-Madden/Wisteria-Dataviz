@@ -79,7 +79,7 @@ namespace Wisteria::GraphItems
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) override final;
+        void Offset(int xToMove, int yToMove) override final;
 
       private:
         /** @brief Draws the points, using the pen and brush connected to this object.
@@ -94,7 +94,7 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const override final;
+        bool HitTest(wxPoint pt, [[maybe_unused]] wxDC& dc) const override final;
 
         /** @warning Do not call this function. It is only included because it's contractually
              required by base class and is not relevant to this object.*/

@@ -238,7 +238,7 @@ namespace Wisteria::Graphs
                 Also, all scales should be set up before calling SetData().
          */
         void AddScale(const std::vector<BarChart::BarBlock>& blocks,
-                      const std::optional<double> scalingAxisStart = std::nullopt,
+                      std::optional<double> scalingAxisStart = std::nullopt,
                       const wxString& header = wxString{});
 
         /** @brief Sets the header over the main scale column.

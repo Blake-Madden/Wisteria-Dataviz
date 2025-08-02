@@ -8,6 +8,7 @@
 
 #include "boxplot.h"
 #include "../math/statistics.h"
+#include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
 
@@ -132,11 +133,11 @@ namespace Wisteria::Graphs
                 }
             }
         // find the first (upper) non-outlier point
-        for (auto val = dest.rbegin(); val != dest.rend(); ++val)
+        for (const auto& val : std::ranges::reverse_view(dest))
             {
-            if (*val <= m_upperWhisker)
+            if (val <= m_upperWhisker)
                 {
-                m_upperWhisker = *val;
+                m_upperWhisker = val;
                 break;
                 }
             }

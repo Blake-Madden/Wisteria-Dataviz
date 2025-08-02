@@ -1622,7 +1622,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     labelWidth * std::abs(std::sin(geometry::degrees_to_radians(angle))) +
                     labelHeight * std::abs(std::cos(geometry::degrees_to_radians(angle)));
 
-                std::negate<double> neg;
+                constexpr std::negate<> neg;
                 dc.DrawRotatedText(
                     watermark.m_label,
                     (drawingRect.GetWidth() / 2) - static_cast<wxCoord>(widthOfWatermark / 2),

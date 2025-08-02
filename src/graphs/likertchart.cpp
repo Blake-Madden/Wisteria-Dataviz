@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "likertchart.h"
+#include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarChart)
 
@@ -73,7 +74,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         }
 
     //-----------------------------------
-    void LikertChart::SetLabels(std::shared_ptr<Data::Dataset> & data,
+    void LikertChart::SetLabels(const std::shared_ptr<Data::Dataset>& data,
                                 const std::vector<wxString>& questionColumns,
                                 const Data::ColumnWithStringTable::StringTableType& codes)
         {
@@ -151,7 +152,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
 
     //-----------------------------------
     void LikertChart::Collapse4PointsTo2(
-        std::shared_ptr<Data::Dataset> & data, const std::vector<wxString>& questionColumns,
+        const std::shared_ptr<Data::Dataset>& data, const std::vector<wxString>& questionColumns,
         const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         assert(condensedCodes.size() == 3 && L"String table should have 3 values!");
@@ -363,7 +364,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                      catColumnName)
                         .ToUTF8());
                 }
-            if (categoricalColumn->GetValues().size())
+            if (!categoricalColumn->GetValues().empty())
                 {
                 maxVal = std::max(*std::max_element(categoricalColumn->GetValues().cbegin(),
                                                     categoricalColumn->GetValues().cend()),
@@ -524,10 +525,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
 
     //----------------------------------------------------------------
     LikertChart::LikertChart(Canvas * canvas, const LikertSurveyQuestionFormat type,
-                             std::optional<wxColour> negativeColor /*= std::nullopt*/,
-                             std::optional<wxColour> positiveColor /*= std::nullopt*/,
-                             std::optional<wxColour> neutralColor /*= std::nullopt*/,
-                             std::optional<wxColour> noResponseColor /*= std::nullopt*/)
+                             const std::optional<wxColour>& negativeColor /*= std::nullopt*/,
+                             const std::optional<wxColour>& positiveColor /*= std::nullopt*/,
+                             const std::optional<wxColour>& neutralColor /*= std::nullopt*/,
+                             const std::optional<wxColour>& noResponseColor /*= std::nullopt*/)
         : BarChart(canvas), m_surveyType(type)
         {
         SetNegativeColor(negativeColor.value_or(wxNullColour));
@@ -558,9 +559,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         }
 
     //----------------------------------------------------------------
-    void LikertChart::SetData(std::shared_ptr<const Data::Dataset> data,
+    void LikertChart::SetData(const std::shared_ptr<Data::Dataset>& data,
                               const std::vector<wxString>& questionColumns,
-                              const std::optional<wxString> groupColumnName /*= std::nullopt*/)
+                              const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         if (data == nullptr)
             {
@@ -599,29 +600,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             }
 
         // go in reverse order so that the first to last questions go from top-to-bottom
-        for (auto questionIter = questionColumns.crbegin(); questionIter != questionColumns.crend();
-             ++questionIter)
+        for (const auto& questionColumn : std::ranges::reverse_view(questionColumns))
             {
-            const auto categoricalColumn = data->GetCategoricalColumn(*questionIter);
+            const auto categoricalColumn = data->GetCategoricalColumn(questionColumn);
             if (categoricalColumn == data->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(
                     wxString::Format(_(L"'%s': categorical column not found for Likert chart."),
-                                     *questionIter)
+                                     questionColumn)
                         .ToUTF8());
                 }
             if (IsCategorized() && groupColumnName.has_value())
                 {
-                AddSurveyQuestion(*questionIter, *groupColumn, *categoricalColumn);
+                AddSurveyQuestion(questionColumn, *groupColumn, *categoricalColumn);
                 }
             else
                 {
-                AddSurveyQuestion(*questionIter, *categoricalColumn);
+                AddSurveyQuestion(questionColumn, *categoricalColumn);
                 }
 
             // set the level labels from the data's string table,
             // these will be used for the legend
-            if (categoricalColumn->GetStringTable().size())
+            if (!categoricalColumn->GetStringTable().empty())
                 {
                 if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
                     GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
@@ -1280,8 +1280,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
 
         // blocks are filled bottom-to-top, so go in reverse order so that the group sorting
         // appears top-to-bottom
-        for (auto category = question.m_threePointCategories.crbegin();
-             category != question.m_threePointCategories.crend(); ++category)
+        for (const auto& threePointCategory :
+             std::ranges::reverse_view(question.m_threePointCategories))
             {
             Bar currentBar(
                 GetBarSlotCount() + 1,
@@ -1296,7 +1296,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                    GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                                .OutlinePen(*wxTRANSPARENT_PEN)
                                .Decal(GraphItems::Label(
-                                   GraphItems::GraphItemInfo(category->m_question)
+                                   GraphItems::GraphItemInfo(threePointCategory.m_question)
                                        .Font(GetBarAxis().GetFont())
                                        .LabelFitting(LabelFit::SplitTextToFit)
                                        .FontColor(*wxBLACK)
@@ -1312,30 +1312,31 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                    GraphItems::GraphItemInfo(
                                        wxString::Format(L"(%s)",
                                                         wxNumberFormatter::ToString(
-                                                            category->m_responses, 0,
+                                                            threePointCategory.m_responses, 0,
                                                             Settings::GetDefaultNumberFormat())))
                                        .Font(GetBarAxis().GetFont())
                                        .FontColor(*wxBLACK)
                                        .ChildAlignment(RelativeAlignment::FlushRight)))
                                .Show(IsShowingResponseCounts())),
                   // space in front of negative block
-                  BarBlock(
-                      BarBlockInfo(m_negativeBlockSize - (category->m_negativeRate)).Show(false)),
+                  BarBlock(BarBlockInfo(m_negativeBlockSize - (threePointCategory.m_negativeRate))
+                               .Show(false)),
                   // negative block
                   BarBlock(
-                      BarBlockInfo(category->m_negativeRate)
+                      BarBlockInfo(threePointCategory.m_negativeRate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNegativeColor())
                           .SelectionLabel(
                               GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
                           .Decal(GraphItems::Label(
                               GraphItems::GraphItemInfo(
-                                  (IsShowingPercentages() && category->m_negativeRate > 0) ?
+                                  (IsShowingPercentages() &&
+                                   threePointCategory.m_negativeRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
-                                              category->m_negativeRate, 0,
+                                              threePointCategory.m_negativeRate, 0,
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
@@ -1349,19 +1350,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                   .ChildAlignment(RelativeAlignment::FlushRight)))),
                   // positive block
                   BarBlock(
-                      BarBlockInfo(category->m_positiveRate)
+                      BarBlockInfo(threePointCategory.m_positiveRate)
                           .Brush(GetPositiveColor())
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .SelectionLabel(
                               GraphItems::Label(GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN)))
                           .Decal(GraphItems::Label(
                               GraphItems::GraphItemInfo(
-                                  (IsShowingPercentages() && category->m_positiveRate > 0) ?
+                                  (IsShowingPercentages() &&
+                                   threePointCategory.m_positiveRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
-                                              category->m_positiveRate, 0,
+                                              threePointCategory.m_positiveRate, 0,
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
@@ -1374,23 +1376,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                           LabelFit::DisplayAsIsAutoFrame)
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))),
                   // block after positive
-                  BarBlock(
-                      BarBlockInfo(m_positiveBlockSize - (category->m_positiveRate)).Show(false)),
+                  BarBlock(BarBlockInfo(m_positiveBlockSize - (threePointCategory.m_positiveRate))
+                               .Show(false)),
                   // neutral block
                   BarBlock(
-                      BarBlockInfo(category->m_neutralRate)
+                      BarBlockInfo(threePointCategory.m_neutralRate)
                           .OutlinePen(*wxTRANSPARENT_PEN)
                           .Brush(GetNeutralColor())
                           .SelectionLabel(GraphItems::Label(
                               GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                           .Decal(GraphItems::Label(
                               GraphItems::GraphItemInfo(
-                                  (IsShowingPercentages() && category->m_neutralRate > 0) ?
+                                  (IsShowingPercentages() && threePointCategory.m_neutralRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
-                                              category->m_neutralRate, 0,
+                                              threePointCategory.m_neutralRate, 0,
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
@@ -1404,12 +1406,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                   .ChildAlignment(RelativeAlignment::FlushLeft)))
                           .Tag(GetNeutralBlockLabel())),
                   // block after neutral
-                  BarBlock(BarBlockInfo(m_neutralBlockSize - category->m_neutralRate)
+                  BarBlock(BarBlockInfo(m_neutralBlockSize - threePointCategory.m_neutralRate)
                                .Show(false)
                                .Tag(GetNeutralBlockLabel())),
                   // no response block
                   BarBlock(
-                      BarBlockInfo(category->m_naRate)
+                      BarBlockInfo(threePointCategory.m_naRate)
                           .OutlinePen(Colors::ColorContrast::ShadeOrTint(
                               Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
                               .8))
@@ -1418,12 +1420,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                               GraphItems::GraphItemInfo().Pen(*wxTRANSPARENT_PEN)))
                           .Decal(GraphItems::Label(
                               GraphItems::GraphItemInfo(
-                                  (IsShowingPercentages() && category->m_naRate > 0) ?
+                                  (IsShowingPercentages() && threePointCategory.m_naRate > 0) ?
                                       wxString::Format(
                                           // TRANSLATORS: formatted number ("%s") and percent ("%%")
                                           _("%s%%"),
                                           wxNumberFormatter::ToString(
-                                              category->m_naRate, 0,
+                                              threePointCategory.m_naRate, 0,
                                               wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                                       wxString{})
                                   .Font(GetBarAxis().GetFont())
@@ -1443,7 +1445,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             if (IsSettingBarSizesToRespondentSize())
                 {
                 currentBar.SetCustomWidth(
-                    safe_divide<double>(category->m_responses, maxCategoryResponse));
+                    safe_divide<double>(threePointCategory.m_responses, maxCategoryResponse));
                 }
             SetBarBlockFullWidth(currentBar, GetCategoryBlockLabel());
             AddBar(currentBar);
@@ -2729,7 +2731,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             GraphItems::Axis dividerHorizontalBar(AxisType::BottomXAxis);
             dividerHorizontalBar.SetCustomXPosition(GetScalingAxis().GetRange().second);
             dividerHorizontalBar.SetCustomYPosition(i + 1.5);
-            if (fullDividerLines.size() &&
+            if (!fullDividerLines.empty() &&
                 std::find(fullDividerLines.cbegin(), fullDividerLines.cend(), i) ==
                     fullDividerLines.cend())
                 {

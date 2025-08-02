@@ -68,8 +68,8 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const wxString& wordColumnName,
                      const std::optional<const wxString>& weightColumnName = std::nullopt,
-                     const size_t minFreq = 1, const std::optional<size_t> maxFreq = std::nullopt,
-                     const std::optional<size_t> maxWords = std::nullopt);
+                     size_t minFreq = 1, std::optional<size_t> maxFreq = std::nullopt,
+                     std::optional<size_t> maxWords = std::nullopt);
 
       private:
         [[deprecated("Word clouds do not support legends.")]] [[nodiscard]]
