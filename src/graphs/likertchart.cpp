@@ -2665,8 +2665,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         disagreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
-            disagreeDividerLine.GetHeader().SetText(GetLeftArrow() + L" " +
-                                                    GetNegativeHeader());
+            disagreeDividerLine.GetHeader().SetText(GetLeftArrow() + L" " + GetNegativeHeader());
             disagreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushRight);
             disagreeDividerLine.GetHeader().GetPen() = wxNullPen;
             disagreeDividerLine.GetHeader().GetFont().MakeBold();
