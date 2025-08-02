@@ -91,6 +91,7 @@ Cerise	#DE3163
 Cerulean	#007BA7
 Chamoisee	#A0785A
 Champagne	#FAD6A5
+ChapelBlue	#B0D2E7
 Charcoal	#36454F
 Cherry	#DE3163
 CherryBlossomPink	#FFB7C5
