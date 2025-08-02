@@ -1320,8 +1320,8 @@ namespace Wisteria::Graphs
         wxString m_positiveHeaderLabel{ _(L"Agree") };
         wxString m_negativeHeaderLabel{ _(L"Disagree") };
         wxString m_noHeaderLabel{ _(L"No Response") };
-        wxString m_leftArrow{ _(L"«") };
-        wxString m_rightArrow{ _(L"»") };
+        wxString m_leftArrow{ _DT(L"«") };
+        wxString m_rightArrow{ _DT(L"»") };
 
         wxString m_nullString;
 

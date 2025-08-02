@@ -14,7 +14,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
     {
     //----------------------------------------------------------------
     SankeyDiagram::SankeyDiagram(
-        Canvas * canvas, const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes /*= nullptr*/)
+        Canvas * canvas,
+        const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes /*= nullptr*/)
         : Graph2D(canvas)
         {
         SetBrushScheme(brushes != nullptr ? brushes :
