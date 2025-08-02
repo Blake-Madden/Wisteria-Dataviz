@@ -180,7 +180,8 @@ namespace Wisteria::Graphs
         @par Citation:
          Inspired by the following article:
 
-         https://www.airweb.org/article/2021/08/20/data-visualization-quick-tips*/
+         https://www.airweb.org/article/2021/08/20/data-visualization-quick-tips
+    */
     class LikertChart final : public BarChart
         {
         wxDECLARE_DYNAMIC_CLASS(LikertChart);

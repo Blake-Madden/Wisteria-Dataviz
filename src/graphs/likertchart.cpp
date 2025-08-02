@@ -537,6 +537,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         SetNoResponseColor(noResponseColor.value_or(wxNullColour));
 
         SetBarOrientation(Orientation::Horizontal);
+        SetBinLabelDisplay(BinLabelDisplay::NoDisplay);
         GetScalingAxis().GetGridlinePen() = wxNullPen;
         GetBarAxis().GetGridlinePen() = wxNullPen;
 
