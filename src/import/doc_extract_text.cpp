@@ -178,10 +178,12 @@ namespace lily_of_the_valley
         std::wstring paragraphBuffer;
         std::vector<unsigned char> currentSectorBuffer(SECTOR_SIZE, 0);
 
+        // declare outside of loop so that its state persists each iteration
+        parse_state currentState; // NOLINT
+
         // process the stream
         while (!cfbObj->eof() && offset < m_text_body_stream_length)
             {
-            parse_state currentState;
             paragraphBuffer.clear();
             currentState.m_non_printable_char_detected = false;
             // cppcheck-suppress unreadVariable
