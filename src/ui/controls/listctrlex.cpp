@@ -3497,19 +3497,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         {
         wxClientDC dc(this);
         dc.SetFont(GetFont());
+        wxCoord headerTextWidth{ 0 }, headerTextHeight{ 0 };
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         // default to the column name's width
-        dc.GetTextExtent(GetColumnName(column), &textWidth, &textHeight);
-        // extra space for arrow icon if column is sorted
-        long widestLabel = textWidth + (20 * GetDPIScaleFactor());
-
+        dc.GetTextExtent(GetColumnName(column), &headerTextWidth, &headerTextHeight);
+        
         // sample the widths of the first few items and see which is the longest
-        for (long i = 0; i < 25 && i < GetItemCount(); ++i)
+        wxString longestStr;
+        for (long i = 0; i < 300 && i < GetItemCount(); ++i)
             {
-            dc.GetTextExtent(GetItemTextFormatted(i, column), &textWidth, &textHeight);
-            widestLabel = std::max<long>(widestLabel, textWidth);
+            const auto currentStr = GetItemTextFormatted(i, column);
+            if (currentStr.length() > longestStr.length())
+                {
+                longestStr = currentStr;
+                }
             }
-        // a little extra padding around the label
-        return widestLabel + (20 * GetDPIScaleFactor());
+        dc.GetTextExtent(longestStr, &textWidth, &textHeight);
+        // extra space for arrow icon if column is sorted
+        return std::max(textWidth, headerTextWidth) + (20 * GetDPIScaleFactor());
         }
     } // namespace Wisteria::UI
