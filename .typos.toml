@@ -7,22 +7,31 @@ odf = "odf"
 ODF = "ODF"
 pn = "pn"
 PN = "PN"
+Ond = "Ond"
 ths = "ths"
+gti = "gti"
+Ded = "Ded"
+ue = "ue"
 # tags
+curren = "curren"
 pard = "pard"
+BA = "BA"
 PARD = "PARD"
 Evn = "Evn"
 ment = "ment"
 FO = "FO"
+FOF = "FOF"
 headerr = "headerr"
-# non-English words
+# non-English words or odd spellings
 recommande = "recommande"
 Persan = "Persan"
+ist = "ist"
 oder = "oder"
+BERKLEY = "BERKLEY"
+Programa = "Programa"
+# false positives
+deliminated = "deliminated"
 
 [type.svg]
 extend-glob = ["*.svg"]
 check-file = false
-
-[files]
-extend-exclude = ["tests/*.*"]

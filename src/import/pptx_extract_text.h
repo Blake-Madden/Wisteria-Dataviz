@@ -1,4 +1,4 @@
-﻿/** @addtogroup Exporting
+/** @addtogroup Exporting
     @brief Classes for formatting and exporting text.
     @date 2005-2025
     @copyright Blake Madden
@@ -205,17 +205,17 @@ namespace lily_of_the_valley
             static const std::wstring_view AUTHOR(L"dc:creator");
             const wchar_t* const textEnd = html_text + text_length;
 
-            const wchar_t* const officMetaStart =
+            const wchar_t* const officeMetaStart =
                 find_element(html_text, textEnd, OFFICE_META, true);
-            if (!officMetaStart)
+            if (!officeMetaStart)
                 {
                 return;
                 }
-            m_title = read_element_as_string(officMetaStart, textEnd, TITLE);
-            m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT);
-            m_description = read_element_as_string(officMetaStart, textEnd, DESCRIPTION);
-            m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS);
-            m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR);
+            m_title = read_element_as_string(officeMetaStart, textEnd, TITLE);
+            m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT);
+            m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION);
+            m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS);
+            m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR);
             }
         };
     } // namespace lily_of_the_valley

@@ -270,8 +270,8 @@ namespace Wisteria::UI
         ObjectAndFunctionsMap m_classCollection;
 
         wxStringNoCaseMap m_libraryFunctionsWithReturnTypes;
-        std::set<wxString, wxStringPartialCmpNoCase> m_libaryAndClassNames;
-        wxString m_libaryAndClassNamesStr;
+        std::set<wxString, wxStringPartialCmpNoCase> m_libraryAndClassNames;
+        wxString m_libraryAndClassNamesStr;
 
         const wxStringNoCaseMap* m_activeFunctionsAndSignaturesMap{ nullptr };
 

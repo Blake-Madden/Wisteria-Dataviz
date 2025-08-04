@@ -28,7 +28,7 @@ namespace Wisteria::UI
         {
         if (m_list)
             {
-            m_list->OnMultiColumSort(event);
+            m_list->OnMultiColumnSort(event);
             }
         }
 
@@ -449,7 +449,7 @@ namespace Wisteria::UI
                 myColumn(parser, std::nullopt);
             lily_of_the_valley::text_row<ListCtrlExDataProvider::ListCellString> myRow(
                 std::nullopt);
-            myRow.treat_consecutive_delimitors_as_one(false);
+            myRow.treat_consecutive_delimiters_as_one(false);
             myRow.add_column(myColumn);
 
             lily_of_the_valley::text_matrix<ListCtrlExDataProvider::ListCellString> importer(

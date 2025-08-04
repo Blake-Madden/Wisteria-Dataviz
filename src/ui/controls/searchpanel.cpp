@@ -31,11 +31,11 @@ SearchPanel::SearchPanel(wxWindow* parent, wxWindowID id) : wxWindow(parent, id)
     nextButton->SetToolTip(_(L"Find the next occurrence"));
     mainSizer->Add(nextButton, wxSizerFlags{}.CentreVertical());
 
-    wxBitmapButton* peviousButton =
+    wxBitmapButton* previousButton =
         new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
                            wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
-    peviousButton->SetToolTip(_(L"Find the previous occurrence"));
-    mainSizer->Add(peviousButton, wxSizerFlags{}.CentreVertical());
+    previousButton->SetToolTip(_(L"Find the previous occurrence"));
+    mainSizer->Add(previousButton, wxSizerFlags{}.CentreVertical());
 
     mainSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
 

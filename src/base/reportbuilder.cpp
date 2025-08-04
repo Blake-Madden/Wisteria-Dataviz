@@ -529,7 +529,7 @@ namespace Wisteria
             axisNode->GetProperty(_DT(L"number-display"))->GetValueString());
         if (numDisplay)
             {
-            axis.SetNumerDisplay(numDisplay.value());
+            axis.SetNumberDisplay(numDisplay.value());
             }
 
         axis.SetDoubleSidedAxisLabels(
@@ -2770,7 +2770,7 @@ namespace Wisteria
             graphNode->GetProperty(_DT(L"number-display"))->GetValueString());
         if (numDisplay)
             {
-            barChart->SetNumerDisplay(numDisplay.value());
+            barChart->SetNumberDisplay(numDisplay.value());
             }
 
         // bar shapes

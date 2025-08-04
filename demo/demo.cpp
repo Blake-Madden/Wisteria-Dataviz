@@ -282,18 +282,18 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    wxFileDialog classiferFileDlg(this, _(L"Select Classifier Data"), wxString{}, wxString{},
+    wxFileDialog classifierFileDlg(this, _(L"Select Classifier Data"), wxString{}, wxString{},
                                   Dataset::GetDataFileFilter(),
                                   wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
-    if (classiferFileDlg.ShowModal() != wxID_OK)
+    if (classifierFileDlg.ShowModal() != wxID_OK)
         {
         return;
         }
     wxString classifierWorksheetName;
-    if (wxFileName{ classiferFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
+    if (wxFileName{ classifierFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
-        ExcelReader xlReader{ classiferFileDlg.GetPath() };
+        ExcelReader xlReader{ classifierFileDlg.GetPath() };
         if (xlReader.GetWorksheetNames().size() == 1)
             {
             classifierWorksheetName = xlReader.GetWorksheetNames()[0];
@@ -315,9 +315,9 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             }
         }
 
-    VariableSelectDlg classiferVarDlg(
+    VariableSelectDlg classifierVarDlg(
         this,
-        Dataset::ReadColumnInfo(classiferFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+        Dataset::ReadColumnInfo(classifierFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
                                 classifierWorksheetName),
         { VariableSelectDlg::VariableListInfo().Label(_(L"Categories")).SingleSelection(true),
           VariableSelectDlg::VariableListInfo()
@@ -329,7 +329,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
               .Label(_(L"Negation Patterns"))
               .SingleSelection(true)
               .Required(false) });
-    if (classiferVarDlg.ShowModal() != wxID_OK)
+    if (classifierVarDlg.ShowModal() != wxID_OK)
         {
         return;
         }
@@ -387,9 +387,9 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
                                  recodingWorksheetName)),
                              recodingWorksheetName);
 
-        classifierData->Import(classiferFileDlg.GetPath(),
+        classifierData->Import(classifierFileDlg.GetPath(),
                                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
-                                   classiferFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
+                                   classifierFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
                                    classifierWorksheetName)),
                                classifierWorksheetName);
 
@@ -405,13 +405,13 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
 
         Wisteria::Data::TextClassifier textClassifier;
         textClassifier.SetClassifierData(
-            classifierData, classiferVarDlg.GetSelectedVariables(0)[0],
-            (classiferVarDlg.GetSelectedVariables(1).size() > 0 ?
-                 std::optional<wxString>{ classiferVarDlg.GetSelectedVariables(1)[0] } :
+            classifierData, classifierVarDlg.GetSelectedVariables(0)[0],
+            (classifierVarDlg.GetSelectedVariables(1).size() > 0 ?
+                 std::optional<wxString>{ classifierVarDlg.GetSelectedVariables(1)[0] } :
                  std::nullopt),
-            classiferVarDlg.GetSelectedVariables(2)[0],
-            (classiferVarDlg.GetSelectedVariables(3).size() > 0 ?
-                 std::optional<wxString>{ classiferVarDlg.GetSelectedVariables(3)[0] } :
+            classifierVarDlg.GetSelectedVariables(2)[0],
+            (classifierVarDlg.GetSelectedVariables(3).size() > 0 ?
+                 std::optional<wxString>{ classifierVarDlg.GetSelectedVariables(3)[0] } :
                  std::nullopt));
         const auto [matchedData, unclassifiedData] =
             textClassifier.ClassifyData(surveyData, surveyVarDlg.GetSelectedVariables(0)[0]);

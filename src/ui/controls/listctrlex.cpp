@@ -308,7 +308,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         Bind(wxEVT_LIST_BEGIN_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
         Bind(wxEVT_LIST_END_LABEL_EDIT, &ListCtrlEx::OnIgnoreEvent, this);
         // menus
-        Bind(wxEVT_MENU, &ListCtrlEx::OnMultiColumSort, this, XRCID("ID_LIST_SORT"));
+        Bind(wxEVT_MENU, &ListCtrlEx::OnMultiColumnSort, this, XRCID("ID_LIST_SORT"));
         Bind(wxEVT_MENU, &ListCtrlEx::OnSelectAll, this, wxID_SELECTALL);
         Bind(wxEVT_MENU, &ListCtrlEx::OnCopy, this, wxID_COPY);
         Bind(wxEVT_MENU, &ListCtrlEx::OnCopyFirstColumn, this, XRCID("ID_COPY_FIRST_COLUMN"));
@@ -556,7 +556,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::OnMultiColumSort([[maybe_unused]]
+    void ListCtrlEx::OnMultiColumnSort([[maybe_unused]]
                                       wxCommandEvent &
                                       event)
         {
@@ -1159,7 +1159,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     static_cast<wxCoord>(dcHeight * scaleDownY) - heightMargin;
 
                 // calculate the widths of each column by finding each column's longest cell
-                wxCoord cellTextWidth{ 0 }, cellTextHeigth{ 0 }, columnHeaderWidth{ 0 },
+                wxCoord cellTextWidth{ 0 }, cellTextHeight{ 0 }, columnHeaderWidth{ 0 },
                     columnHeaderHeight{ 0 };
                 wxString longestString;
                 for (long columnCounter = 0; columnCounter < m_list->GetColumnCount();
@@ -1175,7 +1175,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         {
                         const wxString cellText =
                             m_list->GetItemTextFormatted(rowCounter, columnCounter);
-                        dc->GetTextExtent(cellText, &cellTextWidth, &cellTextHeigth);
+                        dc->GetTextExtent(cellText, &cellTextWidth, &cellTextHeight);
                         longestCellText = std::max<long>(longestCellText, cellTextWidth);
                         if (cellText.length() > longestString.length())
                             {

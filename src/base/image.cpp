@@ -374,9 +374,9 @@ namespace Wisteria::GraphItems
                     y = findYInBound(y);
                     }
 
-                for (auto columCounter = 0; columCounter < image.GetWidth() * 3; columCounter += 3)
+                for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3; columnCounter += 3)
                     {
-                    int x = static_cast<int>(columCounter + (distro(twister) - 0.5) * coarseness);
+                    int x = static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness);
 
                     // generally oriented glass
                     if (orientation == Orientation::Both)
@@ -395,7 +395,7 @@ namespace Wisteria::GraphItems
                     const auto b = imgInData[w1 + 2];
 
                     // target pixel
-                    w1 = w2 + columCounter;
+                    w1 = w2 + columnCounter;
                     assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     imgOutData[w1] = r;
                     imgOutData[w1 + 1] = g;

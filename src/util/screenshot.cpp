@@ -713,7 +713,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
 
     memDC.SelectObject(wxNullBitmap);
 
-    // crop vertially, if requested
+    // crop vertically, if requested
     if (cutoffId != wxID_ANY)
         {
         const wxWindow* cutoffWindow = windowToCapture->FindWindow(cutoffId);

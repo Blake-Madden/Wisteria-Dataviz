@@ -33,7 +33,7 @@ TEST_CASE("Path resolver", "[pathresolve]")
         CHECK(pathResolve.GetResolvedPath().empty());
         }
 
-    SECTION("Excell Cell")
+    SECTION("Excel Cell")
         {
         FilePathResolverBase pathResolve;
 

@@ -853,9 +853,9 @@ namespace lily_of_the_valley
             return false;
             }
 
-        str->seek(0, cfb_iostream::cfb_strem_seek_type::seek_end);
+        str->seek(0, cfb_iostream::cfb_stream_seek_type::seek_end);
         m_file_length = str->tell();
-        str->seek(0, cfb_iostream::cfb_strem_seek_type::seek_beg);
+        str->seek(0, cfb_iostream::cfb_stream_seek_type::seek_beg);
         // read in the first BAT (512 byte block) and verify that it's a valid CFB stream
         std::vector<char> cfbBuf(BAT_SECTOR_SIZE + 1, 0);
         if (str->read(cfbBuf.data(), BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
@@ -919,7 +919,7 @@ namespace lily_of_the_valley
             tmpBuffer.resize(m_sector_size * (i + 1) + DIFAT_SIZE);
             str->seek(
                 static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + currSector * m_sector_size),
-                cfb_iostream::cfb_strem_seek_type::seek_beg);
+                cfb_iostream::cfb_stream_seek_type::seek_beg);
             const auto readSCount =
                 str->read(tmpBuffer.data() + DIFAT_SIZE + (m_sector_size - 4) * i, m_sector_size);
             if (readSCount != m_sector_size)
@@ -945,7 +945,7 @@ namespace lily_of_the_valley
                 }
             str->seek(
                 static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + batSector * m_sector_size),
-                cfb_iostream::cfb_strem_seek_type::seek_beg);
+                cfb_iostream::cfb_stream_seek_type::seek_beg);
             if (str->read(m_BAT.data() + currentBATSector * m_sector_size, m_sector_size) !=
                 m_sector_size)
                 {
@@ -962,7 +962,7 @@ namespace lily_of_the_valley
             char cfbBuffer2[BAT_SECTOR_SIZE]{ 0 };
             str->seek(
                 static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ + XBATstart * m_sector_size),
-                cfb_iostream::cfb_strem_seek_type::seek_beg);
+                cfb_iostream::cfb_stream_seek_type::seek_beg);
             if (str->read(cfbBuffer2, BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
                 {
                 // Bad XBAT entry
@@ -982,7 +982,7 @@ namespace lily_of_the_valley
                     }
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
                                             batSector * m_sector_size),
-                          cfb_iostream::cfb_strem_seek_type::seek_beg);
+                          cfb_iostream::cfb_stream_seek_type::seek_beg);
                 if (str->read(m_BAT.data() + currentBATSector * m_sector_size, m_sector_size) !=
                     m_sector_size)
                     {
@@ -1006,7 +1006,7 @@ namespace lily_of_the_valley
                 // read in the next (X)BAT, which is always 512
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
                                             batSector * m_sector_size),
-                          cfb_iostream::cfb_strem_seek_type::seek_beg);
+                          cfb_iostream::cfb_stream_seek_type::seek_beg);
                 if (str->read(cfbBuffer2, BAT_SECTOR_SIZE) != BAT_SECTOR_SIZE)
                     {
                     // Bad XBAT entry
@@ -1029,7 +1029,7 @@ namespace lily_of_the_valley
                         }
                     str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
                                                 batSector * m_sector_size),
-                              cfb_iostream::cfb_strem_seek_type::seek_beg);
+                              cfb_iostream::cfb_stream_seek_type::seek_beg);
                     if (str->read(m_BAT.data() + currentBATSector * m_sector_size, m_sector_size) !=
                         m_sector_size)
                         {
@@ -1062,7 +1062,7 @@ namespace lily_of_the_valley
                     }
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE /*skip first BAT*/ +
                                             sbatCurrent * m_sector_size),
-                          cfb_iostream::cfb_strem_seek_type::seek_beg);
+                          cfb_iostream::cfb_stream_seek_type::seek_beg);
                 str->read(m_SBAT.data() + sbatBigSectorsRead * m_sector_size, m_sector_size);
                 ++sbatBigSectorsRead;
                 if ((static_cast<size_t>(sbatCurrent) * 4) > (m_bat_sector_count * m_sector_size))
@@ -1116,7 +1116,7 @@ namespace lily_of_the_valley
             throw msword_root_enrty_not_found();
             }
         m_current_file_system_entry = m_file_system_entries;
-        str->seek(0, cfb_iostream::cfb_strem_seek_type::seek_beg);
+        str->seek(0, cfb_iostream::cfb_stream_seek_type::seek_beg);
         return true;
         }
 
@@ -1138,7 +1138,7 @@ namespace lily_of_the_valley
             }
 
         auto cfbObj = std::make_shared<file_system_entry>(*str);
-        cfbObj->m_strorage_offset = m_current_file_system_entry;
+        cfbObj->m_storage_offset = m_current_file_system_entry;
         cfbObj->m_type = static_cast<file_system_entry_type>(m_current_file_system_entry[66]);
         cfbObj->m_color = static_cast<file_system_entry_color>(m_current_file_system_entry[67]);
         cfbObj->m_previous_property = read_uint(m_current_file_system_entry, 68);
@@ -1279,7 +1279,7 @@ namespace lily_of_the_valley
             {
             cfbObj->m_stream_offset = offset;
             cfbObj->seek(static_cast<long>(cfbObj->m_stream_offset),
-                         cfb_iostream::cfb_strem_seek_type::seek_beg);
+                         cfb_iostream::cfb_stream_seek_type::seek_beg);
             }
 
         const size_t remainingBytesInSector = sectorSize - extraBytesOffset;
@@ -1302,7 +1302,7 @@ namespace lily_of_the_valley
                 {
                 cfbObj->m_stream_offset = offset;
                 cfbObj->seek(static_cast<long>(cfbObj->m_stream_offset),
-                             cfb_iostream::cfb_strem_seek_type::seek_beg);
+                             cfb_iostream::cfb_stream_seek_type::seek_beg);
                 }
             const auto readBytes =
                 cfbObj->read(static_cast<char*>(buffer) + readSize,
@@ -1323,7 +1323,7 @@ namespace lily_of_the_valley
             ++sectorCount;
             cfbObj->m_stream_offset = get_offset(cfbObj, sectorCount);
             cfbObj->seek(static_cast<long>(cfbObj->m_stream_offset),
-                         cfb_iostream::cfb_strem_seek_type::seek_beg);
+                         cfb_iostream::cfb_stream_seek_type::seek_beg);
             const auto readbytes = cfbObj->read(static_cast<char*>(buffer) + readSize, bytesToRead);
             readSize += readbytes;
             cfbObj->m_stream_offset += readbytes;

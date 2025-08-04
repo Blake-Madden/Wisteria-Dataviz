@@ -556,7 +556,7 @@ namespace Wisteria::UI
             }
 
         /// @private
-        void OnMultiColumSort([[maybe_unused]] wxCommandEvent& event);
+        void OnMultiColumnSort([[maybe_unused]] wxCommandEvent& event);
         /// @private
         void OnKeyDown(wxKeyEvent& event);
         /// @private

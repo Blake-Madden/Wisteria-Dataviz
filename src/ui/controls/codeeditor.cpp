@@ -363,7 +363,7 @@ void CodeEditor::AddFunctionsOrClasses(const NameList& functions)
 
     for (const auto& func : functions)
         {
-        m_libaryAndClassNames.insert(StripExtraInfo(func.c_str()));
+        m_libraryAndClassNames.insert(StripExtraInfo(func.c_str()));
         }
     }
 
@@ -388,7 +388,7 @@ void CodeEditor::AddLibrary(const wxString& library, const NameList& functions)
         }
     m_libraryCollection.insert(
         std::make_pair(library, std::make_pair(functionString, funcNamesAndSignatures)));
-    m_libaryAndClassNames.insert(library);
+    m_libraryAndClassNames.insert(library);
     }
 
 //-------------------------------------------------------------
@@ -406,24 +406,24 @@ void CodeEditor::AddClass(const wxString& theClass, const NameList& functions)
         }
     m_classCollection.insert(
         std::make_pair(theClass, std::make_pair(functionString, funcNamesAndSignatures)));
-    m_libaryAndClassNames.insert(theClass);
+    m_libraryAndClassNames.insert(theClass);
     }
 
 //-------------------------------------------------------------
 void CodeEditor::Finalize()
     {
-    m_libaryAndClassNamesStr.clear();
-    for (const auto& className : m_libaryAndClassNames)
+    m_libraryAndClassNamesStr.clear();
+    for (const auto& className : m_libraryAndClassNames)
         {
-        m_libaryAndClassNamesStr += L" " + className;
+        m_libraryAndClassNamesStr += L" " + className;
         }
     if (wxSTC_LEX_CPPNOCASE == m_lexer)
         {
-        SetKeyWords(1, m_libaryAndClassNamesStr.Lower());
+        SetKeyWords(1, m_libraryAndClassNamesStr.Lower());
         }
     else
         {
-        SetKeyWords(1, m_libaryAndClassNamesStr);
+        SetKeyWords(1, m_libraryAndClassNamesStr);
         }
     }
 
@@ -798,15 +798,15 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             // high-level classes and libraries
             else
                 {
-                auto pos = m_libaryAndClassNames.find(lastWord);
+                auto pos = m_libraryAndClassNames.find(lastWord);
                 wxString foundKeyword, params;
-                if (pos != m_libaryAndClassNames.cend())
+                if (pos != m_libraryAndClassNames.cend())
                     {
                     foundKeyword = *pos;
                     SplitFunctionAndParams(foundKeyword, params);
                     }
                 // if found a full keyword, then just fix its case and let it auto-highlight
-                if (pos != m_libaryAndClassNames.cend() &&
+                if (pos != m_libraryAndClassNames.cend() &&
                     foundKeyword.length() == lastWord.length())
                     {
                     SetSelection(wordStart, wordStart + lastWord.length());
@@ -832,7 +832,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                 else
                     {
                     const auto [funcStartsWith, matchedFuncs] =
-                        matchFromList(lastWord, m_libaryAndClassNamesStr);
+                        matchFromList(lastWord, m_libraryAndClassNamesStr);
                     AutoCompCancel();
                     if (!matchedFuncs.empty())
                         {

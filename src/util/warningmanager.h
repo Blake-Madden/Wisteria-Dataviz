@@ -149,7 +149,7 @@ struct WarningMessage
     };
 
 /// @brief Management system for warning messages to be shown to the user.
-/// @details This class is entirely static and should be used as a psuedo-singleton.
+/// @details This class is entirely static and should be used as a pseudo-singleton.
 ///     Do not create individual instances.
 class WarningManager
     {

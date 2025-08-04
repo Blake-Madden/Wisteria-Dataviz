@@ -54,7 +54,7 @@ namespace lily_of_the_valley
         ///     and not interpreted as blank columns. If @c false, then this will result in two
         ///     empty columns being read.
         /// @param allow Set to @c true to treat consecutive delimiters as one.
-        void treat_consecutive_delimitors_as_one(const bool allow = true) noexcept
+        void treat_consecutive_delimiters_as_one(const bool allow = true) noexcept
             {
             m_treat_consecutive_delimiters_as_one = allow;
             }

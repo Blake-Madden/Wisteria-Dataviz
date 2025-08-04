@@ -1011,7 +1011,7 @@ namespace Wisteria::GraphItems
         /// @note This will only apply if GetLabelDisplay() is using a type that includes
         ///     the numeric value of the axis point. In other words, this will not apply
         ///     to custom labels.
-        void SetNumerDisplay(const NumberDisplay display)
+        void SetNumberDisplay(const NumberDisplay display)
             {
             m_numberLabelDisplay = display;
             SetLabelDisplay(GetLabelDisplay());

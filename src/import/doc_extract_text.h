@@ -1,4 +1,4 @@
-﻿/** @addtogroup Importing
+/** @addtogroup Importing
     @brief Classes for importing and parsing text.
     @date 2005-2025
     @copyright Blake Madden
@@ -171,7 +171,7 @@ namespace lily_of_the_valley
             black = 1 /*!< black node */
             };
 
-        /// @brief Variant types that a property (from the SummaryInformaion) can be.
+        /// @brief Variant types that a property (from the SummaryInformation) can be.
         enum class property_data_type
             {
             vt_bstr = 8,     /*!< COM string */
@@ -195,7 +195,7 @@ namespace lily_of_the_valley
             {
           public:
             /// @brief Methods for repositioning within a cfb_iostream stream.
-            enum class cfb_strem_seek_type
+            enum class cfb_stream_seek_type
                 {
                 seek_beg = 0, /*!< stream beginning */
                 seek_cur = 1, /*!< stream's current position */
@@ -243,9 +243,9 @@ namespace lily_of_the_valley
                 @param offset How far to move the cursor.
                 @param origin Where to start moving from.
                 @returns How far we have moved into the stream.*/
-            size_t seek(const long offset, const cfb_strem_seek_type origin)
+            size_t seek(const long offset, const cfb_stream_seek_type origin)
                 {
-                if (origin == cfb_strem_seek_type::seek_cur)
+                if (origin == cfb_stream_seek_type::seek_cur)
                     {
                     // if going backwards too far, then move to the start
                     if ((static_cast<long>(tell()) + offset) < 0)
@@ -262,7 +262,7 @@ namespace lily_of_the_valley
                         m_current_position += offset;
                         }
                     }
-                else if (origin == cfb_strem_seek_type::seek_beg)
+                else if (origin == cfb_stream_seek_type::seek_beg)
                     {
                     // negative positive is bogus, so move to start of file
                     if (offset < 0)
@@ -279,7 +279,7 @@ namespace lily_of_the_valley
                         m_current_position = m_start + offset;
                         }
                     }
-                else if (origin == cfb_strem_seek_type::seek_end)
+                else if (origin == cfb_stream_seek_type::seek_end)
                     {
                     // don't go beyond the end
                     if (offset > 0)
@@ -409,7 +409,7 @@ namespace lily_of_the_valley
             int32_t m_next_property{ 0 };     /// previous property in table
             size_t m_internal_offset{ 0 };    /// offset into object's own structure
             size_t m_stream_offset{ 0 };      /// offset into the parent stream
-            const char* m_strorage_offset{ nullptr };
+            const char* m_storage_offset{ nullptr };
             file_system_entry_type m_type{ file_system_entry_type::unknown_unallocated_type };
             file_system_entry_color m_color{ file_system_entry_color::black };
             std::vector<long int> m_sectors; /// where the data actually is

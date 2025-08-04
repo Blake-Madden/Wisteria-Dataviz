@@ -2748,7 +2748,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         // overlay dashed dividing lines between sections
         auto sectionDividerLines = std::make_unique<GraphItems::Lines>(
             wxPen(*wxBLACK, 1, wxPENSTYLE_LONG_DASH), GetScaling());
-        wxCoord bottomPosAndNegX{ 0 }, bottomNeutralX{ 0 }, bottomNAX{ 0 };
+        wxCoord bottomPosAndNegX{ 0 }, bottomNeutralX{ 0 }, bottomMAX{ 0 };
         if (GetBottomXAxis().GetPhysicalCoordinate(
                 m_questionBlockSize + m_categoryBlockSize + m_negativeBlockSize, bottomPosAndNegX))
             {
@@ -2766,10 +2766,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         if (GetBottomXAxis().GetPhysicalCoordinate(m_questionBlockSize + m_categoryBlockSize +
                                                        m_negativeBlockSize + m_positiveBlockSize +
                                                        m_neutralBlockSize,
-                                                   bottomNAX))
+                                                   bottomMAX))
             {
-            sectionDividerLines->AddLine(wxPoint(bottomNAX, GetLeftYAxis().GetBottomPoint().y),
-                                         wxPoint(bottomNAX, GetLeftYAxis().GetTopPoint().y));
+            sectionDividerLines->AddLine(wxPoint(bottomMAX, GetLeftYAxis().GetBottomPoint().y),
+                                         wxPoint(bottomMAX, GetLeftYAxis().GetTopPoint().y));
             }
         AddObject(std::move(sectionDividerLines));
 
