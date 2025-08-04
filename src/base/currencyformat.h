@@ -53,7 +53,9 @@ namespace Wisteria
                 }
             }
 #else
-        char formattedBuffer[1024];
+        char formattedBuffer[1024]{ 0 };
+        /// @todo strfmon_l is preferred for later if we can ever get the locale_t object
+        ///     from `wxUILocale::GetCurrent()`.
         if (strfmon(formattedBuffer, std::size(formattedBuffer), "%n", money) != -1)
             {
             wxString formattedMoney{ formattedBuffer };
