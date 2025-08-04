@@ -1730,7 +1730,7 @@ TEST_CASE("Html Url Format", "[html import]")
         html_url_format formatHtml(L"http://business.mypage.com/blah/blah.html");
         CHECK(formatHtml.get_directory_path() == L"business.mypage.com/blah");
         }
-    SECTION("No Protocal")
+    SECTION("No Protocol")
         {
         html_url_format formatHtml(L"www.mypage.com");
         const wchar_t* p = formatHtml({ L"page.html", 9 }, false);

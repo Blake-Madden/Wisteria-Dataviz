@@ -23,52 +23,52 @@ TEST_CASE("DOC Parser", "[doc import]")
         const char* buffer = "Here is some text to stream.";
         const size_t buffSize = std::strlen(buffer);
         word1997_extract_text::cfb_iostream stream(buffer, buffSize);
-        CHECK(stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_end) == buffSize);
+        CHECK(stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_end) == buffSize);
         // go back to start
-        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg);
-        CHECK(stream.seek(-5, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_end) == buffSize-5);
+        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg);
+        CHECK(stream.seek(-5, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_end) == buffSize-5);
         // go back to start
-        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg);
-        CHECK(stream.seek(99999, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_end) == buffSize);
+        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg);
+        CHECK(stream.seek(99999, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_end) == buffSize);
         // Backwards
 
         // go back to start
-        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg);
+        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg);
         // should move backwards to the start
-        CHECK(stream.seek(-99999, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_end) == 0);
+        CHECK(stream.seek(-99999, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_end) == 0);
         // go back to start
-        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg);
+        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg);
         // should move backwards to the start
-        CHECK(stream.seek(-28, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_end) == 0);
+        CHECK(stream.seek(-28, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_end) == 0);
         // go back to start
-        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg);
+        stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg);
         // should move backwards to the start
-        CHECK(stream.seek(-29, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_end) == 0);
+        CHECK(stream.seek(-29, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_end) == 0);
         }
     SECTION("Ole2 Stream Seek Set")
         {
         const char* buffer = "Here is some text to stream.";
         const size_t buffSize = std::strlen(buffer);
         lily_of_the_valley::word1997_extract_text::cfb_iostream stream(buffer, buffSize);
-        CHECK(stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg) == 0);
-        CHECK(stream.seek(10, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg) == 10);
+        CHECK(stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg) == 0);
+        CHECK(stream.seek(10, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg) == 10);
         // negative positions should move you to the start
-        CHECK(stream.seek(-10, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg) == 0);
+        CHECK(stream.seek(-10, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg) == 0);
         // going too far will move you to the end
-        CHECK(stream.seek(9999, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_beg) == buffSize);
+        CHECK(stream.seek(9999, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_beg) == buffSize);
         }
     SECTION("Ole2 Stream Seek Cur")
         {
         const char* buffer = "Here is some text to stream.";
         const size_t buffSize = std::strlen(buffer);
         lily_of_the_valley::word1997_extract_text::cfb_iostream stream(buffer, buffSize);
-        CHECK(stream.seek(0, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_cur) == 0);
-        CHECK(stream.seek(10, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_cur) == 10);
-        CHECK(stream.seek(-5, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_cur) == 5);
+        CHECK(stream.seek(0, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_cur) == 0);
+        CHECK(stream.seek(10, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_cur) == 10);
+        CHECK(stream.seek(-5, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_cur) == 5);
         // negative positions should move you to the start
-        CHECK(stream.seek(-6, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_cur) == 0);
+        CHECK(stream.seek(-6, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_cur) == 0);
         // going too far will move you to the end
-        CHECK(stream.seek(9999, word1997_extract_text::cfb_iostream::cfb_strem_seek_type::seek_cur) == buffSize);
+        CHECK(stream.seek(9999, word1997_extract_text::cfb_iostream::cfb_stream_seek_type::seek_cur) == buffSize);
         }
     }
 

@@ -374,7 +374,8 @@ namespace Wisteria::GraphItems
                     y = findYInBound(y);
                     }
 
-                for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3; columnCounter += 3)
+                for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3;
+                     columnCounter += 3)
                     {
                     int x = static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness);
 

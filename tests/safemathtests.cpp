@@ -72,7 +72,7 @@ TEST_CASE("Safe Modulus By Negative", "[safemath]")
     CHECK(0 == safe_modulus<int>(100, -1));
     }
 
-TEST_CASE("Infinity", "[infinitiy]")
+TEST_CASE("Infinity", "[infinity]")
     {
     CHECK_FALSE(is_infinity(0.017453));
     CHECK(is_infinity(log((float)0)));

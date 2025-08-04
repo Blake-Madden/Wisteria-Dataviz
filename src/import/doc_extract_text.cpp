@@ -1113,7 +1113,7 @@ namespace lily_of_the_valley
         if (!m_root_storage)
             {
             log_message(L"DOC parser: document entry point not found.");
-            throw msword_root_enrty_not_found();
+            throw msword_root_entry_not_found();
             }
         m_current_file_system_entry = m_file_system_entries;
         str->seek(0, cfb_iostream::cfb_stream_seek_type::seek_beg);

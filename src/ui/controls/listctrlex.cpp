@@ -557,8 +557,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
     //------------------------------------------------------
     void ListCtrlEx::OnMultiColumnSort([[maybe_unused]]
-                                      wxCommandEvent &
-                                      event)
+                                       wxCommandEvent &
+                                       event)
         {
         if (GetColumnCount() == 0)
             {

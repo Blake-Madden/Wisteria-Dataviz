@@ -29,6 +29,9 @@ ist = "ist"
 oder = "oder"
 BERKLEY = "BERKLEY"
 Programa = "Programa"
+objets = "objets"
+sur = "sur"
+Hel = "Hel"
 # false positives
 deliminated = "deliminated"
 

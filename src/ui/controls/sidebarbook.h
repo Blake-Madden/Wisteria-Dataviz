@@ -182,7 +182,7 @@ namespace Wisteria::UI
         /// @private
         [[nodiscard]]
         wxSize CalcSizeFromPage(const wxSize& sizePage) const;
-        // this should be called when we need to be re-layed out
+        // this should be called when we need to be re-laid out
         /// @private
         void UpdateSize();
 

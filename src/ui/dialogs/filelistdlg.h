@@ -74,7 +74,7 @@ namespace Wisteria::UI
 
         /// @returns Access to a descriptive infobar shown when the dialog is presented.
         [[nodiscard]]
-        wxInfoBar* GetInforBar() noexcept
+        wxInfoBar* GetInfoBar() noexcept
             {
             return m_infoBar;
             }

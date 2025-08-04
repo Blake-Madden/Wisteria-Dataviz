@@ -83,7 +83,7 @@ namespace lily_of_the_valley
             };
 
         /// @brief Root entry object missing in document.
-        class msword_root_enrty_not_found : public std::exception
+        class msword_root_entry_not_found : public std::exception
             {
             };
 

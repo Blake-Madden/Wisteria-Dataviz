@@ -620,8 +620,8 @@ TEST_CASE("ListCtrlEx to LaTeX", "[listctrlex]")
         m_list->Select(0);
         m_list->Select(3);
         m_list->Select(6);
-        wxString ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0, -1, true, L"My Table Caption");
-        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+        wxString outputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0, -1, true, L"My Table Caption");
+        CHECK(outputText == LR"(\begin{longtable}{|l|l|}
 \caption{My Table Caption} \label{tab:long} \\
 \hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{OTHER}} \\ \hline
 \endfirsthead
@@ -653,8 +653,8 @@ text & sext \\
         m_list->Select(0);
         m_list->Select(3);
         m_list->Select(6);
-        wxString ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportSelected, 0 ,-1, 0, -1, true, L"My Table Caption");
-        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+        wxString outputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportSelected, 0 ,-1, 0, -1, true, L"My Table Caption");
+        CHECK(outputText == LR"(\begin{longtable}{|l|l|}
 \caption{My Table Caption} \label{tab:long} \\
 \hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{OTHER}} \\ \hline
 \endfirsthead
@@ -679,8 +679,8 @@ teXt2 & seXt2 \\
 
     SECTION("Format to LaTeX custom row range")
         {
-        wxString ouputText= m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, 0);
-        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+        wxString outputText= m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, 0);
+        CHECK(outputText == LR"(\begin{longtable}{|l|l|}
 \hline \multicolumn{1}{|c|}{\textbf{NAME}} \\ \hline
 \endfirsthead
 
@@ -716,8 +716,8 @@ text \\
         m_list->DeleteAllColumns();
         m_list->InsertColumn(0, L"NAME");
         m_list->InsertColumn(1, wxString("NAME2"));
-        wxString ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1);
-        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+        wxString outputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1);
+        CHECK(outputText == LR"(\begin{longtable}{|l|l|}
 \hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{NAME2}} \\ \hline
 \endfirsthead
 
@@ -742,8 +742,8 @@ text & 2text \\
 
 \end{longtable})");
         // just get the first column
-        ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
-        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+        outputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
+        CHECK(outputText == LR"(\begin{longtable}{|l|l|}
 \hline \multicolumn{1}{|c|}{\textbf{NAME}} \\ \hline
 \endfirsthead
 
@@ -768,8 +768,8 @@ text \\
 
 \end{longtable})");
         // get last column
-        ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
-        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+        outputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
+        CHECK(outputText == LR"(\begin{longtable}{|l|l|}
 \hline \multicolumn{1}{|c|}{\textbf{NAME2}} \\ \hline
 \endfirsthead
 
@@ -853,12 +853,12 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         }
     SECTION("Format to html only selected rows")
         {
-        wxString ouputText;
+        wxString outputText;
         m_list->Select(0);
         m_list->Select(3);
         m_list->Select(6);
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportSelected);
-        CHECK(ouputText == wxString(
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportSelected);
+        CHECK(outputText == wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
@@ -868,9 +868,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         }
     SECTION("Format to html no header")
         {
-        wxString ouputText;
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0, -1, false);
-        CHECK(ouputText == wxString(
+        wxString outputText;
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0, -1, false);
+        CHECK(outputText == wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>tExt2</td></tr>\n"
@@ -883,9 +883,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         }
     SECTION("Format to html custom row range")
         {
-        wxString ouputText;
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, -1, true);
-        CHECK(ouputText == wxString(
+        wxString outputText;
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, -1, true);
+        CHECK(outputText == wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>teXt2</td></tr>\n"
@@ -895,13 +895,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         }
     SECTION("Format to html custom row range bad")
         {
-        wxString ouputText;
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
-        CHECK(ouputText.empty());
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);//starting point after ending point is nonsense
-        CHECK(ouputText.empty());
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
-        CHECK(ouputText == wxString(
+        wxString outputText;
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
+        CHECK(outputText.empty());
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);//starting point after ending point is nonsense
+        CHECK(outputText.empty());
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
+        CHECK(outputText == wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
@@ -912,8 +912,8 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>72</td></tr>\n"
             "    <tr><td>7</td></tr>\n"
             "</table>"));
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, -10, -1, 0, -1, true);
-        CHECK(ouputText == wxString(
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, -10, -1, 0, -1, true);
+        CHECK(outputText == wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
@@ -937,9 +937,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
         m_list->InsertColumn(1, L"NAME2");
-        wxString ouputText;
+        wxString outputText;
         // get both columns
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
         CHECK(wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td><td>NAME2</td></tr></thead>\n"
@@ -950,9 +950,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>text</td><td>2text</td></tr>\n"
             "    <tr><td>72</td><td>272</td></tr>\n"
             "    <tr><td>7</td><td>27</td></tr>\n"
-            "</table>") == ouputText);
+            "</table>") == outputText);
         // just get the first column
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
         CHECK(wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
@@ -963,9 +963,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>text</td></tr>\n"
             "    <tr><td>72</td></tr>\n"
             "    <tr><td>7</td></tr>\n"
-            "</table>") == ouputText);
+            "</table>") == outputText);
         // get last column
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
         CHECK(wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME2</td></tr></thead>\n"
@@ -976,7 +976,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>2text</td></tr>\n"
             "    <tr><td>272</td></tr>\n"
             "    <tr><td>27</td></tr>\n"
-            "</table>") == ouputText);
+            "</table>") == outputText);
         }
     SECTION("Format to html custom column range bad")
         {
@@ -990,12 +990,12 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
         m_list->InsertColumn(1, L"NAME2");
-        wxString ouputText;
+        wxString outputText;
         // start bigger then end is nonsense
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 0, true);
-        CHECK(ouputText.empty());
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 0, true);
+        CHECK(outputText.empty());
         // bogus negative start should be reset to first column
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
         CHECK(wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
@@ -1006,12 +1006,12 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>text</td></tr>\n"
             "    <tr><td>72</td></tr>\n"
             "    <tr><td>7</td></tr>\n"
-            "</table>") == ouputText);
+            "</table>") == outputText);
         // bogus (too large) is nonsense
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 99, 1, true);
-        CHECK(ouputText == wxString(""));
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 99, 1, true);
+        CHECK(outputText == wxString(""));
         // bogus negative end should be reset to last column
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, -10, true);
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, -10, true);
         CHECK(wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME2</td></tr></thead>\n"
@@ -1022,9 +1022,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>2text</td></tr>\n"
             "    <tr><td>272</td></tr>\n"
             "    <tr><td>27</td></tr>\n"
-            "</table>") == ouputText);
+            "</table>") == outputText);
         // bogus (too big) end should be reset to last column
-        m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 10, true);
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 10, true);
         CHECK(wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME2</td></tr></thead>\n"
@@ -1035,41 +1035,41 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>2text</td></tr>\n"
             "    <tr><td>272</td></tr>\n"
             "    <tr><td>27</td></tr>\n"
-            "</table>") == ouputText);
+            "</table>") == outputText);
         }
     SECTION("Format to text only selected rows")
         {
-        wxString ouputText;
+        wxString outputText;
         m_list->Select(0);
         m_list->Select(3);
         m_list->Select(6);
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportSelected);
-        CHECK(wxString("NAME\nText\nteXt2\n7") == ouputText);
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportSelected);
+        CHECK(wxString("NAME\nText\nteXt2\n7") == outputText);
         }
     SECTION("Format to text no header")
         {
-        wxString ouputText;
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, false);
-        CHECK(wxString("Text\ntExt2\ntext\nteXt2\ntext\n72\n7") == ouputText);
+        wxString outputText;
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, false);
+        CHECK(wxString("Text\ntExt2\ntext\nteXt2\ntext\n72\n7") == outputText);
         }
     SECTION("Format to text custom row range")
         {
-        wxString ouputText;
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, -1, true);
-        CHECK(wxString("NAME\nteXt2\ntext\n72") == ouputText);
+        wxString outputText;
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, -1, true);
+        CHECK(wxString("NAME\nteXt2\ntext\n72") == outputText);
         }
     SECTION("Format to text custom row range bad")
         {
-        wxString ouputText;
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
-        CHECK(ouputText.empty());
+        wxString outputText;
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
+        CHECK(outputText.empty());
         // starting point after ending point is nonsense
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);
-        CHECK(ouputText.empty());
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
-        CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, -10, -1, 0, -1, true);
-        CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);
+        CHECK(outputText.empty());
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
+        CHECK(outputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, -10, -1, 0, -1, true);
+        CHECK(outputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         }
     SECTION("Format to text custom column range")
         {
@@ -1083,16 +1083,16 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
         m_list->InsertColumn(1, wxString("NAME2"));
-        wxString ouputText;
+        wxString outputText;
         // get both columns
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
-        CHECK(ouputText == wxString("NAME\tNAME2\nText\t2Text\ntExt2\t2tExt2\ntext\t2text\nteXt2\t2teXt2\ntext\t2text\n72\t272\n7\t27"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
+        CHECK(outputText == wxString("NAME\tNAME2\nText\t2Text\ntExt2\t2tExt2\ntext\t2text\nteXt2\t2teXt2\ntext\t2text\n72\t272\n7\t27"));
         // just get the first column
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
-        CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
+        CHECK(outputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         // get last column
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
-        CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
+        CHECK(outputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
         }
     SECTION("Format to text custom column range bad")
         {
@@ -1106,22 +1106,22 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
         m_list->InsertColumn(1, L"NAME2");
-        wxString ouputText;
+        wxString outputText;
         // start bigger then end is nonsense
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 0, true);
-        CHECK(ouputText.empty());
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 0, true);
+        CHECK(outputText.empty());
         // bogus negative start should be reset to first column
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
-        CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
+        CHECK(outputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         // bogus (too large) is nonsense
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 99, 1, true);
-        CHECK(ouputText.empty());
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 99, 1, true);
+        CHECK(outputText.empty());
         // bogus negative end should be reset to last column
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, -10, true);
-        CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, -10, true);
+        CHECK(outputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
         // bogus (too big) end should be reset to last column
-        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 10, true);
-        CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
+        m_list->FormatToText(outputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 10, true);
+        CHECK(outputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
         }
     SECTION("Set sortable range")
         {
