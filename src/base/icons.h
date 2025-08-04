@@ -103,7 +103,9 @@ namespace Wisteria::Icons
         Barn,                     /*!< A barn.*/
         Farm,                     /*!< A barn and grain silo.*/
         Dollar,                   /*!< A US dollar bill.*/
-        Monitor                   /*!< A computer monitor.*/
+        Monitor,                  /*!< A computer monitor.*/
+        Sword,                    /*!< A sword.*/
+        ImmaculateHeartWithSword  /*!< An Immaculate Heart (with sword piercing it).*/
         };
 
     /// @brief Item to draw on a legend.

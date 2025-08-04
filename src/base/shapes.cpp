@@ -224,6 +224,7 @@ namespace Wisteria::GraphItems
             { IconShape::GrannySmithApple, &ShapeRenderer::DrawGrannySmithApple },
             { IconShape::Heart, &ShapeRenderer::DrawHeart },
             { IconShape::ImmaculateHeart, &ShapeRenderer::DrawImmaculateHeart },
+            { IconShape::ImmaculateHeartWithSword, &ShapeRenderer::DrawImmaculateHeartWithSword },
             { IconShape::Flame, &ShapeRenderer::DrawFlame },
             { IconShape::Office, &ShapeRenderer::DrawOffice },
             { IconShape::Factory, &ShapeRenderer::DrawFactory },
@@ -1241,6 +1242,18 @@ namespace Wisteria::GraphItems
                 flowerRect.Offset(flowerRect.GetWidth() * math_constants::half, 0);
                 }
             }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawImmaculateHeartWithSword(const wxRect rect, wxDC& dc) const
+        {
+        DrawImmaculateHeart(rect, dc);
+
+        wxRect swordRect{ rect };
+        swordRect.Offset(static_cast<int>(swordRect.GetWidth() * math_constants::tenth),
+                         static_cast<int>(swordRect.GetHeight() * math_constants::tenth));
+        DrawSword(swordRect, dc, ClippingSection::Upper);
+        DrawSword(swordRect, dc, ClippingSection::Lower);
         }
 
     //---------------------------------------------------
