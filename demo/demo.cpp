@@ -1400,7 +1400,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->SetBarEffect(BoxEffect::StippleShape);
         plot->SetStippleShape(Icons::IconShape::Car);
-        plot->SetStippleShapeColor(wxColour(29, 29, 37));
 
         // do this to use an image instead of a built-in vector icon:
         /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir +
