@@ -188,7 +188,7 @@ cmake . -DCMAKE_BUILD_TYPE=Release
 cmake --build . -j4 --config Release
 ```
 
-If using *KDevelop* or *VS Code*, you can also open the *CMake* file and build from there.
+If using *CLion*, *KDevelop* or *VS Code*, you can also open the *CMake* file and build from there.
 
 macOS
 -----------------------------
