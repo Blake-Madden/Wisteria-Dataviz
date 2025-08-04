@@ -1393,7 +1393,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         // wrap around to the beginning
         CHECK(m_list->GetFocusedItem() == 4);
         }
-    SECTION("On find up case insensitiv efull match")
+    SECTION("On find up case insensitive full match")
         {
         m_list->Select(6);
         wxFindDialogEvent event;

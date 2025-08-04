@@ -18,7 +18,8 @@ Wisteria Dataviz
 | Documentation & Formatting | Result        |
 | --------------------  | ------------- |
 | Doxygen | [![doxygen](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/doxygen.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/doxygen.yml) |
-| Spellcheck | [![Spell Check](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml) |
+| Spellcheck (codespell) | [![Spell Check (codespell)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml) |
+| Spellcheck (Typos) | [![Spell Check (Typos)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/typos.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/typos.yml) |
 | clang-format | [![clang-format](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/clang-format-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/clang-format-check.yml) |
 
 About

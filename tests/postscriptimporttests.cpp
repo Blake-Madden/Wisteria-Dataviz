@@ -71,7 +71,7 @@ TEST_CASE("Postscript Import", "[postscript import]")
         const char* text = "%!PS-Adobe-2.0\n(These\\053.)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"These+.") == 0);
         }
-    SECTION("Hypenated Word")
+    SECTION("Hyphenated Word")
         {
         postscript_extract_text ext;
         const char* text = "%!PS-Adobe-2.0\ni(Commu-)10941800 y(nity)g(News))";

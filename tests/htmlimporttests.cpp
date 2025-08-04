@@ -554,7 +554,7 @@ TEST_CASE("HTML Parser", "[html import]")
     SECTION("Script")
         {
         html_extract_text filter_html;
-        const wchar_t* text = L"hello<SCRIPT>var blah;</script> there<script language=\"assemby\">mov eax, 5;</SCRIPt>!";
+        const wchar_t* text = L"hello<SCRIPT>var blah;</script> there<script language=\"assembly\">mov eax, 5;</SCRIPt>!";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"hello there!") == 0);
         text = L"hello<SCRIPT>var blah;</script> there<noscript>scripting turned off</noSCRIPt><NOSCRIPT whatever= 9>scripting turned off</noSCRIPt>!";

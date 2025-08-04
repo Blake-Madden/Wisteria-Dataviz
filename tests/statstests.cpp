@@ -192,7 +192,7 @@ TEST_CASE("Variance array", "[stats][variance]")
     for (size_t i = 0; i < 1'000'000; ++i)
         { values.push_back(57855.56894 + i); }
     // there is some dispute between other stat packages about the hundredths place value, so don't compare
-    // beyond that. Note that we are going with what SPSS reports (they get the same as us up to the hundreths place)
+    // beyond that. Note that we are going with what SPSS reports (they get the same as us up to the hundredths place)
     CHECK_THAT(83333416666.67, WithinRel(statistics::variance(values, true), 0.2));
     }
 
