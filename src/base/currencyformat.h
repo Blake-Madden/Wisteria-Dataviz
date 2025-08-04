@@ -15,7 +15,7 @@
 #include "wx/string.h"
 #include <wx/numformatter.h>
 #ifdef __UNIX__
-    #include <monetary.h>   
+    #include <monetary.h>
 #endif
 
 namespace Wisteria

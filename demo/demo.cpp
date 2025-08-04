@@ -2378,9 +2378,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize),
                      _(L"Bar Chart (Stylized)"));
-    toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"),
+    toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
-                     _(L"Bar Chart (Commom Image)"));
+                     _(L"Bar Chart (Common Image)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
                      _(L"Bar Chart (Categorical Data)"));

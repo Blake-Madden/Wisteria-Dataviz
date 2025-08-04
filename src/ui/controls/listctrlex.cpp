@@ -3501,7 +3501,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         // default to the column name's width
         dc.GetTextExtent(GetColumnName(column), &headerTextWidth, &headerTextHeight);
-        
+
         // sample the widths of the first few items and see which is the longest
         wxString longestStr;
         for (long i = 0; i < 300 && i < GetItemCount(); ++i)
