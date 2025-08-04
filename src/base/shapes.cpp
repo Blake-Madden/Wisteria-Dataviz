@@ -231,7 +231,8 @@ namespace Wisteria::GraphItems
             { IconShape::Barn, &ShapeRenderer::DrawBarn },
             { IconShape::Farm, &ShapeRenderer::DrawFarm },
             { IconShape::Dollar, &ShapeRenderer::DrawDollar },
-            { IconShape::Monitor, &ShapeRenderer::DrawMonitor }
+            { IconShape::Monitor, &ShapeRenderer::DrawMonitor },
+            { IconShape::Sword, &ShapeRenderer::DrawSword }
         };
 
         // connect the rendering function to the shape
@@ -1219,7 +1220,7 @@ namespace Wisteria::GraphItems
         flameRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
         DrawFlame(flameRect, dc);
 
-        // the heart drawing Bezier curves means it doesn't consume all of the
+        // the heart drawing Bézier curves means it doesn't consume all the
         // rect it was give, so scale down the heart's bounding box to the area
         // that actually has content
         heartRect.SetWidth(heartRect.GetWidth() * 0.75);
@@ -1315,6 +1316,148 @@ namespace Wisteria::GraphItems
             drawRect.Offset(0, previousBottom - drawRect.GetBottom());
             drawFlame(drawRect, Colors::ColorBrewer::GetColor(Colors::Color::PastelOrange),
                       Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange));
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawSword(const wxRect rect, wxDC& dc) const
+        {
+        DrawSword(rect, dc, ClippingSection::None);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawSword(const wxRect rect, wxDC& dc,
+                                  const ClippingSection clippingSection) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger pc{ dc, *wxBLACK_PEN };
+        const wxDCBrushChanger bc{ dc, *wxBLACK_BRUSH };
+        const wxDCFontChanger fc{ dc };
+
+        const auto centerPt = rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for sword icon!");
+        if (gc != nullptr)
+            {
+            const auto originalClipRect(gc->GetClipBox());
+
+            if (clippingSection != ClippingSection::None)
+                {
+                if (clippingSection == ClippingSection::Upper)
+                    {
+                    const std::array<wxPoint, 3> corners{
+                        wxPoint{ static_cast<int>(GetXPosFromLeft(rect, 0.1)),
+                                 static_cast<int>(GetYPosFromTop(rect, 0.0)) },
+                        wxPoint{ static_cast<int>(GetXPosFromLeft(rect, 1.0)),
+                                 static_cast<int>(GetYPosFromTop(rect, 0.9)) },
+                        rect.GetTopRight()
+                    };
+                    const wxRegion clipBox(corners.size(), corners.data());
+                    gc->Clip(clipBox);
+                    }
+                else
+                    {
+                    const std::array<wxPoint, 3> corners{
+                        wxPoint{ static_cast<int>(GetXPosFromLeft(rect, 0)),
+                                 static_cast<int>(GetYPosFromTop(rect, 0.2)) },
+                        rect.GetBottomLeft(),
+                        wxPoint{ static_cast<int>(GetXPosFromLeft(rect, 0.8)),
+                                 static_cast<int>(GetYPosFromTop(rect, 1.0)) }
+                    };
+                    const wxRegion clipBox(corners.size(), corners.data());
+                    gc->Clip(clipBox);
+                    }
+                }
+
+            // blade
+            wxRect2DDouble bladeRect{ rect };
+            bladeRect.SetHeight(bladeRect.GetHeight() * math_constants::tenth);
+            bladeRect.SetWidth(bladeRect.GetWidth() * math_constants::three_quarters);
+            bladeRect.Offset(0, (rect.GetHeight() * math_constants::half) -
+                                    (bladeRect.GetHeight() * math_constants::half));
+
+            // save current transform matrix state
+            gc->PushState();
+            gc->Translate(centerPt.x, centerPt.y);
+
+            // this shape is used for other composite shapes, so need to tint instead of
+            // using opacity
+            gc->SetBrush(TintIfUsingOpacity(ColorBrewer::GetColor(Color::AshGrey)));
+            // only show outline if larger icon
+            gc->SetPen({ TintIfUsingOpacity(ColorBrewer::GetColor(Color::Black)),
+                         static_cast<int>(ScaleToScreenAndCanvas(1)) });
+
+            gc->Rotate(geometry::degrees_to_radians(-60));
+
+            // note that because we translated to the middle of the drawing area,
+            // we need to adjust the points of our middle line back and over from
+            // the translated origin
+            auto bladePath = gc->CreatePath();
+            bladePath.MoveToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.2) - centerPt.x,
+                                                   GetYPosFromTop(rect, 0.45) - centerPt.y });
+            bladePath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.7) - centerPt.x,
+                                                      GetYPosFromTop(rect, 0.45) - centerPt.y });
+
+            bladePath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.7) - centerPt.x,
+                                                      GetYPosFromTop(rect, 0.55) - centerPt.y });
+            bladePath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.2) - centerPt.x,
+                                                      GetYPosFromTop(rect, 0.55) - centerPt.y });
+            // tip of the blade
+            bladePath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.1) - centerPt.x,
+                                                      GetYPosFromTop(rect, 0.5) - centerPt.y });
+
+            bladePath.CloseSubpath();
+            gc->FillPath(bladePath);
+            gc->StrokePath(bladePath);
+
+            // hilt
+            gc->SetBrush(TintIfUsingOpacity(ColorBrewer::GetColor(Color::GoldenYellow)));
+            auto hiltPath = gc->CreatePath();
+            hiltPath.MoveToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.7) - centerPt.x,
+                                                  GetYPosFromTop(rect, 0.45) - centerPt.y });
+            hiltPath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.9) - centerPt.x,
+                                                     GetYPosFromTop(rect, 0.45) - centerPt.y });
+
+            hiltPath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.9) - centerPt.x,
+                                                     GetYPosFromTop(rect, 0.55) - centerPt.y });
+            hiltPath.AddLineToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.7) - centerPt.x,
+                                                     GetYPosFromTop(rect, 0.55) - centerPt.y });
+
+            hiltPath.CloseSubpath();
+            gc->FillPath(hiltPath);
+            gc->StrokePath(hiltPath);
+
+            // hilt guard
+            auto hiltGuardPath = gc->CreatePath();
+            hiltGuardPath.MoveToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.7) - centerPt.x,
+                                                       GetYPosFromTop(rect, 0.35) - centerPt.y });
+            hiltGuardPath.AddLineToPoint(
+                wxPoint2DDouble{ GetXPosFromLeft(rect, 0.75) - centerPt.x,
+                                 GetYPosFromTop(rect, 0.35) - centerPt.y });
+
+            hiltGuardPath.AddLineToPoint(
+                wxPoint2DDouble{ GetXPosFromLeft(rect, 0.75) - centerPt.x,
+                                 GetYPosFromTop(rect, 0.65) - centerPt.y });
+            hiltGuardPath.AddLineToPoint(wxPoint2DDouble{
+                GetXPosFromLeft(rect, 0.7) - centerPt.x, GetYPosFromTop(rect, 0.65) - centerPt.y });
+
+            hiltGuardPath.CloseSubpath();
+            gc->FillPath(hiltGuardPath);
+            gc->StrokePath(hiltGuardPath);
+
+            // restore transform matrix
+            gc->PopState();
+
+            if (clippingSection != ClippingSection::None)
+                {
+                gc->ResetClip();
+                if (!originalClipRect.IsEmpty())
+                    {
+                    gc->Clip(originalClipRect);
+                    }
+                }
             }
         }
 

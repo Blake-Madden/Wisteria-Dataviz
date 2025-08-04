@@ -403,6 +403,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawMonitor(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a sword.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawSword(wxRect rect, wxDC& dc) const;
         /// @}
       private:
         enum class Temperature
@@ -410,10 +414,17 @@ namespace Wisteria::GraphItems
             Hot,
             Cold
             };
+        enum class ClippingSection
+            {
+            Upper,
+            Lower,
+            None
+            };
 
         void DrawBaseBuilding(wxRect rect, wxDC& dc, const wxColour& color) const;
         void DrawThermometer(wxRect rect, wxDC& dc, Temperature temp) const;
         void DrawApple(wxRect rect, wxDC& dc, const wxColour& color) const;
+        void DrawSword(wxRect rect, wxDC& dc, ClippingSection clippingSection) const;
         static void DrawAsterisk(wxRect rect, wxGraphicsContext* gc);
         void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
