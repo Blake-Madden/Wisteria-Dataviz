@@ -243,6 +243,7 @@ namespace Wisteria::Graphs
                 return *this;
                 }
 
+            /// @returns What type of aggregation is being performed.
             [[nodiscard]]
             AggregateType GetType() const noexcept
                 {
