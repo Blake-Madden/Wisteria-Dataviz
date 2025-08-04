@@ -14,14 +14,22 @@
 
 #include "wx/string.h"
 #include <wx/numformatter.h>
+#ifdef __UNIX__
+    #include <monetary.h>   
+#endif
 
 namespace Wisteria
     {
+    /** @brief Formats a number to a currency string (in the current locale format).
+        @param money The value to format.
+        @param noTrailingZeroes @c true to remove fractional amounts if zero.
+        @returns The monetary amount as a formatted string.
+    */
     [[nodiscard]]
-    inline wxString ToCurrency(double val, [[maybe_unused]] bool noTrailingZeroes = false)
+    inline wxString ToCurrency(double money, bool noTrailingZeroes = false)
         {
 #ifdef __WXMSW__
-        const wxString inputVal = wxString::FromCDouble(val);
+        const wxString inputVal = wxString::FromCDouble(money);
         if (!inputVal.empty())
             {
             // see how much space we need
@@ -33,21 +41,28 @@ namespace Wisteria
                 if (::GetCurrencyFormatEx(wxUILocale::GetCurrent().GetName(), 0, inputVal, nullptr,
                                           currencyStr.get(), outputBufferLength) != 0)
                     {
-                    wxString result{ currencyStr.get() };
+                    wxString formattedMoney{ currencyStr.get() };
                     // output is always formatted with cents (even if zero), so we need
-                    // to manually chop that off as best we can
+                    // to manually chop that off upon request
                     if (noTrailingZeroes)
                         {
-                        wxNumberFormatter::RemoveTrailingZeroes(result);
+                        wxNumberFormatter::RemoveTrailingZeroes(formattedMoney);
                         }
-                    return result;
+                    return formattedMoney;
                     }
                 }
             }
 #else
-        return wxNumberFormatter::ToString(val, 2,
-                                           wxNumberFormatter::Style::Style_WithThousandsSep |
-                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        char formattedBuffer[1024];
+        if (strfmon(formattedBuffer, std::size(formattedBuffer), "%n", money) != -1)
+            {
+            wxString formattedMoney{ formattedBuffer };
+            if (noTrailingZeroes)
+                {
+                wxNumberFormatter::RemoveTrailingZeroes(formattedMoney);
+                }
+            return formattedMoney;
+            }
 #endif
         return {};
         }

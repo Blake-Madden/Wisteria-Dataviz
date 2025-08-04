@@ -371,8 +371,6 @@ namespace Wisteria
         /// @brief Show as a percent.
         Percentage,
         /// @brief Show as currency (using the current locale).
-        /// @warning Currently only supported on wMSW; will return as a regularly
-        ///     formatted string elsewhere.
         Currency
         };
 
