@@ -8,7 +8,7 @@ Wisteria Dataviz contains features such as:
   outlier detection, and annotations
 - Built-in [printing](Printing.md) support
 - Built-in copy support
-- [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, and TIFF are supported)
+- [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, TIFF, and WebP are supported)
 - Mouse- and keyboard-enabled zooming
 - Data [importing](ImportingData.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
 - Data [transformations](TransformingData.md), such as filtering, pivoting (both longer or wider), subsetting, and recoding
