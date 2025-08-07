@@ -138,8 +138,6 @@ namespace Wisteria::Graphs
         /// @brief A data series drawn on a line plot.
         class Line
             {
-            friend class LinePlot;
-
           public:
             /// @name Line Display Functions
             /// @brief Functions relating to the visual display of the line
@@ -184,7 +182,6 @@ namespace Wisteria::Graphs
                 return m_linePen;
                 }
 
-          private:
             /// @brief Sets the grouping information connected to this line.
             /// @param groupColumnName The grouping column to use. This is used for
             ///     data validation later.
@@ -200,6 +197,43 @@ namespace Wisteria::Graphs
                 m_label = groupName;
                 }
 
+            /// @returns The shape.
+            [[nodiscard]]
+            Icons::IconShape GetShape() const noexcept
+                {
+                return m_shape;
+                }
+
+            /// @brief Sets the shape.
+            /// @param shape The shape.
+            void SetShape(const Icons::IconShape shape) { m_shape = shape; }
+
+            /// @returns The shape image.
+            [[nodiscard]]
+            const wxBitmapBundle& GetShapeImage() const noexcept
+                {
+                return m_shapeImg;
+                }
+
+            /// @brief Sets the shape image.
+            /// @param shapeImg The shape image.
+            void SetShapeImage(const wxBitmapBundle& shapeImg) { m_shapeImg = shapeImg; }
+
+            /// @returns The group ID.
+            [[nodiscard]]
+            Data::GroupIdType GetGroupId() const noexcept
+                {
+                return m_groupId;
+                }
+
+            /// @returns The group column name.
+            [[nodiscard]]
+            std::optional<wxString> GetGroupColumnName() const
+                {
+                return m_groupColumnName;
+                }
+
+          private:
             std::optional<wxString> m_groupColumnName;
             Data::GroupIdType m_groupId{ 0 };
             wxString m_label;
@@ -385,7 +419,7 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.\n
             @returns The legend for the plot.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
 
       protected:
         /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
@@ -504,7 +538,18 @@ namespace Wisteria::Graphs
                 }
             }
 
-      private:
+        /// @returns The pen styles used for the line(s).
+        [[nodiscard]]
+        const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
+            {
+            return m_linePenStyles;
+            }
+
+        /// @note If X is dates or categorical, then this simply return @c true.
+        [[nodiscard]]
+        bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
+                                   Data::GroupIdType group) const noexcept;
+
         /// @returns Whether X was loaded from a continuous column.
         [[nodiscard]]
         bool IsXContinuous() const noexcept
@@ -526,23 +571,11 @@ namespace Wisteria::Graphs
             return (m_xColumnDate != GetDataset()->GetDateColumns().cend());
             }
 
-        /** @brief Adds a line to the plot.
-            @param line The line to add.*/
-        void AddLine(const Line& line);
-        /// @brief Recalculates the size of embedded objects on the plot.
-        void RecalcSizes(wxDC& dc) final;
-
-        [[nodiscard]]
-        const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
-            {
-            return m_linePenStyles;
-            }
-
-        /// @note If X is dates or categorical, then this simply return @c true.
-        [[nodiscard]]
-        bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
-                                   Data::GroupIdType group) const noexcept;
-
+        /** @brief Returns a color that is ghosted if ghosting is enabled.
+            @param color The base color.
+            @param isGhosted Whether to ghost the color.
+            @returns The (possibly) ghosted color.
+         */
         [[nodiscard]]
         wxColour GetMaybeGhostedColor(const wxColour& color, const bool isGhosted) const
             {
@@ -550,6 +583,52 @@ namespace Wisteria::Graphs
                        Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
                        color;
             }
+
+        /// @returns The showcased lines' names.
+        [[nodiscard]]
+        const std::vector<wxString>& GetShowcasedLines() const noexcept
+            {
+            return m_showcasedLines;
+            }
+
+        /// @returns The functor for determining how to color a point.
+        [[nodiscard]]
+        PointColorCriteria GetColorIf()
+            {
+            return m_colorIf;
+            }
+
+        /// @brief Sets the X column from the dataset.
+        /// @details This will set the iterator to the proper column.
+        /// @warning This must be called after setting the dataset.
+        void SetXColumn(const wxString& xColumnName);
+
+        /// @returns The iterator to the categorical column.
+        /// @details This would usually be used to gather axis labels
+        ///     from the categorical column's string table.
+        /// @warning Call IsXCategorical() first to ensure that this iterator is valid.
+        [[nodiscard]]
+        Data::CategoricalColumnConstIterator GetXCategoricalColumnIterator()
+            {
+            return m_xColumnCategorical;
+            }
+
+      private:
+        /// @brief Resets the X column iterators.
+        /// @warning This must be called after setting the dataset.
+        void ResetXColumns()
+            {
+            m_xColumnContinuous = GetDataset()->GetContinuousColumns().cend();
+            m_xColumnCategorical = GetDataset()->GetCategoricalColumns().cend();
+            m_xColumnDate = GetDataset()->GetDateColumns().cend();
+            }
+
+        /** @brief Adds a line to the plot.
+            @param line The line to add.*/
+        void AddLine(const Line& line);
+
+        /// @brief Recalculates the size of embedded objects on the plot.
+        void RecalcSizes(wxDC& dc) override;
 
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
