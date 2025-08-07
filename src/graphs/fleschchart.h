@@ -51,9 +51,9 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The parent canvas to render on.
             @param colors The color scheme to apply to the points.
-               Leave as null to use the default theme.
+               Leave as @c nullptr to use the default theme.
             @param shapes The shape scheme to use for the points.
-               Leave as null to use the standard shapes.*/
+               Leave as @c nullptr to use the standard shapes.*/
         explicit FleschChart(
             Wisteria::Canvas* canvas,
             const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors = nullptr,

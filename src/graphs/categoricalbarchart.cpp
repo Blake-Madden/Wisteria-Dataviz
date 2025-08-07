@@ -56,7 +56,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                 }
             }
 
-        // set the grouping column (or keep it as null if not in use)
+        // set the grouping column (or keep it as `std::nullopt` if not in use)
         SetGroupColumn(groupColumnName);
 
         m_weightColumn =

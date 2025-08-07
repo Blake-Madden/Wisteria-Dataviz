@@ -247,9 +247,9 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the line plot on.
             @param colors The color scheme to apply to the points.
-                Leave as null to use the default theme.
+                Leave as @c nullptr to use the default theme.
             @param shapes The shape scheme to use for the points.
-                Leave as null to use the standard shapes.\n
+                Leave as @c nullptr to use the standard shapes.\n
                 Set to a new shape scheme filled with IconShape::BlankIcon to not
                 show markers for certain lines/groups.
             @code
@@ -393,8 +393,9 @@ namespace Wisteria::Graphs
                 and all others to a lighter opacity.
             @param labels The lines to showcase.
             @note Call SetGhostOpacity() prior to this to control how translucent
-                the non-showcased (i.e., "ghosted") bars are.
-            @warning This will only take effect if grouping is enabled.
+                the non-showcased (i.e., "ghosted") lines/points are.
+            @warning This will only take effect if called after SetData().\
+                Also, for LinePlot, this will only take effect if grouping is enabled.
             @sa SetGhostOpacity().*/
         void ShowcaseLines(const std::vector<wxString>& labels) { m_showcasedLines = labels; }
 
@@ -405,11 +406,11 @@ namespace Wisteria::Graphs
             return m_ghostOpacity;
             }
 
-        /** @brief Sets the opacity level for "ghosted" bars.\n
-                This is only used if ShowcaseBars() is called; this is the
-                opacity applied to bars not being showcased.
+        /** @brief Sets the opacity level for "ghosted" lines/points.\n
+                This is only used if ShowcaseLines() is called; this is the
+                opacity applied to lines/points not being showcased.
             @param opacity The opacity level (should be between @c 0 and @c 255).
-            @sa ShowcaseBars().*/
+            @sa ShowcaseLines().*/
         void SetGhostOpacity(const uint8_t opacity) noexcept { m_ghostOpacity = opacity; }
 
         /// @}
@@ -545,6 +546,10 @@ namespace Wisteria::Graphs
             return m_linePenStyles;
             }
 
+        /// @brief Returns whether the X column data is ordered ascendingly.
+        /// @param data The dataset to review.
+        /// @param group The group ID to use while stepping through the data.
+        /// @returns @c true if X data is ordered (i.e., not weaving back-and-forth).
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]]
         bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
@@ -599,6 +604,8 @@ namespace Wisteria::Graphs
             }
 
         /// @brief Sets the X column from the dataset.
+        /// @param xColumnName The X column from the dataset to use.
+        ///     Can be continuous, categorical, or a data column.
         /// @details This will set the iterator to the proper column.
         /// @warning This must be called after setting the dataset.
         void SetXColumn(const wxString& xColumnName);

@@ -130,7 +130,7 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.
             @param colors The color scheme to apply to the points.\n
-                Leave as null to use black & white.
+                Leave as @c nullptr to use black & white.
             @note For the color scheme, the first colors map to the lower values,
                 last colors map to the higher values.\n
                 The default color scale is white (low values) to black (high values),

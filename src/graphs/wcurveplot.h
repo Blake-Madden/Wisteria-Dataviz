@@ -121,9 +121,9 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
             @param colors The color scheme to apply to the points.
-                Leave as null to use the default theme.
+                Leave as @c nullptr to use the default theme.
             @param shapes The shape scheme to use for the points.
-                Leave as null to not show points.
+                Leave as @c nullptr to not show points.
                 Set to a new shape scheme filled with IconShape::BlankIcon to not show
                 markers for certain lines/groups.
             @param linePenStyles The line styles to use for the lines.

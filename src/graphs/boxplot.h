@@ -317,7 +317,7 @@ namespace Wisteria::Graphs
             @param colors The base color scheme to paint under the boxes' brushes.\n
                 This will only have a noticeable effect if the brush is non-solid (e.g., hatched).
             @param shapes The shape scheme to use for the points.\n
-                Leave as null to use the standard shapes.*/
+                Leave as @c nullptr to use the standard shapes.*/
         explicit BoxPlot(
             Canvas* canvas, const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
             const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr,
