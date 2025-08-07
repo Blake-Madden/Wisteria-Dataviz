@@ -152,7 +152,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         // clear everything, update axes mirroring or whatever if requested by client
         Graph2D::RecalcSizes(dc);
 
-        for (auto colCounter = 0; colCounter < m_yColumns.size(); ++colCounter)
+        for (size_t colCounter = 0; colCounter < m_yColumns.size(); ++colCounter)
             {
             wxASSERT_MSG(colCounter < GetLines().size(),
                          L"Not enough lines defined in MultiSeriesLinePlot!");
