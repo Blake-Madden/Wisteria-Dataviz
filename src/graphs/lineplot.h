@@ -40,6 +40,9 @@ namespace Wisteria::Graphs
               data, then there will be a line going from the first to second point,
               then a break in the line, then a line between the fourth and fifth point.
 
+        @note This differs from MultiSeriesLinePlot in that it only plots one series of data.
+            To create separate lines, an optional grouping column is used to split the data.
+
         @warning Unlike other applications, the order of the data for line plots is
             important in %Wisteria. The line(s) connecting the points is drawn in the order of the
             points as they appear in the data, whereas most other applications will simply connect
@@ -250,7 +253,7 @@ namespace Wisteria::Graphs
                 Leave as @c nullptr to use the default theme.
             @param shapes The shape scheme to use for the points.
                 Leave as @c nullptr to use the standard shapes.\n
-                Set to a new shape scheme filled with IconShape::BlankIcon to not
+                Set to a new shape scheme filled with `IconShape::BlankIcon` to not
                 show markers for certain lines/groups.
             @code
              // to turn off markers, pass this in as the shape scheme argument
@@ -261,8 +264,8 @@ namespace Wisteria::Graphs
                 wxBitmapBundle::FromSVGFile(L"logo.svg",
                     Image::GetSVGSize(L"logo.svg"))));
 
-            // or show a different image for each group
-            std::make_shared<IconScheme>(IconScheme({IconShape::ImageIcon},
+             // or show a different image for each group
+             std::make_shared<IconScheme>(IconScheme({IconShape::ImageIcon},
                 { wxBitmapBundle::FromSVGFile(L"hs.svg",
                     Image::GetSVGSize(L"hs.svg")),
                   wxBitmapBundle::FromSVGFile(L"university.svg",
@@ -598,7 +601,7 @@ namespace Wisteria::Graphs
 
         /// @returns The functor for determining how to color a point.
         [[nodiscard]]
-        PointColorCriteria GetColorIf()
+        PointColorCriteria GetColorIf() const
             {
             return m_colorIf;
             }
