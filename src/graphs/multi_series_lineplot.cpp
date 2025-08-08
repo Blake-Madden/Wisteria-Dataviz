@@ -60,7 +60,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             }
         GetLeftYAxis().GetTitle().SetText(yLabel);
 
-        for (auto i = 0; i < m_yColumnNames.size(); ++i)
+        for (size_t i = 0; i < m_yColumnNames.size(); ++i)
             {
             Line ln;
             ln.SetGroupInfo(std::nullopt, 0, m_yColumnNames[i]);

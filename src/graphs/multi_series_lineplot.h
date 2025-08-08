@@ -87,6 +87,10 @@ namespace Wisteria::Graphs
             {
             }
 
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#endif
         /** @brief Sets the data.
             @details Separate lines are created for each Y column of data provided.
             @param data The data to use for the line plot.
@@ -109,6 +113,9 @@ namespace Wisteria::Graphs
         virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
                              const std::vector<wxString>& yColumnNames,
                              const wxString& xColumnName);
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 
         /** @brief Builds and returns a legend using the current colors and labels.
             @details This can then be managed by the parent canvas and placed next to the plot.
