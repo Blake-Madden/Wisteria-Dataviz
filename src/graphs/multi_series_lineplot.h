@@ -87,7 +87,7 @@ namespace Wisteria::Graphs
             {
             }
 
-#ifdef __GNUC__
+#if defined(__clang__) || defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #endif
@@ -113,7 +113,7 @@ namespace Wisteria::Graphs
         virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
                              const std::vector<wxString>& yColumnNames,
                              const wxString& xColumnName);
-#ifdef __GNUC__
+#if defined(__clang__) || defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
 

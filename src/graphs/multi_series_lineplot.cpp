@@ -65,6 +65,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             Line ln;
             ln.SetGroupInfo(std::nullopt, 0, m_yColumnNames[i]);
             ln.GetPen().SetColour(GetColorScheme()->GetColor(i));
+            ln.SetShape(GetShapeScheme()->GetShape(i));
+            ln.SetShapeImage(GetShapeScheme()->GetImage(i));
             if (IsAutoSplining() && !IsDataSingleDirection(GetDataset(), 0))
                 {
                 ln.GetPen().SetStyle(wxPenStyle::wxPENSTYLE_SHORT_DASH);
