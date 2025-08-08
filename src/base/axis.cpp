@@ -2301,7 +2301,7 @@ namespace Wisteria::GraphItems
                         const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x =
+                            wxCoord xCoord =
                                 GetTopPoint().x -
                                 (ScaleToScreenAndCanvas(
                                     GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
@@ -2315,42 +2315,43 @@ namespace Wisteria::GraphItems
                                 }
                             else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                                 {
-                                x -= (axisTextHeight / 2);
+                                xCoord -= (axisTextHeight / 2);
                                 axisLabel.SetAnchoring(Anchoring::Center);
                                 }
                             if (IsStackingLabels())
                                 {
-                                x -= drawingInnerLabel ? 0 : axisTextHeight;
+                                xCoord -= drawingInnerLabel ? 0 : axisTextHeight;
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
-                                x = GetTopPoint().x +
-                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                    CalcTickMarkInnerWidth();
+                                xCoord = GetTopPoint().x +
+                                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                         CalcTickMarkInnerWidth();
                                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
                                     GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
                                     {
-                                    x += axisTextHeight;
+                                    xCoord += axisTextHeight;
                                     }
                                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                                     {
-                                    x += (axisTextHeight / 2);
+                                    xCoord += (axisTextHeight / 2);
                                     }
                                 if (IsStackingLabels())
                                     {
-                                    x += drawingInnerLabel ? 0 : axisTextHeight;
+                                    xCoord += drawingInnerLabel ? 0 : axisTextHeight;
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
                         else if (GetAxisType() == AxisType::RightYAxis)
                             {
-                            wxCoord x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
-                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                        CalcTickMarkOuterWidth();
+                            wxCoord xCoord =
+                                GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) +
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
@@ -2361,34 +2362,34 @@ namespace Wisteria::GraphItems
                                 }
                             else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                                 {
-                                x += (axisTextHeight / 2);
+                                xCoord += (axisTextHeight / 2);
                                 axisLabel.SetAnchoring(Anchoring::Center);
                                 }
                             if (IsStackingLabels())
                                 {
-                                x += drawingInnerLabel ? 0 : axisTextHeight;
+                                xCoord += drawingInnerLabel ? 0 : axisTextHeight;
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
-                                x = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
-                                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
-                                     CalcTickMarkInnerWidth());
+                                xCoord = GetTopPoint().x + (GetBottomPoint().x - GetTopPoint().x) -
+                                         (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) +
+                                          CalcTickMarkInnerWidth());
                                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom ||
                                     GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
                                     {
-                                    x -= axisTextHeight;
+                                    xCoord -= axisTextHeight;
                                     }
                                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                                     {
-                                    x -= (axisTextHeight / 2);
+                                    xCoord -= (axisTextHeight / 2);
                                     }
                                 if (IsStackingLabels())
                                     {
-                                    x -= drawingInnerLabel ? 0 : axisTextHeight;
+                                    xCoord -= drawingInnerLabel ? 0 : axisTextHeight;
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ xCoord, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
