@@ -565,7 +565,14 @@ namespace Wisteria
             auto displayInterval = rangeNode->GetProperty(_DT(L"display-interval"))
                                        ->GetValueNumber(axis.GetDisplayInterval());
 
+            if (rangeStart > rangeEnd)
+                {
+                wxLogWarning(_("Invalid axis range (%f to %f) provided."), rangeStart, rangeEnd);
+                }
+            else
+                {
             axis.SetRange(rangeStart, rangeEnd, precision, interval, displayInterval);
+            }
             }
 
         axis.SetPrecision(axisNode->GetProperty(_DT(L"precision"))->GetValueNumber(0));
@@ -1956,9 +1963,9 @@ namespace Wisteria
             else if (exportPath.length())
                 {
                 // just log this (don't throw)
-                wxLogWarning(wxString::Format(L"Dataset '%s' cannot be exported "
+                wxLogWarning(L"Dataset '%s' cannot be exported "
                                               "because debug file IO is not enabled.",
-                                              dataset->GetName()));
+                             dataset->GetName());
                 }
             }
         }
@@ -5224,7 +5231,7 @@ namespace Wisteria
         wxString expandedPath{ path };
         if (expandedPath.empty())
             {
-            throw std::runtime_error(wxString(_(L"Filepath is empty.")).ToUTF8());
+            throw std::runtime_error(_(L"Filepath is empty.").ToUTF8());
             }
         if (!wxFileName::FileExists(expandedPath))
             {
