@@ -366,12 +366,14 @@ namespace Wisteria
     /// @brief How a number should be displayed.
     enum class NumberDisplay
         {
-        /// @brief Display the number as-is.
+        /// @brief Display the number as-is, but with thousands separators.
         Value,
         /// @brief Show as a percent.
         Percentage,
         /// @brief Show as currency (using the current locale).
-        Currency
+        Currency,
+        /// @brief Display the number as-is, no thousands separators.
+        ValueSimple
         };
 
     /// @brief How the segments between the points on a line are connected.

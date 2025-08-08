@@ -641,7 +641,8 @@ namespace Wisteria
             static const std::map<std::wstring, NumberDisplay> bDisplayValues = {
                 { L"percentage", NumberDisplay::Percentage },
                 { L"value", NumberDisplay::Value },
-                { L"currency", NumberDisplay::Currency }
+                { L"currency", NumberDisplay::Currency },
+                { L"value-simple", NumberDisplay::ValueSimple },
             };
 
             const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());

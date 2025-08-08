@@ -283,8 +283,8 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         }
 
     wxFileDialog classifierFileDlg(this, _(L"Select Classifier Data"), wxString{}, wxString{},
-                                  Dataset::GetDataFileFilter(),
-                                  wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+                                   Dataset::GetDataFileFilter(),
+                                   wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
     if (classifierFileDlg.ShowModal() != wxID_OK)
         {

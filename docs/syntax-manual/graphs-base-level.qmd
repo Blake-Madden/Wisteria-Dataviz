@@ -27,6 +27,13 @@ Properties common to all bar-chart derived graphs:
   - `"bin-name"`
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
+- `"number-display"`: A string specifying how to display numeric bar labels. \
+  (`"bar-label-display"` must be set to `"value"`.)\
+  Available options are:
+  - `"percentage"`
+  - `"value"`
+  - `"value-simple"`
+  - `"currency"`
 - `"bar-label-suffix"`: A string to add to the end of each bar label.
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
 - `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.\

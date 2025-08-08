@@ -56,6 +56,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                 (GetNumberDisplay() == NumberDisplay::Currency ?
                      ToCurrency(bar.GetLength(), true) :
+                 GetNumberDisplay() == NumberDisplay::ValueSimple ?
+                     wxNumberFormatter::ToString(bar.GetLength(), defaultPrecision,
+                                                 wxNumberFormatter::Style::Style_None) :
                      wxNumberFormatter::ToString(bar.GetLength(), defaultPrecision,
                                                  Settings::GetDefaultNumberFormat())) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?

@@ -28,6 +28,7 @@
 #include "../src/graphs/likertchart.h"
 #include "../src/graphs/lineplot.h"
 #include "../src/graphs/lrroadmap.h"
+#include "../src/graphs/multi_series_lineplot.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
 #include "../src/graphs/sankeydiagram.h"

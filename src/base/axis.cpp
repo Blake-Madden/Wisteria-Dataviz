@@ -2301,9 +2301,10 @@ namespace Wisteria::GraphItems
                         const auto y = static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate());
                         if (GetAxisType() == AxisType::LeftYAxis)
                             {
-                            wxCoord x = GetTopPoint().x -
-                                        (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
-                                        CalcTickMarkOuterWidth();
+                            wxCoord x =
+                                GetTopPoint().x -
+                                (ScaleToScreenAndCanvas(
+                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -3428,6 +3429,12 @@ namespace Wisteria::GraphItems
                     axisPt.SetDisplayValue(wxNumberFormatter::ToString(
                         axisPt.GetValue(), m_displayPrecision,
                         wxNumberFormatter::Style::Style_WithThousandsSep));
+                    }
+                else if (GetNumberDisplay() == NumberDisplay::ValueSimple)
+                    {
+                    axisPt.SetDisplayValue(
+                        wxNumberFormatter::ToString(axisPt.GetValue(), m_displayPrecision,
+                                                    wxNumberFormatter::Style::Style_None));
                     }
                 else if (GetNumberDisplay() == NumberDisplay::Currency)
                     {
