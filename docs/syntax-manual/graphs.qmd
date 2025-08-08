@@ -192,6 +192,17 @@ Properties for `"line-plot"` nodes:
 - Some base properties available to [graphs](#graph-properties).
 :::
 
+::: {.minipage data-latex="{\textwidth}"}
+## Multi-series Line Plot {#multi-series-line-plot-properties .unnumbered}
+
+Properties for `"multi-series-line-plot"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"x"`: The X column.
+  - `"y"`: The Y column(s) (an array of strings).
+- Some base properties available to [graphs](#graph-properties) and [line plots](#line-plot-properties).
+:::
+
 ## Pie Chart {#pie-chart-properties .unnumbered}
 
 Properties for `"pie-chart"` nodes:

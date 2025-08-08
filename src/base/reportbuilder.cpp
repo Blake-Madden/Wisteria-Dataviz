@@ -192,6 +192,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"multi-series-line-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadMultiSeriesLinePlot(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(
                                                          L"heatmap") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadHeatMap(
@@ -571,8 +577,8 @@ namespace Wisteria
                 }
             else
                 {
-            axis.SetRange(rangeStart, rangeEnd, precision, interval, displayInterval);
-            }
+                axis.SetRange(rangeStart, rangeEnd, precision, interval, displayInterval);
+                }
             }
 
         axis.SetPrecision(axisNode->GetProperty(_DT(L"precision"))->GetValueNumber(0));
@@ -1964,7 +1970,7 @@ namespace Wisteria
                 {
                 // just log this (don't throw)
                 wxLogWarning(L"Dataset '%s' cannot be exported "
-                                              "because debug file IO is not enabled.",
+                             "because debug file IO is not enabled.",
                              dataset->GetName());
                 }
             }
@@ -2577,6 +2583,8 @@ namespace Wisteria
                     graphNode->GetProperty(L"time-interval-label")->GetValueString());
                 }
             LoadGraph(graphNode, canvas, currentRow, currentColumn, wcurvePlot);
+            LoadLinePlotBaseOptions(graphNode, wcurvePlot.get());
+
             return wcurvePlot;
             }
         else
@@ -2659,25 +2667,68 @@ namespace Wisteria
                 ExpandConstants(variablesNode->GetProperty(L"x")->GetValueString()),
                 (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
             LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
-
-            // showcasing
-            if (graphNode->HasProperty(L"ghost-opacity"))
-                {
-                linePlot->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
-                                              ->GetValueNumber(Wisteria::Settings::GHOST_OPACITY));
-                }
-
-            if (const auto showcaseNode = graphNode->GetProperty(L"showcase-lines");
-                showcaseNode->IsOk() && showcaseNode->IsValueArray())
-                {
-                linePlot->ShowcaseLines(showcaseNode->GetValueStringVector());
-                }
+            LoadLinePlotBaseOptions(graphNode, linePlot.get());
 
             return linePlot;
             }
         else
             {
             throw std::runtime_error(_(L"Variables not defined for line plot.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
+                                                Wisteria::Graphs::LinePlot* linePlot)
+        {
+        // showcasing
+        if (graphNode->HasProperty(L"ghost-opacity"))
+            {
+            linePlot->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
+                                          ->GetValueNumber(Wisteria::Settings::GHOST_OPACITY));
+            }
+
+        if (const auto showcaseNode = graphNode->GetProperty(L"showcase-lines");
+            showcaseNode->IsOk() && showcaseNode->IsValueArray())
+            {
+            linePlot->ShowcaseLines(showcaseNode->GetValueStringVector());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadMultiSeriesLinePlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                           size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for multi-series line plot."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            auto linePlot = std::make_shared<MultiSeriesLinePlot>(
+                canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
+                LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
+            linePlot->SetData(
+                foundPos->second,
+                ExpandConstants(variablesNode->GetProperty(L"y")->GetValueStringVector()),
+                ExpandConstants(variablesNode->GetProperty(L"x")->GetValueString()));
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+            LoadLinePlotBaseOptions(graphNode, linePlot.get());
+
+            return linePlot;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for multi-series line plot.").ToUTF8());
             }
         }
 

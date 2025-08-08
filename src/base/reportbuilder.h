@@ -26,6 +26,7 @@
 #include "../graphs/likertchart.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/lrroadmap.h"
+#include "../graphs/multi_series_lineplot.h"
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/sankeydiagram.h"
@@ -136,11 +137,26 @@ namespace Wisteria
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
-        /// @todo many features still needed!
         [[nodiscard]]
         std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
                                                       Canvas* canvas, size_t& currentRow,
                                                       size_t& currentColumn);
+        /// @brief Loads options such as showcasing into different types of line plots.
+        /// @param graphNode The graph node to parse.
+        /// @param[in,out] linePlot The line plot to load options into.
+        /// @todo many features still needed!
+        void LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
+                                     Wisteria::Graphs::LinePlot* linePlot);
+        /// @brief Loads a multi-series line plot node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::Graph2D>
+        LoadMultiSeriesLinePlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a w-curve plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
