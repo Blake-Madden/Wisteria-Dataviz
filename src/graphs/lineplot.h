@@ -294,6 +294,10 @@ namespace Wisteria::Graphs
             GetLeftYAxis().StartAtZero(true);
             }
 
+#if defined(__clang__) || defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#endif
         /** @brief Sets the data.
             @details Along with the X and Y points, separate lines can be created based
                 on the (optional) grouping column in the data.
@@ -321,6 +325,9 @@ namespace Wisteria::Graphs
         virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
                              const wxString& yColumnName, const wxString& xColumnName,
                              const std::optional<wxString>& groupColumnName = std::nullopt);
+#if defined(__clang__) || defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
         /** @brief Sets an additional function to assign a point's color to something different
                 from the rest of its group based on a set of criteria.
