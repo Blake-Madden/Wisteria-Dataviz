@@ -5207,6 +5207,12 @@ namespace Wisteria
                 {
                 return foundPos->second;
                 }
+            // a single icon that should be recycled
+            const auto iconValue = ReportEnumConvert::ConvertIcon(iconSchemeNode->GetValueString());
+            if (iconValue.has_value())
+                {
+                return std::make_shared<IconScheme>(std::vector<IconShape>{ iconValue.value() });
+                }
             }
 
         return nullptr;
