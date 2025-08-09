@@ -1,5 +1,25 @@
 # Releases
 
+## 1.0.2 Release
+
+- New graph type: Multi-series Line Plot\
+  This allows for plotting multiple data series on a line plot
+- Add sword and Immaculate Heart with sword shapes
+- Add Chapel Blue as predefined color
+- Likert Charts
+  - Now uses guillemets instead of Unicode arrows\
+    This fixes display issues where some fonts don't support those characters
+  - Arrow icons are now customizable for Likert Charts
+  - Fix bar labels erroneously being shown
+- Add showcasing option to Lix Gauge
+- Fix axis brackets in Lix Gauge to be a consistent color
+- Add showcasing option to German Lix Gauge
+- Improve auto-contrasting graphs with black backgrounds
+- All shapes now support non-opaque brushes
+- Add currency formatting support to Unix platforms
+- Add `Tint()` function
+- Optimizations for bar sorting (bar charts)
+
 ## 1.0.1 Release
 
 **NOTE**: wxWidgets 3.3.1 is required now
