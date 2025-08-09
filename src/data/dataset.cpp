@@ -1186,10 +1186,10 @@ namespace Wisteria::Data
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
 
-        lily_of_the_valley::standard_delimited_character_column deliminatedColumn(
+        lily_of_the_valley::standard_delimited_character_column delimitedColumn(
             lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
         lily_of_the_valley::text_row<std::wstring> row{};
-        row.add_column(deliminatedColumn);
+        row.add_column(delimitedColumn);
         importer.add_row_definition(row);
 
         lily_of_the_valley::text_preview preview;
@@ -1462,10 +1462,10 @@ namespace Wisteria::Data
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
 
-        lily_of_the_valley::standard_delimited_character_column deliminatedColumn(
+        lily_of_the_valley::standard_delimited_character_column delimitedColumn(
             lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
         lily_of_the_valley::text_row<std::wstring> row{};
-        row.add_column(deliminatedColumn);
+        row.add_column(delimitedColumn);
         importer.add_row_definition(row);
 
         lily_of_the_valley::text_preview preview;
