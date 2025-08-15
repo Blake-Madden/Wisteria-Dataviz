@@ -1991,7 +1991,7 @@ namespace Wisteria::GraphItems
         {
         // start with the smallest possible font and work our way up.
         wxFont resizedFont(ft);
-        resizedFont.SetPointSize(1);
+        resizedFont.SetFractionalPointSize(1);
         const DCFontChangerIfDifferent fc(dc, resizedFont);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
 
@@ -2002,7 +2002,7 @@ namespace Wisteria::GraphItems
             // down below when we try to see if the point size can't be increased anymore.
             // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one
             // operation), whereas we want to test each point size to find the perfect one.
-            resizedFont.SetPointSize(resizedFont.GetFractionalPointSize() + 1.0);
+            resizedFont.SetFractionalPointSize(resizedFont.GetFractionalPointSize() + 1.0);
             // bail if the font can't be made any larger
             if (resizedFont.GetFractionalPointSize() == dc.GetFont().GetFractionalPointSize())
                 {
@@ -2013,7 +2013,8 @@ namespace Wisteria::GraphItems
 
             if (textWidth > boundingBox.GetWidth() || textHeight > boundingBox.GetHeight())
                 {
-                resizedFont.SetPointSize(std::max(1.0, resizedFont.GetFractionalPointSize() - 1));
+                resizedFont.SetFractionalPointSize(
+                    std::max(1.0, resizedFont.GetFractionalPointSize() - 1));
                 break;
                 }
             }
@@ -2021,13 +2022,13 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------------------
-    int Label::CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
-                                    const double angleInDegrees, const wxString& text)
+    double Label::CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
+                                       const double angleInDegrees, const wxString& text)
         {
         // start with the smallest possible font and work our way up.
         wxFont resizedFont(ft);
-        resizedFont.SetPointSize(1);
-        const DCFontChangerIfDifferent fc(dc, resizedFont);
+        resizedFont.SetFractionalPointSize(1);
+        const DCFontChangerIfDifferent fc{ dc, resizedFont };
         wxCoord textWidth{ 0 }, textHeight{ 0 };
 
         for (;;) // will break when font size is found
@@ -2037,11 +2038,11 @@ namespace Wisteria::GraphItems
             // down below when we try to see if the point size can't be increased anymore.
             // Also, increasing by 1.2 will be too aggressive (30pt will become 36pt in one
             // operation), whereas we want to test each point size to find the perfect one.
-            resizedFont.SetPointSize(resizedFont.GetPointSize() + 1);
+            resizedFont.SetFractionalPointSize(resizedFont.GetFractionalPointSize() + 1);
             // bail if the font can't be made any larger
-            if (resizedFont.GetPointSize() == dc.GetFont().GetPointSize())
+            if (resizedFont.GetFractionalPointSize() == dc.GetFont().GetFractionalPointSize())
                 {
-                return resizedFont.GetPointSize();
+                return resizedFont.GetFractionalPointSize();
                 }
             const DCFontChangerIfDifferent fc2(dc, resizedFont);
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
@@ -2056,10 +2057,11 @@ namespace Wisteria::GraphItems
             if (widthOfWatermark > boundingBox.GetWidth() ||
                 heightOfWatermark > boundingBox.GetHeight())
                 {
-                resizedFont.SetPointSize(std::max(1, resizedFont.GetPointSize() - 1));
+                resizedFont.SetFractionalPointSize(
+                    std::max(1.0, resizedFont.GetFractionalPointSize() - 1));
                 break;
                 }
             }
-        return resizedFont.GetPointSize();
+        return resizedFont.GetFractionalPointSize();
         }
     } // namespace Wisteria::GraphItems

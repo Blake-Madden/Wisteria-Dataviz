@@ -362,8 +362,8 @@ namespace Wisteria::GraphItems
                 setting its point size to this should also set its scaling to 1
                 (not the parent's).*/
         [[nodiscard]]
-        static int CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
-                                        double angleInDegrees, const wxString& text);
+        static double CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
+                                           double angleInDegrees, const wxString& text);
 
         /// @private
         /// @internal Deprecated overload.

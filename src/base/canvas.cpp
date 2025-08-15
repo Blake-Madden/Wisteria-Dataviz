@@ -1611,10 +1611,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
                 // set the font size so that the text will fit diagonally
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetPointSize(Wisteria::GraphItems::Label::CalcDiagonalFontSize(
+                labelFont.SetFractionalPointSize(Wisteria::GraphItems::Label::CalcDiagonalFontSize(
                     dc, labelFont, drawingRect, angle, watermark.m_label));
                 labelFont.MakeBold();
-                wxDCFontChanger fc(dc, labelFont);
+                const wxDCFontChanger fc{ dc, labelFont };
 
                 dc.GetMultiLineTextExtent(watermark.m_label, &labelWidth, &labelHeight);
 
@@ -1635,10 +1635,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             else
                 {
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetPointSize(Wisteria::GraphItems::Label::CalcFontSizeToFitBoundingBox(
-                    dc, labelFont, drawingRect, watermark.m_label));
+                labelFont.SetFractionalPointSize(
+                    Wisteria::GraphItems::Label::CalcFontSizeToFitBoundingBox(
+                        dc, labelFont, wxRect2DDouble{ drawingRect }, watermark.m_label));
                 labelFont.MakeBold();
-                wxDCFontChanger fc(dc, labelFont);
+                const wxDCFontChanger fc{ dc, labelFont };
 
                 dc.GetMultiLineTextExtent(watermark.m_label, &labelWidth, &labelHeight);
                 dc.DrawText(watermark.m_label,
