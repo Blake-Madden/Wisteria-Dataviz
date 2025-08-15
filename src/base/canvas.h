@@ -233,6 +233,7 @@ namespace Wisteria
 
         /// @brief Overlays translucent text diagonally across the canvas.
         /// @param watermark The text to draw as the watermark (e.g., a copyright notice).
+        /// @sa SetWatermarkColor().
         void SetWatermark(const wxString& watermark) { m_watermark = watermark; }
 
         /// @returns The watermark label shown across the canvas.
@@ -240,6 +241,23 @@ namespace Wisteria
         ///     values at time of rendering.
         [[nodiscard]]
         wxString GetWatermark() const;
+
+        /// @brief Sets the color of the watermark.
+        /// @param watermark The color of the watermark.
+        /// @note Transparency of this color will be used. If opaque, then the default
+        ///     transparency will be applied at runtime.
+        /// @sa SetWatermark().
+        void SetWatermarkColor(const wxColour& color)
+            {
+            m_watermarkColor = color;
+            }
+
+        /// @returns The color of the watermark.
+        [[nodiscard]]
+        wxColour GetWatermarkColor() const
+            {
+            return m_watermarkColor;
+            }
 
         /// @brief Overlays a translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
@@ -956,6 +974,7 @@ namespace Wisteria
 
         // watermarks and logos
         wxString m_watermark;
+        wxColour m_watermarkColor{ 255, 0, 0 };
         wxFont m_watermarkFont;
         wxBitmapBundle m_watermarkImg;
         wxSize m_watermarkImgSizeDIPs{ 100, 100 };

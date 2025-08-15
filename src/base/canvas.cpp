@@ -1512,12 +1512,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
             // draw label
             {
-            wxDCFontChanger fc(dc, m_watermarkFont);
+            wxDCFontChanger fc{ dc, m_watermarkFont };
             DrawWatermarkLabel(
                 dc, GetCanvasRect(dc),
                 Watermark{ GetWatermark(),
-                           Wisteria::Colors::ColorBrewer::GetColor(
-                               Wisteria::Colors::Color::Red, Settings::GetTranslucencyValue()),
+                           GetWatermarkColor().IsOpaque() ?
+                               Wisteria::Colors::ColorContrast::ChangeOpacity(
+                                   GetWatermarkColor(),
+                                   std::min<uint8_t>(50, Settings::GetTranslucencyValue())) :
+                               GetWatermarkColor(),
                            WatermarkDirection::Diagonal });
             }
 
