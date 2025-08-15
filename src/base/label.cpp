@@ -1663,7 +1663,7 @@ namespace Wisteria::GraphItems
             const DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
                                                                     dc.GetTextForeground());
             dc.DrawRotatedText(token, pt.x + xOffset, pt.y - offset - currentLineOffset,
-                               90 + m_tiltAngle);
+                               90 + m_tiltAngle.value_or(0));
             // move over for next line
             pt.x += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             ++currentLineNumber;
@@ -1892,10 +1892,10 @@ namespace Wisteria::GraphItems
                                dc.GetFont());
             const DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
                                                                     dc.GetTextForeground());
-            if (m_tiltAngle != 0)
+            if (m_tiltAngle.has_value() && m_tiltAngle.value() != 0)
                 {
                 dc.DrawRotatedText(token, pt.x + offset + currentLineOffset, pt.y + yOffset,
-                                   m_tiltAngle);
+                                   m_tiltAngle.value());
                 }
             else
                 {

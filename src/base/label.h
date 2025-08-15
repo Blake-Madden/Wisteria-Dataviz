@@ -230,14 +230,19 @@ namespace Wisteria::GraphItems
             @warning The bounding box of the label will not take this tilt into account.
                 This will enable vertical labels with a slight tilt to blend with each other
                 without creating large negative spaces between them.*/
-        void Tilt(const double tiltAngle) noexcept { m_tiltAngle = tiltAngle; }
+        void Tilt(const std::optional<double> tiltAngle) noexcept { m_tiltAngle = tiltAngle; }
 
         /** @returns The number of pixels between lines.
             @warning This will need to be scaled when being drawn or measured.*/
         [[nodiscard]]
         double GetLineSpacing() const noexcept
             {
-            return m_spacingBetweenLines;
+            return (m_tiltAngle.has_value() && m_tiltAngle.value() != 0 &&
+                    safe_modulus<int>(m_tiltAngle.value(), 90) != 0) ?
+                       // if tilting (other than perfectly up or down),
+                       // then we need a bit more spaces between the lines
+                       m_spacingBetweenLines * 20 :
+                       m_spacingBetweenLines;
             }
 
         /** @brief Sets the number of DIPs between lines (if label is multiline).
@@ -492,7 +497,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         wxCoord CalcPageHorizontalOffset() const;
 
-        double m_tiltAngle{ 0 };
+        std::optional<double> m_tiltAngle{ std::nullopt };
         double m_spacingBetweenLines{ 1 };
         LabelBoundingBoxContentAdjustment m_adjustBoundingBoxToContent{
             LabelBoundingBoxContentAdjustment::ContentAdjustNone
