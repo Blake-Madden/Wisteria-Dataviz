@@ -114,26 +114,30 @@ namespace Wisteria::Graphs
 
         /** @brief Embeds an annotation object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
-            @param pt The X and Y coordinates of the object. These coordinates are relative to the
-                plot's X and Y axes, not physical coordinates on the canvas.\n
+            @param pt The X and Y coordinates of the object.\n
+                These coordinates are relative to the plot's X and Y axes,
+                not physical coordinates on the canvas.\n
                 Note that if one (or both) of the axes are date-based, you can call
                 @c FindDatePosition() to find its point to use here.\n
                 @c FindCustomLabelPosition() can also be used to locate a point along either axis
                 using a label.
             @param interestPts An optional collection of points on the plot to draw a line from
-                this object's anchor point to.
+                this object's anchor point to.\n
+                These coordinates are relative to the plot's X and Y axes,
+                not physical coordinates on the canvas.\n
                 For example, this can draw a line from a data point to an annotation.
             @note This is intended as a way for the client to add a custom object on
                 top of the plot.
                 An example would be inserting a @c Label as a sticky note.*/
-        void AddAnnotation(std::shared_ptr<GraphItems::GraphItemBase> object, const wxPoint pt,
-                           const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
+        void
+        AddAnnotation(std::shared_ptr<GraphItems::GraphItemBase> object, const wxPoint2DDouble pt,
+                      std::vector<wxPoint2DDouble> interestPts = std::vector<wxPoint2DDouble>{})
             {
             if (object != nullptr)
                 {
                 object->SetId(m_currentAssignedId++);
                 object->SetDPIScaleFactor(GetDPIScaleFactor());
-                m_embeddedObjects.push_back({ object, pt, interestPts });
+                m_embeddedObjects.emplace_back(object, pt, std::move(interestPts));
                 }
             }
 
@@ -294,7 +298,7 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the image brush to paint with.
             @details This is used by derived classes that use stipple painting for its objects
-                (e.g., barcharts).
+                (e.g., bar charts).
             @param image The image to paint with.*/
         void SetStippleBrush(const wxBitmapBundle& image) noexcept { m_stipple = image; }
 
@@ -618,15 +622,6 @@ namespace Wisteria::Graphs
             }
 
         /// @private
-        [[deprecated("Use AddAnnotation() instead.")]]
-        void AddEmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
-                               const wxPoint pt,
-                               const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
-            {
-            AddAnnotation(object, pt, interestPts);
-            }
-
-        /// @private
         [[deprecated("Use GetPlotBackgroundColor() instead.")]]
         const wxColour& GetBackgroundColor() const noexcept
             {
@@ -836,8 +831,8 @@ namespace Wisteria::Graphs
             {
           public:
             EmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
-                           wxPoint anchorPt, const std::vector<wxPoint>& interestPts)
-                : m_object(object), m_anchorPt(anchorPt), m_interestPts(interestPts),
+                           wxPoint2DDouble anchorPt, std::vector<wxPoint2DDouble> interestPts)
+                : m_object(object), m_anchorPt(anchorPt), m_interestPts(std::move(interestPts)),
                   m_originalScaling(object->GetScaling())
                 {
                 }
@@ -855,7 +850,7 @@ namespace Wisteria::Graphs
                 }
 
             [[nodiscard]]
-            wxPoint GetAnchorPoint() const noexcept
+            wxPoint2DDouble GetAnchorPoint() const noexcept
                 {
                 return m_anchorPt;
                 }
@@ -867,15 +862,15 @@ namespace Wisteria::Graphs
                 }
 
             [[nodiscard]]
-            const std::vector<wxPoint>& GetInterestPoints() const noexcept
+            const std::vector<wxPoint2DDouble>& GetInterestPoints() const noexcept
                 {
                 return m_interestPts;
                 }
 
           private:
             std::shared_ptr<GraphItems::GraphItemBase> m_object;
-            wxPoint m_anchorPt;
-            std::vector<wxPoint> m_interestPts;
+            wxPoint2DDouble m_anchorPt;
+            std::vector<wxPoint2DDouble> m_interestPts;
             double m_originalScaling{ 1.0 };
             };
 

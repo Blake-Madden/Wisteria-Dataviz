@@ -5741,7 +5741,7 @@ namespace Wisteria
                 if (interestPointsNode->IsOk())
                     {
                     // get all the points on the plot that the note is pointing at
-                    std::vector<wxPoint> interestPointPositions;
+                    std::vector<wxPoint2DDouble> interestPointPositions;
                     const auto interestPoints = interestPointsNode->GetValueArrayObject();
                     for (const auto& interestPoint : interestPoints)
                         {
@@ -5751,10 +5751,10 @@ namespace Wisteria
                                                            interestPoint->GetProperty(L"y"));
                         if (xPos.has_value() && yPos.has_value())
                             {
-                            interestPointPositions.push_back(wxPoint(xPos.value(), yPos.value()));
+                            interestPointPositions.emplace_back(xPos.value(), yPos.value());
                             }
                         }
-                    wxPoint anchorPt;
+                    wxPoint2DDouble anchorPt;
                     const auto anchorNode = annotation->GetProperty(L"anchor");
                     if (anchorNode->IsOk())
                         {
@@ -5764,8 +5764,8 @@ namespace Wisteria
                             FindAxisPosition(graph->GetLeftYAxis(), anchorNode->GetProperty(L"y"));
                         if (xPos.has_value() && yPos.has_value())
                             {
-                            anchorPt.x = xPos.value();
-                            anchorPt.y = yPos.value();
+                            anchorPt.m_x = xPos.value();
+                            anchorPt.m_y = yPos.value();
                             }
                         }
                     // if no anchor point specified, then use the middle point
@@ -5776,18 +5776,15 @@ namespace Wisteria
                         const auto [minX, maxX] = std::minmax_element(
                             interestPointPositions.cbegin(), interestPointPositions.cend(),
                             [](const auto& lhv, const auto& rhv) noexcept
-                            { return lhv.x < rhv.x; });
+                            { return lhv.m_x < rhv.m_x; });
                         const auto [minY, maxY] = std::minmax_element(
                             interestPointPositions.cbegin(), interestPointPositions.cend(),
                             [](const auto& lhv, const auto& rhv) noexcept
-                            { return lhv.y < rhv.y; });
-                        anchorPt.x = safe_divide(maxX->x - minX->x, 2) + minX->x;
-                        anchorPt.y = safe_divide(maxY->y - minY->y, 2) + minY->y;
+                            { return lhv.m_y < rhv.m_y; });
+                        anchorPt.m_x = safe_divide(maxX->m_x - minX->m_x, 2.0) + minX->m_x;
+                        anchorPt.m_y = safe_divide(maxY->m_y - minY->m_y, 2.0) + minY->m_y;
                         }
-                    if (anchorPt.IsFullySpecified())
-                        {
-                        graph->AddAnnotation(label, anchorPt, interestPointPositions);
-                        }
+                    graph->AddAnnotation(label, anchorPt, interestPointPositions);
                     }
                 }
             }

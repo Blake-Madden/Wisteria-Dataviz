@@ -1143,8 +1143,8 @@ namespace Wisteria::Graphs
         for (auto& object : m_embeddedObjects)
             {
             wxCoord x{ 0 }, y{ 0 };
-            if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().x, x) &&
-                GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().y, y))
+            if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().m_x, x) &&
+                GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().m_y, y))
                 {
                 object.GetObject()->SetAnchorPoint({ x, y });
                 }
@@ -1167,10 +1167,11 @@ namespace Wisteria::Graphs
             for (const auto& interestPoint : object.GetInterestPoints())
                 {
                 wxPoint anchorPt, interestPt;
-                if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().x, anchorPt.x) &&
-                    GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().y, anchorPt.y) &&
-                    GetBottomXAxis().GetPhysicalCoordinate(interestPoint.x, interestPt.x) &&
-                    GetLeftYAxis().GetPhysicalCoordinate(interestPoint.y, interestPt.y))
+                if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().m_x,
+                                                           anchorPt.x) &&
+                    GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().m_y, anchorPt.y) &&
+                    GetBottomXAxis().GetPhysicalCoordinate(interestPoint.m_x, interestPt.x) &&
+                    GetLeftYAxis().GetPhysicalCoordinate(interestPoint.m_y, interestPt.y))
                     {
                     Lines ln(wxPen(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SHORT_DASH), GetScaling());
                     ln.AddLine(anchorPt, interestPt);
