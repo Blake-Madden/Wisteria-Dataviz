@@ -1591,18 +1591,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
-    void Canvas::DrawWatermarkLabel(wxDC & dc, const wxRect drawingRect, const Watermark& watermark)
+    void Canvas::DrawWatermarkLabel(wxDC & dc, wxRect drawingRect, const Watermark& watermark)
         {
-        wxDCTextColourChanger cc(dc, watermark.m_color);
-
         if (drawingRect.GetWidth() == 0 || drawingRect.GetHeight() == 0)
             {
             return;
             }
 
+        const auto originalRect{ drawingRect };
+        drawingRect.Deflate(drawingRect.GetWidth() * math_constants::tenth);
+
         if (!watermark.m_label.empty())
             {
-            wxCoord labelWidth{ 0 }, labelHeight{ 0 };
             if (watermark.m_direction == WatermarkDirection::Diagonal)
                 {
                 const double angle = std::atan(safe_divide<double>(drawingRect.GetHeight(),
@@ -1614,37 +1614,51 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 labelFont.SetFractionalPointSize(Wisteria::GraphItems::Label::CalcDiagonalFontSize(
                     dc, labelFont, drawingRect, angle, watermark.m_label));
                 labelFont.MakeBold();
-                const wxDCFontChanger fc{ dc, labelFont };
 
-                dc.GetMultiLineTextExtent(watermark.m_label, &labelWidth, &labelHeight);
+                Wisteria::GraphItems::Label waterLabel(
+                    Wisteria::GraphItems::GraphItemInfo(watermark.m_label)
+                        .Font(labelFont)
+                        .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                        .Padding(0, 0, 0, 0)
+                        .Pen(wxNullPen)
+                        .DPIScaling(GetDPIScaleFactor())
+                        .FontColor(watermark.m_color));
+                const auto boundingBox = waterLabel.GetBoundingBox(dc);
+                const auto widthOfWatermark =
+                    boundingBox.GetWidth() *
+                        std::abs(std::cos(geometry::degrees_to_radians(angle))) -
+                    boundingBox.GetHeight() *
+                        std::abs(std::sin(geometry::degrees_to_radians(angle)));
+                const auto heightOfWatermark =
+                    boundingBox.GetWidth() *
+                        std::abs(std::sin(geometry::degrees_to_radians(angle))) +
+                    boundingBox.GetHeight() *
+                        std::abs(std::cos(geometry::degrees_to_radians(angle)));
 
-                const float widthOfWatermark =
-                    labelWidth * std::abs(std::cos(geometry::degrees_to_radians(angle))) -
-                    labelHeight * std::abs(std::sin(geometry::degrees_to_radians(angle)));
-                const float heightOfWatermark =
-                    labelWidth * std::abs(std::sin(geometry::degrees_to_radians(angle))) +
-                    labelHeight * std::abs(std::cos(geometry::degrees_to_radians(angle)));
+                waterLabel.SetAnchorPoint(
+                    { (drawingRect.GetWidth() / 2) - static_cast<wxCoord>(widthOfWatermark / 2),
+                      (drawingRect.GetHeight() / 2) -
+                          static_cast<wxCoord>(heightOfWatermark / 2) });
 
-                constexpr std::negate<> neg;
-                dc.DrawRotatedText(
-                    watermark.m_label,
-                    (drawingRect.GetWidth() / 2) - static_cast<wxCoord>(widthOfWatermark / 2),
-                    (drawingRect.GetHeight() / 2) - static_cast<wxCoord>(heightOfWatermark / 2),
-                    neg(angle));
+                waterLabel.Tilt(std::negate{}(angle));
+                waterLabel.Draw(dc);
                 }
             else
                 {
-                wxFont labelFont = dc.GetFont();
-                labelFont.SetFractionalPointSize(
-                    Wisteria::GraphItems::Label::CalcFontSizeToFitBoundingBox(
-                        dc, labelFont, wxRect2DDouble{ drawingRect }, watermark.m_label));
-                labelFont.MakeBold();
-                const wxDCFontChanger fc{ dc, labelFont };
+                Wisteria::GraphItems::Label waterLabel(
+                    Wisteria::GraphItems::GraphItemInfo(watermark.m_label)
+                        .Anchoring(Wisteria::Anchoring::Center)
+                        .Padding(0, 0, 0, 0)
+                        .Pen(wxNullPen)
+                        .LabelAlignment(Wisteria::TextAlignment::Centered)
+                        .LabelPageVerticalAlignment(Wisteria::PageVerticalAlignment::Centered)
+                        .LabelPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered)
+                        .DPIScaling(GetDPIScaleFactor())
+                        .FontColor(watermark.m_color));
+                waterLabel.GetFont().MakeBold();
+                waterLabel.SetBoundingBox(drawingRect, dc, GetScaling());
 
-                dc.GetMultiLineTextExtent(watermark.m_label, &labelWidth, &labelHeight);
-                dc.DrawText(watermark.m_label,
-                            wxPoint((drawingRect.GetWidth() / 2) - (labelWidth / 2),
-                                    (drawingRect.GetHeight() / 2) - (labelHeight / 2)));
+                waterLabel.Draw(dc);
                 }
             }
         }

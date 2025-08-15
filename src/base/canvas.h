@@ -759,7 +759,7 @@ namespace Wisteria
             @param dc The device context to draw on.
             @param drawingRect The rect within the DC to draw within.
             @param watermark The label to draw across the canvas.*/
-        static void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, const Watermark& watermark);
+        void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, const Watermark& watermark);
         /** @brief Draws a watermark logo on the corner of a canvas.
             @param dc The device context to draw on.*/
         void DrawWatermarkLogo(wxDC& dc) const;
