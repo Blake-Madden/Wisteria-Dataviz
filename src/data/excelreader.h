@@ -51,7 +51,7 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]]
         wxString ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
-                               const wchar_t delimiter = L'\t');
+                               wchar_t delimiter = L'\t');
 
       private:
         wxString m_filePath;

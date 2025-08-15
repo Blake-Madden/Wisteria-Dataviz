@@ -16,12 +16,8 @@
 #include <map>
 #include <vector>
 #include <wx/bitmap.h>
-#include <wx/image.h>
 #include <wx/mstream.h>
-#include <wx/stdpaths.h>
-#include <wx/wfstream.h>
 #include <wx/zipstrm.h>
-#include <wx/zstream.h>
 
 namespace Wisteria
     {
@@ -103,7 +99,7 @@ namespace Wisteria
             @param bitmapType The format of the image.
             @returns The bitmap from the ZIP file, or @c wxNullBitmap if not found.*/
         [[nodiscard]]
-        wxBitmap ReadBitmap(const wxString& path, const wxBitmapType bitmapType) const;
+        wxBitmap ReadBitmap(const wxString& path, wxBitmapType bitmapType) const;
         /** @brief Reads an SVG entry from the ZIP file.
             @param path The path to the image
                 (relative to its location in the ZIP folder structure).
@@ -111,7 +107,7 @@ namespace Wisteria
             @returns The SVG as a @c wxBitmap from the ZIP file
                 (which will be invalid if the path was not found).*/
         [[nodiscard]]
-        wxBitmap ReadSVG(const wxString& path, const wxSize size) const;
+        wxBitmap ReadSVG(const wxString& path, wxSize size) const;
 
         /// @brief Writes a string to an output buffer as UTF-8, simplifying all conversions.
         /// @param zip The zip buffer to write to.
@@ -135,14 +131,13 @@ namespace Wisteria
             return m_messages;
             }
 
-        /// @brief Clears all of the logged messages from previous reads.
-        void ClearMessages() noexcept { m_messages.clear(); }
+        /// @brief Clears all the logged messages from previous reads.
+        void ClearMessages() const noexcept { m_messages.clear(); }
 
       private:
         /// @brief Optimized reading function which can use a
         ///     large buffer for larger compressed files.
-        bool Read(wxInputStream* stream_in, wxOutputStream& stream_out,
-                  const size_t bufferSize) const;
+        bool Read(wxInputStream* stream_in, wxOutputStream& stream_out, size_t bufferSize) const;
         wxZipInputStream* m_inzip{ nullptr };
         std::map<wxString, wxZipEntry*> m_catalog;
         MemoryMappedFile m_mapfile;

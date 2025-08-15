@@ -42,7 +42,7 @@ namespace Wisteria::Data
         void Combine(const PivotedWiderRow& that);
         /// @brief Adds any missing pivoted columns and sets its value to NaN.
         void Expand(const std::set<wxString, wxStringLessNoCase>& pivotedColumnNames,
-                    const double fillValue = std::numeric_limits<double>::quiet_NaN());
+                    double fillValue = std::numeric_limits<double>::quiet_NaN());
 
       private:
         // ID hash, which is the ID column(s) names combined into one string
@@ -95,7 +95,7 @@ namespace Wisteria::Data
                    const std::vector<wxString>& IdColumns, const wxString& namesFromColumn,
                    const std::vector<wxString>& valuesFromColumns, const wxString& namesSep = L"_",
                    const wxString& namesPrefix = wxEmptyString,
-                   const double fillValue = std::numeric_limits<double>::quiet_NaN());
+                   double fillValue = std::numeric_limits<double>::quiet_NaN());
 
         /** @brief Combines multiple columns into a grouping column and value column.\n
                 Multiple target grouping columns can also be created if a regular expression

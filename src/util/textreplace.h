@@ -39,12 +39,12 @@ namespace Wisteria
             @param replacement The text to replace any matches for @c regExToReplace.
             @warning For regular expressions, it is recommended to wrap words being
                 replaced inside word-boundary anchors (@c \\b) to avoid unexpected results.*/
-        void AddReplacement(const std::shared_ptr<wxRegEx> regExToReplace,
+        void AddReplacement(const std::shared_ptr<wxRegEx>& regExToReplace,
                             const wxString& replacement)
             {
             if (regExToReplace && regExToReplace->IsValid())
                 {
-                m_replacements.push_back(std::make_pair(regExToReplace, replacement));
+                m_replacements.emplace_back(regExToReplace, replacement);
                 }
             else
                 {
@@ -81,7 +81,7 @@ namespace Wisteria
       public:
         /// @brief Constructor.
         /// @param aggressive Set to @c true to use more aggressive abbreviations.
-        AbbreviateEnglish(const bool aggressive = false);
+        explicit AbbreviateEnglish(bool aggressive = false);
         };
     } // namespace Wisteria
 

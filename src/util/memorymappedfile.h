@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __MEMMAPPEDFILE_H__
-#define __MEMMAPPEDFILE_H__
+#ifndef MEMMAPPEDFILE_H
+#define MEMMAPPEDFILE_H
 
 #ifndef __WXMSW__
     #include <sys/fcntl.h>
@@ -18,7 +18,7 @@
     #include <sys/types.h>
     #include <unistd.h>
 #endif
-#include <cstring>
+
 #include <exception>
 #include <stdexcept>
 #include <wx/file.h>
@@ -28,32 +28,32 @@
 #include <wx/string.h>
 
 /// General exception that can be thrown when mapping a file.
-class MemoryMappedFileException : public std::exception
+class MemoryMappedFileException final : public std::exception
     {
     };
 
 /// Exception that can be thrown when mapping if the file is zero length.
-class MemoryMappedFileEmptyException : public std::exception
+class MemoryMappedFileEmptyException final : public std::exception
     {
     };
 
 /// Exception that can be thrown when mapping if the file can't be exclusively locked.
-class MemoryMappedFileShareViolationException : public std::exception
+class MemoryMappedFileShareViolationException final : public std::exception
     {
     };
 
 /// Exception that can be thrown when mapping if the file isn't something that can be mapped.
-class MemoryMappedInvalidFileType : public std::exception
+class MemoryMappedInvalidFileType final : public std::exception
     {
     };
 
 /// Exception that can be thrown when mapping if the size of the file can't be determined.
-class MemoryMappedInvalidFileSize : public std::exception
+class MemoryMappedInvalidFileSize final : public std::exception
     {
     };
 
 /// Exception with reading file in the cloud (web service).
-class MemoryMappedFileCloudFileError : public std::exception
+class MemoryMappedFileCloudFileError final : public std::exception
     {
     };
 
@@ -174,8 +174,8 @@ class MemoryMappedFile
             as the buffer will be as large as the file.
 
         @returns @c true if file mapping (or buffering) was successful.*/
-    bool MapFile(const wxString& filePath, const bool readOnly = true,
-                 const bool autoBufferOnException = false);
+    bool MapFile(const wxString& filePath, bool readOnly = true,
+                 bool autoBufferOnException = false);
     /// @brief Closes the handles and mappings.
     void UnmapFile();
 
@@ -220,10 +220,10 @@ class MemoryMappedFile
     /// @returns The size of a large file (as an unsigned long long).
     /// @param hFile The file's handle.
     [[nodiscard]]
-    static wxULongLong GetFileSize64(const MemoryMappedFileHandleType hFile);
+    static wxULongLong GetFileSize64(MemoryMappedFileHandleType hFile);
 
   private:
-    void Reset(const bool preserveFileName = false);
+    void Reset(bool preserveFileName = false);
     bool Buffer();
 #ifdef __WXMSW__
     HANDLE m_hFile{ INVALID_HANDLE_VALUE };
@@ -242,4 +242,4 @@ class MemoryMappedFile
 
     /** @}*/
 
-#endif //__WXMEMMAPPEDFILE_H__
+#endif // MEMMAPPEDFILE_H

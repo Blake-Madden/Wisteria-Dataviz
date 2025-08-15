@@ -12,12 +12,8 @@
 #ifndef __LOGFILLE_H__
 #define __LOGFILLE_H__
 
-#include <wx/file.h>
-#include <wx/filename.h>
 #include <wx/log.h>
-#include <wx/stdpaths.h>
 #include <wx/string.h>
-#include <wx/wx.h>
 
 // clang-format off
 /** @brief Logging system that writes its records to a temp file.
@@ -63,7 +59,7 @@ class LogFile : public wxLog
     /// @param clearPreviousLog @c true to clear the contents of the target
     ///     log file if it exists. @c false is recommended if you wish to
     ///     preserve the contents of a log file from a previous run of a
-    ///     program (as an example). @c true if recommended if you wish to
+    ///     program (as an example). @c true is recommended if you wish to
     ///     have a fresh log file when activating this logger.
     /// @details Should be created on the heap and passed to
     ///     @c wxLog::SetActiveTarget().

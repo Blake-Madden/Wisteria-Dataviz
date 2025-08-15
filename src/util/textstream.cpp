@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "textstream.h"
+#include <utility>
 
 namespace Wisteria
     {
@@ -68,7 +69,7 @@ namespace Wisteria
     std::wstring
     TextStream::CharStreamWithEmbeddedNullsToUnicode(const char* text, const size_t length,
                                                      // cppcheck-suppress passedByValue
-                                                     wxString srcCharSet /*= wxString{}*/)
+                                                     const wxString& srcCharSet /*= wxString{}*/)
         {
         if (length == 0 || text == nullptr)
             {
@@ -106,10 +107,10 @@ namespace Wisteria
         std::wmemset(dest, 0, destLength);
 
         size_t conversionResult = wxCONV_FAILED;
-        lily_of_the_valley::unicode_extract_text convertUnicodeText;
         // if 16-bit Unicode
-        if (convertUnicodeText.is_unicode(text))
+        if (lily_of_the_valley::unicode_extract_text::is_unicode(text))
             {
+            lily_of_the_valley::unicode_extract_text convertUnicodeText;
             assert(destLength > convertUnicodeText.get_filtered_text_length() &&
                    L"Out buffer not large enough in CharStreamToUnicode()!");
             if (destLength > convertUnicodeText.get_filtered_text_length())
@@ -168,10 +169,10 @@ namespace Wisteria
                         }
                     }
                 // if XML or HTML, then try to read the encoding from the header
-                else if ((srcCharSet =
-                              lily_of_the_valley::html_extract_text::parse_charset(text, length)
-                                  .c_str())
-                             .length())
+                else if (!(srcCharSet =
+                               lily_of_the_valley::html_extract_text::parse_charset(text, length)
+                                   .c_str())
+                              .empty())
                     {
                     conversionResult = wxCSConv(srcCharSet).ToWChar(dest, destLength, text, length);
                     }
@@ -251,7 +252,7 @@ namespace Wisteria
         const size_t destLength = (length * 1.5) + 1;
         auto dest = std::make_unique<wchar_t[]>(destLength);
 
-        return (CharStreamToUnicode(dest.get(), destLength, text, length, srcCharSet)) ?
+        return (CharStreamToUnicode(dest.get(), destLength, text, length, std::move(srcCharSet))) ?
                    std::wstring(dest.get()) :
                    std::wstring{};
         }
@@ -297,9 +298,9 @@ namespace Wisteria
                 break;
                 }
             }
-        MemoryMappedFile file;
         try
             {
+            MemoryMappedFile file;
             file.MapFile(filePath);
             textBuffer = TextStream::CharStreamToUnicode(static_cast<const char*>(file.GetStream()),
                                                          file.GetMapSize(), srcCharSet);
@@ -315,7 +316,7 @@ namespace Wisteria
                 return false;
                 }
             }
-        // empty file's are OK, just silently return
+        // empty files are OK, just silently return
         catch (MemoryMappedFileEmptyException&)
             {
             return true;

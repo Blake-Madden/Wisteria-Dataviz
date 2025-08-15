@@ -9,14 +9,11 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FREQUENCY_MAPS_H__
-#define __FREQUENCY_MAPS_H__
+#ifndef FREQUENCY_MAPS_H
+#define FREQUENCY_MAPS_H
 
-#include <cstddef>
 #include <map>
 #include <set>
-#include <unordered_map>
-#include <unordered_set>
 
 /// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added.
 template<typename T, typename Compare = std::less<T>>
@@ -92,7 +89,7 @@ class double_frequency_set
 
     /** @brief Inserts an item into the set.
         @param value The value to insert.
-        @param incrementSecondFrequency Whether or not to increment the custom counter.
+        @param incrementSecondFrequency Whether to increment the custom counter.
         @returns An iterator to the inserted or updated item.
         @note If a value is already in the set, then that value's count is incremented.*/
     const_iterator insert(const T& value, const bool incrementSecondFrequency)
@@ -112,7 +109,7 @@ class double_frequency_set
 
     /** @brief Inserts an item into the set.
         @param value The value to insert.
-        @param incrementSecondFrequency Whether or not to increment the custom counter.
+        @param incrementSecondFrequency Whether to increment the custom counter.
         @returns An iterator to the inserted or updated item.
         @note If a value is already in the set, then that value's count is incremented.*/
     const_iterator insert(T&& value, const bool incrementSecondFrequency)
@@ -700,4 +697,4 @@ class multi_value_frequency_double_aggregate_map
 
     /** @}*/
 
-#endif // __FREQUENCY_MAPS_H__
+#endif // FREQUENCY_MAPS_H

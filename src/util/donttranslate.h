@@ -1,29 +1,22 @@
-/********************************************************************************
- * Copyright (c) 2021-2025 Blake Madden
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * https://www.eclipse.org/legal/epl-2.0.
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Contributors:
- *   Blake Madden - initial implementation
- ********************************************************************************/
-
 /** @addtogroup Internationalization
     @brief i18n classes.
+    @date 2005-2025
+    @copyright Blake Madden
+    @author Blake Madden
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License.
+
+     SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __DONTTRANSLATE_H__
-#define __DONTTRANSLATE_H__
+#ifndef DONTTRANSLATE_H
+#define DONTTRANSLATE_H
 
-#include <cstdint>
 #include <type_traits>
 
 // Determines whether T is string constant type.
 /// @private
-template<class T>
+template<typename T>
 struct is_string_constant
     : std::bool_constant<std::is_same_v<T, const char*> || std::is_same_v<T, const wchar_t*> ||
                          std::is_same_v<T, const uint8_t*> || std::is_same_v<T, const char16_t*> ||
@@ -33,8 +26,8 @@ struct is_string_constant
 
 // Helper for is_string_constant.
 /// @private
-template<class _Ty>
-inline constexpr bool is_string_constant_v = is_string_constant<_Ty>::value;
+template<typename T>
+inline constexpr bool is_string_constant_v = is_string_constant<T>::value;
 
 /// @brief Explanations for why a string should not be available for translation.
 enum class DTExplanation
@@ -97,7 +90,7 @@ enum class DTExplanation
         auto command = _DT("open ") + fileName;
     @endcode*/
 template<typename T, std::enable_if_t<is_string_constant_v<T>, bool> = true>
-inline constexpr auto
+constexpr auto
 DONTTRANSLATE(T str,
               [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
               [[maybe_unused]] T explanationMessage = nullptr)
@@ -113,13 +106,13 @@ DONTTRANSLATE(T str,
         should not be translated.
     @returns The same string.*/
 template<typename T, std::enable_if_t<is_string_constant_v<T>, bool> = true>
-inline constexpr auto
-_DT(T str, [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
-    [[maybe_unused]] T explanationMessage = nullptr)
+constexpr auto _DT(T str,
+                   [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
+                   [[maybe_unused]] T explanationMessage = nullptr)
     {
     return str;
     }
 
 /** @}*/
 
-#endif //__DONTTRANSLATE_H__
+#endif // DONTTRANSLATE_H

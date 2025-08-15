@@ -13,11 +13,7 @@
 #define __WARNING_MANAGER_H__
 
 #include <algorithm>
-#include <cmath>
 #include <vector>
-#include <wx/file.h>
-#include <wx/font.h>
-#include <wx/richmsgdlg.h>
 #include <wx/wx.h>
 
 /// @brief An enhanced warning message that can store user response information.

@@ -7,10 +7,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "logfile.h"
+#include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
+#include <wx/wx.h>
 
 //--------------------------------------------------
 LogFile::LogFile(bool clearPreviousLog)
-    : // will be a unique file name on a per day basis
+    : // will be a unique file name on a per-day basis
       m_logFilePath(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
                     wxTheApp->GetAppName() + wxGetUserName() + wxDateTime::Now().FormatISODate() +
                     L".log")
@@ -63,7 +67,7 @@ bool LogFile::Clear()
 void LogFile::Flush()
     {
     wxLog::Flush();
-    if (m_buffer.length())
+    if (!m_buffer.empty())
         {
         wxFile logFile(m_logFilePath, wxFile::write_append);
         if (logFile.IsOpened())

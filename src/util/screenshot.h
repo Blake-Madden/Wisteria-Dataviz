@@ -18,7 +18,6 @@
 #include <wx/propgrid/manager.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/ribbon/bar.h>
-#include <wx/ribbon/buttonbar.h>
 #include <wx/wx.h>
 
 /// @brief Class for creating and editing screenshots.
@@ -63,8 +62,8 @@ class Screenshot
         const wxString& filePath, const wxWindowID propertyGridId = wxID_ANY,
         const wxString& startIdToHighlight = wxEmptyString,
         wxString endIdToHighlight = wxEmptyString,
-        const std::pair<bool, wxCoord> cropToGridHeightAndMinSize = std::make_pair(false,
-                                                                                   wxDefaultCoord));
+        const std::pair<bool, wxCoord>& cropToGridHeightAndMinSize =
+            std::make_pair(false, wxDefaultCoord));
     /** @brief Saves a screenshot of a text window.
         @param filePath The path to save the screenshot to.
         @param windowId The ID of the text window. The window will be searched for from the
@@ -87,12 +86,12 @@ class Screenshot
         @param endRow The last row of the list control to scroll to.
         @param startColumn The first column of the list control to ensure is visible.
         @param endColumn The last column of the list control to ensure is visible.
-        @param cuttOffRow First row to chop off in the screenshot.
+        @param cutOffRow First row to chop off in the screenshot.
         @returns @c true if image is saved successfully.*/
     static bool SaveScreenshotOfListControl(const wxString& filePath, const wxWindowID windowId,
                                             const long startRow = -1, const long endRow = -1,
                                             const long startColumn = -1, const long endColumn = -1,
-                                            const long cuttOffRow = -1);
+                                            const long cutOffRow = -1);
 
     /** @brief Saves a screenshot of the top-level ribbon.
         @param filePath The path to save the screenshot to.
@@ -169,7 +168,7 @@ class Screenshot
         return wxPen(*wxRED, width, wxPenStyle::wxPENSTYLE_DOT);
         }
 
-    static wxPen GetOutlintPen(const int width) { return wxPen(*wxLIGHT_GREY, width); }
+    static wxPen GetOutlinePen(const int width) { return wxPen(*wxLIGHT_GREY, width); }
     };
 
     /** @}*/

@@ -12,10 +12,7 @@
 #ifndef __PARENT_BLOCKER_H__
 #define __PARENT_BLOCKER_H__
 
-#include <cmath>
 #include <string>
-#include <wx/math.h>
-#include <wx/numformatter.h>
 #include <wx/string.h>
 #include <wx/utils.h>
 

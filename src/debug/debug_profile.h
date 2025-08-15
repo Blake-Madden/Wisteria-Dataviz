@@ -60,8 +60,8 @@ This is an important distinction from other profiling systems.
     @endcode
 @{*/
 
-#ifndef __DEBUG_PROFILE_H__
-#define __DEBUG_PROFILE_H__
+#ifndef DEBUG_PROFILE_H
+#define DEBUG_PROFILE_H
 
 #include <algorithm>
 #include <cassert>
@@ -125,7 +125,7 @@ This is an important distinction from other profiling systems.
     @note Times are in milliseconds.
 
 @def DUMP_PROFILER_REPORT()
-    @brief Outputs all of the current profile information.
+    @brief Outputs all the current profile information.
     @details This will automatically happen at the exit of the program, but can be explicitly called via this macro at any time.
 */
 /** @} */
@@ -133,18 +133,18 @@ This is an important distinction from other profiling systems.
 /* The standard __func__ macro doesn't include the name of the class for member functions,
    so it isn't as useful as it could be. Try to use more descriptive macros (if available) first.*/
 #if defined(__VISUALC__)
-    #define __DEBUG_FUNCTION_NAME__ __FUNCSIG__
+    #define DEBUG_FUNCTION_NAME __FUNCSIG__
 #elif defined(__GNUG__)
-    #define __DEBUG_FUNCTION_NAME__ __PRETTY_FUNCTION__
+    #define DEBUG_FUNCTION_NAME __PRETTY_FUNCTION__
 #else
-    #define __DEBUG_FUNCTION_NAME__ __func__
+    #define DEBUG_FUNCTION_NAME __func__
 #endif
 
 #ifdef ENABLE_PROFILING
     #define PROFILE() \
-        __debug::__profiler __debug_profiled_function__(__DEBUG_FUNCTION_NAME__)
+        __debug::__profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
     #define PROFILE_WITH_INFO(info) \
-        __debug::__profiler __debug_profiled_function__info__(__DEBUG_FUNCTION_NAME__, (info))
+        __debug::__profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
     #define PROFILE_SECTION_START(section_name) \
         { __debug::__profiler __debug_profiled_section__(section_name)
     #define PROFILE_SECTION_WITH_INFO_START(section_name, info) \
@@ -268,4 +268,4 @@ namespace __debug
     }
 #endif
 
-#endif //__DEBUG_PROFILE_H__
+#endif // DEBUG_PROFILE_H

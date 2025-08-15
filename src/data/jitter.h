@@ -12,7 +12,6 @@
 #ifndef WISTERIA_JITTER_H
 #define WISTERIA_JITTER_H
 
-#include "../base/axis.h"
 #include "../base/graphitems.h"
 #include "../math/mathematics.h"
 #include "../math/safe_math.h"

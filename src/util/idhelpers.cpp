@@ -35,7 +35,7 @@ void MenuEnableItem(wxMenu* menu, const wxWindowID id, const bool enable)
     }
 
 //------------------------------------------------------------------
-void MenuBarEnableAll(wxMenuBar* menuBar, const wxWindowID id, const bool enable)
+void MenuBarEnableAll(const wxMenuBar* menuBar, const wxWindowID id, const bool enable)
     {
     if (menuBar == nullptr)
         {
@@ -44,8 +44,7 @@ void MenuBarEnableAll(wxMenuBar* menuBar, const wxWindowID id, const bool enable
     const auto menuCount = menuBar->GetMenuCount();
     for (size_t i = 0; i < menuCount; ++i)
         {
-        wxMenu* menu = menuBar->GetMenu(i);
-        if (menu)
+        if (wxMenu* menu = menuBar->GetMenu(i); menu != nullptr)
             {
             MenuEnableItem(menu, id, enable);
             }

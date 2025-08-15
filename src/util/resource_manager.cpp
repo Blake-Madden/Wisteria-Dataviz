@@ -9,6 +9,11 @@
 #include "resource_manager.h"
 #include "../base/image.h"
 #include "../ui/mainframe.h"
+#include <wx/fs_zip.h>
+#include <wx/propgrid/manager.h>
+#include <wx/propgrid/propgrid.h>
+#include <wx/ribbon/buttonbar.h>
+#include <wx/wfstream.h>
 
 //---------------------------------------------------
 void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
@@ -157,7 +162,7 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
         assert(bmp.IsOk());
     };
 
-    std::for_each(bmps.begin(), bmps.end(), fillIcon);
+    std::ranges::for_each(bmps, fillIcon);
 
     return wxBitmapBundle::FromBitmaps(bmps);
     }

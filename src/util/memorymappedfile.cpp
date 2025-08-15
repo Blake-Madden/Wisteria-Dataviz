@@ -7,6 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "memorymappedfile.h"
+#include <wx/file.h>
+#include <wx/log.h>
+#include <wx/msgdlg.h>
 
 bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*= true*/,
                                const bool autoBufferOnException /*= false*/)
@@ -196,11 +199,8 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
             m_open = true;
             return true;
             }
-        else
-            {
-            Reset();
-            throw MemoryMappedFileException();
-            }
+        Reset();
+        throw MemoryMappedFileException();
         }
     // get the size of the file
     m_mapSize = GetFileSize64(m_hFile).GetLo();
@@ -220,7 +220,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
             }
         }
     // now get a map of the file
-    m_data = mmap(NULL, m_mapSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE),
+    m_data = mmap(nullptr, m_mapSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE),
                   (MAP_FILE | MAP_SHARED), m_hFile, 0);
     if (MAP_FAILED == m_data)
         {
@@ -270,7 +270,7 @@ void MemoryMappedFile::UnmapFile()
         }
 #else
     munmap(m_data, static_cast<size_t>(m_mapSize));
-    m_data = NULL;
+    m_data = nullptr;
     close(m_hFile);
     m_hFile = -1;
 #endif

@@ -21,11 +21,8 @@ wxString FormulaFormat::FormatMathExpressionFromUS(const wxString& expression)
         else if (formattedExpression[i] == L'.')
             {
             // if ellipses
-            if (i + 1 < formattedExpression.length() && formattedExpression[i + 1] == L'.')
-                {
-                continue;
-                }
-            else if (i > 0 && formattedExpression[i - 1] == L'.')
+            if ((i + 1 < formattedExpression.length() && formattedExpression[i + 1] == L'.') ||
+                (i > 0 && formattedExpression[i - 1] == L'.'))
                 {
                 continue;
                 }

@@ -18,15 +18,7 @@
 #include "zipcatalog.h"
 #include <map>
 #include <wx/filesys.h>
-#include <wx/fs_zip.h>
 #include <wx/listctrl.h>
-#include <wx/mstream.h>
-#include <wx/propgrid/manager.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/ribbon/bar.h>
-#include <wx/ribbon/buttonbar.h>
-#include <wx/stdpaths.h>
-#include <wx/wfstream.h>
 #include <wx/wx.h>
 
 /// @brief Class to manage loading images, icons, and XRC files from a ZIP file.

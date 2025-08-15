@@ -50,8 +50,8 @@ namespace Wisteria
             @param length The length of the `char*` stream.
             @param srcCharSet The character set to convert the text from.
             @returns Whether the text could be copied to the buffer.*/
-        static bool CharStreamToUnicode(wchar_t* dest, const size_t destLength, const char* text,
-                                        const size_t length, wxString srcCharSet = wxString{});
+        static bool CharStreamToUnicode(wchar_t* dest, size_t destLength, const char* text,
+                                        size_t length, wxString srcCharSet = wxString{});
         /** @brief Converts a `char*` stream into a Unicode stream.
             @param text The `char*` stream to read.
             @param length The length of the `char*` stream.
@@ -64,9 +64,9 @@ namespace Wisteria
             @param length The length of the `char*` stream.
             @param srcCharSet The character set to convert the text from.
             @returns The converted text.*/
-        static std::wstring CharStreamWithEmbeddedNullsToUnicode(const char* text,
-                                                                 const size_t length,
-                                                                 wxString srcCharSet = wxString{});
+        static std::wstring
+        CharStreamWithEmbeddedNullsToUnicode(const char* text, size_t length,
+                                             const wxString& srcCharSet = wxString{});
         /** @brief Reads a file into a string buffer.
             @details This supports UTF-8 and double-byte Unicode files. For HTML and XML files,
                 can also support reading the character set from the file's definition and

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __NUMBERFORMAT_H__
-#define __NUMBERFORMAT_H__
+#ifndef WISTERIA_NUMBERFORMAT_H
+#define WISTERIA_NUMBERFORMAT_H
 
 namespace Wisteria
     {
@@ -31,7 +31,7 @@ namespace Wisteria
 
         /// @brief Constructor.
         /// @param type How to format values.
-        NumberFormatInfo(const NumberFormatType type) noexcept : m_type(type) {}
+        explicit NumberFormatInfo(const NumberFormatType type) noexcept : m_type(type) {}
 
         /// @brief Constructor.
         /// @param type How to format values.
@@ -61,7 +61,7 @@ namespace Wisteria
         {
       public:
         /// @private
-        virtual ~NumberFormat() {}
+        virtual ~NumberFormat() = default;
 
         /// @brief Formats a string into a different format.
         /// @param value The string to reformat.
@@ -73,11 +73,10 @@ namespace Wisteria
         /// @param value The number to format.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
-        virtual stringT GetFormattedValue(const double value,
-                                          const NumberFormatInfo& format) const = 0;
+        virtual stringT GetFormattedValue(double value, const NumberFormatInfo& format) const = 0;
         };
     } // namespace Wisteria
 
 /** @}*/
 
-#endif //__NUMBERFORMAT_H__
+#endif // WISTERIA_NUMBERFORMAT_H

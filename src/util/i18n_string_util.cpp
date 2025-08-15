@@ -12,6 +12,10 @@
  ********************************************************************************/
 
 #include "i18n_string_util.h"
+#include "string_util.h"
+#include <cassert>
+#include <cwchar>
+#include <set>
 
 namespace i18n_string_util
     {
@@ -88,13 +92,12 @@ namespace i18n_string_util
         if (periodPos != std::wstring::npos && periodPos < text.length() - 1)
             {
             ++periodPos;
-            if (knownWebExtensions.find(
-                    std::wstring(text.data() + periodPos, text.length() - periodPos)) !=
-                knownWebExtensions.cend())
+            if (knownWebExtensions.contains(
+                    std::wstring(text.data() + periodPos, text.length() - periodPos)))
                 {
-                const size_t numberOfSpaces = std::count_if(
-                    text.cbegin(), text.cend(), [](const auto chr) { return chr == L' '; });
-                // Has a suffix like ".com" but is lengthy and has not slash in it?
+                const size_t numberOfSpaces = std::ranges::count_if(
+                    std::as_const(text), [](const auto chr) { return chr == L' '; });
+                // Has a suffix like ".com" but is lengthy and has no slash in it?
                 // Probably not really an URL then (may be a sentence missing a period).
                 if (firstSlash == std::wstring_view::npos && text.length() > 64 &&
                     numberOfSpaces > 5)
@@ -111,25 +114,26 @@ namespace i18n_string_util
     //--------------------------------------------------
     bool is_file_address(std::wstring_view text)
         {
-        constexpr size_t fileAddressMinLength{ 5 };
-        constexpr size_t basicFileExtMinLength{ 3 };
+        constexpr size_t FILE_ADDRESS_MIN_LENGTH{ 5 };
+        constexpr size_t BASIC_FILE_EXT_MIN_LENGTH{ 3 };
 
         // Basic network and drive letter checks
 
         // UNC path
-        if (text.length() >= basicFileExtMinLength && text[0] == L'\\' && text[1] == L'\\')
+        if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH && text[0] == L'\\' && text[1] == L'\\')
             {
             return true;
             }
         // Windows file path
-        if (text.length() >= basicFileExtMinLength && static_cast<bool>(std::iswalpha(text[0])) &&
-            text[1] == L':' && (text[2] == L'\\' || text[2] == L'/'))
+        if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH &&
+            static_cast<bool>(std::iswalpha(text[0])) && text[1] == L':' &&
+            (text[2] == L'\\' || text[2] == L'/'))
             {
             return true;
             }
 
         // start looking at longer paths
-        if (text.length() < fileAddressMinLength)
+        if (text.length() < FILE_ADDRESS_MIN_LENGTH)
             {
             return false;
             }
@@ -139,7 +143,7 @@ namespace i18n_string_util
             return true;
             }
         // UNIX paths (including where the '/' at the front is missing
-        if (text.length() >= basicFileExtMinLength && text[0] == L'/' &&
+        if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH && text[0] == L'/' &&
             string_util::strnchr(text.data() + 2, L'/', text.length() - 2) != nullptr)
             {
             return true;
@@ -157,7 +161,7 @@ namespace i18n_string_util
             }
 #endif
         // email address
-        if (text.length() >= fileAddressMinLength)
+        if (text.length() >= FILE_ADDRESS_MIN_LENGTH)
             {
             const wchar_t* spaceInStr =
                 string_util::strnchr(text.data() + 1, L' ', text.length() - 1);
@@ -179,14 +183,14 @@ namespace i18n_string_util
         // then this is likely not a file name. It could be filename, but even if it
         // ends with a valid file extension, it would more than likely be a filename
         // at the end of legit sentence if it's this long.
-        constexpr size_t maxFileLength{ 128 };
-        if (text.length() > maxFileLength)
+        constexpr size_t MAX_FILE_LENGTH{ 128 };
+        if (text.length() > MAX_FILE_LENGTH)
             {
             return false;
             }
 
         // cut off possessive form
-        if (text.length() >= basicFileExtMinLength && is_apostrophe(text[text.length() - 2]) &&
+        if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH && is_apostrophe(text[text.length() - 2]) &&
             string_util::is_either(text[text.length() - 1], L's', L'S'))
             {
             text.remove_suffix(2);
@@ -199,7 +203,7 @@ namespace i18n_string_util
             }
         // Large number of spaces? This is unlikely to be a filepath then.
         const size_t numberOfSpaces =
-            std::count_if(text.cbegin(), text.cend(), [](const auto chr) { return chr == L' '; });
+            std::ranges::count_if(std::as_const(text), [](const auto chr) { return chr == L' '; });
         if (numberOfSpaces >= 5)
             {
             return false;
@@ -226,19 +230,19 @@ namespace i18n_string_util
                 }
             // see if a file filter/wildcard (e.g., "*.txt", "Rich Text Format (*.rtf)|*.rtf")
             // and not a file path
-            if (text.length() >= fileAddressMinLength &&
-                text[text.length() - fileAddressMinLength] == L'*')
+            if (text.length() >= FILE_ADDRESS_MIN_LENGTH &&
+                text[text.length() - FILE_ADDRESS_MIN_LENGTH] == L'*')
                 {
                 return false;
                 }
             return true;
             }
         // 4-letter (Microsoft XML-based) file name
-        if (text.length() >= fileAddressMinLength &&
-            text[text.length() - fileAddressMinLength] == L'.' &&
-            static_cast<bool>(std::iswalpha(text[text.length() - (fileAddressMinLength - 1)])) &&
-            static_cast<bool>(std::iswalpha(text[text.length() - (fileAddressMinLength - 2)])) &&
-            static_cast<bool>(std::iswalpha(text[text.length() - (fileAddressMinLength - 3)])) &&
+        if (text.length() >= FILE_ADDRESS_MIN_LENGTH &&
+            text[text.length() - FILE_ADDRESS_MIN_LENGTH] == L'.' &&
+            static_cast<bool>(std::iswalpha(text[text.length() - (FILE_ADDRESS_MIN_LENGTH - 1)])) &&
+            static_cast<bool>(std::iswalpha(text[text.length() - (FILE_ADDRESS_MIN_LENGTH - 2)])) &&
+            static_cast<bool>(std::iswalpha(text[text.length() - (FILE_ADDRESS_MIN_LENGTH - 3)])) &&
             string_util::is_either(text[text.length() - 1], L'x', L'X'))
             {
             if (text.length() >= 6 && text[text.length() - 6] == L' ')
@@ -248,8 +252,9 @@ namespace i18n_string_util
 
             // see if it is really a typo (missing space after a sentence)
             if (static_cast<bool>(
-                    std::iswupper(text[text.length() - (fileAddressMinLength - 1)])) &&
-                !static_cast<bool>(std::iswupper(text[text.length() - (fileAddressMinLength - 2)])))
+                    std::iswupper(text[text.length() - (FILE_ADDRESS_MIN_LENGTH - 1)])) &&
+                !static_cast<bool>(
+                    std::iswupper(text[text.length() - (FILE_ADDRESS_MIN_LENGTH - 2)])))
                 {
                 return false;
                 }
@@ -260,9 +265,9 @@ namespace i18n_string_util
             return true;
             }
         // 4-letter extensions (HTML)
-        if (text.length() >= fileAddressMinLength &&
-            text[text.length() - fileAddressMinLength] == L'.' &&
-            string_util::strnicmp(text.substr(text.length() - (fileAddressMinLength - 1)),
+        if (text.length() >= FILE_ADDRESS_MIN_LENGTH &&
+            text[text.length() - FILE_ADDRESS_MIN_LENGTH] == L'.' &&
+            string_util::strnicmp(text.substr(text.length() - (FILE_ADDRESS_MIN_LENGTH - 1)),
                                   std::wstring_view{ L"html" }) == 0)
             {
             if (text.length() >= 6 &&
@@ -273,8 +278,8 @@ namespace i18n_string_util
             return true;
             }
         // 2-letter extensions
-        if (text.length() >= basicFileExtMinLength &&
-            text[text.length() - basicFileExtMinLength] == L'.' &&
+        if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH &&
+            text[text.length() - BASIC_FILE_EXT_MIN_LENGTH] == L'.' &&
             // translation, source, and doc files
             (string_util::strnicmp(text.substr(text.length() - 2), std::wstring_view{ L"mo" }) ==
                  0 ||
@@ -305,7 +310,7 @@ namespace i18n_string_util
             }
         // C header/source files, which only have a letter in the extension,
         // but are common in documentation
-        if (text.length() >= basicFileExtMinLength && text[text.length() - 2] == L'.' &&
+        if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH && text[text.length() - 2] == L'.' &&
             string_util::is_either(text[text.length() - 1], L'h', L'c'))
             {
             return true;

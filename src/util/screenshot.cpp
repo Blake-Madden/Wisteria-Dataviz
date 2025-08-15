@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "screenshot.h"
+#include <wx/ribbon/buttonbar.h>
 
 //---------------------------------------------------
 bool Screenshot::ConvertImageToPng(const wxString& filePath, const wxSize scaledSize,
@@ -77,7 +78,7 @@ bool Screenshot::AnnotateScreenshot(const wxString& filePath, const wxString& te
         {
         wxMemoryDC memDC;
         memDC.SelectObject(bmp);
-        memDC.SetPen(GetOutlintPen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
+        memDC.SetPen(GetOutlinePen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
         memDC.SetBrush(*wxWHITE);
         memDC.DrawRectangle(wxRect(topLeftCorner, bottomRightCorner));
         memDC.DrawText(text, topLeftCorner);
@@ -283,7 +284,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
                                              const long endRow /*= -1*/,
                                              const long startColumn /*= -1*/,
                                              const long endColumn /*= -1*/,
-                                             const long cuttOffRow /*= -1*/)
+                                             const long cutOffRow /*= -1*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
     if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
@@ -306,7 +307,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
             return false;
             }
         }
-    auto listCtrl = dynamic_cast<wxListCtrl*>(windowToCapture);
+    auto* listCtrl = dynamic_cast<wxListCtrl*>(windowToCapture);
     assert(listCtrl);
 
     long columnsWidth{ 0 };
@@ -328,9 +329,9 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
         listCtrl->EnsureVisible(startRow);
         wxTheApp->Yield();
         }
-    if (cuttOffRow != -1)
+    if (cutOffRow != -1)
         {
-        listCtrl->EnsureVisible(cuttOffRow);
+        listCtrl->EnsureVisible(cutOffRow);
         wxTheApp->Yield();
         }
 
@@ -365,14 +366,14 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
     memDC.SelectObject(wxNullBitmap);
 
     // chop off rows that user doesn't want included
-    if (cuttOffRow != -1 && cuttOffRow + 1 < listCtrl->GetItemCount())
+    if (cutOffRow != -1 && cutOffRow + 1 < listCtrl->GetItemCount())
         {
-        wxRect cuttOffRect;
+        wxRect cutOffRect;
         if (listCtrl && listCtrl->GetSubItemRect(
-                            // get the top of the row below the cut off
-                            cuttOffRow + 1, 0, cuttOffRect))
+                            // get the top of the row below the cut-off
+                            cutOffRow + 1, 0, cutOffRect))
             {
-            bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(), cuttOffRect.GetTop()));
+            bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(), cutOffRect.GetTop()));
             }
         }
     // chop off any dead space after last column
@@ -384,8 +385,8 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
                                                 wxTheApp->GetTopWindow()->GetDPIScaleFactor(),
                                             bitmap.GetHeight()));
         }
-    // and below last row
-    // (this assumes there are less rows in the entire list that fix on the screen)
+    // and below the last row
+    // (this assumes there are fewer rows in the entire list that fix on the screen)
     if (rowHeight < bitmap.GetHeight())
         {
         bitmap = bitmap.GetSubBitmap(wxRect(
@@ -448,7 +449,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
 
     for (size_t i = 0; i < highlightPoints.size(); ++i)
         {
-        if (textWindow)
+        if (textWindow != nullptr)
             {
             wxTextAttr style;
             wxPoint startPoint = textWindow->PositionToCoords(highlightPoints[i].first);
@@ -518,7 +519,7 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
                                                         const wxWindowID propertyGridId /*= wxID_ANY*/,
                                                         const wxString& startIdToHighlight /*= wxEmptyString*/,
                                                         wxString endIdToHighlight /*= wxEmptyString*/,
-                                                        const std::pair<bool, wxCoord> cropToGridHeightAndMinSize /*=
+                                                        const std::pair<bool, wxCoord>& cropToGridHeightAndMinSize /*=
                                                          std::make_pair(false, wxDefaultCoord*/)
     {
     wxWindow* windowToCapture = GetActiveDialogOrFrame();
@@ -592,10 +593,10 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
         wxWindow* window = windowToCapture->FindWindow(propertyGridId);
         if (window != nullptr)
             {
-            const auto propertyGridWindow = dynamic_cast<wxPropertyGridInterface*>(window);
-            if (propertyGridWindow)
+            const auto* propertyGridWindow = dynamic_cast<wxPropertyGridInterface*>(window);
+            if (propertyGridWindow != nullptr)
                 {
-                wxRect gridRect = propertyGridWindow->GetState()->GetGrid()->GetPropertyRect(
+                const wxRect gridRect = propertyGridWindow->GetState()->GetGrid()->GetPropertyRect(
                     propertyGridWindow->GetState()->GetGrid()->GetRoot(),
                     propertyGridWindow->GetState()->GetGrid()->GetLastItem());
                 bitmap = bitmap.GetSubBitmap(wxRect(
@@ -717,7 +718,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
     if (cutoffId != wxID_ANY)
         {
         const wxWindow* cutoffWindow = windowToCapture->FindWindow(cutoffId);
-        if (cutoffWindow)
+        if (cutoffWindow != nullptr)
             {
             wxPoint cutoffPoint{ 0, 0 };
             auto cutoffWindowParent = cutoffWindow;
@@ -831,7 +832,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
                 endPoint += endWindow->GetSize();
                 }
 
-            memDC.SetPen(GetOutlintPen(windowToCapture->GetDPIScaleFactor()));
+            memDC.SetPen(GetOutlinePen(windowToCapture->GetDPIScaleFactor()));
             memDC.SetBrush(*wxWHITE);
             memDC.DrawRectangle(
                 wxRect(wxPoint(startPoint.x, startPoint.y), wxPoint(endPoint.x, endPoint.y)));

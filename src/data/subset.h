@@ -44,7 +44,7 @@ namespace Wisteria::Data
             @param rowPosition The row index in the dataset to review.
             @returns @c true if the row matches the filter, @c false otherwise.*/
         [[nodiscard]]
-        bool MeetsCriterion(const size_t rowPosition) const;
+        bool MeetsCriterion(size_t rowPosition) const;
 
       private:
         const Wisteria::Data::Column<wxString>* m_idColumn;
@@ -157,7 +157,7 @@ namespace Wisteria::Data
         std::shared_ptr<Dataset>
         SubsetSection(const std::shared_ptr<const Dataset>& fromDataset, const wxString& column,
                       const wxString& startRowLabel, const wxString& endRowLabel,
-                      const bool includeSentinelLabels);
+                      bool includeSentinelLabels);
         };
     } // namespace Wisteria::Data
 

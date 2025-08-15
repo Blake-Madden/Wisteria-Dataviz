@@ -744,8 +744,8 @@ namespace Wisteria::UI
         /// @param format The NumberFormatInfo object to control how to display the text (optional).
         inline void
         SetItemText(const size_t row, const size_t column, const wxString& text,
-                    const Wisteria::NumberFormatInfo format =
-                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
+                    const Wisteria::NumberFormatInfo format = NumberFormatInfo{
+                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting })
             {
             if (IsVirtual() && m_virtualData != nullptr)
                 {

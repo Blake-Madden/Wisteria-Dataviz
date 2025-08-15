@@ -21,7 +21,6 @@
 #include <array>
 #include <cassert>
 #include <cctype>
-#include <clocale>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
@@ -33,6 +32,7 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 /// @brief String helper functions and classes.
 namespace string_util
@@ -801,19 +801,19 @@ namespace string_util
     /// @returns Pointer to where the closing tag is, or @c nullptr if not found.
     [[nodiscard]]
     inline const wchar_t* find_matching_close_tag(std::wstring_view stringToSearch,
-                                                  std::wstring_view openSymbol,
-                                                  std::wstring_view closeSymbol)
+                                                  const std::wstring_view openSymbol,
+                                                  const std::wstring_view closeSymbol)
         {
         if (stringToSearch.empty() || openSymbol.empty() || closeSymbol.empty())
             {
             return nullptr;
             }
-        if (openSymbol.length() == 0 || closeSymbol.length() == 0)
+        if (openSymbol.empty() || closeSymbol.empty())
             {
             return nullptr;
             }
         long openStack{ 0 };
-        while (stringToSearch.length())
+        while (!stringToSearch.empty())
             {
             if (stringToSearch.length() >= openSymbol.length() &&
                 stringToSearch.compare(0, openSymbol.length(), openSymbol) == 0)
@@ -822,8 +822,8 @@ namespace string_util
                 stringToSearch.remove_prefix(openSymbol.length());
                 continue;
                 }
-            else if (stringToSearch.length() >= closeSymbol.length() &&
-                     stringToSearch.compare(0, closeSymbol.length(), closeSymbol) == 0)
+            if (stringToSearch.length() >= closeSymbol.length() &&
+                stringToSearch.compare(0, closeSymbol.length(), closeSymbol) == 0)
                 {
                 if (openStack == 0)
                     {
@@ -1295,7 +1295,7 @@ namespace string_util
     [[nodiscard]]
     bool is_extended_ascii(const T* buffer, const size_t buffSize) noexcept
         {
-        static_assert(std::is_same<T, char>::value || std::is_same<T, unsigned char>::value);
+        static_assert(std::is_same_v<T, char> || std::is_same_v<T, unsigned char>);
         if (!buffer || buffSize == 0)
             {
             return false;
@@ -1359,7 +1359,7 @@ namespace string_util
     /// @brief "Trims" left and right sides of a wstring_view.
     /// @param str The string to trim.
     /// @returns A subset of the view, with leading and trailing spaces excluded.
-    inline std::wstring_view trim_view(std::wstring_view str)
+    inline std::wstring_view trim_view(const std::wstring_view str)
         {
         if (str.empty())
             {
@@ -1448,9 +1448,8 @@ namespace string_util
         /// @param delims The set of delimiters to separate the string.
         /// @param skipEmptyTokens @c true to skip empty tokens (i.e., ignoring consecutive
         /// delimiters).
-        string_tokenize(const T& val, const std::wstring& delims,
-                        const bool skipEmptyTokens) noexcept
-            : m_value(val), m_delims(delims), m_skip_empty_tokens(skipEmptyTokens)
+        string_tokenize(const T& val, std::wstring delims, const bool skipEmptyTokens) noexcept
+            : m_value(val), m_delims(std::move(delims)), m_skip_empty_tokens(skipEmptyTokens)
             {
             m_start = m_value.c_str();
             m_next_delim =
@@ -1809,9 +1808,9 @@ namespace string_util
             *endptr = nullptr;
             return 0.0f;
             }
-        const wchar_t sepStr[3] = { 0x2D, 0x3A, 0 };
+        constexpr wchar_t sepStr[3] = { 0x2D, 0x3A, 0 };
         const Tchar_type* separator = string_util::strcspn_pointer<Tchar_type>(nptr, sepStr, 2);
-        // if there is no hyphen or there is one but it is at the end then just call strtod
+        // if there is no hyphen or there is one, but it is at the end, then just call strtod
         if (separator == nullptr || *(separator + 1) == 0)
             {
             return std::wcstod(nptr, endptr);

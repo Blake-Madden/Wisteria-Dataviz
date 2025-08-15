@@ -274,13 +274,15 @@ namespace Wisteria::UI
         virtual void
         SetItemText(size_t row, size_t column, const wxString& text,
                     Wisteria::NumberFormatInfo format =
-                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                        NumberFormatInfo{
+                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
                     double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
         /// @private
         virtual void
         SetItemText(size_t row, size_t column, wxString&& text,
                     Wisteria::NumberFormatInfo format =
-                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                        NumberFormatInfo{
+                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
                     double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
         /// @returns The row's attributes (visual look).
         /// @param row The row to return.
@@ -833,7 +835,8 @@ namespace Wisteria::UI
                 for when it is compared to other cells during a sort operation.*/
         void SetItemText(const size_t row, const size_t column, const wxString& text,
                          const Wisteria::NumberFormatInfo format =
-                             Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                             NumberFormatInfo{
+                                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
                          [[maybe_unused]] const double sortableValue =
                              std::numeric_limits<double>::quiet_NaN() /*Not used here*/) final
             {
@@ -848,7 +851,8 @@ namespace Wisteria::UI
         /// @private
         void SetItemText(const size_t row, const size_t column, wxString&& text,
                          const Wisteria::NumberFormatInfo format =
-                             Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                             NumberFormatInfo{
+                                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
                          [[maybe_unused]] const double sortableValue =
                              std::numeric_limits<double>::quiet_NaN() /*Not used here*/) final
             {
@@ -1281,7 +1285,8 @@ namespace Wisteria::UI
         void
         SetItemText(const size_t row, const size_t column, const wxString& text,
                     const Wisteria::NumberFormatInfo format =
-                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                        NumberFormatInfo{
+                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
                     const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
             {
             DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
@@ -1294,7 +1299,8 @@ namespace Wisteria::UI
         void
         SetItemText(const size_t row, const size_t column, wxString&& text,
                     const Wisteria::NumberFormatInfo format =
-                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                        NumberFormatInfo{
+                            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
                     const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
             {
             DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
@@ -1309,8 +1315,8 @@ namespace Wisteria::UI
             @param value The numeric value for the cell.
             @param format The format to display @c value in.*/
         void SetItemValue(const size_t row, const size_t column, const double value,
-                          const Wisteria::NumberFormatInfo format =
-                              Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
+                          const Wisteria::NumberFormatInfo format = NumberFormatInfo{
+                              Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting })
             {
             DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
             cell.m_numericValue = value;

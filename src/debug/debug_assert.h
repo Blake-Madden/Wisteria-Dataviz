@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __DEBUG_ASSERT_H__
-#define __DEBUG_ASSERT_H__
+#ifndef DEBUG_ASSERT_H
+#define DEBUG_ASSERT_H
 
 /**
 \def NON_UNIT_TEST_ASSERT(expression)
@@ -28,4 +28,4 @@
     #endif
 #endif
 
-#endif //__DEBUG_ASSERT_H__
+#endif // DEBUG_ASSERT_H

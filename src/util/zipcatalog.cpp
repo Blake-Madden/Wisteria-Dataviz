@@ -7,6 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "zipcatalog.h"
+#include <wx/image.h>
+#include <wx/stdpaths.h>
+#include <wx/wfstream.h>
 
 using namespace Wisteria;
 
@@ -151,7 +154,7 @@ wxBitmap ZipCatalog::ReadBitmap(const wxString& path, const wxBitmapType bitmapT
         return wxNullBitmap;
         }
 
-    return wxBitmap(img);
+    return { img };
     }
 
 //------------------------------------------------
@@ -164,7 +167,7 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
         return false;
         }
     m_readBuffer.resize(bufferSize);
-    std::fill(m_readBuffer.begin(), m_readBuffer.end(), 0);
+    std::ranges::fill(m_readBuffer, 0);
 
     for (;;)
         {
@@ -211,7 +214,7 @@ wxArrayString ZipCatalog::GetFilesInFolder(const wxString& path) const
     {
     wxArrayString files;
     wxString formattedPath = path;
-    if (path.length() && path[path.length() - 1] != L'/' && path[path.length() - 1] != L'\\')
+    if (!path.empty() && path[path.length() - 1] != L'/' && path[path.length() - 1] != L'\\')
         {
         formattedPath = path + L'/';
         }

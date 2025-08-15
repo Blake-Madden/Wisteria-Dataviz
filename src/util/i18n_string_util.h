@@ -18,16 +18,7 @@
 #ifndef __I18N_EXTRACT_H__
 #define __I18N_EXTRACT_H__
 
-#include "char_traits.h"
-#include "string_util.h"
-#include <cassert>
-#include <cctype>
-#include <cstddef>
-#include <cstring>
-#include <cwchar>
-#include <cwctype>
 #include <regex>
-#include <set>
 #include <string>
 #include <string_view>
 
@@ -119,7 +110,7 @@ namespace i18n_string_util
         // clang-format on
         }
 
-    /** @returns @c true if a character is an question mark.
+    /** @returns @c true if a character is a question mark.
         @param ch The letter to be reviewed.*/
     [[nodiscard]]
     constexpr static bool is_question(const wchar_t ch) noexcept
@@ -231,7 +222,7 @@ namespace i18n_string_util
             }
         }
 
-    /// @brief Removes escaped unicode values in @c str.
+    /// @brief Removes escaped Unicode values in @c str.
     ///     (e.g., "\u266f" will be replaced with spaces).
     /// @param[out] str The string being escaped.
     void remove_escaped_unicode_values(std::wstring& str);

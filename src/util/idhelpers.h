@@ -24,7 +24,7 @@ void MenuEnableItem(wxMenu* menu, const wxWindowID id, const bool enable);
 /// @param menuBar The menubar to edit.
 /// @param id The menu ID.
 /// @param enable @c true to enable, @c false to disable.
-void MenuBarEnableAll(wxMenuBar* menuBar, const wxWindowID id, const bool enable);
+void MenuBarEnableAll(const wxMenuBar* menuBar, const wxWindowID id, const bool enable);
 
 /// @brief Locks a range of IDs that won't be assigned to anything else.
 /// @details This is useful for menu IDs that persist throughout the program's lifetime.
