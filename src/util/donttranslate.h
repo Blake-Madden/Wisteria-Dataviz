@@ -12,27 +12,28 @@
 #ifndef DONTTRANSLATE_H
 #define DONTTRANSLATE_H
 
+#include <cstdint>
 #include <type_traits>
 
-// Determines whether T is string constant type.
+// Determines whether T is a string literal.
 /// @private
 template<typename T>
-struct is_string_constant
+struct is_string_literal
     : std::bool_constant<std::is_same_v<T, const char*> || std::is_same_v<T, const wchar_t*> ||
                          std::is_same_v<T, const uint8_t*> || std::is_same_v<T, const char16_t*> ||
                          std::is_same_v<T, const char32_t*>>
     {
     };
 
-// Helper for is_string_constant.
+// Concept defining a literal string.
 /// @private
 template<typename T>
-inline constexpr bool is_string_constant_v = is_string_constant<T>::value;
+concept string_literal = is_string_literal<T>::value;
 
 /// @brief Explanations for why a string should not be available for translation.
 enum class DTExplanation
     {
-    DebugMessage,    /*!< Debugging/Tracing related string.*/
+    DebugMessage,    /*!< Debugging/tracing related string.*/
     LogMessage,      /*!< Log messages that aren't normally user facing.*/
     ProperNoun,      /*!< The name of a proper person, place, or thing that wouldn't
                           normally be translated.*/
@@ -42,7 +43,7 @@ enum class DTExplanation
     InternalKeyword, /*!< An internal keyword or constant.*/
     Command,         /*!< A command, such as "open" in a `ShellExecute()` call.*/
     SystemEntry,     /*!< A system entry, such as an entry in the Windows registry.*/
-    FormatString,    /*!< A printf format string.*/
+    FormatString,    /*!< A printf format string with no localizable content.*/
     Syntax,          /*!< Any sort of code or formula.*/
     Constant,        /*!< A constant being displayed that should never change.
                           For example, a number or math constant (e.g., "PI").*/
@@ -89,8 +90,9 @@ enum class DTExplanation
         // a shorthand, _DT(), is also available
         auto command = _DT("open ") + fileName;
     @endcode*/
-template<typename T, std::enable_if_t<is_string_constant_v<T>, bool> = true>
-constexpr auto
+template<typename T>
+    requires string_literal<T>
+consteval auto
 DONTTRANSLATE(T str,
               [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
               [[maybe_unused]] T explanationMessage = nullptr)
@@ -105,8 +107,9 @@ DONTTRANSLATE(T str,
     @param explanationMessage An optional message to add explaining why this
         should not be translated.
     @returns The same string.*/
-template<typename T, std::enable_if_t<is_string_constant_v<T>, bool> = true>
-constexpr auto _DT(T str,
+template<typename T>
+    requires string_literal<T>
+consteval auto _DT(T str,
                    [[maybe_unused]] const DTExplanation explanation = DTExplanation::NoExplanation,
                    [[maybe_unused]] T explanationMessage = nullptr)
     {
