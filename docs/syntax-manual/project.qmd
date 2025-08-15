@@ -3,6 +3,10 @@
 At the root level of a project file, overall settings for the project are defined. The following properties are available at this level:
 
 - `"name"`: A string value, representing the name of the report.
+- `"watermark"`: A watermark to add to each page. \
+  Available options are:
+  - `"label"`: String to write across the pages.
+  - `"color"`: The watermark's color. This can be either a color name or hex-encoded value.
 - `"print"`: Properties related to printer settings. \
   Available options are:
   - `"orientation"`: String specifying the print orientation. \

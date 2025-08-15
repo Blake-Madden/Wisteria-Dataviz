@@ -100,7 +100,21 @@ namespace Wisteria
             return reportPages;
             }
 
+        // Watermark, applied to all pages (can be overridden at individual page level).
+        // These can support constants (including ones from the datasets),
+        // so should be loaded after that section.
+        const auto watermarkProperty = json->GetProperty(L"watermark");
+        wxString reportWatermark;
+        wxColour reportWatermarkColor;
+        if (watermarkProperty->IsOk())
+            {
+            reportWatermark =
+                ExpandConstants(watermarkProperty->GetProperty(L"label")->GetValueString());
+            reportWatermarkColor = ConvertColor(watermarkProperty->GetProperty(L"color"));
+            }
+
         // start loading the pages
+        /// @todo document this section in the manual
         const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
             {
@@ -120,6 +134,27 @@ namespace Wisteria
                     if (page->HasProperty(L"page-numbering"))
                         {
                         m_pageNumber = 1;
+                        }
+
+                    // watermark (overrides report-level watermark)
+                    const auto watermarkProperty = page->GetProperty(L"watermark");
+                    if (watermarkProperty->IsOk())
+                        {
+                        canvas->SetWatermark(ExpandConstants(
+                            watermarkProperty->GetProperty(L"label")->GetValueString()));
+                        canvas->SetWatermarkColor(
+                            ConvertColor(watermarkProperty->GetProperty(L"color")));
+                        }
+                    else
+                        {
+                        if (!reportWatermark.empty())
+                            {
+                            canvas->SetWatermark(reportWatermark);
+                            }
+                        if (reportWatermarkColor.IsOk())
+                            {
+                            canvas->SetWatermarkColor(reportWatermarkColor);
+                            }
                         }
 
                     // background color
