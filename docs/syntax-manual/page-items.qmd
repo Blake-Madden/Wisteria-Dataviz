@@ -91,7 +91,7 @@ Example:
 Properties for `"fillable-shape"` nodes:
 
 - `"icon"`: A string specifying the icon to draw the shape as.
-- `"text"`: A string to display on the shape, which contains [label](#label-properties) properties.
+- `"label"`: A string to display on the shape, which contains [label](#label-properties) properties.
 - `"pen"`: The pen to draw with, which includes [pen](#pen-properties) properties.
 - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
 - `"size"`: The size of the shape, which contains the following properties:
@@ -268,7 +268,7 @@ to be stretched to the full width of the page. For example, a row could be writt
 Properties for `"shape"` nodes:
 
 - `"icon"`: A string specifying the icon to draw the shape as.
-- `"text"`: A string to display on the shape, which contains [label](#label-properties) properties.
+- `"label"`: A string to display on the shape, which contains [label](#label-properties) properties.
 - `"pen"`: The pen to draw with, which includes [pen](#pen-properties) properties.
 - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
 - `"size"`: The size of the shape, which contains the following properties:

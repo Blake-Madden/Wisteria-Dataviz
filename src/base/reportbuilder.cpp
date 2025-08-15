@@ -390,9 +390,9 @@ namespace Wisteria
                 }
             }
 
-        for (auto& tlink : m_tableLinks)
+        for (auto& tableLink : m_tableLinks)
             {
-            tlink.SyncTableSizes();
+            tableLink.SyncTableSizes();
             }
 
         return reportPages;
@@ -3155,7 +3155,7 @@ namespace Wisteria
                 }
             }
 
-        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"text"), GraphItems::Label());
+        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
         auto sh = std::make_unique<FillableShape>(
             GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
@@ -3204,7 +3204,7 @@ namespace Wisteria
         wxBrush brush(*wxWHITE_BRUSH);
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
-        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"text"), GraphItems::Label());
+        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
         auto sh = std::make_unique<Shape>(
             GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
