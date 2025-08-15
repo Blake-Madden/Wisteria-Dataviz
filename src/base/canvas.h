@@ -243,7 +243,7 @@ namespace Wisteria
         wxString GetWatermark() const;
 
         /// @brief Sets the color of the watermark.
-        /// @param watermark The color of the watermark.
+        /// @param color The color of the watermark.
         /// @note Transparency of this color will be used. If opaque, then the default
         ///     transparency will be applied at runtime.
         /// @sa SetWatermark().
