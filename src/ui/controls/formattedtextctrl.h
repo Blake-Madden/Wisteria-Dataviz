@@ -439,7 +439,7 @@ namespace Wisteria::UI
         /// text control for printing that is meant for showing
         /// black text on a white background (if this control is themed,
         /// then it can't be used for printing).
-        void CopyPrintSettings(FormattedTextCtrl* that)
+        void CopyPrintSettings(FormattedTextCtrl* that) const
             {
             if (!that)
                 {

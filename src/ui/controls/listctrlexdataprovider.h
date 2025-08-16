@@ -503,10 +503,9 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns
-                for (size_t i = 0; i < m_columnsToCompare.size(); ++i)
+                for (const auto& col : m_columnsToCompare)
                     {
-                    const int result = Compare(row1[m_columnsToCompare[i].first],
-                                               row2[m_columnsToCompare[i].first]);
+                    const int result = Compare(row1[col.first], row2[col.first]);
                     // if the cells are equal, then we need to compare the next
                     // column as a tiebreaker
                     if (result == 0)
@@ -514,10 +513,8 @@ namespace Wisteria::UI
                         continue;
                         }
                     // otherwise, we have our result, so return it
-                    return (m_columnsToCompare[i].second ==
-                            Wisteria::SortDirection::SortAscending) ?
-                               result < 0 :
-                               result > 0;
+                    return (col.second == Wisteria::SortDirection::SortAscending) ? result < 0 :
+                                                                                    result > 0;
                     }
                 // all the columns are the same, so it's neither less than nor greater than
                 return false;
@@ -906,10 +903,9 @@ namespace Wisteria::UI
         void SetSize(const size_t rowCount, const size_t columnCount) final
             {
             m_virtualData.resize(rowCount);
-            for (StringMatrix::iterator pos = m_virtualData.begin(); pos != m_virtualData.end();
-                 ++pos)
+            for (auto& pos : m_virtualData)
                 {
-                pos->resize(columnCount);
+                pos.resize(columnCount);
                 }
             }
 
@@ -1378,10 +1374,9 @@ namespace Wisteria::UI
         void SetSize(const size_t rowCount, const size_t columnCount) final
             {
             m_virtualData.resize(rowCount);
-            for (DoubleWithLabelMatrix::iterator pos = m_virtualData.begin();
-                 pos != m_virtualData.end(); ++pos)
+            for (auto& pos : m_virtualData)
                 {
-                pos->resize(columnCount);
+                pos.resize(columnCount);
                 }
             }
 

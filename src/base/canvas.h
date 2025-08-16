@@ -19,7 +19,6 @@
 #include "label.h"
 #include <algorithm>
 #include <cmath>
-#include <map>
 #include <stdexcept>
 #include <vector>
 #include <wx/bitmap.h>
@@ -171,7 +170,7 @@ namespace Wisteria
         Canvas& operator=(const Canvas&) = delete;
 
         /// @private
-        void OnDraw(wxDC& dc) override final;
+        void OnDraw(wxDC& dc) final;
 
         // standard events
         /// @private
@@ -247,10 +246,7 @@ namespace Wisteria
         /// @note Transparency of this color will be used. If opaque, then the default
         ///     transparency will be applied at runtime.
         /// @sa SetWatermark().
-        void SetWatermarkColor(const wxColour& color)
-            {
-            m_watermarkColor = color;
-            }
+        void SetWatermarkColor(const wxColour& color) { m_watermarkColor = color; }
 
         /// @returns The color of the watermark.
         [[nodiscard]]
@@ -758,8 +754,10 @@ namespace Wisteria
         /** @brief Draws a watermark label across a canvas.
             @param dc The device context to draw on.
             @param drawingRect The rect within the DC to draw within.
-            @param watermark The label to draw across the canvas.*/
-        void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, const Watermark& watermark);
+            @param watermark The label to draw across the canvas.
+            @param scaling The scaling (e.g., zoom level) of what is being drawn on.*/
+        static void DrawWatermarkLabel(wxDC& dc, wxRect drawingRect, const Watermark& watermark,
+                                       double scaling);
         /** @brief Draws a watermark logo on the corner of a canvas.
             @param dc The device context to draw on.*/
         void DrawWatermarkLogo(wxDC& dc) const;

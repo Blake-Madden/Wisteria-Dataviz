@@ -638,14 +638,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             }
 
         m_columnTotals.resize(m_sankeyColumns.size());
-        std::transform(m_sankeyColumns.cbegin(), m_sankeyColumns.cend(), m_columnTotals.begin(),
-                       [](const auto& group)
-                       {
-                           return std::accumulate(
-                               group.cbegin(), group.cend(), 0.0,
-                               [](const auto init, const auto& val)
-                               { return (val.m_isShown ? val.m_frequency : 0) + init; });
-                       });
+        std::ranges::transform(std::as_const(m_sankeyColumns), m_columnTotals.begin(),
+                               [](const auto& group)
+                               {
+                                   return std::accumulate(
+                                       group.cbegin(), group.cend(), 0.0,
+                                       [](const auto init, const auto& val)
+                                       { return (val.m_isShown ? val.m_frequency : 0) + init; });
+                               });
 
         // if user hasn't supplied enough custom column headers (or any)
         if (m_columnHeaders.size() < m_sankeyColumns.size())

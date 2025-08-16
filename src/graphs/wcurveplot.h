@@ -21,7 +21,7 @@ namespace Wisteria::Graphs
             years. Another example can be customers' satisfaction over the course of
             product releases.
 
-            In regards to student experiential data, this plot demonstrates W-Curve theory.
+            In regard to student experiential data, this plot demonstrates W-Curve theory.
             This postulates that students' campus experience begins positively, then follows
             a pattern of dipping and rising over the subsequent semesters.
         @image html WCurve.svg width=90%
@@ -157,7 +157,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data, const wxString& yColumnName,
                      const wxString& xColumnName,
-                     const std::optional<wxString>& groupColumnName) override final;
+                     const std::optional<wxString>& groupColumnName) final;
 
         /// @brief Sets the label for the major time intervals used in the data collection
         ///     (e.g., "semester" or "year").

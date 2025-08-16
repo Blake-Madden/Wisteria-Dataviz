@@ -321,8 +321,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(FormattedTextCtrl, wxTextCtrl)
             if (renderPage)
                 {
                 drawHeadersAndFooters(gcdc);
-                Wisteria::Canvas::DrawWatermarkLabel(
-                    gcdc, wxRect(wxSize(drawingWidth, drawingHeight)), m_control->GetWatermark());
+                Wisteria::Canvas::DrawWatermarkLabel(gcdc,
+                                                     wxRect(wxSize(drawingWidth, drawingHeight)),
+                                                     m_control->GetWatermark(), 1.0);
                 // copy renderings back into printer DC
                 dc->Blit(0, 0, dc->GetSize().GetWidth(), dc->GetSize().GetWidth(), &memDc, 0, 0);
                 }

@@ -90,6 +90,6 @@ namespace Wisteria::GraphItems
         Draw(memDc);
         memDc.SelectObject(wxNullBitmap);
         wxImage img(bmp.ConvertToImage());
-        return wxBitmap(img);
+        return { img };
         }
     } // namespace Wisteria::GraphItems

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "table.h"
+#include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
 
@@ -370,9 +371,9 @@ namespace Wisteria::Graphs
         labels.insert(labels.cbegin(), 1, m_table[0][columnToSort].GetDisplayValue());
         std::set<wxString> columnLabels;
         // make sure all cell labels are unique in the column
-        for (size_t i = 0; i < m_table.size(); ++i)
+        for (auto& row : m_table)
             {
-            columnLabels.insert(m_table[i][columnToSort].GetDisplayValue());
+            columnLabels.insert(row[columnToSort].GetDisplayValue());
             }
         if (columnLabels.size() != m_table.size())
             {
@@ -383,9 +384,9 @@ namespace Wisteria::Graphs
 
         std::vector<wxString> otherLabels;
         // get the cells labels that the caller did not specify
-        for (size_t i = 0; i < m_table.size(); ++i)
+        for (auto& row : m_table)
             {
-            const auto& cellLabel{ m_table[i][columnToSort] };
+            const auto& cellLabel{ row[columnToSort] };
             const auto foundPos =
                 std::ranges::find_if(std::as_const(labels), [&cellLabel](const auto& label)
                                      { return label.CmpNoCase(cellLabel.GetDisplayValue()) == 0; });
@@ -526,7 +527,7 @@ namespace Wisteria::Graphs
         {
         if (GetColumnCount() &&
             // at least one row of data beneath header(s)
-            GetRowCount() > static_cast<size_t>(1 + (m_hasGroupHeader ? 1 : 0)))
+            GetRowCount() > (1 + (m_hasGroupHeader ? 1 : 0)))
             {
             std::vector<std::pair<size_t, size_t>> indexAndRowCounts;
             for (size_t rowIndex = 1 + (m_hasGroupHeader ? 1 : 0) /* skip header(s)*/;
@@ -548,16 +549,17 @@ namespace Wisteria::Graphs
                 {
                 InsertAggregateRow(Table::AggregateInfo(AggregateType::Total), _(L"Grand Total"),
                                    std::nullopt, bkColor);
-                for (auto rowIter = indexAndRowCounts.crbegin();
-                     rowIter != indexAndRowCounts.crend(); ++rowIter)
+                for (const auto& indexAndRowCount : std::ranges::reverse_view(indexAndRowCounts))
                     {
-                    const auto lastSubgroupRow{ rowIter->first + rowIter->second - 1 };
+                    const auto lastSubgroupRow{ indexAndRowCount.first + indexAndRowCount.second -
+                                                1 };
                     InsertAggregateRow(Table::AggregateInfo(AggregateType::Total)
-                                           .FirstCell(rowIter->first)
+                                           .FirstCell(indexAndRowCount.first)
                                            .LastCell(lastSubgroupRow),
-                                       std::nullopt, rowIter->first + rowIter->second, bkColor);
+                                       std::nullopt,
+                                       indexAndRowCount.first + indexAndRowCount.second, bkColor);
                     // make parent group consume first cell of subtotal row
-                    GetCell(rowIter->first, 0).m_rowCount++;
+                    GetCell(indexAndRowCount.first, 0).m_rowCount++;
                     GetCell(lastSubgroupRow + 1, 1).m_value = _(L"Total");
                     }
                 }
@@ -700,10 +702,10 @@ namespace Wisteria::Graphs
                 {
                 const auto adjacentColumnIndex =
                     ((columnIndex > 0) ? columnIndex - 1 : columnIndex + 1);
-                for (size_t i = 0; i < m_table.size(); ++i)
+                for (auto& row : m_table)
                     {
-                    auto& cell = m_table[i][columnIndex];
-                    cell.m_bgColor = m_table[i][adjacentColumnIndex].m_bgColor;
+                    auto& cell = row[columnIndex];
+                    cell.m_bgColor = row[adjacentColumnIndex].m_bgColor;
                     }
                 }
             else if (bkColor.has_value() && bkColor.value().IsOk())
@@ -870,24 +872,20 @@ namespace Wisteria::Graphs
                     continue;
                     }
                 // If this cell eclipsed by the cell above it? Skip if so.
-                else if (const auto parentCell = GetEclipsingRowWiseCell(row, col);
-                         parentCell.has_value())
+                if (const auto parentCell = GetEclipsingRowWiseCell(row, col);
+                    parentCell.has_value())
                     {
                     continue;
                     }
-                else
-                    {
-                    // Use the alternate color based on the next visible cell above
-                    // this one. If the cell above is eclipsed by a multi-row cell,
-                    // then use the cell eclipsing that one.
-                    const auto& cellAbove = m_table[row - 1][col];
-                    const auto cellAboveParent = GetEclipsingRowWiseCell(row - 1, col);
-                    const wxColour colorAbove = cellAboveParent.has_value() ?
-                                                    cellAboveParent.value().m_bgColor :
-                                                    cellAbove.m_bgColor;
-                    currentRow[col].m_bgColor =
-                        (colorAbove == baseColor ? alternateColor : baseColor);
-                    }
+                // Use the alternate color based on the next visible cell above
+                // this one. If the cell above is eclipsed by a multi-row cell,
+                // then use the cell eclipsing that one.
+                const auto& cellAbove = m_table[row - 1][col];
+                const auto cellAboveParent = GetEclipsingRowWiseCell(row - 1, col);
+                const wxColour colorAbove = cellAboveParent.has_value() ?
+                                                cellAboveParent.value().m_bgColor :
+                                                cellAbove.m_bgColor;
+                currentRow[col].m_bgColor = (colorAbove == baseColor ? alternateColor : baseColor);
                 }
             }
         }

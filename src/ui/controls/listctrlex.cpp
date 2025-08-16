@@ -22,7 +22,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     ListEditTextCtrl::ListEditTextCtrl(
         wxWindow * parent, ListCtrlEx * owner, wxWindowID id /*= wxID_ANY*/,
-        wxString value /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
+        const wxString& value /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
         const wxSize& size /*= wxDefaultSize*/, long style /*= 0*/,
         const wxValidator& validator /*= wxDefaultValidator*/,
         const wxString& name /*= L"ListEditTextCtrl"*/)
@@ -1085,7 +1085,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     drawTables(gcdc);
                     drawHeadersAndFooters(gcdc);
                     Wisteria::Canvas::DrawWatermarkLabel(
-                        gcdc, wxRect(wxSize(drawingWidth, drawingHeight)), m_list->GetWatermark());
+                        gcdc, wxRect(wxSize(drawingWidth, drawingHeight)), m_list->GetWatermark(),
+                        1.0);
                     // copy renderings back into printer DC
                     dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
                     memDc.SelectObject(wxNullBitmap);
@@ -1097,10 +1098,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     return false;
                     }
                 }
-            else
-                {
-                return false;
-                }
+            return false;
             }
 
         /// @brief Calculates the pagination.
@@ -1830,14 +1828,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         const wxEventType type = event.GetEventType();
         long result = wxNOT_FOUND;
 
-        bool matchCase = false;
-        bool matchWholeWord = false;
-        bool searchBackwards = false;
-
         const long currentlyFocusedItem = (GetFocusedItem() == -1) ? 0 : GetFocusedItem();
 
         if (type == wxEVT_COMMAND_FIND || type == wxEVT_COMMAND_FIND_NEXT)
             {
+            bool matchCase = false;
+            bool matchWholeWord = false;
+            bool searchBackwards = false;
             const int flags = event.GetFlags();
             if (flags & wxFR_MATCHCASE)
                 {
@@ -3252,7 +3249,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
     // Saves the list view's content as a table in an external format
     //------------------------------------------------------
-    bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
+    bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions) const
         {
         if (exportOptions.m_exportSelected && GetSelectedItemCount() == 0)
             {

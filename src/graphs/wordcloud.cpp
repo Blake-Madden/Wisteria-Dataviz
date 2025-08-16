@@ -103,8 +103,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
             {
             // remove words that exceed the maximum frequency
             const auto maxWordsToRemoveStart =
-                std::find_if(m_words.cbegin(), m_words.cend(), [maxFreq](const auto& item)
-                             { return item.m_frequency > maxFreq.value(); });
+                std::ranges::find_if(std::as_const(m_words), [maxFreq](const auto& item)
+                                     { return item.m_frequency > maxFreq.value(); });
             if (maxWordsToRemoveStart != m_words.cend())
                 {
                 m_words.erase(maxWordsToRemoveStart, m_words.end());
@@ -118,7 +118,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
 
         // convert raw frequencies to percentages
         const auto grandTotal = std::accumulate(m_words.cbegin(), m_words.cend(), 0.0,
-                                                [](const auto& val, const auto word) noexcept
+                                                [](const auto& val, const auto& word) noexcept
                                                 { return word.m_frequency + val; });
         std::ranges::for_each(m_words, [&grandTotal](auto& val) noexcept
                               { val.m_frequency = safe_divide(val.m_frequency, grandTotal); });

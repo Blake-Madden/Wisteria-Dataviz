@@ -124,7 +124,7 @@ namespace Wisteria::Graphs
             @param toWeightColumnName The (optional) column containing the multiplier value for
                 the "to" column.
             @param fromSortColumnName The (optional) column used to sort the groups in the
-                from column.\n
+                "from" column.\n
                 Note that if a group from @c fromWeightColumnName occurs with multiple values
                 from this column, then it will be sorted by the first value from this column
                 that it encountered.

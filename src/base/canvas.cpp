@@ -1521,7 +1521,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                    GetWatermarkColor(),
                                    std::min<uint8_t>(50, Settings::GetTranslucencyValue())) :
                                GetWatermarkColor(),
-                           WatermarkDirection::Diagonal });
+                           WatermarkDirection::Diagonal },
+                GetScaling());
             }
 
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
@@ -1591,14 +1592,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
-    void Canvas::DrawWatermarkLabel(wxDC & dc, wxRect drawingRect, const Watermark& watermark)
+    void Canvas::DrawWatermarkLabel(wxDC & dc, wxRect drawingRect, const Watermark& watermark,
+                                    double scaling)
         {
         if (drawingRect.GetWidth() == 0 || drawingRect.GetHeight() == 0)
             {
             return;
             }
 
-        const auto originalRect{ drawingRect };
         drawingRect.Deflate(drawingRect.GetWidth() * math_constants::tenth);
 
         if (!watermark.m_label.empty())
@@ -1621,7 +1622,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         .Anchoring(Wisteria::Anchoring::TopLeftCorner)
                         .Padding(0, 0, 0, 0)
                         .Pen(wxNullPen)
-                        .DPIScaling(GetDPIScaleFactor())
+                        .DPIScaling(dc.GetContentScaleFactor())
                         .FontColor(watermark.m_color));
                 const auto boundingBox = waterLabel.GetBoundingBox(dc);
                 const auto widthOfWatermark =
@@ -1653,10 +1654,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         .LabelAlignment(Wisteria::TextAlignment::Centered)
                         .LabelPageVerticalAlignment(Wisteria::PageVerticalAlignment::Centered)
                         .LabelPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered)
-                        .DPIScaling(GetDPIScaleFactor())
+                        .DPIScaling(dc.GetContentScaleFactor())
                         .FontColor(watermark.m_color));
                 waterLabel.GetFont().MakeBold();
-                waterLabel.SetBoundingBox(drawingRect, dc, GetScaling());
+                waterLabel.SetBoundingBox(drawingRect, dc, scaling);
 
                 waterLabel.Draw(dc);
                 }

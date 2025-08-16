@@ -15,7 +15,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     void LinePlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
                            const wxString& yColumnName, const wxString& xColumnName,
-                           const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
+                           const std::optional<wxString>& groupColumnName)
         {
         SetDataset(data);
         ResetGrouping();

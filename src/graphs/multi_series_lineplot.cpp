@@ -151,8 +151,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
     //----------------------------------------------------------------
     void MultiSeriesLinePlot::RecalcSizes(wxDC & dc)
         {
-        // clear everything, update axes mirroring or whatever if requested by client
-        Graph2D::RecalcSizes(dc);
+        // Clear everything, update axes mirroring or whatever if requested by client.
+        // Note that we call the base version (not LinePlot). We just need the basic
+        // axis and title rendering, then we will do our own line plot rendering here.
+        Graph2D::RecalcSizes(dc); // NOLINT
 
         for (size_t colCounter = 0; colCounter < m_yColumns.size(); ++colCounter)
             {

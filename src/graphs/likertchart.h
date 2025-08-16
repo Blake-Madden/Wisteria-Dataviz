@@ -603,12 +603,12 @@ namespace Wisteria::Graphs
         static LikertSurveyQuestionFormat
         DeduceScale(const std::shared_ptr<Data::Dataset>& data,
                     const std::vector<wxString>& questionColumns,
-                    std::optional<wxString> groupColumnName = std::nullopt);
+                    const std::optional<wxString>& groupColumnName = std::nullopt);
 
         /** @brief Collapses the data into the simplest scale
                 (either 3- or 2-point, depending on whether there is a neutral level).
             @details This will also set the string tables for the responses to the simpler scale,
-                although SetLabels() can be called afterwards if you wish to customize these
+                although SetLabels() can be called afterward if you wish to customize these
                 labels further.
 
              - For 4-point scales, this collapses all negative levels to 1 and
@@ -636,7 +636,7 @@ namespace Wisteria::Graphs
                 the question (i.e., categorical) columns' string tables will be reset to use the
                 respective stock labels.*/
         [[nodiscard]]
-        static LikertSurveyQuestionFormat Simplify(std::shared_ptr<Data::Dataset>& data,
+        static LikertSurveyQuestionFormat Simplify(const std::shared_ptr<Data::Dataset>& data,
                                                    const std::vector<wxString>& questionColumns,
                                                    LikertSurveyQuestionFormat currentFormat);
 
@@ -883,7 +883,7 @@ namespace Wisteria::Graphs
             @param format The format to review.
             @returns @c true if the specified format is categorized.*/
         [[nodiscard]]
-        static bool IsCategorized(const LikertSurveyQuestionFormat format) noexcept;
+        static bool IsCategorized(LikertSurveyQuestionFormat format) noexcept;
         /// @brief Draws the brackets connected to questions.
         void AddQuestionBrackets();
         /** @brief Converts a 4-point scale dataset to 2-point.
@@ -934,7 +934,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void
-        Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
+        Collapse5PointsTo3(const std::shared_ptr<Data::Dataset>& data,
                            const std::vector<wxString>& questionColumns,
                            const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 6-point scale dataset to 2-point.
@@ -959,7 +959,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void
-        Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
+        Collapse6PointsTo2(const std::shared_ptr<Data::Dataset>& data,
                            const std::vector<wxString>& questionColumns,
                            const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 7-point scale dataset to 3-point.
@@ -985,7 +985,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void
-        Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
+        Collapse7PointsTo3(const std::shared_ptr<Data::Dataset>& data,
                            const std::vector<wxString>& questionColumns,
                            const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Gets the categorized version of survey format
@@ -994,19 +994,19 @@ namespace Wisteria::Graphs
             @param format The survey format to make categorized.*/
         [[nodiscard]]
         static LikertSurveyQuestionFormat
-        MakeFormatCategorized(const LikertSurveyQuestionFormat format) noexcept;
+        MakeFormatCategorized(LikertSurveyQuestionFormat format) noexcept;
         /** @brief Gets the uncategorized version of survey format
                 (e.g., ThreePointCategorized -> ThreePoint).
             @returns The uncategorized version of survey format.
             @param format The survey format to make uncategorized.*/
         [[nodiscard]]
         static LikertSurveyQuestionFormat
-        MakeFormatUncategorized(const LikertSurveyQuestionFormat format) noexcept;
+        MakeFormatUncategorized(LikertSurveyQuestionFormat format) noexcept;
 
         /// @brief Sets the color for the weakest negative point
         ///     (stronger points will be shades of this color).
         /// @param color The color to use.
-        void SetNegativeColor(const wxColour color)
+        void SetNegativeColor(const wxColour& color)
             {
             if (color.IsOk())
                 {
@@ -1023,7 +1023,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the color for the neutral bars.
         /// @param color The color to use.
-        void SetNeutralColor(const wxColour color)
+        void SetNeutralColor(const wxColour& color)
             {
             if (color.IsOk())
                 {
@@ -1040,7 +1040,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the color for the no-response bars.
         /// @param color The color to use.
-        void SetNoResponseColor(const wxColour color)
+        void SetNoResponseColor(const wxColour& color)
             {
             if (color.IsOk())
                 {
@@ -1058,7 +1058,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the color for the weakest positive point
         ///     (higher points will be shades of this color).
         /// @param color The color to use.
-        void SetPositiveColor(const wxColour color)
+        void SetPositiveColor(const wxColour& color)
             {
             if (color.IsOk())
                 {
@@ -1137,7 +1137,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the positive response label at a given point.
         /// @param label The label to display.
         /// @param point The point of positivity
-        ///     (e.g., 1 will be the weakest positive point [closest one to neutral],
+        ///     (e.g., 1 will be the weakest positive point [the closest one to neutral],
         ///     3 will be the strongest positive).
         /// @note This label will be shown in the legend and also (possibly) as a section header.
         void SetPositiveLabel(const wxString& label, const size_t point)
@@ -1245,8 +1245,8 @@ namespace Wisteria::Graphs
             @details This is used for ensuring that a decal set to SplitTextToFit has all
                 the space available.
             @param bar The bar to edit.
-            @param barBlockLabel The tag of bar block to edit.*/
-        void SetBarBlockFullWidth(Bar& bar, const wxString& tag)
+            @param tag The tag of the bar block to edit.*/
+        static void SetBarBlockFullWidth(Bar& bar, const wxString& tag)
             {
             auto catLabelBlock = bar.FindBlock(tag);
             if (catLabelBlock != bar.GetBlocks().end())
@@ -1257,21 +1257,21 @@ namespace Wisteria::Graphs
 
         /// @brief Tag for category label bar block.
         [[nodiscard]]
-        wxString GetCategoryBlockLabel() const
+        static wxString GetCategoryBlockLabel()
             {
             return _DT(L"CATEGORY_LABEL", DTExplanation::InternalKeyword);
             }
 
         /// @brief Tag for neutral label bar block.
         [[nodiscard]]
-        wxString GetNeutralBlockLabel() const
+        static wxString GetNeutralBlockLabel()
             {
             return _DT(L"NEUTRAL_BLOCK");
             }
 
         /// @brief Tag for neutral label bar block.
         [[nodiscard]]
-        wxString GetQuestionBlockLabel() const
+        static wxString GetQuestionBlockLabel()
             {
             return _DT(L"QUESTION_BLOCK");
             }

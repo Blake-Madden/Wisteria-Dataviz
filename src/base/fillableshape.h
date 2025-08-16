@@ -12,7 +12,6 @@
 #ifndef WISTERIA_FILLABLE_SHAPE_H
 #define WISTERIA_FILLABLE_SHAPE_H
 
-#include "image.h"
 #include "shapes.h"
 
 namespace Wisteria::GraphItems

@@ -324,7 +324,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
                              const wxString& yColumnName, const wxString& xColumnName,
-                             const std::optional<wxString>& groupColumnName = std::nullopt);
+                             const std::optional<wxString>& groupColumnName);
 #if defined(__clang__) || defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif

@@ -205,7 +205,7 @@ namespace Wisteria::UI
         {
       public:
         ListEditTextCtrl(wxWindow* parent, ListCtrlEx* owner, wxWindowID id = wxID_ANY,
-                         wxString value = wxString{}, const wxPoint& pos = wxDefaultPosition,
+                         const wxString& value = wxString{}, const wxPoint& pos = wxDefaultPosition,
                          const wxSize& size = wxDefaultSize, long style = 0,
                          const wxValidator& validator = wxDefaultValidator,
                          const wxString& name = L"ListEditTextCtrl");
@@ -607,7 +607,7 @@ namespace Wisteria::UI
         /// @param path The file path to save the list control's contents.
         /// @param exportOptions The export options (a ListCtrlExportOptions object).
         /// @returns @c true if successful.
-        bool Save(const wxFileName& path, Wisteria::UI::GridExportOptions exportOptions);
+        bool Save(const wxFileName& path, Wisteria::UI::GridExportOptions exportOptions) const;
 
         /// @brief Deletes all rows that are selected.
         void DeleteSelectedItems();

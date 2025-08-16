@@ -156,7 +156,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
             drawTables(gcdc);
             drawHeadersAndFooters(gcdc);
             Wisteria::Canvas::DrawWatermarkLabel(gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
-                                                 m_waterMark);
+                                                 m_waterMark, 1.0);
             // copy renderings back into printer DC
             dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
             memDc.SelectObject(wxNullBitmap);

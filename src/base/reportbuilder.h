@@ -9,37 +9,22 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_REPORT_BUILDER_H__
-#define __WISTERIA_REPORT_BUILDER_H__
+#ifndef WISTERIA_REPORT_BUILDER_H
+#define WISTERIA_REPORT_BUILDER_H
 
 #include "../base/reportenumconvert.h"
 #include "../base/tablelink.h"
 #include "../data/join.h"
-#include "../data/pivot.h"
-#include "../data/subset.h"
 #include "../graphs/boxplot.h"
-#include "../graphs/candlestickplot.h"
-#include "../graphs/categoricalbarchart.h"
 #include "../graphs/ganttchart.h"
-#include "../graphs/heatmap.h"
-#include "../graphs/histogram.h"
-#include "../graphs/likertchart.h"
 #include "../graphs/lineplot.h"
-#include "../graphs/lrroadmap.h"
-#include "../graphs/multi_series_lineplot.h"
-#include "../graphs/piechart.h"
-#include "../graphs/proconroadmap.h"
-#include "../graphs/sankeydiagram.h"
 #include "../graphs/table.h"
-#include "../graphs/wcurveplot.h"
-#include "../graphs/wordcloud.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include "canvas.h"
 #include "colorbrewer.h"
 #include "commonaxisbuilder.h"
 #include "fillableshape.h"
 #include <map>
-#include <tuple>
 #include <vector>
 
 namespace Wisteria
@@ -112,8 +97,8 @@ namespace Wisteria
         /// @param commonAxisNode The common axis node.
         /// @param currentRow The row in the canvas where the common axis will be placed.
         /// @param currentColumn The column in the canvas where the common axis will be placed.
-        void LoadCommonAxis(const wxSimpleJSON::Ptr_t& commonAxisNode, const size_t currentRow,
-                            const size_t currentColumn);
+        void LoadCommonAxis(const wxSimpleJSON::Ptr_t& commonAxisNode, size_t currentRow,
+                            size_t currentColumn);
         /// @brief Loads the base properties for a graph item
         /// @param itemNode The JSON node to parse.
         /// @param item[in,out] The item to write the properties to.
@@ -130,7 +115,7 @@ namespace Wisteria
         ///     this should be called to finalize it and add it to the canvas.
         /// @todo many features still needed!
         void LoadGraph(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas, size_t& currentRow,
-                       size_t& currentColumn, std::shared_ptr<Graphs::Graph2D> graph);
+                       size_t& currentColumn, const std::shared_ptr<Graphs::Graph2D>& graph);
         /// @brief Loads a line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -145,8 +130,8 @@ namespace Wisteria
         /// @param graphNode The graph node to parse.
         /// @param[in,out] linePlot The line plot to load options into.
         /// @todo many features still needed!
-        void LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
-                                     Wisteria::Graphs::LinePlot* linePlot);
+        static void LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
+                                            Wisteria::Graphs::LinePlot* linePlot);
         /// @brief Loads a multi-series line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -281,7 +266,7 @@ namespace Wisteria
         /// @param graphNode The graph node to parse.
         /// @param barChart The bar chart to load the base settings to.
         void LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
-                          std::shared_ptr<Graphs::BarChart> barChart) const;
+                          const std::shared_ptr<Graphs::BarChart>& barChart) const;
         /// @brief Loads a heatmap node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -332,8 +317,8 @@ namespace Wisteria
         ///     counts, prior to any aggregation columns being added.
         /// @returns The row or column position.
         [[nodiscard]]
-        std::optional<size_t> LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
-                                                std::shared_ptr<Graphs::Table> table);
+        static std::optional<size_t> LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
+                                                       std::shared_ptr<Graphs::Table> table);
 
         /// @brief Loads an image node.
         /// @param imageNode The image node to parse.
@@ -374,7 +359,7 @@ namespace Wisteria
         /// @param iconSchemeNode The node to parse.
         /// @returns The loaded icon scheme, or null upon failure.
         [[nodiscard]]
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>
+        static std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>
         LoadIconScheme(const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         /// @brief Loads a line style scheme from a node.
@@ -466,9 +451,9 @@ namespace Wisteria
         std::optional<double> CalcTotal(const wxString& formula,
                                         const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]
-        std::optional<double>
+        static std::optional<double>
         CalcGrandTotal(const wxString& formula,
-                       const std::shared_ptr<const Data::Dataset>& dataset) const;
+                       const std::shared_ptr<const Data::Dataset>& dataset);
         [[nodiscard]]
         std::optional<double>
         CalcGroupCount(const wxString& formula,
@@ -482,7 +467,7 @@ namespace Wisteria
         CalcGroupPercent(const wxString& formula,
                          const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]
-        wxString CalcNow(const wxString& formula) const;
+        static wxString CalcNow(const wxString& formula);
         [[nodiscard]]
         wxString FormatPageNumber(const wxString& formula) const;
 
@@ -553,8 +538,8 @@ namespace Wisteria
                                const std::shared_ptr<const Data::Dataset>& dataset) const;
         /// @brief Converts a single column selection function into a column name.
         [[nodiscard]]
-        wxString ExpandColumnSelection(const wxString& formula,
-                                       const std::shared_ptr<const Data::Dataset>& dataset) const;
+        static wxString ExpandColumnSelection(const wxString& formula,
+                                              const std::shared_ptr<const Data::Dataset>& dataset);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;
@@ -586,4 +571,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_REPORT_BUILDER_H__
+#endif // WISTERIA_REPORT_BUILDER_H
