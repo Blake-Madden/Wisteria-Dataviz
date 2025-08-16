@@ -1221,9 +1221,9 @@ namespace Wisteria::GraphItems
         flameRect.SetTop(rect.GetTop() - ScaleToScreenAndCanvas(1));
         DrawFlame(flameRect, dc);
 
-        // the heart drawing Bézier curves means it doesn't consume all the
-        // rect it was give, so scale down the heart's bounding box to the area
-        // that actually has content
+        // The heart drawing function uses Bézier curves, meaning it doesn't consume
+        // all the rect it was given. Scale down the heart's bounding box to the area
+        // that actually has content.
         heartRect.SetWidth(heartRect.GetWidth() * 0.75);
         heartRect.Offset((rect.GetWidth() - heartRect.GetWidth()) / 2, 0);
 
