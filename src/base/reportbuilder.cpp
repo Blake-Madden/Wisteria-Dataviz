@@ -124,7 +124,6 @@ namespace Wisteria
             }
 
         // start loading the pages
-        /// @todo document this section in the manual
         const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
             {

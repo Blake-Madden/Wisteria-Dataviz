@@ -41,6 +41,7 @@ book:
       - datasets.qmd
     - part: "Page Items"
       chapters:
+      - pages.qmd
       - page-items.qmd
     - part: "Graphs"
       chapters:
