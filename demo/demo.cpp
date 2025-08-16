@@ -215,6 +215,9 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_PRINT_ALL, _(L"&Print All..."), _(L"Print All"));
     fileMenu->AppendSeparator();
 
+    fileMenu->Append(wxID_OPEN, _(L"&Open\tCtrl+O"), _(L"Open Project..."));
+
+    fileMenu->AppendSeparator();
     fileMenu->Append(MyApp::ID_TEXT_CLASSIFIER, _(L"&Text Classifier..."),
                      _(L"Demonstrates the Text Classifier feature"));
     fileMenu->AppendSeparator();
