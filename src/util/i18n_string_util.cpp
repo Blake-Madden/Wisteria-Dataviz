@@ -13,6 +13,7 @@
 
 #include "i18n_string_util.h"
 #include "string_util.h"
+#include <algorithm>
 #include <cassert>
 #include <cwchar>
 #include <set>
