@@ -534,13 +534,6 @@ namespace Wisteria::Graphs
             return m_boxes[index];
             }
 
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint)
-            {
-            return CreateLegend(LegendOptions().PlacementHint(hint));
-            }
-
       private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.
