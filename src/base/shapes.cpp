@@ -168,7 +168,7 @@ namespace Wisteria::GraphItems
 
     //---------------------------------------------------
     Shape::Shape(const GraphItems::GraphItemInfo& itemInfo, const Icons::IconShape shape,
-                 const wxSize sz, const wxBitmapBundle* img /*= nullptr*/)
+                 const wxSize sz, const std::shared_ptr<wxBitmapBundle>& img /*= nullptr*/)
         : GraphItemBase(itemInfo), m_shapeSizeDIPs(sz), m_sizeDIPs(sz), m_shape(shape),
           m_renderer(itemInfo, img)
         {

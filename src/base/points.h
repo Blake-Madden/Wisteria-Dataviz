@@ -43,7 +43,7 @@ namespace Wisteria::GraphItems
                 applicable here and will be drawn as a circle instead if used.*/
         Point2D(GraphItems::GraphItemInfo itemInfo, const size_t radius,
                 const Wisteria::Icons::IconShape& shape = Wisteria::Icons::IconShape::Circle,
-                const wxBitmapBundle* img = nullptr)
+                const std::shared_ptr<wxBitmapBundle>& img = nullptr)
             : GraphItemBase(std::move(itemInfo)), m_shape(shape), m_iconImage(img), m_radius(radius)
             {
             }
@@ -108,7 +108,7 @@ namespace Wisteria::GraphItems
                             [[maybe_unused]] double parentScaling) override final;
 
         Wisteria::Icons::IconShape m_shape{ Wisteria::Icons::IconShape::Circle };
-        const wxBitmapBundle* m_iconImage{ nullptr };
+        std::shared_ptr<wxBitmapBundle> m_iconImage{ nullptr };
         size_t m_radius{ 4 };
         };
 

@@ -242,14 +242,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                                 line.GetPen().GetColour(),
                     isLineGhosted);
                 points->AddPoint(
-                    GraphItems::Point2D(
+                    GraphItems::Point2D{
                         GraphItems::GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i))
                             .AnchorPoint(pt)
                             .Pen(GetMaybeGhostedColor(line.GetPen().GetColour(), isLineGhosted))
                             .Brush((ptColor.IsOk() ? ptColor :
                                                      GetMaybeGhostedColor(line.GetPen().GetColour(),
                                                                           isLineGhosted))),
-                        Settings::GetPointRadius(), line.GetShape(), &line.GetShapeImage()),
+                        Settings::GetPointRadius(), line.GetShape(),
+                        std::make_unique<wxBitmapBundle>(line.GetShapeImage()) },
                     dc);
                 }
             AddObject(std::move(points));

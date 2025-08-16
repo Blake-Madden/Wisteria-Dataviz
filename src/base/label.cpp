@@ -634,7 +634,6 @@ namespace Wisteria::GraphItems
                     }
                 else
                     {
-                    wxBitmapBundle bmp(iconPos->m_img);
                     Shape sh(GraphItemInfo()
                                  .Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen())
                                  .Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush())
@@ -643,7 +642,7 @@ namespace Wisteria::GraphItems
                                  .Scaling(GetScaling())
                                  .DPIScaling(GetDPIScaleFactor()),
                              iconPos->m_shape, boxRect.GetSize(),
-                             iconPos->m_img.IsOk() ? &bmp : nullptr);
+                             std::make_unique<wxBitmapBundle>(iconPos->m_img));
                     sh.SetBoundingBox(boxRect, dc, GetScaling());
                     sh.Draw(dc);
                     }

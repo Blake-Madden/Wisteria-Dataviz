@@ -36,7 +36,7 @@ namespace Wisteria::GraphItems
             @param img An image to use for the point if point is using IconShape::ImageIcon.*/
         FillableShape(const GraphItems::GraphItemInfo& itemInfo, const Icons::IconShape shape,
                       const wxSize sz, const double fillPercent,
-                      const wxBitmapBundle* img = nullptr)
+                      const std::shared_ptr<wxBitmapBundle>& img = nullptr)
             : Shape(itemInfo, shape, sz, img),
               m_fillPercent(std::clamp(fillPercent, math_constants::empty, math_constants::full))
             {
