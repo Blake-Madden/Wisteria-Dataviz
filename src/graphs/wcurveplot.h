@@ -88,8 +88,8 @@ namespace Wisteria::Graphs
 
          // add a story-telling note at the bottom corner
          auto storyNote = std::make_unique<Label>(
-             GraphItemInfo(_(L"Frank reported that he experienced a"
-                " \u201Cdownward spiral\u201D during his first year on campus.")).
+             GraphItemInfo{ _(L"Frank reported that he experienced a"
+                " \u201Cdownward spiral\u201D during his first year on campus.") }.
              Anchoring(Anchoring::BottomLeftCorner).
              FontBackgroundColor(ColorBrewer::GetColor(Color::Canary)).
              LabelAlignment(TextAlignment::RaggedRight).
@@ -98,7 +98,7 @@ namespace Wisteria::Graphs
          storyNote->SplitTextToFitLength(25);
 
          WCurve->AddAnnotation(storyNote,
-                               wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));
+                               wxPoint{ 1, WCurve->GetLeftYAxis().GetRange().first });
 
          // add the plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, WCurve);
@@ -174,6 +174,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxString FormatTimeLabel(uint8_t step) const;
 
+        // TRANSLATORS: time interval shown in W-Curve title.
         wxString m_timeLabel{ _(L"year") };
         };
     } // namespace Wisteria::Graphs

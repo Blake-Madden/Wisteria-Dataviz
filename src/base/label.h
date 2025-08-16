@@ -38,7 +38,7 @@ namespace Wisteria::GraphItems
 namespace Wisteria::GraphItems
     {
     /** @brief A text box that can be placed on a canvas. Can also be used as a legend.
-        @note Call GetLabelDisplayInfo() to edit most of the appearance and layout
+        @note Call @c GetGraphItemInfo() to edit most of the appearance and layout
             functionality for a label.
         @sa The [label](../../Labels.md) overview for more information.*/
     class Label final : public GraphItemBase
@@ -295,21 +295,66 @@ namespace Wisteria::GraphItems
                 within this box.\n
                 If the label isn't wide/tall enough to fill the bounding box precisely
                 width- and length-wise, then it will be anchored.\n
-                Call SetAnchoring() to control how it is anchored.
-            @sa SetBoundingBoxToContentAdjustment().*/
+                Call `GetGraphItemInfo().SetAnchoring()` to control how it is anchored.
+            @sa SetBoundingBoxToContentAdjustment(), LockBoundingBoxScaling(),
+                UnlockBoundingBoxScaling().*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc,
                             [[maybe_unused]] double parentScaling) override final;
 
-        /// @brief When calling SetBoundingBox(), calling this first will prevent the scaling
-        ///     from being adjusted to the new bounding box.
-        /// @details This can be used wanting to prevent the text scaling from growing larger to
-        ///     larger box.
-        /// @sa UnlockBoundingBoxScaling().
+        /** @brief When calling SetBoundingBox(), calling this first will prevent the scaling
+                from being adjusted to the bounding box.
+             @details This can be useful when wanting to prevent the text scaling from growing
+                larger from a subsequent call to SetBoundingBox().
+            @par Example
+                A use case for this is setting a series of labels to have the same font size *and*
+                bounding box size.
+                For example, you could iterate through the labels and get the smallest scaling
+                amongst them. Then go through the labels again, setting them to the same scaling.
+                At this point, they will all have a consistent font size.
+                However, if you had previously set the labels to have a consistent
+                bounding box size, then that will be broken now.
+                This is because calling @c SetScaling() will adjust the bounding box to fit the
+                content with the new font size.
+
+                The solution for this is to do the following to each label:
+                - Cache the original bounding box size by calling GetBoundingBox()
+                  (which all the labels should been initially set to)
+                - Call @c SetScaling() with the homogeneous (smallest) scaling value
+                  (this will temporarily alter the bounding box)
+                - Call LockBoundingBoxScaling() to temporarily lock the scaling
+                - Call SetBoundingBox() with the original bounding box
+                - Call UnlockBoundingBoxScaling() to reset the state
+                - Optionally call `GetGraphItemInfo().SetPageVerticalAlignment()` and
+                  `GetGraphItemInfo().SetPageHorizontalAlignment()` to control how the label
+                  (with a now smaller font) is placed within its bounding box
+
+            @code
+            // Assuming that wxDC-derived object ("dc") is available.
+            // This also assumes we have created a collection of Label objects as "labels,"
+            // and they have already been set to the bounding box size(s) that we want them to use.
+            double smallestTextScaling{ std::numeric_limits<double>::max() };
+            for (auto& currentLabel : labels)
+                {
+                smallestTextScaling = std::min(currentLabel->GetScaling(), smallestTextScaling);
+                }
+
+            for (auto& currentLabel : labels)
+                {
+                const wxRect bBox = currentLabel->GetBoundingBox(dc);
+                currentLabel->SetScaling(smallestTextScaling);
+                currentLabel->LockBoundingBoxScaling();
+                currentLabel->SetBoundingBox(bBox, dc, 1.0);
+                currentLabel->UnlockBoundingBoxScaling();
+                }
+            @endcode
+
+            @sa UnlockBoundingBoxScaling(), SetBoundingBox(), SetScaling().
+        */
         void LockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = true; }
 
         /// @brief When calling SetBoundingBox(), having the scaling unlocked (the default)
         ///     will cause the scaling to be adjusted to the new bounding box.
-        /// @sa LockBoundingBoxScaling().
+        /// @sa LockBoundingBoxScaling(), SetBoundingBox(), SetScaling().
         void UnlockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = false; }
 
         /** @brief Moves the item by the specified x and y values.

@@ -75,8 +75,9 @@ theChart->GetCaption().SplitTextToFitLength(20);
 ```
 
 If using a minimum user-defined size (see "Uniform Widths" below), then the vertical
-alignment of a Label can also be controlled via `Label::GetGraphItemInfo().SetPageAlignment()`
-(or the `LabelPageAlignment` property when being constructed).
+alignment of a Label can also be controlled via `Label::GetGraphItemInfo().SetPageVerticalAlignment()`
+and `Label::GetGraphItemInfo().SetPageHorizontalAlignment()`
+(or the `LabelPageVerticalAlignment` and `LabelPageVerticalAlignment` properties when being constructed).
 
 ```cpp
 Label groupHeader(
@@ -90,7 +91,7 @@ Label groupHeader(
         LabelPageVerticalAlignment(PageVerticalAlignment::BottomAligned));
 // At least 200 pixels (not DIPs) tall.
 // (The minimum user width is left unused with std::nullopt)
-groupHeader.SetMinimumUserSize(wxSize(std::nullopt, 200));
+groupHeader.SetMinimumUserSize(wxSize{ std::nullopt, 200 });
 ```
 
 Line Decorations
@@ -169,7 +170,7 @@ auto note = std::make_unique<Label>(
     Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
 linePlot->AddAnnotation(note,
     // top corner of note
-    wxPoint(3, 38));
+    wxPoint{ 3, 38 });
 ```
 
 Optionally, a line from the note can also be drawn to a specific data point:
@@ -177,9 +178,9 @@ Optionally, a line from the note can also be drawn to a specific data point:
 ```cpp
 linePlot->AddAnnotation(note,
     // top corner of note
-    wxPoint(3, 38),
+    wxPoint{ 3, 38 },
     // the suspect data point to make the note point to
-    wxPoint(4, 59));
+    wxPoint{ 4, 59 });
 ```
 
 Building a Legend

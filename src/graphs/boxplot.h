@@ -91,7 +91,7 @@ namespace Wisteria::Graphs
                 {
                 }
 
-            /// @name Statistics Functions
+            /// @name Statistical Functions
             /// @brief Functions relating to the calculated statistics.
             /// @{
 
@@ -373,7 +373,7 @@ namespace Wisteria::Graphs
             return m_labelPrecision;
             }
 
-        /// @brief Sets the numeric precision for labels in the plot. (Default is 1.)
+        /// @brief Sets the numeric precision for labels in the plot. (Default is `1`.)
         /// @param precision The precision to use for the labels.
         void SetLabelPrecision(const uint8_t precision) noexcept { m_labelPrecision = precision; }
 

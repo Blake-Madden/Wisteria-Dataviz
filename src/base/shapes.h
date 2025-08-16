@@ -596,7 +596,10 @@ namespace Wisteria::GraphItems
         /// @returns What type of shape is being drawn.
         Icons::IconShape GetShape() const noexcept { return m_shape; }
 
-        /// @returns The size in DIPs.
+        /// @brief The overall size of the shape and its bounding box (in DIPs).
+        /// @note This will differ from GetShapeSizeDIPS() (which is protected)
+        ///     if SetBoundingBox() is called.
+        /// @returns The bounding box size in DIPs.
         [[nodiscard]]
         wxSize GetSizeDIPS() const noexcept
             {
@@ -624,7 +627,8 @@ namespace Wisteria::GraphItems
             return m_renderer;
             }
 
-        /// @returns The shape's size in device independent pixels.
+        /// @returns The actual shape's size in device independent pixels.
+        /// @note This will differ from GetSizeDIPS() if SetBoundingBox() is called.
         [[nodiscard]]
         wxSize GetShapeSizeDIPS() const noexcept
             {
