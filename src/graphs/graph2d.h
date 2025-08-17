@@ -215,6 +215,7 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The axis with the provided type.
+        /// @param axisType The axis to access.
         [[nodiscard]]
         Wisteria::GraphItems::Axis& GetAxis(const AxisType axisType) noexcept
             {
@@ -225,6 +226,7 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The opposite axis from the provided type.
+        /// @param axisType The axis to access.
         [[nodiscard]]
         Wisteria::GraphItems::Axis& GetOppositeAxis(const AxisType axisType) noexcept
             {

@@ -117,32 +117,32 @@ namespace Wisteria
       public:
         /// @brief Constructor.
         StandardLineStyles()
-            : LineStyleScheme({ { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_LONG_DASH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_SHORT_DASH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_DOT_DASH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_BDIAGONAL_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_CROSSDIAG_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_FDIAGONAL_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_CROSS_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_VERTICAL_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_FIRST_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_LAST_HATCH, LineStyle::Lines },
-                                { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_LONG_DASH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_SHORT_DASH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_DOT_DASH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_BDIAGONAL_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_CROSSDIAG_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_FDIAGONAL_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_CROSS_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_VERTICAL_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_FIRST_HATCH, LineStyle::Arrows },
-                                { wxPenStyle::wxPENSTYLE_LAST_HATCH, LineStyle::Arrows } })
+            : LineStyleScheme{ { { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_LONG_DASH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_SHORT_DASH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_DOT_DASH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_BDIAGONAL_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_CROSSDIAG_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_FDIAGONAL_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_CROSS_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_VERTICAL_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_FIRST_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_LAST_HATCH, LineStyle::Lines },
+                                 { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_LONG_DASH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_SHORT_DASH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_DOT_DASH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_BDIAGONAL_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_CROSSDIAG_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_FDIAGONAL_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_CROSS_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_VERTICAL_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_FIRST_HATCH, LineStyle::Arrows },
+                                 { wxPenStyle::wxPENSTYLE_LAST_HATCH, LineStyle::Arrows } } }
             {
             }
         };
@@ -1130,7 +1130,7 @@ namespace Wisteria
                 @param placement The method for how the point controls the anchoring
                     of this object.
                 @note This will have no effect on objects with more than one point
-                    (e.g., @c Axes::Axis, @c Points2D).
+                    (e.g., @c Axis, @c Points2D).
                     This mostly related to objects such as Label and Image.*/
             void SetAnchoring(const Wisteria::Anchoring placement)
                 {
@@ -1148,9 +1148,10 @@ namespace Wisteria
 
             /** @brief Sets which type of shadow is being drawn under the object
                 @param shadow The type of shadow to display.
-                @note For some objects, shadow will always be displayed as @c RightSideShadow
-                    (unless set to @c NoDisplay); otherwise, it would look odd.
-                    Set to @c NoDisplay to turn off shadows.*/
+                @note For some objects, shadow will always be displayed as
+                    ShadowType::RightSideShadow (unless set to ShadowType::NoDisplay);
+                    otherwise, it would look odd.
+                    Set to ShadowType::NoDisplay to turn off shadows.*/
             void SetShadowType(const ShadowType shadow) noexcept
                 {
                 m_itemInfo.m_shadowType = shadow;
@@ -1895,7 +1896,7 @@ namespace Wisteria
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The scaled value.
             /// @warning This should be used to rescale pixel values used for line
-            ///     widths and point sizes. It should NOT be used with font point sizes
+            ///     widths and point sizes. It should *not* be used with font point sizes
             ///     because DPI scaling is handled by the OS for those.
             ///     Instead, font sizes should only be scaled to the canvas's scaling.
             [[nodiscard]]

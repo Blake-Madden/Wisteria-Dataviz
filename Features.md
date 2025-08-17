@@ -16,7 +16,7 @@ Wisteria Dataviz contains features such as:
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date/time, and ID columns
   - Graphs are designed to handle missing data
-- Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Windows, if available)
+- Uses high-quality `wxGraphicsContext` for rendering (uses Direct2D on Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
 - Image effects, such as:
   - Applying an oil-painting look
@@ -25,7 +25,7 @@ Wisteria Dataviz contains features such as:
   - Creating a silhouette from an image
   - Stitching images together (either vertically or horizontally)
 - Effects for boxes and bars, including transparency, a watercolor look, a glassy look, stipple brushes, and color fades
-- HiDPI display support (Windows)
+- HiDPI display support
 - Customizable point markers and line styles
   - Pre-defined and extensible shape schemes
 - Customizable [axes](Axes.md)
@@ -38,6 +38,7 @@ Wisteria Dataviz contains features such as:
   - Axis lines can be drawn as a regular line or an arrow
 - Custom axes can be added onto the plot area (inside of the main axes)
 - Reference lines
+  - Can show a descriptive label along the axis or on the legend
 - Reference areas (e.g., recession areas on a financial chart)
 - Legends with shape, image, and color scale support
 - Extensive list of pre-built colors that can be referenced via an enumeration (`Wisteria::Colors::Color`)
@@ -57,11 +58,11 @@ Wisteria Dataviz contains features such as:
   - Fully Unicode
   - Locale-sensitive number formatting (based on `wxUILocale`'s settings)
   - All UI-facing text is available for translation (via the `gettext` library)
+  - i18n functions to help prevent accidental translations (e.g., `DONTTRANSLATE()` and `_DT()`)
 - An extensible framework for designing custom graphs
   - New graph types can be designed from the ground up or be derived from existing graph types (e.g., [BarChart](BarChart.md))
   - Uses an object-based API for positioning points, text boxes, polygons, lines, and images
   - Supports custom axes
   - Draw bounding boxes and extended information in debug mode
   - Profiling macros (e.g., `PROFILE()`) to help with reviewing performance
-  - i18n functions to help prevent accidental translations (e.g., `DONTTRANSLATE()` and `_DT()`)
   - `LogFile` class for routing logging information to a formatted file

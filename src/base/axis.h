@@ -914,11 +914,11 @@ namespace Wisteria::GraphItems
                  SetRightPadding(), SetBottomPadding(), or SetLeftPadding()
                  (this will only affect the axis labels, not the actual axis).
 
-                 To change the font attributes of the axis labels, call @c SetFontBackgroundColor(),
-                 @c SetFontColor(), and @c GetFont(). Setting the background color of the labels
-                    will display background boxes behind the labels that take up as much space
-                    as possible on the axis. Calling SetTextAlignment() will then control
-                    how the text is aligned within these boxes.
+                 To change the font attributes of the axis labels, call SetFontBackgroundColor(),
+                 SetFontColor(), and SetFont(). Setting the background color of the labels
+                 will display background boxes behind them that take up as much space
+                 as possible on the axis. Calling SetTextAlignment() will then control
+                 how the text is aligned within these boxes.
 
                  Whether default labels, custom labels, or both are shown can be controlled
                  by SetLabelDisplay().
@@ -957,7 +957,9 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the text of an axis tick label (overriding any default calculated label).
             @param tickValue The tick on the axis to label.
-            @param label The label to show on the tick.*/
+            @param label The label to show on the tick.
+            @note Labels can include newlines to provide more control over how the labels
+                are fit and positioned along the axis.*/
         void SetCustomLabel(double tickValue, const Label& label);
         /** @returns The custom label for a specific tick, or empty string if one hasn't
                 been assigned.\n Will return an invalid label object if not found,
@@ -989,12 +991,38 @@ namespace Wisteria::GraphItems
             return m_suggestedMaxLengthPerLine;
             }
 
+        /// @brief Sets the font for the axis labels.
+        /// @param font The font to use.
+        void SetFont(const wxFont& font) override final
+            {
+            GraphItemBase::SetFont(font);
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            for (auto& bracket : GetBrackets())
+                {
+                bracket.GetLabel().SetFont(GetFont());
+                }
+            }
+
+        /// @brief Sets the font background color for the axis labels.
+        /// @param color The color to use.
+        /// @note Setting the background color of the labels
+        ///     will display background boxes behind them that take up as
+        ///     much space as possible on the axis.
+        void SetFontBackgroundColor(const wxColour& color) override final
+            {
+            if (color.IsOk())
+                {
+                GraphItemBase::SetFontBackgroundColor(color);
+                m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+                }
+            }
+
         /// @brief Sets the length of each line of each axis label.
         /// @param suggestedMaxLengthPerLine The length that each line should be
         ///     shortened to. If any line is longer, then the axis label will be split
         ///     into multiple lines.
         void SetLabelLineLength(size_t suggestedMaxLengthPerLine);
-        /// @brief Attempts to split longer (> 20 characters) axis labels into multiple lines.
+        /// @brief Attempts to split longer axis labels into multiple lines.
         /// @details Attempts will be made to split lengthy labels if they contain various
         ///     separators (e.g., parentheses, slashes), appear to be a comma-separated list, or
         ///     contain conjunctions.\n
@@ -1628,7 +1656,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the physical y position on the canvas.
             @param y The physical y position to place the axis.
-            @note This is used by the framework (e.g., @c Graph2D) for layout and should not be
+            @note This is used by the framework (e.g., Graphs::Graph2D) for layout and should not be
                 called in client code.\n
                 Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an
                 axis relative to the main axes.*/
@@ -1644,7 +1672,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the physical x position on the canvas.
             @param x The physical x position to place the axis.
-            @note This is used by the framework (e.g., @c Graph2D) for layout and should not be
+            @note This is used by the framework (e.g., Graphs::Graph2D) for layout and should not be
                 called in client code.\n
                 Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an
                 axis relative to the main axes.*/
@@ -1704,23 +1732,13 @@ namespace Wisteria::GraphItems
 
         /// @}
 
-        // These are overridden so that the widest and tallest labels are invalidated.
+        // Overridden so that the widest and tallest labels are invalidated.
         /// @private
         [[nodiscard]]
         GraphItemInfo& GetGraphItemInfo() noexcept override final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetGraphItemInfo();
-            }
-
-        /// @private
-        void SetFontBackgroundColor(const wxColour& color) override final
-            {
-            if (color.IsOk())
-                {
-                GraphItemBase::SetFontBackgroundColor(color);
-                m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
-                }
             }
 
         /// @private
@@ -1731,6 +1749,9 @@ namespace Wisteria::GraphItems
             return GraphItemBase::GetFont();
             }
 
+        // Just hiding these from Doxygen. If these are included inside groupings,
+        // then the "private" tag will break the group in the generated help.
+
         /// @private
         [[nodiscard]]
         const wxFont& GetFont() const noexcept override final
@@ -1738,19 +1759,6 @@ namespace Wisteria::GraphItems
             return GraphItemBase::GetFont();
             }
 
-        /// @private
-        void SetFont(const wxFont& font) override final
-            {
-            GraphItemBase::SetFont(font);
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
-            for (auto& bracket : GetBrackets())
-                {
-                bracket.GetLabel().SetFont(GetFont());
-                }
-            }
-
-        // Just hiding these from Doxygen. If these are included inside groupings,
-        // then the "private" tag will break the group in the generated help.
         /// @private
         [[nodiscard]]
         const wxPen& GetAxisLinePen() const noexcept
