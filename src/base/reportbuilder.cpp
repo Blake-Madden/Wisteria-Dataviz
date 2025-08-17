@@ -803,6 +803,12 @@ namespace Wisteria
                 label->SetTopImage(LoadImageFile(imgNode->GetProperty(L"image-import")),
                                    imgNode->GetProperty(L"offset")->GetValueNumber(0));
                 }
+            // top shape
+            if (const auto topShapeNode = labelNode->GetProperty(L"top-shape");
+                topShapeNode->IsOk())
+                {
+                label->SetTopShape(LoadShapeInfo(topShapeNode));
+                }
 
             const auto orientation = labelNode->GetProperty(L"orientation")->GetValueString();
             if (orientation.CmpNoCase(L"horizontal") == 0)
@@ -3221,6 +3227,43 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    GraphItems::ShapeInfo ReportBuilder::LoadShapeInfo(const wxSimpleJSON::Ptr_t& shapeNode) const
+        {
+        const auto loadedShape =
+            ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
+        if (!loadedShape.has_value())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: unknown icon for shape."),
+                                 shapeNode->GetProperty(L"icon")->GetValueString())
+                    .ToUTF8());
+            }
+
+        wxSize sz{ 32, 32 };
+        const auto sizeNode = shapeNode->GetProperty(L"size");
+        if (sizeNode->IsOk())
+            {
+            sz.x = sizeNode->GetProperty(L"width")->GetValueNumber(32);
+            sz.y = sizeNode->GetProperty(L"height")->GetValueNumber(32);
+            }
+
+        wxPen pen(*wxBLACK_PEN);
+        LoadPen(shapeNode->GetProperty(L"pen"), pen);
+
+        wxBrush brush(*wxWHITE_BRUSH);
+        LoadBrush(shapeNode->GetProperty(L"brush"), brush);
+
+        auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
+
+        return ShapeInfo{}
+            .Shape(loadedShape.value())
+            .Size(sz)
+            .Pen(pen)
+            .Brush(brush)
+            .Text((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}));
+        }
+
+    //---------------------------------------------------
     std::unique_ptr<GraphItems::Shape>
     ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode) const
         {
@@ -3234,7 +3277,7 @@ namespace Wisteria
                     .ToUTF8());
             }
 
-        wxSize sz(32, 32);
+        wxSize sz{ 32, 32 };
         const auto sizeNode = shapeNode->GetProperty(L"size");
         if (sizeNode->IsOk())
             {

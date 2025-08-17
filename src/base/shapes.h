@@ -563,6 +563,100 @@ namespace Wisteria::GraphItems
         static std::mt19937 m_mt;
         };
 
+    /// @brief Simple descriptive information about a shape.
+    ///     Only used for storing  and sharing shape info between interfaces,
+    ///     as Shape is not copyable.
+    class ShapeInfo
+        {
+      public:
+        /** @brief Specifies the shape to render.
+            @param shp The shape to draw.
+            @returns A self reference.*/
+        ShapeInfo& Shape(const Icons::IconShape shp) noexcept
+            {
+            m_shape = shp;
+            return *this;
+            }
+
+        /** @brief Specifies the size of the shape (in DIPs).
+            @param sz The shape's size.
+            @returns A self reference.*/
+        ShapeInfo& Size(const wxSize sz) noexcept
+            {
+            m_sizeDIPs = sz;
+            return *this;
+            }
+
+        /** @brief Specifies the brush of the shape.
+            @param brush The brush.
+            @returns A self reference.*/
+        ShapeInfo& Brush(const wxBrush brush) noexcept
+            {
+            m_brush = brush;
+            return *this;
+            }
+
+        /** @brief Specifies the pen of the shape.
+            @param pen The pen.
+            @returns A self reference.*/
+        ShapeInfo& Pen(const wxPen pen) noexcept
+            {
+            m_pen = pen;
+            return *this;
+            }
+
+        /** @brief Specifies the text on the shape to render.
+            @param shp The text to draw.
+            @returns A self reference.*/
+        ShapeInfo& Text(const wxString text) noexcept
+            {
+            m_text = text;
+            return *this;
+            }
+
+        /// @return The shape.
+        [[nodiscard]]
+        Icons::IconShape GetShape() const noexcept
+            {
+            return m_shape;
+            }
+
+        /// @return The shape's size (in DIPs).
+        [[nodiscard]]
+        wxSize GetSizeDIPs() const noexcept
+            {
+            return m_sizeDIPs;
+            }
+
+        /// @return The shape's brush.
+        [[nodiscard]]
+        wxBrush GetBrush() const noexcept
+            {
+            return m_brush;
+            }
+
+        /// @return The shape's pen.
+        [[nodiscard]]
+        wxPen GetPen() const noexcept
+            {
+            return m_pen;
+            }
+
+        /// @return The shape's text.
+        [[nodiscard]]
+        wxString GetText() const noexcept
+            {
+            return m_text;
+            }
+
+      private:
+        Icons::IconShape m_shape{ Icons::IconShape::Square };
+        wxSize m_sizeDIPs{ 16, 16 };
+        wxBrush m_brush;
+        wxPen m_pen;
+        wxString m_text;
+        };
+
     /** @brief Draws a shape onto a canvas.*/
     class Shape : public GraphItemBase
         {
@@ -575,6 +669,8 @@ namespace Wisteria::GraphItems
         Shape(const GraphItems::GraphItemInfo& itemInfo, Icons::IconShape shape, wxSize sz,
               const std::shared_ptr<wxBitmapBundle>& img = nullptr);
         /// @private
+        /// @internal Is not copyable because the renderer stores a pointer to one of its
+        ///     own functions to draw shapes.
         Shape(const Shape&) = delete;
         /// @private
         Shape& operator==(const Shape&) = delete;

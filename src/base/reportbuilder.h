@@ -291,6 +291,9 @@ namespace Wisteria
         std::unique_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode) const;
 
         [[nodiscard]]
+        GraphItems::ShapeInfo LoadShapeInfo(const wxSimpleJSON::Ptr_t& shapeNode) const;
+
+        [[nodiscard]]
         std::unique_ptr<GraphItems::FillableShape>
         LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode) const;
 

@@ -8,7 +8,6 @@
 
 #include "label.h"
 #include "polygon.h"
-#include "shapes.h"
 #include <wx/fontenum.h>
 #include <wx/regex.h>
 #include <wx/tokenzr.h>
@@ -30,17 +29,34 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxSize Label::CalcTopImageSize(const wxCoord textWidth) const
+    wxSize Label::CalcTopGraphicSize(const wxCoord textWidth) const
         {
-        if (!m_topImage.IsOk())
+        if (!m_topImage.IsOk() && !m_topShape.has_value())
             {
             return { 0, 0 };
             }
-        const auto imgWidth = std::min(m_topImage.GetDefaultSize().GetWidth(), textWidth);
-        const auto imgHeight = geometry::rescaled_height(
-            { m_topImage.GetDefaultSize().GetWidth(), m_topImage.GetDefaultSize().GetHeight() },
-            imgWidth);
-        return { static_cast<int>(imgWidth), static_cast<int>(imgHeight) };
+        wxSize imageSize, shapeSize;
+        if (m_topImage.IsOk())
+            {
+            const auto imgWidth = std::min(m_topImage.GetDefaultSize().GetWidth(), textWidth);
+            const auto imgHeight = geometry::rescaled_height(
+                { m_topImage.GetDefaultSize().GetWidth(), m_topImage.GetDefaultSize().GetHeight() },
+                imgWidth);
+            imageSize = wxSize{ static_cast<int>(imgWidth), static_cast<int>(imgHeight) };
+            }
+        if (m_topShape.has_value())
+            {
+            shapeSize = ScaleToScreenAndCanvas(m_topShape.value().GetSizeDIPs());
+            }
+        const auto maxWidth = ((imageSize.IsFullySpecified() && shapeSize.IsFullySpecified()) ?
+                                   std::max(imageSize.GetWidth(), shapeSize.GetWidth()) :
+                               imageSize.IsFullySpecified() ? imageSize.GetWidth() :
+                                                              shapeSize.GetWidth());
+        const auto maxHeight = ((imageSize.IsFullySpecified() && shapeSize.IsFullySpecified()) ?
+                                    std::max(imageSize.GetHeight(), shapeSize.GetHeight()) :
+                                imageSize.IsFullySpecified() ? imageSize.GetHeight() :
+                                                               shapeSize.GetHeight());
+        return { maxWidth, maxHeight };
         }
 
     //-------------------------------------------
@@ -188,12 +204,12 @@ namespace Wisteria::GraphItems
         // top image
         measuredHeightNoSideImages -=
             ((GetTextOrientation() == Orientation::Horizontal) ?
-                 std::max<wxCoord>(CalcTopImageSize(measuredWidth).GetHeight() - m_topImageOffset,
+                 std::max<wxCoord>(CalcTopGraphicSize(measuredWidth).GetHeight() - m_topImageOffset,
                                    0) :
                  0);
         measureWidthNoSideImages -=
             ((GetTextOrientation() == Orientation::Vertical) ?
-                 std::max<wxCoord>(CalcTopImageSize(measureHeight).GetHeight() - m_topImageOffset,
+                 std::max<wxCoord>(CalcTopGraphicSize(measureHeight).GetHeight() - m_topImageOffset,
                                    0) :
                  0);
 
@@ -208,13 +224,13 @@ namespace Wisteria::GraphItems
         // top image
         textAreaHeightNoSideImages -=
             ((GetTextOrientation() == Orientation::Horizontal) ?
-                 std::max<wxCoord>(CalcTopImageSize(rect.GetWidth()).GetHeight() - m_topImageOffset,
-                                   0) :
+                 std::max<wxCoord>(
+                     CalcTopGraphicSize(rect.GetWidth()).GetHeight() - m_topImageOffset, 0) :
                  0);
         textAreaWidthNoSideImages -=
             ((GetTextOrientation() == Orientation::Vertical) ?
                  std::max<wxCoord>(
-                     CalcTopImageSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
+                     CalcTopGraphicSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
                  0);
 
         if (!m_boundingBoxScalingLocked &&
@@ -450,7 +466,8 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, topBottomOutlineWidth);
                 }
             width += CalcLeftImageSize(height).GetWidth();
-            height += std::max<wxCoord>(CalcTopImageSize(width).GetHeight() - m_topImageOffset, 0);
+            height +=
+                std::max<wxCoord>(CalcTopGraphicSize(width).GetHeight() - m_topImageOffset, 0);
             }
         else
             {
@@ -504,7 +521,8 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, leftRightOutlineWidth);
                 }
             height += CalcLeftImageSize(width).GetWidth();
-            width += std::max<wxCoord>(CalcTopImageSize(height).GetHeight() - m_topImageOffset, 0);
+            width +=
+                std::max<wxCoord>(CalcTopGraphicSize(height).GetHeight() - m_topImageOffset, 0);
             }
         }
 
@@ -1062,13 +1080,34 @@ namespace Wisteria::GraphItems
                 dc.DrawBitmap(img, leftCorner);
                 }
             }
+        // draw top icon
+        if (m_topShape.has_value())
+            {
+            const auto scaledSize = ScaleToScreenAndCanvas(m_topShape.value().GetSizeDIPs());
+            auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
+            leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
+                            safe_divide(scaledSize.GetWidth(), 2);
+            // ensure shape doesn't go below (and outside) the text
+            leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
+                                                      scaledSize.GetHeight());
+
+            Shape shp{ GraphItemInfo{ m_topShape.value().GetText() }
+                           .AnchorPoint(leftCorner)
+                           .Anchoring(Anchoring::TopLeftCorner)
+                           .Scaling(GetScaling())
+                           .DPIScaling(GetDPIScaleFactor())
+                           .Pen(m_topShape.value().GetPen())
+                           .Brush(m_topShape.value().GetBrush()),
+                       m_topShape.value().GetShape(), m_topShape.value().GetSizeDIPs() };
+            shp.Draw(dc);
+            }
         // draw top image
         if (m_topImage.IsOk())
             {
             if (GetTextOrientation() == Orientation::Horizontal)
                 {
                 const auto bmp = m_topImage.GetBitmap(
-                    CalcTopImageSize(GetCachedContentBoundingBox().GetWidth()));
+                    CalcTopGraphicSize(GetCachedContentBoundingBox().GetWidth()));
                 // center horizontally
                 auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
                 leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
@@ -1082,7 +1121,7 @@ namespace Wisteria::GraphItems
                 {
                 const auto img =
                     m_topImage
-                        .GetBitmap(CalcTopImageSize(GetCachedContentBoundingBox().GetHeight()))
+                        .GetBitmap(CalcTopGraphicSize(GetCachedContentBoundingBox().GetHeight()))
                         .ConvertToImage()
                         .Rotate90(false);
                 // center vertically
@@ -1649,7 +1688,7 @@ namespace Wisteria::GraphItems
                     ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
                         CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth();
             const auto xOffset = std::max<wxCoord>(
-                CalcTopImageSize(GetCachedContentBoundingBox().GetHeight()).GetHeight() -
+                CalcTopGraphicSize(GetCachedContentBoundingBox().GetHeight()).GetHeight() -
                     m_topImageOffset,
                 0);
             const bool isHeader{ (currentLineNumber == 0 && GetLineCount() > 1 &&
@@ -1882,7 +1921,7 @@ namespace Wisteria::GraphItems
                                   GetHeaderInfo().IsEnabled() &&
                                   GetHeaderInfo().GetFont().IsOk()) };
             const auto yOffset = std::max<wxCoord>(
-                CalcTopImageSize(GetCachedContentBoundingBox().GetWidth()).GetHeight() -
+                CalcTopGraphicSize(GetCachedContentBoundingBox().GetWidth()).GetHeight() -
                     m_topImageOffset,
                 0);
             const DCFontChangerIfDifferent fc(

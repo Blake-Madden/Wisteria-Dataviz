@@ -169,6 +169,15 @@ Properties for `"label"` nodes:
   The available options are:
   - `"image-import"`: An image import specification. (See [image file properties](#image-file-properties).)
   - `"offset"`: A number specifying how far from the top of the label's box to draw the image. (Default is `0`.)
+- `"top-shape"`: Properties specifying a shape to display above the label. \
+  The available options are:
+  - `"icon"`: A string specifying the icon to draw the shape as.
+  - `"label"`: A string to display on the shape.
+  - `"pen"`: The pen to draw with, which includes [pen](#pen-properties) properties.
+  - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
+  - `"size"`: The size of the shape, which contains the following properties:
+    - `"width"`: The width.
+    - `"height"`: The height.
 - `"header"`: Attributes to apply to the first row of the label. \
      The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.
@@ -268,7 +277,7 @@ to be stretched to the full width of the page. For example, a row could be writt
 Properties for `"shape"` nodes:
 
 - `"icon"`: A string specifying the icon to draw the shape as.
-- `"label"`: A string to display on the shape, which contains [label](#label-properties) properties.
+- `"label"`: A string to display on the shape.
 - `"pen"`: The pen to draw with, which includes [pen](#pen-properties) properties.
 - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
 - `"size"`: The size of the shape, which contains the following properties:
