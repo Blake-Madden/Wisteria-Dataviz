@@ -83,8 +83,17 @@ namespace Wisteria::Graphs
                                              *wxTRANSPARENT_BRUSH);
         wxString textLines;
 
-        // combine lines with the same color and label
-        std::vector<ReferenceLine> refLines{ GetReferenceLines() };
+        // combine lines with the same color and label,
+        // but also only include ones meant to be shown in the legend
+        std::vector<ReferenceLine> refLines;
+        refLines.reserve(GetReferenceLines().size());
+        for (const auto& refLine : GetReferenceLines())
+            {
+            if (refLine.GetLabelPlacement() == ReferenceLabelPlacement::Legend)
+                {
+                refLines.push_back(refLine);
+                }
+            }
         std::ranges::sort(refLines, [](const auto& left, const auto& right) noexcept
                           { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
         refLines.erase(std::ranges::unique(refLines,
@@ -626,6 +635,26 @@ namespace Wisteria::Graphs
         if (IsYAxisMirrored())
             {
             GetRightYAxis().CopySettings(GetLeftYAxis());
+            }
+
+        // if any reference lines are being shown on the axis, then add them now
+        // before we start adjusting the sizes of everything
+        for (const auto& refLine : GetReferenceLines())
+            {
+            const auto& parentAxis = GetAxis(refLine.m_axisType);
+            auto& oppositeAxis = GetOppositeAxis(refLine.m_axisType);
+
+            if (refLine.GetLabelPlacement() == ReferenceLabelPlacement::OppositeAxis)
+                {
+                oppositeAxis.Show(true);
+                oppositeAxis.SetRange(parentAxis.GetRange().first, parentAxis.GetRange().second, 0,
+                                      // try to show the custom label by forcing to
+                                      // include as many ticks along the axes as possible
+                                      std::min(parentAxis.GetInterval(), 1.0), 1);
+                oppositeAxis.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+                oppositeAxis.SetCustomLabel(refLine.m_axisPosition,
+                                            GraphItems::Label{ refLine.m_label });
+                }
             }
 
         AdjustPlotArea(dc);

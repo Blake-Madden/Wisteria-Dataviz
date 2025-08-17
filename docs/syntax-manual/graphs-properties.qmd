@@ -49,6 +49,10 @@ Properties common to all graphs:
   - `"position"`: The axis position for the line. \
        This can either be a numeric position, a date (as a string), or an axis label.
   - `"label"`: The text to display on the legend referring to line.
+  - `"reference-label-placement"`: A string specifying where to place the reference line's label. \
+    Available options are:
+    - `"opposite-axis"`: Shows the label along the axis opposite to `"axis-type"`.
+    - `"legend"`: Shows the label within the legend.
   - `"pen"`: The definition for the [pen](#pen-properties) properties.
 - `"reference-areas"`: An array of reference area definitions, which contain the following properties:
   - `"axis-type"`: The axis to add the reference area to. \

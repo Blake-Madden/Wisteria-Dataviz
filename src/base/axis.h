@@ -77,6 +77,15 @@ namespace Wisteria
                 will be a curly brace.*/
         CurlyBraces
         };
+
+    /// @brief Where to place reference line labels.
+    enum class ReferenceLabelPlacement
+        {
+        /// @brief Show the label on the opposite axis.
+        OppositeAxis,
+        /// @brief Show the label on the legend.
+        Legend
+        };
     } // namespace Wisteria
 
 namespace Wisteria::GraphItems
@@ -95,12 +104,25 @@ namespace Wisteria::GraphItems
         ///     can be used to find the position of a label.
         /// @param label The label to describe what the line represents.
         /// @param pen The pen to use for the line.
+        /// @param labelPlacement Where to place the label.
+        /// @warning If specifying ReferenceLabelPlacement::OppositeAxis as the label placement,
+        ///     then the settings of the opposite axis will be overridden. It will mirror the
+        ///     settings of the main axis, as well be set to only show custom labels.
         ReferenceLine(const AxisType axisType, const double axisPosition, wxString label,
                       const wxPen& pen = wxPen{ *wxLIGHT_GREY, 1,
-                                                wxPenStyle::wxPENSTYLE_LONG_DASH })
+                                                wxPenStyle::wxPENSTYLE_LONG_DASH },
+                      ReferenceLabelPlacement labelPlacement = ReferenceLabelPlacement::Legend)
             : m_axisType(axisType), m_axisPosition(axisPosition), m_label(std::move(label)),
-              m_pen(pen), m_compKey(m_label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
+              m_pen(pen), m_compKey(m_label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX)),
+              m_labelPlacement(labelPlacement)
             {
+            }
+
+        /// @returns Where the label for the reference line is being shown.
+        [[nodiscard]]
+        ReferenceLabelPlacement GetLabelPlacement() const noexcept
+            {
+            return m_labelPlacement;
             }
 
         /// @private
@@ -118,6 +140,7 @@ namespace Wisteria::GraphItems
         wxPen m_pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
         // used by lambdas to sort by label and color (instead of axis position)
         wxString m_compKey;
+        ReferenceLabelPlacement m_labelPlacement{ ReferenceLabelPlacement::Legend };
         };
 
     /// @brief Draws two lines across the graph, showing reference values on its parent axis,

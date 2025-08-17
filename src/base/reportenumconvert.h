@@ -355,6 +355,22 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<ReferenceLabelPlacement>
+        ConvertReferenceLabelPlacement(const wxString& value)
+            {
+            static const std::map<std::wstring, ReferenceLabelPlacement> referenceLabelPlacement = {
+                { L"opposite-axis", ReferenceLabelPlacement::OppositeAxis },
+                { L"legend", ReferenceLabelPlacement::Legend }
+            };
+
+            const auto foundValue = referenceLabelPlacement.find(value.Lower().ToStdWstring());
+            return ((foundValue != referenceLabelPlacement.cend()) ?
+                        std::optional<ReferenceLabelPlacement>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<FlowShape> ConvertFlowShape(const wxString& value)
             {
             static const std::map<std::wstring, FlowShape> flowShapeValues = {

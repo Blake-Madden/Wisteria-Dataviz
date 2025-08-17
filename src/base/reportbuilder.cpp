@@ -5845,7 +5845,7 @@ namespace Wisteria
                     refLine->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
-                    wxPen pen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH);
+                    wxPen pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
                     LoadPen(refLine->GetProperty(L"pen"), pen);
 
                     auto& axis = (axisType == AxisType::BottomXAxis ? graph->GetBottomXAxis() :
@@ -5857,9 +5857,14 @@ namespace Wisteria
 
                     if (axisPos.has_value())
                         {
-                        graph->AddReferenceLine(
-                            ReferenceLine(axisType.value(), axisPos.value(),
-                                          refLine->GetProperty(L"label")->GetValueString(), pen));
+                        const auto labelPlacement =
+                            ReportEnumConvert::ConvertReferenceLabelPlacement(
+                                refLine->GetProperty(L"reference-label-placement")
+                                    ->GetValueString());
+                        graph->AddReferenceLine(ReferenceLine(
+                            axisType.value(), axisPos.value(),
+                            refLine->GetProperty(L"label")->GetValueString(), pen,
+                            labelPlacement.value_or(ReferenceLabelPlacement::Legend)));
                         }
                     }
                 }
