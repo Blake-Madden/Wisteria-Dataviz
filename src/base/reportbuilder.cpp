@@ -5848,12 +5848,9 @@ namespace Wisteria
                     wxPen pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
                     LoadPen(refLine->GetProperty(L"pen"), pen);
 
-                    auto& axis = (axisType == AxisType::BottomXAxis ? graph->GetBottomXAxis() :
-                                  axisType == AxisType::TopXAxis    ? graph->GetTopXAxis() :
-                                  axisType == AxisType::LeftYAxis   ? graph->GetLeftYAxis() :
-                                  axisType == AxisType::RightYAxis  ? graph->GetRightYAxis() :
-                                                                      graph->GetBottomXAxis());
-                    const auto axisPos = FindAxisPosition(axis, refLine->GetProperty(L"position"));
+                    const auto axisPos =
+                        FindAxisPosition(graph->GetAxis(axisType.value_or(AxisType::BottomXAxis)),
+                                         refLine->GetProperty(L"position"));
 
                     if (axisPos.has_value())
                         {
@@ -5887,14 +5884,10 @@ namespace Wisteria
                     refArea->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
-                    wxPen pen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH);
+                    wxPen pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
                     LoadPen(refArea->GetProperty(L"pen"), pen);
 
-                    auto& axis = (axisType == AxisType::BottomXAxis ? graph->GetBottomXAxis() :
-                                  axisType == AxisType::TopXAxis    ? graph->GetTopXAxis() :
-                                  axisType == AxisType::LeftYAxis   ? graph->GetLeftYAxis() :
-                                  axisType == AxisType::RightYAxis  ? graph->GetRightYAxis() :
-                                                                      graph->GetBottomXAxis());
+                    auto& axis = graph->GetAxis(axisType.value_or(AxisType::BottomXAxis));
 
                     ReferenceAreaStyle areaStyle{ ReferenceAreaStyle::Solid };
                     const auto foundPos = refAreaValues.find(std::wstring_view(
