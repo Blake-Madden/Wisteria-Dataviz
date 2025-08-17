@@ -988,8 +988,7 @@ namespace Wisteria::Graphs
             if (refLine.m_axisType == AxisType::LeftYAxis ||
                 refLine.m_axisType == AxisType::RightYAxis)
                 {
-                const auto& parentAxis =
-                    (refLine.m_axisType == AxisType::LeftYAxis ? GetLeftYAxis() : GetRightYAxis());
+                const auto& parentAxis = GetAxis(refLine.m_axisType);
                 if (parentAxis.GetPhysicalCoordinate(refLine.m_axisPosition, axisCoord))
                     {
                     dividerLine->AddLine(wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord),
@@ -1000,9 +999,7 @@ namespace Wisteria::Graphs
             else if (refLine.m_axisType == AxisType::BottomXAxis ||
                      refLine.m_axisType == AxisType::TopXAxis)
                 {
-                const auto& parentAxis =
-                    (refLine.m_axisType == AxisType::BottomXAxis ? GetBottomXAxis() :
-                                                                   GetTopXAxis());
+                const auto& parentAxis = GetAxis(refLine.m_axisType);
                 if (parentAxis.GetPhysicalCoordinate(refLine.m_axisPosition, axisCoord))
                     {
                     dividerLine->AddLine(wxPoint(axisCoord, GetLeftYAxis().GetBottomPoint().y),
@@ -1023,8 +1020,7 @@ namespace Wisteria::Graphs
             if (refArea.m_axisType == AxisType::LeftYAxis ||
                 refArea.m_axisType == AxisType::RightYAxis)
                 {
-                const auto& parentAxis =
-                    (refArea.m_axisType == AxisType::LeftYAxis ? GetLeftYAxis() : GetRightYAxis());
+                const auto& parentAxis = GetAxis(refArea.m_axisType);
                 if (parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition, axisCoord1) &&
                     parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition2, axisCoord2))
                     {
@@ -1081,9 +1077,7 @@ namespace Wisteria::Graphs
             else if (refArea.m_axisType == AxisType::BottomXAxis ||
                      refArea.m_axisType == AxisType::TopXAxis)
                 {
-                const auto& parentAxis =
-                    (refArea.m_axisType == AxisType::BottomXAxis ? GetBottomXAxis() :
-                                                                   GetTopXAxis());
+                const auto& parentAxis = GetAxis(refArea.m_axisType);
                 if (parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition, axisCoord1) &&
                     parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition2, axisCoord2))
                     {

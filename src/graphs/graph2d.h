@@ -119,8 +119,8 @@ namespace Wisteria::Graphs
                 not physical coordinates on the canvas.\n
                 Note that if one (or both) of the axes are date-based, you can call
                 GraphItems::Axis::FindDatePosition() to find its point to use here.\n
-                GraphItems::Axis::FindCustomLabelPosition() can also be used to locate a point along either axis
-                using a label.
+                GraphItems::Axis::FindCustomLabelPosition() can also be used to locate a point along
+           either axis using a label.
             @param interestPts An optional collection of points on the plot to draw a line from
                 this object's anchor point to.\n
                 These coordinates are relative to the plot's X and Y axes,
@@ -214,6 +214,26 @@ namespace Wisteria::Graphs
             return m_rightYAxis;
             }
 
+        /// @returns The axis with the provided type.
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetAxis(const AxisType axisType) noexcept
+            {
+            return (axisType == AxisType::BottomXAxis) ? GetBottomXAxis() :
+                   (axisType == AxisType::TopXAxis)    ? GetTopXAxis() :
+                   (axisType == AxisType::LeftYAxis)   ? GetLeftYAxis() :
+                                                         GetRightYAxis();
+            }
+
+        /// @returns The opposite axis from the provided type.
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetOppositeAxis(const AxisType axisType) noexcept
+            {
+            return (axisType == AxisType::BottomXAxis) ? GetTopXAxis() :
+                   (axisType == AxisType::TopXAxis)    ? GetBottomXAxis() :
+                   (axisType == AxisType::LeftYAxis)   ? GetRightYAxis() :
+                                                         GetLeftYAxis();
+            }
+
         /// @returns The custom axes.
         [[nodiscard]]
         std::vector<Wisteria::GraphItems::Axis>& GetCustomAxes() noexcept
@@ -269,8 +289,8 @@ namespace Wisteria::Graphs
 
         /** @brief Adds a reference line to draw across the graph.
             @details The parent axis and starting point are specified in the
-           GraphItems::ReferenceLine, and the graph will set the length of the line to be the full
-           length of the parallel axis for you.
+               GraphItems::ReferenceLine, and the graph will set the length of the line to be the
+               full length of the parallel axis for you.
             @param refLine The reference line to add.*/
         void AddReferenceLine(Wisteria::GraphItems::ReferenceLine refLine)
             {
