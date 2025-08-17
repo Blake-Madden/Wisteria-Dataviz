@@ -606,7 +606,7 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Specifies the text on the shape to render.
-            @param shp The text to draw.
+            @param text The text to draw.
             @returns A self reference.*/
         ShapeInfo& Text(const wxString text) noexcept
             {
