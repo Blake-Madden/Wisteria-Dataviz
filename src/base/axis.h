@@ -82,7 +82,7 @@ namespace Wisteria
 namespace Wisteria::GraphItems
     {
     /// @brief Draws a line across the graph, showing a reference value on its parent axis.
-    /// @details This is used by a Graph2D::AddReferenceLine().
+    /// @details This is used by a Graphs::Graph2D::AddReferenceLine().
     class ReferenceLine
         {
         friend class Wisteria::Graphs::Graph2D;
@@ -91,12 +91,13 @@ namespace Wisteria::GraphItems
         /// @brief Constructor.
         /// @param axisType The parent axis to anchor the line to.
         /// @param axisPosition Where on the parent axis to start the line.\n
-        ///     Note that `Axes::FindCustomLabelPosition()` or `Axes::FindDatePosition()`
+        ///     Note that Axis::FindCustomLabelPosition() or Axis::FindDatePosition()
         ///     can be used to find the position of a label.
         /// @param label The label to describe what the line represents.
         /// @param pen The pen to use for the line.
         ReferenceLine(const AxisType axisType, const double axisPosition, wxString label,
-                      const wxPen& pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH))
+                      const wxPen& pen = wxPen{ *wxLIGHT_GREY, 1,
+                                                wxPenStyle::wxPENSTYLE_LONG_DASH })
             : m_axisType(axisType), m_axisPosition(axisPosition), m_label(std::move(label)),
               m_pen(pen), m_compKey(m_label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
             {
@@ -121,8 +122,8 @@ namespace Wisteria::GraphItems
 
     /// @brief Draws two lines across the graph, showing reference values on its parent axis,
     ///     and fills in the area between them with a color. An example of this could be adding
-    ///     a recession to a financial plot.
-    /// @details This is used by Graph2D::AddReferenceArea().
+    ///     a recession to a financial chart.
+    /// @details This is used by Graphs::Graph2D::AddReferenceArea().
     class ReferenceArea : public ReferenceLine
         {
         friend class Wisteria::Graphs::Graph2D;
@@ -131,7 +132,7 @@ namespace Wisteria::GraphItems
         /// @brief Constructor.
         /// @param axisType The parent axis to anchor the line to.
         /// @param axisPosition1 Where on the parent axis to start the area.\n
-        ///     Note that `Axes::FindCustomLabelPosition()` or `Axes::FindDatePosition()`
+        ///     Note that Axis::FindCustomLabelPosition() or Axis::FindDatePosition()
         ///     can be used to find the position of a label.
         /// @param axisPosition2 Where on the parent axis to end the area.
         /// @param label The label to describe what the line represents.
@@ -139,7 +140,8 @@ namespace Wisteria::GraphItems
         /// @param refAreaStyle The visual style of the reference area.
         ReferenceArea(const AxisType axisType, const double axisPosition1,
                       const double axisPosition2, const wxString& label,
-                      const wxPen& pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH),
+                      const wxPen& pen = wxPen{ *wxLIGHT_GREY, 1,
+                                                wxPenStyle::wxPENSTYLE_LONG_DASH },
                       const ReferenceAreaStyle refAreaStyle = ReferenceAreaStyle::Solid)
             : ReferenceLine(axisType, axisPosition1, label, pen), m_refAreaStyle(refAreaStyle),
               m_axisPosition2(axisPosition2)

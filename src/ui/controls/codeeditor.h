@@ -24,7 +24,7 @@
 /// @brief Namespace for code/formula parsing and editing.
 namespace Wisteria::UI
     {
-    /** @brief A @c wxStyledTextCtrl-derived editor designed for code editing.
+    /** @brief A `wxStyledTextCtrl`-derived editor designed for code editing.
 
         You can specify a code language via SetLanguage(), and the editor
         will handle loading that language's keywords, lexer, highlighting,

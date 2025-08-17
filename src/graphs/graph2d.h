@@ -118,8 +118,8 @@ namespace Wisteria::Graphs
                 These coordinates are relative to the plot's X and Y axes,
                 not physical coordinates on the canvas.\n
                 Note that if one (or both) of the axes are date-based, you can call
-                @c FindDatePosition() to find its point to use here.\n
-                @c FindCustomLabelPosition() can also be used to locate a point along either axis
+                GraphItems::Axis::FindDatePosition() to find its point to use here.\n
+                GraphItems::Axis::FindCustomLabelPosition() can also be used to locate a point along either axis
                 using a label.
             @param interestPts An optional collection of points on the plot to draw a line from
                 this object's anchor point to.\n
@@ -128,7 +128,7 @@ namespace Wisteria::Graphs
                 For example, this can draw a line from a data point to an annotation.
             @note This is intended as a way for the client to add a custom object on
                 top of the plot.
-                An example would be inserting a @c Label as a sticky note.*/
+                An example would be inserting a GraphItems::Label as a sticky note.*/
         void
         AddAnnotation(std::shared_ptr<GraphItems::GraphItemBase> object, const wxPoint2DDouble pt,
                       std::vector<wxPoint2DDouble> interestPts = std::vector<wxPoint2DDouble>{})
@@ -268,9 +268,9 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Adds a reference line to draw across the graph.
-            @details The parent axis and starting point are specified in the @c ReferenceLine,
-                and the graph will set the length of the line to be the full length of the
-                parallel axis for you.
+            @details The parent axis and starting point are specified in the
+           GraphItems::ReferenceLine, and the graph will set the length of the line to be the full
+           length of the parallel axis for you.
             @param refLine The reference line to add.*/
         void AddReferenceLine(Wisteria::GraphItems::ReferenceLine refLine)
             {
@@ -303,8 +303,8 @@ namespace Wisteria::Graphs
         void SetStippleBrush(const wxBitmapBundle& image) noexcept { m_stipple = image; }
 
         /// @brief Gets the stipple brush.
-        /// @returns The image that is being used to paint with, or null if one
-        ///     hasn't been specified.
+        /// @returns The image that is being used to paint with. Note that this image will be
+        ///     invalid if one hasn't been specified.
         [[nodiscard]]
         const wxBitmapBundle& GetStippleBrush() const noexcept
             {
@@ -399,7 +399,8 @@ namespace Wisteria::Graphs
         ///     (e.g., bar charts, box plots).
         /// @param outlineColor The outline color of the bars/boxes if common image
         ///     is in effect.
-        /// @note This effect will only apply to bars/boxes using the @c CommonImage effect.\n
+        /// @note This effect will only apply to bars/boxes using the BoxEffect::CommonImage
+        /// effect.\n
         ///     If the image is smaller than the plot area, then it will not be used
         ///     and the bars/boxes will fall back to using a solid color.\n
         ///     Also, the image used will be the first image in the image scheme, so
@@ -464,16 +465,16 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the list of images to connect to the plot.
             @param imageScheme The image scheme to use.
-            @note If using the @c CommonImage effect for bar charts or box plots, the first
+            @note If using the BoxEffect::CommonImage effect for bar charts or box plots, the first
                 image in this scheme will be used.\n
-                For the @c Image effect, the bars/boxes' position on the graph will be the
+                For the BoxEffect::Image effect, the bars/boxes' position on the graph will be the
                 index in the image scheme. For example, the first bar will use the first image,
                 the second bar the second image, etc. Also, if a bar is using grouping, the same
                 image will be used for each block within the bar. This option is preferable to
-                @c Stipple when you are wanting different images for different bars
-                It can also be preferable to @c Stipple when using photographs (instead of icons)
-                as the @c Stipple will scale the image to fit, whereas @c Image will crop
-                and center the image.
+                BoxEffect::StippleImage when you are wanting different images for different bars
+                It can also be preferable to BoxEffect::StippleImage when using photographs
+                (instead of icons) as the BoxEffect::StippleImage will scale the image to fit,
+                whereas BoxEffect::Image will crop and center the image.
             @sa SetCommonBoxImageOutlineColor(), BoxPlot::SetBoxEffect(),
            BarChart::SetBarEffect().*/
         void
@@ -771,7 +772,7 @@ namespace Wisteria::Graphs
             @param yValue The y value of the point.
             @param[out] resultPt The coordinate on the canvas where the point is at.
                 If the point is not within the plot (i.e., the x or y value is outside the axes),
-                then this will be (-1,-1).
+                then this will be `(-1,-1)`.
             @returns @c true if the point could be found within the plot.*/
         bool GetPhysicalCoordinates(const double xValue, const double yValue,
                                     wxPoint& resultPt) const
@@ -790,7 +791,7 @@ namespace Wisteria::Graphs
             @param point The point to search for.
             @param[out] resultPt The coordinate on the canvas where the point is at.
                 If the point is not within the plot (i.e., the x or y value is outside the axes),
-                then this will be (-1,-1).
+                then this will be `(-1,-1)`.
             @returns @c true if the point could be found within the plot.*/
         bool GetPhysicalCoordinates(const wxPoint& point, wxPoint& resultPt) const
             {
