@@ -52,17 +52,11 @@ book:
       chapters:
       - notes.qmd 
 format:
-  pdf:
-    documentclass: book
-    template: latex/default.tex
-    include-in-header: latex/preamble.tex
-    latex-engine: xelatex
-    keep-tex: true
-    citation-package: biblatex
-    lot: true
-    code-block-bg: false
   html:
-    theme: cosmo
+    theme:
+      light: flatly
+      dark: darkly
     html-math-method: katex
     css: style.css
     smooth-scroll: true
+    respect-user-color-scheme: true
