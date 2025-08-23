@@ -3109,11 +3109,9 @@ namespace html_utilities
             {
             return image_name;
             }
-        const auto foundPos =
-            std::ranges::search(std::as_const(url), std::as_const(PHP_IMAGE),
-                                [](const wchar_t lhv, const wchar_t rhv)
-                                { return std::towlower(lhv) == std::towlower(rhv); })
-                .begin();
+        const auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(),
+                                          PHP_IMAGE.cend(), [](wchar_t lhv, wchar_t rhv)
+                                          { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + PHP_IMAGE.length());
@@ -3147,11 +3145,9 @@ namespace html_utilities
             }
         // move to after the "www." or (if not there) the start of the url
         // (note that this needs to be case-insensitive, hence the std::search)
-        const auto* foundPos =
-            std::ranges::search(std::as_const(url), std::as_const(WWW),
-                                [](const wchar_t lhv, const wchar_t rhv)
-                                { return std::towlower(lhv) == std::towlower(rhv); })
-                .begin();
+        const auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
+                                          [](wchar_t lhv, wchar_t rhv)
+                                          { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + WWW.length());
