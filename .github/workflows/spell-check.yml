@@ -1,21 +1,26 @@
-name: Spell Check (codespell)
+name: Spell Check
 on: [push, pull_request]
+permissions:
+  contents: read
+env:
+  CLICOLOR: 1
 
 jobs:
-  check-unix:
+  typos:
+    name: Spell Check with Typos & codespell
     runs-on: ubuntu-latest
-    name: Check Spelling
-    permissions:
-      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install codespell
-        run: |
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Run Typos
+      uses: crate-ci/typos@v1.35.1
+      with:
+        config: ./.typos.toml
+    - name: Install codespell
+      run: |
           pip install codespell
-      - name: Run codespell
-        run: |
+    - name: Run codespell
+      run: |
           codespell src/ *.md -L berkley,currenty,lightening,pard,ment,ue,oder,fallow,headerr,curren,fo,notin,bale
           rc=$?
           if [ $rc != 0 ]; then
@@ -31,3 +36,4 @@ jobs:
           >& 2
               exit $rc
           fi
+ 
