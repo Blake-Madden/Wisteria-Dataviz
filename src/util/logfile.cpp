@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "logfile.h"
+#include "donttranslate.h"
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -87,18 +88,17 @@ void LogFile::DoLogTextAtLevel(wxLogLevel level, const wxString& msg)
     case wxLOG_Debug:
         [[fallthrough]];
     case wxLOG_Trace:
-        // don't expose these for translation;
-        // log messages are usually only needed for developers,
-        // so translating them causes more problems than it solves
-        prefix = L"\U0001F41E Debug: ";
+        prefix = _DT(L"\U0001F41E Debug: ", DTExplanation::LogMessage,
+                     L"Don't expose these for translation; log messages are usually only needed "
+                     "for developers, so translating them causes more problems than it solves");
         break;
     case wxLOG_FatalError:
         [[fallthrough]];
     case wxLOG_Error:
-        prefix = L"\U00002757 Error: ";
+        prefix = _DT(L"\U00002757 Error: ");
         break;
     case wxLOG_Warning:
-        prefix = L"\u26A0 Warning: ";
+        prefix = _DT(L"\u26A0 Warning: ");
         break;
     default:
         prefix.clear();
@@ -107,7 +107,7 @@ void LogFile::DoLogTextAtLevel(wxLogLevel level, const wxString& msg)
     }
 
 //--------------------------------------------------
-void LogFile::DoLogRecord(wxLogLevel level, const wxString& msg, const wxLogRecordInfo& info)
+void LogFile::DoLogRecord(const wxLogLevel level, const wxString& msg, const wxLogRecordInfo& info)
     {
     wxString prefix;
     switch (level)
@@ -115,22 +115,23 @@ void LogFile::DoLogRecord(wxLogLevel level, const wxString& msg, const wxLogReco
     case wxLOG_Debug:
         [[fallthrough]];
     case wxLOG_Trace:
-        prefix = L"\U0001F41E Debug: ";
+        prefix = _DT(L"\U0001F41E Debug: ");
         break;
     case wxLOG_FatalError:
         [[fallthrough]];
     case wxLOG_Error:
-        prefix = L"\U00002757 Error: ";
+        prefix = _DT(L"\U00002757 Error: ");
         break;
     case wxLOG_Warning:
-        prefix = L"\u26A0 Warning: ";
+        prefix = _DT(L"\u26A0 Warning: ");
         break;
     default:
         prefix.clear();
         }
     m_buffer += wxString::Format(
-        L"%s%s\t%s\t%s\t%s: line %d\n", prefix, msg,
+        _DT(L"%s%s\t%s\t%s\t%s: line %d\n"), prefix, msg,
         wxDateTime(static_cast<wxLongLong>(info.timestampMS)).FormatISOCombined(' '),
-        (info.func ? wxString(info.func) : wxString(L"N/A")),
-        (info.filename ? wxFileName(info.filename).GetFullName() : wxString(L"N/A")), info.line);
+        (info.func ? wxString(info.func) : wxString(_DT(L"N/A"))),
+        (info.filename ? wxFileName(info.filename).GetFullName() : wxString(_DT(L"N/A"))),
+        info.line);
     }
