@@ -12,7 +12,7 @@
 #ifndef MEMMAPPEDFILE_H
 #define MEMMAPPEDFILE_H
 
-#ifndef __WXMSW__
+#ifdef __UNIX__
     #include <sys/fcntl.h>
     #include <sys/mman.h>
     #include <sys/types.h>
