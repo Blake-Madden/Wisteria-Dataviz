@@ -12,7 +12,7 @@
 #ifndef MEMMAPPEDFILE_H
 #define MEMMAPPEDFILE_H
 
-#ifdef __UNIX__
+#if defined(__UNIX__) || defined(__APPLE__)
     #include <sys/fcntl.h>
     #include <sys/mman.h>
     #include <sys/types.h>

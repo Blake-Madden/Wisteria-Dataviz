@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "html_extract_text.h"
+#include <ranges>
 
 using namespace string_util;
 using namespace lily_of_the_valley;
