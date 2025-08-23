@@ -262,7 +262,7 @@ TEST_CASE("Markdown Parser Styling", "[md import]")
               std::wstring{ L"Formalize the routine, use a top-down approach." });
         }
 
-    SECTION("Blockquoes")
+    SECTION("Block quotes")
         {
         lily_of_the_valley::markdown_extract_text md;
         CHECK(std::wstring{ md({ L"> This is a quote\n\n>\n\n> End of Quote" }) } ==
@@ -306,7 +306,7 @@ TEST_CASE("Markdown Parser Header", "[md import]")
     SECTION("Null")
         {
         lily_of_the_valley::markdown_extract_text md;
-        CHECK(md.has_metadata_section(nullptr) == false);
+        CHECK_FALSE(md.has_metadata_section({L""}));
         CHECK(md.find_metadata_section_end(nullptr) == nullptr);
         CHECK(md({ L"some MD text", 0 }) == nullptr);
         }
