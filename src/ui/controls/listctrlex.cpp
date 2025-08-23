@@ -2643,7 +2643,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             }
 
         wxBusyCursor wait;
-        Save(filePath, exportOptionsDlg.GetExportOptions());
+        if (!Save(filePath, exportOptionsDlg.GetExportOptions()))
+            {
+            wxMessageBox(_(L"Unable to save list."), _(L"Export Error"), wxOK | wxICON_EXCLAMATION);
+            }
         }
 
     //------------------------------------------------------

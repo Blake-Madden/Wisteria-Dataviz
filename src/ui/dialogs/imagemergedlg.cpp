@@ -131,13 +131,19 @@ namespace Wisteria::UI
 
                 if (m_orientRadio == 0)
                     {
-                    Wisteria::GraphItems::Image::StitchHorizontally(images).SaveFile(
-                        m_mergedFilePath);
+                    if (!Wisteria::GraphItems::Image::StitchHorizontally(images).SaveFile(
+                            m_mergedFilePath))
+                        {
+                        wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
+                        }
                     }
                 else
                     {
-                    Wisteria::GraphItems::Image::StitchVertically(images).SaveFile(
-                        m_mergedFilePath);
+                    if (!Wisteria::GraphItems::Image::StitchVertically(images).SaveFile(
+                            m_mergedFilePath))
+                        {
+                        wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
+                        }
                     }
 
                 if (IsModal())
