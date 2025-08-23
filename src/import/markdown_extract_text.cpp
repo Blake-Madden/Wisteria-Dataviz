@@ -149,7 +149,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     m_currentEndSentinel = md_text.data() + md_text.length();
 
     const wchar_t* metaEnd{ nullptr };
-    if (has_metadata_section(m_currentStart))
+    if (has_metadata_section(md_text))
         {
         metaEnd = find_metadata_section_end(m_currentStart);
         }
@@ -164,21 +164,21 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
         return m_currentEndSentinel;
         }
 
-    const std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
-    const std::wstring_view BEGIN_FIGURE{ L"\\begin{figure}" };
-    const std::wstring_view END_FIGURE{ L"\\end{figure}" };
+    constexpr std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
+    constexpr std::wstring_view BEGIN_FIGURE{ L"\\begin{figure}" };
+    constexpr std::wstring_view END_FIGURE{ L"\\end{figure}" };
 
-    const std::wstring_view TABLE{ L"table" };
-    const std::wstring_view TABLE_END{ L"</table>" };
+    constexpr std::wstring_view TABLE{ L"table" };
+    constexpr std::wstring_view TABLE_END{ L"</table>" };
 
-    const std::wstring_view UNORDERED_LIST{ L"ul" };
-    const std::wstring_view UNORDERED_LIST_END{ L"</ul>" };
+    constexpr std::wstring_view UNORDERED_LIST{ L"ul" };
+    constexpr std::wstring_view UNORDERED_LIST_END{ L"</ul>" };
 
-    const std::wstring_view ORDERED_LIST{ L"ol" };
-    const std::wstring_view ORDERED_LIST_END{ L"</ol>" };
+    constexpr std::wstring_view ORDERED_LIST{ L"ol" };
+    constexpr std::wstring_view ORDERED_LIST_END{ L"</ol>" };
 
-    const std::wstring_view SUP{ L"sup" };
-    const std::wstring_view SUP_END{ L"</sup>" };
+    constexpr std::wstring_view SUP{ L"sup" };
+    constexpr std::wstring_view SUP_END{ L"</sup>" };
 
     bool isEscaping{ false };
     bool headerMode{ false };
@@ -432,7 +432,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             // verbatim (inline) code
             else if (!isEscaping)
                 {
-                // RMarkdown code should left as-is, but with the 'r' prefix removed
+                // RMarkdown code should be left as-is, but with the 'r' prefix removed
                 // (or processed for known functions)
                 if (std::wcsncmp(m_currentStart, L"`r keys(", 8) == 0)
                     {
@@ -498,7 +498,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                             std::distance(m_currentStart, m_currentEndSentinel));
                         if (endOfTag == nullptr || (endOfTag >= m_currentEndSentinel))
                             {
-                            log_message(L"Bad 'r dropcap' code block in markdown file.");
+                            log_message(L"Bad 'r drop cap' code block in markdown file.");
                             break;
                             }
                         [[maybe_unused]]
@@ -521,7 +521,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                             std::distance(m_currentStart, m_currentEndSentinel));
                         if (endOfTag == nullptr || (endOfTag >= m_currentEndSentinel))
                             {
-                            log_message(L"Bad 'r dropcap' code block in markdown file.");
+                            log_message(L"Bad 'r drop cap' code block in markdown file.");
                             break;
                             }
                         m_currentStart = ++endOfTag;
@@ -929,21 +929,21 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                 }
 
             auto scanAhead{ m_currentStart };
-            size_t leadingScaces{ 0 };
+            size_t leadingSpaces{ 0 };
             while ((scanAhead < m_currentEndSentinel) &&
                    (*scanAhead == L' ' || *scanAhead == L'\t'))
                 {
                 ++scanAhead;
-                ++leadingScaces;
+                ++leadingSpaces;
                 }
             if (newlineCount == 1 && headerMode)
                 {
                 add_characters(L"\n\n");
                 previousChar = L'\n';
                 }
-            // next line starts a list item, quoteblock, table, etc., so keep the newline as-is
+            // next line starts a list item, quote block, table, etc., so keep the newline as-is
             else if (newlineCount == 1 &&
-                     (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingScaces >= 4))
+                     (string_util::is_one_of(*scanAhead, L">-*+|:^") || leadingSpaces >= 4))
                 {
                 fill_with_character(newlineCount, L'\n');
                 previousChar = L'\n';

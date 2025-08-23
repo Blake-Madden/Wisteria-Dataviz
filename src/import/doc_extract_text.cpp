@@ -1324,9 +1324,9 @@ namespace lily_of_the_valley
             cfbObj->m_stream_offset = get_offset(cfbObj, sectorCount);
             cfbObj->seek(static_cast<long>(cfbObj->m_stream_offset),
                          cfb_iostream::cfb_stream_seek_type::seek_beg);
-            const auto readbytes = cfbObj->read(static_cast<char*>(buffer) + readSize, bytesToRead);
-            readSize += readbytes;
-            cfbObj->m_stream_offset += readbytes;
+            const auto readBytes = cfbObj->read(static_cast<char*>(buffer) + readSize, bytesToRead);
+            readSize += readBytes;
+            cfbObj->m_stream_offset += readBytes;
             }
 
         cfbObj->m_internal_offset += readSize;

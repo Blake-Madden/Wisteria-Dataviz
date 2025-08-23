@@ -106,9 +106,9 @@ namespace lily_of_the_valley
                 {
                 return false;
                 }
-            const auto foundPos =
-                std::find_if(text.cbegin(), text.cend(), [](const auto& ch) noexcept
-                             { return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t")); });
+            const auto foundPos = std::ranges::find_if(
+                text, [](const auto& ch) noexcept
+                { return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t")); });
             return (foundPos != text.cend());
             }
         };

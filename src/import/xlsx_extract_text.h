@@ -13,7 +13,6 @@
 #define XLSX_TEXT_EXTRACT_H
 
 #include "html_extract_text.h"
-#include <cmath>
 #include <sstream>
 #include <vector>
 
@@ -246,9 +245,8 @@ namespace lily_of_the_valley
             @returns The cell's textual content.*/
         [[nodiscard]]
         std::wstring get_cell_text(const wchar_t* cell_name, const wchar_t* shared_strings,
-                                   const size_t shared_strings_length,
-                                   const wchar_t* worksheet_text,
-                                   const size_t worksheet_length) const;
+                                   size_t shared_strings_length, const wchar_t* worksheet_text,
+                                   size_t worksheet_length) const;
 
         /** @brief Retrieves a list of cells in the worksheet that has text in them.
             @param wrk The worksheet to review.
@@ -273,7 +271,7 @@ namespace lily_of_the_valley
             @note It is recommended to set remove_newlines_and_tabs_when_reading() to @c true
                 before calling this.*/
         [[nodiscard]]
-        static std::wstring get_worksheet_text(const worksheet& wrk, const wchar_t delim = L'\t');
+        static std::wstring get_worksheet_text(const worksheet& wrk, wchar_t delim = L'\t');
 
         /** @brief Main interface for extracting plain text from an Excel worksheet.
             @note Call read_shared_strings() and read_styles() beforehand so that the
@@ -283,7 +281,7 @@ namespace lily_of_the_valley
             @param text_length The length of the text.
             @param[out] data The data matrix (worksheet) to copy the sheet text into.
             @sa get_worksheet_text().*/
-        void operator()(const wchar_t* html_text, const size_t text_length, worksheet& data);
+        void operator()(const wchar_t* html_text, size_t text_length, worksheet& data);
 
         /** @brief Retrieves the string table from the `xl/sharedStrings.xml` file.
             @param text The content of `xl/sharedStrings.xml`.
@@ -291,18 +289,17 @@ namespace lily_of_the_valley
             @param truncate Whether to truncate the labels to 256 characters.\n
                 This is useful if doing a preview of the file and you don't need the
                 full text of each cell loaded into memory.*/
-        void read_shared_strings(const wchar_t* text, const size_t text_length,
-                                 const bool truncate = false);
+        void read_shared_strings(const wchar_t* text, size_t text_length, bool truncate = false);
 
         /** @brief Retrieves the number formatting styles from the `xl/styles.xml` file.
             @param text The content of `xl/styles.xml`.
             @param text_length The length of the text.*/
-        void read_styles(const wchar_t* text, const size_t text_length);
+        void read_styles(const wchar_t* text, size_t text_length);
 
         /** @brief Retrieves the worksheet names from the `xl/workbook.xml` file.
             @param text The content of `xl/workbook.xml`.
             @param text_length The length of the text.*/
-        void read_worksheet_names(const wchar_t* text, const size_t text_length);
+        void read_worksheet_names(const wchar_t* text, size_t text_length);
 
         /** @returns The list of worksheet names in the Excel file.
             @note You must call read_worksheet_names() first to load these names.*/
@@ -356,7 +353,7 @@ namespace lily_of_the_valley
 
         /** @returns The column name from a column index (1-indexed).
             @param col The column number.
-            @returns The name of the column. For example, @c 30 will return "AD").*/
+            @returns The name of the column. For example, @c 30 will return "AD".*/
         [[nodiscard]]
         static std::wstring column_index_to_column_name(size_t col);
         /** @brief Parses a cell reference and returns the column name,
@@ -384,8 +381,7 @@ namespace lily_of_the_valley
             @returns The string at the given index of the string table,
                 or empty string if not found.*/
         [[nodiscard]]
-        std::wstring get_shared_string(const size_t index, const wchar_t* text,
-                                       const size_t text_length) const;
+        std::wstring get_shared_string(size_t index, const wchar_t* text, size_t text_length) const;
 
         /** @brief Splits a cell name into the column name and row number.
             @param cell_name The cell name (e.g., "A2").

@@ -13,7 +13,6 @@
 #define TEXT_ROW_H
 
 #include "text_column.h"
-#include <cassert>
 #include <utility>
 #include <vector>
 
@@ -28,14 +27,14 @@ namespace lily_of_the_valley
         /// @param repeat_count How many times this row definition should be repeated by
         ///     the parent parser.\n
         ///     Set to @c std::nullopt to repeat the row until the end of file is reached.
-        explicit text_row(std::optional<size_t> repeat_count = std::nullopt) noexcept
+        explicit text_row(const std::optional<size_t> repeat_count = std::nullopt) noexcept
             : m_repeat_count(repeat_count)
             {
             }
 
         /// @brief Assigns the container of strings that we will write to.
         /// @param values Where the strings will be written to.
-        inline void set_values(std::vector<string_typeT>* values) noexcept
+        void set_values(std::vector<string_typeT>* values) noexcept
             {
             m_values = values;
             m_single_value = nullptr;
@@ -43,7 +42,7 @@ namespace lily_of_the_valley
 
         /// @brief Assigns the string that we will write to (this assumes a single column dataset).
         /// @param value Where the single value will be written to.
-        inline void set_single_value(string_typeT* value) noexcept
+        void set_single_value(string_typeT* value) noexcept
             {
             m_single_value = value;
             m_values = nullptr;
@@ -71,7 +70,7 @@ namespace lily_of_the_valley
 
         /// @returns Whether the row may have an unknown number of columns before parsing.
         [[nodiscard]]
-        inline bool is_column_resizing_enabled() const noexcept
+        bool is_column_resizing_enabled() const noexcept
             {
             return m_allow_column_values_resizing;
             }
@@ -79,7 +78,7 @@ namespace lily_of_the_valley
         /// @brief Adds a column that looks for a standard character delimiter
         ///     (space, semicolon, or comma).
         /// @param column The column definition to add.
-        inline void add_column(text_column<text_column_standard_delimiter_parser>& column)
+        void add_column(text_column<text_column_standard_delimiter_parser>& column)
             {
             m_standard_delimiter_columns.push_back(column);
             m_column_indices.push_back(std::make_pair(column_type::standard_delimiter,
@@ -93,7 +92,7 @@ namespace lily_of_the_valley
 
         /// @brief Adds a column that looks for a single character delimiter.
         /// @param column The column definition to add.
-        inline void add_column(text_column<text_column_delimited_character_parser>& column)
+        void add_column(text_column<text_column_delimited_character_parser>& column)
             {
             m_delimited_character_columns.push_back(column);
             m_column_indices.push_back(std::make_pair(column_type::delimited_character,
@@ -108,7 +107,7 @@ namespace lily_of_the_valley
         /// @brief Adds a column that looks for a single character delimiter from
         ///     a list of characters.
         /// @param column The column definition to add.
-        inline void add_column(text_column<text_column_delimited_multiple_character_parser>& column)
+        void add_column(text_column<text_column_delimited_multiple_character_parser>& column)
             {
             m_delimited_multiple_character_columns.push_back(column);
             m_column_indices.push_back(
@@ -123,7 +122,7 @@ namespace lily_of_the_valley
 
         /// @brief Adds a column that simply reads to the end of the line.
         /// @param column The column definition to add.
-        inline void add_column(text_column<text_column_to_eol_parser>& column)
+        void add_column(text_column<text_column_to_eol_parser>& column)
             {
             m_to_eol_columns.push_back(column);
             m_column_indices.push_back(
@@ -137,7 +136,7 @@ namespace lily_of_the_valley
 
         /// @brief Adds a column that is of fixed width.
         /// @param column The column definition to add.
-        inline void add_column(text_column<text_column_fixed_parser>& column)
+        void add_column(text_column<text_column_fixed_parser>& column)
             {
             m_fixed_width_columns.push_back(column);
             m_column_indices.push_back(
@@ -153,7 +152,7 @@ namespace lily_of_the_valley
         ///     This can be @c false if all column parsers are meant to simply skip, essentially
         ///     reading in nothing for this row.
         [[nodiscard]]
-        inline bool is_reading_text() const noexcept
+        bool is_reading_text() const noexcept
             {
             return m_read_text;
             }
@@ -251,30 +250,27 @@ namespace lily_of_the_valley
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
                                 }
-                            else
+                            previousPosition =
+                                trim(previousPosition, currentPosition - previousPosition);
+                            if (previousPosition == nullptr)
                                 {
-                                previousPosition =
-                                    trim(previousPosition, currentPosition - previousPosition);
-                                if (previousPosition == nullptr)
-                                    {
-                                    return nullptr;
-                                    }
-                                if (m_values)
-                                    {
-                                    m_values->at(currentColumnIndex)
-                                        .assign(previousPosition, trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
-                                    ++currentColumnIndex;
-                                    }
-                                else if (is_reading_single_column())
-                                    {
-                                    m_single_value->assign(previousPosition,
-                                                           trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(*m_single_value);
-                                    ++currentColumnIndex;
-                                    }
-                                ++m_number_of_columns_last_read;
+                                return nullptr;
                                 }
+                            if (m_values != nullptr)
+                                {
+                                m_values->at(currentColumnIndex)
+                                    .assign(previousPosition, trim.get_trimmed_string_length());
+                                cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                ++currentColumnIndex;
+                                }
+                            else if (is_reading_single_column())
+                                {
+                                m_single_value->assign(previousPosition,
+                                                       trim.get_trimmed_string_length());
+                                cellQuoteCollapse(*m_single_value);
+                                ++currentColumnIndex;
+                                }
+                            ++m_number_of_columns_last_read;
                             }
                         if (currentPosition == nullptr)
                             {
@@ -287,12 +283,9 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
-                        else if (currentPosition[0] == 0)
+                        if (currentPosition[0] == 0)
                             {
                             return nullptr;
                             }
@@ -353,10 +346,7 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -370,7 +360,7 @@ namespace lily_of_the_valley
                                     {
                                     return nullptr;
                                     }
-                                if (m_values)
+                                if (m_values != nullptr)
                                     {
                                     m_values->at(currentColumnIndex++).assign(previousPosition);
                                     }
@@ -381,30 +371,27 @@ namespace lily_of_the_valley
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
                                 }
-                            else
+                            previousPosition =
+                                trim(previousPosition, currentPosition - previousPosition);
+                            if (previousPosition == nullptr)
                                 {
-                                previousPosition =
-                                    trim(previousPosition, currentPosition - previousPosition);
-                                if (previousPosition == nullptr)
-                                    {
-                                    return nullptr;
-                                    }
-                                if (m_values)
-                                    {
-                                    m_values->at(currentColumnIndex)
-                                        .assign(previousPosition, trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
-                                    ++currentColumnIndex;
-                                    }
-                                else if (is_reading_single_column())
-                                    {
-                                    m_single_value->assign(previousPosition,
-                                                           trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(*m_single_value);
-                                    ++currentColumnIndex;
-                                    }
-                                ++m_number_of_columns_last_read;
+                                return nullptr;
                                 }
+                            if (m_values != nullptr)
+                                {
+                                m_values->at(currentColumnIndex)
+                                    .assign(previousPosition, trim.get_trimmed_string_length());
+                                cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                ++currentColumnIndex;
+                                }
+                            else if (is_reading_single_column())
+                                {
+                                m_single_value->assign(previousPosition,
+                                                       trim.get_trimmed_string_length());
+                                cellQuoteCollapse(*m_single_value);
+                                ++currentColumnIndex;
+                                }
+                            ++m_number_of_columns_last_read;
                             }
                         if (currentPosition == nullptr)
                             {
@@ -417,12 +404,9 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
-                        else if (currentPosition[0] == 0)
+                        if (currentPosition[0] == 0)
                             {
                             return nullptr;
                             }
@@ -455,7 +439,7 @@ namespace lily_of_the_valley
                            vector properly. By default, we won't resize it for them either,
                            because then the greater text matrix will wind up being a jagged array.
                            Enable column count resizing to change that.*/
-                        if (m_values)
+                        if (m_values != nullptr)
                             {
                             if (currentColumnIndex >= m_values->size())
                                 {
@@ -484,10 +468,7 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
                         // if this parser is NOT set to skip the column's text, then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -499,7 +480,7 @@ namespace lily_of_the_valley
                                     {
                                     return nullptr;
                                     }
-                                if (m_values)
+                                if (m_values != nullptr)
                                     {
                                     m_values->at(currentColumnIndex++).assign(previousPosition);
                                     }
@@ -510,30 +491,27 @@ namespace lily_of_the_valley
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
                                 }
-                            else
+                            previousPosition =
+                                trim(previousPosition, currentPosition - previousPosition);
+                            if (previousPosition == nullptr)
                                 {
-                                previousPosition =
-                                    trim(previousPosition, currentPosition - previousPosition);
-                                if (previousPosition == nullptr)
-                                    {
-                                    return nullptr;
-                                    }
-                                if (m_values)
-                                    {
-                                    m_values->at(currentColumnIndex)
-                                        .assign(previousPosition, trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
-                                    ++currentColumnIndex;
-                                    }
-                                else if (is_reading_single_column())
-                                    {
-                                    m_single_value->assign(previousPosition,
-                                                           trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(*m_single_value);
-                                    ++currentColumnIndex;
-                                    }
-                                ++m_number_of_columns_last_read;
+                                return nullptr;
                                 }
+                            if (m_values != nullptr)
+                                {
+                                m_values->at(currentColumnIndex)
+                                    .assign(previousPosition, trim.get_trimmed_string_length());
+                                cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                ++currentColumnIndex;
+                                }
+                            else if (is_reading_single_column())
+                                {
+                                m_single_value->assign(previousPosition,
+                                                       trim.get_trimmed_string_length());
+                                cellQuoteCollapse(*m_single_value);
+                                ++currentColumnIndex;
+                                }
+                            ++m_number_of_columns_last_read;
                             }
                         if (currentPosition == nullptr)
                             {
@@ -546,12 +524,9 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
-                        else if (currentPosition[0] == 0)
+                        if (currentPosition[0] == 0)
                             {
                             return nullptr;
                             }
@@ -583,7 +558,7 @@ namespace lily_of_the_valley
                            vector properly. By default, we won't resize it for them either,
                            because then the greater text matrix will wind up being a jagged array.
                            Enable column count resizing to change that.*/
-                        if (m_values)
+                        if (m_values != nullptr)
                             {
                             if (currentColumnIndex >= m_values->size())
                                 {
@@ -612,10 +587,7 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -627,7 +599,7 @@ namespace lily_of_the_valley
                                     {
                                     return nullptr;
                                     }
-                                if (m_values)
+                                if (m_values != nullptr)
                                     {
                                     m_values->at(currentColumnIndex++).assign(previousPosition);
                                     }
@@ -638,30 +610,27 @@ namespace lily_of_the_valley
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
                                 }
-                            else
+                            previousPosition =
+                                trim(previousPosition, currentPosition - previousPosition);
+                            if (previousPosition == nullptr)
                                 {
-                                previousPosition =
-                                    trim(previousPosition, currentPosition - previousPosition);
-                                if (previousPosition == nullptr)
-                                    {
-                                    return nullptr;
-                                    }
-                                if (m_values)
-                                    {
-                                    m_values->at(currentColumnIndex)
-                                        .assign(previousPosition, trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
-                                    ++currentColumnIndex;
-                                    }
-                                else if (is_reading_single_column())
-                                    {
-                                    m_single_value->assign(previousPosition,
-                                                           trim.get_trimmed_string_length());
-                                    cellQuoteCollapse(*m_single_value);
-                                    ++currentColumnIndex;
-                                    }
-                                ++m_number_of_columns_last_read;
+                                return nullptr;
                                 }
+                            if (m_values != nullptr)
+                                {
+                                m_values->at(currentColumnIndex)
+                                    .assign(previousPosition, trim.get_trimmed_string_length());
+                                cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                ++currentColumnIndex;
+                                }
+                            else if (is_reading_single_column())
+                                {
+                                m_single_value->assign(previousPosition,
+                                                       trim.get_trimmed_string_length());
+                                cellQuoteCollapse(*m_single_value);
+                                ++currentColumnIndex;
+                                }
+                            ++m_number_of_columns_last_read;
                             }
                         if (currentPosition == nullptr)
                             {
@@ -674,12 +643,9 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+                            return ++currentPosition;
                             }
-                        else if (currentPosition[0] == 0)
+                        if (currentPosition[0] == 0)
                             {
                             return nullptr;
                             }
@@ -693,7 +659,7 @@ namespace lily_of_the_valley
                        vector properly. By default, we won't resize it for them either,
                        because then the greater text matrix will wind up being a jagged array.
                        Enable column count resizing to change that.*/
-                    if (m_values)
+                    if (m_values != nullptr)
                         {
                         if (currentColumnIndex >= m_values->size())
                             {
@@ -722,10 +688,7 @@ namespace lily_of_the_valley
                             currentPosition += 2;
                             return currentPosition;
                             }
-                        else
-                            {
-                            return ++currentPosition;
-                            }
+                        return ++currentPosition;
                         }
                     // if this parser is NOT set to skip the column's text then read it in
                     if (currentColumnIter->get_parser().is_reading_text())
@@ -737,7 +700,7 @@ namespace lily_of_the_valley
                                 {
                                 return nullptr;
                                 }
-                            if (m_values)
+                            if (m_values != nullptr)
                                 {
                                 m_values->at(currentColumnIndex++).assign(previousPosition);
                                 }
@@ -748,30 +711,27 @@ namespace lily_of_the_valley
                             ++m_number_of_columns_last_read;
                             return nullptr;
                             }
-                        else
+                        previousPosition =
+                            trim(previousPosition, currentPosition - previousPosition);
+                        if (previousPosition == nullptr)
                             {
-                            previousPosition =
-                                trim(previousPosition, currentPosition - previousPosition);
-                            if (previousPosition == nullptr)
-                                {
-                                return nullptr;
-                                }
-                            if (m_values)
-                                {
-                                m_values->at(currentColumnIndex)
-                                    .assign(previousPosition, trim.get_trimmed_string_length());
-                                cellQuoteCollapse(m_values->at(currentColumnIndex));
-                                ++currentColumnIndex;
-                                }
-                            else if (is_reading_single_column())
-                                {
-                                m_single_value->assign(previousPosition,
-                                                       trim.get_trimmed_string_length());
-                                cellQuoteCollapse(*m_single_value);
-                                ++currentColumnIndex;
-                                }
-                            ++m_number_of_columns_last_read;
+                            return nullptr;
                             }
+                        if (m_values != nullptr)
+                            {
+                            m_values->at(currentColumnIndex)
+                                .assign(previousPosition, trim.get_trimmed_string_length());
+                            cellQuoteCollapse(m_values->at(currentColumnIndex));
+                            ++currentColumnIndex;
+                            }
+                        else if (is_reading_single_column())
+                            {
+                            m_single_value->assign(previousPosition,
+                                                   trim.get_trimmed_string_length());
+                            cellQuoteCollapse(*m_single_value);
+                            ++currentColumnIndex;
+                            }
+                        ++m_number_of_columns_last_read;
                         }
                     if (currentPosition == nullptr)
                         {
@@ -784,12 +744,9 @@ namespace lily_of_the_valley
                             currentPosition += 2;
                             return currentPosition;
                             }
-                        else
-                            {
-                            return ++currentPosition;
-                            }
+                        return ++currentPosition;
                         }
-                    else if (currentPosition[0] == 0)
+                    if (currentPosition[0] == 0)
                         {
                         return nullptr;
                         }
@@ -839,7 +796,7 @@ namespace lily_of_the_valley
             };
 
         [[nodiscard]]
-        inline bool is_reading_single_column() const noexcept
+        bool is_reading_single_column() const noexcept
             {
             return (m_single_value != nullptr);
             }

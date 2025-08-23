@@ -20,9 +20,7 @@
 #include <map>
 #include <vector>
 #include <wx/listctrl.h>
-#include <wx/math.h>
 #include <wx/numformatter.h>
-#include <wx/wx.h>
 
 namespace Wisteria::UI
     {
@@ -340,7 +338,7 @@ namespace Wisteria::UI
             @param startIndex The row to start the search from.
             @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
         [[nodiscard]]
-        virtual long Find(const wchar_t* textToFind, size_t startIndex = 0) const = 0;
+        virtual long Find(const wchar_t* textToFind, size_t startIndex) const = 0;
         /// @brief Sorts a column.
         /// @param column The column to sort.
         /// @param direction The direction to sort.
@@ -551,10 +549,9 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns, except the last
-                for (size_t i = 0; i < m_columnsToCompare.size(); ++i)
+                for (const auto& col : m_columnsToCompare)
                     {
-                    const int result = Compare(row1[m_columnsToCompare[i].first],
-                                               row2[m_columnsToCompare[i].first]);
+                    const int result = Compare(row1[col.first], row2[col.first]);
                     // if the cells are equal, then we need to compare the next column as a
                     // tiebreaker
                     if (result == 0)
@@ -593,7 +590,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row1,
                    const std::vector<ListCtrlExDataProviderBase::DoubleWithLabel>& row2) const
             {
-            assert(m_columnsToCompare.size());
+            assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return (Compare(row1[m_columnsToCompare[0].first],
@@ -602,10 +599,9 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns
-                for (size_t i = 0; i < m_columnsToCompare.size(); ++i)
+                for (const auto& col : m_columnsToCompare)
                     {
-                    const int result = Compare(row1[m_columnsToCompare[i].first],
-                                               row2[m_columnsToCompare[i].first]);
+                    const int result = Compare(row1[col.first], row2[col.first]);
                     // if the cells are equal, then we need to compare the next
                     // column as a tiebreaker
                     if (result == 0)
@@ -642,7 +638,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                    const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
-            assert(m_columnsToCompare.size());
+            assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 if (m_columnsToCompare[0].second == Wisteria::SortDirection::SortAscending)
@@ -657,10 +653,9 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns
-                for (size_t i = 0; i < m_columnsToCompare.size(); ++i)
+                for (const auto& col : m_columnsToCompare)
                     {
-                    const int result = row1[m_columnsToCompare[i].first].Compare(
-                        row2[m_columnsToCompare[i].first]);
+                    const int result = row1[col.first].Compare(row2[col.first]);
                     // if the cells are equal, then we need to compare the next
                     // column as a tiebreaker
                     if (result == 0)
@@ -668,7 +663,7 @@ namespace Wisteria::UI
                         continue;
                         }
                     // otherwise, we have our result, so return it
-                    if (m_columnsToCompare[i].second == Wisteria::SortDirection::SortAscending)
+                    if (col.second == Wisteria::SortDirection::SortAscending)
                         {
                         return result < 0;
                         }
@@ -703,7 +698,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                    const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
-            assert(m_columnsToCompare.size());
+            assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return row1[m_columnsToCompare[0]] < row2[m_columnsToCompare[0]];
@@ -711,10 +706,9 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns
-                for (size_t i = 0; i < m_columnsToCompare.size(); ++i)
+                for (const auto col : m_columnsToCompare)
                     {
-                    const int result =
-                        row1[m_columnsToCompare[i]].Compare(row2[m_columnsToCompare[i]]);
+                    const int result = row1[col].Compare(row2[col]);
                     // if the cells are equal, then we need to compare the next
                     // column as a tiebreaker
                     if (result == 0)
@@ -753,7 +747,7 @@ namespace Wisteria::UI
         operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                    const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
-            assert(m_columnsToCompare.size());
+            assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return row1[m_columnsToCompare[0]] > row2[m_columnsToCompare[0]];
@@ -761,10 +755,9 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns
-                for (size_t i = 0; i < m_columnsToCompare.size(); ++i)
+                for (unsigned long col : m_columnsToCompare)
                     {
-                    const int result =
-                        row1[m_columnsToCompare[i]].Compare(row2[m_columnsToCompare[i]]);
+                    const int result = row1[col].Compare(row2[col]);
                     // if the cells are equal, then we need to compare the next
                     // column as a tiebreaker
                     if (result == 0)
@@ -811,7 +804,7 @@ namespace Wisteria::UI
             if (cell.GetNumberFormatType().m_type ==
                 Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
                 {
-                return cell.m_strVal.c_str();
+                return cell.m_strVal;
                 }
             else
                 {
@@ -819,7 +812,7 @@ namespace Wisteria::UI
                 return (m_formatNumber != nullptr) ?
                            m_formatNumber->GetFormattedValue(cell.m_strVal.c_str(),
                                                              cell.GetNumberFormatType()) :
-                           wxString(cell.m_strVal.c_str());
+                           cell.m_strVal;
                 }
             }
 
@@ -989,7 +982,7 @@ namespace Wisteria::UI
             @param startIndex The row to start the search from.
             @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
         [[nodiscard]]
-        long Find(const wchar_t* textToFind, const size_t startIndex = 0) const final
+        long Find(const wchar_t* textToFind, const size_t startIndex) const final
             {
             if (GetColumnCount() == 0)
                 {
@@ -1064,9 +1057,9 @@ namespace Wisteria::UI
         void Sort(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns,
                   const size_t low /*= 0*/, const size_t high /*= -1*/) final
             {
-            for (size_t i = 0; i < columns.size(); ++i)
+            for (const auto& column : columns)
                 {
-                if (columns[i].first >= GetColumnCount())
+                if (column.first >= GetColumnCount())
                     {
                     return;
                     }
@@ -1111,9 +1104,9 @@ namespace Wisteria::UI
         void Sort(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columns,
                   const size_t low /*= 0*/, const size_t high /*= -1*/) final
             {
-            for (size_t i = 0; i < columns.size(); ++i)
+            for (const auto& column : columns)
                 {
-                if (columns[i].first >= GetColumnCount())
+                if (column.first >= GetColumnCount())
                     {
                     return;
                     }
@@ -1460,7 +1453,7 @@ namespace Wisteria::UI
             @param startIndex The row to start the search from.
             @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
         [[nodiscard]]
-        long Find(const wchar_t* textToFind, const size_t startIndex = 0) const final
+        long Find(const wchar_t* textToFind, const size_t startIndex) const final
             {
             if (GetColumnCount() == 0)
                 {

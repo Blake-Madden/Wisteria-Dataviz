@@ -26,7 +26,7 @@ namespace lily_of_the_valley
             std::ios::in|std::ios::binary|std::ios::ate);
         if (fs.is_open())
             {
-            //read a unicode file into a char* buffer
+            //read a Unicode file into a char* buffer
             size_t fileSize = fs.tellg();
             char* fileContents = new char[fileSize+1];
             std::unique_ptr<char> deleteBuffer(fileContents);
@@ -111,7 +111,7 @@ namespace lily_of_the_valley
                 {
                 return nullptr;
                 }
-            // first see if the file is an even number of bytes (a unicode file would have to be)
+            // first see if the file is an even number of bytes (a Unicode file would have to be)
             if (length % 2 != 0)
                 {
                 log_message(L"Invalid Unicode stream, uneven number of bytes.");
@@ -123,7 +123,7 @@ namespace lily_of_the_valley
             std::wmemset(outBuffer.get(), 0, outSize);
             allocate_text_buffer(outSize);
 
-            /* If unicode stream is the native endian format,
+            /* If Unicode stream is the native endian format,
                then just copy it over into the wide buffer.*/
             if (std::strncmp(systemIsLittleEndian ? get_bom_utf16le() : get_bom_utf16be(),
                              unicodeText, 2) == 0)
@@ -151,7 +151,7 @@ namespace lily_of_the_valley
         /** @brief Flips the bytes of unicodeText and copy them into destination.
                 Destination should be length+1 and zeroed out beforehand.
             @param[out] destination wchar_t buffer to write the flipped text.
-            @param unicodeText The raw char* unicode stream.
+            @param unicodeText The raw char* Unicode stream.
             @param length The length of the raw char* stream.*/
         static void get_flipped_buffer(wchar_t* destination, const char* unicodeText,
                                        const size_t length)
@@ -169,12 +169,12 @@ namespace lily_of_the_valley
         /** @brief Copies the bytes of unicodeText into destination.
                 Destination should be length+1 and zeroed out beforehand.
             @param[out] destination wchar_t buffer to write the flipped text.
-            @param unicodeText The raw char* unicode stream.
+            @param unicodeText The raw char* Unicode stream.
             @param length The length of the raw char* stream.*/
         static void convert_unicode_char_stream(wchar_t* destination, const char* unicodeText,
                                                 size_t length) noexcept
             {
-            const uint16_t* doubleByteBuffer = reinterpret_cast<const uint16_t*>(unicodeText);
+            const auto* doubleByteBuffer = reinterpret_cast<const uint16_t*>(unicodeText);
             if constexpr (sizeof(wchar_t) == 2)
                 {
                 std::memcpy(destination, unicodeText,

@@ -227,7 +227,7 @@ namespace lily_of_the_valley
             rtf_symbol("row", 0, false, KWD::kwdChar, 0x0a, L""),
             rtf_symbol("nestrow", 0, false, KWD::kwdChar, 0x0a, L"") };
         }
-        
+
     /// @private
     const rtf_to_text_symbol_table rtf_extract_text::RTF_TO_TEXT_TABLE;
     /// @private
@@ -269,7 +269,7 @@ namespace lily_of_the_valley
     rtf_extract_text::rtf_extract_text(
         const rtf_extraction_type& extraction_type /*= rtf_extraction_type::rtf_to_text*/) noexcept
         : m_extraction_type(extraction_type), m_ris(RIS::risNorm), m_rds(RDS::rdsNorm), m_cGroup(0),
-          m_psave(nullptr), m_fSkipDestIfUnk(0), m_cbBin(0), m_lParam(0), m_rtf_text(nullptr),
+          m_psave(nullptr), m_fSkipDestIfUnk(false), m_cbBin(0), m_lParam(0), m_rtf_text(nullptr),
           m_paragraphCount(0), m_font_size(12), m_keyword_command_table(nullptr),
           m_in_bullet_state(false)
         {
@@ -302,9 +302,7 @@ namespace lily_of_the_valley
         const char* const endSentinel = text + text_length;
             // read the metadata
             {
-            rtf_extract_text parseRtfMetaData;
-            const char* infoSection = std::strstr(text, "{\\info");
-            if (infoSection)
+            if (const char* infoSection = std::strstr(text, "{\\info"); infoSection != nullptr)
                 {
                 ++infoSection;
                 const char* const infoSectionEnd =
@@ -313,6 +311,7 @@ namespace lily_of_the_valley
                     {
                     try
                         {
+                        rtf_extract_text parseRtfMetaData;
                         // title
                         const char* titleSection = std::strstr(infoSection, "{\\title");
                         if (titleSection && titleSection + 7 < infoSectionEnd)
@@ -421,7 +420,7 @@ namespace lily_of_the_valley
             // load the font table
             m_font_table.clear();
             const char* fontTable = std::strstr(text, "{\\fonttbl");
-            if (fontTable)
+            if (fontTable != nullptr)
                 {
                 ++fontTable;
                 const char* fontTableEnd =
@@ -459,7 +458,7 @@ namespace lily_of_the_valley
             // load the color table
             m_color_table.clear();
             const char* colorTable = std::strstr(text, "{\\colortbl");
-            if (colorTable)
+            if (colorTable != nullptr)
                 {
                 ++colorTable;
                 const char* colorTableEnd =
@@ -520,9 +519,9 @@ namespace lily_of_the_valley
                                    std::to_wstring((colorPos - m_color_table.begin()) + 1) +
                                    L" {color:#" + colorPos->web_color + L";}";
                 }
-            // find the first paragraph color and we will just use this for the rest of the document
+            // find the first paragraph color; we will just use this for the rest of the document
             const char* textColor = std::strstr(text, "\\par");
-            if (textColor)
+            if (textColor != nullptr)
                 {
                 const char* nextSpace = std::strchr(textColor, L' ');
                 textColor = std::strstr(textColor, "\\cf");
@@ -739,14 +738,14 @@ namespace lily_of_the_valley
         if (m_extraction_type == rtf_extraction_type::rtf_to_html &&
             (std::strcmp(szKeyword, "par") == 0 || std::strcmp(szKeyword, "pard") == 0))
             {
-            const std::string_view PAR_TAG{ "par" };
-            const std::string_view PARD_TAG{ "pard" };
-            const std::string_view LINE_TAG{ "line" };
+            constexpr std::string_view PAR_TAG{ "par" };
+            constexpr std::string_view PARD_TAG{ "pard" };
+            constexpr std::string_view LINE_TAG{ "line" };
             ++m_paragraphCount;
             // if even, then this is a terminating paragraph command
             if ((m_paragraphCount % 2) == 0)
                 {
-                std::copy(PAR_TAG.cbegin(), PAR_TAG.cend(), szKeyword);
+                std::ranges::copy(std::as_const(PAR_TAG), szKeyword);
                 }
             // else, it is either the start of a new paragraph or an empty paragraph
             else
@@ -765,11 +764,11 @@ namespace lily_of_the_valley
                 if (std::strncmp(nextKeyword, "\\par", 4) == 0)
                     {
                     --m_paragraphCount; // it's also not a paragraph anymore
-                    std::copy(LINE_TAG.cbegin(), LINE_TAG.cend(), szKeyword);
+                    std::ranges::copy(std::as_const(LINE_TAG), szKeyword);
                     }
                 else
                     {
-                    std::copy(PARD_TAG.cbegin(), PARD_TAG.cend(), szKeyword);
+                    std::ranges::copy(std::as_const(PARD_TAG), szKeyword);
                     }
                 }
             }
@@ -929,7 +928,7 @@ namespace lily_of_the_valley
                 {
                 // If a valid color.
                 // Zero index is just a reset to the control's default color,
-                // which is not in the table. Hence color 1 is actually the
+                // which is not in the table. Hence, color 1 is actually the
                 // first color in the table.
                 if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
                     {
@@ -963,7 +962,7 @@ namespace lily_of_the_valley
                 {
                 // If a valid color.
                 // Zero index is just a reset to the control's default color,
-                // which is not in the table. Hence color 1 is actually the
+                // which is not in the table. Hence, color 1 is actually the
                 // first color in the table.
                 if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
                     {
@@ -1057,7 +1056,7 @@ namespace lily_of_the_valley
             // Will have a trailing '?' or '*' that we need to skip.
             // (It can either be hex encoded or a single character.)
             // First, we step over the end of the current Unicode sequence
-            // to see how far we need to step. Afterwards, when we return from
+            // to see how far we need to step. Afterward, when we return from
             // here, the caller will step one more time to step over the actual ? or *.
             if (std::strncmp(std::next(m_rtf_text), "\\'3f", 4) == 0 ||
                 std::strncmp(std::next(m_rtf_text), "\\'3F", 4) == 0 ||
@@ -1091,7 +1090,7 @@ namespace lily_of_the_valley
                 }
             // this is usually some bullet definition in here, just skip that
             const char* endOfBulletDescription = std::strchr(m_rtf_text, '}');
-            if (endOfBulletDescription)
+            if (endOfBulletDescription != nullptr)
                 {
                 m_rtf_text = endOfBulletDescription - 1;
                 }

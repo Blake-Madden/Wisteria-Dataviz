@@ -185,7 +185,7 @@ namespace lily_of_the_valley
             return get_filtered_text();
             }
 
-        /** @brief Reads the "docProps/core.xml" file and extracts meta data from
+        /** @brief Reads the "docProps/core.xml" file and extracts metadata from
                 the file (e.g., subject, title).
             @param html_text The "docProps/core.xml" text to extract text from.
                 "docProps/core.xml" is extracted from a PPTX file.\n
@@ -194,15 +194,15 @@ namespace lily_of_the_valley
             @sa get_title(), get_subject(), etc.*/
         void read_meta_data(const wchar_t* html_text, const size_t text_length)
             {
-            // reset meta data from last call
+            // reset metadata from last call
             reset_meta_data();
 
-            static const std::wstring_view OFFICE_META(L"cp:coreProperties");
-            static const std::wstring_view SUBJECT(L"dc:subject");
-            static const std::wstring_view TITLE(L"dc:title");
-            static const std::wstring_view DESCRIPTION(L"dc:description");
-            static const std::wstring_view KEYWORDS(L"cp:keywords");
-            static const std::wstring_view AUTHOR(L"dc:creator");
+            constexpr static std::wstring_view OFFICE_META(L"cp:coreProperties");
+            constexpr static std::wstring_view SUBJECT(L"dc:subject");
+            constexpr static std::wstring_view TITLE(L"dc:title");
+            constexpr static std::wstring_view DESCRIPTION(L"dc:description");
+            constexpr static std::wstring_view KEYWORDS(L"cp:keywords");
+            constexpr static std::wstring_view AUTHOR(L"dc:creator");
             const wchar_t* const textEnd = html_text + text_length;
 
             const wchar_t* const officeMetaStart =

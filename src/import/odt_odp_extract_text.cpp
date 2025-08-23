@@ -12,15 +12,15 @@ namespace lily_of_the_valley
     {
     void odt_odp_extract_text::read_meta_data(const wchar_t* html_text, const size_t text_length)
         {
-        // reset meta data from last call
+        // reset metadata from last call
         reset_meta_data();
 
-        const std::wstring_view OFFICE_META(L"office:meta");
-        const std::wstring_view SUBJECT(L"dc:subject");
-        const std::wstring_view TITLE(L"dc:title");
-        const std::wstring_view DESCRIPTION(L"dc:description");
-        const std::wstring_view KEYWORDS(L"meta:keyword");
-        const std::wstring_view AUTHOR(L"meta:initial-creator");
+        constexpr std::wstring_view OFFICE_META(L"office:meta");
+        constexpr std::wstring_view SUBJECT(L"dc:subject");
+        constexpr std::wstring_view TITLE(L"dc:title");
+        constexpr std::wstring_view DESCRIPTION(L"dc:description");
+        constexpr std::wstring_view KEYWORDS(L"meta:keyword");
+        constexpr std::wstring_view AUTHOR(L"meta:initial-creator");
         const wchar_t* const textEnd = html_text + text_length;
 
         const wchar_t* const officeMetaStart = find_element(html_text, textEnd, OFFICE_META, true);
@@ -70,22 +70,22 @@ namespace lily_of_the_valley
     const wchar_t* odt_odp_extract_text::operator()(const wchar_t* html_text,
                                                     const size_t text_length)
         {
-        // reset meta data from last call
+        // reset metadata from last call
         reset_meta_data();
 
-        static const std::wstring_view OFFICE_ANNOTATION(L"office:annotation");
-        static const std::wstring_view OFFICE_ANNOTATION_OOO(L"officeooo:annotation");
+        constexpr static std::wstring_view OFFICE_ANNOTATION(L"office:annotation");
+        constexpr static std::wstring_view OFFICE_ANNOTATION_OOO(L"officeooo:annotation");
         // text section tags
-        static const std::wstring_view TEXT_P(L"text:p");
-        static const std::wstring_view TEXT_P_END(L"</text:p>");
-        static const std::wstring_view TEXT_H(L"text:h");
-        static const std::wstring_view TEXT_H_END(L"</text:h>");
-        static const std::wstring_view TEXT_S(L"text:s");
-        static const std::wstring_view TEXT_C(L"text:c");
+        constexpr static std::wstring_view TEXT_P(L"text:p");
+        constexpr static std::wstring_view TEXT_P_END(L"</text:p>");
+        constexpr static std::wstring_view TEXT_H(L"text:h");
+        constexpr static std::wstring_view TEXT_H_END(L"</text:h>");
+        constexpr static std::wstring_view TEXT_S(L"text:s");
+        constexpr static std::wstring_view TEXT_C(L"text:c");
         // tables
-        static const std::wstring_view TABLE_ROW(L"table:table-row");
+        constexpr static std::wstring_view TABLE_ROW(L"table:table-row");
         // paragraph info
-        static const std::wstring_view TEXT_STYLE_NAME(L"text:style-name");
+        constexpr static std::wstring_view TEXT_STYLE_NAME(L"text:style-name");
 
         clear_log();
         clear();
@@ -188,16 +188,14 @@ namespace lily_of_the_valley
                     const std::wstring styleName =
                         read_attribute_as_string(start + 1, TEXT_STYLE_NAME, false, false);
                     // page breaks
-                    if (m_page_break_paragraph_styles.find(styleName) !=
-                        m_page_break_paragraph_styles.cend())
+                    if (m_page_break_paragraph_styles.contains(styleName))
                         {
                         add_character(L'\f');
                         }
                     // if this paragraph's style is indented, then include a tab in front of it
                     if (!m_preserve_text_table_layout || !insideOfListItemOrTableCell)
                         {
-                        if (m_indented_paragraph_styles.find(styleName) !=
-                            m_indented_paragraph_styles.cend())
+                        if (m_indented_paragraph_styles.contains(styleName))
                             {
                             add_character(L'\n');
                             add_character(L'\n');
@@ -312,11 +310,11 @@ namespace lily_of_the_valley
     void odt_odp_extract_text::read_paragraph_styles(const wchar_t* text, const wchar_t* textEnd)
         {
         // items for reading in general style information
-        static const std::wstring_view STYLE_STYLE_END(L"</style:style>");
-        static const std::wstring_view STYLE_NAME(L"style:name");
-        static const std::wstring_view ALIGNMENT(L"fo:text-align");
-        static const std::wstring_view BREAK_BEFORE(L"fo:break-before");
-        static const std::wstring_view MARGIN_ALIGNMENT(L"fo:margin-left");
+        constexpr static std::wstring_view STYLE_STYLE_END(L"</style:style>");
+        constexpr static std::wstring_view STYLE_NAME(L"style:name");
+        constexpr static std::wstring_view ALIGNMENT(L"fo:text-align");
+        constexpr static std::wstring_view BREAK_BEFORE(L"fo:break-before");
+        constexpr static std::wstring_view MARGIN_ALIGNMENT(L"fo:margin-left");
 
         const wchar_t* const officeStyleStart =
             find_element(text, textEnd, L"office:automatic-styles", true);
@@ -328,7 +326,7 @@ namespace lily_of_the_valley
             find_closing_element(officeStyleStart, textEnd, L"office:automatic-styles");
         if (officeStyleEnd)
             {
-            // go through all of the styles in the office styles section
+            // go through all the styles in the office styles section
             const wchar_t* currentStyleStart =
                 find_element(officeStyleStart, textEnd, L"style:style", true);
             while (currentStyleStart)

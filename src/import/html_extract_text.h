@@ -13,11 +13,7 @@
 #define HTML_EXTRACT_TEXT_H
 
 #include "extract_text.h"
-#include <algorithm>
-#include <map>
-#include <regex>
 #include <set>
-#include <vector>
 
 /// @brief Helper classes for HTML parsing.
 namespace html_utilities
@@ -36,7 +32,7 @@ namespace html_utilities
                 or the letter if no equivalent is found.\n
                 For example, 'S' will return 'Σ'.*/
         [[nodiscard]]
-        wchar_t find(const wchar_t letter) const;
+        wchar_t find(wchar_t letter) const;
 
       private:
         std::unordered_map<wchar_t, wchar_t> m_symbol_table;
@@ -49,7 +45,7 @@ namespace html_utilities
         /// @private
         html_entity_table();
 
-        /** @returns The unicode value of an entity, or '?' if not valid.
+        /** @returns The Unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.*/
         [[nodiscard]]
         wchar_t operator[](const std::wstring_view html_entity) const
@@ -58,17 +54,17 @@ namespace html_utilities
             }
 
         /** @brief Searches for an entity.
-            @returns The unicode value of an entity, or '?' if not valid.
+            @returns The Unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.
-            @note This function first must do a case sensitive search because some HTML entities
-                are case sensitive (e.g., "Dagger" and "dagger" result in different values).
+            @note This function first must do a case-sensitive search because some HTML entities
+                are case-sensitive (e.g., "Dagger" and "dagger" result in different values).
                 Of course, before XHTML, most HTML was very liberal with casing,
-                so if a case sensitive search fails, then a case insensitive search is performed.
+                so if a case-sensitive search fails, then a case-insensitive search is performed.
                 In this case, whatever the HTML author's intention for something like "&SIGMA;"
                 may be misinterpreted (should it be a lowercase or uppercase sigma symbol?)--
                 the price you pay for sloppy HTML.*/
         [[nodiscard]]
-        wchar_t find(const std::wstring_view html_entity) const;
+        wchar_t find(std::wstring_view html_entity) const;
 
       private:
         std::unordered_map<std::wstring_view, wchar_t> m_table;
@@ -181,7 +177,7 @@ namespace html_utilities
         /** @brief Constructor.
             @param html_text The HTML text to analyze.
             @param length The length of html_text.*/
-        html_hyperlink_parse(const wchar_t* html_text, const size_t length) noexcept;
+        html_hyperlink_parse(const wchar_t* html_text, size_t length) noexcept;
 
         /// @returns The base web directory.
         [[nodiscard]]
@@ -209,7 +205,7 @@ namespace html_utilities
             return m_current_hyperlink_length;
             }
 
-        /** @brief Specifies whether or not image links should be reviewed.
+        /** @brief Specifies whether image links should be reviewed.
             @param include Set to false to skip image links, true to include them.*/
         inline void include_image_links(const bool include) noexcept
             {
@@ -243,7 +239,7 @@ namespace html_utilities
             return text;
             }
 
-        /** Indicates whether or not character is legal to be in an URL.
+        /** Indicates whether character is legal to be in an URL.
                 If false, then that character should be hex encoded.
             @param ch The character to review.
             @returns Whether the character is illegal and needs to be encoded.*/
@@ -359,11 +355,11 @@ namespace html_utilities
         explicit html_url_format(std::wstring_view root_url);
         /** @brief Main interface.
             @param path The filepath to format.
-            @param is_image Whether or not the filepath is to an image.\n
+            @param is_image Whether the filepath is to an image.\n
                 This is needed when formatting a full URL to an image from a PHP request.\n
                 @c false is recommended.
             @returns The fully-formed file path.*/
-        const wchar_t* operator()(std::wstring_view path, const bool is_image);
+        const wchar_t* operator()(std::wstring_view path, bool is_image);
 
         /** @returns The domain of the base URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
@@ -432,7 +428,7 @@ namespace html_utilities
                     string_util::strnicmp<wchar_t>(url.data(), L"ftps:", 5) == 0);
             }
 
-        /** @returns Whether or not this URL has a PHP query command.*/
+        /** @returns Whether this URL has a PHP query command.*/
         [[nodiscard]]
         bool has_query() const noexcept
             {
@@ -457,7 +453,7 @@ namespace html_utilities
       protected:
         /** @returns The position of the top level direction in an URL, as well as
                 the position of the query comment in it (if there is one).
-                Also will add a slash to the URL if need.
+                Also, will add a slash to the URL if needed.
             @param[in,out] url The URL to parse.
             @param[out] query_position The position in the URL of the query
                 (e.g., PHP command).*/
@@ -499,7 +495,7 @@ namespace html_utilities
             @param text_length The length of the HTML text.
             @returns The HTML stream with the hyperlinks removed from it.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length);
+        const wchar_t* operator()(const wchar_t* html_text, size_t text_length);
         };
 
     /// @returns @c true if character is not safe to use in an URL.
@@ -566,8 +562,8 @@ namespace lily_of_the_valley
                 in the output. If @c false, then they will be replaced with spaces,
                 which is the default for HTML renderers. Recommended @c false.
             @returns The plain text from the HTML stream.*/
-        const wchar_t* operator()(const wchar_t* html_text, const size_t text_length,
-                                  const bool include_outer_text, const bool preserve_newlines);
+        const wchar_t* operator()(const wchar_t* html_text, size_t text_length,
+                                  bool include_outer_text, bool preserve_newlines);
 
         /** @returns The title from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
@@ -629,7 +625,7 @@ namespace lily_of_the_valley
             @note Be sure to skip the starting '<' first.*/
         [[nodiscard]]
         static bool compare_element(const wchar_t* text, std::wstring_view element,
-                                    const bool accept_self_terminating_elements);
+                                    bool accept_self_terminating_elements);
         /** Compares (case sensitively) raw HTML text with an element constant to see
                 if the current element that we are on is the one we are looking for.
                 Be sure to skip the starting '<' first.
@@ -643,11 +639,11 @@ namespace lily_of_the_valley
                 text in between opening and closing tags.\n
                 @c false is recommended for most cases.
             @returns @c true if the current position matches the element.
-            @note This function is case sensitive, so it should only be used for XML
+            @note This function is case-sensitive, so it should only be used for XML
                 or strict HTML 4.0.*/
         [[nodiscard]]
         static bool compare_element_case_sensitive(const wchar_t* text, std::wstring_view element,
-                                                   const bool accept_self_terminating_elements);
+                                                   bool accept_self_terminating_elements);
         /** @returns The current element that a stream is on. (This assumes that you have
                 already skipped the leading < symbol.)
             @note The returned string view will wrap @c text and will share the same lifetime.
@@ -656,7 +652,7 @@ namespace lily_of_the_valley
                 @c true is recommended for most cases.*/
         [[nodiscard]]
         static string_util::case_insensitive_wstring_view
-        get_element_name(const wchar_t* text, const bool accept_self_terminating_elements);
+        get_element_name(const wchar_t* text, bool accept_self_terminating_elements);
         /** @returns The body of an HTML buffer.
             @param text The HTML stream to parse.*/
         [[nodiscard]]
@@ -695,8 +691,8 @@ namespace lily_of_the_valley
                 Returns null and length of zero on failure.*/
         [[nodiscard]]
         static std::pair<const wchar_t*, size_t>
-        read_attribute(const wchar_t* text, std::wstring_view tag, const bool allowQuotedTags,
-                       const bool allowSpacesInValue);
+        read_attribute(const wchar_t* text, std::wstring_view tag, bool allowQuotedTags,
+                       bool allowSpacesInValue);
         /** @brief Same as read_attribute(), except it returns a `std::wstring`
                 instead of a raw pointer.
             @param text The start of the element section.
@@ -710,9 +706,9 @@ namespace lily_of_the_valley
                 such as a font name. @c  false is recommended for most cases.
             @returns The tag value as a string, or empty string on failure.*/
         [[nodiscard]]
-        static std::wstring
-        read_attribute_as_string(const wchar_t* text, std::wstring_view attribute,
-                                 const bool allowQuotedTags, const bool allowSpacesInValue);
+        static std::wstring read_attribute_as_string(const wchar_t* text,
+                                                     std::wstring_view attribute,
+                                                     bool allowQuotedTags, bool allowSpacesInValue);
         /** @brief Same as read_attribute(), except it returns the value as a long.
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "score").
@@ -723,7 +719,7 @@ namespace lily_of_the_valley
             @returns The attribute value as a double, or zero on failure.*/
         [[nodiscard]]
         static long read_attribute_as_long(const wchar_t* text, std::wstring_view attribute,
-                                           const bool allowQuotedTags);
+                                           bool allowQuotedTags);
         /** @brief Searches a buffer range for an element (e.g., "<h1>").
             @returns The pointer to the next element, or null if not found.
             @param sectionStart The start of the HTML buffer.
@@ -736,7 +732,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static const wchar_t* find_element(const wchar_t* sectionStart, const wchar_t* sectionEnd,
                                            std::wstring_view elementTag,
-                                           const bool accept_self_terminating_elements);
+                                           bool accept_self_terminating_elements);
         /** @c brief Searches a buffer range for an element's matching close (e.g., "</h1>").
             @details If the search starts on the starting element, then it will search for
                 the matching close tag (i.e., it will skip inner elements that have the same name
@@ -762,7 +758,7 @@ namespace lily_of_the_valley
                 then you should set @c sectionStart to one character after the '<'.*/
         [[nodiscard]]
         static const wchar_t* find_tag(const wchar_t* text, std::wstring_view tag,
-                                       const bool allowQuotedTags);
+                                       bool allowQuotedTags);
         /** @brief Searches a buffer range for a bookmark (e.g., "<a name="citation" />").
             @param sectionStart The start of the HTML buffer.
             @param sectionEnd The end of the HTML buffer.
@@ -772,7 +768,7 @@ namespace lily_of_the_valley
         static std::pair<const wchar_t*, std::wstring> find_bookmark(const wchar_t* sectionStart,
                                                                      const wchar_t* sectionEnd);
         /** @brief Searches a buffer range for an ID (e.g., "<div id="citation" />").
-            @param[in,out] htmlText The the HTML buffer. Its "suffix" will be trimmed past
+            @param[in,out] htmlText The HTML buffer. Its "suffix" will be trimmed past
                 the last read ID section. Will be empty if no more IDs could be found.
             @returns The ID name (e.g., "citation").*/
         [[nodiscard]]
@@ -785,7 +781,7 @@ namespace lily_of_the_valley
             @param ch The character to search for.
             @returns The pointer of where the character is, or null if not found.*/
         [[nodiscard]]
-        static const wchar_t* strchr_not_quoted(const wchar_t* string, const wchar_t ch) noexcept;
+        static const wchar_t* strchr_not_quoted(const wchar_t* string, wchar_t ch) noexcept;
         /** @brief Searches for substring in string (case-insensitive), but ensures that
                 what you are searching for is not in quotes.
             @details This is specifically tailored for " and ' type of quotes used
@@ -796,14 +792,14 @@ namespace lily_of_the_valley
             @param strSearchSize The length of @c strSearch.
             @returns The pointer of where the character is, or null if not found.*/
         [[nodiscard]]
-        static const wchar_t* stristr_not_quoted(const wchar_t* string, const size_t stringSize,
+        static const wchar_t* stristr_not_quoted(const wchar_t* string, size_t stringSize,
                                                  const wchar_t* strSearch,
-                                                 const size_t strSearchSize) noexcept;
+                                                 size_t strSearchSize) noexcept;
         /** @returns The charset from the meta section of an HTML buffer.
             @param pageContent The meta section to analyze.
             @param length The length of @c pageContent.*/
         [[nodiscard]]
-        static std::string parse_charset(const char* pageContent, const size_t length);
+        static std::string parse_charset(const char* pageContent, size_t length);
 
         /// @brief Whether text from `<noscript>` blocks should be included in the results.
         /// @details These are using warning messages that scripting should be enabled

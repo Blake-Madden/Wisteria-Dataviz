@@ -134,14 +134,14 @@ namespace lily_of_the_valley
             if (m_removeNewlinesAndTabs)
                 {
                 // will also replace non-breaking spaces
-                std::transform(currentString.begin(), currentString.end(), currentString.begin(),
-                               [](auto& ch) noexcept
-                               {
-                                   return (ch == L'\n' || ch == L'\r' || ch == L'\t' ||
-                                           ch == L'\u00A0') ?
-                                              L' ' :
-                                              ch;
-                               });
+                std::ranges::transform(currentString, currentString.begin(),
+                                       [](auto& ch) noexcept
+                                       {
+                                           return (ch == L'\n' || ch == L'\r' || ch == L'\t' ||
+                                                   ch == L'\u00A0') ?
+                                                      L' ' :
+                                                      ch;
+                                       });
                 }
             return std::make_pair(true, currentString);
             }
@@ -191,14 +191,14 @@ namespace lily_of_the_valley
         assert(shared_strings_length == std::wcslen(shared_strings));
         assert(worksheet_length == std::wcslen(worksheet_text));
         const wchar_t* const worksheetEnd = worksheet_text + worksheet_length;
-        std::pair<const wchar_t*, size_t> typeTag;
         while ((worksheet_text = html_extract_text::find_element(worksheet_text, worksheetEnd, L"c",
                                                                  true)) != nullptr)
             {
             if (html_extract_text::read_attribute_as_string(worksheet_text, L"r", false, false) ==
                 cell_name)
                 {
-                typeTag = html_extract_text::read_attribute(worksheet_text, L"t", false, false);
+                std::pair<const wchar_t*, size_t> typeTag =
+                    html_extract_text::read_attribute(worksheet_text, L"t", false, false);
                 if (typeTag.second == 1 && *typeTag.first == L's')
                     {
                     const wchar_t* const cellEnd =
@@ -253,12 +253,11 @@ namespace lily_of_the_valley
         cells.reserve(wrk.size() * (wrk[0].size() / 4));
         for (const auto& rowPos : wrk)
             {
-            for (worksheet_row::const_iterator cellPos = rowPos.begin(); cellPos != rowPos.end();
-                 ++cellPos)
+            for (const auto& rowPo : rowPos)
                 {
-                if (cellPos->get_value().length())
+                if (!rowPo.get_value().empty())
                     {
-                    cells.push_back(cellPos->get_name());
+                    cells.push_back(rowPo.get_name());
                     }
                 }
             }
@@ -286,7 +285,7 @@ namespace lily_of_the_valley
             dataText.back() = L'\n';
             }
         // chop off extra newline at the end
-        if (dataText.length() && dataText.back() == L'\n')
+        if (!dataText.empty() && dataText.back() == L'\n')
             {
             dataText.erase(dataText.end() - 1);
             }
@@ -416,7 +415,7 @@ namespace lily_of_the_valley
                                         {
                                         valueStr.assign(tTag, tEnd - tTag);
                                         // read a value
-                                        if (valueStr.length())
+                                        if (!valueStr.empty())
                                             {
                                             currentCell.set_value(valueStr);
                                             }
@@ -438,7 +437,7 @@ namespace lily_of_the_valley
                                 {
                                 valueStr.assign(valueTag, valueEnd - valueTag);
                                 // read a value
-                                if (valueStr.length())
+                                if (!valueStr.empty())
                                     {
                                     // First, convert based on types...
                                     // -----------------------------
@@ -464,11 +463,7 @@ namespace lily_of_the_valley
                                         {
                                         const bool bVal = static_cast<bool>(
                                             std::wcstol(valueStr.c_str(), nullptr, 10));
-                                        if (bVal)
-                                            {
-                                            currentCell.set_value(bVal ? _DT(L"TRUE") :
-                                                                         _DT(L"FALSE"));
-                                            }
+                                        currentCell.set_value(bVal ? _DT(L"TRUE") : _DT(L"FALSE"));
                                         }
                                     // - 'e' (error): an error message (e.g., "#DIV/0!");
                                     //                treat this as missing data.
@@ -489,8 +484,7 @@ namespace lily_of_the_valley
                                         const auto styleIndex =
                                             std::wcstol(styleTag.first, nullptr, 10);
                                         // a date?
-                                        if (m_date_format_indices.find(styleIndex) !=
-                                            m_date_format_indices.cend())
+                                        if (m_date_format_indices.contains(styleIndex))
                                             {
                                             const auto serialDate =
                                                 std::wcstol(valueStr.c_str(), nullptr, 10);
@@ -661,7 +655,6 @@ namespace lily_of_the_valley
             if (endTag)
                 {
                 const wchar_t* stringTag = customNumberFormats;
-                std::wstring formatStr;
 
                 // strip [] and "" sections from the format string
                 // ("these are literal strings and color formatting codes")
@@ -705,7 +698,7 @@ namespace lily_of_the_valley
                                                        stringTag, L"numFmtId", false, false)
                                                        .c_str(),
                                                    nullptr, 10);
-                    formatStr = html_extract_text::read_attribute_as_string(
+                    std::wstring formatStr = html_extract_text::read_attribute_as_string(
                         stringTag, L"formatCode", false, false);
                     stripFormatString(formatStr);
                     // Custom format is some sort of date if it contains
@@ -747,7 +740,7 @@ namespace lily_of_the_valley
                                                    nullptr, 10);
                     // built-in formats known to be date formats, or a custom date format
                     if ((fmtId >= 14 && fmtId <= 17) || fmtId == 22 ||
-                        dateFormatIds.find(fmtId) != dateFormatIds.cend())
+                        dateFormatIds.contains(fmtId))
                         {
                         m_date_format_indices.insert(currentIndex);
                         }
@@ -777,7 +770,7 @@ namespace lily_of_the_valley
             html_extract_text::find_closing_element(text + 6, textEnd, L"sheets");
         if (sheetsEnd != nullptr)
             {
-            // go through all of the worksheet names
+            // go through all the worksheet names
             while ((text = html_extract_text::find_element(text, textEnd, L"sheet", true)) !=
                    nullptr)
                 {
@@ -823,9 +816,9 @@ namespace lily_of_the_valley
             return std::wstring{};
             }
         std::wstring columnName;
-        constexpr auto ALPHABET_SIZE{ 26 };
         while (col > 0)
             {
+            constexpr auto ALPHABET_SIZE{ 26 };
             const wchar_t modulo = (col - 1) % ALPHABET_SIZE;
             columnName.insert(columnName.begin(), 1, L'A' + modulo);
             col = ((col - modulo) / ALPHABET_SIZE);

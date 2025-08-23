@@ -13,6 +13,7 @@
 #define TEXT_COLUMN_H
 
 #include "text_functional.h"
+#include <optional>
 
 namespace lily_of_the_valley
     {
@@ -20,6 +21,8 @@ namespace lily_of_the_valley
     class text_column_parser
         {
       public:
+        virtual ~text_column_parser() = default;
+
         /// @brief Constructor.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
         ///     or @c false to simply skip to the end of line.
@@ -76,7 +79,7 @@ namespace lily_of_the_valley
             @param character The character to review.
             @returns @c true if @c character is a delimiter.*/
         [[nodiscard]]
-        virtual bool is_delimiter(const wchar_t character) const noexcept = 0;
+        virtual bool is_delimiter(wchar_t character) const noexcept = 0;
 
       protected:
         /// @brief Functor for determining and end-of-line.
@@ -271,7 +274,7 @@ namespace lily_of_the_valley
             @param text The current row of text to parse.
             @returns The text after the column(s) that were just read.*/
         [[nodiscard]]
-        inline const wchar_t* read(const wchar_t* text)
+        const wchar_t* read(const wchar_t* text)
             {
             const wchar_t* end = m_parser(text);
             /* if this is null then we are at the end of the file,
@@ -287,10 +290,14 @@ namespace lily_of_the_valley
         /// @note This is optional and if not specified then this column
         ///     definition should be repeated
         ///     by the parser until the end of line is reached.
-        inline std::optional<size_t> get_repeat_count() const noexcept { return m_repeat_count; }
+        [[nodiscard]]
+        std::optional<size_t> get_repeat_count() const noexcept
+            {
+            return m_repeat_count;
+            }
 
         /// @returns The parser used by this column.
-        inline Tparser& get_parser() noexcept { return m_parser; }
+        Tparser& get_parser() noexcept { return m_parser; }
 
       private:
         Tparser m_parser;

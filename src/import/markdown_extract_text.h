@@ -13,7 +13,6 @@
 #define MARKDOWN_TEXT_EXTRACT_H
 
 #include "html_extract_text.h"
-#include <regex>
 
 namespace lily_of_the_valley
     {
@@ -22,9 +21,9 @@ namespace lily_of_the_valley
         {
       public:
         /** @brief Main interface for extracting plain text from a Markdown file.
-            @param md_text The markdown text to parse.
+            @param md_text The Markdown text to parse.
             @returns The parsed text from the Markdown stream.*/
-        const wchar_t* operator()(const std::wstring_view md_text);
+        const wchar_t* operator()(std::wstring_view md_text);
 #ifndef __UNITTEST
       private:
 #endif
@@ -33,20 +32,15 @@ namespace lily_of_the_valley
             @note YAML sections are supported.
             @warning @c md_text must be the start of the Markdown document.*/
         [[nodiscard]]
-        static bool has_metadata_section(const wchar_t* md_text)
+        static bool has_metadata_section(const std::wstring_view md_text)
             {
-            if (md_text == nullptr)
-                {
-                return false;
-                }
-            // does the first line start with ---
-            return (std::wcsncmp(md_text, L"---", 3) == 0);
+            return md_text.starts_with(L"---");
             }
 
-        bool parse_styled_text(wchar_t& previousChar, const wchar_t tag);
+        bool parse_styled_text(wchar_t& previousChar, wchar_t tag);
 
         [[nodiscard]]
-        bool parse_html_block(const std::wstring_view tag, const std::wstring_view endTag);
+        bool parse_html_block(std::wstring_view tag, std::wstring_view endTag);
 
         /** @brief Metadata sections end on the first blank like, so moves to that.
             @param md_text The Markdown text, starting anywhere in the metadata section.

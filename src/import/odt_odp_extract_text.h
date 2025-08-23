@@ -16,7 +16,7 @@
 
 namespace lily_of_the_valley
     {
-    /** @brief Class to extract text from a Open Document Text or
+    /** @brief Class to extract text from an Open Document Text or
             Open Document Presentation stream (specifically, the "content.xml" file).
         @par Example:
         @code
@@ -56,7 +56,7 @@ namespace lily_of_the_valley
             @param text_length The length of the "content.xml" stream.
             @returns The plain text from the ODT stream.*/
         const wchar_t* operator()(const wchar_t* html_text, const size_t text_length);
-        /** @brief Reads the "meta.xml" file and extracts meta data from
+        /** @brief Reads the "meta.xml" file and extracts metadata from
                 the file (e.g., subject, title).
             @param html_text The "meta.xml" text to extract text from.\n
                 "meta.xml" is extracted from an ODT file.\n
@@ -66,7 +66,7 @@ namespace lily_of_the_valley
         void read_meta_data(const wchar_t* html_text, const size_t text_length);
 
       private:
-        /// Reads in all of the paragraph styles, looking for any styles
+        /// Reads in all the paragraph styles, looking for any styles
         /// that involve text alignment.
         void read_paragraph_styles(const wchar_t* text, const wchar_t* textEnd);
         std::set<std::wstring> m_indented_paragraph_styles;

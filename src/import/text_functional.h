@@ -13,10 +13,7 @@
 #define TEXT_FUNCTIONAL_H
 
 #include <algorithm>
-#include <cstdint>
-#include <cstring>
 #include <cwctype>
-#include <optional>
 #include <string>
 
 namespace lily_of_the_valley

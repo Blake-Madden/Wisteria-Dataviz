@@ -14,7 +14,6 @@
 
 #include "extract_text.h"
 #include <cassert>
-#include <limits>
 #include <vector>
 
 namespace lily_of_the_valley
@@ -415,7 +414,7 @@ namespace lily_of_the_valley
             std::vector<long int> m_sectors; /// where the data actually is
             };
 
-        /// Keeps track of the current state will parsing a stream.
+        /// Keeps track of the current state while parsing a stream.
         struct parse_state
             {
             bool m_hyperlink_begin_char_detected{ false };

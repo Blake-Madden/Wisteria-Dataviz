@@ -14,6 +14,7 @@
 
 #include "text_functional.h"
 #include "text_matrix.h"
+#include <cassert>
 #include <map>
 
 namespace lily_of_the_valley
@@ -29,7 +30,7 @@ namespace lily_of_the_valley
             @param text A wide character stream t to parse.
             @param headerRowDelimiter The delimiter to use to determine the number of columns when
                 parsing the header.
-            @param ignoreBlankLines Specifies whether or not to count empty rows as lines.
+            @param ignoreBlankLines Specifies whether to count empty rows as lines.
                 If set to @c true, then consecutive line ends will be skipped when counting the
                 lines in the file. Note that a row of column delimiters (with no data) will be seen
                 as a row however because we aren't using advanced column parsing logic in here.
@@ -52,9 +53,8 @@ namespace lily_of_the_valley
                 return 0;
                 }
 
-            lily_of_the_valley::text_column<text_column_to_eol_parser> noReadColumn(
-                lily_of_the_valley::text_column_to_eol_parser{ false });
-            lily_of_the_valley::text_row<std::wstring> noReadRowsStart;
+            text_column<text_column_to_eol_parser> noReadColumn(text_column_to_eol_parser{ false });
+            text_row<std::wstring> noReadRowsStart;
             noReadRowsStart.add_column(noReadColumn);
             while (skipRows > 0)
                 {
@@ -77,8 +77,8 @@ namespace lily_of_the_valley
                 collapseQuotes(header);
                 }
 
-            const wchar_t* currentPos = text;
-            const wchar_t* lineStart = nullptr;
+            const wchar_t* currentPos{ text };
+            const wchar_t* lineStart{ nullptr };
             while (currentPos[0])
                 {
                 lineStart = currentPos;
