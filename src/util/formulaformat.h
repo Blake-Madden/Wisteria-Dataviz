@@ -9,15 +9,11 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FORMAT_FORMULA_H__
-#define __FORMAT_FORMULA_H__
+#ifndef FORMAT_FORMULA_H
+#define FORMAT_FORMULA_H
 
-#include <cmath>
-#include <string>
-#include <wx/math.h>
 #include <wx/numformatter.h>
 #include <wx/string.h>
-#include <wx/utils.h>
 
 /// @brief Class for formatting math formulas between U.S. and non-U.S. locales.
 class FormulaFormat
@@ -35,11 +31,11 @@ class FormulaFormat
     /// @returns The locale's list separator.
     static wchar_t GetListSeparator() noexcept
         {
-        // bit of a hack, but there is no standard way of getting this
+        // a bit of a hack, but there is no standard way of getting this
         return (wxNumberFormatter::GetDecimalSeparator() == L'.') ? L',' : L';';
         }
     };
 
     /** @}*/
 
-#endif //__FORMAT_FORMULA_H__
+#endif // FORMAT_FORMULA_H

@@ -57,16 +57,16 @@ void QueueDownload::Remove(const int ID)
 //--------------------------------------------------
 void QueueDownload::CancelPending()
     {
-    std::for_each(m_requests.begin(), m_requests.end(),
-                  [](wxWebRequest& request)
-                  {
-                      if (request.IsOk() &&
-                          (request.GetState() == wxWebRequest::State_Active ||
-                           request.GetState() == wxWebRequest::State_Unauthorized))
+    std::ranges::for_each(m_requests,
+                          [](wxWebRequest& request)
                           {
-                          request.Cancel();
-                          }
-                  });
+                              if (request.IsOk() &&
+                                  (request.GetState() == wxWebRequest::State_Active ||
+                                   request.GetState() == wxWebRequest::State_Unauthorized))
+                                  {
+                                  request.Cancel();
+                                  }
+                          });
     }
 
 //--------------------------------------------------
@@ -106,8 +106,8 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
     case wxWebRequest::State_Unauthorized:
         {
         const auto requestPos =
-            std::find_if(m_requests.cbegin(), m_requests.cend(),
-                         [&evt](const auto& request) { return request.GetId() == evt.GetId(); });
+            std::ranges::find_if(std::as_const(m_requests), [&evt](const auto& request)
+                                 { return request.GetId() == evt.GetId(); });
         if (requestPos == m_requests.cend())
             {
             Remove(evt.GetId());
@@ -176,7 +176,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
     if (GetCookies().length() > 0)
         {
-        request.SetHeader(L"Cookie", GetCookies());
+        request.SetHeader(_DT(L"Cookie", DTExplanation::InternalKeyword), GetCookies());
         }
     request.DisablePeerVerify(IsPeerVerifyDisabled());
     if (request.IsOk())
@@ -431,7 +431,7 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
     }
 
 //--------------------------------------------------
-void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
+void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
     {
     if (evt.GetRequest().IsOk())
         {
@@ -560,7 +560,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     case wxWebRequest::State_Active:
         [[fallthrough]];
     case wxWebRequest::State_Idle:
-        /* Check after XX seconds as to whether any data has been received;
+        /* Check after XX seconds whether any data has been received;
            if not, then quit.*/
         if (const auto elapsedSeconds = std::chrono::system_clock::now() - m_startTime;
             std::chrono::duration_cast<std::chrono::seconds>(elapsedSeconds).count() >

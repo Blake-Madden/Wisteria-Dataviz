@@ -17,8 +17,6 @@
 #include "memorymappedfile.h"
 #include "zipcatalog.h"
 #include <map>
-#include <wx/filesys.h>
-#include <wx/listctrl.h>
 #include <wx/wx.h>
 
 /// @brief Class to manage loading images, icons, and XRC files from a ZIP file.

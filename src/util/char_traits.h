@@ -23,36 +23,36 @@
 #include <cstring>
 #include <cwchar>
 #include <cwctype>
-#include <ios>
+#include <string>
 #include <string_view>
 
 namespace string_util
     {
-    /// @brief Case insensitive comparison for `std::basic_string<wchar_t>` strings.
+    /// @brief Case-insensitive comparison for `std::basic_string<wchar_t>` strings.
     /// @private
     class case_insensitive_character_traits : public std::char_traits<wchar_t>
         {
       public:
         //--------------------------------------------------
-        inline static bool eq_int_type(const int_type& i1, const int_type& i2) noexcept
+        static bool eq_int_type(const int_type& i1, const int_type& i2) noexcept
             {
             return tolower(i1) == tolower(i2);
             }
 
         //--------------------------------------------------
-        inline static bool eq(const char_type& first, const char_type& second) noexcept
+        static bool eq(const char_type& first, const char_type& second) noexcept
             {
             return (tolower(first) == tolower(second));
             }
 
         //--------------------------------------------------
-        inline static bool lt(const char_type& first, const char_type& second) noexcept
+        static bool lt(const char_type& first, const char_type& second) noexcept
             {
             return (tolower(first) < tolower(second));
             }
 
         //--------------------------------------------------
-        inline static char_type tolower(const char_type& ch) noexcept { return std::towlower(ch); }
+        static char_type tolower(const char_type& ch) noexcept { return std::towlower(ch); }
 
         //--------------------------------------------------
         static int compare(const char_type* s1, const char_type* s2, size_t n) noexcept
@@ -63,7 +63,7 @@ namespace string_util
                 {
                 return -1;
                 }
-            else if (s2 == nullptr)
+            if (s2 == nullptr)
                 {
                 return 1;
                 }

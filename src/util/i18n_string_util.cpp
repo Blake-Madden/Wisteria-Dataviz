@@ -28,7 +28,7 @@ namespace i18n_string_util
             return false;
             }
         // protocols
-        if (string_util::strnicmp(text, std::wstring_view{ L"http://" }) == 0)
+        if (string_util::strnicmp(text, std::wstring_view{ L"http://" }) == 0) // NOLINT
             {
             return true;
             }
@@ -99,7 +99,7 @@ namespace i18n_string_util
                 const size_t numberOfSpaces = std::ranges::count_if(
                     std::as_const(text), [](const auto chr) { return chr == L' '; });
                 // Has a suffix like ".com" but is lengthy and has no slash in it?
-                // Probably not really an URL then (may be a sentence missing a period).
+                // Probably not really an URL then (might be a sentence missing a period).
                 if (firstSlash == std::wstring_view::npos && text.length() > 64 &&
                     numberOfSpaces > 5)
                     {

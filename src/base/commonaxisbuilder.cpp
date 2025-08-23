@@ -8,12 +8,10 @@
 
 #include "commonaxisbuilder.h"
 
-using namespace Wisteria::GraphItems;
-
 namespace Wisteria
     {
     //----------------------------------------------------------------
-    std::unique_ptr<Axis>
+    std::unique_ptr<GraphItems::Axis>
     CommonAxisBuilder::BuildYAxis(Canvas* canvas,
                                   const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                                   AxisType axisType)
@@ -33,7 +31,7 @@ namespace Wisteria
 
         // see which plot has the largest range end and use that
         // (note that we will be assuming all plots are using the same range start [usually zero])
-        Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetLeftYAxis() };
+        GraphItems::Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetLeftYAxis() };
         for (const auto& graph : graphs)
             {
             if (graph->GetLeftYAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
@@ -53,7 +51,7 @@ namespace Wisteria
             graph->GetRightYAxis().GetTitle().Show(false);
             }
         // create a common axis, also copied from the tallest plot's left axis
-        auto commonAxis = std::make_unique<Axis>(axisType);
+        auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the left side of its
@@ -70,7 +68,7 @@ namespace Wisteria
         }
 
     //----------------------------------------------------------------
-    std::unique_ptr<Axis>
+    std::unique_ptr<GraphItems::Axis>
     CommonAxisBuilder::BuildXAxis(Canvas* canvas,
                                   const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                                   AxisType axisType, const bool useCommonLeftAxis /*= false*/)
@@ -90,7 +88,7 @@ namespace Wisteria
 
         // see which plot has the largest range end and use that
         // (note that we will be assuming all plots are using the same range start [usually zero])
-        Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetBottomXAxis() };
+        GraphItems::Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetBottomXAxis() };
         for (const auto& graph : graphs)
             {
             if (graph->GetBottomXAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
@@ -110,7 +108,7 @@ namespace Wisteria
             graph->GetTopXAxis().GetTitle().Show(false);
             }
         // create a common axis, also copied from the widest plot's bottom axis
-        auto commonAxis = std::make_unique<Axis>(axisType);
+        auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the bottom side of its bounding box

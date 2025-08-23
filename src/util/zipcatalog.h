@@ -12,6 +12,7 @@
 #ifndef __WXZIPHELPER_H__
 #define __WXZIPHELPER_H__
 
+#include "memorymappedfile.h"
 #include "textstream.h"
 #include <map>
 #include <vector>

@@ -9,22 +9,14 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __FILE_UTIL_H__
-#define __FILE_UTIL_H__
+#ifndef FILE_UTIL_H
+#define FILE_UTIL_H
 
 #include <initializer_list>
-#include <map>
-#include <memory>
-#include <string>
 #include <wx/arrstr.h>
-#include <wx/dir.h>
-#include <wx/file.h>
-#include <wx/filefn.h>
 #include <wx/filename.h>
-#include <wx/progdlg.h>
-#include <wx/regex.h>
 #include <wx/string.h>
-#include <wx/tokenzr.h>
+// defines NOMINMAX, include it before windows.h
 #include <wx/wx.h>
 #ifdef __WXMSW__
     #include <shlobj.h>
@@ -32,7 +24,6 @@
 #endif
 #include "../data/dataset.h"
 #include "../util/donttranslate.h"
-#include "../util/string_util.h"
 
 /// @brief The filepaths that a string may be resolved to.
 enum class FilePathType
@@ -211,19 +202,19 @@ class FilePathResolverBase
 
 /** @brief Renames a file, attempting to shortening the destination name.
     @details If the destination file name is more than 255 and the original isn't,
-        then this will attempted to truncate the name and combine it with the original name
+        then this will attempt to truncate the name and combine it with the original name
         to add randomness.\n
         If that criteria isn't met, then will attempt to call @c wxRenameFile.
         This can be called if a regular call to @c wxRenameFile fails.
     @param srcPath The original file to rename/move.
     @param destPath The destination name.
     @returns @c true if successful.*/
-bool RenameFileShortenName(const wxString& srcPath, wxString& destPath);
+bool RenameFileShortenName(const wxString& srcPath, const wxString& destPath);
 /** @returns A shortened version of a filepath.
     @param filePath The filepath to shorten.
     @param maxLength The maximum length of the shortened name.*/
 [[nodiscard]]
-wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength = 40);
+wxString GetShortenedFilePath(const wxString& filePath, size_t maxLength = 40);
 /// @brief Strips illegal characters from a file path, except for path separators.
 /// @param filePath The path to strip.
 /// @returns The stripped path.
@@ -324,4 +315,4 @@ std::pair<wxString, size_t> GetCommonFolder(const wxString& path1, const wxStrin
 
 /** @}*/
 
-#endif //__FILE_UTIL_H__
+#endif // FILE_UTIL_H

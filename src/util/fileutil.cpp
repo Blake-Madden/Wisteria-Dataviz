@@ -7,6 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "fileutil.h"
+#include "wx/dir.h"
+#include "wx/progdlg.h"
+#include "wx/tokenzr.h"
 
 //------------------------------------------------
 wxString FilePathResolverBase::ResolvePath(
@@ -66,7 +69,7 @@ wxString FilePathResolverBase::ResolvePath(
         {
         m_path.Replace(L"\\", L"/");
         m_path.Replace(L" ", L"%20");
-        m_path.insert(0, L"http://"); // safe assumption to fallback to
+        m_path.insert(0, L"http://"); // safe assumption to fall back to
 
         m_fileType = FilePathType::HTTP;
         return m_path;
@@ -287,10 +290,10 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
         {
         wxArrayString subDirs;
         GetAllDirs(currentDir, subDirs);
-        for (size_t i = 0; i < subDirs.size(); ++i)
+        for (const auto& subDir : subDirs)
             {
             const wxString currentNewPath =
-                subDirs[i] + wxFileName::GetPathSeparator() + filePath.GetFullName();
+                subDir + wxFileName::GetPathSeparator() + filePath.GetFullName();
             if (wxFileName::FileExists(currentNewPath))
                 {
                 return currentNewPath;
@@ -324,7 +327,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
     }
 
 //------------------------------------------------
-bool RenameFileShortenName(const wxString& srcPath, wxString& destPath)
+bool RenameFileShortenName(const wxString& srcPath, const wxString& destPath)
     {
     constexpr int maxFileNameLength{ 255 };
     wxFileName src{ srcPath };
@@ -363,7 +366,8 @@ wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /
             {
             wxFileName fn(filePath);
             wxArrayString astrTemp = fn.GetDirs();
-            wxString volumePath = fn.GetVolume() + fn.GetVolumeSeparator() + fn.GetPathSeparator();
+            wxString volumePath =
+                fn.GetVolume() + wxFileName::GetVolumeSeparator() + wxFileName::GetPathSeparator();
 
             /* let's replace each part with ellipsis, until the length is OK
                (but never substitute drive and file name)*/
@@ -378,7 +382,7 @@ wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /
                     }
                 else
                     {
-                    astrTemp[i] = wxString(1, wchar_t(8230));
+                    astrTemp[i] = wxString(1, static_cast<wchar_t>(8230));
                     }
                 }
             return volumePath + JoinDirs(astrTemp) + fn.GetFullName();
@@ -425,7 +429,7 @@ wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /
                     }
                 else
                     {
-                    folders[i] = wxString(1, wchar_t(8230));
+                    folders[i] = wxString(1, static_cast<wchar_t>(8230));
                     }
                 }
 
@@ -496,7 +500,7 @@ bool SendToRecycleBinOrDelete(const wxString& fileToDelete)
 //------------------------------------------------------------------
 int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs)
     {
-    wxDir dir(rootDirectory);
+    const wxDir dir(rootDirectory);
 
     if (!dir.IsOpened())
         {
@@ -512,17 +516,17 @@ int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs)
         ++counter;
 
         wxString subdir = rootDirectory;
-        if (subdir.length() && subdir.at(subdir.length() - 1) != wxFileName::GetPathSeparator())
+        if (!subdir.empty() && subdir.at(subdir.length() - 1) != wxFileName::GetPathSeparator())
             {
             subdir += wxFileName::GetPathSeparator();
             }
         subdir += filename;
 
         subDirs.Add(subdir);
-        const auto countersubs = GetAllDirs(subdir, subDirs);
-        if (countersubs > 0)
+        const auto counterSubs = GetAllDirs(subdir, subDirs);
+        if (counterSubs > 0)
             {
-            counter += countersubs;
+            counter += counterSubs;
             }
         cont = dir.GetNext(&filename);
         }
@@ -585,10 +589,9 @@ wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtens
     matchedFiles.reserve(files.size());
     std::set<wxString, Wisteria::Data::wxStringLessNoCase> validExtensions;
     wxStringTokenizer tkz(fileExtensions, L"*.;");
-    wxString nextFileExt;
     while (tkz.HasMoreTokens())
         {
-        nextFileExt = tkz.GetNextToken();
+        wxString nextFileExt = tkz.GetNextToken();
         if (!nextFileExt.empty())
             {
             validExtensions.insert(nextFileExt);
@@ -596,7 +599,7 @@ wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtens
         }
     for (const auto& file : files)
         {
-        if (validExtensions.find(wxFileName(file).GetExt()) != validExtensions.cend())
+        if (validExtensions.contains(wxFileName(file).GetExt()))
             {
             matchedFiles.push_back(file);
             }
@@ -608,7 +611,7 @@ wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtens
 bool RemoveEmptyDirsRecursively(const wxString& rootDirectory)
     {
     wxString rdir = rootDirectory;
-    if (rootDirectory.length() &&
+    if (!rootDirectory.empty() &&
         rootDirectory.at(rootDirectory.length() - 1) != wxFileName::GetPathSeparator())
         {
         rdir += wxFileName::GetPathSeparator();
@@ -650,8 +653,7 @@ bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrF
     if (fileOrFolderToCombineName.HasVolume() && directoryToCombineWithName.HasVolume())
         {
         wxString fullVolumeName = directoryToCombineWithName.GetVolume() +
-                                  directoryToCombineWithName.GetVolumeSeparator() +
-                                  directoryToCombineWithName.GetPathSeparator();
+                                  wxFileName::GetVolumeSeparator() + wxFileName::GetPathSeparator();
         if (fileOrFolderToCombineName.GetVolume().CmpNoCase(
                 directoryToCombineWithName.GetVolume()) != 0)
             {
@@ -660,8 +662,8 @@ bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrF
             }
         }
 
-    wxArrayString fileOrFolderToCombineDirs = fileOrFolderToCombineName.GetDirs();
-    wxArrayString directoryToCombineDirs = directoryToCombineWithName.GetDirs();
+    const wxArrayString& fileOrFolderToCombineDirs = fileOrFolderToCombineName.GetDirs();
+    const wxArrayString& directoryToCombineDirs = directoryToCombineWithName.GetDirs();
 
     size_t i = 0;
     for (i = 0; i < fileOrFolderToCombineName.GetDirCount() &&
@@ -709,11 +711,11 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
     wxString newFileName;
     wxString fromDir = fromDirectory;
     wxString toDir = toDirectory;
-    if (fromDir.length() && fromDir.at(fromDir.length() - 1) != wxFileName::GetPathSeparator())
+    if (!fromDir.empty() && fromDir.at(fromDir.length() - 1) != wxFileName::GetPathSeparator())
         {
         fromDir += wxFileName::GetPathSeparator();
         }
-    if (toDir.length() && toDir.at(toDir.length() - 1) != wxFileName::GetPathSeparator())
+    if (!toDir.empty() && toDir.at(toDir.length() - 1) != wxFileName::GetPathSeparator())
         {
         toDir += wxFileName::GetPathSeparator();
         }
@@ -734,8 +736,7 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
 
     wxDir dir;
     wxArrayString filesToMove;
-    const size_t numberOfFiles = dir.GetAllFiles(fromDir, &filesToMove);
-    if (numberOfFiles == 0)
+    if (wxDir::GetAllFiles(fromDir, &filesToMove) == 0)
         {
         newFolder = fromDir;
         if (newFolder.GetDirCount() &&
@@ -772,9 +773,9 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
         if (PathCombine(toDir, relativeFilePath, newFileName))
             {
             newFolder = newFileName;
-            if (!newFolder.DirExists(newFolder.GetPath()))
+            if (!wxFileName::DirExists(newFolder.GetPath()))
                 {
-                newFolder.Mkdir(newFolder.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+                wxFileName::Mkdir(newFolder.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
                 }
             wxRenameFile(filesToMove[i], newFileName);
             }
@@ -793,10 +794,9 @@ wxString CreateNewFileName(const wxString& filePath)
     // as this version of SplitPath returns void.
     // cppcheck-suppress ignoredReturnValue
     wxFileName::SplitPath(filePath, &dir, &name, &ext);
-    wxString newFilePath;
     for (int i = 0; i < 1'000; ++i)
         {
-        newFilePath =
+        wxString newFilePath =
             wxString::Format(L"%s%c%s%04d.%s", dir, wxFileName::GetPathSeparator(), name, i, ext);
         if (!wxFileName::FileExists(newFilePath))
             {

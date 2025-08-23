@@ -7,7 +7,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "textstream.h"
+#include "../import/html_extract_text.h"
+#include "../import/unicode_extract_text.h"
+#include "../utfcpp/source/utf8.h"
+#include "../util/donttranslate.h"
+#include "../util/string_util.h"
+#include "memorymappedfile.h"
+#include "wx/filedlg.h"
+#include "wx/generic/filectrlg.h"
+#include "wx/log.h"
+#include "wx/osx/filedlg.h"
+#include <memory>
 #include <utility>
+#include <vector>
+#include <wx/file.h>
+#include <wx/filename.h>
 
 namespace Wisteria
     {
@@ -116,10 +130,8 @@ namespace Wisteria
             if (destLength > convertUnicodeText.get_filtered_text_length())
                 {
                 convertUnicodeText(text, length, wxIsPlatformLittleEndian());
-                std::copy(convertUnicodeText.get_filtered_text(),
-                          convertUnicodeText.get_filtered_text() +
-                              convertUnicodeText.get_filtered_text_length(),
-                          dest);
+                std::copy_n(convertUnicodeText.get_filtered_text(),
+                            convertUnicodeText.get_filtered_text_length(), dest);
                 return true; // already null terminated, so we're done, return from here.
                 }
             else

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "xml_format.h"
+#include "wx/fontenum.h"
 
 using namespace lily_of_the_valley;
 
@@ -587,8 +588,6 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart, const wchar_t* sectio
         return defaultValue;
         }
 
-    wxString value;
-
     const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
         sectionStart, sectionEnd, { entityTag.wc_str(), entityTag.length() }, true);
     if (currentPos && (currentPos < sectionEnd))
@@ -599,19 +598,17 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart, const wchar_t* sectio
         currentPos = std::wcschr(currentPos, L'>');
         if (currentPos && endPos && (currentPos < endPos))
             {
+            wxString value;
             ++currentPos;
             value.assign(currentPos, (endPos - currentPos));
             lily_of_the_valley::html_extract_text filter_html;
             value = filter_html(value.wc_str(), value.length(), true, true);
             return value;
             }
-        else
-            {
-            wxMessageBox(
-                wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
-                _(L"Warning"), wxOK | wxICON_INFORMATION);
-            return defaultValue;
-            }
+        wxMessageBox(
+            wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
+            _(L"Warning"), wxOK | wxICON_INFORMATION);
+        return defaultValue;
         }
     return defaultValue;
     }

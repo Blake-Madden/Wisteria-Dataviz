@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __DOWNLOADFILE_H__
-#define __DOWNLOADFILE_H__
+#ifndef WISTERIA_DOWNLOADFILE_H
+#define WISTERIA_DOWNLOADFILE_H
 
 #include "../import/html_extract_text.h"
 #include <chrono>
@@ -22,8 +22,6 @@
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/log.h>
-#include <wx/progdlg.h>
-#include <wx/stdpaths.h>
 #include <wx/string.h>
 #include <wx/webrequest.h>
 #include <wx/wx.h>
@@ -32,7 +30,7 @@
         and then downloads them asynchronously.
     @par Example
         A `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
-        should store an initialize a @c QueueDownload object as a member
+        should store and initialize a @c QueueDownload object as a member
         and then initialize it as such:
     @code
         // You can also call SetEventHandler() and bind wxEVT_WEBREQUEST_STATE and
@@ -125,7 +123,7 @@ class QueueDownload
     ///     any download that still pending.
     void Start()
         {
-        std::for_each(m_requests.begin(), m_requests.end(), [](auto& request) { request.Start(); });
+        std::ranges::for_each(m_requests, [](auto& request) { request.Start(); });
         }
 
     /// @brief Bind this to a @c wxEVT_WEBREQUEST_STATE in the
@@ -144,7 +142,7 @@ class QueueDownload
     void CancelPending();
 
     /** @brief Disable SSL certificate verification.
-        @details This can be used to connect to self signed servers or
+        @details This can be used to connect to self-signed servers or
             other invalid SSL connections.\n
             Disabling verification makes the communication insecure.
         @param disable @c true to disable SSL certificate verification.*/
@@ -230,7 +228,7 @@ class QueueDownload
 /** @brief Reads or downloads a file synchronously.
     @par Example
         A `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
-        should store an initialize a @c FileDownload object as a member
+        should store and initialize a @c FileDownload object as a member
         and then initialize it as such:
     @code
         // You can also call SetEventHandler() and bind wxEVT_WEBREQUEST_STATE and
@@ -248,7 +246,7 @@ class QueueDownload
 
     Later, the `wxEvtHandler`-derived class can call GetResponse(), Read(), or Download() as such:
     @code
-        // get the content type of a page (without reading its full content)
+        // get the content type from a page (without reading its full content)
         const wxString contentType = m_downloadFile.GetResponse(
             "https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md")
             .GetHeader("Content-Type");
@@ -257,7 +255,7 @@ class QueueDownload
         m_downloadFile.Download("https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md",
                                 wxStandardPaths::Get().GetDocumentsDir() + "/readme.md");
 
-        // then read a webpage and copy it into a wxString
+        // then read a webpage and copy it into a string
         wxString webPageContent(m_downloadFile.Read("https://www.wxwidgets.org/") ?
                                 &m_downloadFile.GetLastRead()[0] : wxString{});
     @endcode
@@ -325,7 +323,7 @@ class FileDownload
         }
 
     /** @brief Disable SSL certificate verification.
-        @details This can be used to connect to self signed servers or other
+        @details This can be used to connect to self-signed servers or other
             invalid SSL connections.\n
             Disabling verification makes the communication insecure.
         @param disable @c true to disable SSL certificate verification.*/
@@ -367,7 +365,7 @@ class FileDownload
     /// @brief Reads the requested URL.
     /// @details This will be synchronous, so will not return until the
     ///     entire web file has been read.\n
-    ///     Call GetLastRead() afterwards to get the web file's content.
+    ///     Call GetLastRead() afterward to get the web file's content.
     /// @param url The web file to download.
     /// @returns @c true if read was successful.
     /// @sa GetLastRead().
@@ -461,7 +459,7 @@ class FileDownload
     ///     Bind(wxEVT_WEBREQUEST_DATA,
     ///         &FileDownload::ProcessRequest, &m_downloadFile);
     /// @endcode
-    void ProcessRequest(wxWebRequestEvent& evt);
+    void ProcessRequest(const wxWebRequestEvent& evt);
 
   private:
     void LoadResponseInfo(const wxWebRequestEvent& evt);
@@ -524,4 +522,4 @@ class FileDownload
 
     /** @}*/
 
-#endif // __DOWNLOADFILE_H__
+#endif // WISTERIA_DOWNLOADFILE_H

@@ -52,7 +52,7 @@
     */
 // clang-format on
 
-class LogFile : public wxLog
+class LogFile final : public wxLog
     {
   public:
     /// @brief Default constructor.

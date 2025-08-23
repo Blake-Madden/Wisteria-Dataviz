@@ -15,8 +15,8 @@
     @brief i18n classes.
 @{*/
 
-#ifndef __I18N_EXTRACT_H__
-#define __I18N_EXTRACT_H__
+#ifndef I18N_EXTRACT_H
+#define I18N_EXTRACT_H
 
 #include <regex>
 #include <string>
@@ -265,4 +265,4 @@ namespace i18n_string_util
 
 /** @}*/
 
-#endif //__I18N_EXTRACT_H__
+#endif // I18N_EXTRACT_H

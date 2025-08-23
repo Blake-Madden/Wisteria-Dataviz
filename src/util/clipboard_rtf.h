@@ -17,7 +17,7 @@
 #include <wx/string.h>
 
 /** @brief A specialization of @c wxDataObjectSimple for Rich Text Formatted text.
-    @details It can be used without change to paste data into the wxClipboard
+    @details It can be used to paste data into the wxClipboard
         or a @c wxDropSource.*/
 class wxRtfDataObject : public wxDataObjectSimple
     {
@@ -25,7 +25,7 @@ class wxRtfDataObject : public wxDataObjectSimple
     /** @brief Constructor. May be used to initialize the text
             (otherwise, SetText() should be used later).
         @param rtf The RTF data.*/
-    wxRtfDataObject(const wxString& rtf = wxString{})
+    explicit wxRtfDataObject(wxString rtf = wxString{})
         :
 #ifdef __WXMSW__
           wxDataObjectSimple(L"Rich Text Format"),
@@ -34,13 +34,13 @@ class wxRtfDataObject : public wxDataObjectSimple
 #else
           wxDataObjectSimple(L"text/rtf"),
 #endif
-          m_rtf(rtf)
+          m_rtf(std::move(rtf))
         {
         }
 
     /** @brief Sets the (Rich Text Formatted) text.
         @param rtf The RTF data.*/
-    void SetText(wxString rtf) { m_rtf = std::move(rtf); }
+    void SetText(const wxString& rtf) { m_rtf = rtf; }
 
     /** @param format The data's format (not used).
         @returns The size of the RTF data in bytes. */

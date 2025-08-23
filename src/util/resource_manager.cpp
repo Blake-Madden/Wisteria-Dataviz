@@ -12,7 +12,6 @@
 #include <wx/fs_zip.h>
 #include <wx/propgrid/manager.h>
 #include <wx/propgrid/propgrid.h>
-#include <wx/ribbon/buttonbar.h>
 #include <wx/wfstream.h>
 
 //---------------------------------------------------

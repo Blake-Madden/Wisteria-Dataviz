@@ -15,6 +15,7 @@
 #include <string>
 #include <wx/string.h>
 #include <wx/utils.h>
+#include <wx/window.h>
 
 /** @brief Temporarily prevents a window from propagating its event to its parent.
     @details This is useful for when a parent sends an event to a child, but the child

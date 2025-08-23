@@ -9,23 +9,11 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __TEXTSTREAM_H__
-#define __TEXTSTREAM_H__
+#ifndef WISTERIA_TEXT_STREAM_H
+#define WISTERIA_TEXT_STREAM_H
 
-#include "../import/html_extract_text.h"
-#include "../import/unicode_extract_text.h"
 #include "../math/mathematics.h"
-#include "../utfcpp/source/utf8.h"
-#include "../util/donttranslate.h"
-#include "../util/string_util.h"
-#include "memorymappedfile.h"
-#include <memory>
-#include <vector>
-#include <wx/file.h>
-#include <wx/filename.h>
-#include <wx/regex.h>
 #include <wx/string.h>
-#include <wx/wx.h>
 
 namespace Wisteria
     {
@@ -86,4 +74,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__TEXTSTREAM_H__
+#endif // WISTERIA_TEXT_STREAM_H

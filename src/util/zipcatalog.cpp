@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "zipcatalog.h"
+#include "../import/unicode_extract_text.h"
+#include "wx/bmpbndl.h"
 #include <wx/image.h>
 #include <wx/stdpaths.h>
 #include <wx/wfstream.h>

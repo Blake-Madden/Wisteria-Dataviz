@@ -15,22 +15,8 @@
 #include "../import/html_encode.h"
 #include "../math/mathematics.h"
 #include "../util/donttranslate.h"
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <set>
 #include <vector>
-#include <wx/arrstr.h>
-#include <wx/dir.h>
-#include <wx/file.h>
-#include <wx/filefn.h>
-#include <wx/filename.h>
-#include <wx/fontenum.h>
-#include <wx/progdlg.h>
-#include <wx/regex.h>
 #include <wx/string.h>
-#include <wx/tokenzr.h>
-#include <wx/utils.h>
 #include <wx/wx.h>
 
 /// @brief Class to format XML files.
