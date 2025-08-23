@@ -22,12 +22,8 @@
 #include <vector>
 #include <wx/html/htmlwin.h>
 #include <wx/listbox.h>
-#include <wx/spinctrl.h>
-#include <wx/stattext.h>
 #include <wx/stc/stc.h>
 #include <wx/tokenzr.h>
-#include <wx/valgen.h>
-#include <wx/wupdlock.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI

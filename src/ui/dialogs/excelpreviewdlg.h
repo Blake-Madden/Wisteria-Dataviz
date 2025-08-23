@@ -61,7 +61,9 @@ namespace Wisteria::UI
             assert(m_wrk && m_excelFile);
             wxCHECK_MSG((row >= 0 && row < GetNumberRows()) && (col >= 0 && col < GetNumberCols()),
                         wxString{}, L"invalid row or column index in ExcelTable");
-            return m_excelFile ? wxString((*m_wrk)[row][col].get_value()) : wxString();
+            return (m_excelFile != nullptr && m_wrk != nullptr) ?
+                       wxString((*m_wrk)[row][col].get_value()) :
+                       wxString{};
             }
 
         /// @private
@@ -98,7 +100,7 @@ namespace Wisteria::UI
                         long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
             : m_wrk(wrk), m_excelFile(excelFile)
             {
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+            wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
             Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
             Bind(wxEVT_BUTTON, &ExcelPreviewDlg::OnOK, this, wxID_OK);
@@ -121,11 +123,11 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool IsCellSelected(const wxGridCellCoords& cell) const
             {
-            if (m_selectedRows.find(cell.GetRow()) != m_selectedRows.end())
+            if (m_selectedRows.contains(cell.GetRow()))
                 {
                 return true;
                 }
-            else if (m_selectedColumns.find(cell.GetCol()) != m_selectedColumns.end())
+            else if (m_selectedColumns.contains(cell.GetCol()))
                 {
                 return true;
                 }

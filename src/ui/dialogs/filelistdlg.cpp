@@ -12,7 +12,7 @@ namespace Wisteria::UI
     {
     void FileListDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         // infobar
         m_infoBar = new wxInfoBar(this);
@@ -20,17 +20,17 @@ namespace Wisteria::UI
 
         const wxSizerFlags szFlags(wxSizerFlags{}.Expand().Border());
 
-        wxBoxSizer* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* controlsSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(controlsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         // file list and toolbar
-        wxBoxSizer* fileListSizer = new wxBoxSizer(wxVERTICAL);
+        auto* fileListSizer = new wxBoxSizer(wxVERTICAL);
         controlsSizer->Add(fileListSizer, wxSizerFlags{ 2 }.Expand().Border());
 
-        auto buttonsSizer = new wxGridSizer(
+        auto* buttonsSizer = new wxGridSizer(
             4, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
 
-        wxButton* button = new wxButton(this, wxID_OPEN, _(L"&Open Files..."));
+        auto* button = new wxButton(this, wxID_OPEN, _(L"&Open Files..."));
         button->SetBitmap(
             wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
@@ -70,7 +70,7 @@ namespace Wisteria::UI
         fileListSizer->Add(m_listCtrl, wxSizerFlags{ 1 }.Expand());
 
         // file information
-        wxBoxSizer* fileInfoSizer = new wxBoxSizer(wxVERTICAL);
+        auto* fileInfoSizer = new wxBoxSizer(wxVERTICAL);
         m_thumbnail = new Wisteria::UI::Thumbnail(
             this, wxNullBitmap, Wisteria::ClickMode::FullSizeViewable, false, wxID_ANY,
             wxDefaultPosition, FromDIP(wxSize{ 256, 256 }));

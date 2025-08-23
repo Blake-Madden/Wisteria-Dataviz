@@ -77,7 +77,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnCopy([[maybe_unused]] wxRibbonButtonBarEvent& event)
         {
-        if (m_useCheckBoxes && m_checkList)
+        if (m_useCheckBoxes && m_checkList != nullptr)
             {
             wxString selectedText;
             for (size_t i = 0; i < m_checkList->GetCount(); ++i)
@@ -110,12 +110,12 @@ namespace Wisteria::UI
     //------------------------------------------------------
     ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
                      const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
-                     const long buttonStyle /*= LD_NO_BUTTONS*/, wxWindowID id /*= wxID_ANY*/,
+                     const long buttonStyle /*= LD_NO_BUTTONS*/, const wxWindowID id /*= wxID_ANY*/,
                      const wxString& caption /*= wxString{}*/,
                      const wxString& label /*= wxString{}*/,
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
-                     long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
+                     const long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
         : m_useCheckBoxes(useCheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
           m_hoverColor(hoverColor), m_values(values), m_realTimeTimer(this)
         {
@@ -215,7 +215,7 @@ namespace Wisteria::UI
         // the top label
         if (m_label.length())
             {
-            wxBoxSizer* labelSizer = new wxBoxSizer(wxHORIZONTAL);
+            auto* labelSizer = new wxBoxSizer(wxHORIZONTAL);
             labelSizer->Add(new wxStaticText(this, wxID_STATIC, m_label), 0, wxALIGN_CENTER | wxALL,
                             0);
             labelSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
@@ -224,9 +224,9 @@ namespace Wisteria::UI
 
         if ((m_buttonStyle & LD_FIND_BUTTON))
             {
-            wxBoxSizer* searchSizer = new wxBoxSizer(wxHORIZONTAL);
+            auto* searchSizer = new wxBoxSizer(wxHORIZONTAL);
             searchSizer->AddStretchSpacer(1);
-            auto searcher = new Wisteria::UI::SearchPanel(this, wxID_ANY);
+            auto* searcher = new Wisteria::UI::SearchPanel(this, wxID_ANY);
             searcher->SetBackgroundColour(GetBackgroundColour());
             searchSizer->Add(searcher, 0);
             mainSizer->Add(searchSizer, wxSizerFlags{}.Expand());
@@ -237,7 +237,7 @@ namespace Wisteria::UI
             {
             m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxRIBBON_BAR_FLOW_HORIZONTAL);
-            wxRibbonPage* homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
+            auto* homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
             // export
             if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
                 {
@@ -267,9 +267,9 @@ namespace Wisteria::UI
                 (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_CLEAR_BUTTON) ||
                 (m_buttonStyle & LD_REFRESH_BUTTON) || (m_buttonStyle & LD_LOG_VERBOSE_BUTTON))
                 {
-                wxRibbonPanel* editPage = new wxRibbonPanel(
-                    homePage, ID_EDIT_PANEL, _(L"Edit"), wxNullBitmap, wxDefaultPosition,
-                    wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+                auto* editPage = new wxRibbonPanel(homePage, ID_EDIT_PANEL, _(L"Edit"),
+                                                   wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+                                                   wxRIBBON_PANEL_NO_AUTO_MINIMISE);
                 m_editButtonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
                 if (m_buttonStyle & LD_COPY_BUTTON)
                     {

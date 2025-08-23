@@ -31,8 +31,8 @@ namespace Wisteria::UI
             @param pos The dialog's screen position.
             @param size The dialog's initial size.
             @param style The dialog's flags.*/
-        OpacityDlg(wxWindow* parent, const uint8_t opacity, wxBitmap image,
-                   wxWindowID id = wxID_ANY, const wxString& caption = _(L"Set Opacity"),
+        OpacityDlg(wxWindow* parent, uint8_t opacity, wxBitmap image, wxWindowID id = wxID_ANY,
+                   const wxString& caption = _(L"Set Opacity"),
                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private

@@ -41,7 +41,7 @@ namespace Wisteria::UI
             m_selectedCells.push_back(m_grid->GetGridCursorCoords());
             }
         // rows
-        wxArrayInt selRows = m_grid->GetSelectedRows();
+        const wxArrayInt selRows = m_grid->GetSelectedRows();
         for (size_t i = 0; i < selRows.Count(); ++i)
             {
             m_selectedRows.insert(selRows[i]);
@@ -75,11 +75,9 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void ExcelPreviewDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        wxArrayString choices;
-        choices.Add(_(L"All text cells"));
-        choices.Add(_(L"Only highlighted cells"));
+        const wxArrayString choices = { _(L"All text cells"), _(L"Only highlighted cells") };
         mainSizer->Add(new wxRadioBox(this, wxID_ANY, _(L"Import:"), wxDefaultPosition,
                                       wxDefaultSize, choices, 0, wxRA_SPECIFY_ROWS,
                                       wxGenericValidator(&m_importMethod)),

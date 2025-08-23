@@ -22,14 +22,8 @@
 #include <wx/paper.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
-#include <wx/ribbon/gallery.h>
 #include <wx/ribbon/toolbar.h>
 #include <wx/wx.h>
-#include <wx/xrc/xh_bmp.h>
-#include <wx/xrc/xh_menu.h>
-#include <wx/xrc/xh_statbar.h>
-#include <wx/xrc/xh_toolb.h>
-#include <wx/xrc/xmlres.h>
 
 namespace Wisteria::UI
     {
@@ -149,9 +143,9 @@ namespace Wisteria::UI
       private:
         // Ribbon features
         /// @private
-        void OnRibbonButtonBarClick(wxRibbonButtonBarEvent& evt);
+        void OnRibbonButtonBarClick(const wxRibbonButtonBarEvent& evt);
         /// @private
-        void OnRibbonToolBarClick(wxRibbonToolBarEvent& evt);
+        void OnRibbonToolBarClick(const wxRibbonToolBarEvent& evt);
 
         wxRibbonBar* m_ribbon{ nullptr };
         wxPrintData* m_printData{ nullptr };

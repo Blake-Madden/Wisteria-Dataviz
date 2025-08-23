@@ -101,7 +101,7 @@ namespace Wisteria::Graphs
             double m_frequency;
             };
 
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
         std::vector<WordInfo> m_words;
         };
     } // namespace Wisteria::Graphs

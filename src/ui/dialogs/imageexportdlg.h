@@ -15,6 +15,7 @@
 #include "../../math/mathematics.h"
 #include "../../util/donttranslate.h"
 #include "../controls/thumbnail.h"
+#include <utility>
 #include <wx/bitmap.h>
 #include <wx/combobox.h>
 #include <wx/dialog.h>
@@ -81,12 +82,12 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        ImageExportDlg(wxWindow* parent, const wxBitmapType bitmapType, const wxBitmap& previewImg,
+        ImageExportDlg(wxWindow* parent, const wxBitmapType bitmapType, wxBitmap previewImg,
                        const ImageExportOptions& options, wxWindowID id = wxID_ANY,
                        const wxString& caption = _(L"Image Export Options"),
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                       long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN)
-            : m_options(options), m_originalBitmap(previewImg)
+                       const long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN)
+            : m_options(options), m_originalBitmap(std::move(previewImg))
             {
             Create(parent, bitmapType, id, caption, pos, size, style);
             }
@@ -108,7 +109,7 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).
             @returns @c true if creation was successful.*/
-        bool Create(wxWindow* parent, const wxBitmapType bitmapType, wxWindowID id = wxID_ANY,
+        bool Create(wxWindow* parent, wxBitmapType bitmapType, wxWindowID id = wxID_ANY,
                     const wxString& caption = _(L"Image Export Options"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                     long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
@@ -130,7 +131,7 @@ namespace Wisteria::UI
             }
 
       private:
-        void CreateControls(const wxBitmapType bitmapType);
+        void CreateControls(wxBitmapType bitmapType);
 
         void OnOK([[maybe_unused]] wxCommandEvent& event);
         void OnOptionsChanged([[maybe_unused]] wxCommandEvent& event);
@@ -138,7 +139,7 @@ namespace Wisteria::UI
 
         void OnHelpClicked([[maybe_unused]] wxCommandEvent& event)
             {
-            if (m_helpTopic.length())
+            if (!m_helpTopic.empty())
                 {
                 wxLaunchDefaultBrowser(wxFileName::FileNameToURL(
                     m_helpProjectFolder + wxFileName::GetPathSeparator() + m_helpTopic));

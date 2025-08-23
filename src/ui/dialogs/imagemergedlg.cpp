@@ -15,12 +15,12 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::CreateControls(const wxArrayString& imgPaths)
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         wxArrayString orientations;
         orientations.Add(_(L"Horizontally"));
         orientations.Add(_(L"Vertically"));
-        wxRadioBox* orientationsRadioBox =
+        auto* orientationsRadioBox =
             new wxRadioBox(this, wxID_ANY, _(L"Merge Images:"), wxDefaultPosition, wxDefaultSize,
                            orientations, 0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_orientRadio));
         orientationsRadioBox->SetSelection(0);

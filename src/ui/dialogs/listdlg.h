@@ -142,9 +142,9 @@ namespace Wisteria::UI
 
         /// @brief Sets the label for the checkbox on the dialog.
         /// @param label The text to display.
-        void SetCheckBoxLabel(const wxString label)
+        void SetCheckBoxLabel(const wxString& label)
             {
-            if (m_checkBox)
+            if (m_checkBox != nullptr)
                 {
                 m_checkBox->SetLabel(label);
                 }
@@ -155,7 +155,7 @@ namespace Wisteria::UI
         /// @param topicPath The subpath to the topic.
         void SetSortHelpTopic(const wxString& helpProjectPath, const wxString& topicPath)
             {
-            if (m_list)
+            if (m_list != nullptr)
                 {
                 m_list->SetSortHelpTopic(helpProjectPath, topicPath);
                 }

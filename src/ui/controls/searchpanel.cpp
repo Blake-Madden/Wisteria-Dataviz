@@ -19,19 +19,19 @@ using namespace Wisteria::UI;
 //---------------------------------------------------
 SearchPanel::SearchPanel(wxWindow* parent, wxWindowID id) : wxWindow(parent, id)
     {
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* mainSizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_search = new wxSearchCtrl(this, ControlIDs::ID_SEARCH_TEXT_ENTRY, wxString{},
                                 wxDefaultPosition, FromDIP(wxSize{ 200, -1 }), 0);
     mainSizer->Add(m_search, wxSizerFlags{}.Border(wxTOP | wxBOTTOM));
 
-    wxBitmapButton* nextButton =
+    auto* nextButton =
         new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
                            wxArtProvider::GetBitmapBundle(wxART_GO_DOWN, wxART_BUTTON));
     nextButton->SetToolTip(_(L"Find the next occurrence"));
     mainSizer->Add(nextButton, wxSizerFlags{}.CentreVertical());
 
-    wxBitmapButton* previousButton =
+    auto* previousButton =
         new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
                            wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
     previousButton->SetToolTip(_(L"Find the previous occurrence"));
@@ -42,7 +42,7 @@ SearchPanel::SearchPanel(wxWindow* parent, wxWindowID id) : wxWindow(parent, id)
     SetSizerAndFit(mainSizer);
 
     // search options menu
-    auto searchOptionsMenu = new wxMenu;
+    auto* searchOptionsMenu = new wxMenu;
 
     m_matchCaseItem = searchOptionsMenu->AppendCheckItem(XRCID("ID_MATCH_CASE"), _(L"Match Case"),
                                                          _(L"Match Case"));
@@ -107,14 +107,14 @@ void SearchPanel::Activate()
     }
 
 //---------------------------------------------------
-void SearchPanel::OnSearchButton(wxCommandEvent& event)
+void SearchPanel::OnSearchButton(const wxCommandEvent& event)
     {
     wxCommandEvent cmd(wxEVT_NULL, event.GetId());
     OnSearch(cmd);
     }
 
 //---------------------------------------------------
-void SearchPanel::OnSearch(wxCommandEvent& event)
+void SearchPanel::OnSearch(const wxCommandEvent& event)
     {
     if (m_search->GetValue().empty())
         {

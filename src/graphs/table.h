@@ -110,7 +110,7 @@ namespace Wisteria::Graphs
          // apply a zebra-stripe look
          tableGraph->ApplyAlternateRowColors(ColorBrewer::GetColor(Color::AzureMist), 1, 1);
 
-         // add the table to the canvas
+         // add the table to the canvas/page
          canvas->SetFixedObject(0, 0, tableGraph);
 
          // make canvas taller and less wide
@@ -1527,7 +1527,7 @@ namespace Wisteria::Graphs
       private:
         [[deprecated("Tables do not support legends.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label>
-        CreateLegend([[maybe_unused]] const LegendOptions& options) override final
+        CreateLegend([[maybe_unused]] const LegendOptions& options) final
             {
             return nullptr;
             }
@@ -1537,12 +1537,12 @@ namespace Wisteria::Graphs
 
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
         [[nodiscard]]
-        wxRect GetContentRect() const noexcept override final
+        wxRect GetContentRect() const noexcept final
             {
             return {};
             }
 
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
 
         void AdjustTextLabelToCell(const TableCell& cell,
                                    Wisteria::GraphItems::Label& cellLabel) const;

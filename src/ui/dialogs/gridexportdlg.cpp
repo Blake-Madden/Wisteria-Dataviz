@@ -11,12 +11,13 @@
 
 using namespace Wisteria::UI;
 
-GridExportDlg::GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
-                             const GridExportFormat& exportFormat, wxWindowID id /*= wxID_ANY*/,
+GridExportDlg::GridExportDlg(wxWindow* parent, const int rowCount, const int columnCount,
+                             const GridExportFormat& exportFormat,
+                             const wxWindowID id /*= wxID_ANY*/,
                              const wxString& caption /*= _(L"List Export Options")*/,
                              const wxPoint& pos /*= wxDefaultPosition*/,
                              const wxSize& size /*= wxDefaultSize*/,
-                             long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
+                             const long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
     : m_exportFormat(exportFormat)
     {
     m_options.m_toRow = rowCount;
@@ -96,14 +97,14 @@ GridExportDlg::GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
 //-------------------------------------------------------------
 void GridExportDlg::CreateControls()
     {
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxBoxSizer* optionsSizer = new wxBoxSizer(wxVERTICAL);
+    auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(optionsSizer, wxSizerFlags{ 1 }.Border());
 
-    wxCheckBox* columnHeaderCheck = new wxCheckBox(
-        this, wxID_ANY, _(L"&Include column headers"), wxDefaultPosition, wxDefaultSize,
-        wxCHK_2STATE, wxGenericValidator(&m_options.m_includeColumnHeaders));
+    auto* columnHeaderCheck = new wxCheckBox(this, wxID_ANY, _(L"&Include column headers"),
+                                             wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
+                                             wxGenericValidator(&m_options.m_includeColumnHeaders));
     optionsSizer->Add(columnHeaderCheck, wxSizerFlags{}.Border());
 
     optionsSizer->Add(new wxRadioButton(this, ControlIDs::ID_EXPORT_ALL_OPTION,
@@ -126,7 +127,7 @@ void GridExportDlg::CreateControls()
     m_rangeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Range:"));
     optionsSizer->Add(m_rangeBoxSizer, wxSizerFlags{ 1 }.Expand().Border());
 
-    wxFlexGridSizer* rangeOptionsSizer = new wxFlexGridSizer(2, 4, 5, 5);
+    auto* rangeOptionsSizer = new wxFlexGridSizer(2, 4, 5, 5);
     m_rangeBoxSizer->Add(rangeOptionsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
     // row options
@@ -134,7 +135,7 @@ void GridExportDlg::CreateControls()
         new wxStaticText(m_rangeBoxSizer->GetStaticBox(), ID_ROWS_FROM_LABEL, _(L"Rows: from")),
         wxSizerFlags{}.CenterVertical());
 
-    auto fromRowSpinCtrl =
+    auto* fromRowSpinCtrl =
         new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), ControlIDs::ID_ROWS_FROM_SPIN, L"1",
                        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toRow, 1);
     fromRowSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_fromRow));
@@ -144,7 +145,7 @@ void GridExportDlg::CreateControls()
         new wxStaticText(m_rangeBoxSizer->GetStaticBox(), ID_ROWS_TO_LABEL, _(L"to")),
         wxSizerFlags{}.CenterVertical());
 
-    auto toRowSpinCtrl =
+    auto* toRowSpinCtrl =
         new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), ControlIDs::ID_ROWS_TO_SPIN, L"1",
                        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toRow, 1);
     toRowSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_toRow));
@@ -155,7 +156,7 @@ void GridExportDlg::CreateControls()
         new wxStaticText(m_rangeBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Columns: from")),
         wxSizerFlags{}.CenterVertical());
 
-    auto fromColumnSpinCtrl =
+    auto* fromColumnSpinCtrl =
         new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), wxID_ANY, L"1", wxDefaultPosition,
                        wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toColumn, 1);
     fromColumnSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_fromColumn));
@@ -164,7 +165,7 @@ void GridExportDlg::CreateControls()
     rangeOptionsSizer->Add(new wxStaticText(m_rangeBoxSizer->GetStaticBox(), wxID_STATIC, _(L"to")),
                            wxSizerFlags{}.CenterVertical());
 
-    auto toColumnSpinCtrl =
+    auto* toColumnSpinCtrl =
         new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), wxID_ANY, L"1", wxDefaultPosition,
                        wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toColumn, 1);
     toColumnSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_toColumn));

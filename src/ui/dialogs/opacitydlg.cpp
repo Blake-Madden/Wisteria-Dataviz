@@ -45,7 +45,7 @@ void OpacityDlg::OnChangeOpacity(const wxScrollEvent& event)
 //-------------------------------------------------------------
 void OpacityDlg::CreateControls()
     {
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     assert(m_image.IsOk());
     if (m_image.IsOk())

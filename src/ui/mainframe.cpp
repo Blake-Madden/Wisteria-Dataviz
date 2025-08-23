@@ -129,14 +129,14 @@ void Wisteria::UI::BaseMainFrame::DisplayHelp(const wxString& topic /*= wxEmptyS
     }
 
 //----------------------------------------------------------
-void Wisteria::UI::BaseMainFrame::OnRibbonButtonBarClick(wxRibbonButtonBarEvent& evt)
+void Wisteria::UI::BaseMainFrame::OnRibbonButtonBarClick(const wxRibbonButtonBarEvent& evt)
     {
     wxCommandEvent event(wxEVT_MENU, evt.GetId());
     ProcessWindowEvent(event);
     }
 
 //----------------------------------------------------------
-void Wisteria::UI::BaseMainFrame::OnRibbonToolBarClick(wxRibbonToolBarEvent& evt)
+void Wisteria::UI::BaseMainFrame::OnRibbonToolBarClick(const wxRibbonToolBarEvent& evt)
     {
     wxCommandEvent event(wxEVT_MENU, evt.GetId());
     ProcessWindowEvent(event);

@@ -159,8 +159,8 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varInfo)
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-        wxGridBagSizer* varsSizer =
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* varsSizer =
             new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
         mainSizer->Add(varsSizer, wxSizerFlags{ 1 }.Expand().Border());
 

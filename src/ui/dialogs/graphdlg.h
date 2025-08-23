@@ -56,10 +56,10 @@ namespace Wisteria::UI
 
       private:
         /// Creation step.
-        bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
+        bool Create(wxWindow* parent, const wxWindowID id = wxID_ANY,
                     const wxString& caption = _(L"View Graph"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
+                    const long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER)
             {
             SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
             wxDialog::Create(parent, id, caption, pos, size, style);
@@ -79,7 +79,7 @@ namespace Wisteria::UI
         /// Create the controls.
         void CreateControls()
             {
-            wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+            auto* mainSizer = new wxBoxSizer(wxVERTICAL);
             mainSizer->SetMinSize(FromDIP(wxSize{ 800, 600 }));
 
             m_canvas = new Wisteria::Canvas(this);
@@ -88,27 +88,27 @@ namespace Wisteria::UI
 
             mainSizer->Add(new wxStaticLine(this),
                            wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
-            wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+            auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
                 {
-                wxButton* button = new wxButton(this, wxID_PRINT);
+                auto* button = new wxButton(this, wxID_PRINT);
                 button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_PRINT, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
-                wxButton* button = new wxButton(this, wxID_COPY);
+                auto* button = new wxButton(this, wxID_COPY);
                 button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_COPY, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
-                wxButton* button = new wxButton(this, wxID_SAVE);
+                auto* button = new wxButton(this, wxID_SAVE);
                 button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_FILE_SAVE, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
-                wxButton* button = new wxButton(this, wxID_CLOSE);
+                auto* button = new wxButton(this, wxID_CLOSE);
                 button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_CLOSE, wxART_BUTTON));
                 button->SetDefault();
                 buttonSizer->Add(button);
@@ -143,7 +143,7 @@ namespace Wisteria::UI
                 }
             }
 
-        Wisteria::Canvas* m_canvas{ nullptr };
+        Canvas* m_canvas{ nullptr };
         };
     } // namespace Wisteria::UI
 

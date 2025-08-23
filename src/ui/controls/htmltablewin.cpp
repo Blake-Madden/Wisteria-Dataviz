@@ -18,9 +18,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(HtmlTableWindow, wxHtmlWindow)
 
     //------------------------------------------------------
     HtmlTableWindow::HtmlTableWindow(
-        wxWindow* parent, wxWindowID id /*= wxID_ANY*/, const wxPoint& pos /*= wxDefaultPosition*/,
-        const wxSize& size /*= wxDefaultSize*/,
-        long style /*= wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION | wxBORDER_THEME*/)
+        wxWindow* parent, const wxWindowID id /*= wxID_ANY*/,
+        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+        const long style /*= wxHW_DEFAULT_STYLE | wxHW_NO_SELECTION | wxBORDER_THEME*/)
     : wxHtmlWindow(parent, id, pos, size, style, L"HtmlTableWindow")
     {
     m_menu.Append(wxID_COPY, _(L"Copy"));
@@ -262,7 +262,7 @@ void HtmlTableWindow::OnSave([[maybe_unused]] wxCommandEvent& event)
     }
 
 //------------------------------------------------------
-bool HtmlTableWindow::Save(const wxFileName& path)
+bool HtmlTableWindow::Save(const wxFileName& path) const
     {
     // create the folder to the filepath, if necessary
     wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);

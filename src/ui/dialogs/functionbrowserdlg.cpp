@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "functionbrowserdlg.h"
+#include "wx/wupdlock.h"
 
 namespace Wisteria::UI
     {
@@ -25,7 +26,7 @@ namespace Wisteria::UI
             {
             if (m_editWindow != nullptr && m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
                 {
-                wxStyledTextCtrl* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
+                auto* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
                 styleWindow->AddText(event.GetLinkInfo().GetHref());
                 styleWindow->SetSelection(styleWindow->GetCurrentPos(),
                                           styleWindow->GetCurrentPos());
@@ -261,12 +262,12 @@ namespace Wisteria::UI
     void FunctionBrowserCtrl::CreateControls(const wxString& firstWindowCaption,
                                              const wxString& secondWindowCaption)
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-        wxBoxSizer* listsSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* listsSizer = new wxBoxSizer(wxHORIZONTAL);
 
         m_categoryList = new Wisteria::UI::SideBar(this, ID_CATEGORY_LIST);
         m_categoryList->SetImageList(GetImageList());
-        wxBoxSizer* categorySizer = new wxBoxSizer(wxVERTICAL);
+        auto* categorySizer = new wxBoxSizer(wxVERTICAL);
         categorySizer->Add(new wxStaticText(this, wxID_STATIC, firstWindowCaption));
         categorySizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
         categorySizer->Add(m_categoryList, wxSizerFlags{ 1 }.Expand());
@@ -277,7 +278,7 @@ namespace Wisteria::UI
         m_functionList =
             new wxListBox(this, ID_FUNCTION_LIST, wxDefaultPosition, FromDIP(wxSize(275, 400)), 0,
                           nullptr, wxBORDER_THEME | wxLB_SINGLE | wxLB_HSCROLL | wxLB_NEEDED_SB);
-        wxBoxSizer* functionSizer = new wxBoxSizer(wxVERTICAL);
+        auto* functionSizer = new wxBoxSizer(wxVERTICAL);
         functionSizer->Add(new wxStaticText(this, wxID_STATIC, secondWindowCaption));
         functionSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
         functionSizer->Add(m_functionList, wxSizerFlags{ 1 }.Expand());
@@ -302,17 +303,17 @@ namespace Wisteria::UI
 
     //------------------------------------------------
     bool FunctionBrowserDlg::Create(
-        wxWindow* parent, wxWindow* editor, wxWindowID id /*= wxID_ANY*/,
+        wxWindow* parent, wxWindow* editor, const wxWindowID id /*= wxID_ANY*/,
         const wxString& caption /*= _(L"Function Browser")*/,
         const wxString& firstWindowCaption /*= _(L"Categories:")*/,
         const wxString& secondWindowCaption /*= _(L"Functions/Operators:")*/,
         const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
-        long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
+        const long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
         {
         SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         m_funcBrowserControl = new FunctionBrowserCtrl(this, editor, wxID_ANY, firstWindowCaption,
                                                        secondWindowCaption);
@@ -324,13 +325,13 @@ namespace Wisteria::UI
 
         SetSizerAndFit(mainSizer);
 
-        wxWindow* insertButton = FindWindow(wxID_OK);
+        auto* insertButton = FindWindow(wxID_OK);
         if (insertButton != nullptr)
             {
             insertButton->SetId(ID_INSERT_BUTTON);
             insertButton->SetLabel(_(L"&Insert"));
             }
-        wxWindow* closeButton = FindWindow(wxID_CANCEL);
+        auto* closeButton = FindWindow(wxID_CANCEL);
         if (closeButton != nullptr)
             {
             closeButton->SetLabel(_(L"&Close"));

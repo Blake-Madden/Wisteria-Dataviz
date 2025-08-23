@@ -17,7 +17,6 @@
 #include <set>
 #include <vector>
 #include <wx/artprov.h>
-#include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
 #include <wx/scrolwin.h>
 #include <wx/uilocale.h>

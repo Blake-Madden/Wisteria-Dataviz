@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __THUMBNAIL_H__
-#define __THUMBNAIL_H__
+#ifndef WISTERIA_THUMBNAIL_H
+#define WISTERIA_THUMBNAIL_H
 
 #include "../../base/image.h"
 #include <wx/bitmap.h>
@@ -24,8 +24,8 @@
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_THUMBNAIL_CHANGED, wxCommandEvent);
 
-#define EVT_THUMBNAIL_CHANGED(winid, fn)                                                           \
-    wx__DECLARE_EVT1(wxEVT_THUMBNAIL_CHANGED, winid, wxCommandEventHandler(fn))
+#define EVT_THUMBNAIL_CHANGED(winId, fn)                                                           \
+    wx__DECLARE_EVT1(wxEVT_THUMBNAIL_CHANGED, winId, wxCommandEventHandler(fn))
 
 /// @endcond
 
@@ -160,4 +160,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__THUMBNAIL_H__
+#endif // WISTERIA_THUMBNAIL_H

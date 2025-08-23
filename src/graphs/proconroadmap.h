@@ -144,7 +144,7 @@ namespace Wisteria::Graphs
          OTroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
                                           OTroadmap->GetMagnitude()));
 
-         // add everything to the canvas
+         // add everything to the canvas/page
          canvas->SetFixedObject(0, 0, SWroadmap);
          canvas->SetFixedObject(1, 0, OTroadmap);
          canvas->SetFixedObject(2, 0, legend);
@@ -201,7 +201,7 @@ namespace Wisteria::Graphs
                      const std::optional<size_t>& minimumCountForItem);
 
         /// @brief Adds a caption explaining how to interpret the graph.
-        void AddDefaultCaption() override final;
+        void AddDefaultCaption() final;
 
         /** @brief Sets the legend label for positive influencers.
             @param label The label to display.*/
@@ -214,14 +214,14 @@ namespace Wisteria::Graphs
       private:
         /// @returns The positive label used for the legend.
         [[nodiscard]]
-        wxString GetPositiveLegendLabel() const override final
+        wxString GetPositiveLegendLabel() const final
             {
             return m_positiveLabel;
             }
 
         /// @returns The negative label used for the legend.
         [[nodiscard]]
-        wxString GetNegativeLegendLabel() const override final
+        wxString GetNegativeLegendLabel() const final
             {
             return m_negativeLabel;
             }

@@ -117,18 +117,17 @@ bool PrinterHeaderFooterDlg::Validate()
 //-------------------------------------------------------------
 void PrinterHeaderFooterDlg::CreateControls()
     {
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxStaticBox* headerFrame = new wxStaticBox(this, wxID_ANY, _(L"Headers"));
-    wxStaticBoxSizer* headerFrameSizer = new wxStaticBoxSizer(headerFrame, wxHORIZONTAL);
+    auto* headerFrame = new wxStaticBox(this, wxID_ANY, _(L"Headers"));
+    auto* headerFrameSizer = new wxStaticBoxSizer(headerFrame, wxHORIZONTAL);
     mainSizer->Add(headerFrameSizer, wxSizerFlags{}.Expand().Border());
 
-    wxBoxSizer* headerLeftSizer = new wxBoxSizer(wxVERTICAL);
+    auto* headerLeftSizer = new wxBoxSizer(wxVERTICAL);
     headerFrameSizer->Add(headerLeftSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-    wxStaticText* leftHeaderTextLabel =
-        new wxStaticText(headerFrameSizer->GetStaticBox(), wxID_STATIC, _(L"Left:"),
-                         wxDefaultPosition, wxDefaultSize, 0);
+    auto* leftHeaderTextLabel = new wxStaticText(headerFrameSizer->GetStaticBox(), wxID_STATIC,
+                                                 _(L"Left:"), wxDefaultPosition, wxDefaultSize, 0);
     headerLeftSizer->Add(leftHeaderTextLabel, wxSizerFlags{}.Expand().Border(wxBOTTOM));
 
     wxArrayString choiceStrings;
@@ -145,10 +144,10 @@ void PrinterHeaderFooterDlg::CreateControls()
                        wxGenericValidator(&m_leftPrinterHeader));
     headerLeftSizer->Add(leftHeaderPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
-    wxBoxSizer* headerCenterSizer = new wxBoxSizer(wxVERTICAL);
+    auto* headerCenterSizer = new wxBoxSizer(wxVERTICAL);
     headerFrameSizer->Add(headerCenterSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-    wxStaticText* centerHeaderTextLabel =
+    auto* centerHeaderTextLabel =
         new wxStaticText(headerFrameSizer->GetStaticBox(), wxID_STATIC, _(L"Center:"),
                          wxDefaultPosition, wxDefaultSize, 0);
     headerCenterSizer->Add(centerHeaderTextLabel, wxSizerFlags{}.Expand().Border(wxBOTTOM));
@@ -159,10 +158,10 @@ void PrinterHeaderFooterDlg::CreateControls()
                        wxGenericValidator(&m_centerPrinterHeader));
     headerCenterSizer->Add(centerHeaderPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
-    wxBoxSizer* headerRightSizer = new wxBoxSizer(wxVERTICAL);
+    auto* headerRightSizer = new wxBoxSizer(wxVERTICAL);
     headerFrameSizer->Add(headerRightSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-    wxStaticText* rightHeaderTextLabel =
+    auto* rightHeaderTextLabel =
         new wxStaticText(headerFrameSizer->GetStaticBox(), wxID_STATIC, _(L"Right:"),
                          wxDefaultPosition, wxDefaultSize, 0);
     headerRightSizer->Add(rightHeaderTextLabel, wxSizerFlags{}.Expand().Border(wxBOTTOM));
@@ -173,14 +172,14 @@ void PrinterHeaderFooterDlg::CreateControls()
                        wxGenericValidator(&m_rightPrinterHeader));
     headerRightSizer->Add(rightHeaderPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
-    wxStaticBox* footersTextBox = new wxStaticBox(this, wxID_ANY, _(L"Footers"));
-    wxStaticBoxSizer* footerSizer = new wxStaticBoxSizer(footersTextBox, wxHORIZONTAL);
+    auto* footersTextBox = new wxStaticBox(this, wxID_ANY, _(L"Footers"));
+    auto* footerSizer = new wxStaticBoxSizer(footersTextBox, wxHORIZONTAL);
     mainSizer->Add(footerSizer, wxSizerFlags{}.Expand().Border());
 
-    wxBoxSizer* footerLeftSizer = new wxBoxSizer(wxVERTICAL);
+    auto* footerLeftSizer = new wxBoxSizer(wxVERTICAL);
     footerSizer->Add(footerLeftSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-    wxStaticText* leftFooterPrinterText = new wxStaticText(
+    auto* leftFooterPrinterText = new wxStaticText(
         footerSizer->GetStaticBox(), wxID_STATIC, _(L"Left:"), wxDefaultPosition, wxDefaultSize, 0);
     footerLeftSizer->Add(leftFooterPrinterText, wxSizerFlags{}.Expand().Border());
 
@@ -190,10 +189,10 @@ void PrinterHeaderFooterDlg::CreateControls()
                        wxGenericValidator(&m_leftPrinterFooter));
     footerLeftSizer->Add(leftFooterPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
-    wxBoxSizer* footerCenterSizer = new wxBoxSizer(wxVERTICAL);
+    auto* footerCenterSizer = new wxBoxSizer(wxVERTICAL);
     footerSizer->Add(footerCenterSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-    wxStaticText* centerFooterPrinterText =
+    auto* centerFooterPrinterText =
         new wxStaticText(footerSizer->GetStaticBox(), wxID_STATIC, _(L"Center:"), wxDefaultPosition,
                          wxDefaultSize, 0);
     footerCenterSizer->Add(centerFooterPrinterText, wxSizerFlags{}.Expand().Border(wxBOTTOM));
@@ -204,10 +203,10 @@ void PrinterHeaderFooterDlg::CreateControls()
                        wxGenericValidator(&m_centerPrinterFooter));
     footerCenterSizer->Add(centerFooterPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
-    wxBoxSizer* footerRightSizer = new wxBoxSizer(wxVERTICAL);
+    auto* footerRightSizer = new wxBoxSizer(wxVERTICAL);
     footerSizer->Add(footerRightSizer, wxSizerFlags{ 1 }.Expand().Border(wxLEFT | wxBOTTOM));
 
-    wxStaticText* rightFooterPrinterText =
+    auto* rightFooterPrinterText =
         new wxStaticText(footerSizer->GetStaticBox(), wxID_STATIC, _(L"Right:"), wxDefaultPosition,
                          wxDefaultSize, 0);
     footerRightSizer->Add(rightFooterPrinterText, wxSizerFlags{}.Expand().Border(wxBOTTOM));

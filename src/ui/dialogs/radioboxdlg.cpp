@@ -17,7 +17,7 @@ using namespace Wisteria::Colors;
 //----------------------------------------------------------
 void RadioBoxDlg::CreateControls(const bool showHelpButton)
     {
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     auto banner = new wxBannerWindow(this, wxTOP);
     banner->SetText(m_bannerLabel, m_bannerDescription);
@@ -26,7 +26,7 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
 
     mainSizer->Add(banner, wxSizerFlags{}.Expand());
 
-    wxRadioBox* radioBox =
+    auto* radioBox =
         new wxRadioBox(this, wxID_ANY, m_optionsLabel, wxDefaultPosition, wxDefaultSize, m_choices,
                        0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_selected));
 

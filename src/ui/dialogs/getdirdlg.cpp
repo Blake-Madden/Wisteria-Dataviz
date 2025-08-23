@@ -16,10 +16,10 @@ namespace Wisteria::UI
     {
     //-------------------------------------------------------------
     GetDirFilterDialog::GetDirFilterDialog(
-        wxWindow* parent, const wxString& fullFileFilter, wxWindowID id /*= wxID_ANY*/,
+        wxWindow* parent, const wxString& fullFileFilter, const wxWindowID id /*= wxID_ANY*/,
         const wxString& caption /*= _(L"Select Directory")*/,
         const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
-        long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
+        const long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
         : m_fullFileFilter(fullFileFilter)
         {
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
@@ -75,24 +75,24 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void GetDirFilterDialog::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        wxBoxSizer* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(fileBrowseBoxSizer, wxSizerFlags{}.Expand().Border());
 
-        wxTextCtrl* filePathEdit =
+        auto* filePathEdit =
             new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition,
                            wxSize(FromDIP(wxSize{ 600, 600 }).GetWidth(), -1),
                            wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
         filePathEdit->AutoCompleteFileNames();
         fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
 
-        wxBitmapButton* fileBrowseButton =
+        auto* fileBrowseButton =
             new wxBitmapButton(this, ID_FOLDER_BROWSE_BUTTON,
                                wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
         fileBrowseBoxSizer->Add(fileBrowseButton, wxSizerFlags{}.CenterVertical());
 
-        wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(fileTypeSizer, wxSizerFlags{}.Expand());
         fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:"),
                                             wxDefaultPosition, wxDefaultSize, 0),
@@ -112,7 +112,7 @@ namespace Wisteria::UI
             choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
         fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 
-        wxCheckBox* recurseDirsCheckBox =
+        auto* recurseDirsCheckBox =
             new wxCheckBox(this, wxID_ANY, _(L"&Search directories recursively"), wxDefaultPosition,
                            wxDefaultSize, 0, wxGenericValidator(&m_isRecursive));
         mainSizer->Add(recurseDirsCheckBox, 0, wxALIGN_LEFT | wxALL,

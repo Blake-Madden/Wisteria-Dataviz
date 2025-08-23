@@ -15,9 +15,7 @@
 #include "../controls/listctrlex.h"
 #include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
-#include <wx/filename.h>
 #include <wx/infobar.h>
-#include <wx/richmsgdlg.h>
 #include <wx/string.h>
 #include <wx/wx.h>
 

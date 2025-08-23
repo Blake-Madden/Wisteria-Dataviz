@@ -127,19 +127,19 @@ namespace Wisteria::GraphItems
             }
 
       private:
-        wxRect Draw(wxDC& dc) const override final;
+        wxRect Draw(wxDC& dc) const final;
 
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const override final
+        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
             {
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, points.data(), points.size());
             }
 
-        void Offset(const int x, const int y) override final { m_pieArea.Offset(x, y); }
+        void Offset(const int x, const int y) final { m_pieArea.Offset(x, y); }
 
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double scaling) override final
+                            [[maybe_unused]] const double scaling) final
             {
             m_pieArea = rect;
             }
@@ -1009,7 +1009,7 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options)override final
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final
             {
             return options.GetRingPerimeter() == Perimeter::Inner ?
                 CreateInnerPieLegend(options.GetPlacementHint()) :
@@ -1063,7 +1063,7 @@ namespace Wisteria::Graphs
       private:
         /// @returns The indices along the outer pie of the provided slices.
         std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
-        void RecalcSizes(wxDC& dc)override final;
+        void RecalcSizes(wxDC& dc) final;
 
         PieInfo m_innerPie;
         PieInfo m_outerPie;

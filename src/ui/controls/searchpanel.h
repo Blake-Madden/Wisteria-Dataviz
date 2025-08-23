@@ -57,7 +57,7 @@ namespace Wisteria::UI
         /// @param event The event.
         /// @note The control's parent should handle @c @c wxEVT_FIND_NEXT to trap
         ///     and process the results of this call.
-        void OnSearch(wxCommandEvent& event);
+        void OnSearch(const wxCommandEvent& event);
 
       private:
         enum ControlIDs
@@ -68,7 +68,7 @@ namespace Wisteria::UI
             ID_SEARCH_OPTIONS
             };
 
-        void OnSearchButton(wxCommandEvent& event);
+        void OnSearchButton(const wxCommandEvent& event);
 
         wxSearchCtrl* m_search{ nullptr };
         wxMenuItem* m_matchCaseItem{ nullptr };

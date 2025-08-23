@@ -61,10 +61,10 @@ void SideBarBook::MakeChangedEvent(wxBookCtrlEvent& event)
     }
 
 //---------------------------------------------------
-bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID Id, bool bSelect,
-                          const int imageId)
+bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID Id,
+                          const bool bSelect, const int imageId)
     {
-    assert(page);
+    wxASSERT(page);
     const size_t position = GetPageCount();
     if (!DoInsertPage(position, page, text, bSelect, imageId))
         {
@@ -94,7 +94,7 @@ bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID
         selNew = 0;
         }
 
-    if (page && selNew != m_selection)
+    if (page != nullptr && selNew != m_selection)
         {
         page->Hide();
         }
@@ -111,7 +111,7 @@ bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID
 
 //---------------------------------------------------
 bool SideBarBook::AddSubPage(wxWindow* page, const wxString& text, const wxWindowID Id,
-                             bool bSelect /*= false*/, int imageId /*= wxNOT_FOUND*/)
+                             const bool bSelect /*= false*/, int imageId /*= wxNOT_FOUND*/)
     {
     assert(page);
     if (!DoInsertPage(GetPageCount(), page, text, bSelect, imageId))
@@ -120,7 +120,7 @@ bool SideBarBook::AddSubPage(wxWindow* page, const wxString& text, const wxWindo
         }
     GetSideBar()->InsertSubItemById(
         GetSideBar()->GetFolder(GetSideBar()->GetFolderCount() - 1).GetId(), text, Id, imageId);
-    if (!bSelect && page)
+    if (!bSelect && page != nullptr)
         {
         page->Hide();
         }
@@ -153,23 +153,20 @@ void SideBarBook::OnListSelected([[maybe_unused]] wxCommandEvent& event)
         return;
         }
     // if previous and new items are the same then don't change anything
-    else if (oldSel != wxNOT_FOUND && oldSel < static_cast<int>(GetPageCount()) &&
-             (static_cast<size_t>(oldSel) == selNew.value() ||
-              m_pages[oldSel] == m_pages[selNew.value()]))
+    if (oldSel != wxNOT_FOUND && oldSel < static_cast<int>(GetPageCount()) &&
+        (static_cast<size_t>(oldSel) == selNew.value() ||
+         m_pages[oldSel] == m_pages[selNew.value()]))
         {
         return;
         }
-    else
-        {
-        SetSelection(selNew.value());
-        }
+    SetSelection(selNew.value());
     }
 
 //---------------------------------------------------
-bool SideBarBook::DeletePage(size_t nPage)
+bool SideBarBook::DeletePage(const size_t nPage)
     {
     wxWindow* page = DoRemovePage(nPage);
-    if (!page)
+    if (page == nullptr)
         {
         return false;
         }
@@ -274,9 +271,9 @@ wxSize SideBarBook::DoGetBestSize() const
         bestSize = GetCurrentPage()->GetBestSize();
         }
 
-    // convert display area to window area, adding the size necessary for the
-    // tabs
-    wxSize best = CalcSizeFromPage(bestSize);
+    // convert display area to window area, adding the size necessary
+    // for the tabs
+    const wxSize best = CalcSizeFromPage(bestSize);
     CacheBestSize(best);
     return best;
     }
@@ -313,13 +310,12 @@ wxSize SideBarBook::GetControllerSize() const
     {
     if (!GetSideBar() || !GetSideBar()->IsShown())
         {
-        return wxSize(0, 0);
+        return { 0, 0 };
         }
 
     const wxSize sizeClient = GetClientSize(), sizeCtrl = GetSideBar()->GetBestSize();
 
     wxSize size;
-
     if (IsVertical())
         {
         size.x = sizeClient.x;
@@ -339,7 +335,7 @@ wxRect SideBarBook::GetPageRect() const
     {
     const wxSize size = GetControllerSize();
 
-    wxRect rectPage(wxPoint(), GetClientSize());
+    wxRect rectPage{ wxPoint{}, GetClientSize() };
 
     switch (GetWindowStyle() & wxBK_ALIGN_MASK)
         {
@@ -394,9 +390,9 @@ void SideBarBook::DoSize()
     else
         {
         // resize controller and the page area to fit inside our new size
-        const wxSize sizeClient(GetClientSize()),
-            sizeBorder(GetSideBar()->GetSize() - GetSideBar()->GetClientSize()),
-            sizeCtrl(GetControllerSize());
+        const wxSize sizeClient{ GetClientSize() },
+            sizeBorder{ GetSideBar()->GetSize() - GetSideBar()->GetClientSize() },
+            sizeCtrl{ GetControllerSize() };
 
         GetSideBar()->SetClientSize(sizeCtrl.x - sizeBorder.x, sizeCtrl.y - sizeBorder.y);
         // if this changes the visibility of the scrollbars the best size changes, re-layout
@@ -438,7 +434,7 @@ void SideBarBook::DoSize()
     for (unsigned int i = 0; i < m_pages.size(); ++i)
         {
         wxWindow* const page = m_pages[i];
-        if (!page)
+        if (page == nullptr)
             {
             assert(false && L"Null page in a control that does not allow null pages?");
             continue;
@@ -449,8 +445,9 @@ void SideBarBook::DoSize()
     }
 
 //---------------------------------------------------
-bool SideBarBook::DoInsertPage(size_t nPage, wxWindow* page, [[maybe_unused]] const wxString& text,
-                               [[maybe_unused]] bool bSelect, [[maybe_unused]] int imageId)
+bool SideBarBook::DoInsertPage(const size_t nPage, wxWindow* page,
+                               [[maybe_unused]] const wxString& text, [[maybe_unused]] bool bSelect,
+                               [[maybe_unused]] int imageId)
     {
     wxCHECK_MSG(page, false, L"NULL page in SideBarBook::DoInsertPage()");
     wxCHECK_MSG(nPage <= m_pages.size(), false,

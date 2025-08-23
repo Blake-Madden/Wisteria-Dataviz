@@ -816,11 +816,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                             // draw the column headers' background
                             drawDC.SetBrush(wxColour(L"#337BC4"));
                             drawDC.DrawRectangle(currentX, bodyStart, GetTableWidth(),
-                                                 GetCoulmnHeight());
+                                                 GetColumnHeight());
                             // draw the cell borders
                             //-----------------
                             // horizontal lines
-                            wxCoord currentY = bodyStart + GetCoulmnHeight();
+                            wxCoord currentY = bodyStart + GetColumnHeight();
                             for (auto i = currentPageTableRowStart;
                                  i <= /*bottom line*/ currentPageTableRowStart +
                                           currentPage.GetRowsPerPage() &&
@@ -896,7 +896,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                     if (GetColumnsInfo()[j].m_included)
                                         {
                                         const auto yCoord =
-                                            bodyStart + GetCoulmnHeight() + GetCellTopPadding() +
+                                            bodyStart + GetColumnHeight() + GetCellTopPadding() +
                                             (GetLineHeight() * (i - currentPageTableRowStart));
                                         const auto cellTextDrawingRect =
                                             wxRect(currentX, yCoord,
@@ -1228,7 +1228,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         measureLabel.SetLineSpacing(1 * m_list->GetDPIScaleFactor());
                         measureLabel.SplitTextToFitBoundingBox(
                             *dc, wxSize(avgWidth - (2 * GetCellSidePadding()),
-                                        (drawingHeight - GetCoulmnHeight()) -
+                                        (drawingHeight - GetColumnHeight()) -
                                             (2 * GetCellTopPadding())));
 
                         textHeight = measureLabel.GetBoundingBox(*dc).GetHeight();
@@ -1255,7 +1255,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         measureLabel.SetLineSpacing(1 * m_list->GetDPIScaleFactor());
                         measureLabel.SplitTextToFitBoundingBox(
                             *dc, wxSize(longestColumn->m_width - (2 * GetCellSidePadding()),
-                                        (drawingHeight - GetCoulmnHeight()) -
+                                        (drawingHeight - GetColumnHeight()) -
                                             (2 * GetCellTopPadding())));
 
                         textHeight = measureLabel.GetBoundingBox(*dc).GetHeight();
@@ -1267,7 +1267,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 m_lineHeight =
                     textHeight + GetCellTopPadding() * 2 + m_list->GetDPIScaleFactor() /*border*/;
                 const long rowsPerPage = std::max<long>(
-                    safe_divide<long>(drawingHeight - GetCoulmnHeight(), m_lineHeight), 1);
+                    safe_divide<long>(drawingHeight - GetColumnHeight(), m_lineHeight), 1);
                 const long tablesPerPage =
                     std::max<long>(static_cast<long>(std::floor(safe_divide<double>(
                                        drawingWidth, GetTableWidth() + GetTablePadding()))),
@@ -1360,7 +1360,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         /// @returns The height of the column header area (includes cell padding).
         [[nodiscard]]
-        long GetCoulmnHeight() const noexcept
+        long GetColumnHeight() const noexcept
             {
             return m_columnHeight;
             }

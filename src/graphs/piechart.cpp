@@ -559,9 +559,9 @@ namespace Wisteria::Graphs
             Data::GroupIdType parentGroupIndex{ 0 };
             for (auto& innerPieSliceGroup : innerPie)
                 {
-                std::for_each(innerPieSliceGroup.second.begin(), innerPieSliceGroup.second.end(),
-                              [&parentGroupIndex](auto& slice) noexcept
-                              { slice.m_parentSliceIndex = parentGroupIndex; });
+                std::ranges::for_each(innerPieSliceGroup.second,
+                                      [&parentGroupIndex](auto& slice) noexcept
+                                      { slice.m_parentSliceIndex = parentGroupIndex; });
                 GetInnerPie().insert(GetInnerPie().end(), innerPieSliceGroup.second.cbegin(),
                                      innerPieSliceGroup.second.cend());
                 ++parentGroupIndex;
@@ -1540,64 +1540,62 @@ namespace Wisteria::Graphs
                 {
                 const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
                 // move everything over to the left
-                std::for_each(addedObjects.begin(), addedObjects.end(),
-                              [&](auto& obj)
-                              {
-                                  if (obj != nullptr)
+                std::ranges::for_each(addedObjects,
+                                      [&](auto& obj)
                                       {
-                                      obj->Offset(-xDiff, 0);
-                                      }
-                              });
+                                          if (obj != nullptr)
+                                              {
+                                              obj->Offset(-xDiff, 0);
+                                              }
+                                      });
                 // refit outer right labels now that there is more real estate for them
-                std::for_each(outerTopRightLabelAndLines.begin(), outerTopRightLabelAndLines.end(),
-                              [&](auto& labelAndLine)
-                              {
-                                  if (labelAndLine.first != nullptr)
+                std::ranges::for_each(outerTopRightLabelAndLines,
+                                      [&](auto& labelAndLine)
                                       {
-                                      refitLabelAndLine(labelAndLine, Side::Right);
-                                      }
-                              });
-                std::for_each(outerBottomRightLabelAndLines.begin(),
-                              outerBottomRightLabelAndLines.end(),
-                              [&](auto& labelAndLine)
-                              {
-                                  if (labelAndLine.first != nullptr)
+                                          if (labelAndLine.first != nullptr)
+                                              {
+                                              refitLabelAndLine(labelAndLine, Side::Right);
+                                              }
+                                      });
+                std::ranges::for_each(outerBottomRightLabelAndLines,
+                                      [&](auto& labelAndLine)
                                       {
-                                      refitLabelAndLine(labelAndLine, Side::Right);
-                                      }
-                              });
+                                          if (labelAndLine.first != nullptr)
+                                              {
+                                              refitLabelAndLine(labelAndLine, Side::Right);
+                                              }
+                                      });
                 }
             // empty right gutter
             else if (outerTopRightLabelAndLines.empty() && outerBottomRightLabelAndLines.empty())
                 {
                 const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
                 // move everything over to the right
-                std::for_each(addedObjects.begin(), addedObjects.end(),
-                              [&](auto& obj)
-                              {
-                                  if (obj != nullptr)
+                std::ranges::for_each(addedObjects,
+                                      [&](auto& obj)
                                       {
-                                      obj->Offset(xDiff, 0);
-                                      }
-                              });
+                                          if (obj != nullptr)
+                                              {
+                                              obj->Offset(xDiff, 0);
+                                              }
+                                      });
                 // refit outer left labels now that there is more real estate for them
-                std::for_each(outerTopLeftLabelAndLines.begin(), outerTopLeftLabelAndLines.end(),
-                              [&](auto& labelAndLine)
-                              {
-                                  if (labelAndLine.first != nullptr)
+                std::ranges::for_each(outerTopLeftLabelAndLines,
+                                      [&](auto& labelAndLine)
                                       {
-                                      refitLabelAndLine(labelAndLine, Side::Left);
-                                      }
-                              });
-                std::for_each(outerBottomLeftLabelAndLines.begin(),
-                              outerBottomLeftLabelAndLines.end(),
-                              [&](auto& labelAndLine)
-                              {
-                                  if (labelAndLine.first != nullptr)
+                                          if (labelAndLine.first != nullptr)
+                                              {
+                                              refitLabelAndLine(labelAndLine, Side::Left);
+                                              }
+                                      });
+                std::ranges::for_each(outerBottomLeftLabelAndLines,
+                                      [&](auto& labelAndLine)
                                       {
-                                      refitLabelAndLine(labelAndLine, Side::Left);
-                                      }
-                              });
+                                          if (labelAndLine.first != nullptr)
+                                              {
+                                              refitLabelAndLine(labelAndLine, Side::Left);
+                                              }
+                                      });
                 }
             }
 
@@ -1663,14 +1661,14 @@ namespace Wisteria::Graphs
             { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the largest one
-        std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
-                      [&](const auto& slice) noexcept
-                      {
-                          if (compare_doubles(slice.m_percent, maxPie.m_percent))
+        std::ranges::for_each(GetOuterPie(),
+                              [&](const auto& slice) noexcept
                               {
-                              pieLabels.push_back(slice.m_groupLabel);
-                              }
-                      });
+                                  if (compare_doubles(slice.m_percent, maxPie.m_percent))
+                                      {
+                                      pieLabels.push_back(slice.m_groupLabel);
+                                      }
+                              });
 
         return pieLabels;
         }
@@ -1690,14 +1688,14 @@ namespace Wisteria::Graphs
             { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the smallest one
-        std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
-                      [&](const auto& slice) noexcept
-                      {
-                          if (compare_doubles(slice.m_percent, minPie.m_percent))
+        std::ranges::for_each(GetOuterPie(),
+                              [&](const auto& slice) noexcept
                               {
-                              pieLabels.push_back(slice.m_groupLabel);
-                              }
-                      });
+                                  if (compare_doubles(slice.m_percent, minPie.m_percent))
+                                      {
+                                      pieLabels.push_back(slice.m_groupLabel);
+                                      }
+                              });
 
         return pieLabels;
         }
@@ -1717,14 +1715,14 @@ namespace Wisteria::Graphs
             { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the largest one
-        std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
-                      [&](const auto& slice) noexcept
-                      {
-                          if (compare_doubles(slice.m_percent, maxPie.m_percent))
+        std::ranges::for_each(GetInnerPie(),
+                              [&](const auto& slice) noexcept
                               {
-                              pieLabels.push_back(slice.m_groupLabel);
-                              }
-                      });
+                                  if (compare_doubles(slice.m_percent, maxPie.m_percent))
+                                      {
+                                      pieLabels.push_back(slice.m_groupLabel);
+                                      }
+                              });
 
         return pieLabels;
         }
@@ -1737,14 +1735,14 @@ namespace Wisteria::Graphs
             {
             // get the inner slices within the current parent slice
             std::vector<const SliceInfo*> innerSlicesForCurrentGroup;
-            std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
-                          [&](const auto& slice)
-                          {
-                              if (slice.m_parentSliceIndex == i)
+            std::ranges::for_each(std::as_const(GetInnerPie()),
+                                  [&](const auto& slice)
                                   {
-                                  innerSlicesForCurrentGroup.push_back(&slice);
-                                  }
-                          });
+                                      if (slice.m_parentSliceIndex == i)
+                                          {
+                                          innerSlicesForCurrentGroup.push_back(&slice);
+                                          }
+                                  });
             if (innerSlicesForCurrentGroup.empty())
                 {
                 continue;
@@ -1756,14 +1754,14 @@ namespace Wisteria::Graphs
                 { return compare_doubles_less(lhv->m_percent, rhv->m_percent); });
 
             // in case of ties, grab all pie slices with same percentage as the largest one
-            std::for_each(innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
-                          [&](const auto& slice) noexcept
-                          {
-                              if (compare_doubles(slice->m_percent, maxPie->m_percent))
+            std::ranges::for_each(std::as_const(innerSlicesForCurrentGroup),
+                                  [&](const auto& slice) noexcept
                                   {
-                                  pieLabels.push_back(slice->m_groupLabel);
-                                  }
-                          });
+                                      if (compare_doubles(slice->m_percent, maxPie->m_percent))
+                                          {
+                                          pieLabels.push_back(slice->m_groupLabel);
+                                          }
+                                  });
             }
 
         return pieLabels;
@@ -1784,14 +1782,14 @@ namespace Wisteria::Graphs
             { return compare_doubles_less(lhv.m_percent, rhv.m_percent); });
 
         // in case of ties, grab all pie slices with same percentage as the smallest one
-        std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
-                      [&](const auto& slice) noexcept
-                      {
-                          if (compare_doubles(slice.m_percent, minPie.m_percent))
+        std::ranges::for_each(std::as_const(GetInnerPie()),
+                              [&](const auto& slice) noexcept
                               {
-                              pieLabels.push_back(slice.m_groupLabel);
-                              }
-                      });
+                                  if (compare_doubles(slice.m_percent, minPie.m_percent))
+                                      {
+                                      pieLabels.push_back(slice.m_groupLabel);
+                                      }
+                              });
 
         return pieLabels;
         }
@@ -1804,14 +1802,14 @@ namespace Wisteria::Graphs
             {
             // get the inner slices within the current parent slice
             std::vector<const SliceInfo*> innerSlicesForCurrentGroup;
-            std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
-                          [&](const auto& slice)
-                          {
-                              if (slice.m_parentSliceIndex == i)
+            std::ranges::for_each(std::as_const(GetInnerPie()),
+                                  [&](const auto& slice)
                                   {
-                                  innerSlicesForCurrentGroup.push_back(&slice);
-                                  }
-                          });
+                                      if (slice.m_parentSliceIndex == i)
+                                          {
+                                          innerSlicesForCurrentGroup.push_back(&slice);
+                                          }
+                                  });
             if (innerSlicesForCurrentGroup.empty())
                 {
                 continue;
@@ -1823,14 +1821,14 @@ namespace Wisteria::Graphs
                 { return compare_doubles_less(lhv->m_percent, rhv->m_percent); });
 
             // in case of ties, grab all pie slices with same percentage as the smallest one
-            std::for_each(innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
-                          [&](const auto& slice) noexcept
-                          {
-                              if (compare_doubles(slice->m_percent, minPie->m_percent))
+            std::ranges::for_each(std::as_const(innerSlicesForCurrentGroup),
+                                  [&](const auto& slice) noexcept
                                   {
-                                  pieLabels.push_back(slice->m_groupLabel);
-                                  }
-                          });
+                                      if (compare_doubles(slice->m_percent, minPie->m_percent))
+                                          {
+                                          pieLabels.push_back(slice->m_groupLabel);
+                                          }
+                                  });
             }
 
         return pieLabels;
@@ -1839,47 +1837,45 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::GhostOuterPieSlices(const bool ghost)
         {
-        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
-                      [&](auto& slice) noexcept { slice.Ghost(ghost); });
+        std::ranges::for_each(GetOuterPie(), [&](auto& slice) noexcept { slice.Ghost(ghost); });
         }
 
     //----------------------------------------------------------------
     void PieChart::GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& slicesToGhost)
         {
-        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
-                      [&](auto& slice) noexcept
-                      {
-                          const bool inList =
-                              (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
-                                            [&slice](const auto& label)
-                                            {
-                                                return label.CmpNoCase(slice.GetGroupLabel()) == 0;
-                                            }) != slicesToGhost.cend());
-                          slice.Ghost(inList ? ghost : !ghost);
-                      });
+        std::ranges::for_each(
+            GetOuterPie(),
+            [&](auto& slice) noexcept
+            {
+                const bool inList =
+                    (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     slicesToGhost.cend());
+                slice.Ghost(inList ? ghost : !ghost);
+            });
         }
 
     //----------------------------------------------------------------
     void PieChart::GhostInnerPieSlices(const bool ghost)
         {
-        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-                      [&](auto& slice) noexcept { slice.Ghost(ghost); });
+        std::ranges::for_each(GetInnerPie(), [&](auto& slice) noexcept { slice.Ghost(ghost); });
         }
 
     //----------------------------------------------------------------
     void PieChart::GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& slicesToGhost)
         {
-        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-                      [&](auto& slice) noexcept
-                      {
-                          const bool inList =
-                              (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
-                                            [&slice](const auto& label)
-                                            {
-                                                return label.CmpNoCase(slice.GetGroupLabel()) == 0;
-                                            }) != slicesToGhost.cend());
-                          slice.Ghost(inList ? ghost : !ghost);
-                      });
+        std::ranges::for_each(
+            GetInnerPie(),
+            [&](auto& slice) noexcept
+            {
+                const bool inList =
+                    (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     slicesToGhost.cend());
+                slice.Ghost(inList ? ghost : !ghost);
+            });
         }
 
     //----------------------------------------------------------------
@@ -2031,31 +2027,31 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowOuterPieLabels(const bool show)
         {
-        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
-                      [&](auto& slice) noexcept { slice.ShowGroupLabel(show); });
+        std::ranges::for_each(GetOuterPie(),
+                              [&](auto& slice) noexcept { slice.ShowGroupLabel(show); });
         }
 
     //----------------------------------------------------------------
     void PieChart::ShowOuterPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
-        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
-                      [&](auto& slice) noexcept
-                      {
-                          const bool inList =
-                              (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                            [&slice](const auto& label)
-                                            {
-                                                return label.CmpNoCase(slice.GetGroupLabel()) == 0;
-                                            }) != labelsToShow.cend());
-                          slice.ShowGroupLabel(inList ? show : !show);
-                      });
+        std::ranges::for_each(
+            GetOuterPie(),
+            [&](auto& slice) noexcept
+            {
+                const bool inList =
+                    (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     labelsToShow.cend());
+                slice.ShowGroupLabel(inList ? show : !show);
+            });
         }
 
     //----------------------------------------------------------------
     void PieChart::ShowOuterPieMidPointLabels(const bool show)
         {
-        std::for_each(
-            GetOuterPie().begin(), GetOuterPie().end(),
+        std::ranges::for_each(
+            GetOuterPie(),
             [&show, this](auto& slice) noexcept
             {
                 slice.SetMidPointLabelDisplay(
@@ -2068,8 +2064,8 @@ namespace Wisteria::Graphs
     void PieChart::ShowOuterPieMidPointLabels(const bool show,
                                               const std::vector<wxString>& labelsToShow)
         {
-        std::for_each(
-            GetOuterPie().begin(), GetOuterPie().end(),
+        std::ranges::for_each(
+            GetOuterPie(),
             [&show, &labelsToShow, this](auto& slice) noexcept
             {
                 const bool inList =
@@ -2096,31 +2092,31 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show)
         {
-        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-                      [&show](auto& slice) noexcept { slice.ShowGroupLabel(show); });
+        std::ranges::for_each(GetInnerPie(),
+                              [&show](auto& slice) noexcept { slice.ShowGroupLabel(show); });
         }
 
     //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
-        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-                      [&show, &labelsToShow](auto& slice) noexcept
-                      {
-                          const bool inList =
-                              (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                            [&slice](const auto& label)
-                                            {
-                                                return label.CmpNoCase(slice.GetGroupLabel()) == 0;
-                                            }) != labelsToShow.cend());
-                          slice.ShowGroupLabel(inList ? show : !show);
-                      });
+        std::ranges::for_each(
+            GetInnerPie(),
+            [&show, &labelsToShow](auto& slice) noexcept
+            {
+                const bool inList =
+                    (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     labelsToShow.cend());
+                slice.ShowGroupLabel(inList ? show : !show);
+            });
         }
 
     //----------------------------------------------------------------
     void PieChart::ShowInnerPieMidPointLabels(const bool show)
         {
-        std::for_each(
-            GetInnerPie().begin(), GetInnerPie().end(),
+        std::ranges::for_each(
+            GetInnerPie(),
             [&show, this](auto& slice) noexcept
             {
                 slice.SetMidPointLabelDisplay(
@@ -2133,8 +2129,8 @@ namespace Wisteria::Graphs
     void PieChart::ShowInnerPieMidPointLabels(const bool show,
                                               const std::vector<wxString>& labelsToShow)
         {
-        std::for_each(
-            GetInnerPie().begin(), GetInnerPie().end(),
+        std::ranges::for_each(
+            GetInnerPie(),
             [&show, &labelsToShow, this](auto& slice) noexcept
             {
                 const bool inList =

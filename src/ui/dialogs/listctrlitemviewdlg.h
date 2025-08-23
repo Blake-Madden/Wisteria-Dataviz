@@ -17,7 +17,6 @@
 #include <wx/grid.h>
 #include <wx/statline.h>
 #include <wx/string.h>
-#include <wx/utils.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -127,7 +126,7 @@ namespace Wisteria::UI
             @param value The value to display in the grid.*/
         void AddValue(const wxString& columnName, const wxString& value)
             {
-            m_values.push_back(RowTableItem(columnName, value));
+            m_values.emplace_back(columnName, value);
             }
 
         void OnButtonClick(wxCommandEvent& event);
