@@ -27,32 +27,32 @@
 #include <wx/msgdlg.h>
 #include <wx/string.h>
 
-/// General exception that can be thrown when mapping a file.
+/// @brief General exception that can be thrown when mapping a file.
 class MemoryMappedFileException final : public std::exception
     {
     };
 
-/// Exception that can be thrown when mapping if the file is zero length.
+/// @brief Exception that can be thrown when mapping if the file is zero length.
 class MemoryMappedFileEmptyException final : public std::exception
     {
     };
 
-/// Exception that can be thrown when mapping if the file can't be exclusively locked.
+/// @brief Exception that can be thrown when mapping if the file can't be exclusively locked.
 class MemoryMappedFileShareViolationException final : public std::exception
     {
     };
 
-/// Exception that can be thrown when mapping if the file isn't something that can be mapped.
+/// @brief Exception that can be thrown when mapping if the file isn't something that can be mapped.
 class MemoryMappedInvalidFileType final : public std::exception
     {
     };
 
-/// Exception that can be thrown when mapping if the size of the file can't be determined.
+/// @brief Exception that can be thrown when mapping if the size of the file can't be determined.
 class MemoryMappedInvalidFileSize final : public std::exception
     {
     };
 
-/// Exception with reading file in the cloud (web service).
+/// @brief Exception with reading file in the cloud (web service).
 class MemoryMappedFileCloudFileError final : public std::exception
     {
     };
@@ -86,7 +86,6 @@ using MemoryMappedFileHandleType = int;
         // handle error here
         }
 @endcode
-@date 2006
 @todo Currently only supports files under 2GBs.
 */
 class MemoryMappedFile

@@ -749,7 +749,8 @@ namespace Wisteria::UI
             {
             if (IsVirtual() && m_virtualData != nullptr)
                 {
-                m_virtualData->SetItemText(row, column, text, format);
+                m_virtualData->SetItemText(row, column, text, format,
+                                           std::numeric_limits<double>::quiet_NaN());
                 }
             else
                 {
@@ -759,7 +760,7 @@ namespace Wisteria::UI
 
         /// @returns The Estimated width of a column based on the longest label
         ///     in the first 10 rows.
-        /// @details This is needed because wxLIST_AUTOSIZE doesn't work with virtual controls
+        /// @details This is needed because @c wxLIST_AUTOSIZE doesn't work with virtual controls
         ///     on some platforms.
         /// @param column The column to measure.
         [[nodiscard]]
