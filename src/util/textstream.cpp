@@ -13,15 +13,14 @@
 #include "../util/donttranslate.h"
 #include "../util/string_util.h"
 #include "memorymappedfile.h"
-#include "wx/filedlg.h"
-#include "wx/generic/filectrlg.h"
-#include "wx/log.h"
-#include "wx/osx/filedlg.h"
 #include <memory>
 #include <utility>
 #include <vector>
 #include <wx/file.h>
+#include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/generic/filectrlg.h>
+#include <wx/log.h>
 
 namespace Wisteria
     {
