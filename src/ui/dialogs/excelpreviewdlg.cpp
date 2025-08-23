@@ -35,8 +35,7 @@ namespace Wisteria::UI
             }
         // the focused cell (in case there are no selections, we treat the
         // focused cell as selected)
-        /// @todo use IsFullySpecified() when API is available in wx 3.3.0
-        if (m_grid->GetGridCursorCoords() != wxGridNoCellCoords)
+        if (m_grid->GetGridCursorCoords().IsFullySpecified())
             {
             m_selectedCells.push_back(m_grid->GetGridCursorCoords());
             }
