@@ -2179,7 +2179,7 @@ namespace Wisteria::GraphItems
                                     }
                                 axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels() &&
                                 // doesn't make sense to draw labels on top of each other
@@ -2211,7 +2211,7 @@ namespace Wisteria::GraphItems
                                         }
                                     axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2253,7 +2253,7 @@ namespace Wisteria::GraphItems
                                     }
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels() &&
                                 GetPerpendicularLabelAxisAlignment() !=
@@ -2285,7 +2285,7 @@ namespace Wisteria::GraphItems
                                         }
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2474,7 +2474,7 @@ namespace Wisteria::GraphItems
                             }
                         if (GetAxisType() == AxisType::BottomXAxis)
                             {
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2494,7 +2494,7 @@ namespace Wisteria::GraphItems
                                     {
                                     y -= drawingInnerLabel ? 0 : axisTextHeight;
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2516,7 +2516,7 @@ namespace Wisteria::GraphItems
                                 {
                                 y -= drawingInnerLabel ? 0 : axisTextHeight;
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2527,7 +2527,7 @@ namespace Wisteria::GraphItems
                                     {
                                     y += drawingInnerLabel ? 0 : axisTextHeight;
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
@@ -2571,7 +2571,7 @@ namespace Wisteria::GraphItems
                             }
                         if (GetAxisType() == AxisType::BottomXAxis)
                             {
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2586,7 +2586,7 @@ namespace Wisteria::GraphItems
                                              ScaleToScreenAndCanvas(
                                                  GetSpacingBetweenLabelsAndLine());
                                         }
-                                    axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                    axisLabel.SetAnchorPoint(wxPoint{ x, y });
                                     axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
@@ -2630,7 +2630,7 @@ namespace Wisteria::GraphItems
                                      CalcTickMarkOuterWidth() + safe_divide(axisTextWidth, 2));
                                 axisLabel.SetTextAlignment(TextAlignment::FlushLeft);
                                 }
-                            axisLabel.SetAnchorPoint(wxPoint(x, y));
+                            axisLabel.SetAnchorPoint(wxPoint{ x, y });
                             axisLabel.Draw(dc);
                             if (HasDoubleSidedAxisLabels())
                                 {
@@ -2655,7 +2655,7 @@ namespace Wisteria::GraphItems
                                         safe_divide(axisTextWidth, 2) + CalcTickMarkInnerWidth();
                                     axisLabel.SetTextAlignment(TextAlignment::FlushRight);
                                     }
-                                axisLabel.SetAnchorPoint(wxPoint(x, y));
+                                axisLabel.SetAnchorPoint(wxPoint{ x, y });
                                 axisLabel.Draw(dc);
                                 }
                             }
