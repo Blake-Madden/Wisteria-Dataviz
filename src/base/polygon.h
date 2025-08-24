@@ -134,7 +134,7 @@ namespace Wisteria::GraphItems
             if (polygon.size() > 0)
                 {
                 m_points.clear();
-                std::copy(polygon.cbegin(), polygon.cend(), std::back_inserter(m_points));
+                std::ranges::copy(std::as_const(polygon), std::back_inserter(m_points));
                 UpdatePointPositions();
                 }
             else

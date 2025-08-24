@@ -197,7 +197,7 @@ namespace Wisteria::Data
             {
             if (values.size() <= m_data.size())
                 {
-                std::copy(values.cbegin(), values.cend(), m_data.begin());
+                std::ranges::copy(std::as_const(values), m_data.begin());
                 }
             else
                 {
