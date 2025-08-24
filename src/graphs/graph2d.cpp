@@ -825,14 +825,14 @@ namespace Wisteria::Graphs
         // fill in the plot area's color (if being used, by default it is transparent)
         if (GetPlotBackgroundColor().IsOk() && !GetPlotBackgroundColor().IsTransparent())
             {
-            wxPoint boxPoints[4]{ { 0, 0 } };
+            std::array<wxPoint, 4> boxPoints;
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             AddObject(
                 std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
                                                           .Pen(*wxBLACK_PEN)
                                                           .Brush(wxColour(GetPlotBackgroundColor()))
                                                           .Scaling(GetScaling()),
-                                                      boxPoints, std::size(boxPoints)));
+                                                      boxPoints));
             }
 
         // fill in the plot background image
@@ -1053,14 +1053,14 @@ namespace Wisteria::Graphs
                 if (parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition, axisCoord1) &&
                     parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition2, axisCoord2))
                     {
-                    const wxPoint boxPoints[4] = {
+                    const std::array<wxPoint, 4> boxPoints = {
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord1),
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord1),
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2),
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2)
                     };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(wxNullPen), boxPoints, std::size(boxPoints));
+                        GraphItemInfo().Pen(wxNullPen), boxPoints);
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
                         area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
@@ -1110,14 +1110,14 @@ namespace Wisteria::Graphs
                 if (parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition, axisCoord1) &&
                     parentAxis.GetPhysicalCoordinate(refArea.m_axisPosition2, axisCoord2))
                     {
-                    const wxPoint boxPoints[4] = {
+                    const std::array<wxPoint, 4> boxPoints = {
                         wxPoint(axisCoord1, GetLeftYAxis().GetBottomPoint().y),
                         wxPoint(axisCoord1, GetLeftYAxis().GetTopPoint().y),
                         wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y),
                         wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y)
                     };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(wxNullPen), boxPoints, std::size(boxPoints));
+                        GraphItemInfo().Pen(wxNullPen), boxPoints);
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
                         area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
@@ -1210,11 +1210,11 @@ namespace Wisteria::Graphs
             {
                 // regular outline
                 {
-                wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                wxPoint pts[5];
+                const wxDCPenChanger pc(dc,
+                                        wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                std::array<wxPoint, 5> pts;
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), pts);
-                pts[4] = pts[0]; // close the square
-                dc.DrawLines(std::size(pts), pts);
+                dc.DrawLines(pts.size(), pts.data());
                 }
             // with higher-level debugging enabled, show a large amount of information
             // about the plot, including its axes' physical points, scaling, a graphical
@@ -1223,21 +1223,23 @@ namespace Wisteria::Graphs
                 {
                     // highlight horizontal axes
                     {
-                    wxDCPenChanger pc(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                    wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_BDIAGONAL_HATCH));
+                    const wxDCPenChanger pc(
+                        dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                    const wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_BDIAGONAL_HATCH));
                     dc.DrawRectangle(GetTopXAxis().GetBoundingBox(dc));
                     dc.DrawRectangle(GetBottomXAxis().GetBoundingBox(dc));
                     }
                     // vertical axes
                     {
-                    wxDCPenChanger pc(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                    wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_FDIAGONAL_HATCH));
+                    const wxDCPenChanger pc(
+                        dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                    const wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_FDIAGONAL_HATCH));
                     dc.DrawRectangle(GetLeftYAxis().GetBoundingBox(dc));
                     dc.DrawRectangle(GetRightYAxis().GetBoundingBox(dc));
                     }
                     // ruler along the top, showing a 100-pixel legend
                     {
-                    wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
+                    const wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
                     dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // left-to-right
                     for (auto i = GetBoundingBox(dc).GetTopLeft().x;
@@ -1277,7 +1279,7 @@ namespace Wisteria::Graphs
                     }
                     // ruler along the left, showing a 100-pixel legend
                     {
-                    wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
+                    const wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
                     dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // top-to-bottom
                     for (auto i = GetBoundingBox(dc).GetTopLeft().y;

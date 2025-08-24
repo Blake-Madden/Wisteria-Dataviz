@@ -382,7 +382,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                 // connection line
                 if (IsShowingConnectionLine())
                     {
-                    const wxPoint linePts[4] = { pt1, pt2, pt2, pt3 };
                     wxColour lineColor{ Colors::ColorContrast::ShadeOrTintIfClose(
                         Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BondiBlue),
                         GetPlotOrCanvasColor()) };
@@ -391,12 +390,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
                         lineColor = Wisteria::Colors::ColorContrast::ChangeOpacity(lineColor, 100);
                         }
                     const wxPen linePen{ lineColor };
+                    const std::array<wxPoint, 2> line1{ pt1, pt2 };
+                    const std::array<wxPoint, 2> line2{ pt2, pt3 };
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), linePts,
-                        2));
+                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), line1));
                     AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), linePts + 2,
-                        2));
+                        GraphItems::GraphItemInfo().Pen(linePen).Scaling(GetScaling()), line2));
                     }
 
                 // Convert group ID into color scheme index

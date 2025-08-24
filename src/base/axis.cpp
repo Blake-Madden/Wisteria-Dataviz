@@ -2674,10 +2674,9 @@ namespace Wisteria::GraphItems
             {
             const wxDCPenChanger pc(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK,
                                               ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-            wxPoint pts[5];
+            std::array<wxPoint, 5> pts;
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
-            pts[4] = pts[0]; // close the square
-            dc.DrawLines(5, pts);
+            dc.DrawLines(pts.size(), pts.data());
             }
 
         if (GetOutlineSize().IsFullySpecified())
@@ -2685,11 +2684,10 @@ namespace Wisteria::GraphItems
             const wxDCPenChanger pc(dc,
                                     wxPen(penIsLight ? *wxWHITE : *wxBLACK,
                                           ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
-            wxPoint pts[5];
+            std::array<wxPoint, 5> pts;
             // area rect was already inflated from GetBoundingBox()
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
-            pts[4] = pts[0]; // close the square
-            dc.DrawLines(5, pts);
+            dc.DrawLines(pts.size(), pts.data());
             }
 
         // highlight the selected protruding bounding box in debug mode

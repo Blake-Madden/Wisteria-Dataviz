@@ -1087,9 +1087,8 @@ namespace Wisteria::GraphItems
         dc.DrawBitmap(wxBitmap(m_img), imgTopLeftCorner, true);
 
         // draw the outline
-        wxPoint pts[5];
+        std::array<wxPoint, 5> pts;
         GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), pts);
-        pts[4] = pts[0]; // close the square
         if (GetPen().IsOk())
             {
             wxPen scaledPen(GetPen());
@@ -1097,13 +1096,13 @@ namespace Wisteria::GraphItems
             const wxDCPenChanger pc(
                 dc, IsSelected() ? wxPen(*wxBLACK, 2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
                                    scaledPen);
-            dc.DrawLines(std::size(pts), pts);
+            dc.DrawLines(pts.size(), pts.data());
             }
         // just draw selection outline if regular pen isn't in use
         else if (IsSelected())
             {
             const wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
-            dc.DrawLines(std::size(pts), pts);
+            dc.DrawLines(pts.size(), pts.data());
             }
 
         if (GetClippingRect())

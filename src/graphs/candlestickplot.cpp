@@ -227,7 +227,7 @@ namespace Wisteria::Graphs
                 auto candle = std::make_unique<GraphItems::Polygon>(
                     GraphItemInfo(ohlcInfo).Brush(
                         (ohlc.m_open <= ohlc.m_close ? m_gainBrush : m_lossBrush)),
-                    points.data(), std::size(points));
+                    points);
 
                 // if candle is really thin, then remove the outline so that
                 // we can at least see the color

@@ -390,14 +390,14 @@ namespace Wisteria::Graphs
 
                 const wxPen linePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), 2);
 
-                wxPoint linePoints[2] = { box.m_upperOutlierRangeCoordinate,
-                                          box.m_lowerOutlierRangeCoordinate };
+                std::array<wxPoint, 2> linePoints = { box.m_upperOutlierRangeCoordinate,
+                                                      box.m_lowerOutlierRangeCoordinate };
                 AddObject(std::make_unique<GraphItems::Polygon>(
                     GraphItemInfo(whiskerLabel)
                         .Pen(linePen)
                         .Brush(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                         .Scaling(GetScaling()),
-                    linePoints, std::size(linePoints)));
+                    linePoints));
 
                 linePoints[0] = wxPoint(box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
                                         box.m_lowerOutlierRangeCoordinate.y);
@@ -408,7 +408,7 @@ namespace Wisteria::Graphs
                         .Pen(linePen)
                         .Brush(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                         .Scaling(GetScaling()),
-                    linePoints, std::size(linePoints)));
+                    linePoints));
 
                 linePoints[0] = wxPoint(box.m_lowerOutlierRangeCoordinate.x - ((boxWidth / 4)),
                                         box.m_upperOutlierRangeCoordinate.y);
@@ -419,7 +419,7 @@ namespace Wisteria::Graphs
                         .Pen(linePen)
                         .Brush(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
                         .Scaling(GetScaling()),
-                    linePoints, std::size(linePoints)));
+                    linePoints));
                 }
 
             if (box.GetDataset()->GetRowCount() > 1)
@@ -515,7 +515,7 @@ namespace Wisteria::Graphs
                 // color-filled box
                 else
                     {
-                    wxPoint boxPoints[4]{ { 0, 0 } };
+                    std::array<wxPoint, 4> boxPoints;
                     GraphItems::Polygon::GetRectPoints(box.m_boxRect, boxPoints);
                     // Polygons don't support drop shadows, so need to manually add
                     // a shadow as another polygon
@@ -523,7 +523,7 @@ namespace Wisteria::Graphs
                         {
                         const wxCoord scaledShadowOffset =
                             ScaleToScreenAndCanvas(GetShadowOffset());
-                        wxPoint shadowPts[7] = {
+                        std::array<wxPoint, 7> shadowPts = {
                             box.m_boxRect.GetLeftBottom() + wxPoint(scaledShadowOffset, 0),
                             box.m_boxRect.GetLeftBottom() +
                                 wxPoint(scaledShadowOffset, scaledShadowOffset),
@@ -537,7 +537,7 @@ namespace Wisteria::Graphs
                         };
                         AddObject(std::make_unique<GraphItems::Polygon>(
                             GraphItemInfo().Pen(wxNullPen).Brush(GraphItemBase::GetShadowColor()),
-                            shadowPts, std::size(shadowPts)));
+                            shadowPts));
                         }
                     wxColour boxColor =
                         (GetColorScheme() ? GetColorScheme()->GetColor(box.GetSchemeIndex()) :
@@ -556,7 +556,7 @@ namespace Wisteria::Graphs
                             .Scaling(GetScaling())
                             .BaseColor(boxColor)
                             .Brush(brush),
-                        boxPoints, std::size(boxPoints));
+                        boxPoints);
                     constexpr uint8_t boxLightenFactor = 160;
                     if (box.GetBoxEffect() == BoxEffect::FadeFromLeftToRight)
                         {
@@ -623,9 +623,10 @@ namespace Wisteria::Graphs
             // draw the middle point line
             GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
                                    box.m_middleCoordinate);
-            wxPoint boxLinePts[2] = { wxPoint(box.m_boxRect.GetX(), box.m_middleCoordinate.y),
-                                      wxPoint(box.m_boxRect.GetX() + box.m_boxRect.GetWidth(),
-                                              box.m_middleCoordinate.y) };
+            std::array<wxPoint, 2> boxLinePts = {
+                wxPoint(box.m_boxRect.GetX(), box.m_middleCoordinate.y),
+                wxPoint(box.m_boxRect.GetX() + box.m_boxRect.GetWidth(), box.m_middleCoordinate.y)
+            };
             AddObject(std::make_unique<GraphItems::Polygon>(
                 GraphItemInfo()
                     .Pen(
@@ -633,7 +634,7 @@ namespace Wisteria::Graphs
                                       GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour()))
                             .Cap(wxPenCap::wxCAP_BUTT))
                     .Scaling(GetScaling()),
-                boxLinePts, 2));
+                boxLinePts));
 
             // draw the points (grouped)
             box.m_jitter.SetJitterWidth(box.m_boxRect.GetWidth());
@@ -732,12 +733,13 @@ namespace Wisteria::Graphs
                 GetPlotOrCanvasColor()) };
             for (size_t i = 0; i < GetBoxCount() - 1; ++i)
                 {
-                wxPoint connectionPts[2] = { wxPoint(m_boxes[i].m_middleCoordinate.x,
-                                                     m_boxes[i].m_middleCoordinate.y),
-                                             wxPoint(m_boxes[i + 1].m_middleCoordinate.x,
-                                                     m_boxes[i + 1].m_middleCoordinate.y) };
+                std::array<wxPoint, 2> connectionPts = {
+                    wxPoint{ m_boxes[i].m_middleCoordinate.x, m_boxes[i].m_middleCoordinate.y },
+                    wxPoint{ m_boxes[i + 1].m_middleCoordinate.x,
+                             m_boxes[i + 1].m_middleCoordinate.y }
+                };
                 AddObject(std::make_unique<GraphItems::Polygon>(
-                    GraphItemInfo().Pen(connectionPen).Scaling(GetScaling()), connectionPts, 2));
+                    GraphItemInfo().Pen(connectionPen).Scaling(GetScaling()), connectionPts));
                 }
             }
 
