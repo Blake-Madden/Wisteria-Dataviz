@@ -1846,9 +1846,9 @@ namespace Wisteria
                             throw std::runtime_error(_(L"Subset missing filters.").ToUTF8());
                             }
                         cf.reserve(filterAndNodes.size());
-                        for (const auto& filterNode : filterAndNodes)
+                        for (const auto& filterAndNode : filterAndNodes)
                             {
-                            cf.push_back(loadColumnFilter(filterNode));
+                            cf.push_back(loadColumnFilter(filterAndNode));
                             }
 
                         subsettedDataset = dataSubsetter.SubsetAnd(parentToSubset, cf);
@@ -1863,9 +1863,9 @@ namespace Wisteria
                             throw std::runtime_error(_(L"Subset missing filters.").ToUTF8());
                             }
                         cf.reserve(filterOrNodes.size());
-                        for (const auto& filterNode : filterOrNodes)
+                        for (const auto& filterOrNode : filterOrNodes)
                             {
-                            cf.push_back(loadColumnFilter(filterNode));
+                            cf.push_back(loadColumnFilter(filterOrNode));
                             }
 
                         subsettedDataset = dataSubsetter.SubsetOr(parentToSubset, cf);
