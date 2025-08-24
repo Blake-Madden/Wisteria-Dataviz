@@ -1228,22 +1228,21 @@ namespace Wisteria::GraphItems
                     const auto bBox = GetBoundingBox(dc);
                     const Label infoLabel(
                         GraphItemInfo(
-                            wxString::Format(
-                                _DT(L"Scaling: %s\n"
-                                    "Width: %s\n"
-                                    "Height: %s\n"
-                                    "Default font size: %f\n"
-                                    "Font size: %f"),
-                                wxNumberFormatter::ToString(
-                                    GetScaling(), 1,
-                                    wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                                wxNumberFormatter::ToString(
-                                    bBox.GetWidth(), 0,
-                                    wxNumberFormatter::Style::Style_WithThousandsSep),
-                                wxNumberFormatter::ToString(
-                                    bBox.GetHeight(), 0,
-                                    wxNumberFormatter::Style::Style_WithThousandsSep),
-                                GetFont().GetFractionalPointSize(),
+                            wxString::Format(_DT(L"Scaling: %s\n"
+                                                 "Width: %s\n"
+                                                 "Height: %s\n"
+                                                 "Default font size: %f\n"
+                                                 "Font size: %f"),
+                                             wxNumberFormatter::ToString(
+                                                 GetScaling(), 1,
+                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                                             wxNumberFormatter::ToString(
+                                                 bBox.GetWidth(), 0,
+                                                 wxNumberFormatter::Style::Style_WithThousandsSep),
+                                             wxNumberFormatter::ToString(
+                                                 bBox.GetHeight(), 0,
+                                                 wxNumberFormatter::Style::Style_WithThousandsSep),
+                                             GetFont().GetFractionalPointSize(),
                                              wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)
                                                  .GetFractionalPointSize()))
                             .AnchorPoint(bBox.GetTopLeft())

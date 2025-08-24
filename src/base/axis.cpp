@@ -2695,12 +2695,11 @@ namespace Wisteria::GraphItems
             {
             if (IsSelected())
                 {
-                wxPoint debugOutline[5];
+                std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
-                debugOutline[4] = debugOutline[0];
-                const wxDCPenChanger pcDebug(
-                    dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
-                dc.DrawLines(std::size(debugOutline), debugOutline);
+                const wxDCPenChanger pcDebug{ dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
+                                                        wxPENSTYLE_SHORT_DASH) };
+                dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))

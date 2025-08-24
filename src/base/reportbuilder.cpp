@@ -3154,7 +3154,7 @@ namespace Wisteria
                     if (!blocks.empty())
                         {
                         wxASSERT_MSG(barChart->GetBrushScheme()->GetBrushes().size() >= (1 + i),
-                               L"Bad brush mapping for bar chart!");
+                                     L"Bad brush mapping for bar chart!");
                         blocks.front().GetBrush() = barChart->GetBrushScheme()->GetBrush(
                             barChart->GetBrushScheme()->GetBrushes().size() - 1 - i);
                         }
