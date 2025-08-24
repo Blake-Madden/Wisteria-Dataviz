@@ -43,6 +43,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Download wxwidgets
+      run: |
+        export DISPLAY=:0.0
+        sudo apt-get update && sudo apt-get install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev
+        git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 
     - name: Install Clang 19 (including scan-build)
       run: |-
