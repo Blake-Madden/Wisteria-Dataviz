@@ -84,7 +84,7 @@ namespace Wisteria::GraphItems
         /** @brief Draws the box onto the given @c wxDC.
             @param dc The wxDC to render onto.
             @returns The box that the text is being drawn in.*/
-        wxRect Draw(wxDC& dc) const override final;
+        wxRect Draw(wxDC& dc) const final;
 
         /// @returns The minimum width needed for the left padding if including a legend.
         /// @sa SetLeftPadding().
@@ -117,7 +117,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the label, which the caller can use (e.g., as a selection label).
             @param label The text for the label.*/
-        void SetText(const wxString& label) override final
+        void SetText(const wxString& label) final
             {
             GraphItemBase::SetText(label);
             CalcLongestLineLength();
@@ -279,7 +279,7 @@ namespace Wisteria::GraphItems
         /** @brief Adds a shape to the top side of the text.
             @param shpInfo A description of the shape.
             @sa SetTopImage().*/
-        void SetTopShape(const std::optional<ShapeInfo> shpInfo) { m_topShape = shpInfo; }
+        void SetTopShape(const std::optional<ShapeInfo>& shpInfo) { m_topShape = shpInfo; }
 
         /// @}
 
@@ -292,7 +292,7 @@ namespace Wisteria::GraphItems
             @note This is a more optimal alternative to GetBoundingBox(), which doesn't have to
                 create its own temporary @c wxDC.*/
         [[nodiscard]]
-        wxRect GetBoundingBox(wxDC& dc) const override final;
+        wxRect GetBoundingBox(wxDC& dc) const final;
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
             @param dc The DC to measure content with.
@@ -306,7 +306,7 @@ namespace Wisteria::GraphItems
             @sa SetBoundingBoxToContentAdjustment(), LockBoundingBoxScaling(),
                 UnlockBoundingBoxScaling().*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc,
-                            [[maybe_unused]] double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) final;
 
         /** @brief When calling SetBoundingBox(), calling this first will prevent the scaling
                 from being adjusted to the bounding box.
@@ -325,7 +325,7 @@ namespace Wisteria::GraphItems
 
                 The solution for this is to do the following to each label:
                 - Cache the original bounding box size by calling GetBoundingBox()
-                  (which all the labels should been initially set to)
+                  (which all the labels should have been initially set to)
                 - Call @c SetScaling() with the homogeneous (smallest) scaling value
                   (this will temporarily alter the bounding box)
                 - Call LockBoundingBoxScaling() to temporarily lock the scaling
@@ -367,7 +367,7 @@ namespace Wisteria::GraphItems
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) override final
+        void Offset(const int xToMove, const int yToMove) final
             {
             SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove, yToMove));
             InvalidateCachedBoundingBox();
@@ -423,8 +423,7 @@ namespace Wisteria::GraphItems
                                            double angleInDegrees, const wxString& text);
 
         /// @private
-        /// @internal Deprecated overload.
-        [[nodiscard]]
+        [[nodiscard]] [[deprecated("Prefer using the version that takes a wxRect2DDouble")]]
         static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
                                                 const wxRect& boundingBox, const wxString& text)
             {
@@ -483,7 +482,7 @@ namespace Wisteria::GraphItems
             return GetFirstAvailableFont({ L"Cascadia Mono", L"Consolas", L"Times New Roman" });
             }
 
-        /// @brief Corrects issues with fonts such as bogus facenames and point sizes.
+        /// @brief Corrects issues with fonts such as bogus face names and point sizes.
         /// @param theFont The font to review and correct.
         static void FixFont(wxFont& theFont);
         /// @}
@@ -503,7 +502,7 @@ namespace Wisteria::GraphItems
         wxSize CalcLeftImageSize(wxCoord textHeight) const;
         /// @returns The max size that the top image (or icon, or both) will be if the
         ///     provided width is given.
-        /// @note For the top image, this will maintain the its aspect ratio and the
+        /// @note For the top image, this will maintain its aspect ratio and the
         ///     calculated width may be smaller than @c textWidth.
         /// @param textWidth The current width of the label.
         [[nodiscard]]
@@ -513,7 +512,7 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The DC to calculate positions from.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const override final
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             {
             return GetBoundingBox(dc).Contains(pt);
             }

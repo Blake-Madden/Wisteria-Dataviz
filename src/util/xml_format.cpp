@@ -253,9 +253,10 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
             {
             pos += attribute.length();
             const int pointSize = static_cast<int>(std::wcstol(pos, &dummy, 10));
-            font.SetPointSize((pointSize > 0) ?
+            font.SetFractionalPointSize(
+                (pointSize > 0) ?
                                   pointSize :
-                                  wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
+                    wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFractionalPointSize());
             }
         // style
         attribute = GetFontStyle();

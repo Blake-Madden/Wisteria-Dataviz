@@ -1401,9 +1401,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             // overlapping the bar instead of a decal
             if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
                 decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
-                decalLabel->GetFont().GetPointSize() < barRenderInfo.m_defaultFontPointSize / 2)
+                decalLabel->GetFont().GetFractionalPointSize() <
+                    barRenderInfo.m_defaultFontPointSize / 2)
                 {
-                decalLabel->GetFont().SetPointSize(barRenderInfo.m_defaultFontPointSize);
+                decalLabel->GetFont().SetFractionalPointSize(barRenderInfo.m_defaultFontPointSize);
                 decalLabel->GetPen().SetColour(*wxBLACK);
                 decalLabel->SetFontColor(*wxBLACK);
                 decalLabel->SetFontBackgroundColor(*wxWHITE);
@@ -1971,9 +1972,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             // overlapping the bar instead of a decal.
             if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
                 decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
-                decalLabel->GetFont().GetPointSize() < barRenderInfo.m_defaultFontPointSize / 2)
+                decalLabel->GetFont().GetFractionalPointSize() <
+                    barRenderInfo.m_defaultFontPointSize / 2)
                 {
-                decalLabel->GetFont().SetPointSize(barRenderInfo.m_defaultFontPointSize);
+                decalLabel->GetFont().SetFractionalPointSize(barRenderInfo.m_defaultFontPointSize);
                 decalLabel->SetFontColor(*wxBLACK);
                 decalLabel->GetPen().SetColour(*wxBLACK);
                 decalLabel->SetFontBackgroundColor(*wxWHITE);
@@ -2413,7 +2415,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         barRenderInfo.m_scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
         barRenderInfo.m_labelSpacingFromLine = ScaleToScreenAndCanvas(5);
         barRenderInfo.m_defaultFontPointSize =
-            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
+            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFractionalPointSize();
         // scale the common image to the plot area's size
         barRenderInfo.m_scaledCommonImg =
             GetCommonBoxImage().IsOk() ? Wisteria::GraphItems::Image::CropImageToRect(

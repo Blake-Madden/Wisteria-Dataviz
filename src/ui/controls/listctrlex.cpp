@@ -795,8 +795,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         // draw table caption (title) if requested
                         if (IsIncludingTableCaption() && page == 1)
                             {
-                            wxFont captionFont(drawDC.GetFont());
-                            captionFont.SetPointSize(captionFont.GetPointSize() * 2);
+                            wxFont captionFont{ drawDC.GetFont() };
+                            captionFont.SetFractionalPointSize(
+                                captionFont.GetFractionalPointSize() * 2);
 
                             GraphItems::Label caption(
                                 GraphItems::GraphItemInfo(GetTitle())

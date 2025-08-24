@@ -1232,8 +1232,8 @@ namespace Wisteria::GraphItems
                                 _DT(L"Scaling: %s\n"
                                     "Width: %s\n"
                                     "Height: %s\n"
-                                    "Default font size: %d\n"
-                                    "Font size: %d"),
+                                    "Default font size: %f\n"
+                                    "Font size: %f"),
                                 wxNumberFormatter::ToString(
                                     GetScaling(), 1,
                                     wxNumberFormatter::Style::Style_NoTrailingZeroes),
@@ -1243,8 +1243,9 @@ namespace Wisteria::GraphItems
                                 wxNumberFormatter::ToString(
                                     bBox.GetHeight(), 0,
                                     wxNumberFormatter::Style::Style_WithThousandsSep),
-                                GetFont().GetPointSize(),
-                                wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()))
+                                GetFont().GetFractionalPointSize(),
+                                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)
+                                                 .GetFractionalPointSize()))
                             .AnchorPoint(bBox.GetTopLeft())
                             .Anchoring(Anchoring::TopLeftCorner)
                             .FontColor(*wxBLUE)
@@ -1958,9 +1959,10 @@ namespace Wisteria::GraphItems
 #else
             9;
 #endif
-        if (theFont.GetPointSize() < MINIMUM_POINT_SIZE)
+        if (theFont.GetFractionalPointSize() < MINIMUM_POINT_SIZE)
             {
-            theFont.SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
+            theFont.SetFractionalPointSize(
+                wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFractionalPointSize());
             }
         // Fix the face name. Of interest is that some versions of macOS use hidden fonts for their
         // default font, which won't be displayed in a standard font selection dialog. We have to

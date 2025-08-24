@@ -109,11 +109,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     currentColumn = 0;
                     currentGroupId = GetGroupColumn()->GetValue(i);
                     }
-                assert(currentRow < m_matrix.size() &&
-                       L"Invalid row when filling heatmap matrix! "
-                       "Data should be sorted by group before calling SetData().!");
-                assert(currentColumn < m_matrix[currentRow].size() &&
-                       L"Invalid column when filling heatmap matrix!");
+                wxASSERT_MSG(currentRow < m_matrix.size(),
+                             L"Invalid row when filling heatmap matrix! "
+                             "Data should be sorted by group before calling SetData().!");
+                wxASSERT_MSG(currentColumn < m_matrix[currentRow].size(),
+                             L"Invalid column when filling heatmap matrix!");
                 // should not happen, just do this to prevent crash if data was not sorted by
                 // value and then by group first. What's displayed if this happens is the data
                 // won't be grouped properly, but it's showing it how the client passed it in.
@@ -121,7 +121,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     {
                     std::vector<HeatCell> newRow;
                     newRow.resize(maxItemByColumnCount->second);
-                    m_matrix.push_back(newRow);
+                    m_matrix.push_back(std::move(newRow));
                     }
                 // shouldn't happen, just done as sanity check
                 if (currentRow >= m_matrix.size() || currentColumn >= m_matrix[currentRow].size())
@@ -167,9 +167,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     ++currentRow;
                     currentColumn = 0;
                     }
-                assert(currentRow < m_matrix.size() && L"Invalid row when filling heatmap matrix!");
-                assert(currentColumn < m_matrix[currentRow].size() &&
-                       L"Invalid column when filling heatmap matrix!");
+                wxASSERT_MSG(currentRow < m_matrix.size(),
+                             L"Invalid row when filling heatmap matrix!");
+                wxASSERT_MSG(currentColumn < m_matrix[currentRow].size(),
+                             L"Invalid column when filling heatmap matrix!");
                 // shouldn't happen, just done as sanity check
                 if (currentRow >= m_matrix.size() || currentColumn >= m_matrix[currentRow].size())
                     {
@@ -193,7 +194,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
     //----------------------------------------------------------------
     void HeatMap::RecalcSizes(wxDC & dc)
         {
-        // if no data then bail
+        // if no data, then bail
         if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 || m_matrix.empty())
             {
             return;
@@ -201,15 +202,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         Graph2D::RecalcSizes(dc);
 
-        const auto maxRowsWhenGrouping =
-            std::ceil(safe_divide<double>(m_matrix.size(), m_groupColumnCount));
+        const int maxRowsWhenGrouping =
+            static_cast<int>(std::ceil(safe_divide<double>(m_matrix.size(), m_groupColumnCount)));
 
         constexpr wxCoord LABEL_RIGHT_PADDING{ 4 };
 
         // size the boxes to fit in the area available
         wxRect drawArea = GetPlotAreaBoundingBox();
         const auto padding = static_cast<int>(wxSizerFlags::GetDefaultBorder() * GetScaling());
-        wxCoord groupHeaderLabelHeight{ 0 };
+        double groupHeaderLabelHeight{ 0 };
         wxFont groupHeaderLabelFont{ GetBottomXAxis().GetFont() };
         bool groupHeaderLabelMultiline{ false };
 
@@ -261,12 +262,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     .Padding(0, 0, LABEL_RIGHT_PADDING, 0)
                     .Font(groupHeaderLabelFont));
             // try to keep the axis font size, but use smaller font if necessary
-            groupHeaderLabelFont.SetPointSize(
-                std::min(groupHeaderLabelFont.GetPointSize(),
-                         GraphItems::Label::CalcFontSizeToFitBoundingBox(
-                             dc, groupHeaderLabelFont,
-                             drawArea /* really just needing the width measurement */,
-                             groupHeaderLabelTemplate.GetText())));
+            groupHeaderLabelFont.SetFractionalPointSize(std::min(
+                groupHeaderLabelFont.GetFractionalPointSize(),
+                GraphItems::Label::CalcFontSizeToFitBoundingBox(
+                    dc, groupHeaderLabelFont,
+                    wxRect2DDouble{ drawArea } /* really just needing the width measurement */,
+                    groupHeaderLabelTemplate.GetText())));
 
             // remeasure with adjusted font
             if (IsShowingGroupHeaders())
@@ -284,14 +285,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                         groupHeaderLabelTemplate.GetBoundingBox(dc).GetHeight();
                     groupHeaderLabelMultiline = true;
                     // readjust font size now that it is multiline and can be larger now
-                    groupHeaderLabelFont.SetPointSize(std::max(
-                        GetBottomXAxis().GetFont().GetPointSize(),
-                        GraphItems::Label::CalcFontSizeToFitBoundingBox(
-                            dc, groupHeaderLabelFont,
-                            GraphItems::Polygon::DownScaleRect(
-                                wxRect{ wxSize(groupHeaderLabelHeight, drawArea.GetWidth()) },
-                                GetScaling()),
-                            groupHeaderLabelTemplate.GetText())));
+                    groupHeaderLabelFont.SetFractionalPointSize(
+                        std::max(GetBottomXAxis().GetFont().GetFractionalPointSize(),
+                                 GraphItems::Label::CalcFontSizeToFitBoundingBox(
+                                     dc, groupHeaderLabelFont,
+                                     GraphItems::Polygon::DownScaleRect(
+                                         wxRect2DDouble{ 0, 0, groupHeaderLabelHeight,
+                                                         static_cast<double>(drawArea.GetWidth()) },
+                                         GetScaling()),
+                                     groupHeaderLabelTemplate.GetText())));
                     }
                 }
 
@@ -299,10 +301,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             drawArea.Offset(wxPoint(groupLabelWidth, groupHeaderLabelHeight));
             }
 
-        const auto boxWidth =
+        const double boxWidth =
             IsUsingGrouping() ?
                 std::min(
-                    safe_divide<wxCoord>(drawArea.GetHeight(), maxRowsWhenGrouping),
+                    safe_divide(drawArea.GetHeight(), maxRowsWhenGrouping),
                     safe_divide<wxCoord>(drawArea.GetWidth(),
                                          ((m_groupColumnCount > 1) ? m_matrix[0].size() :
                                                                      // just one column?
@@ -318,21 +320,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         // get the best font size to fit the row labels
         wxFont groupLabelFont{ GetBottomXAxis().GetFont() };
-        groupLabelFont.SetPointSize( // fit font as best possible
+        groupLabelFont.SetFractionalPointSize( // fit font as best possible
             GraphItems::Label::CalcFontSizeToFitBoundingBox(
                 dc, groupLabelFont,
-                wxSize(widestLabelWidth - ScaleToScreenAndCanvas(LABEL_RIGHT_PADDING), boxWidth),
+                wxRect2DDouble{ 0, 0,
+                                widestLabelWidth - ScaleToScreenAndCanvas(LABEL_RIGHT_PADDING),
+                                boxWidth },
                 widestStr));
         // and the labels on the boxes
         wxFont boxLabelFont{ GetBottomXAxis().GetFont() };
-        boxLabelFont.SetPointSize( // fit font as best possible
+        boxLabelFont.SetFractionalPointSize( // fit font as best possible
             GraphItems::Label::CalcFontSizeToFitBoundingBox(
-                dc, boxLabelFont, wxSize(boxWidth, boxWidth),
+                dc, boxLabelFont, wxRect2DDouble{ 0, 0, boxWidth, boxWidth },
                 wxNumberFormatter::ToString(m_range.second /* largest value in the range*/, 1,
                                             Settings::GetDefaultNumberFormat())));
 
         // draw the boxes in a grid, row x column
-        wxPoint pts[4];
         size_t currentRow{ 0 }, currentColumn{ 0 };
         size_t currentGroupStart{ 0 };
         // go through the row's columns
@@ -380,19 +383,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 // if NaN, then color will be bogus, so use plot's background color
                 const wxColour cellColor = cell.m_color.IsOk() ? cell.m_color : wxTransparentColor;
 
-                pts[0] = wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn),
-                                 drawArea.GetTopLeft().y + (currentRow * boxWidth));
-                pts[1] = wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn),
-                                 drawArea.GetTopLeft().y + (boxWidth) + (currentRow * boxWidth));
-                pts[2] = wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
-                                 drawArea.GetTopLeft().y + (boxWidth) + (currentRow * boxWidth));
-                pts[3] = wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
-                                 drawArea.GetTopLeft().y + (currentRow * boxWidth));
+                const std::array<wxPoint, 4> pts = {
+                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn),
+                            drawArea.GetTopLeft().y + (currentRow * boxWidth)),
+                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn),
+                            drawArea.GetTopLeft().y + boxWidth + (currentRow * boxWidth)),
+                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
+                            drawArea.GetTopLeft().y + boxWidth + (currentRow * boxWidth)),
+                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
+                            drawArea.GetTopLeft().y + (currentRow * boxWidth))
+                };
                 // keep scaling at 1 since this is set to a specific size on the plot
                 auto box = std::make_unique<GraphItems::Polygon>(
                     GraphItems::GraphItemInfo(cell.m_selectionLabel).Pen(GetPen()).Brush(cellColor),
-                    pts, std::size(pts));
-                const wxRect boxRect(pts[0], pts[2]);
+                    pts);
+                const wxRect boxRect{ pts[0], pts[2] };
 
                 AddObject(std::move(box));
                 // show the value of the cell, centered on it
@@ -408,8 +413,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                                  // if NaN, then set 'X' to red
                                  Colors::ColorContrast::ShadeOrTintIfClose(*wxRED, cellColor)))
                         .Anchoring(Anchoring::Center)
-                        .AnchorPoint(wxPoint(boxRect.GetLeft() + (boxRect.GetWidth() / 2),
-                                             boxRect.GetTop() + (boxRect.GetHeight() / 2)))));
+                        .AnchorPoint(wxPoint{ boxRect.GetLeft() + (boxRect.GetWidth() / 2),
+                                              boxRect.GetTop() + (boxRect.GetHeight() / 2) })));
                 ++currentColumn;
                 }
             if (hasGroupLabels)
@@ -418,11 +423,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 auto groupRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo(GetGroupColumn()->GetLabelFromID(currentGroupStart))
                         .Anchoring(Anchoring::TopLeftCorner)
-                        .
-                    // font is already scaled, so leave the label's scaling at 1.0
-                    Font(groupLabelFont)
-                        .AnchorPoint(wxPoint(drawArea.GetTopLeft().x - groupLabelWidth,
-                                             drawArea.GetTopLeft().y + (currentRow * boxWidth)))
+                        .Font(groupLabelFont) // font is already scaled, so leave its scaling at 1
+                        .AnchorPoint(wxPoint{ drawArea.GetTopLeft().x - groupLabelWidth,
+                                              drawArea.GetTopLeft().y +
+                                                  static_cast<wxCoord>(currentRow * boxWidth) })
                         .Pen(wxNullPen)
                         .Padding(0, LABEL_RIGHT_PADDING, 0, 0)
                         .LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
@@ -440,7 +444,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                 currentGroupStart != m_matrix.size())
                 {
                 currentRow = 0;
-                drawArea.Offset(wxPoint(drawArea.GetWidth() + padding + groupLabelWidth, 0));
+                drawArea.Offset(wxPoint{ drawArea.GetWidth() + padding + groupLabelWidth, 0 });
                 }
             }
         }

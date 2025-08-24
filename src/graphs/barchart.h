@@ -1430,7 +1430,7 @@ namespace Wisteria::Graphs
 
             wxCoord m_barSpacing{ 0 };
             wxCoord m_scaledShadowOffset{ 0 };
-            int m_defaultFontPointSize{ 0 };
+            double m_defaultFontPointSize{ 0 };
             wxCoord m_labelSpacingFromLine{ 0 };
             wxImage m_scaledCommonImg;
             std::vector<std::unique_ptr<GraphItems::Label>> m_decals;

@@ -630,7 +630,7 @@ namespace Wisteria::Graphs
         outerPieDrawArea.Offset(wxPoint((pieDrawArea.width - outerPieDrawArea.width) / 2,
                                         (pieDrawArea.height - outerPieDrawArea.height) / 2));
 
-        int smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
+        double smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetFractionalPointSize() };
 
         // shrinks an outer label to fit within the plotting area
         // and also draws a connection line from the label to the pie slice
@@ -684,8 +684,8 @@ namespace Wisteria::Graphs
                     measureAndFitLabel(outerLabel);
                     }
 
-                smallestOuterLabelFontSize =
-                    std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
+                smallestOuterLabelFontSize = std::min(
+                    smallestOuterLabelFontSize, outerLabel->GetFont().GetFractionalPointSize());
 
                 std::unique_ptr<GraphItems::Points2D> connectionLine{ nullptr };
                 const bool isTopLeft = outerLabel->GetAnchoring() == Anchoring::BottomRightCorner;
@@ -795,7 +795,7 @@ namespace Wisteria::Graphs
         // outer (main) pie
         double startAngle{ 0.0 };
         std::vector<std::unique_ptr<GraphItems::Label>> middleLabels;
-        int smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
+        double smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetFractionalPointSize() };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
             const std::optional<wxColour> sliceColor =
@@ -886,8 +886,9 @@ namespace Wisteria::Graphs
                 if (middleLabel != nullptr)
                     {
                     middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
-                    smallestMiddleLabelFontSize = std::min(smallestMiddleLabelFontSize,
-                                                           middleLabel->GetFont().GetPointSize());
+                    smallestMiddleLabelFontSize =
+                        std::min(smallestMiddleLabelFontSize,
+                                 middleLabel->GetFont().GetFractionalPointSize());
                     if (GetOuterPie().at(i).IsGhosted())
                         {
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
@@ -905,7 +906,7 @@ namespace Wisteria::Graphs
             {
             if (middleLabel != nullptr)
                 {
-                middleLabel->GetFont().SetPointSize(smallestMiddleLabelFontSize);
+                middleLabel->GetFont().SetFractionalPointSize(smallestMiddleLabelFontSize);
                 queueObjectForOffsetting(std::move(middleLabel));
                 }
             }
@@ -918,7 +919,7 @@ namespace Wisteria::Graphs
             GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(0)) : std::nullopt
         };
         auto sliceBrush{ GetBrushScheme()->GetBrush(0) };
-        smallestMiddleLabelFontSize = GetBottomXAxis().GetFont().GetPointSize();
+        smallestMiddleLabelFontSize = GetBottomXAxis().GetFont().GetFractionalPointSize();
 
         const double sliceProportion =
             safe_divide<double>(1 - (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), 2) +
@@ -1041,8 +1042,9 @@ namespace Wisteria::Graphs
                 if (middleLabel != nullptr)
                     {
                     middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
-                    smallestMiddleLabelFontSize = std::min(smallestMiddleLabelFontSize,
-                                                           middleLabel->GetFont().GetPointSize());
+                    smallestMiddleLabelFontSize =
+                        std::min(smallestMiddleLabelFontSize,
+                                 middleLabel->GetFont().GetFractionalPointSize());
                     if (innerPie.IsGhosted())
                         {
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
@@ -1083,8 +1085,9 @@ namespace Wisteria::Graphs
                 {
                 continue;
                 }
-            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
-            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
+                smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
             outerLabel->SetFontColor(
                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
@@ -1167,8 +1170,9 @@ namespace Wisteria::Graphs
                 {
                 continue;
                 }
-            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
-            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
+                smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
             outerLabel->SetFontColor(
                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
@@ -1268,8 +1272,9 @@ namespace Wisteria::Graphs
                 {
                 continue;
                 }
-            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
-            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
+                smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
             outerLabel->SetFontColor(
                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
@@ -1350,8 +1355,9 @@ namespace Wisteria::Graphs
                 {
                 continue;
                 }
-            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
-            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetHeaderInfo().GetFont().SetFractionalPointSize(
+                smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetFractionalPointSize(smallestOuterLabelFontSize);
             outerLabel->SetFontColor(
                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
 
@@ -1431,7 +1437,7 @@ namespace Wisteria::Graphs
             {
             if (middleLabel != nullptr)
                 {
-                middleLabel->GetFont().SetPointSize(smallestMiddleLabelFontSize);
+                middleLabel->GetFont().SetFractionalPointSize(smallestMiddleLabelFontSize);
                 queueObjectForOffsetting(std::move(middleLabel));
                 }
             }

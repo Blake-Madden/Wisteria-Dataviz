@@ -202,19 +202,10 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend(const LegendOptions& options) override final;
-
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint,
-                                                        const bool includeHeader)
-            {
-            return CreateLegend(LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
-            }
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
       private:
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
 
         struct HeatCell
             {
@@ -228,7 +219,7 @@ namespace Wisteria::Graphs
         std::vector<wxColour> m_reversedColorSpectrum; // used for the legend
         std::pair<double, double> m_range{ 0, 0 };
         wxString m_groupHeaderPrefix{ _(L"Groups") };
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
+        std::vector<Data::Column<double>>::const_iterator m_continuousColumn;
         bool m_showGroupHeaders{ true };
         size_t m_groupColumnCount{ 1 };
         };

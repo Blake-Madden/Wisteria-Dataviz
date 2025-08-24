@@ -246,12 +246,12 @@ namespace Wisteria::GraphItems
                 inside a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
                 by shooting a ray along the X axis.
-            @param p The point.
+            @param pt The point.
             @param polygon The polygon's points.
             @param N The number of points in the polygon.
             @returns Whether the point is inside the polygon.*/
         [[nodiscard]]
-        static bool IsInsidePolygon(wxPoint p, const wxPoint* polygon, int N);
+        static bool IsInsidePolygon(wxPoint pt, const wxPoint* polygon, int N);
 
         /** @brief Determines if a rectangle is inside a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
@@ -297,7 +297,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Shrinks a rectangle by a given scaling.
             @param theRect The rectangle to downscale.
-            @param scaling Scale factor to scale it down. For example, 2 will
+            @param scaling Scale factor to scale it down. For example, @c 2 will
                 downscale the rectangle to half its original size.
             @returns The downscaled rectangle.*/
         [[nodiscard]]
@@ -305,6 +305,18 @@ namespace Wisteria::GraphItems
             {
             return { wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
                             safe_divide<double>(theRect.GetHeight(), scaling)) };
+            }
+
+        /** @brief Shrinks a rectangle by a given scaling.
+            @param theRect The rectangle to downscale.
+            @param scaling Scale factor to scale it down. For example, @c 2 will
+                downscale the rectangle to half its original size.
+            @returns The downscaled rectangle.*/
+        [[nodiscard]]
+        static wxRect2DDouble DownScaleRect(const wxRect2DDouble& theRect, const double scaling)
+            {
+            return { 0, 0, safe_divide(theRect.GetWidth(), scaling),
+                     safe_divide(theRect.GetHeight(), scaling) };
             }
 
         /** @brief Determines the four corners of a rectangle.
@@ -343,7 +355,7 @@ namespace Wisteria::GraphItems
             @param pt The point to convert.
             @returns The @c wxPoint as a pair of double values.*/
         [[nodiscard]]
-        static std::pair<double, double> PointToPair(wxPoint pt) noexcept
+        static std::pair<double, double> PointToPair(const wxPoint pt) noexcept
             {
             return std::make_pair(static_cast<double>(pt.x), static_cast<double>(pt.y));
             }
@@ -354,16 +366,16 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(wxPoint pt, wxDC& dc) const override final;
+        bool HitTest(wxPoint pt, wxDC& dc) const final;
         /** @brief Draws the polygon.
             @param dc The canvas to draw the point on.
             @returns The box that the polygon is being drawn within.*/
-        wxRect Draw(wxDC& dc) const override final;
+        wxRect Draw(wxDC& dc) const final;
 
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]]
-        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const override final
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
             {
             return GetPolygonBoundingBox(m_scaledPoints.data(), m_scaledPoints.size());
             }
@@ -371,14 +383,14 @@ namespace Wisteria::GraphItems
         /** @brief Moves the polygon by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(int xToMove, int yToMove) override final;
+        void Offset(int xToMove, int yToMove) final;
         /** @brief Bounds the polygon to the given rectangle.
             @param rect The rectangle to bound the polygon to.
             @param dc The rendering DC.
             @param parentScaling This parameter is not used in this implementation.
             @todo Add support for this; not currently implemented.*/
         void SetBoundingBox([[maybe_unused]] const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) final;
         /** @returns A rectangle from four points.
             @param points The four points to construct the rectangle.
             @warning It is assumed that there are four elements in @c points.*/
