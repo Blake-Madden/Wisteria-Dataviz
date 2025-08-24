@@ -593,10 +593,9 @@ namespace Wisteria::GraphItems
             if (IsSelected())
                 {
                 std::array<wxPoint, 5> debugOutline;
-                GetRectPoints(boundingBox, debugOutline.data());
-                debugOutline[4] = debugOutline[0];
-                const wxDCPenChanger pcDebug(
-                    dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                GetRectPoints(boundingBox, debugOutline);
+                const wxDCPenChanger pcDebug{ dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
+                                                        wxPENSTYLE_SHORT_DASH) };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }

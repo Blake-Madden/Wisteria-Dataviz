@@ -56,10 +56,9 @@ namespace Wisteria::GraphItems
             if (IsSelected())
                 {
                 std::array<wxPoint, 5> debugOutline;
-                GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline.data());
-                debugOutline[4] = debugOutline[0];
-                const wxDCPenChanger pcDebug(
-                    dc, wxPen(*wxRED, 2 * scaledPen.GetWidth(), wxPENSTYLE_SHORT_DASH));
+                GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
+                const wxDCPenChanger pcDebug{ dc, wxPen(*wxRED, 2 * scaledPen.GetWidth(),
+                                                        wxPENSTYLE_SHORT_DASH) };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
