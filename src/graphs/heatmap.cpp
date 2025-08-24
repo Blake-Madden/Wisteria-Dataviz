@@ -439,7 +439,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             ++currentRow;
             currentColumn = 0;
             if (IsUsingGrouping() && m_groupColumnCount > 1 &&
-                currentRow + 1 > maxRowsWhenGrouping &&
+                std::cmp_greater(currentRow + 1, maxRowsWhenGrouping) &&
                 // don't add another column if this is the last row
                 currentGroupStart != m_matrix.size())
                 {
