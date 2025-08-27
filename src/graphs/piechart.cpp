@@ -318,7 +318,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
                                                  *wxTRANSPARENT_PEN);
             scaledArcPen.SetWidth(ScaleToScreenAndCanvas(scaledArcPen.GetWidth()));
 
-            const wxDCPenChanger pc(dc, scaledArcPen);
+            const wxDCPenChanger pc{ dc, scaledArcPen };
 
             // if a base color is in use, draw under a (possibly) hatched brush
             if (GetGraphItemInfo().GetBaseColor().has_value())
@@ -338,7 +338,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         arcStart.first += m_pieArea.GetTopLeft().x;
         arcStart.second += m_pieArea.GetTopLeft().y;
             {
-            const wxDCPenChanger pc(dc, scaledPen);
+            const wxDCPenChanger pc{ dc, scaledPen };
             dc.DrawLine(centerPoint, wxPoint(arcStart.first, arcStart.second));
             }
         // line from the pie center to the end of the arc
@@ -347,24 +347,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         arcEnd.first += m_pieArea.GetTopLeft().x;
         arcEnd.second += m_pieArea.GetTopLeft().y;
             {
-            const wxDCPenChanger pc(dc, scaledPen);
+            const wxDCPenChanger pc{ dc, scaledPen };
             dc.DrawLine(centerPoint, wxPoint(arcEnd.first, arcEnd.second));
             }
 
         if (IsSelected())
             {
             auto points = GetPolygon();
-            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            const wxDCPenChanger pc{ dc,
+                                     wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT) };
             dc.DrawLines(points.size(), points.data());
             // highlight the selected protruding bounding box in debug mode
             if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
-                wxPoint debugOutline[5];
+                std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(m_pieArea, debugOutline);
-                debugOutline[4] = debugOutline[0];
-                const wxDCPenChanger pcDebug(
-                    dc, wxPen(*wxGREEN, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
-                dc.DrawLines(std::size(debugOutline), debugOutline);
+                const wxDCPenChanger pcDebug{ dc, wxPen(*wxGREEN, ScaleToScreenAndCanvas(2),
+                                                        wxPENSTYLE_SHORT_DASH) };
+                dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
 
