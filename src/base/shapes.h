@@ -202,6 +202,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the line within.
         /// @param dc The DC to draw to.
         void DrawHorizontalLine(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a vertical line.
+        /// @param rect The area to draw the line within.
+        /// @param dc The DC to draw to.
+        void DrawVerticalLine(wxRect rect, wxDC& dc) const;
         /// @brief Draws a box plot.
         /// @param rect The area to draw the box plot within.
         /// @param dc The DC to draw to.

@@ -105,7 +105,8 @@ namespace Wisteria::Icons
         Dollar,                   /*!< A US dollar bill.*/
         Monitor,                  /*!< A computer monitor.*/
         Sword,                    /*!< A sword.*/
-        ImmaculateHeartWithSword  /*!< An Immaculate Heart (with sword piercing it).*/
+        ImmaculateHeartWithSword, /*!< An Immaculate Heart (with sword piercing it).*/
+        VerticalLine              /*!< A vertical line.*/
         };
 
     /// @brief Item to draw on a legend.

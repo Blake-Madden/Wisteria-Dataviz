@@ -96,6 +96,7 @@ namespace Wisteria
             static const std::map<std::wstring_view, Icons::IconShape> iconEnums = {
                 { L"blank", Icons::IconShape::Blank },
                 { L"horizontal-line", Icons::IconShape::HorizontalLine },
+                { L"vertical-line", Icons::IconShape::VerticalLine },
                 { L"arrow-right", Icons::IconShape::ArrowRight },
                 { L"circle", Icons::IconShape::Circle },
                 { L"image", Icons::IconShape::Image },

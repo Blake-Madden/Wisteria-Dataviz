@@ -88,6 +88,7 @@ Properties common to all graphs:
   The following individual icons are available:
   - `"blank"`
   - `"horizontal-line"`
+  - `"vertical-line"`
   - `"arrow-right"`
   - `"circle"`
   - `"image"`
