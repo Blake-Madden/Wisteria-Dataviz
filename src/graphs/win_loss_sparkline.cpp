@@ -351,7 +351,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 if (!cell.m_valid)
                     {
                     // If there are valid games after this one, then this must have been a
-                    // cancelation. Otherwise, it could just be a shorter season than the others
+                    // cancellation. Otherwise, it could just be a shorter season than the others
                     // and these aren't really games.
                     bool moreValidGames{ false };
                     for (auto scanAheadCounter = cellCounter + 1;
