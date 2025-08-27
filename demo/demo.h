@@ -35,6 +35,7 @@
 #include "../src/graphs/scalechart.h"
 #include "../src/graphs/table.h"
 #include "../src/graphs/wcurveplot.h"
+#include "../src/graphs/win_loss_sparkline.h"
 #include "../src/graphs/wordcloud.h"
 #include "../src/import/text_matrix.h"
 #include "../src/ui/dialogs/variableselectdlg.h"

@@ -1,4 +1,4 @@
-# Automatically generated from 'Build CMake Files List.R'
+# Automatically generated from 'build_cmake_files_list.R'
 # DO NOT MODIFY MANUALLY!
 
 SET(WISTERIA_SRC
@@ -53,6 +53,7 @@ SET(WISTERIA_SRC
     src/graphs/scalechart.cpp
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
+    src/graphs/win_loss_sparkline.cpp
     src/graphs/wordcloud.cpp
     src/import/cpp_extract_text.cpp
     src/import/doc_extract_text.cpp
