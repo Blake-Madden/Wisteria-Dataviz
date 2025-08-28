@@ -12,7 +12,7 @@
 #ifndef WISTERIA_WIN_LOSS_H
 #define WISTERIA_WIN_LOSS_H
 
-#include "groupgraph2d.h"
+#include "graph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -21,13 +21,24 @@ namespace Wisteria::Graphs
         @details Multiple series can be included, showing either different teams or multiple
          seasons for the same team.
 
+         This graphic is based on the sports season sparkline featured in Edward Tufte's
+         *Beautiful Evidence*, but with the following alterations:
+
+         - Wins and losses have their won colors (green and red, respectively), rather than
+           all being black
+         - Shutout game lines have a wider width to make them stand out, rather than being
+           red (as featured in the original book)
+         - Support for highlighting postseason games was added
+         - Support for highlighting the best record(s) and longest winning streak(s) was added
+
         @par %Data:
          This plot accepts a Data::Dataset where a categorical column specifies the row labels
          (e.g., teams' names, or season labels) and continuous (boolean) columns specifies the
-         outcomes of the games and whether they were home games.
+         outcomes of the games and whether they were home games. (A postseason-game indicator
+         column can optionally be included.)
 
          | SEASON   | WON   | SHUTOUT | HOMEGAME |
-         | :--      | --:   | :--     |          |
+         | :--      | --:   | :--     | :--      |
          | 2022     | 1     | 1       | 1        |
          | 2022     | 0     | 0       | 1        |
          | 2022     | 1     | 0       | 1        |
@@ -58,14 +69,14 @@ namespace Wisteria::Graphs
          Any other non-zero value will be considered @c true.
 
          @warning The data is mapped exactly in the order that it appears in the data
-         (i.e., nothing is sorted). Because this, the grouping column should be presorted
-         and each group's values should be in the order that want them to appear in the plot.
+         (i.e., nothing is sorted). Because this, the season column should be presorted
+         and each season's values should be in the order that want them to appear in the plot.
 
          @par Missing Data:
-         - Missing data in the group column will be shown as an empty row label (for the group).
+         - Missing data in the season column will be shown as an empty row label.
          - For any missing data in boolean columns, a blank space will be shown along series
-           where the game would have been. (If it appears to be a canceled game midseason, then
-           it will be X'ed out.)
+           where the game would have been. (If it appears to be a canceled game midseason
+           [or the entire season was canceled], then it will be X'ed out.)
 
          @par Example:
          @code
@@ -90,7 +101,7 @@ namespace Wisteria::Graphs
 
           auto plot = std::make_shared<WinLossSparkline>(canvas);
 
-          plot->SetData(volleyballData, L"WON", L"SHUTOUT", L"HOMEGAME", L"SEASON");
+          plot->SetData(volleyballData, L"SEASON", L"WON", L"SHUTOUT", L"HOMEGAME");
 
           canvas->SetFixedObject(0, 0, plot);
 
@@ -103,7 +114,7 @@ namespace Wisteria::Graphs
 
          @par Citations:
             Tufte, Edward Rolfe. *Beautiful Evidence*. Graphics Press, 2019.
-    */
+     */
     class WinLossSparkline final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(WinLossSparkline);
@@ -111,40 +122,60 @@ namespace Wisteria::Graphs
 
       public:
         /** @brief Constructor.
-            @param canvas The canvas that the plot is plotted on.*/
+            @param canvas The canvas that the plot is plotted on.
+          */
         explicit WinLossSparkline(Canvas* canvas);
 
         /** @brief Sets the data.
             @param data The data.
+            @param seasonColumnName The season column to split the data by row.\n
+                This will normally be a team's seasons, or multiple teams.
             @param wonColumnName A boolean column indicating whether the
                 game was won or lost.
             @param shutoutColumnName A boolean column indicating whether one team was
                 held scoreless.
             @param homeGameColumnName A boolean column indicating whether the game was played
                 at the home stadium.
-            @param groupColumnName The group column to split the data by row.\n
-                This will normally be a team's seasons, or multiple teams.
-            @warning Regarding the group column, the data must be sorted ahead of time
+            @param postseasonColumnName A boolean column indicating whether the game was played
+                during the postseason.
+            @warning Regarding the season column, the data must be sorted ahead of time
                 (given that ordering is important in a sparkline anyway).
             @note Boolean columns should be continuous columns that contain
                 @c 0, @c 1, or be empty. (Non-zero values will be read as @c true.)
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
-                @c wxString::FromUTF8() when formatting it for an error message.*/
+                @c wxString::FromUTF8() when formatting it for an error message.
+         */
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     const wxString& wonColumnName, const wxString& shutoutColumnName,
-                     const wxString& homeGameColumnName, const wxString& groupColumnName);
+                     const wxString& seasonColumnName, const wxString& wonColumnName,
+                     const wxString& shutoutColumnName, const wxString& homeGameColumnName,
+                     const std::optional<wxString>& postseasonColumnName = std::nullopt);
+
+        /** @brief Sets whether to highlight the best season record(s) and longest winning
+           streak(s).
+            @param highlight @c true to highlight the best records.
+            @note The best record and longest winning streak will be determined from all rows.
+                The best records from all seasons will be highlighted. (In the case of ties,
+                all ties will be highlighted.)
+         */
+        void HighlightBestRecords(const bool highlight) noexcept
+            {
+            m_highlightBestRecords = highlight;
+            }
 
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
-            @returns The legend for the chart.*/
+            @returns The legend for the chart.
+         */
         [[nodiscard]]
         std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
       private:
         void RecalcSizes(wxDC& dc) final;
+
+        void CalculateRecords();
 
         struct WinLossCell
             {
@@ -152,20 +183,29 @@ namespace Wisteria::Graphs
             bool m_won{ true };
             bool m_shutout{ false };
             bool m_homeGame{ true };
+            bool m_postseason{ false };
             };
 
         struct WinLossRow
             {
-            wxString m_groupLabel;
+            wxString m_seasonLabel;
             wxString m_overallRecordLabel;
             wxString m_homeRecordLabel;
             wxString m_roadRecordLabel;
             wxString m_pctLabel;
+            bool m_highlightPctLabel{ false };
             };
 
         std::vector<std::pair<WinLossRow, std::vector<WinLossCell>>> m_matrix;
         wxColour m_winColor;
         wxColour m_lossColor;
+        wxColour m_postseasonColor;
+        wxColour m_highlightColor;
+        bool m_hasPostseasonData{ false };
+        bool m_highlightBestRecords{ true };
+
+        // state data
+        size_t m_longestWinningStreak{ 0 };
         };
     } // namespace Wisteria::Graphs
 

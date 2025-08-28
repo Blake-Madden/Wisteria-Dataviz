@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "win_loss_sparkline.h"
+#include "../math/safe_math.h"
 #include "../util/frequencymap.h"
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::Graph2D)
@@ -25,15 +26,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         GetPen().SetColour(L"#BEBBBB");
         m_winColor = Colors::ColorBrewer::GetColor(Colors::Color::ForestGreen);
         m_lossColor = Colors::ColorBrewer::GetColor(Colors::Color::RedTomato);
+        m_postseasonColor = Colors::ColorContrast::ChangeOpacity(
+            Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue), 75);
+        m_highlightColor = Colors::ColorContrast::ChangeOpacity(
+            Colors::ColorBrewer::GetColor(Colors::Color::ForestGreen), 75);
         }
 
     //----------------------------------------------------------------
-    void WinLossSparkline::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                                   const wxString& wonColumnName, const wxString& shutoutColumnName,
-                                   const wxString& homeGameColumnName,
-                                   const wxString& groupColumnName)
+    void WinLossSparkline::SetData(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& seasonColumnName,
+        const wxString& wonColumnName, const wxString& shutoutColumnName,
+        const wxString& homeGameColumnName,
+        const std::optional<wxString>& postSeasonColumnName /*= std::nullopt*/)
         {
         GetSelectedIds().clear();
+        m_longestWinningStreak = 0;
 
         const auto wonColIter = data->GetContinuousColumn(wonColumnName);
         if (wonColIter == data->GetContinuousColumns().cend())
@@ -58,26 +65,44 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     .ToUTF8());
             }
 
-        const auto groupColIter = data->GetCategoricalColumn(groupColumnName);
-        if (groupColIter == data->GetCategoricalColumns().cend())
+        const auto postseasonColIter = [this, &data, &postSeasonColumnName]()
+        {
+            if (postSeasonColumnName)
+                {
+                const auto colIter = data->GetContinuousColumn(postSeasonColumnName.value());
+                if (colIter == data->GetContinuousColumns().cend())
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"'%s': column not found for graph."),
+                                         postSeasonColumnName.value())
+                            .ToUTF8());
+                    }
+                m_hasPostseasonData = true;
+                return colIter;
+                }
+            return data->GetContinuousColumns().cend();
+        }();
+
+        const auto seasonColIter = data->GetCategoricalColumn(seasonColumnName);
+        if (seasonColIter == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': group column not found for graph."), groupColumnName)
+                wxString::Format(_(L"'%s': season column not found for graph."), seasonColumnName)
                     .ToUTF8());
             }
 
         m_matrix.clear();
 
-        // see how many groups there are
-        frequency_set<Data::GroupIdType> groups;
-        for (const auto& groupId : groupColIter->GetValues())
+        // see how many seasons there are
+        frequency_set<Data::GroupIdType> seasons;
+        for (const auto& groupId : seasonColIter->GetValues())
             {
-            groups.insert(groupId);
+            seasons.insert(groupId);
             }
-        // if more columns than groups, then fix the column count
-        m_matrix.resize(groups.get_data().size());
+        // if more columns than seasons, then fix the column count
+        m_matrix.resize(seasons.get_data().size());
         const auto maxItemByColumnCount = std::ranges::max_element(
-            groups.get_data(), [](const auto& item1, const auto& item2) noexcept
+            seasons.get_data(), [](const auto& item1, const auto& item2) noexcept
             { return item1.second < item2.second; });
         for (auto& row : m_matrix)
             {
@@ -88,24 +113,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         size_t currentRowWins{ 0 }, currentRowLosses{ 0 };
         size_t currentRowHomeWins{ 0 }, currentRowHomeLosses{ 0 };
         size_t currentRowRoadWins{ 0 }, currentRowRoadLosses{ 0 };
-        auto currentGroupId = groupColIter->GetValue(0);
+        auto currentGroupId = seasonColIter->GetValue(0);
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
             // move to next row if on another group ID
-            if (groupColIter->GetValue(i) != currentGroupId)
+            if (seasonColIter->GetValue(i) != currentGroupId)
                 {
                 ++currentRow;
                 currentColumn = currentRowWins = currentRowLosses = currentRowHomeWins =
                     currentRowHomeLosses = currentRowRoadWins = currentRowRoadLosses = 0;
-                currentGroupId = groupColIter->GetValue(i);
+                currentGroupId = seasonColIter->GetValue(i);
                 }
             wxASSERT_MSG(currentRow < m_matrix.size(),
                          L"Invalid row when filling heatmap matrix! "
-                         "Data should be sorted by group before calling SetData().!");
+                         "Data should be sorted by season before calling SetData().!");
             wxASSERT_MSG(currentColumn < m_matrix[currentRow].second.size(),
                          L"Invalid column when filling heatmap matrix!");
             // should not happen, just do this to prevent crash if data was not sorted by
-            // value and then by group first. What's displayed if this happens is the data
+            // value and then by season first. What's displayed if this happens is the data
             // won't be grouped properly, but it's showing it how the client passed it in.
             if (currentRow >= m_matrix.size())
                 {
@@ -119,7 +144,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 {
                 break;
                 }
-            m_matrix[currentRow].first.m_groupLabel = groupColIter->GetValueAsLabel(i);
+            m_matrix[currentRow].first.m_seasonLabel = seasonColIter->GetValueAsLabel(i);
             const auto wonVal = wonColIter->GetValue(i);
             const auto shutoutVal = shutoutColIter->GetValue(i);
             const auto homeGameVal = homeGameColIter->GetValue(i);
@@ -131,6 +156,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             m_matrix[currentRow].second[currentColumn].m_won = static_cast<bool>(wonVal);
             m_matrix[currentRow].second[currentColumn].m_shutout = static_cast<bool>(shutoutVal);
             m_matrix[currentRow].second[currentColumn].m_homeGame = static_cast<bool>(homeGameVal);
+            if (postSeasonColumnName && postseasonColIter != data->GetContinuousColumns().cend())
+                {
+                const auto postSeasonVal = postseasonColIter->GetValue(i);
+                if (std::isfinite(postSeasonVal))
+                    {
+                    m_matrix[currentRow].second[currentColumn].m_postseason =
+                        static_cast<bool>(postSeasonVal);
+                    }
+                }
             m_matrix[currentRow].second[currentColumn].m_valid = true;
 
             if (m_matrix[currentRow].second[currentColumn].m_won)
@@ -183,6 +217,61 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
             ++currentColumn;
             }
+
+        if (m_highlightBestRecords)
+            {
+            CalculateRecords();
+            }
+        }
+
+    //----------------------------------------------------------------
+    void WinLossSparkline::CalculateRecords()
+        {
+        // get the team/season with the best record
+        double highestPct{ 0 };
+        for (auto& row : m_matrix)
+            {
+            double val{ 0 };
+            if (row.first.m_pctLabel.ToDouble(&val))
+                {
+                highestPct = std::max(highestPct, val);
+                }
+            }
+        for (auto& row : m_matrix)
+            {
+            double val{ 0 };
+            if (row.first.m_pctLabel.ToDouble(&val) && compare_doubles(val, highestPct))
+                {
+                row.first.m_highlightPctLabel = true;
+                }
+            }
+
+        // get the longest winning streak
+        std::vector<size_t> rowWinningStreaks;
+        rowWinningStreaks.reserve(m_matrix.size());
+        for (auto& row : m_matrix)
+            {
+            size_t longestWinningStreak{ 0 };
+            size_t consecutiveWins{ 0 };
+            for (const auto& game : row.second)
+                {
+                // skip over canceled games
+                if (game.m_valid)
+                    {
+                    if (game.m_won)
+                        {
+                        ++consecutiveWins;
+                        }
+                    else
+                        {
+                        longestWinningStreak = std::max(longestWinningStreak, consecutiveWins);
+                        consecutiveWins = 0;
+                        }
+                    }
+                }
+            rowWinningStreaks.push_back(longestWinningStreak);
+            }
+        m_longestWinningStreak = std::ranges::max(rowWinningStreaks);
         }
 
     //----------------------------------------------------------------
@@ -201,24 +290,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
         // size the boxes to fit in the area available
         wxRect drawArea = GetPlotAreaBoundingBox();
-        double groupHeaderLabelHeight{ 0 };
-        wxFont groupHeaderLabelFont{ GetBottomXAxis().GetFont() };
+        double seasonHeaderLabelHeight{ 0 };
+        wxFont seasonHeaderLabelFont{ GetBottomXAxis().GetFont() };
 
-        // find the width of the longest group label
+        // find the width of the longest season label
         GraphItems::Label measuringLabel(GraphItems::GraphItemInfo()
                                              .Scaling(GetScaling())
                                              .Pen(wxNullPen)
                                              .DPIScaling(GetDPIScaleFactor()));
 
-        wxCoord groupLabelWidth{ 0 };
-        for (const auto& [strVal, cells] : m_matrix)
+        wxCoord seasonLabelWidth{ 0 };
+        for (const auto& [strVal, games] : m_matrix)
             {
-            measuringLabel.SetText(strVal.m_groupLabel);
-            groupLabelWidth =
-                std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), groupLabelWidth);
+            measuringLabel.SetText(strVal.m_seasonLabel);
+            seasonLabelWidth =
+                std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), seasonLabelWidth);
             }
         wxCoord overallRecordLabelWidth{ 0 };
-        for (const auto& [strVal, cells] : m_matrix)
+        for (const auto& [strVal, games] : m_matrix)
             {
             measuringLabel.SetText(strVal.m_overallRecordLabel);
             overallRecordLabelWidth =
@@ -226,7 +315,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             }
         // measure the HOME column, including the header string
         wxCoord homeRecordLabelWidth{ 0 };
-        for (const auto& [strVal, cells] : m_matrix)
+        for (const auto& [strVal, games] : m_matrix)
             {
             measuringLabel.SetText(strVal.m_homeRecordLabel);
             homeRecordLabelWidth =
@@ -237,7 +326,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), homeRecordLabelWidth);
         // measure the ROAD column, including the header string
         wxCoord roadRecordLabelWidth{ 0 };
-        for (const auto& [strVal, cells] : m_matrix)
+        for (const auto& [strVal, games] : m_matrix)
             {
             measuringLabel.SetText(strVal.m_roadRecordLabel);
             roadRecordLabelWidth =
@@ -248,7 +337,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), roadRecordLabelWidth);
         // measure the PCT column, including the header string
         wxCoord pctRecordLabelWidth{ 0 };
-        for (const auto& [strVal, cells] : m_matrix)
+        for (const auto& [strVal, games] : m_matrix)
             {
             measuringLabel.SetText(strVal.m_pctLabel);
             pctRecordLabelWidth =
@@ -257,12 +346,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         measuringLabel.SetText(_(L"pct"));
         pctRecordLabelWidth =
             std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), pctRecordLabelWidth);
-        const wxCoord allLabelsWidth{ groupLabelWidth + overallRecordLabelWidth +
+        const wxCoord allLabelsWidth{ seasonLabelWidth + overallRecordLabelWidth +
                                       homeRecordLabelWidth + roadRecordLabelWidth +
                                       pctRecordLabelWidth + (PADDING_BETWEEN_LABELS * 4) };
 
         drawArea.SetWidth(drawArea.GetWidth() - allLabelsWidth);
-        // Free some space for the group labels above each column (even if one column).
+        // Free some space for the season labels above each column (even if one column).
         GraphItems::Label headerLabelTemplate(
             GraphItems::GraphItemInfo(_(L"home"))
                 .Scaling(GetScaling())
@@ -270,12 +359,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 .DPIScaling(GetDPIScaleFactor())
                 .Padding(LABEL_PADDING, LABEL_PADDING, LABEL_PADDING, LABEL_PADDING)
                 .Font(GetBottomXAxis().GetFont()));
-        groupHeaderLabelHeight = headerLabelTemplate.GetBoundingBox(dc).GetHeight();
+        seasonHeaderLabelHeight = headerLabelTemplate.GetBoundingBox(dc).GetHeight();
 
         // leave space for the headers and for even spacing between each row
-        drawArea.SetHeight(drawArea.GetHeight() - groupHeaderLabelHeight -
+        drawArea.SetHeight(drawArea.GetHeight() - seasonHeaderLabelHeight -
                            ((m_matrix.size() - 1) * PADDING_BETWEEN_LABELS));
-        drawArea.Offset(wxPoint(allLabelsWidth, groupHeaderLabelHeight));
+        drawArea.Offset(wxPoint(allLabelsWidth, seasonHeaderLabelHeight));
 
         const double boxWidth =
             std::min<double>(safe_divide<size_t>(drawArea.GetHeight(), m_matrix.size()),
@@ -287,74 +376,83 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         // draw the boxes in a grid, row x column
         int currentRow{ 0 }, currentColumn{ 0 };
 
-        auto homeHeader =
-            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(_(L"home"))
-                                                    .Scaling(GetScaling())
-                                                    .DPIScaling(GetDPIScaleFactor())
-                                                    .Pen(wxNullPen)
-                                                    .Font(groupHeaderLabelFont)
-                                                    .Padding(0, 0, 0, LABEL_PADDING)
-                                                    .AnchorPoint(drawArea.GetTopLeft()));
+        auto homeHeader = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo(
+                /* TRANSLATORS: Sports game, as played at the team's home stadium. */ _(L"home"))
+                .Scaling(GetScaling())
+                .DPIScaling(GetDPIScaleFactor())
+                .Pen(wxNullPen)
+                .Font(seasonHeaderLabelFont)
+                .Padding(0, 0, 0, LABEL_PADDING)
+                .AnchorPoint(drawArea.GetTopLeft()));
         homeHeader->Offset(-(homeRecordLabelWidth + roadRecordLabelWidth + pctRecordLabelWidth +
                              (PADDING_BETWEEN_LABELS * 2)),
-                           -groupHeaderLabelHeight);
+                           -seasonHeaderLabelHeight);
         homeHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(homeHeader));
 
-        auto roadHeader =
-            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(_(L"road"))
-                                                    .Scaling(GetScaling())
-                                                    .DPIScaling(GetDPIScaleFactor())
-                                                    .Pen(wxNullPen)
-                                                    .Font(groupHeaderLabelFont)
-                                                    .Padding(0, 0, 0, LABEL_PADDING)
-                                                    .AnchorPoint(drawArea.GetTopLeft()));
+        auto roadHeader = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo(
+                /* TRANSLATORS: Sports game, where a team
+                   travels away from their home stadium to play. */
+                _(L"road"))
+                .Scaling(GetScaling())
+                .DPIScaling(GetDPIScaleFactor())
+                .Pen(wxNullPen)
+                .Font(seasonHeaderLabelFont)
+                .Padding(0, 0, 0, LABEL_PADDING)
+                .AnchorPoint(drawArea.GetTopLeft()));
         roadHeader->Offset(-(roadRecordLabelWidth + pctRecordLabelWidth + PADDING_BETWEEN_LABELS),
-                           -groupHeaderLabelHeight);
+                           -seasonHeaderLabelHeight);
         roadHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(roadHeader));
 
         auto pctHeader =
-            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(_(L"pct"))
+            std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo(
+                                                    /* TRANSLATORS: Percentage, as in the percent of
+                                                       games a team won during a season. */
+                                                    _(L"pct"))
                                                     .Scaling(GetScaling())
                                                     .DPIScaling(GetDPIScaleFactor())
                                                     .Pen(wxNullPen)
-                                                    .Font(groupHeaderLabelFont)
+                                                    .Font(seasonHeaderLabelFont)
                                                     .Padding(0, 0, 0, LABEL_PADDING)
                                                     .AnchorPoint(drawArea.GetTopLeft()));
-        pctHeader->Offset(-pctRecordLabelWidth, -groupHeaderLabelHeight);
+        pctHeader->Offset(-pctRecordLabelWidth, -seasonHeaderLabelHeight);
         pctHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(pctHeader));
 
         for (const auto& row : m_matrix)
             {
-            for (size_t cellCounter = 0; cellCounter < row.second.size(); ++cellCounter)
+            size_t seasonGames{ 0 };
+            bool inWinningStreak{ false };
+            for (size_t gameCounter = 0; gameCounter < row.second.size(); ++gameCounter)
                 {
-                const auto& cell = row.second[cellCounter];
+                const auto& game = row.second[gameCounter];
+                const auto xOffset{ (boxWidth * currentColumn) };
+                const auto yOffset{ (currentRow * boxWidth) +
+                                    (currentRow * PADDING_BETWEEN_LABELS) };
                 const std::array<wxPoint, 4> pts = {
-                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn),
-                            drawArea.GetTopLeft().y + (currentRow * boxWidth) +
-                                (currentRow * PADDING_BETWEEN_LABELS)),
-                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn),
-                            drawArea.GetTopLeft().y + boxWidth + (currentRow * boxWidth) +
-                                (currentRow * PADDING_BETWEEN_LABELS)),
-                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
-                            drawArea.GetTopLeft().y + boxWidth + (currentRow * boxWidth) +
-                                (currentRow * PADDING_BETWEEN_LABELS)),
-                    wxPoint(drawArea.GetTopLeft().x + (boxWidth * currentColumn) + boxWidth,
-                            drawArea.GetTopLeft().y + (currentRow * boxWidth) +
-                                (currentRow * PADDING_BETWEEN_LABELS))
+                    wxPoint(drawArea.GetTopLeft().x + xOffset, drawArea.GetTopLeft().y + yOffset),
+                    wxPoint(drawArea.GetTopLeft().x + xOffset,
+                            drawArea.GetTopLeft().y + boxWidth + yOffset),
+                    wxPoint(drawArea.GetTopLeft().x + xOffset + boxWidth,
+                            drawArea.GetTopLeft().y + boxWidth + yOffset),
+                    wxPoint(drawArea.GetTopLeft().x + xOffset + boxWidth,
+                            drawArea.GetTopLeft().y + yOffset)
                 };
 
-                /// @todo Show canceled game as X'ed out, not gray.
+                wxRect boxRect{ pts[0], pts[2] };
+                boxRect.Deflate(ScaleToScreenAndCanvas(1));
+
                 // for missing data, just place a blank placeholder where the game should be
-                if (!cell.m_valid)
+                if (!game.m_valid)
                     {
                     // If there are valid games after this one, then this must have been a
                     // cancellation. Otherwise, it could just be a shorter season than the others
                     // and these aren't really games.
                     bool moreValidGames{ false };
-                    for (auto scanAheadCounter = cellCounter + 1;
+                    for (auto scanAheadCounter = gameCounter + 1;
                          scanAheadCounter < row.second.size(); ++scanAheadCounter)
                         {
                         if (row.second[scanAheadCounter].m_valid)
@@ -363,18 +461,40 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                             break;
                             }
                         }
-                    AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(
-                            moreValidGames ?
-                                Colors::ColorBrewer::GetColor(Colors::Color::PastelGray) :
-                                wxNullBrush),
-                        pts));
+                    // if there are valid games after one or the entire season was canceled,
+                    // then show the game as crossed out
+                    if (moreValidGames || seasonGames == 0)
+                        {
+                        auto smallerBox{ boxRect };
+                        smallerBox.Deflate(smallerBox.GetWidth() * math_constants::tenth);
+                        auto shp = std::make_unique<GraphItems::Shape>(
+                            GraphItems::GraphItemInfo()
+                                .Pen(wxPenInfo{
+                                    Colors::ColorBrewer::GetColor(Colors::Color::PastelGray), 2 })
+                                .Brush(wxNullBrush)
+                                .Anchoring(Anchoring::TopLeftCorner)
+                                .Scaling(GetScaling())
+                                .DPIScaling(GetDPIScaleFactor()),
+                            Icons::IconShape::CrossedOut, smallerBox.GetSize());
+                        shp->SetBoundingBox(smallerBox, dc, GetScaling());
+                        AddObject(std::move(shp));
+                        }
+                    else
+                        {
+                        AddObject(std::make_unique<GraphItems::Polygon>(
+                            GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(wxNullBrush), pts));
+                        }
                     ++currentColumn;
                     continue;
                     }
 
-                wxRect boxRect{ pts[0], pts[2] };
-                boxRect.Deflate(ScaleToScreenAndCanvas(1));
+                ++seasonGames;
+
+                if (game.m_postseason)
+                    {
+                    AddObject(std::make_unique<GraphItems::Polygon>(
+                        GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(m_postseasonColor), pts));
+                    }
 
                 auto homeGameLine = std::make_unique<GraphItems::Lines>(
                     wxPenInfo{ *wxBLACK, 2 }.Cap(wxCAP_BUTT), GetScaling());
@@ -383,31 +503,64 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 auto lossLine = std::make_unique<GraphItems::Lines>(
                     wxPenInfo{ m_lossColor, 2 }.Cap(wxCAP_BUTT), GetScaling());
 
-                if (cell.m_homeGame)
+                if (game.m_homeGame)
                     {
                     homeGameLine->AddLine(
                         { boxRect.GetLeft(), boxRect.GetTop() + (boxRect.GetHeight() / 2) },
                         { boxRect.GetRight(), boxRect.GetTop() + (boxRect.GetHeight() / 2) });
                     }
 
-                if (cell.m_won)
+                if (game.m_won)
                     {
+                    // if not already known to be in a longest winning streak,
+                    // scan ahead and see if we are in the start of one
+                    if (!inWinningStreak)
+                        {
+                        size_t consecutiveWins{ 1 };
+                        for (auto scanAheadCounter = gameCounter + 1;
+                             scanAheadCounter < row.second.size(); ++scanAheadCounter)
+                            {
+                            if (row.second[scanAheadCounter].m_valid)
+                                {
+                                if (row.second[scanAheadCounter].m_won)
+                                    {
+                                    ++consecutiveWins;
+                                    }
+                                else
+                                    {
+                                    break;
+                                    }
+                                }
+                            }
+                        if (consecutiveWins == m_longestWinningStreak)
+                            {
+                            inWinningStreak = true;
+                            }
+                        }
+
+                    if (inWinningStreak)
+                        {
+                        AddObject(std::make_unique<GraphItems::Polygon>(
+                            GraphItems::GraphItemInfo().Pen(wxNullPen).Brush(m_highlightColor),
+                            pts));
+                        }
                     winLine->AddLine(
                         { boxRect.GetLeft() + (boxRect.GetWidth() / 2), boxRect.GetTop() },
                         { boxRect.GetLeft() + (boxRect.GetWidth() / 2),
                           boxRect.GetTop() + (boxRect.GetHeight() / 2) });
-                    if (cell.m_shutout)
+                    if (game.m_shutout)
                         {
                         winLine->GetPen().SetWidth(4);
                         }
                     }
                 else
                     {
+                    inWinningStreak = false;
                     lossLine->AddLine(
                         { boxRect.GetLeft() + (boxRect.GetWidth() / 2),
                           boxRect.GetTop() + (boxRect.GetHeight() / 2) },
                         { boxRect.GetLeft() + (boxRect.GetWidth() / 2), boxRect.GetBottom() });
-                    if (cell.m_shutout)
+                    if (game.m_shutout)
                         {
                         lossLine->GetPen().SetWidth(4);
                         }
@@ -416,17 +569,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 AddObject(std::move(lossLine));
                 AddObject(std::move(winLine));
                 AddObject(std::move(homeGameLine));
+
                 ++currentColumn;
                 }
 
-                // add the group label (e.g., team name)
+                // add the season label (e.g., team name or season)
                 {
                 const wxPoint labelAnchorPoint{ drawArea.GetTopLeft().x - allLabelsWidth,
                                                 drawArea.GetTopLeft().y +
                                                     static_cast<wxCoord>(currentRow * boxWidth) +
                                                     (currentRow * PADDING_BETWEEN_LABELS) };
-                auto groupRowLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo(row.first.m_groupLabel)
+                auto seasonRowLabel = std::make_unique<GraphItems::Label>(
+                    GraphItems::GraphItemInfo(row.first.m_seasonLabel)
                         .Anchoring(Anchoring::TopLeftCorner)
                         .DPIScaling(GetDPIScaleFactor())
                         .Font(GetBottomXAxis().GetFont())
@@ -434,11 +588,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         .Pen(wxNullPen)
                         .Padding(0, LABEL_PADDING, 0, 0)
                         .LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
-                groupRowLabel->SetBoundingBox(wxRect{ labelAnchorPoint.x, labelAnchorPoint.y,
-                                                      groupLabelWidth,
-                                                      static_cast<wxCoord>(boxWidth) },
-                                              dc, GetScaling());
-                labels.push_back(std::move(groupRowLabel));
+                seasonRowLabel->SetBoundingBox(wxRect{ labelAnchorPoint.x, labelAnchorPoint.y,
+                                                       seasonLabelWidth,
+                                                       static_cast<wxCoord>(boxWidth) },
+                                               dc, GetScaling());
+                labels.push_back(std::move(seasonRowLabel));
                 }
 
                 // overall record
@@ -522,6 +676,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     GraphItems::GraphItemInfo(row.first.m_pctLabel)
                         .Anchoring(Anchoring::TopLeftCorner)
                         .Font(GetBottomXAxis().GetFont())
+                        .FontBackgroundColor(row.first.m_highlightPctLabel ? m_highlightColor :
+                                                                             wxNullColour)
                         .AnchorPoint(labelAnchorPoint)
                         .DPIScaling(GetDPIScaleFactor())
                         .Pen(wxNullPen)
@@ -542,7 +698,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         for (auto& currentLabel : labels)
             {
-            smallestTextScaling = std::min(currentLabel->GetScaling(), smallestTextScaling);
+            if (!currentLabel->GetText().empty())
+                {
+                smallestTextScaling = std::min(currentLabel->GetScaling(), smallestTextScaling);
+                }
             }
 
         for (auto& currentLabel : labels)
@@ -561,7 +720,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         {
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo(
-                _(L"Won\nWon in a Shutout\nLost\nLost in a Shutout\nHome Game\nCanceled Game"))
+                _(L"Won\nWon in a shutout\nLost\nLost in a shutout\nHome game\nCanceled game") +
+                (m_hasPostseasonData ? _(L"\nPostseason") : wxString{}) +
+                (m_highlightBestRecords ? _(L"\nBest record/longest winning streak") : wxString{}))
                 .DPIScaling(GetDPIScaleFactor())
                 .Anchoring(Anchoring::TopLeftCorner)
                 .LabelAlignment(TextAlignment::FlushLeft)
@@ -578,8 +739,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine, *wxBLACK_PEN,
                                               wxNullBrush);
         legend->GetLegendIcons().emplace_back(
-            Icons::IconShape::Square, Colors::ColorBrewer::GetColor(Colors::Color::PastelGray),
-            Colors::ColorBrewer::GetColor(Colors::Color::PastelGray));
+            Icons::IconShape::CrossedOut, Colors::ColorBrewer::GetColor(Colors::Color::PastelGray),
+            wxNullBrush);
+        if (m_hasPostseasonData)
+            {
+            legend->GetLegendIcons().emplace_back(Icons::IconShape::Square, m_postseasonColor,
+                                                  m_postseasonColor);
+            }
+        if (m_highlightBestRecords)
+            {
+            legend->GetLegendIcons().emplace_back(Icons::IconShape::Square, m_highlightColor,
+                                                  m_highlightColor);
+            }
 
         AddReferenceLinesAndAreasToLegend(*legend);
         AdjustLegendSettings(*legend, options.GetPlacementHint());
