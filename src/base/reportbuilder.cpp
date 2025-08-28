@@ -17,6 +17,7 @@
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/sankeydiagram.h"
+#include "../graphs/win_loss_sparkline.h"
 
 namespace Wisteria
     {
@@ -238,6 +239,12 @@ namespace Wisteria
                                                          L"heatmap") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadHeatMap(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"win-loss-sparkline") == 0)
+                                                {
+                                                embeddedGraphs.push_back(WinLossSparkline(
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(
@@ -2781,6 +2788,45 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for multi-series line plot.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::WinLossSparkline(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                    size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for sparkline."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto postSeason =
+                ExpandConstants(variablesNode->GetProperty(L"postseason")->GetValueString());
+            auto wlSparkline = std::make_shared<Wisteria::Graphs::WinLossSparkline>(canvas);
+            wlSparkline->SetData(
+                foundPos->second,
+                ExpandConstants(variablesNode->GetProperty(L"season")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"won")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"shutout")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"home-game")->GetValueString()),
+                (postSeason.empty() ? std::nullopt : std::optional<wxString>(postSeason)));
+
+            wlSparkline->HighlightBestRecords(
+                graphNode->GetProperty(L"highlight-best-records")->GetValueBool(true));
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, wlSparkline);
+            return wlSparkline;
+            }
+        else
+            {
+            throw std::runtime_error(_(L"Variables not defined for sparkline.").ToUTF8());
             }
         }
 

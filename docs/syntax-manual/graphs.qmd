@@ -671,6 +671,20 @@ The remaining properties are executed in the following order:
   - `"footnote"`: The footnote to add to the caption. Can include [constants](#constants-properties).
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Win/Loss Sparkline {#heatmap-properties .unnumbered}
+
+Properties for `"win-loss-sparkline"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"season"`: The season label column (can be a team name or season).
+  - `"won"`: The column indicating whether the team won the game.
+  - `"shutout"`: The column indicating whether the losing team was held scoreless.
+  - `"home-game"`: The column indicating whether the was at the team's home stadium.
+  - `"postseason"`: The column indicating if a game was played during the postseason.
+- `"highlight-best-records"`: If `true`, will highlight the best season record and long winning streak within the data.
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Word Cloud {#word-cloud-properties .unnumbered}
 
 Properties for `"word-cloud"` nodes:
