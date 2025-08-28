@@ -106,7 +106,8 @@ namespace Wisteria::Icons
         Monitor,                  /*!< A computer monitor.*/
         Sword,                    /*!< A sword.*/
         ImmaculateHeartWithSword, /*!< An Immaculate Heart (with sword piercing it).*/
-        VerticalLine              /*!< A vertical line.*/
+        VerticalLine,             /*!< A vertical line.*/
+        CrossedOut                /*!< An 'X' (crossed out symbol).*/
         };
 
     /// @brief Item to draw on a legend.

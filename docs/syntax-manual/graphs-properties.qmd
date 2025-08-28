@@ -89,6 +89,7 @@ Properties common to all graphs:
   - `"blank"`
   - `"horizontal-line"`
   - `"vertical-line"`
+  - `"crossed-out"`
   - `"arrow-right"`
   - `"circle"`
   - `"image"`

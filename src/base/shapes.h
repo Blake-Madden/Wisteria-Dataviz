@@ -206,6 +206,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the line within.
         /// @param dc The DC to draw to.
         void DrawVerticalLine(wxRect rect, wxDC& dc) const;
+        /// @brief Draws an 'X' (crossed out symbol).
+        /// @param rect The area to draw within.
+        /// @param dc The DC to draw to.
+        void DrawCrossedOut(wxRect rect, wxDC& dc) const;
         /// @brief Draws a box plot.
         /// @param rect The area to draw the box plot within.
         /// @param dc The DC to draw to.
@@ -594,7 +598,7 @@ namespace Wisteria::GraphItems
         /** @brief Specifies the brush of the shape.
             @param brush The brush.
             @returns A self reference.*/
-        ShapeInfo& Brush(const wxBrush brush) noexcept
+        ShapeInfo& Brush(const wxBrush& brush) noexcept
             {
             m_brush = brush;
             return *this;
@@ -603,7 +607,7 @@ namespace Wisteria::GraphItems
         /** @brief Specifies the pen of the shape.
             @param pen The pen.
             @returns A self reference.*/
-        ShapeInfo& Pen(const wxPen pen) noexcept
+        ShapeInfo& Pen(const wxPen& pen) noexcept
             {
             m_pen = pen;
             return *this;
@@ -612,7 +616,7 @@ namespace Wisteria::GraphItems
         /** @brief Specifies the text on the shape to render.
             @param text The text to draw.
             @returns A self reference.*/
-        ShapeInfo& Text(const wxString text) noexcept
+        ShapeInfo& Text(const wxString& text) noexcept
             {
             m_text = text;
             return *this;
