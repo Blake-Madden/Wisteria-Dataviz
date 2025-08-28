@@ -1291,9 +1291,11 @@ namespace Wisteria::Data
                     break;
                     }
                 if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
-                    // numbers outside 0-7 probably aren't a discrete code
+                    // Numbers outside 1-7 probably aren't a discrete code.
+                    // (Don't allow 0 because we use that for the default missing data value
+                    //  for categorical columns.)
                     !is_within(
-                        std::make_pair(0.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
+                        std::make_pair(1.0, static_cast<double>(importInfo.m_maxDiscreteValue)),
                         parsedNumber))
                     {
                     currentColumnType = ColumnImportType::Numeric;
