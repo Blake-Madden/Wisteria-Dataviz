@@ -177,6 +177,7 @@ namespace Wisteria::GraphItems
             { IconShape::ArrowRight, &ShapeRenderer::DrawRightArrow },
             { IconShape::HorizontalLine, &ShapeRenderer::DrawHorizontalLine },
             { IconShape::VerticalLine, &ShapeRenderer::DrawVerticalLine },
+            { IconShape::CrossedOut, &ShapeRenderer::DrawCrossedOut },
             { IconShape::Circle, &ShapeRenderer::DrawCircle },
             { IconShape::Square, &ShapeRenderer::DrawSquare },
             { IconShape::Asterisk, &ShapeRenderer::DrawAsterisk },
@@ -3043,6 +3044,23 @@ namespace Wisteria::GraphItems
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawLine(wxPoint(rect.GetLeft() + (rect.GetWidth() / 2), rect.GetTop()),
                     wxPoint(rect.GetLeft() + (rect.GetWidth() / 2), rect.GetBottom()));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCrossedOut(const wxRect rect, wxDC& dc) const
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            {
+            // for a line icon, make it a minimum of 2 pixels wide
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
+            }
+        const DCPenChangerIfDifferent pc{ dc, scaledPen };
+        const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
+        dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop()),
+                    wxPoint(rect.GetRight(), rect.GetBottom()));
+        dc.DrawLine(wxPoint(rect.GetRight(), rect.GetTop()),
+                    wxPoint(rect.GetLeft(), rect.GetBottom()));
         }
 
     //---------------------------------------------------
