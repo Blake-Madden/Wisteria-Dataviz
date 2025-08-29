@@ -354,6 +354,16 @@ namespace Wisteria
         std::shared_ptr<GraphItems::Label> LoadLabel(const wxSimpleJSON::Ptr_t& labelNode,
                                                      const GraphItems::Label& labelTemplate) const;
 
+        /// @brief Loads a spacer node.
+        /// @returns An empty Label object to simply consume space on the canvas.
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> LoadSpacer() const;
+
+        /// @brief Loads an empty spacer node.
+        /// @returns An empty Label object that just fills empty slots in a canvas row.
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> LoadEmptySpacer() const;
+
         /// @brief Loads a color scheme from a node.
         /// @param colorSchemeNode The node to parse.
         /// @returns The loaded color scheme, or null upon failure.

@@ -86,6 +86,18 @@ Example:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Empty Spacer {#empty-spacer-properties .unnumbered}
+
+An `"empty-spacer"` node will act as a placeholder on a page.
+In contrast to a "`spacer`", an `"empty-spacer"` does not consume any space on the page and does not effect any other items' sizes.
+
+These are used for filling gaps in rows that have less items than others, thus ensuring that items across all rows will align properly.
+For example, if one row has a chart and legend and the next row only has a chart, then an `"empty-spacer"` should be added to the second row.
+
+`"empty-spacer"` nodes do not take any properties.
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Fillable Shape {#fillable-shape-properties .unnumbered}
 
 Properties for `"fillable-shape"` nodes:
@@ -243,7 +255,9 @@ Example with a colorful header and logo:
 ```
 
 Note that empty labels can be used to draw divider lines, as well as a way to force another item in the same row
-to be stretched to the full width of the page. For example, a row could be written as this:
+to be stretched to the full width of the page.
+(A spacer is a shorthand for an empty label.)
+For example, a row could be written as this:
 
 ```json
 {
@@ -261,9 +275,8 @@ to be stretched to the full width of the page. For example, a row could be writt
       "fit-row-to-content": true
     },
     {
-      "type": "label",
-      "description": "empty spacer to stretch previous line across the page",
-      "fixed-width": true
+      "type": "spacer",
+      "description": "Empty spacer to stretch previous line across the page"
     }
   ]
 }
@@ -283,4 +296,17 @@ Properties for `"shape"` nodes:
 - `"size"`: The size of the shape, which contains the following properties:
   - `"width"`: The width.
   - `"height"`: The height.
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
+## Spacer {#spacer-properties .unnumbered}
+
+A `"spacer"` node will add a blank space to the canvas, equal to the height of the other rows
+(and width of the rest of the items within the same row).
+
+Most importantly, this will resize the other items around it.
+For example, if a canvas only contains a singe chart, then that chart will be stretched to the height of the page.
+If, however, a spacer is added to a row underneath it, then the chart will only consume half the page.
+
+`"spacer"` nodes do not take any properties.
 :::

@@ -327,6 +327,18 @@ namespace Wisteria
                                                     LoadLabel(item, GraphItems::Label()));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"spacer") == 0)
+                                                {
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                                       LoadSpacer());
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(
+                                                         L"empty-spacer") == 0)
+                                                {
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                                       LoadEmptySpacer());
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(
                                                          L"image") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
@@ -760,6 +772,24 @@ namespace Wisteria
                   commonAxisNode->GetProperty(L"common-perpendicular-axis")->GetValueBool(),
                   commonAxisNode });
             }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<GraphItems::Label> ReportBuilder::LoadSpacer() const
+        {
+        return std::make_shared<GraphItems::Label>(
+            GraphItems::GraphItemInfo().DPIScaling(m_dpiScaleFactor).Scaling(1.0));
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<GraphItems::Label> ReportBuilder::LoadEmptySpacer() const
+        {
+        return std::make_shared<GraphItems::Label>(GraphItems::GraphItemInfo()
+                                                       .DPIScaling(m_dpiScaleFactor)
+                                                       .Scaling(1.0)
+                                                       .FixedWidthOnCanvas(true)
+                                                       .CanvasHeightProportion(0)
+                                                       .Show(false));
         }
 
     //---------------------------------------------------
