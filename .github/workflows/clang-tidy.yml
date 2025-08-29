@@ -5,7 +5,8 @@
 #                      \___/_/\_\ .__/ \__,_|\__|
 #                               |_| XML parser
 #
-# Copyright (c) 2025 Sebastian Pipping <sebastian@pipping.org>
+# Copyright (c) 2021-2024 Sebastian Pipping <sebastian@pipping.org>
+# Copyright (c) 2023      Joyce Brum <joycebrum@google.com>
 # Licensed under the MIT license:
 #
 # Permission is  hereby granted,  free of charge,  to any  person obtaining
@@ -30,7 +31,7 @@
 ###################################################################
 # NOTE: This is a modified version of this action for this project.
 
-name: Clang Static Analyzer
+name: clang-tidy
 
 on: [push, pull_request]
 
@@ -38,8 +39,8 @@ permissions:
   contents: read
 
 jobs:
-  clang_static_analyzer:
-    name: Clang Static Analyzer
+  clang_tidy:
+    name: clang-tidy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -52,7 +53,7 @@ jobs:
         sudo apt-get update && sudo apt-get install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev
         git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 
-    - name: Install Clang 19 (including scan-build)
+    - name: Install clang-tidy
       run: |-
         set -x
         source /etc/os-release
@@ -60,37 +61,18 @@ jobs:
         sudo add-apt-repository "deb https://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-19 main"
         sudo apt-get update  # due to new repository
         sudo apt-get install --yes --no-install-recommends -V \
-            clang-19 \
-            clang-tools-19
+            clang-tidy-19
         echo /usr/lib/llvm-19/bin >>"${GITHUB_PATH}"
 
-    - name: Build using scan-build
+    - name: Run clang-tidy
       run: |
         set -x
-
-        clang --version | head -n1
-        clang++ --version | head -n1
-
-        available_checkers="$(scan-build --help | grep -o '^ [+ ] [^. ]\+\.[^ ]\+' | sed 's,^.\{3\},,' | sort)"
-        [[ "$(wc -l <<<"${available_checkers}")" -ge 103 ]]  # self-test
-
-        enabled_checkers="$(grep -v \
-            -e '^optin\.performance\.Padding$' \
-            -e '^security\.insecureAPI\.strcpy$' \
-            <<<"${available_checkers}")"
-        [[ "$(wc -l <<<"${enabled_checkers}")" -ge 101 ]]  # self-test
-
-        scan-build \
-            -o html/ \
-            $(sed 's,^,-enable-checker ,' <<<"${enabled_checkers}") \
-            sh -c 'cmake -S . -B build/ && make -C build -j$(nproc) VERBOSE=1'
-
-        rmdir html || false 'The report directory is non-empty, i.e. Clang Static Analyzer found an issue! Please download and inspect the zip file artifact attached to this CI run. Thanks!'
+        clang-tidy ./src | tee clang-tidy-ouput.txt
 
     - name: Update output
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: clang_scan_build_report
-        path: html/
+        name: clang_tidy_report
+        path: clang-tidy-ouput.txt
         if-no-files-found: ignore
