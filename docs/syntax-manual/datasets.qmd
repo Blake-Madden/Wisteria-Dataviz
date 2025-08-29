@@ -37,16 +37,19 @@ Each dataset property will contain the following properties (loaded in the follo
 - `"categorical-columns"`: An array of categorical column specifications. \
   This property is optional. \
   Each specification consists of the following:
-- `"name"`: The name of the column.
-- `"parser"`: How to read the column. \
+  - `"name"`: The name of the column.
+  - `"parser"`: How to read the column. \
     Available options are:
-    - `"as-integers"`: imports the column as discrete integers.
+    - `"as-integers"`: imports the column as discrete integers. \
+      Note that missing data in this column will be recoded to 0. \
+      If you have discrete data with zeros and missing data, it is recommended to import it as a continuous column instead.
+      This will ensure that the missing data remains as missing data, instead of being recoded to 0.
     - `"as-strings"`: imports the column as text. (If not specified, this will be the default).
 - `"date-columns"`: An array of date column specifications. \
   This property is optional. \
   Each specification consists of the following:
-- `"name"`: The name of the column.
-- `"parser"`: How to parse the column's date strings. \
+  - `"name"`: The name of the column.
+  - `"parser"`: How to parse the column's date strings. \
     Available options are:
     - `"iso-date"`
     - `"iso-combined"`
@@ -54,13 +57,13 @@ Each dataset property will contain the following properties (loaded in the follo
     - `"strptime-format"`
     - `"automatic"` (if not specified, this will be the default).
     - `"time"`
-- `"format"`: If `"parser"` is set to `"strptime-format"`,
+  - `"format"`: If `"parser"` is set to `"strptime-format"`,
     then this is the user-defined format to parse with.
 
-::: {.notesection data-latex=""}
-The `"parser"` and `"format"` options are ignored if importing an *Excel* file.
-*Excel* stores dates and times as serial dates, and these will be converted accordingly.
+  The `"parser"` and `"format"` options are ignored if importing an *Excel* file.
+  *Excel* stores dates and times as serial dates, and these will be converted accordingly.
 
+::: {.notesection data-latex=""}
 If no columns are defined, then the importer will import all columns and deduce their types.
 :::
 
@@ -129,8 +132,8 @@ Next, any transformation commands for a dataset node are executed. These are per
       "treat-leading-zeros-as-text": true,
       "columns-rename": [
         {
-          "name-re": "Four[ \\-]Year Grad Rate \\- Class of ([[:digit:]]{4})",
-          "new-name-re": "Graduated \\1"
+         "name-re": "Four[ \\-]Year Grad Rate \\- Class of ([[:digit:]]{4})",
+         "new-name-re": "Graduated \\1"
         }
       ],
       "columns-select": "(IRN|Graduated [0-9]{4})"
@@ -259,8 +262,8 @@ contain the following properties:
   - `"column"`: The name of the column to filter on.
   - `"start-label"`: The start label to begin the subset.
   - `"end-label"`: The label in the column that marks the end of the subset.
-  - `"include-sentinel-labels"`: `true` to include the `"start-label"` and `"end-label"` rows in the subset. \
-    The default is `true`.
+  - `"include-sentinel-labels"`: `"true"` to include the `"start-label"` and `"end-label"` rows in the subset. \
+    The default is `"true"`.
   
 ::: {.notesection data-latex=""}
 Subset nodes can contain their own transformation and formula sections, same as a dataset node.
