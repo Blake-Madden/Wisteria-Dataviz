@@ -1005,7 +1005,7 @@ namespace Wisteria::Graphs
         /// @{
 
         /** @brief Builds and returns a legend.
-            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @details This can be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]]
@@ -1018,7 +1018,7 @@ namespace Wisteria::Graphs
 
         /** @brief Builds and returns a legend for the outer pie
                 (or the only pie, if a single data series).
-            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @details This can be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.\n
                 This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.
@@ -1028,7 +1028,7 @@ namespace Wisteria::Graphs
         CreateOuterPieLegend(LegendCanvasPlacementHint hint);
 
         /** @brief Builds and returns a legend for the inner pie (if a dual data series).
-            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @details This can be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.\n
                 This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.

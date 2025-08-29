@@ -24,21 +24,21 @@ namespace Wisteria::Graphs
          This graphic is based on the sports season sparkline featured in Edward Tufte's
          *Beautiful Evidence*, but with the following alterations:
 
-         - Wins and losses have their won colors (green and red, respectively), rather than
+         - Wins and losses have their own colors (green and red, respectively), rather than
            all being black
          - Shutout game lines have a wider width to make them stand out, rather than being
            red (as featured in the original book)
-         - Support for highlighting postseason games was added
-         - Support for highlighting the best record(s) and longest winning streak(s) was added
+         - Includes support for highlighting postseason games
+         - Includes support for highlighting the best record(s) and longest winning streak(s)
 
         @par %Data:
          This plot accepts a Data::Dataset where a categorical column specifies the row labels
-         (e.g., teams' names, or season labels) and continuous (boolean) columns specifies the
-         outcomes of the games and whether they were home games. (A postseason-game indicator
-         column can optionally be included.)
+         (e.g., teams' names, or season labels) and continuous (boolean) columns specifying the
+          outcomes of the games and whether they were home games. (A postseason-game indicator
+          column can optionally be included.)
 
          | SEASON   | WON   | SHUTOUT | HOMEGAME |
-         | :--      | --:   | :--     | :--      |
+         | :--      | --:   | --:     | --:      |
          | 2022     | 1     | 1       | 1        |
          | 2022     | 0     | 0       | 1        |
          | 2022     | 1     | 0       | 1        |
@@ -74,7 +74,7 @@ namespace Wisteria::Graphs
 
          @par Missing Data:
          - Missing data in the season column will be shown as an empty row label.
-         - For any missing data in boolean columns, a blank space will be shown along series
+         - For any missing data in boolean columns, a blank space will be shown along the series
            where the game would have been. (If it appears to be a canceled game midseason
            [or the entire season was canceled], then it will be X'ed out.)
 
@@ -122,7 +122,7 @@ namespace Wisteria::Graphs
 
       public:
         /** @brief Constructor.
-            @param canvas The canvas that the plot is plotted on.
+            @param canvas The canvas to plot on.
           */
         explicit WinLossSparkline(Canvas* canvas);
 
@@ -165,7 +165,7 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Builds and returns a legend.
-            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @details This can be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.
          */
