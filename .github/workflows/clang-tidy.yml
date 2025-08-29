@@ -58,16 +58,16 @@ jobs:
         set -x
         source /etc/os-release
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository "deb https://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-19 main"
+        sudo add-apt-repository "deb https://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-22 main"
         sudo apt-get update  # due to new repository
         sudo apt-get install --yes --no-install-recommends -V \
-            clang-tidy-19
-        echo /usr/lib/llvm-19/bin >>"${GITHUB_PATH}"
+            clang-tidy-22
+        echo /usr/lib/llvm-22/bin >>"${GITHUB_PATH}"
 
     - name: Run clang-tidy
       run: |
         set -x
-        clang-tidy ./src | tee clang-tidy-ouput.txt
+        clang-tidy ./src/base/* | tee clang-tidy-ouput.txt
 
     - name: Update output
       if: always()
