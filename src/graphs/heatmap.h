@@ -64,8 +64,8 @@ namespace Wisteria::Graphs
          as the grouping variable.
 
          Note that the data is mapped exactly in the order that it appears in the data
-         (i.e., nothing is sorted). Because this, the grouping column should be presorted
-         and each group's values should be in the order that want them to appear in the plot.
+         (i.e., nothing is sorted). Because of this, the grouping column should be presorted
+         in the order that you want them to appear.
 
          @par Missing Data:
          - Missing data in the ID column will result in an empty selection label for the cell.

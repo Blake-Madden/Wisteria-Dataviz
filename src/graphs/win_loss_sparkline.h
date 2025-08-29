@@ -18,6 +18,8 @@ namespace Wisteria::Graphs
     {
     /** @brief A series of lines showing the outcome of a team's season.
 
+        @image html WinLossSparkline.svg width=90%
+
         @details Multiple series can be included, showing either different teams or multiple
          seasons for the same team.
 
@@ -69,8 +71,8 @@ namespace Wisteria::Graphs
          Any other non-zero value will be considered @c true.
 
          @warning The data is mapped exactly in the order that it appears in the data
-         (i.e., nothing is sorted). Because this, the season column should be presorted
-         and each season's values should be in the order that want them to appear in the plot.
+         (i.e., nothing is sorted). Because of this, the season column should be presorted
+         in the order that you want them to appear (going downward).
 
          @par Missing Data:
          - Missing data in the season column will be shown as an empty row label.

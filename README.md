@@ -57,7 +57,7 @@ specifying which columns to include and how to classify them
   - Change the colors and styles of the bars, lines, etc.
   - Change the plot background color, or use an image as the background
   - Add titles and captions
-  - Adjust the [axes](Axes.md), add tickmarks, add custom [labels](Labels.md)
+  - Adjust the [axes](Axes.md), add tick marks, add custom [labels](Labels.md)
   - etc.
 - Add the plot (and its legend [if applicable]) to the canvas
 
@@ -133,6 +133,13 @@ Social Sciences
 | :-------------- |
 | ![](docs/images/LRRoadmapFirstYear.svg) |
 
+Sports
+-----------------------------
+
+| Win/Loss Sparkline (Wisteria::Graphs::WinLossSparkline) |
+| :-------------- |
+| ![](docs/images/WinLossSparkline.svg) |
+
 See more in the [graphs gallery](Gallery.md).
 
 Release Notes
@@ -168,9 +175,9 @@ Linux
 Install the following from your repository manager (or build from source):
 
 - *GTK3* development files (version 3.3 or higher)
-- *OpenMP* (libomp) and its development files
-- *Threading Building Blocks* (libtbb) and its development files
-- *Doxygen* (if building the API documentation)
+- *OpenMP* (*libomp*) and its development files
+- *Threading Building Blocks* (*libtbb*) and its development files
+- *Doxygen* (if wanting the API documentation)
 
 Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher at the
 same folder level as this project:
@@ -196,7 +203,7 @@ macOS
 Install the following:
 
 - *XCode* (will include the *AppleClang* compiler)
-- *Doxygen* (if building the API documentation)
+- *Doxygen* (if wanting the API documentation)
 
 Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher at the
 same folder level as this project:
@@ -229,7 +236,7 @@ Dependencies
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher
 - A C++20 compatible compiler (*AppleClang* on macOS)
 - *CMake* 3.25 or higher
-- *Doxygen* (if building the API documentation)
+- *Doxygen* (if wanting the API documentation)
 - *GTK 3* (Linux)
-- *Threading Building Blocks*: libtbb (Linux)
+- *Threading Building Blocks*: *libtbb* (Linux)
 - *OpenMP* (Linux)

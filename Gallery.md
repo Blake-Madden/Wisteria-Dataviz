@@ -112,6 +112,13 @@ Social Sciences
 | :-------------- |
 | ![](docs/images/LRRoadmapFirstYearNegative.svg) |
 
+Sports
+-----------------------------
+
+| Win/Loss Sparkline (Wisteria::Graphs::WinLossSparkline) |
+| :-------------- |
+| ![](docs/images/WinLossSparkline.svg) |
+
 Readability Formulas
 -----------------------------
 
