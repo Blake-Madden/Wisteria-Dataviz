@@ -5539,6 +5539,17 @@ namespace Wisteria
                 bmp, bmpNode->GetProperty(L"opacity")->GetValueNumber(wxALPHA_OPAQUE));
             }
 
+        if (bmpNode->HasProperty(L"effect"))
+            {
+            const auto imgEffect = ReportEnumConvert::ConvertImageEffect(
+                bmpNode->GetProperty(L"effect")->GetValueString());
+            if (imgEffect)
+                {
+                bmp = Wisteria::GraphItems::Image::ApplyEffect(imgEffect.value(),
+                                                               bmp.ConvertToImage());
+                }
+            }
+
         return bmp;
         }
 

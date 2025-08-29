@@ -134,7 +134,7 @@ Properties for `"image"` nodes:
 - `"resize-method"`: How the image's size is adjusted when its bounding box is changed. \
   Available options are:
   - `"downscale-only"`
-  - `"downscale-or-upscale"`
+  - `"downscale-or-upscale"` (the default)
   - `"upscale-only"`
   - `"no-resize"`
 :::

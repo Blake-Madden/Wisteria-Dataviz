@@ -224,15 +224,24 @@ Properties for image import specifications:
 
 - `"path"`: A single file path to import for the image.
 - `"paths"`: An array of file paths to import for the image.
-- `"color-filter"`: A string specifying a color to translucently apply across the image.
-- `"opacity"`: A number between `0-255` specifying how opaque the image is. \
-  Note that when loading an image for a page's background, this value will be overridden
-  by the page's background opacity setting.
 - `"stitch"`: A string specifying how to stitch multiple images together.
   (You must use `"paths"` to import multiple images.) \
   Available options are:
   - `"vertical"`
   - `"horizontal"` (the default)
+- `"color-filter"`: A string specifying a color to translucently apply across the image.
+- `"opacity"`: A number between `0-255` specifying how opaque the image is. \
+  Note that when loading an image for a page's background, this value will be overridden
+  by the page's background opacity setting.
+- `"effect"`: A string specifying an effect to apply to the image. \
+  Available options are:
+  - `"blur-horizontal"`
+  - `"blur-vertical"`
+  - `"frosted-glass"`
+  - `"gray-scale"`
+  - `"oil-painting"`
+  - `"sepia"`
+  - `"no-effect"`
 
 Note that instead of properties, a single string can be specified indicating a file path to load.
 :::

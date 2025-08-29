@@ -642,7 +642,7 @@ namespace Wisteria
                 { L"no-display", BinLabelDisplay::NoDisplay },
                 { L"bin-name", BinLabelDisplay::BinName },
                 { L"bin-name-and-value", BinLabelDisplay::BinNameAndValue },
-                { L"bin-name-and-percentage", BinLabelDisplay::BinNameAndPercentage },
+                { L"bin-name-and-percentage", BinLabelDisplay::BinNameAndPercentage }
             };
 
             const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
@@ -660,7 +660,7 @@ namespace Wisteria
                 { L"percentage", NumberDisplay::Percentage },
                 { L"value", NumberDisplay::Value },
                 { L"currency", NumberDisplay::Currency },
-                { L"value-simple", NumberDisplay::ValueSimple },
+                { L"value-simple", NumberDisplay::ValueSimple }
             };
 
             const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
@@ -756,6 +756,26 @@ namespace Wisteria
             const auto foundValue = barShapeValues.find(value.Lower().ToStdWstring());
             return ((foundValue != barShapeValues.cend()) ?
                         std::optional<Graphs::BarChart::BarShape>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<ImageEffect> ConvertImageEffect(const wxString& value)
+            {
+            static const std::map<std::wstring, ImageEffect> imgEffectValues = {
+                { L"blur-horizontal", ImageEffect::BlurHorizontal },
+                { L"blur-vertical", ImageEffect::BlurVertical },
+                { L"frosted-glass", ImageEffect::FrostedGlass },
+                { L"gray-scale", ImageEffect::Grayscale },
+                { L"oil-painting", ImageEffect::OilPainting },
+                { L"sepia", ImageEffect::Sepia },
+                { L"no-effect", ImageEffect::NoEffect }
+            };
+
+            const auto foundValue = imgEffectValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != imgEffectValues.cend()) ?
+                        std::optional<ImageEffect>(foundValue->second) :
                         std::nullopt);
             }
         };
