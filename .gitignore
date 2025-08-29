@@ -71,3 +71,4 @@ cpp.hint
 *.app
 *.manifest
 /tests/gui-tests/wxWidgets_lib
+/src/base/version.h

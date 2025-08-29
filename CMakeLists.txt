@@ -29,7 +29,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
-project(Wisteria VERSION 1.0.3.0 DESCRIPTION "Wisteria-Dataviz")
+project(Wisteria VERSION 1.0.4.0 DESCRIPTION "Wisteria-Dataviz")
 
 set(FULL_VERSION ${Wisteria_VERSION_MAJOR}.${Wisteria_VERSION_MINOR}.${Wisteria_VERSION_PATCH}.${Wisteria_VERSION_TWEAK})
 # Build a displayable version string that only includes the necessary parts
