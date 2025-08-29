@@ -1,5 +1,19 @@
 # Releases
 
+## 1.0.3 Release
+
+- New graph type: Win/Loss Sparkline
+- Expanded W-Curve plot to handle 12 levels
+- Reference lines can now show their labels on the axes
+- Shapes can now be added above a label
+- Made color of canvas watermark customizable
+- Fixed annotations to support floating-point positioning
+- Improved layout of watermarks and rotated text
+- Improved deduction of discrete columns when importing data
+- Exposed more functionality to JSON syntax
+- Expanded and improved the documentation
+- C++20 modernizations and clang-tidy fixes
+
 ## 1.0.2 Release
 
 - New graph type: Multi-series Line Plot
