@@ -12,6 +12,7 @@
 #include "wx/xrc/xh_bmp.h"
 #include "wx/xrc/xh_menu.h"
 #include "wx/xrc/xmlres.h"
+#include <wx/regex.h>
 #include <wx/stc/stc.h>
 #include <wx/xml/xml.h>
 
