@@ -89,7 +89,8 @@ wxString FilePathResolverBase::ResolvePath(
         m_fileType = FilePathType::LocalOrNetwork;
         return m_path;
         }
-    // Otherwise, see if the file exists locally or on a network (e.g., a UNC path).
+    // Otherwise, see if the file (full filepath) exists locally or on a network
+    // (e.g., a UNC path).
     else if (HasLocalOrNetworkPrefix(GetResolvedPath()))
         {
         FilePathType specificLocalType = FilePathType::LocalOrNetwork;
@@ -162,7 +163,7 @@ wxString FilePathResolverBase::ResolvePath(
 #else
             // on UNIX, just assume file path is legit if the prefix checked out
             m_fileType = specificLocalType;
-            // but do fix any forward slashes (Windows format)
+            // but do fix any forward slashes (from Windows format)
             m_path.Replace(L"\\", L"/", true);
             // chop off Windows drive letter
             if (HasWindowsPrefix(GetResolvedPath()))
@@ -178,12 +179,17 @@ wxString FilePathResolverBase::ResolvePath(
             return m_path;
             }
         }
+    // ...or it's a relative path (or just a file name)
     else
         {
+#ifndef __WXMSW__
+        // fix any forward slashes (from Windows format)
+        m_path.Replace(L"\\", L"/", true);
+#endif
         // see if in other provided paths
         for (const auto& otherPath : pathsToSearch)
             {
-            if (const auto absPath{ wxFileName(m_path).GetAbsolutePath(otherPath) };
+            if (const auto absPath{ wxFileName{ m_path }.GetAbsolutePath(otherPath) };
                 wxFile::Exists(absPath))
                 {
                 m_path = absPath;
@@ -193,7 +199,7 @@ wxString FilePathResolverBase::ResolvePath(
             }
         // ...or in the CWD
         wxLogNull logNo;
-        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() }; wxFile::Exists(absPath))
+        if (const auto absPath{ wxFileName{ m_path }.GetAbsolutePath() }; wxFile::Exists(absPath))
             {
             m_path = absPath;
             m_fileType = FilePathType::LocalOrNetwork;
@@ -230,9 +236,9 @@ bool FilePathResolverBase::HasNetworkPrefix(const wxString& str)
 wxString ParseTitleFromFileName(wxString filename)
     {
     // if page is just a PHP query, then use the name of the folder
-    if (wxFileName(filename).GetName().StartsWith(L"?"))
+    if (wxFileName{ filename }.GetName().StartsWith(L"?"))
         {
-        filename = wxFileName(filename).GetPath();
+        filename = wxFileName{ filename }.GetPath();
         }
     // sometimes webpage paths end with a '/', so chop that off when getting the title
     if (filename.EndsWith(L"/"))
@@ -246,7 +252,7 @@ wxString ParseTitleFromFileName(wxString filename)
         {
         filename.Replace(L".", wxString{}, true);
         }
-    wxString retVal = StripIllegalFileCharacters(wxFileName(filename).GetName());
+    wxString retVal = StripIllegalFileCharacters(wxFileName{ filename }.GetName());
     retVal.Replace(L".", wxString{}, true);
     return retVal;
     }
