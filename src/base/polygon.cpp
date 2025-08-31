@@ -213,26 +213,6 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Polygon::GetPolygonBoundingBox(const std::vector<wxPoint>& polygon)
-        {
-        assert(!polygon.empty());
-        if (polygon.empty())
-            {
-            return {};
-            }
-
-        wxCoord minX(polygon[0].x), maxX(polygon[0].x), minY(polygon[0].y), maxY(polygon[0].y);
-        for (const auto& pt : polygon)
-            {
-            minX = std::min(pt.x, minX);
-            maxX = std::max(pt.x, maxX);
-            minY = std::min(pt.y, minY);
-            maxY = std::max(pt.y, maxY);
-            }
-        return { wxPoint(minX, minY), wxPoint(maxX, maxY) };
-        }
-
-    //-------------------------------------------
     void Polygon::UpdatePointPositions()
         {
         m_scaledPoints = GetPoints();

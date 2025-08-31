@@ -349,8 +349,26 @@ namespace Wisteria::GraphItems
             @param polygon The polygon's points.
             @returns The rectangle that the polygon would need to fit in.
             @todo needs unit testing*/
+        template<typename polygonT>
         [[nodiscard]]
-        static wxRect GetPolygonBoundingBox(const std::vector<wxPoint>& polygon);
+        static wxRect GetPolygonBoundingBox(const polygonT& polygon)
+            {
+            assert(!polygon.empty());
+            if (polygon.empty())
+                {
+                return {};
+                }
+
+            wxCoord minX(polygon[0].x), maxX(polygon[0].x), minY(polygon[0].y), maxY(polygon[0].y);
+            for (const auto& pt : polygon)
+                {
+                minX = std::min(pt.x, minX);
+                maxX = std::max(pt.x, maxX);
+                minY = std::min(pt.y, minY);
+                maxY = std::max(pt.y, maxY);
+                }
+            return { wxPoint{ minX, minY }, wxPoint{ maxX, maxY } };
+            }
 
         /** @brief Converts a pair of doubles to a @c wxPoint.
             @param coordPair The two double values representing a point.
