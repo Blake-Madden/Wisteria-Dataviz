@@ -345,6 +345,7 @@ namespace Wisteria::GraphItems
             @deprecated Prefer the version that takes a `std::vector`.*/
         [[nodiscard]] [[deprecated("Prefer the version that takes a std::vector")]]
         static wxRect GetPolygonBoundingBox(const wxPoint* polygon, size_t N);
+
         /** @brief Determines the bounding box that a polygon requires to fit inside.
             @param polygon The polygon's points.
             @returns The rectangle that the polygon would need to fit in.
