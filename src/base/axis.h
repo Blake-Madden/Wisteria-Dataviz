@@ -677,7 +677,7 @@ namespace Wisteria::GraphItems
         /** @private
             @brief Sets the DPI scaling for the axis.
             @param scaling The DPI scaling to use.*/
-        void SetDPIScaleFactor(const double scaling) override final
+        void SetDPIScaleFactor(const double scaling) final
             {
             GraphItemBase::SetDPIScaleFactor(scaling);
             m_title.SetDPIScaleFactor(scaling);
@@ -691,7 +691,7 @@ namespace Wisteria::GraphItems
         /** @private
             @brief Sets the scaling of the axis.
             @param scaling The scaling to use.*/
-        void SetScaling(double scaling) override final;
+        void SetScaling(double scaling) final;
 
         /// @brief Which parts of the axis should be reset when Reset() is called.
         enum class AxisResetLevel
@@ -962,8 +962,8 @@ namespace Wisteria::GraphItems
                 are fit and positioned along the axis.*/
         void SetCustomLabel(double tickValue, const Label& label);
         /** @returns The custom label for a specific tick, or empty string if one hasn't
-                been assigned.\n Will return an invalid label object if not found,
-                so check it with @c IsOk().
+                been assigned.\n
+                Will return an invalid label object if not found, so check it with @c IsOk().
             @param value The tick value to retrieve the custom label for.*/
         [[nodiscard]]
         const Label& GetCustomLabel(double value) const;
@@ -991,9 +991,9 @@ namespace Wisteria::GraphItems
             return m_suggestedMaxLengthPerLine;
             }
 
-        /// @brief Sets the font for the axis labels.
+        /// @brief Sets the font for the axis labels and brackets.
         /// @param font The font to use.
-        void SetFont(const wxFont& font) override final
+        void SetFont(const wxFont& font) final
             {
             GraphItemBase::SetFont(font);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1003,17 +1003,35 @@ namespace Wisteria::GraphItems
                 }
             }
 
-        /// @brief Sets the font background color for the axis labels.
+        /// @brief Sets the text color for the axis labels and brackets.
+        /// @param color The color to use for the font.
+        void SetFontColor(const wxColour& color) final
+            {
+            if (color.IsOk())
+                {
+                GraphItemBase::SetFontColor(color);
+                for (auto& bracket : GetBrackets())
+                    {
+                    bracket.GetLabel().SetFontColor(color);
+                    }
+                }
+            }
+
+        /// @brief Sets the font background color for the axis labels and brackets.
         /// @param color The color to use.
         /// @note Setting the background color of the labels
         ///     will display background boxes behind them that take up as
         ///     much space as possible on the axis.
-        void SetFontBackgroundColor(const wxColour& color) override final
+        void SetFontBackgroundColor(const wxColour& color) final
             {
             if (color.IsOk())
                 {
                 GraphItemBase::SetFontBackgroundColor(color);
                 m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+                for (auto& bracket : GetBrackets())
+                    {
+                    bracket.GetLabel().SetFontBackgroundColor(color);
+                    }
                 }
             }
 
@@ -1254,7 +1272,7 @@ namespace Wisteria::GraphItems
             @param bottom The bottom padding.
             @param left The left padding.*/
         void SetPadding(const wxCoord top, const wxCoord right, const wxCoord bottom,
-                        const wxCoord left) noexcept override final
+                        const wxCoord left) noexcept final
             {
             GraphItemBase::SetPadding(top, right, bottom, left);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1263,7 +1281,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the bottom padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetBottomPadding(const wxCoord padding) noexcept override final
+        void SetBottomPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetBottomPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1272,7 +1290,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the top padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetTopPadding(const wxCoord padding) noexcept override final
+        void SetTopPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetTopPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1281,7 +1299,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the right padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetRightPadding(const wxCoord padding) noexcept override final
+        void SetRightPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetRightPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1290,7 +1308,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the left padding of the axis.
             @param padding The padding size.
             @note This is a pixel value that the framework will scale to the screen for you.*/
-        void SetLeftPadding(const wxCoord padding) noexcept override final
+        void SetLeftPadding(const wxCoord padding) noexcept final
             {
             GraphItemBase::SetLeftPadding(padding);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -1735,7 +1753,7 @@ namespace Wisteria::GraphItems
         // Overridden so that the widest and tallest labels are invalidated.
         /// @private
         [[nodiscard]]
-        GraphItemInfo& GetGraphItemInfo() noexcept override final
+        GraphItemInfo& GetGraphItemInfo() noexcept final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetGraphItemInfo();
@@ -1743,7 +1761,7 @@ namespace Wisteria::GraphItems
 
         /// @private
         [[nodiscard]]
-        wxFont& GetFont() noexcept override final
+        wxFont& GetFont() noexcept final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetFont();
@@ -1754,7 +1772,7 @@ namespace Wisteria::GraphItems
 
         /// @private
         [[nodiscard]]
-        const wxFont& GetFont() const noexcept override final
+        const wxFont& GetFont() const noexcept final
             {
             return GraphItemBase::GetFont();
             }
@@ -1883,7 +1901,7 @@ namespace Wisteria::GraphItems
 
         /// @brief If embedded into canvas (i.e., not part of a plot) then this is
         ///     used by canvas to set the axis to a common size with plots next to it.
-        void RecalcSizes(wxDC& dc) override final
+        void RecalcSizes(wxDC& dc) final
             {
             if (IsVertical() && GetContentTop() && GetContentBottom())
                 {
@@ -1912,7 +1930,7 @@ namespace Wisteria::GraphItems
         /// @returns The rectangular area of the axis line area.
         ///     This is relative to its parent canvas.
         [[nodiscard]]
-        wxRect GetContentRect() const noexcept override final
+        wxRect GetContentRect() const noexcept final
             {
             if (IsVertical())
                 {
@@ -1996,13 +2014,13 @@ namespace Wisteria::GraphItems
         /// @param dc The DC to draw on.
         /// @returns The bounding box that the axis was drawn in.
         [[nodiscard]]
-        wxRect Draw(wxDC& dc) const override final;
+        wxRect Draw(wxDC& dc) const final;
         /** @returns The rectangle that the axis would fit in.
             @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with
                 the same DC.*/
         [[nodiscard]]
-        wxRect GetBoundingBox(wxDC& dc) const override final;
+        wxRect GetBoundingBox(wxDC& dc) const final;
         /** @returns The rectangle of the part of the axis that protrudes outside the plot area.
             @param dc The DC to measure with.*/
         [[nodiscard]]
@@ -2012,7 +2030,7 @@ namespace Wisteria::GraphItems
             @param pt The point to check.
             @param dc The rendering DC.*/
         [[nodiscard]]
-        bool HitTest(const wxPoint pt, wxDC& dc) const override final
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             {
             return GetBoundingBox(dc).Contains(pt);
             }
@@ -2020,7 +2038,7 @@ namespace Wisteria::GraphItems
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
-        void Offset(const int xToMove, const int yToMove) override final
+        void Offset(const int xToMove, const int yToMove) final
             {
             m_points.first += wxPoint(xToMove, yToMove);
             m_points.second += wxPoint(xToMove, yToMove);
@@ -2158,7 +2176,7 @@ namespace Wisteria::GraphItems
         /// @brief Calculates how much space is available for the labels within the plot area.
         void CalcMaxLabelWidth();
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] double parentScaling) override final;
+                            [[maybe_unused]] double parentScaling) final;
 
         /// @returns The physical (relative to the parent canvas) starting and ending points
         ///     for the axis.
