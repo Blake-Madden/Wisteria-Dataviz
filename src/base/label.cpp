@@ -1102,8 +1102,7 @@ namespace Wisteria::GraphItems
                                            .DPIScaling(GetDPIScaleFactor())
                                            .Pen(shpInfo.GetPen())
                                            .Brush(shpInfo.GetBrush()),
-                                       shpInfo.GetShape(),
-                                       shpInfo.GetSizeDIPs(),
+                                       shpInfo.GetShape(), shpInfo.GetSizeDIPs(),
                                        shpInfo.GetFillPercent() };
                     shp.Draw(dc);
                     }
