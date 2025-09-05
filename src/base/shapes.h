@@ -420,6 +420,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawSword(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a crescent at the top.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawCrescentTop(wxRect rect, wxDC& dc) const;
         /// @}
       private:
         enum class Temperature

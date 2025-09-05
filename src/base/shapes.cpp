@@ -235,7 +235,8 @@ namespace Wisteria::GraphItems
             { IconShape::Farm, &ShapeRenderer::DrawFarm },
             { IconShape::Dollar, &ShapeRenderer::DrawDollar },
             { IconShape::Monitor, &ShapeRenderer::DrawMonitor },
-            { IconShape::Sword, &ShapeRenderer::DrawSword }
+            { IconShape::Sword, &ShapeRenderer::DrawSword },
+            { IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop }
         };
 
         // connect the rendering function to the shape
@@ -651,6 +652,48 @@ namespace Wisteria::GraphItems
             leafPath.CloseSubpath();
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCrescentTop(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger pc{ dc, *wxBLACK_PEN };
+        const wxDCBrushChanger bc{ dc, *wxBLACK_BRUSH };
+
+        wxRect drawRect{ rect };
+        drawRect.Deflate(GetGraphItemInfo().GetPen().IsOk() ?
+                             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                             0);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        assert(gc && L"Failed to get graphics context for crescent!");
+        if (gc != nullptr)
+            {
+            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(),
+                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetBrush(GetGraphItemInfo().GetBrush().GetColour());
+
+            wxGraphicsPath crescentPath = gc->CreatePath();
+
+            const auto startPoint =
+                wxPoint(GetXPosFromLeft(drawRect, 0.8), GetYPosFromTop(drawRect, 0.2));
+            crescentPath.MoveToPoint(startPoint);
+            // top line
+            crescentPath.AddCurveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0.2), GetYPosFromTop(drawRect, 0)),
+                wxPoint(GetXPosFromLeft(drawRect, -0.2), GetYPosFromTop(drawRect, 0.3)),
+                wxPoint(GetXPosFromLeft(drawRect, 0.1), GetYPosFromTop(drawRect, 0.75)));
+            // bottom line
+            crescentPath.AddCurveToPoint(
+                wxPoint(GetXPosFromLeft(drawRect, 0.05), GetYPosFromTop(drawRect, 0.2)),
+                wxPoint(GetXPosFromLeft(drawRect, 0.4), GetYPosFromTop(drawRect, 0.2)), startPoint);
+
+            crescentPath.CloseSubpath();
+            gc->FillPath(crescentPath);
+            gc->StrokePath(crescentPath);
             }
         }
 
