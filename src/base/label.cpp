@@ -44,9 +44,9 @@ namespace Wisteria::GraphItems
                 imgWidth);
             imageSize = wxSize{ static_cast<int>(imgWidth), static_cast<int>(imgHeight) };
             }
-        if (m_topShape.has_value())
+        if (m_topShape.has_value() && !m_topShape.value().empty())
             {
-            shapeSize = ScaleToScreenAndCanvas(m_topShape.value().GetSizeDIPs());
+            shapeSize = ScaleToScreenAndCanvas(m_topShape.value().front().GetSizeDIPs());
             }
         const auto maxWidth = ((imageSize.IsFullySpecified() && shapeSize.IsFullySpecified()) ?
                                    std::max(imageSize.GetWidth(), shapeSize.GetWidth()) :
@@ -1083,23 +1083,43 @@ namespace Wisteria::GraphItems
         // draw top icon
         if (m_topShape.has_value())
             {
-            const auto scaledSize = ScaleToScreenAndCanvas(m_topShape.value().GetSizeDIPs());
-            auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
-            leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
-                            safe_divide(scaledSize.GetWidth(), 2);
-            // ensure shape doesn't go below (and outside) the text
-            leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
-                                                      scaledSize.GetHeight());
+            for (const auto& shpInfo : m_topShape.value())
+                {
+                const auto scaledSize = ScaleToScreenAndCanvas(shpInfo.GetSizeDIPs());
+                auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
+                leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
+                                safe_divide(scaledSize.GetWidth(), 2);
+                // ensure shape doesn't go below (and outside) the text
+                leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
+                                                          scaledSize.GetHeight());
 
-            Shape shp{ GraphItemInfo{ m_topShape.value().GetText() }
-                           .AnchorPoint(leftCorner)
-                           .Anchoring(Anchoring::TopLeftCorner)
-                           .Scaling(GetScaling())
-                           .DPIScaling(GetDPIScaleFactor())
-                           .Pen(m_topShape.value().GetPen())
-                           .Brush(m_topShape.value().GetBrush()),
-                       m_topShape.value().GetShape(), m_topShape.value().GetSizeDIPs() };
-            shp.Draw(dc);
+                if (shpInfo.GetFillPercent() < 1.0)
+                    {
+                    FillableShape shp{ GraphItemInfo{ shpInfo.GetText() }
+                                           .AnchorPoint(leftCorner)
+                                           .Anchoring(Anchoring::TopLeftCorner)
+                                           .Scaling(GetScaling())
+                                           .DPIScaling(GetDPIScaleFactor())
+                                           .Pen(shpInfo.GetPen())
+                                           .Brush(shpInfo.GetBrush()),
+                                       shpInfo.GetShape(),
+                                       shpInfo.GetSizeDIPs(),
+                                       shpInfo.GetFillPercent() };
+                    shp.Draw(dc);
+                    }
+                else
+                    {
+                    Shape shp{ GraphItemInfo{ shpInfo.GetText() }
+                                   .AnchorPoint(leftCorner)
+                                   .Anchoring(Anchoring::TopLeftCorner)
+                                   .Scaling(GetScaling())
+                                   .DPIScaling(GetDPIScaleFactor())
+                                   .Pen(shpInfo.GetPen())
+                                   .Brush(shpInfo.GetBrush()),
+                               shpInfo.GetShape(), shpInfo.GetSizeDIPs() };
+                    shp.Draw(dc);
+                    }
+                }
             }
         // draw top image
         if (m_topImage.IsOk())

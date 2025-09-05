@@ -622,6 +622,15 @@ namespace Wisteria::GraphItems
             return *this;
             }
 
+        /** @brief If a fillable shape, how much of it to fill.
+            @param fillPercent The percent to fill the shape.
+            @returns A self reference.*/
+        ShapeInfo& FillPercent(const double fillPercent) noexcept
+            {
+            m_fillPercent = fillPercent;
+            return *this;
+            }
+
         /// @return The shape.
         [[nodiscard]]
         Icons::IconShape GetShape() const noexcept
@@ -657,12 +666,20 @@ namespace Wisteria::GraphItems
             return m_text;
             }
 
+        /// @returns The percent that the shape is filled.
+        [[nodiscard]]
+        double GetFillPercent() const noexcept
+            {
+            return m_fillPercent;
+            }
+
       private:
         Icons::IconShape m_shape{ Icons::IconShape::Square };
         wxSize m_sizeDIPs{ 16, 16 };
         wxBrush m_brush;
         wxPen m_pen;
         wxString m_text;
+        double m_fillPercent{ math_constants::full };
         };
 
     /** @brief Draws a shape onto a canvas.*/

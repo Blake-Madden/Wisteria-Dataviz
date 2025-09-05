@@ -12,6 +12,7 @@
 #ifndef WISTERIA_CANVASLABEL_H
 #define WISTERIA_CANVASLABEL_H
 
+#include "fillableshape.h"
 #include "graphitems.h"
 #include "shapes.h"
 #include <vector>
@@ -276,10 +277,15 @@ namespace Wisteria::GraphItems
             m_topImageOffset = offset;
             }
 
-        /** @brief Adds a shape to the top side of the text.
-            @param shpInfo A description of the shape.
+        /** @brief Adds a shape (or shapes) to the top side of the text.
+            @description Can be one shape, or multiple shapes that will be drawn
+                on top of each other.
+            @param shpInfo A description of the shape(s).
             @sa SetTopImage().*/
-        void SetTopShape(const std::optional<ShapeInfo>& shpInfo) { m_topShape = shpInfo; }
+        void SetTopShape(const std::optional<std::vector<ShapeInfo>>& shpInfo)
+            {
+            m_topShape = shpInfo;
+            }
 
         /// @}
 
@@ -560,7 +566,7 @@ namespace Wisteria::GraphItems
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         wxBitmapBundle m_leftImage;
         wxBitmapBundle m_topImage;
-        std::optional<ShapeInfo> m_topShape{ std::nullopt };
+        std::optional<std::vector<ShapeInfo>> m_topShape{ std::nullopt };
         size_t m_topImageOffset{ 0 };
         bool m_boundingBoxScalingLocked{ false };
         };

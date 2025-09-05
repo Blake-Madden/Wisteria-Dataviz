@@ -838,7 +838,21 @@ namespace Wisteria
             if (const auto topShapeNode = labelNode->GetProperty(L"top-shape");
                 topShapeNode->IsOk())
                 {
-                label->SetTopShape(LoadShapeInfo(topShapeNode));
+                if (topShapeNode->IsValueArray())
+                    {
+                    std::vector<GraphItems::ShapeInfo> shapes;
+                    auto shapeNodes = topShapeNode->GetValueArrayObject();
+                    for (const auto& shpNode : shapeNodes)
+                        {
+                        shapes.push_back(LoadShapeInfo(shpNode));
+                        }
+                    label->SetTopShape(shapes);
+                    }
+                else
+                    {
+                    label->SetTopShape(
+                        std::vector<GraphItems::ShapeInfo>{ LoadShapeInfo(topShapeNode) });
+                    }
                 }
 
             const auto orientation = labelNode->GetProperty(L"orientation")->GetValueString();
@@ -3340,7 +3354,8 @@ namespace Wisteria
             .Size(sz)
             .Pen(pen)
             .Brush(brush)
-            .Text((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}));
+            .Text((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
+            .FillPercent(shapeNode->GetProperty(L"fill-percent")->GetValueNumber(1.0));
         }
 
     //---------------------------------------------------
