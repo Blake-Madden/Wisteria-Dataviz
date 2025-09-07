@@ -10,8 +10,6 @@
 #include "image.h"
 #include "label.h"
 
-using namespace Wisteria::Colors;
-
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
@@ -82,14 +80,13 @@ namespace Wisteria::GraphItems
     wxBitmap GraphItemBase::ToBitmap(wxDC& dc) const
         {
         const wxRect BoundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
-        wxBitmap bmp(BoundingBox.GetWidth(), BoundingBox.GetHeight());
+        wxBitmap bmp{ BoundingBox.GetWidth(), BoundingBox.GetHeight() };
         wxMemoryDC memDc(bmp);
         memDc.SetBackground(*wxTRANSPARENT_BRUSH);
         memDc.Clear();
         memDc.SetLogicalOrigin(BoundingBox.GetPosition().x, BoundingBox.GetPosition().y);
         Draw(memDc);
         memDc.SelectObject(wxNullBitmap);
-        wxImage img(bmp.ConvertToImage());
-        return { img };
+        return bmp;
         }
     } // namespace Wisteria::GraphItems
