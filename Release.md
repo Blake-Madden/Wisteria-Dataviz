@@ -12,7 +12,6 @@
 - Improved deduction of discrete columns when importing data
 - Exposed more functionality to JSON syntax
 - Expanded and improved the documentation
-- C++20 modernizations and clang-tidy fixes
 
 ## 1.0.2 Release
 
