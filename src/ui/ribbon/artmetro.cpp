@@ -519,7 +519,8 @@ void RibbonMetroArtProvider::DrawTab(wxDC& dc, [[maybe_unused]] wxWindow* wnd,
     }
 
 void RibbonMetroArtProvider::DrawPartialPageBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect,
-                                                       wxRibbonPage* page, wxPoint offset,
+                                                       wxRibbonPage* page,
+                                                       [[maybe_unused]] wxPoint offset,
                                                        [[maybe_unused]] bool hovered)
     {
     wxRect background;
@@ -532,7 +533,6 @@ void RibbonMetroArtProvider::DrawPartialPageBackground(wxDC& dc, wxWindow* wnd, 
     if (wnd->GetSizer() && wnd->GetParent() != page)
         {
         background = wnd->GetParent()->GetSize();
-        offset = wxPoint(0, 0);
         }
     else
         {
