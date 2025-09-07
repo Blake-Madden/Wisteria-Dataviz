@@ -11,10 +11,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
 
-    using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     void Table::TableCell::SetFormat(const TableCellFormat cellFormat) noexcept
@@ -246,9 +243,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
+    Table::Table(Wisteria::Canvas * canvas) : Graph2D(canvas)
         {
-        GetPen() = ColorBrewer::GetColor(Colors::Color::Almond);
+        GetPen() = Colors::ColorBrewer::GetColor(Colors::Color::Almond);
 
         // arbitrary ranges, just need to create any sort of plotting area
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
@@ -594,7 +591,7 @@ namespace Wisteria::Graphs
             SetRowBackgroundColor(rIndex,
                                   bkColor.has_value() ?
                                       bkColor.value() :
-                                      ColorBrewer::GetColor(Colors::Color::LightGray),
+                                      Colors::ColorBrewer::GetColor(Colors::Color::LightGray),
                                   std::nullopt);
 
             // if overriding default borders for the cells in this column
@@ -674,13 +671,12 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void
-    Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
-                                 const std::optional<wxString>& colName /*= std::nullopt*/,
-                                 const std::optional<size_t> colIndex /*= std::nullopt*/,
-                                 const std::optional<bool> useAdjacentColors /*= std::nullopt*/,
-                                 const std::optional<wxColour>& bkColor /*= std::nullopt*/,
-                                 const std::optional<std::bitset<4>> borders /*= std::nullopt*/)
+    void Table::InsertAggregateColumn(
+        const AggregateInfo& aggInfo, const std::optional<wxString>& colName /*= std::nullopt*/,
+        const std::optional<size_t> colIndex /*= std::nullopt*/,
+        const std::optional<bool> useAdjacentColors /*= std::nullopt*/,
+        const std::optional<wxColour>& bkColor /*= std::nullopt*/,
+        const std::optional<std::bitset<4>> borders /*= std::nullopt*/)
         {
         if (GetColumnCount())
             {
@@ -714,8 +710,9 @@ namespace Wisteria::Graphs
                 }
             else
                 {
-                SetColumnBackgroundColor(
-                    columnIndex, ColorBrewer::GetColor(Colors::Color::LightGray), std::nullopt);
+                SetColumnBackgroundColor(columnIndex,
+                                         Colors::ColorBrewer::GetColor(Colors::Color::LightGray),
+                                         std::nullopt);
                 }
             // if overriding default borders for the cells in this column
             if (borders.has_value())
@@ -819,7 +816,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::AddCellAnnotation(CellAnnotation&& cellNote)
+    void Table::AddCellAnnotation(CellAnnotation && cellNote)
         {
         if (cellNote.m_cells.empty())
             {
@@ -853,7 +850,8 @@ namespace Wisteria::Graphs
             return;
             }
 
-        const auto alternateColor = ColorContrast::ShadeOrTint(baseColor, math_constants::tenth);
+        const auto alternateColor =
+            Colors::ColorContrast::ShadeOrTint(baseColor, math_constants::tenth);
 
         // start with base color
         SetRowBackgroundColor(startRow, baseColor, columnStops);
@@ -1085,9 +1083,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::CalcMainTableSize(std::vector<wxCoord>& columnWidths,
-                                  std::vector<wxCoord>& rowHeights, Label& measuringLabel,
-                                  wxDC& dc) const
+    void Table::CalcMainTableSize(std::vector<wxCoord> & columnWidths,
+                                  std::vector<wxCoord> & rowHeights,
+                                  GraphItems::Label & measuringLabel, wxDC & dc) const
         {
         columnWidths.clear();
         columnWidths.resize(GetColumnCount());
@@ -1155,15 +1153,15 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    wxSize Table::CalculateTableSize(std::vector<wxCoord>& columnWidths,
-                                     std::vector<wxCoord>& rowHeights, wxRect& drawArea,
-                                     wxDC& dc) const
+    wxSize Table::CalculateTableSize(std::vector<wxCoord> & columnWidths,
+                                     std::vector<wxCoord> & rowHeights, wxRect & drawArea,
+                                     wxDC & dc) const
         {
-        Label measuringLabel(GraphItemInfo()
-                                 .Pen(wxPen{})
-                                 .Padding(5, 5, 5, 5)
-                                 .Scaling(GetScaling())
-                                 .DPIScaling(GetDPIScaleFactor()));
+        GraphItems::Label measuringLabel(GraphItems::GraphItemInfo{}
+                                             .Pen(wxPen{})
+                                             .Padding(5, 5, 5, 5)
+                                             .Scaling(GetScaling())
+                                             .DPIScaling(GetDPIScaleFactor()));
 
         // if there are annotations, add gutters for them
         wxCoord widestLeftNote{ 0 }, widestRightNote{ 0 };
@@ -1288,7 +1286,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::RecalcSizes(wxDC& dc)
+    void Table::RecalcSizes(wxDC & dc)
         {
         if (GetRowCount() == 0 || GetColumnCount() == 0)
             {
@@ -1356,7 +1354,7 @@ namespace Wisteria::Graphs
 
         // measure the text
         std::array<wxPoint, 4> pts{};
-        std::vector<std::unique_ptr<Label>> cellLabels;
+        std::vector<std::unique_ptr<GraphItems::Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         size_t currentRow{ 0 }, currentColumn{ 0 };
         wxCoord currentXPos{ drawArea.GetX() };
@@ -1445,18 +1443,20 @@ namespace Wisteria::Graphs
                      cell.m_valueFormat == TableCellFormat::Accounting);
 
                 const auto cellText = cell.GetDisplayValue();
-                auto cellLabel = std::make_unique<Label>(
-                    GraphItemInfo((isPrefixSeparateLabel ? wxString{} : cell.GetPrefix()) +
-                                  (!cellText.empty() ? cellText : wxString(L" ")))
+                auto cellLabel = std::make_unique<GraphItems::Label>(
+                    GraphItems::GraphItemInfo(
+                        (isPrefixSeparateLabel ? wxString{} : cell.GetPrefix()) +
+                        (!cellText.empty() ? cellText : wxString(L" ")))
                         .Pen(wxNullPen)
                         .Padding(5, 5, 5, 5)
                         .Scaling(GetScaling())
                         .DPIScaling(GetDPIScaleFactor())
                         .Font(cell.m_font)
-                        .FontColor(((cell.m_bgColor.IsOk() && !cell.m_bgColor.IsTransparent()) ?
-                                        ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
-                                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                            GetPlotOrCanvasColor())))
+                        .FontColor(
+                            ((cell.m_bgColor.IsOk() && !cell.m_bgColor.IsTransparent()) ?
+                                 Colors::ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
+                                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                     GetPlotOrCanvasColor())))
                         .FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE)
                         .Anchoring(Anchoring::TopLeftCorner)
                         .AnchorPoint(boxRect.GetTopLeft()));
@@ -1486,17 +1486,18 @@ namespace Wisteria::Graphs
                                                                           L"\u25B2")) :
                             cell.GetPrefix();
                     const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE };
-                    auto cellPrefixLabel = std::make_unique<Label>(
-                        GraphItemInfo(prefix)
+                    auto cellPrefixLabel = std::make_unique<GraphItems::Label>(
+                        GraphItems::GraphItemInfo{ prefix }
                             .Pen(wxNullPen)
                             .Padding(5, 5, 5, 5)
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
                             .Font(cell.m_font)
-                            .FontColor(((cell.m_bgColor.IsOk() && !cell.m_bgColor.IsTransparent()) ?
-                                            ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
-                                            Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                                                GetPlotOrCanvasColor())))
+                            .FontColor(
+                                ((cell.m_bgColor.IsOk() && !cell.m_bgColor.IsTransparent()) ?
+                                     Colors::ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
+                                     Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+                                         GetPlotOrCanvasColor())))
                             .FontBackgroundColor(wxTransparentColour)
                             .Anchoring(Anchoring::TopLeftCorner)
                             .AnchorPoint(boxRect.GetLeftTop()));
@@ -1504,12 +1505,12 @@ namespace Wisteria::Graphs
                         {
                         cellPrefixLabel->SetFontColor(
                             (cell.GetDoubleValue() < 0) ?
-                                (ColorContrast::IsDark(cellBkColor) ?
-                                     ColorBrewer::GetColor(Colors::Color::RosePink) :
-                                     ColorBrewer::GetColor(Colors::Color::Red)) :
-                                (ColorContrast::IsDark(cellBkColor) ?
-                                     ColorBrewer::GetColor(Colors::Color::MintGreen) :
-                                     ColorBrewer::GetColor(Colors::Color::HunterGreen)));
+                                (Colors::ColorContrast::IsDark(cellBkColor) ?
+                                     Colors::ColorBrewer::GetColor(Colors::Color::RosePink) :
+                                     Colors::ColorBrewer::GetColor(Colors::Color::Red)) :
+                                (Colors::ColorContrast::IsDark(cellBkColor) ?
+                                     Colors::ColorBrewer::GetColor(Colors::Color::MintGreen) :
+                                     Colors::ColorBrewer::GetColor(Colors::Color::HunterGreen)));
                         }
                     cellPrefixLabel->SetBoundingBox(boxRect, dc, GetScaling());
                     cellPrefixLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
@@ -1572,8 +1573,9 @@ namespace Wisteria::Graphs
             ++currentRow;
             }
 
-        auto highlightedBorderLines = std::make_unique<Lines>(GetHighlightPen(), GetScaling());
-        auto borderLines = std::make_unique<Lines>(GetPen(), GetScaling());
+        auto highlightedBorderLines =
+            std::make_unique<GraphItems::Lines>(GetHighlightPen(), GetScaling());
+        auto borderLines = std::make_unique<GraphItems::Lines>(GetPen(), GetScaling());
         borderLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
         currentRow = currentColumn = 0;
         currentXPos = drawArea.GetX();
@@ -1771,7 +1773,7 @@ namespace Wisteria::Graphs
             // sort by rows, top-to-bottom
             std::ranges::sort(note.m_cells, [](const auto& lv, const auto& rv) noexcept
                               { return lv.m_row < rv.m_row; });
-            auto noteConnectionLines = std::make_unique<Lines>(
+            auto noteConnectionLines = std::make_unique<GraphItems::Lines>(
                 note.m_connectionLinePen.has_value() ? note.m_connectionLinePen.value() :
                                                        GetHighlightPen(),
                 GetScaling());
@@ -1802,8 +1804,8 @@ namespace Wisteria::Graphs
                 AddObject(std::move(noteConnectionLines));
 
                 // add the note into the gutter
-                auto noteLabel = std::make_unique<Label>(
-                    GraphItemInfo(note.m_note)
+                auto noteLabel = std::make_unique<GraphItems::Label>(
+                    GraphItems::GraphItemInfo{ note.m_note }
                         .Pen(wxNullPen)
                         .FontColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                             GetPlotOrCanvasColor()))
@@ -1821,7 +1823,7 @@ namespace Wisteria::Graphs
                                             (connectionOverhangWidth * 2) + labelSpacingFromLine);
                 rightGutterTextArea.SetWidth(rightGutterTextArea.GetWidth() -
                                              (connectionOverhangWidth * 2) - labelSpacingFromLine);
-                if (!Polygon::IsRectInsideRect(bBox, rightGutterTextArea))
+                if (!GraphItems::Polygon::IsRectInsideRect(bBox, rightGutterTextArea))
                     {
                     noteLabel->SplitTextToFitBoundingBox(dc, rightGutterTextArea.GetSize());
                     const auto boundBox = noteLabel->GetBoundingBox(dc);
@@ -1860,8 +1862,8 @@ namespace Wisteria::Graphs
                 AddObject(std::move(noteConnectionLines));
 
                 // add the note into the gutter
-                auto noteLabel = std::make_unique<Label>(
-                    GraphItemInfo(note.m_note)
+                auto noteLabel = std::make_unique<GraphItems::Label>(
+                    GraphItems::GraphItemInfo{ note.m_note }
                         .Pen(wxNullPen)
                         // use same text scale as the table
                         .Scaling(smallestTextScaling)
@@ -1876,7 +1878,7 @@ namespace Wisteria::Graphs
                 auto leftGutterTextArea{ leftGutter };
                 leftGutterTextArea.SetWidth(leftGutterTextArea.GetWidth() -
                                             (connectionOverhangWidth * 2) - labelSpacingFromLine);
-                if (!Polygon::IsRectInsideRect(bBox, leftGutterTextArea))
+                if (!GraphItems::Polygon::IsRectInsideRect(bBox, leftGutterTextArea))
                     {
                     noteLabel->SplitTextToFitBoundingBox(dc, leftGutterTextArea.GetSize());
                     const auto boundBox = noteLabel->GetBoundingBox(dc);

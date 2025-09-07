@@ -13,9 +13,6 @@
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
 
-using namespace Wisteria::Colors;
-using namespace Wisteria::Icons;
-
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
@@ -173,70 +170,72 @@ namespace Wisteria::GraphItems
           m_renderer(itemInfo, img)
         {
         static const std::map<Icons::IconShape, ShapeRenderer::DrawFunction> shapeMap = {
-            { IconShape::Blank, nullptr },
-            { IconShape::ArrowRight, &ShapeRenderer::DrawRightArrow },
-            { IconShape::HorizontalLine, &ShapeRenderer::DrawHorizontalLine },
-            { IconShape::VerticalLine, &ShapeRenderer::DrawVerticalLine },
-            { IconShape::CrossedOut, &ShapeRenderer::DrawCrossedOut },
-            { IconShape::Circle, &ShapeRenderer::DrawCircle },
-            { IconShape::Square, &ShapeRenderer::DrawSquare },
-            { IconShape::Asterisk, &ShapeRenderer::DrawAsterisk },
-            { IconShape::Plus, &ShapeRenderer::DrawPlus },
-            { IconShape::TriangleUpward, &ShapeRenderer::DrawUpwardTriangle },
-            { IconShape::TriangleDownward, &ShapeRenderer::DrawDownwardTriangle },
-            { IconShape::TriangleRight, &ShapeRenderer::DrawRightTriangle },
-            { IconShape::TriangleLeft, &ShapeRenderer::DrawLeftTriangle },
-            { IconShape::Diamond, &ShapeRenderer::DrawDiamond },
-            { IconShape::Hexagon, &ShapeRenderer::DrawHexagon },
-            { IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
-            { IconShape::Sun, &ShapeRenderer::DrawSun },
-            { IconShape::Flower, &ShapeRenderer::DrawFlower },
-            { IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
-            { IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
-            { IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
-            { IconShape::GoRoadSign, &ShapeRenderer::DrawGoSign },
-            { IconShape::Image, &ShapeRenderer::DrawImage },
-            { IconShape::LeftCurlyBrace, &ShapeRenderer::DrawLeftCurlyBrace },
-            { IconShape::RightCurlyBrace, &ShapeRenderer::DrawRightCurlyBrace },
-            { IconShape::TopCurlyBrace, &ShapeRenderer::DrawTopCurlyBrace },
-            { IconShape::BottomCurlyBrace, &ShapeRenderer::DrawBottomCurlyBrace },
-            { IconShape::Man, &ShapeRenderer::DrawMan },
-            { IconShape::Woman, &ShapeRenderer::DrawWoman },
-            { IconShape::BusinessWoman, &ShapeRenderer::DrawBusinessWoman },
-            { IconShape::ChevronDownward, &ShapeRenderer::DrawChevronDownward },
-            { IconShape::ChevronUpward, &ShapeRenderer::DrawChevronUpward },
-            { IconShape::Text, &ShapeRenderer::DrawText },
-            { IconShape::Tack, &ShapeRenderer::DrawTack },
-            { IconShape::Banner, &ShapeRenderer::DrawBanner },
-            { IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
-            { IconShape::ThickWaterColorRectangle, &ShapeRenderer::DrawThickWaterColorRectangle },
-            { IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
-            { IconShape::Book, &ShapeRenderer::DrawBook },
-            { IconShape::Tire, &ShapeRenderer::DrawTire },
-            { IconShape::Snowflake, &ShapeRenderer::DrawSnowflake },
-            { IconShape::Newspaper, &ShapeRenderer::DrawNewspaper },
-            { IconShape::Car, &ShapeRenderer::DrawCar },
-            { IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
-            { IconShape::Clock, &ShapeRenderer::DrawClock },
-            { IconShape::Ruler, &ShapeRenderer::DrawRuler },
-            { IconShape::IVBag, &ShapeRenderer::DrawIVBag },
-            { IconShape::ColdThermometer, &ShapeRenderer::DrawColdThermometer },
-            { IconShape::HotThermometer, &ShapeRenderer::DrawHotThermometer },
-            { IconShape::Apple, &ShapeRenderer::DrawRedApple },
-            { IconShape::GrannySmithApple, &ShapeRenderer::DrawGrannySmithApple },
-            { IconShape::Heart, &ShapeRenderer::DrawHeart },
-            { IconShape::ImmaculateHeart, &ShapeRenderer::DrawImmaculateHeart },
-            { IconShape::ImmaculateHeartWithSword, &ShapeRenderer::DrawImmaculateHeartWithSword },
-            { IconShape::Flame, &ShapeRenderer::DrawFlame },
-            { IconShape::Office, &ShapeRenderer::DrawOffice },
-            { IconShape::Factory, &ShapeRenderer::DrawFactory },
-            { IconShape::House, &ShapeRenderer::DrawHouse },
-            { IconShape::Barn, &ShapeRenderer::DrawBarn },
-            { IconShape::Farm, &ShapeRenderer::DrawFarm },
-            { IconShape::Dollar, &ShapeRenderer::DrawDollar },
-            { IconShape::Monitor, &ShapeRenderer::DrawMonitor },
-            { IconShape::Sword, &ShapeRenderer::DrawSword },
-            { IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop }
+            { Icons::IconShape::Blank, nullptr },
+            { Icons::IconShape::ArrowRight, &ShapeRenderer::DrawRightArrow },
+            { Icons::IconShape::HorizontalLine, &ShapeRenderer::DrawHorizontalLine },
+            { Icons::IconShape::VerticalLine, &ShapeRenderer::DrawVerticalLine },
+            { Icons::IconShape::CrossedOut, &ShapeRenderer::DrawCrossedOut },
+            { Icons::IconShape::Circle, &ShapeRenderer::DrawCircle },
+            { Icons::IconShape::Square, &ShapeRenderer::DrawSquare },
+            { Icons::IconShape::Asterisk, &ShapeRenderer::DrawAsterisk },
+            { Icons::IconShape::Plus, &ShapeRenderer::DrawPlus },
+            { Icons::IconShape::TriangleUpward, &ShapeRenderer::DrawUpwardTriangle },
+            { Icons::IconShape::TriangleDownward, &ShapeRenderer::DrawDownwardTriangle },
+            { Icons::IconShape::TriangleRight, &ShapeRenderer::DrawRightTriangle },
+            { Icons::IconShape::TriangleLeft, &ShapeRenderer::DrawLeftTriangle },
+            { Icons::IconShape::Diamond, &ShapeRenderer::DrawDiamond },
+            { Icons::IconShape::Hexagon, &ShapeRenderer::DrawHexagon },
+            { Icons::IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
+            { Icons::IconShape::Sun, &ShapeRenderer::DrawSun },
+            { Icons::IconShape::Flower, &ShapeRenderer::DrawFlower },
+            { Icons::IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
+            { Icons::IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
+            { Icons::IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
+            { Icons::IconShape::GoRoadSign, &ShapeRenderer::DrawGoSign },
+            { Icons::IconShape::Image, &ShapeRenderer::DrawImage },
+            { Icons::IconShape::LeftCurlyBrace, &ShapeRenderer::DrawLeftCurlyBrace },
+            { Icons::IconShape::RightCurlyBrace, &ShapeRenderer::DrawRightCurlyBrace },
+            { Icons::IconShape::TopCurlyBrace, &ShapeRenderer::DrawTopCurlyBrace },
+            { Icons::IconShape::BottomCurlyBrace, &ShapeRenderer::DrawBottomCurlyBrace },
+            { Icons::IconShape::Man, &ShapeRenderer::DrawMan },
+            { Icons::IconShape::Woman, &ShapeRenderer::DrawWoman },
+            { Icons::IconShape::BusinessWoman, &ShapeRenderer::DrawBusinessWoman },
+            { Icons::IconShape::ChevronDownward, &ShapeRenderer::DrawChevronDownward },
+            { Icons::IconShape::ChevronUpward, &ShapeRenderer::DrawChevronUpward },
+            { Icons::IconShape::Text, &ShapeRenderer::DrawText },
+            { Icons::IconShape::Tack, &ShapeRenderer::DrawTack },
+            { Icons::IconShape::Banner, &ShapeRenderer::DrawBanner },
+            { Icons::IconShape::WaterColorRectangle, &ShapeRenderer::DrawWaterColorRectangle },
+            { Icons::IconShape::ThickWaterColorRectangle,
+              &ShapeRenderer::DrawThickWaterColorRectangle },
+            { Icons::IconShape::GraduationCap, &ShapeRenderer::DrawGraduationCap },
+            { Icons::IconShape::Book, &ShapeRenderer::DrawBook },
+            { Icons::IconShape::Tire, &ShapeRenderer::DrawTire },
+            { Icons::IconShape::Snowflake, &ShapeRenderer::DrawSnowflake },
+            { Icons::IconShape::Newspaper, &ShapeRenderer::DrawNewspaper },
+            { Icons::IconShape::Car, &ShapeRenderer::DrawCar },
+            { Icons::IconShape::Blackboard, &ShapeRenderer::DrawBlackboard },
+            { Icons::IconShape::Clock, &ShapeRenderer::DrawClock },
+            { Icons::IconShape::Ruler, &ShapeRenderer::DrawRuler },
+            { Icons::IconShape::IVBag, &ShapeRenderer::DrawIVBag },
+            { Icons::IconShape::ColdThermometer, &ShapeRenderer::DrawColdThermometer },
+            { Icons::IconShape::HotThermometer, &ShapeRenderer::DrawHotThermometer },
+            { Icons::IconShape::Apple, &ShapeRenderer::DrawRedApple },
+            { Icons::IconShape::GrannySmithApple, &ShapeRenderer::DrawGrannySmithApple },
+            { Icons::IconShape::Heart, &ShapeRenderer::DrawHeart },
+            { Icons::IconShape::ImmaculateHeart, &ShapeRenderer::DrawImmaculateHeart },
+            { Icons::IconShape::ImmaculateHeartWithSword,
+              &ShapeRenderer::DrawImmaculateHeartWithSword },
+            { Icons::IconShape::Flame, &ShapeRenderer::DrawFlame },
+            { Icons::IconShape::Office, &ShapeRenderer::DrawOffice },
+            { Icons::IconShape::Factory, &ShapeRenderer::DrawFactory },
+            { Icons::IconShape::House, &ShapeRenderer::DrawHouse },
+            { Icons::IconShape::Barn, &ShapeRenderer::DrawBarn },
+            { Icons::IconShape::Farm, &ShapeRenderer::DrawFarm },
+            { Icons::IconShape::Dollar, &ShapeRenderer::DrawDollar },
+            { Icons::IconShape::Monitor, &ShapeRenderer::DrawMonitor },
+            { Icons::IconShape::Sword, &ShapeRenderer::DrawSword },
+            { Icons::IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop }
         };
 
         // connect the rendering function to the shape
@@ -254,7 +253,7 @@ namespace Wisteria::GraphItems
             }
         m_rendererNeedsUpdating = false;
 
-        assert((m_shape == IconShape::Blank || m_drawFunction) &&
+        assert((m_shape == Icons::IconShape::Blank || m_drawFunction) &&
                L"Shape failed to set drawing function!");
         if (m_drawFunction != nullptr)
             {
@@ -356,8 +355,8 @@ namespace Wisteria::GraphItems
             auto sunBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, 0), GetXPosFromLeft(rect, 1.5),
                 GetYPosFromTop(rect, 1.5),
-                ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::Sunglow)),
-                ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::SunsetOrange)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Sunglow)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
             gc->SetBrush(sunBrush);
 
             const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
@@ -382,7 +381,7 @@ namespace Wisteria::GraphItems
             {
             gc->SetPen(wxNullPen);
             gc->SetBrush(
-                ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::ChapelBlue)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChapelBlue)));
             // a line going from the middle of the left side to the middle of the right
             wxRect petalRect(centerPt,
                              wxSize{ static_cast<int>((rect.GetWidth() * math_constants::half) -
@@ -412,7 +411,7 @@ namespace Wisteria::GraphItems
             gc->PopState();
             // draw the middle of flower
             gc->SetBrush(
-                ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(Color::GoldenYellow)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldenYellow)));
             const wxRect flowerRect =
                 wxRect{ rect }.Deflate(safe_divide<double>(rect.GetWidth(), 2.5));
             gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
@@ -509,15 +508,13 @@ namespace Wisteria::GraphItems
                     mercuryRect.SetHeight(mercuryRect.GetHeight() * math_constants::third);
                     mercuryRect.Offset(0, drawRect.GetHeight() * math_constants::two_thirds);
                     const wxDCBrushChanger bc(
-                        dc, ApplyColorOpacity(
-                                Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::Ice)));
+                        dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Ice)));
                     dc.DrawRectangle(mercuryRect);
                     }
                 else
                     {
-                    const wxDCBrushChanger bc(
-                        dc, ApplyColorOpacity(Wisteria::Colors::ColorBrewer::GetColor(
-                                Colors::Color::TractorRed)));
+                    const wxDCBrushChanger bc(dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(
+                                                      Colors::Color::TractorRed)));
                     dc.DrawRectangle(mercuryRect);
                     }
                 }
@@ -525,8 +522,8 @@ namespace Wisteria::GraphItems
 
         if (temp == Temperature::Hot)
             {
-            scaledPen.SetColour(ApplyColorOpacity(
-                Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::LightGray)));
+            scaledPen.SetColour(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::LightGray)));
             }
         const DCPenChangerIfDifferent pc2(dc, scaledPen);
         // measuring lines along stem
@@ -564,13 +561,13 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRedApple(const wxRect rect, wxDC& dc) const
         {
-        DrawApple(rect, dc, Wisteria::Colors::ColorBrewer::GetColor(Color::CandyApple));
+        DrawApple(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::CandyApple));
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawGrannySmithApple(const wxRect rect, wxDC& dc) const
         {
-        DrawApple(rect, dc, Wisteria::Colors::ColorBrewer::GetColor(Color::GrannySmithApple));
+        DrawApple(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::GrannySmithApple));
         }
 
     //---------------------------------------------------
@@ -596,7 +593,8 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::three_fourths),
                 GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(color, math_constants::three_fourths)),
+                ApplyColorOpacity(
+                    Colors::ColorContrast::ShadeOrTint(color, math_constants::three_fourths)),
                 ApplyColorOpacity(color)));
 
             wxGraphicsPath applePath = gc->CreatePath();
@@ -635,7 +633,7 @@ namespace Wisteria::GraphItems
             gc->StrokePath(shinePath);
 
             // leaf
-            gc->SetBrush(Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::JungleGreen));
+            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::JungleGreen));
             gc->SetPen(*wxTRANSPARENT_PEN);
 
             wxGraphicsPath leafPath = gc->CreatePath();
@@ -700,8 +698,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawOffice(const wxRect rect, wxDC& dc) const
         {
-        DrawBaseBuilding(rect, dc,
-                         Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite));
+        DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite));
         }
 
     //---------------------------------------------------
@@ -729,15 +726,14 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(chimneyRect, math_constants::half),
                 GetXPosFromLeft(chimneyRect, math_constants::full),
                 GetYPosFromTop(chimneyRect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(
-                    Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
+                ApplyColorOpacity(Colors::ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
             gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
                               chimneyRect.GetHeight());
 
             // house body
-            DrawBaseBuilding(rect, dc,
-                             Wisteria::Colors::ColorBrewer::GetColor(Colors::Color::PastelYellow));
+            DrawBaseBuilding(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::PastelYellow));
 
             // roof
             wxRect roofRect{ rect };
@@ -750,7 +746,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(chimneyRect, math_constants::full),
                 GetYPosFromTop(chimneyRect, math_constants::half),
                 TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)),
-                TintIfUsingOpacity(ColorContrast::ShadeOrTint(
+                TintIfUsingOpacity(Colors::ColorContrast::ShadeOrTint(
                     Colors::ColorBrewer::GetColor(Colors::Color::Brownstone)))));
 
             wxGraphicsPath roofPath = gc->CreatePath();
@@ -792,7 +788,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, math_constants::full),
                 GetXPosFromLeft(smokeRect, 0), GetYPosFromTop(smokeRect, 0),
                 Colors::ColorContrast::ChangeOpacity(
-                    ColorContrast::ShadeOrTint(
+                    Colors::ColorContrast::ShadeOrTint(
                         Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
                     200),
                 Colors::ColorContrast::ChangeOpacity(
@@ -837,7 +833,7 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(chimneyRect, math_constants::half),
                 GetXPosFromLeft(chimneyRect, math_constants::full),
                 GetYPosFromTop(chimneyRect, math_constants::half),
-                TintIfUsingOpacity(ColorContrast::ShadeOrTint(
+                TintIfUsingOpacity(Colors::ColorContrast::ShadeOrTint(
                     Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))),
                 TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BrickRed))));
             gc->DrawRectangle(chimneyRect.GetX(), chimneyRect.GetY(), chimneyRect.GetWidth(),
@@ -901,7 +897,8 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::full),
                 GetYPosFromTop(rect, math_constants::half),
-                TintIfUsingOpacity(ColorContrast::ShadeOrTint(color)), TintIfUsingOpacity(color)));
+                TintIfUsingOpacity(Colors::ColorContrast::ShadeOrTint(color)),
+                TintIfUsingOpacity(color)));
 
             wxRect mainBuildingRect{ drawRect };
             const auto yOffset{ mainBuildingRect.GetHeight() * math_constants::third };
@@ -967,9 +964,9 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::full),
                 GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(
-                    Colors::ColorBrewer::GetColor(Color::FireEngineRed))),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Color::FireEngineRed))));
+                ApplyColorOpacity(Colors::ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::FireEngineRed))),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::FireEngineRed))));
 
             const wxRect barnRect{ drawRect };
             const std::vector<wxPoint> barnPoints = {
@@ -1004,7 +1001,7 @@ namespace Wisteria::GraphItems
 
             // draw lines across barn to look like boards
             gc->SetPen(wxPen{ Colors::ColorContrast::ChangeOpacity(
-                                  Colors::ColorBrewer::GetColor(Color::DarkGray), 75),
+                                  Colors::ColorBrewer::GetColor(Colors::Color::DarkGray), 75),
                               static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
             double clipX{ 0 }, clipY{ 0 }, clipW{ 0 }, clipH{ 0 };
             gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
@@ -1089,9 +1086,9 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::full),
                 GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(
-                    ColorContrast::ShadeOrTint(Colors::ColorBrewer::GetColor(Color::Yellow))),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Color::Yellow))));
+                ApplyColorOpacity(Colors::ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::Yellow))),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Yellow))));
             gc->DrawRectangle(hayRect.x, hayRect.y, hayRect.GetWidth(), hayRect.GetHeight());
 
             // draw the loft opening's frame
@@ -1130,9 +1127,9 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(siloRect, 0), GetYPosFromTop(siloRect, math_constants::half),
                 GetXPosFromLeft(siloRect, math_constants::full),
                 GetYPosFromTop(siloRect, math_constants::half),
-                ApplyColorOpacity(
-                    ColorContrast::ShadeOrTint(Colors::ColorBrewer::GetColor(Color::LightGray))),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Color::LightGray))));
+                ApplyColorOpacity(Colors::ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::LightGray))),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::LightGray))));
 
             wxRect siloBodyRect{ siloRect };
             siloBodyRect.SetHeight(siloBodyRect.GetHeight() * math_constants::three_fourths);
@@ -1212,9 +1209,10 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::three_fourths),
                 GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(ColorContrast::ShadeOrTint(
-                    ColorBrewer::GetColor(Color::CandyApple), math_constants::three_fourths)),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::CandyApple))));
+                ApplyColorOpacity(Colors::ColorContrast::ShadeOrTint(
+                    Colors::ColorBrewer::GetColor(Colors::Color::CandyApple),
+                    math_constants::three_fourths)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::CandyApple))));
 
             wxGraphicsPath applePath = gc->CreatePath();
 
@@ -1442,9 +1440,9 @@ namespace Wisteria::GraphItems
 
             // this shape is used for other composite shapes, so need to tint instead of
             // using opacity
-            gc->SetBrush(TintIfUsingOpacity(ColorBrewer::GetColor(Color::AshGrey)));
+            gc->SetBrush(TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::AshGrey)));
             // only show outline if larger icon
-            gc->SetPen({ TintIfUsingOpacity(ColorBrewer::GetColor(Color::Black)),
+            gc->SetPen({ TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
 
             gc->Rotate(geometry::degrees_to_radians(-60));
@@ -1471,7 +1469,8 @@ namespace Wisteria::GraphItems
             gc->StrokePath(bladePath);
 
             // hilt
-            gc->SetBrush(TintIfUsingOpacity(ColorBrewer::GetColor(Color::GoldenYellow)));
+            gc->SetBrush(
+                TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldenYellow)));
             auto hiltPath = gc->CreatePath();
             hiltPath.MoveToPoint(wxPoint2DDouble{ GetXPosFromLeft(rect, 0.7) - centerPt.x,
                                                   GetYPosFromTop(rect, 0.45) - centerPt.y });
@@ -1546,8 +1545,8 @@ namespace Wisteria::GraphItems
             // (Note that we do not apply a translucency to the white backgrounds
             //  as that would allow the monitor stand to show through it.
             //  Instead, we only make the outline and monitor content translucent.)
-            gc->SetBrush(ColorBrewer::GetColor(Color::White));
-            gc->SetPen({ ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)),
+            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
+            gc->SetPen({ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
             wxRect2DDouble poleRect{ monitorRect };
             poleRect.SetWidth(monitorRect.GetWidth() * math_constants::tenth);
@@ -1567,8 +1566,8 @@ namespace Wisteria::GraphItems
             standBaseRect.MoveBottomTo(drawRect.GetBottom());
 
             // draw everything
-            gc->SetBrush(ColorBrewer::GetColor(Color::White));
-            gc->SetPen({ ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)),
+            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
+            gc->SetPen({ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
             gc->DrawRectangle(monitorOuterRect);
 
@@ -1578,12 +1577,12 @@ namespace Wisteria::GraphItems
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)));
             gc->SetBrush(boardBrush);
-            gc->SetPen(wxPen{ ColorBrewer::GetColor(Color::White),
+            gc->SetPen(wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::White),
                               static_cast<int>(ScaleToScreenAndCanvas(1)) });
             gc->DrawRectangle(monitorRect);
 
-            gc->SetBrush(ColorBrewer::GetColor(Color::White));
-            gc->SetPen({ ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)),
+            gc->SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
+            gc->SetPen({ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
                          static_cast<int>(ScaleToScreenAndCanvas(1)) });
 
             auto standBasePath = gc->CreatePath();
@@ -1952,7 +1951,7 @@ namespace Wisteria::GraphItems
             dc.DrawPolygon(bookCoverBottom.size(), bookCoverBottom.data());
             // a highlight along the bottom edge
             scaledPen.SetColour(
-                ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
             const DCPenChangerIfDifferent pc2{ dc, scaledPen };
@@ -1960,7 +1959,8 @@ namespace Wisteria::GraphItems
 
             // gold trim on edges of book
             scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
-            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::GoldLeaf)));
+            scaledPen.SetColour(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldLeaf)));
             const DCPenChangerIfDifferent pc3{ dc, scaledPen };
             auto topCornerLeft = geometry::point_along_line(
                 std::make_pair(bookCoverBottom[1].x, bookCoverBottom[1].y),
@@ -1986,7 +1986,8 @@ namespace Wisteria::GraphItems
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
 
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
-            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::Gold)));
+            scaledPen.SetColour(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Gold)));
             const DCPenChangerIfDifferent pc4{ dc, scaledPen };
             dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
@@ -2000,7 +2001,7 @@ namespace Wisteria::GraphItems
             dc.DrawPolygon(spine.size(), spine.data());
             // a highlight along the edge
             scaledPen.SetColour(
-                ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
             const DCPenChangerIfDifferent pc2{ dc, scaledPen };
@@ -2010,14 +2011,14 @@ namespace Wisteria::GraphItems
             // draw the pages
             {
             const DCBrushChangerIfDifferent bc(
-                dc, TintIfUsingOpacity(ColorBrewer::GetColor(Color::AntiqueWhite)));
+                dc, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite)));
             const DCPenChangerIfDifferent pc{ dc, *wxTRANSPARENT_PEN };
             dc.DrawPolygon(pagesFront.size(), pagesFront.data());
             }
 
             {
             const DCBrushChangerIfDifferent bc(
-                dc, TintIfUsingOpacity(ColorBrewer::GetColor(Color::LightGray)));
+                dc, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::LightGray)));
             const DCPenChangerIfDifferent pc{ dc, *wxTRANSPARENT_PEN };
             dc.DrawPolygon(pagesSide.size(), pagesSide.data());
             }
@@ -2030,7 +2031,7 @@ namespace Wisteria::GraphItems
             dc.DrawPolygon(bookCover.size(), bookCover.data());
             // a highlight along the bottom edge
             scaledPen.SetColour(
-                ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour(), .4));
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
             scaledPen.SetCap(wxPenCap::wxCAP_ROUND);
             const DCPenChangerIfDifferent pc2{ dc, scaledPen };
@@ -2054,14 +2055,16 @@ namespace Wisteria::GraphItems
                     wxPoint(goldLeafPoints[0].first, goldLeafPoints[0].second)
                 };
                 scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::half));
-                scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::GoldLeaf)));
+                scaledPen.SetColour(
+                    ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldLeaf)));
                 const DCPenChangerIfDifferent pc3{ dc, scaledPen };
                 dc.DrawLines(goldLeafPointsPt.size(), goldLeafPointsPt.data());
                 }
 
             // gold trim on edges of book
             scaledPen.SetWidth(ScaleToScreenAndCanvas(1));
-            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::GoldLeaf)));
+            scaledPen.SetColour(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldLeaf)));
             const DCPenChangerIfDifferent pc3{ dc, scaledPen };
             auto topCornerLeft =
                 geometry::point_along_line(std::make_pair(bookCover[1].x, bookCover[1].y),
@@ -2087,7 +2090,8 @@ namespace Wisteria::GraphItems
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
 
             scaledPen.SetWidth(ScaleToScreenAndCanvas(math_constants::quarter));
-            scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Color::Gold)));
+            scaledPen.SetColour(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Gold)));
             const DCPenChangerIfDifferent pc4{ dc, scaledPen };
             dc.DrawLines(topLeftGoldLeaf.size(), topLeftGoldLeaf.data());
             dc.DrawLines(bottomLeftGoldLeaf.size(), bottomLeftGoldLeaf.data());
@@ -2181,7 +2185,7 @@ namespace Wisteria::GraphItems
             SetYOffsetPercentage(0.05);
             }
 
-        wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
+        wxPen scaledPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
                         std::min(1.0, ScaleToScreenAndCanvas(math_constants::half)));
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -2220,14 +2224,15 @@ namespace Wisteria::GraphItems
 
             {
             const DCBrushChangerIfDifferent bc(
-                dc, ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::SmokyBlack)));
+                dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)));
             dc.DrawPolygon(hatTop.size(), hatTop.data());
             }
 
-        scaledPen.SetColour(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::HarvestGold)));
+        scaledPen.SetColour(
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::HarvestGold)));
         const DCPenChangerIfDifferent pc2{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(
-            dc, ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::HarvestGold)));
+            dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::HarvestGold)));
         const wxPoint hatTopMidPoint(GetXPosFromLeft(rect, math_constants::half),
                                      GetYPosFromTop(rect, math_constants::third));
 
@@ -2257,8 +2262,8 @@ namespace Wisteria::GraphItems
         };
         dc.DrawPolygon(tassel.size(), tassel.data());
 
-        scaledPen.SetColour(
-            TintIfUsingOpacity(ColorContrast::Shade(ColorBrewer::GetColor(Colors::Color::Silver))));
+        scaledPen.SetColour(TintIfUsingOpacity(
+            Colors::ColorContrast::Shade(Colors::ColorBrewer::GetColor(Colors::Color::Silver))));
         scaledPen.SetCap(wxPenCap::wxCAP_BUTT);
         scaledPen.SetWidth(scaledPen.GetWidth() + ScaleToScreenAndCanvas(1.5));
         const DCPenChangerIfDifferent pc4{ dc, scaledPen };
@@ -2400,10 +2405,10 @@ namespace Wisteria::GraphItems
             topRect.SetX(topRect.GetX() + ((dcRect.GetWidth() / 2) - (topRect.GetWidth() / 2)));
             topRect.SetY(topRect.GetY() + (topRect.GetHeight() * math_constants::two_thirds));
 
-            gc->SetBrush(
-                wxBrush(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour())));
-            gc->SetPen(
-                wxPen(ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour())));
+            gc->SetBrush(wxBrush(
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour())));
+            gc->SetPen(wxPen(
+                Colors::ColorContrast::ShadeOrTint(GetGraphItemInfo().GetBrush().GetColour())));
             gc->DrawEllipse(topRect.GetTopLeft().x, topRect.GetTopLeft().y, topRect.GetWidth(),
                             topRect.GetHeight());
 
@@ -2418,8 +2423,8 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc) const
         {
-        const wxDCBrushChanger bc(dc,
-                                  ApplyColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
+        const wxDCBrushChanger bc(
+            dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow)));
 
             // sign post
             {
@@ -2434,7 +2439,7 @@ namespace Wisteria::GraphItems
                 // dark gray outline of sign post
                 {
                 const wxDCPenChanger pc(
-                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
                                         signPostWidth + ScaleToScreenAndCanvas(1))
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
@@ -2442,7 +2447,8 @@ namespace Wisteria::GraphItems
                 // actual sign post
                 {
                 const wxDCPenChanger pc(
-                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray), signPostWidth)
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray),
+                                        signPostWidth)
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
@@ -2452,7 +2458,7 @@ namespace Wisteria::GraphItems
             const auto signRect =
                 wxRect(rect.GetLeftTop(),
                        wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::two_thirds));
-            DrawCircularSign(signRect, ColorBrewer::GetColor(Color::KellyGreen),
+            DrawCircularSign(signRect, Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen),
                              // TRANSLATORS: A GO sign, as in OK to proceed.
                              _(L"GO"), dc);
             }
@@ -2483,7 +2489,8 @@ namespace Wisteria::GraphItems
                 // actual sign post
                 {
                 const wxDCPenChanger pc{
-                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray), signPostWidth)
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray),
+                                        signPostWidth)
                                   .Cap(wxPenCap::wxCAP_BUTT))
                 };
                 dc.DrawLine(pt[0], pt[1]);
@@ -2519,8 +2526,8 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc) const
         {
-        const wxDCBrushChanger bc(dc,
-                                  ApplyColorOpacity(ColorBrewer::GetColor(Color::SchoolBusYellow)));
+        const wxDCBrushChanger bc(
+            dc, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow)));
 
         const auto iconRadius = GetRadius(rect);
 
@@ -2539,7 +2546,7 @@ namespace Wisteria::GraphItems
                 // against a possibly dark background
                 {
                 const wxDCPenChanger pc{
-                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray),
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
                                         signPostWidth + ScaleToScreenAndCanvas(1))
                                   .Cap(wxPenCap::wxCAP_BUTT))
                 };
@@ -2548,7 +2555,8 @@ namespace Wisteria::GraphItems
                 // actual sign post
                 {
                 const wxDCPenChanger pc{
-                    dc, wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray), signPostWidth)
+                    dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray),
+                                        signPostWidth)
                                   .Cap(wxPenCap::wxCAP_BUTT))
                 };
                 dc.DrawLine(pt[0], pt[1]);
@@ -2602,8 +2610,10 @@ namespace Wisteria::GraphItems
                 Polygon::DrawArrow(
                     dc, wxPoint(rect.GetLeft(), rect.GetTop() + rect.GetHeight() / 2),
                     wxPoint(rect.GetRight(), rect.GetTop() + rect.GetHeight() / 2),
-                    wxSize(ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs().GetWidth()),
-                           ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs().GetHeight())));
+                    wxSize(ScaleToScreenAndCanvas(
+                               Icons::LegendIcon::GetArrowheadSizeDIPs().GetWidth()),
+                           ScaleToScreenAndCanvas(
+                               Icons::LegendIcon::GetArrowheadSizeDIPs().GetHeight())));
             });
         }
 
@@ -2636,12 +2646,12 @@ namespace Wisteria::GraphItems
 
             const wxColour bodyColor{ TintIfUsingOpacity(wxColour{ L"#171721" }) }; // dark blue
 
-            const auto bodyBrush =
-                gc->CreateLinearGradientBrush(GetXPosFromLeft(dcRect, -math_constants::full),
-                                              GetYPosFromTop(dcRect, math_constants::half),
-                                              GetXPosFromLeft(dcRect, math_constants::full),
-                                              GetYPosFromTop(dcRect, math_constants::half),
-                                              ColorContrast::Shade(bodyColor, 0.4), bodyColor);
+            const auto bodyBrush = gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(dcRect, -math_constants::full),
+                GetYPosFromTop(dcRect, math_constants::half),
+                GetXPosFromLeft(dcRect, math_constants::full),
+                GetYPosFromTop(dcRect, math_constants::half),
+                Colors::ColorContrast::Shade(bodyColor, 0.4), bodyColor);
             gc->SetPen(outlinePen);
             gc->SetBrush(bodyBrush);
             // body of car
@@ -2694,9 +2704,9 @@ namespace Wisteria::GraphItems
             windshieldAreaPath.AddLineToPoint(windshieldSection[3]);
             gc->DrawPath(windshieldAreaPath);
 
-            gc->SetPen(
-                wxPenInfo(ColorBrewer::GetColor(Colors::Color::DarkGray), ScaleToScreenAndCanvas(1))
-                    .Cap(wxCAP_BUTT));
+            gc->SetPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
+                                 ScaleToScreenAndCanvas(1))
+                           .Cap(wxCAP_BUTT));
             auto windshieldPath = gc->CreatePath();
             windshieldPath.MoveToPoint(windshield[0]);
             windshieldPath.AddLineToPoint(windshield[1]);
@@ -2709,8 +2719,8 @@ namespace Wisteria::GraphItems
                 GetYPosFromTop(dcRect, math_constants::half),
                 GetXPosFromLeft(dcRect, math_constants::three_quarters),
                 GetYPosFromTop(dcRect, math_constants::half),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::SmokyBlack)),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)));
             gc->SetBrush(windowBrush);
             auto sideWindowPath = gc->CreatePath();
             sideWindowPath.MoveToPoint(
@@ -2729,7 +2739,7 @@ namespace Wisteria::GraphItems
             gc->SetBrush(bodyBrush);
 
             // divider between windows
-            gc->SetPen(wxPenInfo(ColorContrast::Shade(bodyColor),
+            gc->SetPen(wxPenInfo(Colors::ColorContrast::Shade(bodyColor),
                                  dcRect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
                                      ScaleToScreenAndCanvas(1) :
                                      ScaleToScreenAndCanvas(2))
@@ -2761,8 +2771,8 @@ namespace Wisteria::GraphItems
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 headlightsRect.GetLeft(), headlightsRect.GetTop() * math_constants::half,
                 headlightsRect.GetRight(), headlightsRect.GetTop() * math_constants::half,
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::OrangeYellow)),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::AntiqueWhite))));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::OrangeYellow)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::AntiqueWhite))));
             gc->DrawRectangle(headlightsRect.GetX(), headlightsRect.GetY(),
                               headlightsRect.GetWidth(), headlightsRect.GetHeight());
             gc->SetBrush(bodyBrush);
@@ -2805,7 +2815,7 @@ namespace Wisteria::GraphItems
         {
         if (gc != nullptr)
             {
-            const wxPen scaledPen(ColorBrewer::GetColor(Colors::Color::DarkGray),
+            const wxPen scaledPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
                                   rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
                                       ScaleToScreenAndCanvas(1) :
                                       ScaleToScreenAndCanvas(2));
@@ -2815,8 +2825,8 @@ namespace Wisteria::GraphItems
             const auto tireBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(tireRect, 0), GetYPosFromTop(tireRect, 0),
                 GetXPosFromLeft(tireRect, 1.5), GetYPosFromTop(tireRect, 1.5),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::SmokyBlack)),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::DarkGray)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)));
             gc->SetBrush(tireBrush);
 
             gc->DrawEllipse(tireRect.GetTopLeft().x, tireRect.GetTopLeft().y, tireRect.GetWidth(),
@@ -2827,8 +2837,8 @@ namespace Wisteria::GraphItems
             const auto hubCapBrush = gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(hubCapRect, 0), GetYPosFromTop(hubCapRect, 0),
                 GetXPosFromLeft(hubCapRect, 1.5), GetYPosFromTop(hubCapRect, 1.5),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::Silver)),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::CoolGrey)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Silver)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::CoolGrey)));
             gc->SetBrush(hubCapBrush);
 
             gc->DrawEllipse(hubCapRect.GetTopLeft().x, hubCapRect.GetTopLeft().y,
@@ -3122,12 +3132,12 @@ namespace Wisteria::GraphItems
 
         const wxCoord frameWidth = dcRect.GetWidth() * math_constants::tenth;
 
-        dc.GradientFillLinear(dcRect,
-                              TintIfUsingOpacity(ColorBrewer::GetColor(Colors::Color::WarmGray)),
-                              TintIfUsingOpacity(*wxBLACK), wxEAST);
+        dc.GradientFillLinear(
+            dcRect, TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::WarmGray)),
+            TintIfUsingOpacity(*wxBLACK), wxEAST);
 
         const wxDCPenChanger pc(
-            dc, wxPen(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::YellowPepper)),
+            dc, wxPen(ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::YellowPepper)),
                       frameWidth));
         const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(dcRect);
@@ -3174,12 +3184,13 @@ namespace Wisteria::GraphItems
             while (textLeft.y < textRect.GetBottom())
                 {
                 const wxDCPenChanger pc3{
-                    dc, wxPen{ ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
-                               static_cast<int>(ScaleToScreenAndCanvas(
-                                   rect.GetWidth() <= ScaleToScreenAndCanvas(16) ?
-                                       math_constants::whole :
-                                       math_constants::half)),
-                               static_cast<wxPenStyle>(randPenStyle(m_mt)) }
+                    dc,
+                    wxPen{
+                        ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack)),
+                        static_cast<int>(ScaleToScreenAndCanvas(
+                            rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? math_constants::whole :
+                                                                            math_constants::half)),
+                        static_cast<wxPenStyle>(randPenStyle(m_mt)) }
                 };
                 if ((currentLine % 10) > 0)
                     {
@@ -3199,9 +3210,10 @@ namespace Wisteria::GraphItems
                 }
         };
 
-        const wxDCPenChanger pc{ dc, wxPen{ ApplyColorOpacity(
-                                                ColorBrewer::GetColor(Colors::Color::DarkGray)),
-                                            static_cast<int>(ScaleToScreenAndCanvas(1)) } };
+        const wxDCPenChanger pc{
+            dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray)),
+                       static_cast<int>(ScaleToScreenAndCanvas(1)) }
+        };
         const wxDCBrushChanger bc{ dc, *wxWHITE_BRUSH };
 
         wxRect frontPageRect{ rect };
@@ -3239,7 +3251,7 @@ namespace Wisteria::GraphItems
 
         // headline
         const wxDCPenChanger pc2{
-            dc, wxPen{ ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::WarmGray)),
+            dc, wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::WarmGray)),
                        static_cast<int>(ScaleToScreenAndCanvas(math_constants::half)) }
         };
         auto headlineBox{ frontPageRect };
@@ -3263,9 +3275,9 @@ namespace Wisteria::GraphItems
         pictureBox.SetTop(headlineBox.GetBottom() + ScaleToScreenAndCanvas(1));
         pictureBox.Offset(wxPoint{ static_cast<int>(ScaleToScreenAndCanvas(2)), 0 });
         dc.DrawRectangle(pictureBox);
-        dc.GradientFillLinear(pictureBox,
-                              ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::Afternoon)),
-                              ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::BlueSky)));
+        dc.GradientFillLinear(
+            pictureBox, ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Afternoon)),
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::BlueSky)));
         wxRect sunRect{ pictureBox };
         sunRect.SetWidth(sunRect.GetWidth() * math_constants::three_quarters);
         sunRect.SetHeight(sunRect.GetWidth());
@@ -3315,8 +3327,8 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
                 GetXPosFromLeft(rect, math_constants::three_fourths),
                 GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::ChineseRed)),
-                ApplyColorOpacity(ColorBrewer::GetColor(Color::SunsetOrange)));
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChineseRed)),
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
             gc->SetBrush(leafBrush);
 
             auto leafPath = gc->CreatePath();
@@ -3338,8 +3350,8 @@ namespace Wisteria::GraphItems
             gc->StrokePath(leafPath);
 
             const auto stemWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
-            gc->SetPen(
-                wxPen(ColorBrewer::GetColor(Color::DarkBrown), ScaleToScreenAndCanvas(stemWidth)));
+            gc->SetPen(wxPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkBrown),
+                             ScaleToScreenAndCanvas(stemWidth)));
 
             // draw the stem
             auto stemPath = gc->CreatePath();
@@ -3372,10 +3384,12 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc != nullptr)
             {
-            const wxPen bodyPen(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::Ice)),
-                                ScaleToScreenAndCanvas(1));
-            const wxPen crystalPen(ApplyColorOpacity(ColorBrewer::GetColor(Colors::Color::Ice)),
-                                   ScaleToScreenAndCanvas(1));
+            const wxPen bodyPen(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Ice)),
+                ScaleToScreenAndCanvas(1));
+            const wxPen crystalPen(
+                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Ice)),
+                ScaleToScreenAndCanvas(1));
 
             const auto centerPt =
                 rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -3504,8 +3518,8 @@ namespace Wisteria::GraphItems
             // make the brush translucent (if not already so) to make it a watercolor brush
             if (br.GetColour().IsOpaque())
                 {
-                br.SetColour(
-                    ColorContrast::ChangeOpacity(br.GetColour(), Settings::GetTranslucencyValue()));
+                br.SetColour(Colors::ColorContrast::ChangeOpacity(
+                    br.GetColour(), Settings::GetTranslucencyValue()));
                 }
             gc->SetBrush(br);
             auto fillPath = gc->CreatePath();

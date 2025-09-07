@@ -11,8 +11,6 @@
 
 #include "reportbuilder.h"
 
-using namespace Wisteria::Colors;
-
 // clang-format off
 std::map<std::wstring_view, Wisteria::Colors::Color> Wisteria::ReportBuilder::m_colorMap =
     {

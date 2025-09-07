@@ -11,11 +11,6 @@
 
 wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::Graphs::Graph2D, Wisteria::GraphItems::GraphItemBase);
 
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-
 namespace Wisteria::Graphs
     {
     // random number generator that can be used by the graph
@@ -32,7 +27,7 @@ namespace Wisteria::Graphs
         const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
             GetPlotOrCanvasColor()) };
 
-        const auto adjustLabel = [this, &contrastingColor](Label& label)
+        const auto adjustLabel = [this, &contrastingColor](GraphItems::Label& label)
         {
             // contrast a label if its font color (or background color, if in use)
             // is the same as the background
@@ -79,13 +74,13 @@ namespace Wisteria::Graphs
             return;
             }
 
-        legend.GetLegendIcons().emplace_back(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2),
-                                             *wxTRANSPARENT_BRUSH);
+        legend.GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator,
+                                             wxPen(*wxBLACK, 2), *wxTRANSPARENT_BRUSH);
         wxString textLines;
 
         // combine lines with the same color and label,
         // but also only include ones meant to be shown in the legend
-        std::vector<ReferenceLine> refLines;
+        std::vector<GraphItems::ReferenceLine> refLines;
         refLines.reserve(GetReferenceLines().size());
         for (const auto& refLine : GetReferenceLines())
             {
@@ -111,14 +106,14 @@ namespace Wisteria::Graphs
             {
             textLines += refLine.m_label + L"\n";
             legend.GetLegendIcons().emplace_back(
-                IconShape::HorizontalLine,
+                Icons::IconShape::HorizontalLine,
                 wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()),
-                ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
-                                             Settings::GetTranslucencyValue()));
+                Colors::ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
+                                                     Settings::GetTranslucencyValue()));
             }
 
         // combine areas with the same color and label
-        std::vector<ReferenceArea> refAreas{ GetReferenceAreas() };
+        std::vector<GraphItems::ReferenceArea> refAreas{ GetReferenceAreas() };
         std::ranges::sort(refAreas, [](const auto& left, const auto& right) noexcept
                           { return (left.m_compKey.CmpNoCase(right.m_compKey) < 0); });
         refAreas.erase(std::ranges::unique(refAreas,
@@ -136,9 +131,10 @@ namespace Wisteria::Graphs
             {
             textLines += refArea.m_label + L"\n";
             legend.GetLegendIcons().emplace_back(
-                IconShape::Square, wxPen{ refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle() },
-                wxBrush{ ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                      Settings::GetTranslucencyValue()) });
+                Icons::IconShape::Square,
+                wxPen{ refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle() },
+                wxBrush{ Colors::ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                              Settings::GetTranslucencyValue()) });
             }
         legend.SetText(legend.GetText() + L"\n \n" + textLines.Trim());
         }
@@ -158,7 +154,8 @@ namespace Wisteria::Graphs
             {
             legend.GetGraphItemInfo()
                 .Pen(*wxBLACK_PEN)
-                .Padding(4, 4, 4, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4))
+                .Padding(4, 4, 4,
+                         (legend.HasLegendIcons() ? GraphItems::Label::GetMinLegendWidthDIPs() : 4))
                 .FontBackgroundColor(*wxWHITE);
             legend.GetFont().MakeSmaller();
             legend.GetHeaderInfo().GetFont().MakeSmaller();
@@ -171,7 +168,8 @@ namespace Wisteria::Graphs
                 LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
             legend.GetGraphItemInfo()
                 .Pen(wxNullPen)
-                .Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0))
+                .Padding(0, 0, 0,
+                         (legend.HasLegendIcons() ? GraphItems::Label::GetMinLegendWidthDIPs() : 0))
                 .CanvasPadding(4, 4, 4, 4)
                 .FixedWidthOnCanvas(true);
             legend.GetFont().MakeSmaller();
@@ -185,7 +183,8 @@ namespace Wisteria::Graphs
                 LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
             legend.GetGraphItemInfo()
                 .Pen(wxNullPen)
-                .Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0))
+                .Padding(0, 0, 0,
+                         (legend.HasLegendIcons() ? GraphItems::Label::GetMinLegendWidthDIPs() : 0))
                 .CanvasPadding(4, 4, 4, 4)
                 .FixedWidthOnCanvas(true);
             legend.GetFont().MakeSmaller();
@@ -201,7 +200,8 @@ namespace Wisteria::Graphs
             legend.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
             legend.GetGraphItemInfo()
                 .Pen(wxNullPen)
-                .Padding(0, 0, 0, (legend.HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0))
+                .Padding(0, 0, 0,
+                         (legend.HasLegendIcons() ? GraphItems::Label::GetMinLegendWidthDIPs() : 0))
                 .CanvasPadding(4, 4, 4, 4)
                 .FitCanvasHeightToContent(true);
             }
@@ -838,13 +838,13 @@ namespace Wisteria::Graphs
         // fill in the plot background image
         if (m_plotAreaBgImage.IsOk() && m_bgImageOpacity != wxALPHA_TRANSPARENT)
             {
-            auto img = std::make_unique<Image>(
+            auto img = std::make_unique<GraphItems::Image>(
                 (m_plotAreaImageFit == ImageFit::Shrink ?
-                     Image::ShrinkImageToRect(
+                     GraphItems::Image::ShrinkImageToRect(
                          m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize())
                              .ConvertToImage(),
                          GetPlotAreaBoundingBox().GetSize()) :
-                     Image::CropImageToRect(
+                     GraphItems::Image::CropImageToRect(
                          m_plotAreaBgImage.GetBitmap(m_plotAreaBgImage.GetDefaultSize())
                              .ConvertToImage(),
                          GetPlotAreaBoundingBox().GetSize(), true)));
@@ -902,10 +902,10 @@ namespace Wisteria::Graphs
 
         // draw the axes on the plot area (on top of the gridlines)
         // (AdjustPlotArea() will have already set the axes' points)
-        AddObject(std::make_unique<Axis>(GetBottomXAxis()));
-        AddObject(std::make_unique<Axis>(GetTopXAxis()));
-        AddObject(std::make_unique<Axis>(GetLeftYAxis()));
-        AddObject(std::make_unique<Axis>(GetRightYAxis()));
+        AddObject(std::make_unique<GraphItems::Axis>(GetBottomXAxis()));
+        AddObject(std::make_unique<GraphItems::Axis>(GetTopXAxis()));
+        AddObject(std::make_unique<GraphItems::Axis>(GetLeftYAxis()));
+        AddObject(std::make_unique<GraphItems::Axis>(GetRightYAxis()));
 
         // draw the title
         if (!GetTitle().GetText().empty())
@@ -1005,7 +1005,7 @@ namespace Wisteria::Graphs
         // custom axes
         for (const auto& customAxis : GetCustomAxes())
             {
-            AddObject(std::make_unique<Axis>(customAxis));
+            AddObject(std::make_unique<GraphItems::Axis>(customAxis));
             }
 
         // reference lines
@@ -1060,26 +1060,26 @@ namespace Wisteria::Graphs
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2)
                     };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(wxNullPen), boxPoints);
+                        GraphItems::GraphItemInfo().Pen(wxNullPen), boxPoints);
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
-                        area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
+                        area->GetBrush().SetColour(Colors::ColorContrast::ChangeOpacity(
                             refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()));
                         }
                     else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromTopToBottom)
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                         Settings::GetTranslucencyValue()),
+                            Colors::ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                                 Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::South));
                         }
                     else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromBottomToTop)
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                         Settings::GetTranslucencyValue()),
+                            Colors::ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                                 Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::North));
                         }
                     AddObject(std::move(area));
@@ -1117,26 +1117,26 @@ namespace Wisteria::Graphs
                         wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y)
                     };
                     auto area = std::make_unique<GraphItems::Polygon>(
-                        GraphItemInfo().Pen(wxNullPen), boxPoints);
+                        GraphItems::GraphItemInfo().Pen(wxNullPen), boxPoints);
                     if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
                         {
-                        area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
+                        area->GetBrush().SetColour(Colors::ColorContrast::ChangeOpacity(
                             refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()));
                         }
                     else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromLeftToRight)
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                         Settings::GetTranslucencyValue()),
+                            Colors::ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                                 Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::Right));
                         }
                     else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromRightToLeft)
                         {
                         area->GetBrush() = wxTransparentColour;
                         area->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
-                                                         Settings::GetTranslucencyValue()),
+                            Colors::ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
+                                                                 Settings::GetTranslucencyValue()),
                             wxTransparentColour, FillDirection::Left));
                         }
                     AddObject(std::move(area));
@@ -1196,7 +1196,8 @@ namespace Wisteria::Graphs
                     GetBottomXAxis().GetPhysicalCoordinate(interestPoint.m_x, interestPt.x) &&
                     GetLeftYAxis().GetPhysicalCoordinate(interestPoint.m_y, interestPt.y))
                     {
-                    Lines ln(wxPen(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SHORT_DASH), GetScaling());
+                    GraphItems::Lines ln(wxPen(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SHORT_DASH),
+                                         GetScaling());
                     ln.AddLine(anchorPt, interestPt);
                     ln.SetLineStyle(LineStyle::Arrows);
                     ln.SetDPIScaleFactor(GetDPIScaleFactor());
@@ -1257,8 +1258,8 @@ namespace Wisteria::Graphs
                             wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(20)),
                             wxPoint(i, GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(40)));
                         }
-                    Label rulerLabel(
-                        GraphItemInfo(_DT(L"\u21E6 100 pixels"))
+                    GraphItems::Label rulerLabel(
+                        GraphItems::GraphItemInfo(_DT(L"\u21E6 100 pixels"))
                             .AnchorPoint(wxPoint(
                                 GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
                                 GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25)))
@@ -1291,8 +1292,8 @@ namespace Wisteria::Graphs
                         }
                     }
                 const auto bBox = GetBoundingBox(dc);
-                Label infoLabel(
-                    GraphItemInfo(
+                GraphItems::Label infoLabel(
+                    GraphItems::GraphItemInfo(
                         wxString::Format(
                             _DT(L"Scaling: %s\n"
                                 "Vertical Axes Top (x, y): %d, %d\n"

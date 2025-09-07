@@ -8,10 +8,8 @@
 
 #include "reportprintout.h"
 
-using namespace Wisteria;
-
 //------------------------------------------------------
-bool ReportPrintout::OnPrintPage(const int page)
+bool Wisteria::ReportPrintout::OnPrintPage(const int page)
     {
     wxDC* dc = GetDC();
     auto canvas = GetCanvasFromPageNumber(page);
@@ -204,7 +202,8 @@ bool ReportPrintout::OnPrintPage(const int page)
     }
 
 //------------------------------------------------------
-wxString ReportPrintout::ExpandPrintString(const wxString& printString, const int pageNumber) const
+wxString Wisteria::ReportPrintout::ExpandPrintString(const wxString& printString,
+                                                     const int pageNumber) const
     {
     // page out of range, so don't do anything
     if (GetCanvasFromPageNumber(pageNumber) == nullptr)
@@ -233,7 +232,8 @@ wxString ReportPrintout::ExpandPrintString(const wxString& printString, const in
     }
 
 //------------------------------------------------------
-PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut)
+Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
+                                                       const ReportPrintout* printOut)
     : m_canvas(canvas),
       m_originalMinWidth((canvas != nullptr) ? canvas->GetCanvasMinWidthDIPs() : 0),
       m_originalMinHeight((canvas != nullptr) ? canvas->GetCanvasMinHeightDIPs() : 0),
@@ -263,7 +263,7 @@ PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const ReportPrintou
     }
 
 //------------------------------------------------------
-PrintFitToPageChanger::~PrintFitToPageChanger()
+Wisteria::PrintFitToPageChanger::~PrintFitToPageChanger()
     {
     if (m_canvas != nullptr && m_canvas->IsFittingToPageWhenPrinting())
         {
@@ -275,7 +275,7 @@ PrintFitToPageChanger::~PrintFitToPageChanger()
     }
 
 //------------------------------------------------------
-FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const wxSize newSize)
+Wisteria::FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const wxSize newSize)
     : m_canvas(canvas),
       m_originalMinWidth((canvas != nullptr) ? canvas->GetCanvasMinWidthDIPs() : 0),
       m_originalMinHeight((canvas != nullptr) ? canvas->GetCanvasMinHeightDIPs() : 0),
@@ -303,7 +303,7 @@ FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const wxSize ne
     }
 
 //------------------------------------------------------
-FitToSaveOptionsChanger::~FitToSaveOptionsChanger()
+Wisteria::FitToSaveOptionsChanger::~FitToSaveOptionsChanger()
     {
     if (m_canvas != nullptr && m_sizeChanged)
         {

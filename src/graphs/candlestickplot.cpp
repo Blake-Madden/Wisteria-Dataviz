@@ -10,10 +10,7 @@
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::Graph2D)
 
-    using namespace Wisteria::GraphItems;
-using namespace Wisteria::Colors;
-
-namespace Wisteria::Graphs
+    namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     void CandlestickPlot::SetData(const std::shared_ptr<const Data::Dataset>& data,
@@ -157,7 +154,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void CandlestickPlot::RecalcSizes(wxDC& dc)
+    void CandlestickPlot::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);
 
@@ -198,8 +195,8 @@ namespace Wisteria::Graphs
             const auto wickX = lowPt.x;
             auto wick = std::make_unique<GraphItems::Lines>(
                 wxPen((ohlc.m_open <= ohlc.m_close ?
-                           ColorContrast::Shade(m_gainBrush.GetColour(), .2) :
-                           ColorContrast::Shade(m_lossBrush.GetColour(), .2))),
+                           Colors::ColorContrast::Shade(m_gainBrush.GetColour(), .2) :
+                           Colors::ColorContrast::Shade(m_lossBrush.GetColour(), .2))),
                 GetScaling());
             wick->AddLine(lowPt, hiPt);
             if (!datePos.has_value() ||
@@ -225,7 +222,7 @@ namespace Wisteria::Graphs
                 AddObject(std::move(wick));
 
                 auto candle = std::make_unique<GraphItems::Polygon>(
-                    GraphItemInfo(ohlcInfo).Brush(
+                    GraphItems::GraphItemInfo(ohlcInfo).Brush(
                         (ohlc.m_open <= ohlc.m_close ? m_gainBrush : m_lossBrush)),
                     points);
 

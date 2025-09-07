@@ -11,8 +11,6 @@
 #include "polygon.h"
 #include <array>
 
-using namespace Wisteria::Colors;
-
 namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------
@@ -531,7 +529,9 @@ namespace Wisteria::GraphItems
         SetColorTransparent(silhouette, *wxWHITE);
         if (!opaque)
             {
-            silhouette = ChangeColor(silhouette, *wxBLACK, ColorBrewer::GetColor(Color::LightGray));
+            silhouette = ChangeColor(
+                silhouette, *wxBLACK,
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::LightGray));
             }
         return silhouette;
         }
