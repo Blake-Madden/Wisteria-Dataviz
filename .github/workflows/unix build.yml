@@ -17,7 +17,7 @@ jobs:
              export DISPLAY=:0.0
              export DEBIAN_FRONTEND=noninteractive
              sudo apt-get update && sudo apt-get install xvfb cmake libtbb-dev libgtk-3-0 libgtk-3-dev libwayland-server0 libwayland-cursor0 libwayland-client0
-             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             git clone -b use-wayland-scanner --single-branch https://github.com/vadz/wxWidgets.git --recurse-submodules
 
       - name: Build
         run: |
