@@ -108,7 +108,9 @@ namespace Wisteria::Icons
         ImmaculateHeartWithSword, /*!< An Immaculate Heart (with sword piercing it).*/
         VerticalLine,             /*!< A vertical line.*/
         CrossedOut,               /*!< An 'X' (crossed out symbol).*/
-        CrescentTop               /*!< A crescent opening at the top.*/
+        CrescentTop,              /*!< A crescent opening at the top.*/
+        CrescentBottom,           /*!< A crescent opening at the bottom.*/
+        CrescentRight             /*!< A crescent opening at the right.*/
         };
 
     /// @brief Item to draw on a legend.

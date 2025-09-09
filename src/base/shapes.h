@@ -424,6 +424,14 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawCrescentTop(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a crescent at the bottom.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawCrescentBottom(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a crescent at the right.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawCrescentRight(wxRect rect, wxDC& dc) const;
         /// @}
       private:
         enum class Temperature
