@@ -778,7 +778,7 @@ namespace Wisteria
     std::shared_ptr<GraphItems::Label> ReportBuilder::LoadSpacer() const
         {
         return std::make_shared<GraphItems::Label>(
-            GraphItems::GraphItemInfo().DPIScaling(m_dpiScaleFactor).Scaling(1.0));
+            GraphItems::GraphItemInfo().DPIScaling(m_dpiScaleFactor).Scaling(1.0).Show(false));
         }
 
     //---------------------------------------------------
