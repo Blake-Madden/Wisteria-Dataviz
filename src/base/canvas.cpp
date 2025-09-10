@@ -2024,4 +2024,34 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             }
         return GetFreeFloatingObjects().rend();
         }
+
+    //------------------------------------------------------
+    double Canvas::CalcMinHeightProportion(Wisteria::GraphItems::GraphItemBase & item)
+        {
+        wxGCDC gdc(this);
+        CanvasItemScalingChanger sc(item);
+        item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+        item.RecalcSizes(gdc);
+        const auto bBox = item.GetBoundingBox(gdc);
+        auto bBoxHeight = bBox.GetHeight();
+        // Large images will likely be wider than their canvas.
+        // In that case (and if they should have their row's height fit just the image,
+        // then adjust their height calculation based on the canvas width
+        // (keeping the aspect ratio). When the canvas is layed out later,
+        // the image's width will be set to the canvas's width and the height
+        // calculated here earlier will be used. This will ensure that there won't
+        // be dead space above and below the image.
+        if (item.IsKindOf(wxCLASSINFO(GraphItems::Image)) &&
+            item.IsFittingCanvasRowHeightToContent())
+            {
+            const auto canvasWidth = GetCanvasRect(gdc).GetWidth();
+            if (bBox.GetWidth() > canvasWidth)
+                {
+                bBoxHeight *= (safe_divide<double>(canvasWidth, bBox.GetWidth()));
+                }
+            }
+        return safe_divide<double>(bBoxHeight + gdc.FromDIP(item.GetTopCanvasMargin()) +
+                                       gdc.FromDIP(item.GetBottomCanvasMargin()),
+                                   gdc.FromDIP(GetCanvasMinHeightDIPs()));
+        }
     } // namespace Wisteria

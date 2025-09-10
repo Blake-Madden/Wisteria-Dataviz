@@ -379,17 +379,7 @@ namespace Wisteria
                 object prior to calling this because those are factored into this calculation.
             @note This is a low-level function. Prefer using CalcRowDimensions() instead.*/
         [[nodiscard]]
-        double CalcMinHeightProportion(Wisteria::GraphItems::GraphItemBase& item)
-            {
-            wxGCDC gdc(this);
-            CanvasItemScalingChanger sc(item);
-            item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
-            item.RecalcSizes(gdc);
-            return safe_divide<double>(item.GetBoundingBox(gdc).GetHeight() +
-                                           gdc.FromDIP(item.GetTopCanvasMargin()) +
-                                           gdc.FromDIP(item.GetBottomCanvasMargin()),
-                                       gdc.FromDIP(GetCanvasMinHeightDIPs()));
-            }
+        double CalcMinHeightProportion(Wisteria::GraphItems::GraphItemBase& item);
 
         /// @brief Calculates the proportions of the canvas that each row and column
         ///     should consume.
