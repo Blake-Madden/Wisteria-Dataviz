@@ -2037,7 +2037,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // Large images will likely be wider than their canvas.
         // In that case (and if they should have their row's height fit just the image,
         // then adjust their height calculation based on the canvas width
-        // (keeping the aspect ratio). When the canvas is layed out later,
+        // (keeping the aspect ratio). When the canvas is laid out later,
         // the image's width will be set to the canvas's width and the height
         // calculated here earlier will be used. This will ensure that there won't
         // be dead space above and below the image.
