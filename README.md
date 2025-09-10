@@ -152,6 +152,11 @@ Building
 Windows
 -----------------------------
 
+Install the following:
+
+- *Visual Studio*
+- *Doxygen* (if wanting the API documentation)
+
 Download [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.3.1 or higher:
 
 - Open *Visual Studio* and select *Clone a Repository*
@@ -218,11 +223,7 @@ Next, download *Wisteria* and build the library, demo, and documentation:
 git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
 cd Wisteria-Dataviz
 cmake . -DCMAKE_BUILD_TYPE=Release
-# AppleClang will not understand an "all" target,
-# so the binaries and manual must be built separately
-cmake --build . --target demo -j4 --config Release
-cmake --build . --target wisteria -j4 --config Release
-cmake --build . --target doxygen-docs -j4
+cmake --build . -j4 --config Release
 ```
 
 Documentation
