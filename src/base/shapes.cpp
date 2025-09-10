@@ -235,7 +235,9 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::Dollar, &ShapeRenderer::DrawDollar },
             { Icons::IconShape::Monitor, &ShapeRenderer::DrawMonitor },
             { Icons::IconShape::Sword, &ShapeRenderer::DrawSword },
-            { Icons::IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop }
+            { Icons::IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop },
+            { Icons::IconShape::CrescentBottom, &ShapeRenderer::DrawCrescentBottom },
+            { Icons::IconShape::CrescentRight, &ShapeRenderer::DrawCrescentRight }
         };
 
         // connect the rendering function to the shape
