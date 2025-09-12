@@ -681,7 +681,24 @@ Properties for `"win-loss-sparkline"` nodes:
   - `"shutout"`: The column indicating whether the losing team was held scoreless.
   - `"home-game"`: The column indicating whether the was at the team's home stadium.
   - `"postseason"`: The column indicating if a game was played during the postseason.
-- `"highlight-best-records"`: If `true`, will highlight the best season record and long winning streak within the data.
+- `"highlight-best-records"`: If `true`, will highlight the best season record and longest winning streak within the data.
+
+```json
+{
+  "type": "win-loss-sparkline",
+  "dataset": "wvball",
+  "canvas-margins": [ 0, 5, 5, 5 ],
+  "caption": "2020-21 season canceled",
+  "variables": {
+    "season": "SEASON",
+    "won": "WON",
+    "shutout": "SHUTOUT",
+    "home-game": "HOMEGAME",
+    "postseason": "POSTSEASON"
+  },
+  "legend": { "placement": "bottom" }
+}
+```
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}

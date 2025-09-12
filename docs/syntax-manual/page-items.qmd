@@ -149,6 +149,18 @@ Properties for `"image"` nodes:
   - `"downscale-or-upscale"` (the default)
   - `"upscale-only"`
   - `"no-resize"`
+
+```json
+{
+  "type": "image",
+  "image-import": {
+    "path": "basketball-banner.png",
+    "effect": "gray-scale"
+  },
+  "canvas-margins": [ 0, 5, 5, 5 ],
+  "fit-row-to-content": true
+}
+```
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
@@ -266,7 +278,7 @@ For example, a row could be written as this:
   "items": [
     {
       "type": "label",
-      "description": "Just a divider, double lined with ones space between them",
+      "description": "Just a divider, double lined with a space between them",
       "outline": [ true, false, true, false ],
       "pen": {
         "color": "{{CompanyColor}}",
@@ -278,7 +290,7 @@ For example, a row could be written as this:
     },
     {
       "type": "spacer",
-      "description": "Empty spacer to stretch previous line across the page"
+      "description": "Spacer to stretch previous line across the page"
     }
   ]
 }

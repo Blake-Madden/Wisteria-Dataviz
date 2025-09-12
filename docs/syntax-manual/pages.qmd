@@ -1,8 +1,6 @@
-# Pages
+# Pages {#page-properties}
 
-## All Items {#item-properties .unnumbered}
-
-Properties common to all items:
+Pages can contain the following properties:
 
 - `"name"`: A string value, representing the name of the page.
 - `"page-numbering"`: Resets the internal page counter to 1. \

@@ -139,6 +139,11 @@ Next, any transformation commands for a dataset node are executed. These are per
       "columns-select": "(IRN|Graduated [0-9]{4})"
     }
 ```
+The above example will import the second worksheet from an *Excel* file, recoding all cells with the values `<10`, `< 10`, and `NC` as missing data.
+Next, it will import any numeric columns with leading zeros as text, preserving the leading zero.
+Then it will rename columns that match the matching regex (`"name-re"`) with the value from `"new-name-re"`.
+(Note that the replacement string supports capture groups.)
+Finally, only columns matching the regex from `"columns-select"` will be imported.
 
 \newpage
 
@@ -330,6 +335,31 @@ If pivoting longer, the following options are available:
 - `"names-to"`: An array of strings specifying the target column(s) to move the names from the `"from-columns"` into.
 - `"values-to"`: A string specifying the column to move the values from the `"from-columns"` into.
 - `"names-pattern"`: An optional string specifying a regular expression to split the `"from-columns"` names into.
+
+Example:
+
+```json
+"datasets": [
+ ...
+ {
+ "path": "Enrolled.txt",
+      "treat-leading-zeros-as-text": true,
+      "md-codes": [ "NULL" ],
+      "treat-years-as-text": true,
+      "pivots": [
+        {
+          "type": "wider",
+          "id-columns": [ "County", "HIGH_SCHOOL", "BUILDING_IRN",
+                          "SCHOOL_TYPE", "SCHOOL_SUB_TYPE", "TO_INST" ],
+          "names-from-column": "AY",
+          "values-from-columns": [ "Enrolled" ],
+          "names-prefix": "Enrolled ",
+          "fill-value": 0
+        }
+     ]
+ }
+]
+```
 
 ::: {.notesection data-latex=""}
 Pivot nodes can contain their own transformation and formula sections, same as a dataset node.
