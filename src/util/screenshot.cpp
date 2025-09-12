@@ -464,6 +464,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
                 }
             long x{ 0 }, y{ 0 };
             if ((highlightPoints[i].second != -1) &&
+                highlightPoints[i].second < textWindow->GetLastPosition() &&
                 textWindow->PositionToXY(highlightPoints[i].second, &x, &y))
                 {
                 endPoint.y = textWindow->PositionToCoords(textWindow->XYToPosition(0, y + 1)).y;
