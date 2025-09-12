@@ -53,14 +53,29 @@ find_package(Doxygen)
 if(NOT DOXYGEN_FOUND)
     message(STATUS "Doxygen not found. API documentation cannot be generated.")
 else()
-    set(ALL_OPTION_MAYBE_UNAVAILABLE ALL)
+    set(DOXYGEN_ALL_OPTION_MAYBE_UNAVAILABLE ALL)
 endif()
 
 add_custom_target(doxygen-docs
-            ${ALL_OPTION_MAYBE_UNAVAILABLE}
+            ${DOXYGEN_ALL_OPTION_MAYBE_UNAVAILABLE}
             COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
             COMMENT "Generating API documentation with Doxygen"
+            VERBATIM)
+
+find_program(QUARTO_EXECUTABLE NAMES quarto quarto.exe)
+
+if(QUARTO_EXECUTABLE MATCHES "QUARTO_EXECUTABLE-NOTFOUND")
+    message(STATUS "Quarto not found. JSON syntax documentation cannot be generated.")
+else()
+    set(QUARTO_ALL_OPTION_MAYBE_UNAVAILABLE ALL)
+endif()
+
+add_custom_target(quarto-docs
+            ${QUARTO_ALL_OPTION_MAYBE_UNAVAILABLE}
+            COMMAND ${QUARTO_EXECUTABLE} render "${CMAKE_SOURCE_DIR}/docs/syntax-manual"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/syntax-manual"
+            COMMENT "Generating JSON syntax documentation with Quarto"
             VERBATIM)
 
 if(APPLE)
@@ -96,17 +111,6 @@ find_directory("wxWidgets" wxWidgets_BASEDIR)
 add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
 set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
-
-if(UNIX AND NOT APPLE)
-    # GTK 3 dependency
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-
-    # Setup CMake to use GTK+, tell the compiler where to look for headers
-    # and to the linker where to look for libraries
-    include_directories(${GTK3_INCLUDE_DIRS})
-    link_directories(${GTK3_LIBRARY_DIRS})
-endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
                "${CMAKE_CURRENT_SOURCE_DIR}/src/base/version.h")
