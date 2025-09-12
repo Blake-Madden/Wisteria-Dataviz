@@ -72,21 +72,6 @@ namespace Wisteria::UI
             @param flags The flags to set.*/
         void SetFlags(long flags) final;
 
-        /** @brief Gets the colour of the tabs.
-            @param primary The color of the active tab and its tool area.
-            @param secondary The color of the background (including inactive tabs).
-            @param tertiary The background color of hovered buttons and non-active tabs.*/
-        void GetColourScheme(wxColour* primary,
-                             wxColour* secondary,
-                             wxColour* tertiary) const final;
-
-        /** @brief Sets the colour of the tabs.
-            @param primary The color of the active tab and its tool area.
-            @param secondary The color of the background (including inactive tabs).
-            @param tertiary The background color of hovered buttons and non-active tabs.*/
-        void SetColourScheme(const wxColour& primary,
-                             const wxColour& secondary,
-                             const wxColour& tertiary) final;
     private:
         void DrawTabCtrlBackground(
                             wxDC& dc,
