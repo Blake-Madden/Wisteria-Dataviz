@@ -92,7 +92,7 @@ namespace Wisteria::UI
                             {
                             currentDescriptionAndRetVal =
                                 wxString::Format(L"<br />%s<tt><span style='font-weight:bold;'>"
-                                                 "<span style=\"color:blue\"><a "
+                                                 "<span style=\"color:#00A2E8\"><a "
                                                  "href=\"%s\">%s</a></span></span></tt>.",
                                                  _(L"Returns: "), retVal, retVal);
                             }
@@ -114,7 +114,7 @@ namespace Wisteria::UI
                             const wxString retVal = tkz.GetNextToken();
                             currentDescriptionAndRetVal +=
                                 wxString::Format(L"<br />%s<tt><span style='font-weight:bold;'>"
-                                                 "<span style=\"color:blue\"><a "
+                                                 "<span style=\"color:#00A2E8\"><a "
                                                  "href=\"%s\">%s</a></span></span></tt>.",
                                                  _(L"Returns: "), retVal, retVal);
                             }
