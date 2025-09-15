@@ -76,6 +76,98 @@ RibbonMetroArtProvider::RibbonMetroArtProvider(bool set_colour_scheme)
     m_gallery_bitmap_padding_bottom_size = 4;
     }
 
+void RibbonMetroArtProvider::SetColourScheme(const wxColour& primary, const wxColour& secondary,
+                                             const wxColour& tertiary)
+    {
+    wxRibbonHSLColour primary_hsl(primary);
+    wxRibbonHSLColour secondary_hsl(secondary);
+    wxRibbonHSLColour tertiary_hsl(tertiary);
+
+    // Map primary & secondary luminance from [0, 1] to [0.15, 0.85]
+    primary_hsl.luminance = std::cos(primary_hsl.luminance * float(M_PI)) * -0.35f + 0.5f;
+    secondary_hsl.luminance = std::cos(secondary_hsl.luminance * float(M_PI)) * -0.35f + 0.5f;
+
+    // TODO: Remove next line once this provider stops piggybacking MSW
+    wxRibbonMSWArtProvider::SetColourScheme(primary, secondary, tertiary);
+
+    const auto LikePrimary = [primary_hsl](double luminance)
+    { return wxRibbonShiftLuminance(primary_hsl, luminance).ToRGB(); };
+    const auto LikeSecondary = [secondary_hsl](double luminance)
+    { return wxRibbonShiftLuminance(secondary_hsl, luminance).ToRGB(); };
+
+    m_tab_border_pen = LikePrimary(0.75);
+#ifdef __WXOSX__
+    m_tab_label_colour = wxSystemSettings::GetColour(wxSYS_COLOUR_CAPTIONTEXT);
+#else
+    m_tab_label_colour = wxSystemSettings::SelectLightDark(
+        LikePrimary(0.1), wxSystemSettings::GetColour(wxSYS_COLOUR_CAPTIONTEXT));
+#endif
+    m_tab_active_label_colour = m_tab_label_colour;
+    m_tab_hover_label_colour = m_tab_label_colour;
+    m_tab_hover_background_top_colour = primary_hsl.ToRGB();
+#ifdef __WXOSX__
+    m_tab_hover_background_top_gradient_colour = m_tab_hover_background_top_colour;
+#else
+    m_tab_hover_background_top_gradient_colour = LikePrimary(1.6);
+#endif
+    m_tab_active_background_colour = LikePrimary(0.9);
+#ifdef __WXOSX__
+    m_tab_active_background_gradient_colour = m_tab_active_background_colour;
+#else
+    m_tab_active_background_gradient_colour = primary_hsl.ToRGB();
+#endif
+    m_panel_label_colour = m_tab_label_colour;
+    m_panel_minimised_label_colour = m_panel_label_colour;
+    m_panel_hover_label_colour = tertiary_hsl.ToRGB();
+    m_page_border_pen = m_tab_border_pen;
+    m_panel_border_pen = m_tab_border_pen;
+    m_page_hover_background_colour = LikePrimary(1.5);
+    m_page_hover_background_gradient_colour = LikePrimary(0.9);
+    m_button_bar_hover_border_pen = secondary_hsl.ToRGB();
+    m_button_bar_label_colour = m_tab_label_colour;
+#ifdef __WXOSX__
+    m_button_bar_label_disabled_colour =
+        wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+#else
+    m_button_bar_label_disabled_colour = m_tab_label_colour;
+#endif
+    m_gallery_border_pen = m_tab_border_pen;
+    m_gallery_item_border_pen = m_button_bar_hover_border_pen;
+    m_gallery_hover_background_brush = LikePrimary(1.2);
+    m_gallery_button_background_colour = m_page_hover_background_colour;
+    m_gallery_button_background_gradient_colour = m_page_hover_background_gradient_colour;
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_FACE_COLOUR, LikePrimary(0.1));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_DISABLED_FACE_COLOUR, wxColour(128, 128, 128));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_ACTIVE_FACE_COLOUR, LikeSecondary(0.1));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_HOVER_FACE_COLOUR, LikeSecondary(0.1));
+    m_toolbar_border_pen = m_tab_border_pen;
+    SetColour(wxRIBBON_ART_TOOLBAR_FACE_COLOUR, LikePrimary(0.1));
+    m_tool_background_colour = m_page_hover_background_colour;
+    m_tool_background_gradient_colour = m_page_hover_background_gradient_colour;
+
+    // For highlight pages
+    wxColour top_colour1(
+        (m_tab_active_background_colour.Red() + m_tab_hover_background_top_colour.Red()) / 2,
+        (m_tab_active_background_colour.Green() + m_tab_hover_background_top_colour.Green()) / 2,
+        (m_tab_active_background_colour.Blue() + m_tab_hover_background_top_colour.Blue()) / 2);
+
+    wxColour bottom_colour1((m_tab_active_background_gradient_colour.Red() +
+                             m_tab_hover_background_top_gradient_colour.Red()) /
+                                2,
+                            (m_tab_active_background_gradient_colour.Green() +
+                             m_tab_hover_background_top_gradient_colour.Green()) /
+                                2,
+                            (m_tab_active_background_gradient_colour.Blue() +
+                             m_tab_hover_background_top_gradient_colour.Blue()) /
+                                2);
+
+    m_tab_highlight_top_colour = top_colour1;
+    m_tab_highlight_top_gradient_colour = bottom_colour1;
+
+    m_tab_highlight_colour = top_colour1;
+    m_tab_highlight_gradient_colour = bottom_colour1;
+    }
+
 void RibbonMetroArtProvider::SetFlags(long flags)
     {
     if ((flags ^ m_flags) & wxRIBBON_BAR_FLOW_VERTICAL)
