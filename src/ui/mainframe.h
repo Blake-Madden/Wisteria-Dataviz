@@ -110,14 +110,14 @@ namespace Wisteria::UI
 
         /// @returns The program's logo.
         [[nodiscard]]
-        const wxBitmap& GetLogo() const noexcept
+        const wxBitmapBundle& GetLogo() const noexcept
             {
             return m_logo;
             }
 
         /// @brief Sets the program's logo.
         /// @param logo The logo for the program.
-        void SetLogo(const wxBitmap& logo) { m_logo = logo; }
+        void SetLogo(const wxBitmapBundle& logo) { m_logo = logo; }
 
         /// @brief Sets the directory where the documentation is stored.
         /// @param helpFolder The help folder.
@@ -151,7 +151,7 @@ namespace Wisteria::UI
         wxPrintData* m_printData{ nullptr };
         wxString m_helpFolder;
         wxArrayString m_defaultFileExtensions;
-        wxBitmap m_logo;
+        wxBitmapBundle m_logo;
         wxDECLARE_CLASS(BaseMainFrame);
         };
 
