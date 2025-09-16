@@ -113,6 +113,8 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
                 wxBitmapBundle::FromSVGFile(path, wxSize(64, 64)).GetBitmap(wxSize(64, 64)));
             bmps.push_back(
                 wxBitmapBundle::FromSVGFile(path, wxSize(128, 128)).GetBitmap(wxSize(128, 128)));
+            bmps.push_back(
+                wxBitmapBundle::FromSVGFile(path, wxSize(256, 256)).GetBitmap(wxSize(256, 256)));
 
             const auto [node, inserted] =
                 m_bmpBundleMap.insert(std::make_pair(path, wxBitmapBundle::FromBitmaps(bmps)));
@@ -126,6 +128,7 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(32, 32)));
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(64, 64)));
             bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(128, 128)));
+            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(256, 256)));
 
             const auto [node, inserted] =
                 m_bmpBundleMap.insert(std::make_pair(path, wxBitmapBundle::FromBitmaps(bmps)));
