@@ -731,7 +731,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             GraphItems::GraphItemInfo(
                 _(L"Won") + (m_hadShutoutWins ? _(L"\nWon in a shutout") : wxString{}) +
                 _(L"\nLost") + (m_hadShutoutLosses ? _(L"\nLost in a shutout") : wxString{}) +
-                _(L"\nHome game\nCanceled game / scrimmage ") +
+                _(L"\nHome game\nCanceled game / scrimmage") +
                 (m_hasPostseasonData ? _(L"\nPostseason") : wxString{}) +
                 (m_highlightBestRecords ? _(L"\nBest record / longest winning streak") :
                                           wxString{}))
