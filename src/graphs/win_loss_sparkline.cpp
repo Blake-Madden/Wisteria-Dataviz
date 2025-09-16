@@ -41,6 +41,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         {
         GetSelectedIds().clear();
         m_longestWinningStreak = 0;
+        m_hadShutoutWins = m_hadShutoutLosses = false;
 
         const auto wonColIter = data->GetContinuousColumn(wonColumnName);
         if (wonColIter == data->GetContinuousColumns().cend())
@@ -261,11 +262,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     if (game.m_won)
                         {
                         ++consecutiveWins;
+                        if (game.m_shutout)
+                            {
+                            m_hadShutoutWins = true;
+                            }
                         }
                     else
                         {
                         longestWinningStreak = std::max(longestWinningStreak, consecutiveWins);
                         consecutiveWins = 0;
+                        if (game.m_shutout)
+                            {
+                            m_hadShutoutLosses = true;
+                            }
                         }
                     }
                 }
@@ -720,9 +729,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         {
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo(
-                _(L"Won\nWon in a shutout\nLost\nLost in a shutout\nHome game\nCanceled game") +
+                _(L"Won") + (m_hadShutoutWins ? _(L"\nWon in a shutout") : wxString{}) +
+                _(L"\nLost") + (m_hadShutoutLosses ? _(L"\nLost in a shutout") : wxString{}) +
+                _(L"\nHome game\nCanceled game / scrimmage ") +
                 (m_hasPostseasonData ? _(L"\nPostseason") : wxString{}) +
-                (m_highlightBestRecords ? _(L"\nBest record/longest winning streak") : wxString{}))
+                (m_highlightBestRecords ? _(L"\nBest record / longest winning streak") :
+                                          wxString{}))
                 .DPIScaling(GetDPIScaleFactor())
                 .Anchoring(Anchoring::TopLeftCorner)
                 .LabelAlignment(TextAlignment::FlushLeft)
@@ -730,12 +742,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 .FontColor(GetLeftYAxis().GetFontColor()));
         legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine, m_winColor,
                                               wxNullBrush);
-        legend->GetLegendIcons().emplace_back(
-            Icons::IconShape::VerticalLine, wxPenInfo(m_winColor, 4).Cap(wxCAP_BUTT), wxNullBrush);
+        if (m_hadShutoutWins)
+            {
+            legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine,
+                                                  wxPenInfo(m_winColor, 4).Cap(wxCAP_BUTT),
+                                                  wxNullBrush);
+            }
         legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine, m_lossColor,
                                               wxNullBrush);
-        legend->GetLegendIcons().emplace_back(
-            Icons::IconShape::VerticalLine, wxPenInfo(m_lossColor, 4).Cap(wxCAP_BUTT), wxNullBrush);
+        if (m_hadShutoutLosses)
+            {
+            legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine,
+                                                  wxPenInfo(m_lossColor, 4).Cap(wxCAP_BUTT),
+                                                  wxNullBrush);
+            }
         legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine, *wxBLACK_PEN,
                                               wxNullBrush);
         legend->GetLegendIcons().emplace_back(

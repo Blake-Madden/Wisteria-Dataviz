@@ -67,7 +67,7 @@ namespace Wisteria::Graphs
 
          Note that for the continuous (boolean) columns, they should either contain @c 0
          (indicating @c false), @c 1 (indicating @c true), or be blank.
-         A blank cell could indicate a game that was canceled, for example.
+         A blank cell could indicate a game that was canceled or a scrimmage, for example.
          Any other non-zero value will be considered @c true.
 
          @warning The data is mapped exactly in the order that it appears in the data
@@ -208,6 +208,8 @@ namespace Wisteria::Graphs
 
         // state data
         size_t m_longestWinningStreak{ 0 };
+        bool m_hadShutoutWins{ false };
+        bool m_hadShutoutLosses{ false };
         };
     } // namespace Wisteria::Graphs
 
