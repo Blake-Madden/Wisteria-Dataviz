@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <concepts>
 #include <cstdint>
 #include <functional>
 #include <initializer_list>
@@ -72,6 +73,15 @@ namespace math_constants
     /// @brief Synonym for full (i.e., 100%).
     constexpr double whole = full;
     } // namespace math_constants
+
+/// @returns @c true if a value is a power of two.
+/// @param val The value to review.
+template<std::unsigned_integral T>
+[[nodiscard]]
+constexpr bool is_power_of_two(T val)
+    {
+    return val > 0 && (val & (val - 1)) == 0;
+    }
 
 /// @returns @c true if a value is within a given range.
 /// @param value The value to review.

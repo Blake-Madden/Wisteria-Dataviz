@@ -129,5 +129,66 @@ TEST_CASE("Comparable first pair", "[comparable]")
         }
     }
 
+// ------------------------------------------------------------
+// Compile-time tests
+// ------------------------------------------------------------
+static_assert(is_power_of_two(1u));
+static_assert(is_power_of_two(2u));
+static_assert(is_power_of_two(1024u));
+static_assert(!is_power_of_two(0u));
+static_assert(!is_power_of_two(3u));
+static_assert(!is_power_of_two(1000u));
+
+// ------------------------------------------------------------
+// Runtime unit tests
+// ------------------------------------------------------------
+TEST_CASE("is_power_of_two basic checks", "[math][bit]")
+    {
+    SECTION("Zero is not a power of two")
+        {
+        REQUIRE_FALSE(is_power_of_two(0u));
+        }
+
+    SECTION("Powers of two return true")
+        {
+        REQUIRE(is_power_of_two(1u));
+        REQUIRE(is_power_of_two(2u));
+        REQUIRE(is_power_of_two(4u));
+        REQUIRE(is_power_of_two(8u));
+        REQUIRE(is_power_of_two(16u));
+        REQUIRE(is_power_of_two(1024u));
+        }
+
+    SECTION("Non-powers of two return false")
+        {
+        REQUIRE_FALSE(is_power_of_two(3u));
+        REQUIRE_FALSE(is_power_of_two(5u));
+        REQUIRE_FALSE(is_power_of_two(6u));
+        REQUIRE_FALSE(is_power_of_two(7u));
+        REQUIRE_FALSE(is_power_of_two(9u));
+        REQUIRE_FALSE(is_power_of_two(1000u));
+        }
+    }
+
+TEST_CASE("is_power_of_two with different unsigned types", "[math][bit][types]")
+    {
+    // uint8_t
+    REQUIRE(is_power_of_two(uint8_t{1}));
+    REQUIRE_FALSE(is_power_of_two(uint8_t{3}));
+
+    // uint16_t
+    REQUIRE(is_power_of_two(uint16_t{256}));
+    REQUIRE_FALSE(is_power_of_two(uint16_t{257}));
+
+    // uint32_t
+    REQUIRE(is_power_of_two(uint32_t{1u << 31}));
+
+    REQUIRE_FALSE(is_power_of_two(uint32_t{(1u << 31) - 1}));
+
+    // uint64_t
+    REQUIRE(is_power_of_two(uint64_t{1ull << 63}));
+    REQUIRE_FALSE(is_power_of_two(uint64_t{(1ull << 63) - 1}));
+    }
+
 // NOLINTEND
 // clang-format on
