@@ -278,7 +278,7 @@ namespace Wisteria::GraphItems
             }
 
         /** @brief Adds a shape (or shapes) to the top side of the text.
-            @description Can be one shape, or multiple shapes that will be drawn
+            @details Can be one shape, or multiple shapes that will be drawn
                 on top of each other.
             @param shpInfo A description of the shape(s).
             @sa SetTopImage().*/
