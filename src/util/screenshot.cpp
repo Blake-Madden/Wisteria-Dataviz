@@ -164,12 +164,12 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
                 }
             }
         }
-    if (!foundWindow)
+    if (foundWindow == nullptr)
         {
         return false;
         }
 
-    auto ribbonBar = dynamic_cast<wxRibbonBar*>(foundWindow);
+    auto* ribbonBar = dynamic_cast<wxRibbonBar*>(foundWindow);
     assert(ribbonBar);
 
     if (!ribbonBar->SetActivePage(pageToSelect))
@@ -197,8 +197,9 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
                 wxRibbonPanel* currentPanel{ activePage->GetPanel(i) };
                 if (currentPanel != nullptr && currentPanel->IsShown())
                     {
-                    const auto buttonBar = currentPanel->FindWindow(lastButtonBarToHighlight);
-                    return (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar))) ?
+                    auto* buttonBar = currentPanel->FindWindow(lastButtonBarToHighlight);
+                    return (buttonBar != nullptr &&
+                            buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar))) ?
                                buttonBar :
                                nullptr;
                     }
@@ -225,9 +226,9 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
                        offset of the children relative to its parent. When dealing with client
                        areas, using the screen position of controls will be off because the main
                        dialog's decorations aren't factored into that.*/
-                    wxPoint startPoint(0, 0);
-                    auto startWindowParent = buttonBar;
-                    while (startWindowParent && startWindowParent != ribbonBar)
+                    wxPoint startPoint{ 0, 0 };
+                    auto* startWindowParent = buttonBar;
+                    while (startWindowParent != nullptr && startWindowParent != ribbonBar)
                         {
                         startPoint += startWindowParent->GetPosition();
                         startWindowParent = startWindowParent->GetParent();
@@ -238,24 +239,25 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
                                          lastButtonBarSize.GetWidth(),
                                      startPoint.y + buttonBar->GetSize().GetHeight());
                     // add a little padding around the control(s) being highlighted
-                    startPoint -=
-                        wxPoint(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
+                    startPoint -= wxPoint{ wxSizerFlags::GetDefaultBorder(),
+                                           wxSizerFlags::GetDefaultBorder() };
                     // adjust if outside render area
                     startPoint.x = std::max(
                         startPoint.x, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
                     startPoint.y = std::max(
                         startPoint.y, static_cast<int>(windowToCapture->GetDPIScaleFactor()) * 2);
 
-                    endPoint += wxPoint(
-                        // same for end point, but make sure we didn't go off the screen
-                        (endPoint.x + wxSizerFlags::GetDefaultBorder() <
-                         memDC.GetSize().GetWidth()) ?
-                            wxSizerFlags::GetDefaultBorder() :
-                            0,
-                        (endPoint.y + wxSizerFlags::GetDefaultBorder() <
-                         memDC.GetSize().GetHeight()) ?
-                            wxSizerFlags::GetDefaultBorder() :
-                            0);
+                    endPoint +=
+                        wxPoint{ // same for end point, but make sure we didn't go off the screen
+                                 (endPoint.x + wxSizerFlags::GetDefaultBorder() <
+                                  memDC.GetSize().GetWidth()) ?
+                                     wxSizerFlags::GetDefaultBorder() :
+                                     0,
+                                 (endPoint.y + wxSizerFlags::GetDefaultBorder() <
+                                  memDC.GetSize().GetHeight()) ?
+                                     wxSizerFlags::GetDefaultBorder() :
+                                     0
+                        };
                     memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
                     memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
                     memDC.DrawLine(endPoint.x, startPoint.y, endPoint.x, endPoint.y);
@@ -273,7 +275,6 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
 
     wxFileName fn(filePath);
     fn.SetExt(L"bmp");
-    // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
     }
@@ -398,7 +399,6 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
 
     wxFileName fn(filePath);
     fn.SetExt(L"bmp");
-    // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
     }
@@ -420,7 +420,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     if (windowToCapture->GetId() != windowId || !windowToCapture->IsKindOf(CLASSINFO(wxTextCtrl)))
         {
         wxWindow* foundWindow = windowToCapture->FindWindow(windowId);
-        if (foundWindow && foundWindow->IsKindOf(CLASSINFO(wxTextCtrl)))
+        if (foundWindow != nullptr && foundWindow->IsKindOf(CLASSINFO(wxTextCtrl)))
             {
             windowToCapture = foundWindow;
             }
@@ -435,6 +435,8 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     if (highlightPoints.size())
         {
         dynamic_cast<wxTextCtrl*>(windowToCapture)->ShowPosition(highlightPoints[0].first);
+        // give UI time to scroll and refresh
+        ::wxSleep(2);
         }
 
     wxClientDC dc(windowToCapture);
@@ -464,7 +466,6 @@ bool Screenshot::SaveScreenshotOfTextWindow(
                 }
             long x{ 0 }, y{ 0 };
             if ((highlightPoints[i].second != -1) &&
-                highlightPoints[i].second < textWindow->GetLastPosition() &&
                 textWindow->PositionToXY(highlightPoints[i].second, &x, &y))
                 {
                 endPoint.y = textWindow->PositionToCoords(textWindow->XYToPosition(0, y + 1)).y;
@@ -510,7 +511,6 @@ bool Screenshot::SaveScreenshotOfTextWindow(
 
     wxFileName fn(filePath);
     fn.SetExt(L"bmp");
-    // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
     }
@@ -553,15 +553,15 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
                 {
                 endIdToHighlight = startIdToHighlight;
                 }
-            const auto propertyGridWindow = dynamic_cast<wxPropertyGridInterface*>(window);
-            if (propertyGridWindow &&
+            const auto* propertyGridWindow = dynamic_cast<wxPropertyGridInterface*>(window);
+            if (propertyGridWindow != nullptr &&
                 propertyGridWindow->GetProperty(wxGetTranslation(startIdToHighlight)) &&
                 propertyGridWindow->GetProperty(wxGetTranslation(endIdToHighlight)) &&
                 propertyGridWindow->GetState())
                 {
-                wxPoint startPoint(0, 0);
-                auto startWindowParent = window;
-                while (startWindowParent && startWindowParent != windowToCapture)
+                wxPoint startPoint{ 0, 0 };
+                auto* startWindowParent = window;
+                while (startWindowParent != nullptr && startWindowParent != windowToCapture)
                     {
                     startPoint += startWindowParent->GetPosition();
                     startWindowParent = startWindowParent->GetParent();
@@ -600,10 +600,10 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
                 const wxRect gridRect = propertyGridWindow->GetState()->GetGrid()->GetPropertyRect(
                     propertyGridWindow->GetState()->GetGrid()->GetRoot(),
                     propertyGridWindow->GetState()->GetGrid()->GetLastItem());
-                bitmap = bitmap.GetSubBitmap(wxRect(
+                bitmap = bitmap.GetSubBitmap(wxRect{
                     0, 0, bitmap.GetWidth(),
                     std::max(GetActiveDialogOrFrame()->FromDIP(cropToGridHeightAndMinSize.second),
-                             gridRect.GetHeight())));
+                             gridRect.GetHeight()) });
                 }
             }
         }
@@ -613,7 +613,6 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
 
     wxFileName fn(filePath);
     fn.SetExt(L"bmp");
-    // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
     }
@@ -640,19 +639,10 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
     wxMemoryDC memDC;
 
     // use 24-bit (RGB) bitmap, because including the alpha channel
-    // is unnecessary and causes artifacts on HiDPI displays.
+    // is unnecessary and causes artifacts on HiDPI displays
     wxBitmap bitmap(dc.GetSize(), 24);
     memDC.SelectObject(bitmap);
     memDC.Clear();
-    /* On Vista and above, the Aero theme breaks ::BitBlt grabbing the entire window
-       (the outer frame appears translucent).
-       Instead, BitBlit the client area and not the entire dialog.
-       An alternative is to call this:
-
-       ::PrintWindow(windowToCapture->GetHandle(), memDC.GetHDC(), 0)
-
-       But on HiDPI displays that causes various artifacts in the images.
-       BitBlitting the client area is less problematic overall.*/
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
     wxCoord endPointY{ 0 };
@@ -664,28 +654,28 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
         const wxWindow* startWindow = (startIdToHighlight == wxID_ANY) ?
                                           nullptr :
                                           windowToCapture->FindWindow(startIdToHighlight);
-        if (startWindow)
+        if (startWindow != nullptr)
             {
             /* Step back all the way from the child window to the parent and tally the offset
                of the children relative to its parent. When dealing with client areas, using
                the screen position of controls will be off because the main dialog's decorations
                aren't factored into that.*/
-            auto startWindowParent = startWindow;
-            while (startWindowParent && startWindowParent != windowToCapture)
+            auto* startWindowParent = startWindow;
+            while (startWindowParent != nullptr && startWindowParent != windowToCapture)
                 {
                 startPoint += startWindowParent->GetPosition();
                 startWindowParent = startWindowParent->GetParent();
                 }
-            wxPoint endPoint(startPoint.x + startWindow->GetSize().GetWidth(),
-                             startPoint.y + startWindow->GetSize().GetHeight());
+            wxPoint endPoint{ startPoint.x + startWindow->GetSize().GetWidth(),
+                              startPoint.y + startWindow->GetSize().GetHeight() };
             const wxWindow* endWindow = (endIdToHighlight == wxID_ANY) ?
                                             nullptr :
                                             windowToCapture->FindWindow(endIdToHighlight);
-            if (endWindow)
+            if (endWindow != nullptr)
                 {
-                endPoint = wxPoint(0, 0);
-                auto endWindowParent = endWindow;
-                while (endWindowParent && endWindowParent != windowToCapture)
+                endPoint = wxPoint{ 0, 0 };
+                auto* endWindowParent = endWindow;
+                while (endWindowParent != nullptr && endWindowParent != windowToCapture)
                     {
                     endPoint += endWindowParent->GetPosition();
                     endWindowParent = endWindowParent->GetParent();
@@ -695,15 +685,16 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 }
             // add a little padding around the control(s) being highlighted
             startPoint -=
-                wxPoint(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
-            endPoint += wxPoint(
+                wxPoint{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() };
+            endPoint += wxPoint{
                 // same for end point, but make sure we didn't go off the screen
                 (endPoint.x + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetWidth()) ?
                     wxSizerFlags::GetDefaultBorder() :
                     0,
                 (endPoint.y + wxSizerFlags::GetDefaultBorder() < memDC.GetSize().GetHeight()) ?
                     wxSizerFlags::GetDefaultBorder() :
-                    0);
+                    0
+            };
             endPointY = endPoint.y;
             memDC.SetPen(GetScreenshotHighlightPen(windowToCapture->GetDPIScaleFactor()));
             memDC.DrawLine(startPoint.x, startPoint.y, endPoint.x, startPoint.y);
@@ -728,8 +719,8 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 cutoffPoint += cutoffWindowParent->GetPosition();
                 cutoffWindowParent = cutoffWindowParent->GetParent();
                 }
-            const wxPoint cutOffEndPoint(cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
-                                         cutoffPoint.y + cutoffWindow->GetSize().GetHeight());
+            const wxPoint cutOffEndPoint{ cutoffPoint.x + cutoffWindow->GetSize().GetWidth(),
+                                          cutoffPoint.y + cutoffWindow->GetSize().GetHeight() };
 
             // if cutoff is at the starting point (or above it),
             // then crop above the first highlighted control
@@ -737,16 +728,16 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
                 {
                 const wxCoord yStart = cutOffEndPoint.y - wxSizerFlags::GetDefaultBorder();
                 bitmap = bitmap.GetSubBitmap(
-                    wxRect(0, yStart, bitmap.GetWidth(), bitmap.GetHeight() - yStart));
+                    wxRect{ 0, yStart, bitmap.GetWidth(), bitmap.GetHeight() - yStart });
                 }
             // ...otherwise, crop beneath end point
             else
                 {
-                bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(),
-                                                    // if there is something being highlighted, make
-                                                    // sure we don't cut that off
-                                                    std::max(cutOffEndPoint.y, endPointY) +
-                                                        wxSizerFlags::GetDefaultBorder()));
+                bitmap = bitmap.GetSubBitmap(wxRect{ 0, 0, bitmap.GetWidth(),
+                                                     // if there is something being highlighted,
+                                                     // make sure we don't cut that off
+                                                     std::max(cutOffEndPoint.y, endPointY) +
+                                                         wxSizerFlags::GetDefaultBorder() });
                 }
             }
         }
@@ -756,7 +747,6 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
 
     wxFileName fn(filePath);
     fn.SetExt(L"bmp");
-    // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
     }
@@ -782,19 +772,10 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
     wxMemoryDC memDC;
 
     // use 24-bit (RGB) bitmap, because including the alpha channel
-    // is unnecessary and causes artifacts on HiDPI displays.
+    // is unnecessary and causes artifacts on HiDPI displays
     wxBitmap bitmap(dc.GetSize(), 24);
     memDC.SelectObject(bitmap);
     memDC.Clear();
-    /* On Vista and above, the Aero theme breaks ::BitBlt grabbing the entire window
-       (the outer frame appears translucent).
-       Instead, BitBlit the client area and not the entire dialog.
-       An alternative is to call this:
-
-       ::PrintWindow(windowToCapture->GetHandle(), memDC.GetHDC(), 0)
-
-       But on HiDPI displays that causes various artifacts in the images.
-       BitBlitting the client area is less problematic overall.*/
     memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
 
     if (startIdToOverwrite != wxID_ANY || endIdToOverwrite != wxID_ANY)
@@ -802,29 +783,29 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
         const wxWindow* startWindow = (startIdToOverwrite == wxID_ANY) ?
                                           nullptr :
                                           windowToCapture->FindWindow(startIdToOverwrite);
-        if (startWindow)
+        if (startWindow != nullptr)
             {
             /* Step back all the way from the child window to the parent and tally the offset
                of the children relative to its parent. When dealing with client areas, using
                the screen position of controls will be off because the main dialog's decorations
                aren't factored into that.*/
-            wxPoint startPoint(0, 0);
-            auto startWindowParent = startWindow;
-            while (startWindowParent && startWindowParent != windowToCapture)
+            wxPoint startPoint{ 0, 0 };
+            auto* startWindowParent = startWindow;
+            while (startWindowParent != nullptr && startWindowParent != windowToCapture)
                 {
                 startPoint += startWindowParent->GetPosition();
                 startWindowParent = startWindowParent->GetParent();
                 }
-            wxPoint endPoint(startPoint.x + startWindow->GetSize().GetWidth(),
-                             startPoint.y + startWindow->GetSize().GetHeight());
+            wxPoint endPoint{ startPoint.x + startWindow->GetSize().GetWidth(),
+                              startPoint.y + startWindow->GetSize().GetHeight() };
             const wxWindow* endWindow = (endIdToOverwrite == wxID_ANY) ?
                                             nullptr :
                                             windowToCapture->FindWindow(endIdToOverwrite);
-            if (endWindow)
+            if (endWindow != nullptr)
                 {
-                endPoint = wxPoint(0, 0);
-                auto endWindowParent = endWindow;
-                while (endWindowParent && endWindowParent != windowToCapture)
+                endPoint = wxPoint{ 0, 0 };
+                auto* endWindowParent = endWindow;
+                while (endWindowParent != nullptr && endWindowParent != windowToCapture)
                     {
                     endPoint += endWindowParent->GetPosition();
                     endWindowParent = endWindowParent->GetParent();
@@ -836,7 +817,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
             memDC.SetPen(GetOutlinePen(windowToCapture->GetDPIScaleFactor()));
             memDC.SetBrush(*wxWHITE);
             memDC.DrawRectangle(
-                wxRect(wxPoint(startPoint.x, startPoint.y), wxPoint(endPoint.x, endPoint.y)));
+                wxRect{ wxPoint{ startPoint.x, startPoint.y }, wxPoint{ endPoint.x, endPoint.y } });
             memDC.DrawText(annotation, wxPoint(startPoint.x + 2, startPoint.y + 2));
             }
         }
@@ -848,7 +829,6 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
 
     wxFileName fn(filePath);
     fn.SetExt(L"bmp");
-    // create the folder to the filepath--if necessary--and save the image
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
     }
@@ -859,7 +839,7 @@ void Screenshot::PrepareWindowForScreenshot(wxWindow* windowToCapture)
     windowToCapture->Refresh(true);
     windowToCapture->UpdateWindowUI(wxUPDATE_UI_RECURSE);
     wxTheApp->Yield();
-    ::wxSleep(1);
+    ::wxSleep(2);
     }
 
 //---------------------------------------------------
