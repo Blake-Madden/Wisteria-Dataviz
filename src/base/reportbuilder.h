@@ -426,11 +426,11 @@ namespace Wisteria
             {
             if (node->IsValueNumber())
                 {
-                return node->GetValueNumber();
+                return node->AsDouble();
                 }
             else if (node->IsValueString())
                 {
-                return ExpandNumericConstant(node->GetValueString());
+                return ExpandNumericConstant(node->AsString());
                 }
             else
                 {
