@@ -99,7 +99,8 @@ namespace Wisteria::UI
                 }
 
 #ifdef __WXGTK__
-            if (!is_power_of_two(size.GetWidth()) || !is_power_of_two(size.GetHeight()))
+            if (!is_power_of_two(static_cast<uint32_t>(size.GetWidth())) ||
+                !is_power_of_two(static_cast<uint32_t>(size.GetHeight())))
                 {
                 // non-power-of-2 sizes are safe
                 return bundle.GetBitmap(size);
