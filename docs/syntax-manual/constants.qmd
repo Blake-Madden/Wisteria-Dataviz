@@ -40,4 +40,19 @@ These functions can be used in a dataset's formulas section, the `"constants"` s
       - `` `MonthName` ``: The name of the month.
       - `` `MonthShortName` ``: The abbreviated name of the month.
       - `` `Fancy` ``: The date formatted as full month name, day, and four-digit year.
+      
+Example:
+
+```json
+{
+  "items": [
+    {
+      "type": "label",
+      "text": "Prepared by the Office of Institutional Research on {{Now(`fancy`)}}",
+      "color": "darkgray",
+      "fit-row-to-content": true
+    }
+  ]
+}
+```
 :::

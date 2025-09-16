@@ -269,7 +269,27 @@ contain the following properties:
   - `"end-label"`: The label in the column that marks the end of the subset.
   - `"include-sentinel-labels"`: `"true"` to include the `"start-label"` and `"end-label"` rows in the subset. \
     The default is `"true"`.
-  
+
+```json
+"datasets": [
+  {
+    "path": "headcount_institution.xlsx",
+    "worksheet": "inst_table",
+    "skip-rows": 2,
+    "subsets": [
+      {
+        "name": "headcount_institution",
+        "section": {
+          "start-label": "Universities",
+          "end-label": "University Total",
+          "column": "Sector Institution",
+          "include-sentinel-labels": false
+        }
+      }
+    ]
+  }
+]
+```
 ::: {.notesection data-latex=""}
 Subset nodes can contain their own transformation and formula sections, same as a dataset node.
 :::
@@ -298,6 +318,29 @@ contain the following properties:
 ::: {.notesection data-latex=""}
 Merge nodes can contain their own transformation and formula sections, same as a dataset node.
 :::
+
+```json
+"datasets": [
+  {
+    "path": "GRAD_RATES.csv"
+  },
+  
+  {
+    "path": "Enrolled.txt",
+    "merges": [
+      {
+        "name": "AllGradData",
+        "other-dataset": "GRAD_RATES",
+        "by": [
+          {
+            "left-column": "BUILDING_IRN",
+            "right-column": "Building IRN"
+          }
+        ]
+      }
+  }
+]
+```
 ::::
 
 :::: {.minipage data-latex="{\textwidth}"}

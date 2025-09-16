@@ -13,4 +13,4 @@ Pages can contain the following properties:
 - `"background-color"`: A string specifying the page's background color.
 - `"background-image"`: A string specifying the path to an image to use as the page's background.
 - `"rows"`: The definitions of rows of content in the report. \
-  This is where all embedded graphs, labels, images, etc. on the page is defined.
+  This is where all embedded graphs, labels, images, etc. on the page are defined.
