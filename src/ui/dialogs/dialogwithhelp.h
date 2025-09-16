@@ -86,7 +86,7 @@ namespace Wisteria::UI
             @return A wxBitmap suitable for use in @c wxGenericStaticBitmap.
                     Returns @c wxNullBitmap if size is invalid.
         */
-        static wxBitmap FixStaticBitmapImage(const wxBitmapBundle& bundle, wxSize size)
+        static wxBitmap FixStaticBitmapImage(const wxBitmapBundle& bundle, const wxSize size)
             {
             wxASSERT_MSG(size.GetWidth() > 0 && size.GetHeight() > 0,
                          "FixStaticBitmapImage requires positive, fully-specified size!");
