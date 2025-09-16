@@ -782,7 +782,7 @@ namespace Wisteria
         {
         return std::make_shared<GraphItems::Label>(GraphItems::GraphItemInfo()
                                                        .DPIScaling(m_dpiScaleFactor)
-                                                       .Scaling(1.0)
+                                                       .Scaling(0.0)
                                                        .FixedWidthOnCanvas(true)
                                                        .CanvasHeightProportion(0)
                                                        .Show(false));

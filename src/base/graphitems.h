@@ -901,7 +901,7 @@ namespace Wisteria
                 {
                 m_itemInfo.m_text = label;
                 m_itemInfo.m_scaling = scaling;
-                assert(m_itemInfo.m_scaling > 0 && L"Scaling in canvas object is <= 0?!");
+                assert(m_itemInfo.m_scaling >= 0 && L"Scaling in canvas object is < 0?!");
                 }
 
             /** @brief Constructor.
@@ -917,8 +917,8 @@ namespace Wisteria
                     maintain its size and position; scaling will not affect it.*/
             virtual void SetScaling(const double scaling)
                 {
-                assert(scaling > 0 && L"Scaling in canvas object is less than or equal to zero?!");
-                if (scaling <= 0)
+                assert(scaling >= 0 && L"Scaling in canvas object is less than zero?!");
+                if (scaling < 0)
                     {
                     return;
                     }
@@ -2090,8 +2090,8 @@ namespace Wisteria
                 @param scaling The object's initial scaling factor.*/
             void SetOriginalCanvasScaling(const double scaling)
                 {
-                assert(scaling > 0 && L"Scaling in canvas object is less than or equal to zero?!");
-                if (scaling <= 0)
+                assert(scaling >= 0 && L"Scaling in canvas object is less than zero?!");
+                if (scaling < 0)
                     {
                     return;
                     }
