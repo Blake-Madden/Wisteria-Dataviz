@@ -98,7 +98,7 @@ jobs:
 
           # Fail workflow if any profanity
           if profane_files:
-              sys.exit("❌ Profanity detected. Failing workflow.")
+              sys.exit("❌ Profanity detected. Failing workflow!")
           else:
               print("✅ No profanity detected.")
 
