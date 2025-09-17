@@ -1,26 +1,5 @@
 name: Profanity Check
-
-on:
-  push:
-    paths:
-      - '**/*.md'
-      - '**/*.qmd'
-      - '**/*.cpp'
-      - '**/*.h'
-      - '**/*.hpp'
-      - '**/*.cxx'
-      - '**/*.R'
-      - '**/*.r'
-  pull_request:
-    paths:
-      - '**/*.md'
-      - '**/*.qmd'
-      - '**/*.cpp'
-      - '**/*.h'
-      - '**/*.hpp'
-      - '**/*.cxx'
-      - '**/*.R'
-      - '**/*.r'
+on: [push, pull_request]
 
 jobs:
   check-profanity:
