@@ -230,8 +230,7 @@ constexpr T coalesce(std::initializer_list<T> list)
     @param unscaledValue The original value to rescale.
     @param dataRange The min and max of the data that the value came from.
     @param newDataRange The min and max of the range that the value is being rescaled to.
-    @returns The value, rescaled to the new data range.
-    @todo needs unit tests.*/
+    @returns The value, rescaled to the new data range.*/
 [[nodiscard]]
 inline constexpr double scale_within(double unscaledValue,
                                      const std::pair<double, double>& dataRange,
@@ -250,8 +249,7 @@ inline constexpr double scale_within(double unscaledValue,
      - 1 -> 3
      - 2 -> 10
      - 3 -> 100
-     - 4 -> 1,000
-    @todo needs a unit test.*/
+     - 4 -> 1,000*/
 [[nodiscard]]
 inline constexpr double next_interval(const double value, const uint8_t intervalSize) noexcept
     {
@@ -268,8 +266,7 @@ inline constexpr double next_interval(const double value, const uint8_t interval
      - 1 -> 112
      - 2 -> 110
      - 3 -> 100
-     - 4 -> 0
-    @todo needs a unit test.*/
+     - 4 -> 0*/
 [[nodiscard]]
 inline constexpr double previous_interval(const double value, const uint8_t intervalSize) noexcept
     {
@@ -282,8 +279,7 @@ inline constexpr double previous_interval(const double value, const uint8_t inte
     @param start The start of the interval.
     @param end The end of the interval.\n
      For example:\n
-     - 0.75 & 4.2 -> 0-5
-    @todo needs a unit test.*/
+     - 0.75 & 4.2 -> 0-5*/
 [[nodiscard]]
 inline constexpr std::pair<double, double> adjust_intervals(const double start,
                                                             const double end) noexcept
@@ -729,8 +725,7 @@ namespace geometry
             is going downwards.)\n
             The returned pair represents the x and y values of the middle point.
         @param pt1 The first point.
-        @param pt2 The second point.
-        @todo needs unit tested.*/
+        @param pt2 The second point.*/
     [[nodiscard]]
     inline std::tuple<double, double, bool>
     middle_point_horizontal_spline(const std::pair<double, double>& pt1,
@@ -753,8 +748,7 @@ namespace geometry
         @returns The middle point between two points.\n
             The returned pair represents the x and y values of the middle point.
         @param pt1 The first point.
-        @param pt2 The second point.
-        @todo needs unit tested.*/
+        @param pt2 The second point.*/
     [[nodiscard]]
     inline std::pair<double, double>
     middle_point_horizontal_upward_spline(const std::pair<double, double>& pt1,
@@ -776,8 +770,7 @@ namespace geometry
         @returns The middle point between two points.\n
             The returned pair represents the x and y values of the middle point.
         @param pt1 The first point.
-        @param pt2 The second point.
-        @todo needs unit tested.*/
+        @param pt2 The second point.*/
     [[nodiscard]]
     inline std::pair<double, double>
     middle_point_horizontal_downward_spline(const std::pair<double, double>& pt1,
@@ -806,8 +799,7 @@ namespace geometry
         @param angleInDegrees The angle of the line (in degrees).
         @param length The length of the line.
         @param origin The x,y origin of the line.
-        @returns The x,y end of the line.
-        @todo needs unit tested.*/
+        @returns The x,y end of the line.*/
     [[nodiscard]]
     inline std::pair<double, double> find_point(const double angleInDegrees, const double length,
                                                 const std::pair<double, double>& origin) noexcept

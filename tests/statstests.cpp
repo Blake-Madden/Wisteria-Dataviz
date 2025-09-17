@@ -4,8 +4,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/math/statistics.h"
+#include <array>
 
 using namespace Catch::Matchers;
+using namespace statistics;
 
 TEST_CASE("Valid N", "[stats][validN]")
     {
@@ -591,6 +593,133 @@ TEST_CASE("Outliers container", "[stats][outliers]")
     CHECK(values.begin()+9  ==  fo());
     CHECK(values.end() == fo()); // end of the trail
     CHECK(values.end() == fo()); // end of the trail still
+    }
+
+// ---------------- z_score tests ----------------
+
+TEST_CASE("z_score basic positive values", "[z_score]")
+    {
+    CHECK_THAT(z_score(10.0, 5.0, 2.0), WithinRel(2.5, 1e-6));
+    CHECK_THAT(z_score(5.0, 5.0, 2.0), WithinAbs(0.0, 1e-6));
+    CHECK_THAT(z_score(0.0, 5.0, 2.0), WithinRel(-2.5, 1e-6));
+    }
+
+TEST_CASE("z_score with negative mean and stdDev", "[z_score]")
+    {
+    CHECK_THAT(z_score(-5.0, -10.0, 2.0), WithinRel(2.5, 1e-6));
+    CHECK_THAT(z_score(-10.0, -10.0, 2.0), WithinAbs(0.0, 1e-6));
+    CHECK_THAT(z_score(-15.0, -10.0, 2.0), WithinRel(-2.5, 1e-6));
+    }
+
+TEST_CASE("z_score with zero standard deviation", "[z_score]")
+    {
+    // safe_divide returns 0 for division by zero
+    CHECK_THAT(z_score(10.0, 5.0, 0.0), WithinAbs(0.0, 1e-6));
+    CHECK_THAT(z_score(5.0, 5.0, 0.0), WithinAbs(0.0, 1e-6));
+    }
+
+// Deterministic fuzz-style test for z_score
+TEST_CASE("z_score deterministic range", "[z_score][fuzz]")
+    {
+    for (double value = -10.0; value <= 10.0; value += 1.0)
+        {
+        for (double mean = -5.0; mean <= 5.0; mean += 1.0)
+            {
+            for (double stdDev : {0.0, 1.0, 2.0, 5.0})
+                {
+                double result = z_score(value, mean, stdDev);
+
+                if (stdDev == 0.0)
+                    {
+                    // safe_divide returns 0 for zero stdDev
+                    CHECK_THAT(result, WithinAbs(0.0, 1e-6));
+                    }
+                else
+                    {
+                    CHECK(result == (value - mean) / stdDev);
+                    }
+                }
+            }
+        }
+    }
+
+// ---------------- phi_coefficient tests ----------------
+
+TEST_CASE("phi_coefficient basic correlation", "[phi_coefficient]")
+    {
+    int a1[] = {1, 0, 1, 0};
+    int a2[] = {1, 0, 1, 0};
+
+    CHECK_THAT(phi_coefficient(a1, a1 + 4, a2, a2 + 4), WithinRel(1.0, 1e-6));
+    }
+
+TEST_CASE("phi_coefficient negative correlation", "[phi_coefficient]")
+    {
+    int a1[] = {1, 0, 1, 0};
+    int a2[] = {0, 1, 0, 1};
+
+    CHECK_THAT(phi_coefficient(a1, a1 + 4, a2, a2 + 4), WithinRel(-1.0, 1e-6));
+    }
+
+TEST_CASE("phi_coefficient no correlation", "[phi_coefficient]")
+    {
+    int a1[] = {1, 1, 0, 0};
+    int a2[] = {0, 1, 0, 1};
+
+    CHECK_THAT(phi_coefficient(a1, a1 + 4, a2, a2 + 4), WithinAbs(0.0, 1e-6));
+    }
+
+TEST_CASE("phi_coefficient all zeros or ones", "[phi_coefficient]")
+    {
+    int allOnes[] = {1, 1, 1, 1};
+    int allZeros[] = {0, 0, 0, 0};
+
+    // perfectly undefined, safe_divide returns 0
+    CHECK_THAT(phi_coefficient(allOnes, allOnes + 4, allZeros, allZeros + 4), WithinAbs(0.0, 1e-6));
+    }
+
+TEST_CASE("phi_coefficient mismatched array sizes throws", "[phi_coefficient]")
+    {
+    int a1[] = {1, 0, 1};
+    int a2[] = {1, 0, 1, 0};
+
+    CHECK_THROWS_AS(phi_coefficient(a1, a1 + 3, a2, a2 + 4), std::range_error);
+    }
+
+// ---------------- phi_coefficient deterministic fuzz-style test ----------------
+
+#include <array>
+
+TEST_CASE("phi_coefficient always in [-1, 1] for all 0/1 arrays", "[phi_coefficient][fuzz]")
+    {
+    constexpr int size = 8;
+    std::array<int, size> a1{};
+    std::array<int, size> a2{};
+
+    // Iterate over all combinations of 0/1 arrays (2^8 = 256 combinations)
+    for (int mask1 = 0; mask1 < (1 << size); ++mask1)
+        {
+        for (int mask2 = 0; mask2 < (1 << size); ++mask2)
+            {
+            for (int i = 0; i < size; ++i)
+                {
+                a1[i] = (mask1 & (1 << i)) ? 1 : 0;
+                a2[i] = (mask2 & (1 << i)) ? 1 : 0;
+                }
+
+            double result = phi_coefficient(a1.data(), a1.data() + size, a2.data(), a2.data() + size);
+
+            // Always within [-1, 1]
+            CHECK(result >= -1.0);
+            CHECK(result <= 1.0);
+
+            // If result is numerically zero, check with WithinAbs
+            if (result == 0.0)
+                {
+                CHECK_THAT(result, WithinAbs(0.0, 1e-6));
+                }
+            }
+        }
     }
 
 // NOLINTEND

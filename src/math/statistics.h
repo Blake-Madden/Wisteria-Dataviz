@@ -259,8 +259,8 @@ namespace statistics
     /** @returns The standard deviation from the specified range.
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
-        @throws std::invalid_argument If less than two observations are provided, throws an
-       exception.*/
+        @throws std::invalid_argument If less than two observations are provided,
+            throws an exception.*/
     [[nodiscard]]
     inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
         {
@@ -275,8 +275,7 @@ namespace statistics
     /** @returns A value, converted to a z-score.
         @param value The value to convert.
         @param mean The sample mean.
-        @param stdDev The sample standard deviation.
-        @todo Need unit tests.*/
+        @param stdDev The sample standard deviation.*/
     [[nodiscard]]
     inline double z_score(const double value, const double mean, const double stdDev) noexcept
         {
@@ -290,8 +289,8 @@ namespace statistics
             The standard error will measure the standard deviation of these sample means.
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
-        @throws std::invalid_argument If less than two observations are provided, throws an
-       exception.*/
+        @throws std::invalid_argument If less than two observations are provided,
+            throws an exception.*/
     [[nodiscard]]
     inline double standard_error_of_mean(const std::vector<double>& data, const bool is_sample)
         {
@@ -543,8 +542,7 @@ namespace statistics
         @param end1 The end of the first range.
         @param begin2 The start of the second range.
         @param end2 The end of the second range.
-        @returns The phi coefficient.
-        @todo needs to be validated and unit tested*/
+        @returns The phi coefficient.*/
     template<typename T>
     [[nodiscard]]
     inline double phi_coefficient(const T begin1, const T end1, const T begin2, const T end2)
