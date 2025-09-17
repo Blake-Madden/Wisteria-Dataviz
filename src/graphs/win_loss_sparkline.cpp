@@ -26,6 +26,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         GetPen().SetColour(L"#BEBBBB");
         m_winColor = Colors::ColorBrewer::GetColor(Colors::Color::ForestGreen);
         m_lossColor = Colors::ColorBrewer::GetColor(Colors::Color::RedTomato);
+        m_tieColor = Colors::ColorBrewer::GetColor(Colors::Color::RoyalPurple);
         m_postseasonColor = Colors::ColorContrast::ChangeOpacity(
             Colors::ColorBrewer::GetColor(Colors::Color::BondiBlue), 75);
         m_highlightColor = Colors::ColorContrast::ChangeOpacity(
@@ -111,9 +112,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             }
 
         size_t currentRow{ 0 }, currentColumn{ 0 };
-        size_t currentRowWins{ 0 }, currentRowLosses{ 0 };
-        size_t currentRowHomeWins{ 0 }, currentRowHomeLosses{ 0 };
-        size_t currentRowRoadWins{ 0 }, currentRowRoadLosses{ 0 };
+        size_t currentRowWins{ 0 }, currentRowLosses{ 0 }, currentRowTies{ 0 };
+        size_t currentRowHomeWins{ 0 }, currentRowHomeLosses{ 0 }, currentRowHomeTies{ 0 };
+        size_t currentRowRoadWins{ 0 }, currentRowRoadLosses{ 0 }, currentRowRoadTies{ 0 };
         auto currentGroupId = seasonColIter->GetValue(0);
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
@@ -121,8 +122,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             if (seasonColIter->GetValue(i) != currentGroupId)
                 {
                 ++currentRow;
-                currentColumn = currentRowWins = currentRowLosses = currentRowHomeWins =
-                    currentRowHomeLosses = currentRowRoadWins = currentRowRoadLosses = 0;
+                currentColumn = currentRowWins = currentRowLosses = currentRowTies =
+                    currentRowHomeWins = currentRowHomeLosses = currentRowHomeTies =
+                        currentRowRoadWins = currentRowRoadLosses = currentRowRoadTies = 0;
                 currentGroupId = seasonColIter->GetValue(i);
                 }
             wxASSERT_MSG(currentRow < m_matrix.size(),
@@ -154,7 +156,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 ++currentColumn;
                 continue;
                 }
-            m_matrix[currentRow].second[currentColumn].m_won = static_cast<bool>(wonVal);
+            m_matrix[currentRow].second[currentColumn].m_result = static_cast<GameResult>(wonVal);
             m_matrix[currentRow].second[currentColumn].m_shutout = static_cast<bool>(shutoutVal);
             m_matrix[currentRow].second[currentColumn].m_homeGame = static_cast<bool>(homeGameVal);
             if (postSeasonColumnName && postseasonColIter != data->GetContinuousColumns().cend())
@@ -168,7 +170,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 }
             m_matrix[currentRow].second[currentColumn].m_valid = true;
 
-            if (m_matrix[currentRow].second[currentColumn].m_won)
+            if (m_matrix[currentRow].second[currentColumn].m_result == GameResult::Won)
                 {
                 ++currentRowWins;
                 if (m_matrix[currentRow].second[currentColumn].m_homeGame)
@@ -180,7 +182,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     ++currentRowRoadWins;
                     }
                 }
-            else
+            else if (m_matrix[currentRow].second[currentColumn].m_result == GameResult::Lost)
                 {
                 ++currentRowLosses;
                 if (m_matrix[currentRow].second[currentColumn].m_homeGame)
@@ -192,11 +194,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     ++currentRowRoadLosses;
                     }
                 }
+            else if (m_matrix[currentRow].second[currentColumn].m_result == GameResult::Tied)
+                {
+                ++currentRowTies;
+                if (m_matrix[currentRow].second[currentColumn].m_homeGame)
+                    {
+                    ++currentRowHomeTies;
+                    }
+                else
+                    {
+                    ++currentRowRoadTies;
+                    }
+                }
             m_matrix[currentRow].first.m_overallRecordLabel =
                 wxNumberFormatter::ToString(currentRowWins, 0, Settings::GetDefaultNumberFormat()) +
                 L'–' +
                 wxNumberFormatter::ToString(currentRowLosses, 0,
                                             Settings::GetDefaultNumberFormat());
+            if (currentRowTies > 0)
+                {
+                m_matrix[currentRow].first.m_overallRecordLabel +=
+                    L'–' + wxNumberFormatter::ToString(currentRowTies, 0,
+                                                       Settings::GetDefaultNumberFormat());
+                }
 
             m_matrix[currentRow].first.m_homeRecordLabel =
                 wxNumberFormatter::ToString(currentRowHomeWins, 0,
@@ -204,6 +224,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 L'–' +
                 wxNumberFormatter::ToString(currentRowHomeLosses, 0,
                                             Settings::GetDefaultNumberFormat());
+            if (currentRowHomeTies > 0)
+                {
+                m_matrix[currentRow].first.m_homeRecordLabel +=
+                    L'–' + wxNumberFormatter::ToString(currentRowHomeTies, 0,
+                                                       Settings::GetDefaultNumberFormat());
+                }
 
             m_matrix[currentRow].first.m_roadRecordLabel =
                 wxNumberFormatter::ToString(currentRowRoadWins, 0,
@@ -211,10 +237,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 L'–' +
                 wxNumberFormatter::ToString(currentRowRoadLosses, 0,
                                             Settings::GetDefaultNumberFormat());
+            if (currentRowRoadTies > 0)
+                {
+                m_matrix[currentRow].first.m_roadRecordLabel +=
+                    L'–' + wxNumberFormatter::ToString(currentRowRoadTies, 0,
+                                                       Settings::GetDefaultNumberFormat());
+                }
 
             m_matrix[currentRow].first.m_pctLabel = wxNumberFormatter::ToString(
-                safe_divide<double>(currentRowWins, currentRowWins + currentRowLosses), 3,
-                wxNumberFormatter::Style::Style_None);
+                safe_divide<double>(currentRowWins + (currentRowTies * math_constants::half),
+                                    currentRowWins + currentRowLosses + currentRowTies),
+                3, wxNumberFormatter::Style::Style_None);
 
             ++currentColumn;
             }
@@ -259,7 +292,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 // skip over canceled games
                 if (game.m_valid)
                     {
-                    if (game.m_won)
+                    if (game.m_result == GameResult::Won)
                         {
                         ++consecutiveWins;
                         if (game.m_shutout)
@@ -267,7 +300,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                             m_hadShutoutWins = true;
                             }
                         }
-                    else
+                    else if (game.m_result == GameResult::Lost || game.m_result == GameResult::Tied)
                         {
                         longestWinningStreak = std::max(longestWinningStreak, consecutiveWins);
                         consecutiveWins = 0;
@@ -511,6 +544,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     wxPenInfo{ m_winColor, 2 }.Cap(wxCAP_BUTT), GetScaling());
                 auto lossLine = std::make_unique<GraphItems::Lines>(
                     wxPenInfo{ m_lossColor, 2 }.Cap(wxCAP_BUTT), GetScaling());
+                auto tieLine = std::make_unique<GraphItems::Lines>(
+                    wxPenInfo{ m_tieColor, 2 }.Cap(wxCAP_BUTT), GetScaling());
 
                 if (game.m_homeGame)
                     {
@@ -519,7 +554,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         { boxRect.GetRight(), boxRect.GetTop() + (boxRect.GetHeight() / 2) });
                     }
 
-                if (game.m_won)
+                if (game.m_result == GameResult::Won)
                     {
                     // if not already known to be in a longest winning streak,
                     // scan ahead and see if we are in the start of one
@@ -531,11 +566,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                             {
                             if (row.second[scanAheadCounter].m_valid)
                                 {
-                                if (row.second[scanAheadCounter].m_won)
+                                if (row.second[scanAheadCounter].m_result == GameResult::Won)
                                     {
                                     ++consecutiveWins;
                                     }
-                                else
+                                else if (row.second[scanAheadCounter].m_result ==
+                                             GameResult::Lost ||
+                                         row.second[scanAheadCounter].m_result == GameResult::Tied)
                                     {
                                     break;
                                     }
@@ -562,7 +599,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         winLine->GetPen().SetWidth(4);
                         }
                     }
-                else
+                else if (game.m_result == GameResult::Lost)
                     {
                     inWinningStreak = false;
                     lossLine->AddLine(
@@ -574,10 +611,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         lossLine->GetPen().SetWidth(4);
                         }
                     }
+                else if (game.m_result == GameResult::Tied)
+                    {
+                    inWinningStreak = false;
+                    tieLine->AddLine(
+                        { boxRect.GetLeft() + (boxRect.GetWidth() / 2), boxRect.GetTop() },
+                        { boxRect.GetLeft() + (boxRect.GetWidth() / 2), boxRect.GetBottom() });
+                    }
 
                 AddObject(std::move(lossLine));
                 AddObject(std::move(winLine));
                 AddObject(std::move(homeGameLine));
+                AddObject(std::move(tieLine));
 
                 ++currentColumn;
                 }
@@ -731,7 +776,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             GraphItems::GraphItemInfo(
                 _(L"Won") + (m_hadShutoutWins ? _(L"\nWon in a shutout") : wxString{}) +
                 _(L"\nLost") + (m_hadShutoutLosses ? _(L"\nLost in a shutout") : wxString{}) +
-                _(L"\nHome game\nCanceled game / scrimmage") +
+                _(L"\nTied\nHome game\nCanceled game / scrimmage") +
                 (m_hasPostseasonData ? _(L"\nPostseason") : wxString{}) +
                 (m_highlightBestRecords ? _(L"\nBest record / longest winning streak") :
                                           wxString{}))
@@ -756,6 +801,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                   wxPenInfo(m_lossColor, 4).Cap(wxCAP_BUTT),
                                                   wxNullBrush);
             }
+        legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine, m_tieColor,
+                                              wxNullBrush);
         legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine, *wxBLACK_PEN,
                                               wxNullBrush);
         legend->GetLegendIcons().emplace_back(

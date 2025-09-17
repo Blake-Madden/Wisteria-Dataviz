@@ -28,6 +28,7 @@ namespace Wisteria::Graphs
 
          - Wins and losses have their own colors (green and red, respectively), rather than
            all being black
+         - Ties are supported, rendered as a vertical purple line
          - Shutout game lines have a wider width to make them stand out, rather than being
            red (as featured in the original book)
          - Includes support for highlighting postseason games
@@ -39,36 +40,44 @@ namespace Wisteria::Graphs
           outcomes of the games and whether they were home games. (A postseason-game indicator
           column can optionally be included.)
 
-         | SEASON   | WON   | SHUTOUT | HOMEGAME |
-         | :--      | --:   | --:     | --:      |
-         | 2022     | 1     | 1       | 1        |
-         | 2022     | 0     | 0       | 1        |
-         | 2022     | 1     | 0       | 1        |
-         | 2022     | 1     | 0       | 0        |
-         | 2022     | 0     | 0       | 0        |
-         | 2022     | 0     | 0       | 1        |
-         | 2022     | 1     | 0       | 1        |
-         | 2022     | 1     | 0       | 1        |
-         | 2022     | 0     | 0       | 0        |
-         | 2022     | 1     | 0       | 0        |
-         | 2022     | 1     | 0       | 0        |
-         | 2022     | 1     | 0       | 1        |
-         | 2023     | 1     | 0       | 1        |
-         | 2023     | 0     | 0       | 1        |
-         | 2023     | 1     | 1       | 0        |
-         | 2023     | 1     | 0       | 0        |
-         | 2023     | 0     | 0       | 1        |
-         | 2023     | 1     | 0       | 1        |
-         | 2023     | 0     | 0       | 1        |
-         | 2023     | 1     | 0       | 0        |
-         | 2023     | 0     | 0       | 0        |
+         | SEASON   | RESULT | SHUTOUT | HOMEGAME |
+         | :--      | --:    | --:     | --:      |
+         | 2022     | 1      | 1       | 1        |
+         | 2022     | 0      | 0       | 1        |
+         | 2022     | 1      | 0       | 1        |
+         | 2022     | 1      | 0       | 0        |
+         | 2022     | 0      | 0       | 0        |
+         | 2022     | 0      | 0       | 1        |
+         | 2022     | 1      | 0       | 1        |
+         | 2022     | 1      | 0       | 1        |
+         | 2022     | 0      | 0       | 0        |
+         | 2022     | 1      | 0       | 0        |
+         | 2022     | 1      | 0       | 0        |
+         | 2022     | 1      | 0       | 1        |
+         | 2023     | 1      | 0       | 1        |
+         | 2023     | 0      | 0       | 1        |
+         | 2023     | 1      | 1       | 0        |
+         | 2023     | 2      | 0       | 0        |
+         | 2023     | 0      | 0       | 1        |
+         | 2023     | 1      | 0       | 1        |
+         | 2023     | 0      | 0       | 1        |
+         | 2023     | 1      | 0       | 0        |
+         | 2023     | 0      | 0       | 0        |
 
          ...
 
-         Note that for the continuous (boolean) columns, they should either contain @c 0
+         Note that for the SHUTOUT and HOMEGAME columns, they should either contain @c 0
          (indicating @c false), @c 1 (indicating @c true), or be blank.
-         A blank cell could indicate a game that was canceled or a scrimmage, for example.
-         Any other non-zero value will be considered @c true.
+
+         For the RESULT columns, the codes are:
+         - 0: lost
+         - 1: won
+         - 2: tied
+         - blank
+
+         A blank cell for any of these columns could indicate a canceled game
+         or a scrimmage, for example. These will be skipped when determining longest winning
+         streaks and other statistics.
 
          @warning The data is mapped exactly in the order that it appears in the data
          (i.e., nothing is sorted). Because of this, the season column should be presorted
@@ -92,7 +101,7 @@ namespace Wisteria::Graphs
             {
             volleyballData->ImportCSV(L"/home/daphne/data/volley-ball.csv",
                 ImportInfo()
-                    .ContinuousColumns({ L"WON", L"SHUTOUT", L"HOMEGAME" })
+                    .ContinuousColumns({ L"RESULT", L"SHUTOUT", L"HOMEGAME" })
                     .CategoricalColumns({ { L"SEASON", CategoricalImportMethod::ReadAsStrings } }));
             }
           catch (const std::exception& err)
@@ -103,7 +112,7 @@ namespace Wisteria::Graphs
 
           auto plot = std::make_shared<WinLossSparkline>(canvas);
 
-          plot->SetData(volleyballData, L"SEASON", L"WON", L"SHUTOUT", L"HOMEGAME");
+          plot->SetData(volleyballData, L"SEASON", L"RESULT", L"SHUTOUT", L"HOMEGAME");
 
           canvas->SetFixedObject(0, 0, plot);
 
@@ -179,10 +188,17 @@ namespace Wisteria::Graphs
 
         void CalculateRecords();
 
+        enum class GameResult
+            {
+            Lost,
+            Won,
+            Tied
+            };
+
         struct WinLossCell
             {
             bool m_valid{ false };
-            bool m_won{ true };
+            GameResult m_result{ GameResult::Tied };
             bool m_shutout{ false };
             bool m_homeGame{ true };
             bool m_postseason{ false };
@@ -201,6 +217,7 @@ namespace Wisteria::Graphs
         std::vector<std::pair<WinLossRow, std::vector<WinLossCell>>> m_matrix;
         wxColour m_winColor;
         wxColour m_lossColor;
+        wxColour m_tieColor;
         wxColour m_postseasonColor;
         wxColour m_highlightColor;
         bool m_hasPostseasonData{ false };
