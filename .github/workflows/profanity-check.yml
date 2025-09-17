@@ -103,7 +103,7 @@ jobs:
               print("✅ No profanity detected.")
 
       - name: Upload profanity report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: profanity-report
           path: ${{ steps.profanity.outputs.report_file }}
