@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install profanity-check
+          pip install better-profanity
 
       - name: Run profanity check (parallel)
         id: profanity
@@ -29,7 +29,9 @@ jobs:
           import os
           import sys
           from multiprocessing import Pool, cpu_count
-          from profanity_check import predict
+          from better_profanity import profanity
+
+          profanity.load_censor_words()
 
           extensions = ['.md', '.qmd', '.cpp', '.h', '.hpp', '.cxx', '.R', '.r']
 
@@ -44,7 +46,7 @@ jobs:
               try:
                   with open(path, 'r', encoding='utf-8', errors='ignore') as f:
                       content = f.read()
-                      if predict([content])[0] == 1:
+                      if profanity.contains_profanity(content):
                           return path
               except Exception as e:
                   print(f"⚠️ Could not read {path}: {e}")
@@ -68,7 +70,7 @@ jobs:
               else:
                   f.write("No profanity detected.\n")
 
-          # Print GitHub summary + annotations
+          # GitHub summary + annotations
           print(f"::notice title=Profanity Check Summary::Scanned {total_files} files, found {profane_count} with profanity.")
           for f in profane_files:
               print(f"::error file={f}::Profanity detected in this file")
