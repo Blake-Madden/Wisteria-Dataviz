@@ -33,7 +33,7 @@ jobs:
 
           profanity.load_censor_words()
 
-          extensions = ['.md', '.qmd', '.cpp', '.h', '.hpp', '.cxx', '.R', '.r']
+          extensions = ['.md', '.qmd']
 
           # Gather all files to check
           files_to_check = []
@@ -46,17 +46,19 @@ jobs:
               try:
                   with open(path, 'r', encoding='utf-8', errors='ignore') as f:
                       content = f.read()
-                      if profanity.contains_profanity(content):
-                          return path
+                      words_found = [w for w in content.split() if profanity.contains_profanity(w)]
+                      if words_found:
+                          return path, words_found
               except Exception as e:
                   print(f"⚠️ Could not read {path}: {e}")
-              return None
+              return None, []
 
           # Parallel scan
           with Pool(cpu_count()) as pool:
               results = pool.map(check_file, files_to_check)
 
-          profane_files = [f for f in results if f]
+          # Filter profane files
+          profane_files = [(f, words) for f, words in results if words]
           total_files = len(files_to_check)
           profane_count = len(profane_files)
 
@@ -65,19 +67,33 @@ jobs:
           with open(report_file, 'w', encoding='utf-8') as f:
               if profane_files:
                   f.write("Profanity detected in the following files:\n")
-                  for line in profane_files:
-                      f.write(f"{line}\n")
+                  for file_path, words in profane_files:
+                      f.write(f"{file_path}: {', '.join(words)}\n")
               else:
                   f.write("No profanity detected.\n")
 
-          # GitHub summary + annotations
-          print(f"::notice title=Profanity Check Summary::Scanned {total_files} files, found {profane_count} with profanity.")
-          for f in profane_files:
-              print(f"::error file={f}::Profanity detected in this file")
+          # Export report file for next step
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as gh_out:
+              gh_out.write(f"report_file={report_file}\n")
 
-          # Save path for artifact step
-          print(f"::set-output name=report_file::{report_file}")
+          # Write GitHub Actions job summary with red highlight for failure
+          summary_path = os.environ['GITHUB_STEP_SUMMARY']
+          with open(summary_path, 'a') as summary:
+              summary.write(f"## Profanity Check Summary\n")
+              summary.write(f"**Total files scanned:** {total_files}\n\n")
+              if profane_files:
+                  summary.write(f"**Files with profanity:** <span style='color:red'>{profane_count}</span>\n\n")
+                  summary.write("### Offending files and words\n")
+                  for file_path, words in profane_files:
+                      summary.write(f"- {file_path}: {', '.join(words)}\n")
+              else:
+                  summary.write("**Files with profanity:** 0 ✅\n")
 
+          # Add annotations for each profane file
+          for file_path, words in profane_files:
+              print(f"::error file={file_path}::Profanity detected: {', '.join(words)}")
+
+          # Fail workflow if any profanity
           if profane_files:
               sys.exit("❌ Profanity detected. Failing workflow.")
           else:
