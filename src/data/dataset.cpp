@@ -1271,12 +1271,26 @@ namespace Wisteria::Data
                     // is a string or date further down this column
                     currentColumnType = ColumnImportType::Numeric;
                     }
-                // ConvertToDate() will also attempt to parse as time, so use
-                // strictly review as dates
+                // ConvertToDate() will also attempt to parse as time, so
+                // review as both date/time and just dates
                 else if (dTime.ParseDateTime(currentCell, &end) ||
                          dTime.ParseDate(currentCell, &end))
                     {
                     currentColumnType = ColumnImportType::Date;
+                    // will need to keep going through the rest of the values to ensure
+                    // that the rest of the column are dates too
+                    continue;
+                    }
+
+                // If was deduced as a date earlier, but current value doesn't appear
+                // to be one, then switch back to text and stop. This can happen with
+                // ambiguous values like "24-1" being seen as a day and month when it can
+                // also be a game's score. In that case, something like "24-0" later in the data
+                // will fail to be parsed as a date and force this column back to a string.
+                if (currentColumnType == ColumnImportType::Date &&
+                    !dTime.ParseDateTime(currentCell, &end) && !dTime.ParseDate(currentCell, &end))
+                    {
+                    currentColumnType = ColumnImportType::String;
                     break;
                     }
 
