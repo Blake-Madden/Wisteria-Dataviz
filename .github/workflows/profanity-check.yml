@@ -1,0 +1,109 @@
+name: Profanity Check
+
+on:
+  push:
+    paths:
+      - '**/*.md'
+      - '**/*.qmd'
+      - '**/*.cpp'
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.cxx'
+      - '**/*.R'
+      - '**/*.r'
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '**/*.qmd'
+      - '**/*.cpp'
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.cxx'
+      - '**/*.R'
+      - '**/*.r'
+
+jobs:
+  check-profanity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install profanity-check
+
+      - name: Run profanity check
+        id: profanity
+        run: |
+          import os
+          import sys
+          from multiprocessing import Pool, cpu_count
+          from profanity_check import predict
+
+          extensions = ['.md', '.qmd', '.cpp', '.h', '.hpp', '.cxx', '.R', '.r']
+
+          # Gather all files to check
+          files_to_check = []
+          for root, dirs, files in os.walk('.'):
+              for file in files:
+                  if any(file.endswith(ext) for ext in extensions):
+                      files_to_check.append(os.path.join(root, file))
+
+          def check_file(path):
+              try:
+                  with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                      content = f.read()
+                      if predict([content])[0] == 1:
+                          return path
+              except Exception as e:
+                  print(f"⚠️ Could not read {path}: {e}")
+              return None
+
+          # Parallel scan
+          with Pool(cpu_count()) as pool:
+              results = pool.map(check_file, files_to_check)
+
+          # Filter profane files
+          profane_files = [f for f in results if f]
+          total_files = len(files_to_check)
+          profane_count = len(profane_files)
+
+          # Write artifact report
+          report_file = 'profanity_report.txt'
+          with open(report_file, 'w', encoding='utf-8') as f:
+              if profane_files:
+                  f.write("Profanity detected in the following files:\n")
+                  for line in profane_files:
+                      f.write(f"{line}\n")
+              else:
+                  f.write("No profanity detected.\n")
+
+          # Print GitHub Actions summary
+          print(f"::notice title=Profanity Check Summary::Scanned {total_files} files, found {profane_count} with profanity.")
+          for f in profane_files:
+              print(f"::error file={f}::Profanity detected in this file")
+
+          # Set output for artifact
+          print(f"::set-output name=report_file::{report_file}")
+
+          # Fail workflow if any profanity
+          if profane_files:
+              sys.exit("❌ Profanity detected. Failing workflow.")
+          else:
+              print("✅ No profanity detected.")
+
+      - name: Upload profanity report
+        uses: actions/upload-artifact@v3
+        with:
+          name: profanity-report
+          path: ${{ steps.profanity.outputs.report_file }}
