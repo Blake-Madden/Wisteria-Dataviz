@@ -66,7 +66,8 @@ jobs:
            cmake ./
            msbuild ${{ env.guitestrunner }}.sln
            cd bin/Debug
-           ./${{ env.guitestrunner }} --reporter JUnit::out=${{ env.guioutfile }}
+           ./${{ env.guitestrunner }} --reporter JUnit::out=./${{ env.guioutfile }}
+           Get-ChildItem -Path ${{ github.workspace }}/tests/gui-tests/ -Recurse -Force
            cat ${{ env.guioutfile }}
            $FileContent = Get-Content ${{ env.guioutfile }}
            $errors = (Select-String -InputObject $FileContent -Pattern 'errors="([0-9]+)"' | % { $($_.matches.groups[1]) } )

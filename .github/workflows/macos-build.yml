@@ -59,6 +59,7 @@ jobs:
              cmake --build . -j4
              cd bin
              ./${{ env.guitestrunner }} --reporter JUnit::out=${{ env.guioutfile }}
+             ls -R ${{ github.workspace }}/tests/gui-tests/
              cat ${{ env.guioutfile }}
              errors=$(cat ${{ env.guioutfile }} | grep -Po '(errors)="\K[^"]*')
              failures=$(cat ${{ env.guioutfile }} | grep -Po '(failures)="\K[^"]*')
