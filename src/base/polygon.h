@@ -219,8 +219,7 @@ namespace Wisteria::GraphItems
         /** @returns The area of a polygon using the shoelace formula.
             @param polygon The polygon's points.
             @details Based on
-            https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.
-            @todo needs unit testing*/
+            https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.*/
         template<typename polygonT>
         [[nodiscard]]
         static double GetPolygonArea(const polygonT& polygon)
@@ -256,12 +255,11 @@ namespace Wisteria::GraphItems
         static bool IsInsidePolygon(wxPoint pt, const wxPoint* polygon, int N);
 
         /** @brief Determines if a rectangle is inside a polygon.
-            @details Tests if a point is within a polygon (or on an edge or vertex)
-                by shooting a ray along the X axis.
+            @details Tests if all four corners of a rectangle are within a polygon
+                (or on an edge or vertex) by shooting a ray along the X axis.
             @param rect The rectangle to review against the polygon.
             @param polygon The polygon to perform collision detection within.
-            @returns Whether the point is inside the polygon.
-            @todo needs unit testing*/
+            @returns Whether the point is inside the polygon.*/
         template<typename polygonT>
         [[nodiscard]]
         static bool IsRectInsidePolygon(const wxRect rect, const polygonT& polygon)
@@ -348,8 +346,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Determines the bounding box that a polygon requires to fit inside.
             @param polygon The polygon's points.
-            @returns The rectangle that the polygon would need to fit in.
-            @todo needs unit testing*/
+            @returns The rectangle that the polygon would need to fit in.*/
         template<typename polygonT>
         [[nodiscard]]
         static wxRect GetPolygonBoundingBox(const polygonT& polygon)

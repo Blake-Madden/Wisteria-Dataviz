@@ -75,7 +75,6 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Polygon::IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N)
         {
-        assert(N > 0 && polygon);
         if (N == 0 || polygon == nullptr)
             {
             return false;
