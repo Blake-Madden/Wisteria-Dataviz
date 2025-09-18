@@ -1,5 +1,8 @@
 name: macOS Build & Unit Tests
 on: [push, pull_request]
+env:
+  guitestrunner: 'WisteriaGuiTestRunner'
+  guioutfile: 'WDV-gui-junit.xml'
 
 jobs:
   build:
@@ -14,17 +17,17 @@ jobs:
   
       - name: Download wxwidgets
         run: |
+             brew install grep
              brew install tbb
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
  
-      - name: Build
+      - name: Build and demo
         run: |
              cmake ./
              cmake --build . -j4
 
-      - name: Run tests
+      - name: Run low-level tests
         run: |
-             brew install grep
              cd ..
              git clone https://github.com/catchorg/Catch2.git
              cd ${{ github.workspace }}/tests
@@ -44,8 +47,29 @@ jobs:
                exit 1
              fi
 
+      - name: Run GUI tests
+        run: |
+             cd gui-tests
+             cmake ./
+             cmake --build . -j4
+             cd bin
+             ./${{ env.guitestrunner }} --reporter JUnit::out=${{ env.guioutfile }}
+             cat ${{ env.guioutfile }}
+             errors=$(cat ${{ env.guioutfile }} | grep -Po '(errors)="\K[^"]*')
+             failures=$(cat ${{ env.guioutfile }} | grep -Po '(failures)="\K[^"]*')
+             echo "Error count is: ${errors}"
+             echo "Failure count is: ${failures}"
+             if [ "$errors" -gt 0 ]; then
+               exit 1
+             fi
+             if [ "$failures" -gt 0 ]; then
+               exit 1
+             fi
+
       - name: Archive test results
         uses: actions/upload-artifact@v4
         with:
           name: macOS unit tests
-          path: ${{ github.workspace }}/tests/bin/*.xml
+          path: |
+            ${{ github.workspace }}/tests/bin/*.xml
+            ${{ github.workspace }}/tests/gui-tests/bin/*.xml
