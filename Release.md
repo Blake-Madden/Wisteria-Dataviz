@@ -2,7 +2,7 @@
 
 ## 1.0.4 Release
 
-- Add support to tied games to Win/Loss Sparkline
+- Add support for tied games to Win/Loss Sparkline
 - Make legend for Win/Loss Sparkline more dynamic
 - Improve layout of images embedded in reports
   - Larger images will now be sized properly to the width of the canvas, while maintaining aspect ratio
