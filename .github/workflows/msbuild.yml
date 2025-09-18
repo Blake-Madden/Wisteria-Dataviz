@@ -5,6 +5,8 @@ env:
   project: 'Wisteria'
   testrunner: 'WisteriaTestRunner'
   outfile: 'WDV-win32-junit.xml'
+  guitestrunner: 'WisteriaGuiTestRunner'
+  guioutfile: 'WDV-gui-win32-junit.xml'
 
 permissions:
   contents: read
@@ -25,20 +27,49 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Build & run tests
+    - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
            cmake ./
            msbuild ${{ env.project }}.sln
+
+    - name: Run low-level tests
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
            cd ..
            git clone https://github.com/catchorg/Catch2.git
            cd ${{ github.workspace }}/tests
            cmake ./
            msbuild ${{ env.testrunner }}.sln
-           cd bin\Debug
+           cd bin/Debug
            ./${{ env.testrunner }} --reporter JUnit::out=${{ env.outfile }}
            cat ${{ env.outfile }}
            $FileContent = Get-Content ${{ env.outfile }}
+           $errors = (Select-String -InputObject $FileContent -Pattern 'errors="([0-9]+)"' | % { $($_.matches.groups[1]) } )
+           $failures = (Select-String -InputObject $FileContent -Pattern 'failures="([0-9]+)"' | % { $($_.matches.groups[1]) } )
+           if ($errors.Value -gt 0)
+             {
+             Write-Host "Error count is: " + $errors.Value
+             exit 1
+             }
+           if ($failures.Value -gt 0)
+             {
+             Write-Host "Failure count is: " + $failures.Value
+             exit 1
+             }
+
+    - name: Run GUI tests
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+           cd ..
+           git clone https://github.com/catchorg/Catch2.git
+           cd ${{ github.workspace }}/tests/gui-tests
+           cmake ./
+           msbuild ${{ env.guitestrunner }}.sln
+           cd bin/Debug
+           ./${{ env.guitestrunner }} --reporter JUnit::out=${{ env.guioutfile }}
+           cat ${{ env.guioutfile }}
+           $FileContent = Get-Content ${{ env.guioutfile }}
            $errors = (Select-String -InputObject $FileContent -Pattern 'errors="([0-9]+)"' | % { $($_.matches.groups[1]) } )
            $failures = (Select-String -InputObject $FileContent -Pattern 'failures="([0-9]+)"' | % { $($_.matches.groups[1]) } )
            if ($errors.Value -gt 0)
@@ -56,4 +87,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: MSW unit tests
-        path: ${{ github.workspace }}/tests/bin/Debug/*.xml
+        path: |
+          ${{ github.workspace }}/tests/bin/Debug/*.xml
+          ${{ github.workspace }}/tests/gui-tests/bin/Debug/*.xml

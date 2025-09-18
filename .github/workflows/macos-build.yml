@@ -1,8 +1,10 @@
 name: macOS Build & Unit Tests
 on: [push, pull_request]
 env:
+  testrunner: 'WisteriaTestRunner'
+  outfile: 'WDV-macos-junit.xml'
   guitestrunner: 'WisteriaGuiTestRunner'
-  guioutfile: 'WDV-gui-junit.xml'
+  guioutfile: 'WDV-gui-macos-junit.xml'
 
 jobs:
   build:
@@ -27,6 +29,7 @@ jobs:
              cmake --build . -j4
 
       - name: Run low-level tests
+        working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
              cd ..
              git clone https://github.com/catchorg/Catch2.git
@@ -34,10 +37,10 @@ jobs:
              cmake ./
              cmake --build . -j4
              cd bin
-             ./WisteriaTestRunner --reporter JUnit::out=WDV-macos-junit.xml
-             cat WDV-macos-junit.xml
-             errors=$(cat WDV-macos-junit.xml | ggrep -Po '(errors)="\K[^"]*')
-             failures=$(cat WDV-macos-junit.xml | ggrep -Po '(failures)="\K[^"]*')
+             ./${{ env.testrunner }} --reporter JUnit::out=${{ env.outfile }}
+             cat ${{ env.outfile }}
+             errors=$(cat ${{ env.outfile }} | ggrep -Po '(errors)="\K[^"]*')
+             failures=$(cat ${{ env.outfile }} | ggrep -Po '(failures)="\K[^"]*')
              echo "Error count is: ${errors}"
              echo "Failure count is: ${failures}"
              if [ "$errors" -gt 0 ]; then
@@ -48,8 +51,9 @@ jobs:
              fi
 
       - name: Run GUI tests
+        working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
-             cd gui-tests
+             cd ${{ github.workspace }}/tests/gui-tests
              cmake ./
              cmake --build . -j4
              cd bin
