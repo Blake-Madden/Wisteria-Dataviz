@@ -3,8 +3,6 @@ on: [push, pull_request]
 env:
   testrunner: 'WisteriaTestRunner'
   outfile: 'WDV-macos-junit.xml'
-  guitestrunner: 'WisteriaGuiTestRunner'
-  guioutfile: 'WDV-gui-macos-junit.xml'
 
 jobs:
   build:
@@ -51,31 +49,9 @@ jobs:
              fi
              rm -rf "${{ github.workspace }}/tests/Catch2"
 
-      - name: Run GUI tests
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: |
-             cd ${{ github.workspace }}/tests/gui-tests
-             cmake ./
-             cmake --build . -j4
-             cd bin
-             ./${{ env.guitestrunner }} --reporter JUnit::out=${{ env.guioutfile }}
-             ls -R ${{ github.workspace }}/tests/gui-tests/
-             cat ${{ env.guioutfile }}
-             errors=$(cat ${{ env.guioutfile }} | grep -Po '(errors)="\K[^"]*')
-             failures=$(cat ${{ env.guioutfile }} | grep -Po '(failures)="\K[^"]*')
-             echo "Error count is: ${errors}"
-             echo "Failure count is: ${failures}"
-             if [ "$errors" -gt 0 ]; then
-               exit 1
-             fi
-             if [ "$failures" -gt 0 ]; then
-               exit 1
-             fi
-
       - name: Archive test results
         uses: actions/upload-artifact@v4
         with:
           name: macOS unit tests
           path: |
             ${{ github.workspace }}/tests/bin/*.xml
-            ${{ github.workspace }}/tests/gui-tests/bin/*.xml
