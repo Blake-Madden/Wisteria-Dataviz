@@ -39,37 +39,14 @@ namespace Wisteria::GraphItems
     std::pair<double, double> Polygon::GetPercentInsideRect(const wxRect innerRect,
                                                             const wxRect outerRect)
         {
-        if (IsRectInsideRect(innerRect, outerRect))
-            {
-            return std::make_pair(1.0, 1.0);
-            }
-
-        int widthDiffLeft{ 0 }, widthDiffRight{ 0 };
-        int heightDiffTop{ 0 }, heightDiffBottom{ 0 };
-
-        if (innerRect.GetLeft() < outerRect.GetLeft())
-            {
-            widthDiffLeft = outerRect.GetLeft() - innerRect.GetLeft();
-            }
-        if (innerRect.GetRight() > outerRect.GetRight())
-            {
-            widthDiffRight = innerRect.GetRight() - outerRect.GetRight();
-            }
-        if (innerRect.GetTop() < outerRect.GetTop())
-            {
-            heightDiffTop = outerRect.GetTop() - innerRect.GetTop();
-            }
-        if (innerRect.GetBottom() > outerRect.GetBottom())
-            {
-            heightDiffBottom = innerRect.GetBottom() - outerRect.GetBottom();
-            }
-
-        const int widthDiff = widthDiffLeft + widthDiffRight;
-        const int heightDiff = heightDiffTop + heightDiffBottom;
-
-        return std::make_pair(
-            safe_divide<double>(innerRect.GetWidth() - widthDiff, innerRect.GetWidth()),
-            safe_divide<double>(innerRect.GetHeight() - heightDiff, innerRect.GetHeight()));
+        return { safe_divide<double>(
+                     std::max(0, std::min(innerRect.GetRight(), outerRect.GetRight()) -
+                                     std::max(innerRect.GetLeft(), outerRect.GetLeft()) + 1),
+                     innerRect.GetWidth()),
+                 safe_divide<double>(
+                     std::max(0, std::min(innerRect.GetBottom(), outerRect.GetBottom()) -
+                                     std::max(innerRect.GetTop(), outerRect.GetTop()) + 1),
+                     innerRect.GetHeight()) };
         }
 
     //-------------------------------------------

@@ -387,3 +387,56 @@ TEST_CASE("Polygon::IsRectInsideRect", "[polygon]")
         CHECK_FALSE(Polygon::IsRectInsideRect(innerLarger, outer));
         }
     }
+
+TEST_CASE("Polygon::GetPercentInsideRect", "[polygon]")
+    {
+    wxRect outer{ 0, 0, 4, 3 }; // x=0..3, y=0..2 inclusive
+
+    SECTION("Inner rectangle fully inside outer rectangle")
+        {
+        wxRect inner{ 1, 1, 2, 1 }; // fully inside
+        const auto [wPct, hPct] = Polygon::GetPercentInsideRect(inner, outer);
+        CHECK_THAT(wPct, Catch::Matchers::WithinAbs(1.0, 1e-6));
+        CHECK_THAT(hPct, Catch::Matchers::WithinAbs(1.0, 1e-6));
+        }
+
+    SECTION("Inner rectangle identical to outer rectangle")
+        {
+        wxRect inner{ 0, 0, 4, 3 };
+        const auto [wPct, hPct] = Polygon::GetPercentInsideRect(inner, outer);
+        CHECK_THAT(wPct, Catch::Matchers::WithinAbs(1.0, 1e-6));
+        CHECK_THAT(hPct, Catch::Matchers::WithinAbs(1.0, 1e-6));
+        }
+
+    SECTION("Inner rectangle partially outside on right and bottom")
+        {
+        wxRect inner{ 2, 1, 3, 2 }; // x=2..4, y=1..2
+        const auto [wPct, hPct] = Polygon::GetPercentInsideRect(inner, outer);
+        CHECK_THAT(wPct, Catch::Matchers::WithinAbs(2.0 / 3.0, 1e-6));
+        CHECK_THAT(hPct, Catch::Matchers::WithinAbs(1.0, 1e-6));
+        }
+
+    SECTION("Inner rectangle partially outside on left and top")
+        {
+        wxRect inner{ -1, -1, 3, 3 }; // x=-1..1, y=-1..1
+        const auto [wPct, hPct] = Polygon::GetPercentInsideRect(inner, outer);
+        CHECK_THAT(wPct, Catch::Matchers::WithinAbs(2.0 / 3.0, 1e-6));
+        CHECK_THAT(hPct, Catch::Matchers::WithinAbs(2.0 / 3.0, 1e-6));
+        }
+
+    SECTION("Inner rectangle fully outside to the right and below")
+        {
+        wxRect inner{ 5, 5, 2, 2 };
+        const auto [wPct, hPct] = Polygon::GetPercentInsideRect(inner, outer);
+        CHECK_THAT(wPct, Catch::Matchers::WithinAbs(0.0, 1e-6));
+        CHECK_THAT(hPct, Catch::Matchers::WithinAbs(0.0, 1e-6));
+        }
+
+    SECTION("Inner rectangle larger than outer rectangle")
+        {
+        wxRect inner{ -1, -1, 6, 5 }; // x=-1..4, y=-1..3
+        const auto [wPct, hPct] = Polygon::GetPercentInsideRect(inner, outer);
+        CHECK_THAT(wPct, Catch::Matchers::WithinAbs(4.0 / 6.0, 1e-6));
+        CHECK_THAT(hPct, Catch::Matchers::WithinAbs(3.0 / 5.0, 1e-6));
+        }
+    }
