@@ -49,6 +49,7 @@ jobs:
              if [ "$failures" -gt 0 ]; then
                exit 1
              fi
+             rm -rf "${{ github.workspace }}/tests/Catch2"
 
       - name: Run GUI tests
         working-directory: ${{env.GITHUB_WORKSPACE}}

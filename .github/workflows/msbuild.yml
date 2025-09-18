@@ -57,12 +57,11 @@ jobs:
              Write-Host "Failure count is: " + $failures.Value
              exit 1
              }
+           rmdir /s /q "${{ github.workspace }}/tests/Catch2"
 
     - name: Run GUI tests
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-           cd ..
-           git clone https://github.com/catchorg/Catch2.git
            cd ${{ github.workspace }}/tests/gui-tests
            cmake ./
            msbuild ${{ env.guitestrunner }}.sln
