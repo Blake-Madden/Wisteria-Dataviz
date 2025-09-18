@@ -125,9 +125,8 @@ endif()
 if(WIN32)
     target_link_libraries(${TEST_APP} PRIVATE Catch2::Catch2 ${wxWidgets_LIBRARIES})
 elseif(UNIX)
-    find_package(OpenMP)
     find_library(TBB_LIB tbb)
-    target_link_libraries(${TEST_APP} ${wxWidgets_LIBRARIES} ${TBB_LIB} OpenMP::OpenMP_CXX Catch2::Catch2)
+    target_link_libraries(${TEST_APP} ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2)
 endif()
 
 # Copy datasets and test files into build folder
