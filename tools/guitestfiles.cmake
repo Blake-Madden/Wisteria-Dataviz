@@ -10,6 +10,7 @@ SET(TEST_SRC_FILES
     formattedtexttests.cpp
     labeltests.cpp
     listctrlextests.cpp
+    polygontests.cpp
     sidebartests.cpp
     subsettests.cpp
     testableframe.cpp
