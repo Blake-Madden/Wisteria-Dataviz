@@ -114,7 +114,11 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         dataProvider.SetItemValue(6,0,2);
         dataProvider.SetItemText(7,0,L"a");
         dataProvider.SetItemText(8,0,L"B");
-        dataProvider.SetItemText(9,0,L"Z", Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting, 4);//should actually sort as 4
+        dataProvider.SetItemText(
+            9, 0, L"Z",
+            Wisteria::NumberFormatInfo{
+                Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting },
+            4); // should actually sort as 4
         dataProvider.Sort(0, Wisteria::SortDirection::SortDescending,0,(size_t)-1);
         CHECK(dataProvider.GetItemText(0,0) == L"c");
         CHECK(dataProvider.GetItemText(1,0) == L"B");
@@ -289,7 +293,7 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         dataProvider.SetItemText(1,1,L"second2");
         dataProvider.SetItemText(2,0,L"third");
         dataProvider.SetItemText(2,1,L"third2");
-        CHECK(dataProvider.Find(L"second") == 1);
+        CHECK(dataProvider.Find(L"second", 0) == 1);
         }
     }
 
@@ -579,7 +583,7 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
         dataProvider.SetItemText(1,1,L"second2");
         dataProvider.SetItemText(2,0,L"third");
         dataProvider.SetItemText(2,1,L"third2");
-        CHECK(dataProvider.Find(L"second") == 1);
+        CHECK(dataProvider.Find(L"second", 0) == 1);
         }
     }
 

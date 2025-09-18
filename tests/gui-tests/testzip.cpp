@@ -1,7 +1,9 @@
+#include "../../src/CRCpp/inc/CRC.h"
+#include "../../src/util/zipcatalog.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../../src/util/zipcatalog.h"
-#include "../../src/CRCpp/inc/CRC.h"
+#include <wx/stdpaths.h>
+#include <wx/wfstream.h>
 
 using namespace Wisteria;
 
@@ -11,7 +13,8 @@ TEST_CASE("Zip Catalog", "[zip]")
     ZipCatalog zc(appDir + L"/test_files/zip_data.zip");
 
         {
-        const auto bmp = zc.ReadBitmap(L"thisisengineering-raeng-64YrPKiguAE-unsplash.jpg", wxBITMAP_TYPE_JPEG);
+        const auto bmp =
+            zc.ReadBitmap(L"thisisengineering-raeng-64YrPKiguAE-unsplash.jpg", wxBITMAP_TYPE_JPEG);
         CHECK(bmp.IsOk());
         }
 
@@ -19,13 +22,16 @@ TEST_CASE("Zip Catalog", "[zip]")
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"thisisengineering-raeng-64YrPKiguAE-unsplash.jpg", memstream);
         wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc = CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc =
+            CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
 
-        wxFileInputStream theFile(appDir + L"/test_files/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg");
+        wxFileInputStream theFile(appDir +
+                                  L"/test_files/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg");
         wxMemoryOutputStream memstream2;
         theFile.Read(memstream2);
         wxStreamBuffer* theBuffer2 = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(), theBuffer2->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(),
+                                            theBuffer2->GetBufferSize(), CRC::CRC_32());
         CHECK(crc == crc2);
         }
 
@@ -36,13 +42,15 @@ TEST_CASE("Zip Catalog", "[zip]")
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"piechart-subgrouped.svg", memstream);
         wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc = CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
-    
+        std::uint32_t crc =
+            CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
+
         wxFileInputStream theFile(appDir + L"/test_files/piechart-subgrouped.svg");
         wxMemoryOutputStream memstream2;
         theFile.Read(memstream2);
         wxStreamBuffer* theBuffer2 = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(), theBuffer2->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(),
+                                            theBuffer2->GetBufferSize(), CRC::CRC_32());
         CHECK(crc == crc2);
         }
 
@@ -55,13 +63,15 @@ TEST_CASE("Zip Catalog", "[zip]")
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"subsettests.cpp", memstream);
         wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc = CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc =
+            CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
 
         wxFileInputStream theFile(appDir + L"/test_files/subsettests.cpp");
         wxMemoryOutputStream memstream2;
         theFile.Read(memstream2);
         wxStreamBuffer* theBuffer2 = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(), theBuffer2->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(),
+                                            theBuffer2->GetBufferSize(), CRC::CRC_32());
 
         CHECK(str.length() == theBuffer->GetBufferSize());
         CHECK(theBuffer->GetBufferSize() == theBuffer2->GetBufferSize());
@@ -78,13 +88,15 @@ TEST_CASE("Zip Catalog", "[zip]")
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"listctrlextests.cpp", memstream);
         wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc = CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
-    
+        std::uint32_t crc =
+            CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
+
         wxFileInputStream theFile(appDir + L"/test_files/listctrlextests.cpp");
         wxMemoryOutputStream memstream2;
         theFile.Read(memstream2);
         wxStreamBuffer* theBuffer2 = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(), theBuffer2->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(),
+                                            theBuffer2->GetBufferSize(), CRC::CRC_32());
         CHECK(crc == crc2);
         }
 
@@ -96,13 +108,15 @@ TEST_CASE("Zip Catalog", "[zip]")
         wxMemoryOutputStream memstream;
         zc.ReadFile(L"fileutiltests.cpp", memstream);
         wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc = CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
-    
+        std::uint32_t crc =
+            CRC::Calculate(theBuffer->GetBufferStart(), theBuffer->GetBufferSize(), CRC::CRC_32());
+
         wxFileInputStream theFile(appDir + L"/test_files/fileutiltests.cpp");
         wxMemoryOutputStream memstream2;
         theFile.Read(memstream2);
         wxStreamBuffer* theBuffer2 = memstream.GetOutputStreamBuffer();
-        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(), theBuffer2->GetBufferSize(), CRC::CRC_32());
+        std::uint32_t crc2 = CRC::Calculate(theBuffer2->GetBufferStart(),
+                                            theBuffer2->GetBufferSize(), CRC::CRC_32());
         CHECK(crc == crc2);
         CHECK(crc == crcStr);
         }
