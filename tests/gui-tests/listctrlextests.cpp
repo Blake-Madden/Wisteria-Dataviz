@@ -800,6 +800,25 @@ text \\
         }
     }
 
+// platforms will have different system font defaults, so remove that from the exported HTML
+[[nodiscard]]
+wxString RemoveFontStyleSection(const wxString& value)
+    {
+    wxString str = value;
+    const std::wstring_view styleSection{ L"style='font-family:" };
+    auto startPos = str.find(styleSection.data());
+    if (startPos != wxString::npos)
+        {
+        startPos += 7;
+        const auto endPos = str.find("'", startPos + styleSection.length());
+        if (endPos != wxString::npos)
+            {
+            str.erase(startPos, endPos - startPos);
+            }
+        }
+    return str;
+    }
+
 TEST_CASE("ListCtrlEx", "[listctrlex]")
     {
     auto m_dataProvider = std::make_shared<ListCtrlExNumericDataProvider>();
@@ -862,8 +881,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_list->Select(3);
         m_list->Select(6);
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportSelected);
-        CHECK(outputText == wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+        CHECK(RemoveFontStyleSection(outputText) ==
+              wxString(
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>teXt2</td></tr>\n"
@@ -874,8 +894,8 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         {
         wxString outputText;
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0, -1, false);
-        CHECK(outputText == wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+        CHECK(RemoveFontStyleSection(outputText) == wxString(
+            "<table border='1' style=''>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>tExt2</td></tr>\n"
             "    <tr><td>text</td></tr>\n"
@@ -889,8 +909,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         {
         wxString outputText;
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, -1, true);
-        CHECK(outputText == wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+        CHECK(RemoveFontStyleSection(outputText) ==
+              wxString(
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>teXt2</td></tr>\n"
             "    <tr><td>text</td></tr>\n"
@@ -902,11 +923,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         wxString outputText;
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
         CHECK(outputText.empty());
-        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);//starting point after ending point is nonsense
+        // starting point after ending point is nonsense
+        m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);
         CHECK(outputText.empty());
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
-        CHECK(outputText == wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+        CHECK(RemoveFontStyleSection(outputText) ==
+              wxString(
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>tExt2</td></tr>\n"
@@ -917,8 +940,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>7</td></tr>\n"
             "</table>"));
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, -10, -1, 0, -1, true);
-        CHECK(outputText == wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+        CHECK(RemoveFontStyleSection(outputText) ==
+              wxString(
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>tExt2</td></tr>\n"
@@ -945,7 +969,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         // get both columns
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
         CHECK(wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td><td>NAME2</td></tr></thead>\n"
             "    <tr><td>Text</td><td>2Text</td></tr>\n"
             "    <tr><td>tExt2</td><td>2tExt2</td></tr>\n"
@@ -954,11 +978,11 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>text</td><td>2text</td></tr>\n"
             "    <tr><td>72</td><td>272</td></tr>\n"
             "    <tr><td>7</td><td>27</td></tr>\n"
-            "</table>") == outputText);
+                       "</table>") == RemoveFontStyleSection(outputText));
         // just get the first column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
         CHECK(wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>tExt2</td></tr>\n"
@@ -967,11 +991,11 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>text</td></tr>\n"
             "    <tr><td>72</td></tr>\n"
             "    <tr><td>7</td></tr>\n"
-            "</table>") == outputText);
+                       "</table>") == RemoveFontStyleSection(outputText));
         // get last column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
         CHECK(wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME2</td></tr></thead>\n"
             "    <tr><td>2Text</td></tr>\n"
             "    <tr><td>2tExt2</td></tr>\n"
@@ -980,7 +1004,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>2text</td></tr>\n"
             "    <tr><td>272</td></tr>\n"
             "    <tr><td>27</td></tr>\n"
-            "</table>") == outputText);
+                       "</table>") == RemoveFontStyleSection(outputText));
         }
     SECTION("Format to html custom column range bad")
         {
@@ -1001,7 +1025,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         // bogus negative start should be reset to first column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
         CHECK(wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME</td></tr></thead>\n"
             "    <tr><td>Text</td></tr>\n"
             "    <tr><td>tExt2</td></tr>\n"
@@ -1010,14 +1034,14 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>text</td></tr>\n"
             "    <tr><td>72</td></tr>\n"
             "    <tr><td>7</td></tr>\n"
-            "</table>") == outputText);
+                       "</table>") == RemoveFontStyleSection(outputText));
         // bogus (too large) is nonsense
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 99, 1, true);
-        CHECK(outputText == wxString(""));
+        CHECK(outputText.empty());
         // bogus negative end should be reset to last column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, -10, true);
         CHECK(wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME2</td></tr></thead>\n"
             "    <tr><td>2Text</td></tr>\n"
             "    <tr><td>2tExt2</td></tr>\n"
@@ -1026,11 +1050,11 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>2text</td></tr>\n"
             "    <tr><td>272</td></tr>\n"
             "    <tr><td>27</td></tr>\n"
-            "</table>") == outputText);
+                       "</table>") == RemoveFontStyleSection(outputText));
         // bogus (too big) end should be reset to last column
         m_list->FormatToHtml(outputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 10, true);
         CHECK(wxString(
-            "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
+            "<table border='1' style=''>\n"
             "    <thead><tr style='background:#337BC4; color:white;'><td>NAME2</td></tr></thead>\n"
             "    <tr><td>2Text</td></tr>\n"
             "    <tr><td>2tExt2</td></tr>\n"
@@ -1039,7 +1063,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
             "    <tr><td>2text</td></tr>\n"
             "    <tr><td>272</td></tr>\n"
             "    <tr><td>27</td></tr>\n"
-            "</table>") == outputText);
+                       "</table>") == RemoveFontStyleSection(outputText));
         }
     SECTION("Format to text only selected rows")
         {
