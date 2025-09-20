@@ -7,6 +7,8 @@
 - Improve layout of images embedded in reports
   - Larger images will now be sized properly to the width of the canvas, while maintaining aspect ratio
 - Improve layout of empty spacers in reports (will now consume zero size)
+- Expanded JSON syntax manual
+- JSON syntax manual will now be automatically build via *CMake* (if *Quarto* is installed)
 
 ## 1.0.3 Release
 
