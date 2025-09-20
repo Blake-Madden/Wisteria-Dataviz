@@ -50,7 +50,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    bool Polygon::IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N)
+    bool Polygon::IsInsidePolygon(const wxPoint pt, const wxPoint* polygon, const int N)
         {
         if (N == 0 || polygon == nullptr)
             {
@@ -70,7 +70,7 @@ namespace Wisteria::GraphItems
             {
             constexpr bool BOUND{ true };
             // point is a vertex
-            if (p == p1)
+            if (pt == p1)
                 {
                 return BOUND;
                 }
@@ -79,7 +79,7 @@ namespace Wisteria::GraphItems
             wxPoint p2 = polygon[i % N];
 
             // ray is outside our interests
-            if (p.y < std::min(p1.y, p2.y) || p.y > std::max(p1.y, p2.y))
+            if (pt.y < std::min(p1.y, p2.y) || pt.y > std::max(p1.y, p2.y))
                 {
                 // next ray left point
                 p1 = p2;
@@ -87,13 +87,13 @@ namespace Wisteria::GraphItems
                 }
 
             // ray is crossing over by the algorithm (common part of)
-            if (p.y > std::min(p1.y, p2.y) && p.y < std::max(p1.y, p2.y))
+            if (pt.y > std::min(p1.y, p2.y) && pt.y < std::max(p1.y, p2.y))
                 {
                 // x is before of ray
-                if (p.x <= std::max(p1.x, p2.x))
+                if (pt.x <= std::max(p1.x, p2.x))
                     {
                     // overlies on a horizontal ray
-                    if (p1.y == p2.y && p.x >= std::min(p1.x, p2.x))
+                    if (p1.y == p2.y && pt.x >= std::min(p1.x, p2.x))
                         {
                         return BOUND;
                         }
@@ -102,7 +102,7 @@ namespace Wisteria::GraphItems
                     if (p1.x == p2.x)
                         {
                         // overlies on a ray
-                        if (p1.x == p.x)
+                        if (p1.x == pt.x)
                             {
                             return BOUND;
                             }
@@ -114,17 +114,17 @@ namespace Wisteria::GraphItems
                     else
                         {
                         // cross point of x
-                        const auto xinters = ((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
+                        const auto xinters = ((pt.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
 
                         // overlies on a ray
                         if (constexpr double DOUBLE_EPSILON{ .01f };
-                            std::fabs(p.x - xinters) < DOUBLE_EPSILON)
+                            std::fabs(pt.x - xinters) < DOUBLE_EPSILON)
                             {
                             return BOUND;
                             }
 
                         // before ray
-                        if (p.x < xinters)
+                        if (pt.x < xinters)
                             {
                             ++crossPointsCount;
                             }
@@ -135,13 +135,13 @@ namespace Wisteria::GraphItems
             else
                 {
                 // p crossing over p2
-                if (p.y == p2.y && p.x <= p2.x)
+                if (pt.y == p2.y && pt.x <= p2.x)
                     {
                     // next vertex
                     const wxPoint& p3 = polygon[(i + 1) % N];
 
-                    // p.y lies between p1.y & p3.y
-                    if (p.y >= std::min(p1.y, p3.y) && p.y <= std::max(p1.y, p3.y))
+                    // pt.y lies between p1.y & p3.y
+                    if (pt.y >= std::min(p1.y, p3.y) && pt.y <= std::max(p1.y, p3.y))
                         {
                         ++crossPointsCount;
                         }
