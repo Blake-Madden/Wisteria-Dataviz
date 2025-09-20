@@ -197,9 +197,9 @@ namespace Wisteria::GraphItems
             @brief Helper functions for collision detection and shape calculations.*/
         /// @{
 
-        /** @deprecated Use `geometry::get_polygon_width()`.*/
+        /** @deprecated Use `geometry::get_polygon_width()` instead.*/
         template<typename polygonT>
-        [[nodiscard]] [[deprecated("Use geometry::get_polygon_width()")]]
+        [[nodiscard]] [[deprecated("Use geometry::get_polygon_width() instead")]]
         static double GetPolygonWidth(const polygonT& polygon)
             {
             double areaWidth{ 0.0 };
@@ -215,9 +215,9 @@ namespace Wisteria::GraphItems
             return areaWidth;
             }
 
-        /** @deprecated Use `geometry::get_polygon_area()`.*/
+        /** @deprecated Use `geometry::get_polygon_area()` instead.*/
         template<typename polygonT>
-        [[nodiscard]] [[deprecated("Use geometry::get_polygon_area()")]]
+        [[nodiscard]] [[deprecated("Use geometry::get_polygon_area() instead")]]
         static double GetPolygonArea(const polygonT& polygon)
             {
             if (polygon.empty())
@@ -239,8 +239,8 @@ namespace Wisteria::GraphItems
             return std::abs(area / 2.0);
             }
 
-        /** @deprecated Use version that takes a `std::array`.*/
-        [[nodiscard]] [[deprecated("Use version geometry::is_inside_polygon()")]]
+        /** @deprecated Use `geometry::is_inside_polygon()` instead.*/
+        [[nodiscard]] [[deprecated("Use geometry::is_inside_polygon() instead")]]
         static bool IsInsidePolygon(wxPoint pt, const wxPoint* polygon, int N)
             {
             if (N == 0 || polygon == nullptr)
