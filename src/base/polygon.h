@@ -201,9 +201,9 @@ namespace Wisteria::GraphItems
             @param polygon The polygon to review.*/
         template<typename polygonT>
         [[nodiscard]]
-        static int GetPolygonWidth(const polygonT& polygon)
+        static double GetPolygonWidth(const polygonT& polygon)
             {
-            int areaWidth{ 0 };
+            double areaWidth{ 0.0 };
             for (auto pt : polygon)
                 {
                 auto startX{ pt.x };
@@ -211,7 +211,7 @@ namespace Wisteria::GraphItems
                     {
                     ++pt.x;
                     }
-                areaWidth = std::max({ pt.x - startX, areaWidth });
+                areaWidth = std::max<double>(pt.x - startX, areaWidth);
                 }
             return areaWidth;
             }
@@ -232,7 +232,7 @@ namespace Wisteria::GraphItems
             double area{ 0.0 };
 
             // Calculate value of shoelace formula
-            int j = polygon.size() - 1;
+            auto j = polygon.size() - 1;
             for (size_t i = 0; i < polygon.size(); i++)
                 {
                 area += (polygon[j].x + polygon[i].x) * (polygon[j].y - polygon[i].y);
