@@ -74,15 +74,15 @@ TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
         {
         std::vector<wxPoint> polygon{};
         wxPoint pt{ 0, 0 };
-        CHECK_FALSE(Polygon::IsInsidePolygon(pt, polygon.data(), polygon.size()));
+        CHECK_FALSE(Polygon::IsInsidePolygon(pt, polygon));
         }
 
     SECTION("Single point polygon")
         {
         std::vector<wxPoint> polygon{ { 1, 1 } };
         CHECK(
-            Polygon::IsInsidePolygon({ 1, 1 }, polygon.data(), polygon.size())); // point on vertex
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 0, 0 }, polygon.data(), polygon.size()));
+            Polygon::IsInsidePolygon(wxPoint{ 1, 1 }, polygon)); // point on vertex
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
         }
 
     SECTION("Triangle polygon")
@@ -90,19 +90,19 @@ TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
         std::vector<wxPoint> polygon{ { 0, 0 }, { 5, 0 }, { 0, 3 } };
 
         // Inside
-        CHECK(Polygon::IsInsidePolygon({ 1, 1 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 2, 1 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 1 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 1 }, polygon));
 
         // Outside
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 5, 3 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ -1, -1 }, polygon.data(), polygon.size()));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 5, 3 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -1, -1 }, polygon));
 
         // On vertex
-        CHECK(Polygon::IsInsidePolygon({ 0, 0 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
 
         // On edge
-        CHECK(Polygon::IsInsidePolygon({ 2, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 1, 0 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon));
         }
 
     SECTION("Rectangle polygon")
@@ -110,20 +110,20 @@ TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
         std::vector<wxPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
 
         // Inside
-        CHECK(Polygon::IsInsidePolygon({ 2, 1 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 3, 2 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 1 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 3, 2 }, polygon));
 
         // Outside
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 5, 1 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ -1, 2 }, polygon.data(), polygon.size()));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 5, 1 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -1, 2 }, polygon));
 
         // On vertex
-        CHECK(Polygon::IsInsidePolygon({ 0, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 4, 3 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 4, 3 }, polygon));
 
         // On edge
-        CHECK(Polygon::IsInsidePolygon({ 2, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 4, 1 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 4, 1 }, polygon));
         }
 
     SECTION("Concave L-shape polygon (integer points, deterministic)")
@@ -131,23 +131,23 @@ TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
         std::vector<wxPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
 
         // Safe inside points (bottom rectangle)
-        CHECK(Polygon::IsInsidePolygon({ 1, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 2, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 3, 0 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
 
         // Safe outside points
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 5, 1 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 0, 4 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ -1, 0 }, polygon.data(), polygon.size()));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 5, 1 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 4 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -1, 0 }, polygon));
 
         // Vertices (considered inside)
-        CHECK(Polygon::IsInsidePolygon({ 0, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 4, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 2, 3 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 4, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 3 }, polygon));
 
         // Edges (considered inside)
-        CHECK(Polygon::IsInsidePolygon({ 2, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 3, 0 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
         }
 
     SECTION("Rotated square (diamond shape)")
@@ -155,21 +155,21 @@ TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
         std::vector<wxPoint> polygon{ { 0, 2 }, { 2, 0 }, { 0, -2 }, { -2, 0 } };
 
         // Inside
-        CHECK(Polygon::IsInsidePolygon({ 0, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 1, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 0, -1 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, -1 }, polygon));
 
         // Outside
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 3, 0 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 0, 3 }, polygon.data(), polygon.size()));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 3 }, polygon));
 
         // On vertex
-        CHECK(Polygon::IsInsidePolygon({ 0, 2 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 2, 0 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 2 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
 
         // On edge
-        CHECK(Polygon::IsInsidePolygon({ 1, 1 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ -1, -1 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 1 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ -1, -1 }, polygon));
         }
 
     SECTION("Concave rotated polygon (diamond with notch, integer points, deterministic)")
@@ -178,23 +178,23 @@ TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
                                       { 0, -3 }, { -2, -1 }, { -1, 0 }, { -2, 1 } };
 
         // Safe inside points (main polygon body)
-        CHECK(Polygon::IsInsidePolygon({ 0, 0 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 0, 1 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ -1, 1 }, polygon.data(), polygon.size()));
-        CHECK(Polygon::IsInsidePolygon({ 0, -1 }, polygon.data(), polygon.size()));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 1 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ -1, 1 }, polygon));
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, -1 }, polygon));
 
         // Points on edges or vertices (considered inside)
-        CHECK(Polygon::IsInsidePolygon({ 1, 0 }, polygon.data(), polygon.size()));   // edge
-        CHECK(Polygon::IsInsidePolygon({ 0, 3 }, polygon.data(), polygon.size()));   // vertex
-        CHECK(Polygon::IsInsidePolygon({ 2, -1 }, polygon.data(), polygon.size()));  // vertex
-        CHECK(Polygon::IsInsidePolygon({ 0, 2 }, polygon.data(), polygon.size()));   // edge
-        CHECK(Polygon::IsInsidePolygon({ -1, -1 }, polygon.data(), polygon.size())); // edge
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon)); // edge
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 3 }, polygon)); // vertex
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, -1 }, polygon)); // vertex
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 2 }, polygon));  // edge
+        CHECK(Polygon::IsInsidePolygon(wxPoint{ -1, -1 }, polygon)); // edge
 
         // Outside points (must be false)
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 3, 0 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 0, 4 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ -3, 0 }, polygon.data(), polygon.size()));
-        CHECK_FALSE(Polygon::IsInsidePolygon({ 0, -4 }, polygon.data(), polygon.size()));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 4 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -3, 0 }, polygon));
+        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, -4 }, polygon));
         }
     }
 

@@ -50,125 +50,6 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    bool Polygon::IsInsidePolygon(const wxPoint pt, const wxPoint* polygon, const int N)
-        {
-        if (N == 0 || polygon == nullptr)
-            {
-            return false;
-            }
-
-        // cross points count of x
-        int crossPointsCount{ 0 };
-
-        // neighbor bound vertices
-
-        // left vertex
-        wxPoint p1 = polygon[0];
-
-        // check all rays
-        for (int i = 1; i <= N; ++i)
-            {
-            constexpr bool BOUND{ true };
-            // point is a vertex
-            if (pt == p1)
-                {
-                return BOUND;
-                }
-
-            // right vertex
-            wxPoint p2 = polygon[i % N];
-
-            // ray is outside our interests
-            if (pt.y < std::min(p1.y, p2.y) || pt.y > std::max(p1.y, p2.y))
-                {
-                // next ray left point
-                p1 = p2;
-                continue;
-                }
-
-            // ray is crossing over by the algorithm (common part of)
-            if (pt.y > std::min(p1.y, p2.y) && pt.y < std::max(p1.y, p2.y))
-                {
-                // x is before of ray
-                if (pt.x <= std::max(p1.x, p2.x))
-                    {
-                    // overlies on a horizontal ray
-                    if (p1.y == p2.y && pt.x >= std::min(p1.x, p2.x))
-                        {
-                        return BOUND;
-                        }
-
-                    // ray is vertical
-                    if (p1.x == p2.x)
-                        {
-                        // overlies on a ray
-                        if (p1.x == pt.x)
-                            {
-                            return BOUND;
-                            }
-                        // before ray
-                        ++crossPointsCount;
-                        }
-
-                    // cross point on the left side
-                    else
-                        {
-                        // cross point of x
-                        const auto xinters = ((pt.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
-
-                        // overlies on a ray
-                        if (constexpr double DOUBLE_EPSILON{ .01f };
-                            std::fabs(pt.x - xinters) < DOUBLE_EPSILON)
-                            {
-                            return BOUND;
-                            }
-
-                        // before ray
-                        if (pt.x < xinters)
-                            {
-                            ++crossPointsCount;
-                            }
-                        }
-                    }
-                }
-            // special case when ray is crossing through the vertex
-            else
-                {
-                // p crossing over p2
-                if (pt.y == p2.y && pt.x <= p2.x)
-                    {
-                    // next vertex
-                    const wxPoint& p3 = polygon[(i + 1) % N];
-
-                    // pt.y lies between p1.y & p3.y
-                    if (pt.y >= std::min(p1.y, p3.y) && pt.y <= std::max(p1.y, p3.y))
-                        {
-                        ++crossPointsCount;
-                        }
-                    else
-                        {
-                        crossPointsCount += 2;
-                        }
-                    }
-                }
-
-            // next ray left point
-            p1 = p2;
-            }
-
-        // EVEN
-        if (crossPointsCount % 2 == 0)
-            {
-            return false;
-            }
-        // ODD
-        else
-            {
-            return true;
-            }
-        }
-
-    //-------------------------------------------
     wxRect Polygon::GetPolygonBoundingBox(const wxPoint* polygon, const size_t N)
         {
         assert(N > 0 && polygon);
@@ -205,7 +86,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Polygon::HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const
         {
-        return IsInsidePolygon(pt, m_scaledPoints.data(), m_scaledPoints.size());
+        return IsInsidePolygon(pt, m_scaledPoints);
         }
 
     //-------------------------------------------

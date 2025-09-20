@@ -207,7 +207,7 @@ namespace Wisteria::GraphItems
             for (auto pt : polygon)
                 {
                 auto startX{ pt.x };
-                while (IsInsidePolygon(pt, &polygon[0], polygon.size()))
+                while (IsInsidePolygon(pt, polygon))
                     {
                     ++pt.x;
                     }
@@ -243,6 +243,127 @@ namespace Wisteria::GraphItems
             return std::abs(area / 2.0);
             }
 
+        /** @deprecated Use version that takes a `std::array`.*/
+        [[nodiscard]] [[deprecated("Use version that takes a std::array")]]
+        static bool IsInsidePolygon(wxPoint pt, const wxPoint* polygon, int N)
+            {
+            if (N == 0 || polygon == nullptr)
+                {
+                return false;
+                }
+
+            // cross points count of x
+            int crossPointsCount{ 0 };
+
+            // neighbor bound vertices
+
+            // left vertex
+            wxPoint p1 = polygon[0];
+
+            // check all rays
+            for (int i = 1; i <= N; ++i)
+                {
+                constexpr bool BOUND{ true };
+                // point is a vertex
+                if (pt == p1)
+                    {
+                    return BOUND;
+                    }
+
+                // right vertex
+                wxPoint p2 = polygon[i % N];
+
+                // ray is outside our interests
+                if (pt.y < std::min(p1.y, p2.y) || pt.y > std::max(p1.y, p2.y))
+                    {
+                    // next ray left point
+                    p1 = p2;
+                    continue;
+                    }
+
+                // ray is crossing over by the algorithm (common part of)
+                if (pt.y > std::min(p1.y, p2.y) && pt.y < std::max(p1.y, p2.y))
+                    {
+                    // x is before of ray
+                    if (pt.x <= std::max(p1.x, p2.x))
+                        {
+                        // overlies on a horizontal ray
+                        if (p1.y == p2.y && pt.x >= std::min(p1.x, p2.x))
+                            {
+                            return BOUND;
+                            }
+
+                        // ray is vertical
+                        if (p1.x == p2.x)
+                            {
+                            // overlies on a ray
+                            if (p1.x == pt.x)
+                                {
+                                return BOUND;
+                                }
+                            // before ray
+                            ++crossPointsCount;
+                            }
+
+                        // cross point on the left side
+                        else
+                            {
+                            // cross point of x
+                            const auto xinters =
+                                ((pt.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
+
+                            // overlies on a ray
+                            if (constexpr double DOUBLE_EPSILON{ .01f };
+                                std::fabs(pt.x - xinters) < DOUBLE_EPSILON)
+                                {
+                                return BOUND;
+                                }
+
+                            // before ray
+                            if (pt.x < xinters)
+                                {
+                                ++crossPointsCount;
+                                }
+                            }
+                        }
+                    }
+                // special case when ray is crossing through the vertex
+                else
+                    {
+                    // p crossing over p2
+                    if (pt.y == p2.y && pt.x <= p2.x)
+                        {
+                        // next vertex
+                        const wxPoint& p3 = polygon[(i + 1) % N];
+
+                        // pt.y lies between p1.y & p3.y
+                        if (pt.y >= std::min(p1.y, p3.y) && pt.y <= std::max(p1.y, p3.y))
+                            {
+                            ++crossPointsCount;
+                            }
+                        else
+                            {
+                            crossPointsCount += 2;
+                            }
+                        }
+                    }
+
+                // next ray left point
+                p1 = p2;
+                }
+
+            // EVEN
+            if (crossPointsCount % 2 == 0)
+                {
+                return false;
+                }
+            // ODD
+            else
+                {
+                return true;
+                }
+            }
+
         /** @brief Alexander Motrichuk's implementation of determining if a point is
                 inside a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
@@ -251,8 +372,126 @@ namespace Wisteria::GraphItems
             @param polygon The polygon's points.
             @param N The number of points in the polygon.
             @returns Whether the point is inside the polygon.*/
+        template<typename pointT, typename polygonT>
         [[nodiscard]]
-        static bool IsInsidePolygon(wxPoint pt, const wxPoint* polygon, int N);
+        static bool IsInsidePolygon(const pointT pt, const polygonT& polygon)
+            {
+            if (polygon.empty())
+                {
+                return false;
+                }
+
+            // cross points count of x
+            int crossPointsCount{ 0 };
+
+            // neighbor bound vertices
+
+            // left vertex
+            auto p1 = polygon[0];
+
+            // check all rays
+            for (int i = 1; i <= polygon.size(); ++i)
+                {
+                constexpr bool BOUND{ true };
+                // point is a vertex
+                if (pt == p1)
+                    {
+                    return BOUND;
+                    }
+
+                // right vertex
+                auto p2 = polygon[i % polygon.size()];
+
+                // ray is outside our interests
+                if (pt.y < std::min(p1.y, p2.y) || pt.y > std::max(p1.y, p2.y))
+                    {
+                    // next ray left point
+                    p1 = p2;
+                    continue;
+                    }
+
+                // ray is crossing over by the algorithm (common part of)
+                if (pt.y > std::min(p1.y, p2.y) && pt.y < std::max(p1.y, p2.y))
+                    {
+                    // x is before of ray
+                    if (pt.x <= std::max(p1.x, p2.x))
+                        {
+                        // overlies on a horizontal ray
+                        if (p1.y == p2.y && pt.x >= std::min(p1.x, p2.x))
+                            {
+                            return BOUND;
+                            }
+
+                        // ray is vertical
+                        if (p1.x == p2.x)
+                            {
+                            // overlies on a ray
+                            if (p1.x == pt.x)
+                                {
+                                return BOUND;
+                                }
+                            // before ray
+                            ++crossPointsCount;
+                            }
+
+                        // cross point on the left side
+                        else
+                            {
+                            // cross point of x
+                            const auto xinters =
+                                ((pt.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
+
+                            // overlies on a ray
+                            if (constexpr double DOUBLE_EPSILON{ .01f };
+                                std::fabs(pt.x - xinters) < DOUBLE_EPSILON)
+                                {
+                                return BOUND;
+                                }
+
+                            // before ray
+                            if (pt.x < xinters)
+                                {
+                                ++crossPointsCount;
+                                }
+                            }
+                        }
+                    }
+                // special case when ray is crossing through the vertex
+                else
+                    {
+                    // p crossing over p2
+                    if (pt.y == p2.y && pt.x <= p2.x)
+                        {
+                        // next vertex
+                        const auto& p3 = polygon[(i + 1) % polygon.size()];
+
+                        // pt.y lies between p1.y & p3.y
+                        if (pt.y >= std::min(p1.y, p3.y) && pt.y <= std::max(p1.y, p3.y))
+                            {
+                            ++crossPointsCount;
+                            }
+                        else
+                            {
+                            crossPointsCount += 2;
+                            }
+                        }
+                    }
+
+                // next ray left point
+                p1 = p2;
+                }
+
+            // EVEN
+            if (crossPointsCount % 2 == 0)
+                {
+                return false;
+                }
+            // ODD
+            else
+                {
+                return true;
+                }
+            }
 
         /** @brief Determines if a rectangle is inside a polygon.
             @details Tests if all four corners of a rectangle are within a polygon
@@ -264,10 +503,10 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static bool IsRectInsidePolygon(const wxRect rect, const polygonT& polygon)
             {
-            return (IsInsidePolygon(rect.GetTopLeft(), &polygon[0], polygon.size()) &&
-                    IsInsidePolygon(rect.GetTopRight(), &polygon[0], polygon.size()) &&
-                    IsInsidePolygon(rect.GetBottomLeft(), &polygon[0], polygon.size()) &&
-                    IsInsidePolygon(rect.GetBottomRight(), &polygon[0], polygon.size()));
+            return (IsInsidePolygon(rect.GetTopLeft(), polygon) &&
+                    IsInsidePolygon(rect.GetTopRight(), polygon) &&
+                    IsInsidePolygon(rect.GetBottomLeft(), polygon) &&
+                    IsInsidePolygon(rect.GetBottomRight(), polygon));
             }
 
         /** @brief Determines if a rectangle entirely fits another rectangle.

@@ -106,7 +106,7 @@ namespace Wisteria::GraphItems
             {
             pts[0] = line.first;
             pts[1] = line.second;
-            if (GraphItems::Polygon::IsInsidePolygon(pt, pts.data(), pts.size()))
+            if (GraphItems::Polygon::IsInsidePolygon(pt, pts))
                 {
                 return true;
                 }
