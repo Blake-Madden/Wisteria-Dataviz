@@ -65,11 +65,15 @@ TEST_CASE("Parse title from file name", "[parse-title]")
         }
     SECTION("Url Ending With Slash")
         {
-        CHECK(ParseTitleFromFileName(L"http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/") == L"bachmann_gas_prices");
+        CHECK(ParseTitleFromFileName(
+                  L"http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/") ==
+              wxString{ L"bachmann_gas_prices" });
         }
     SECTION("Url Query")
         {
-        CHECK(ParseTitleFromFileName(L"http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/?iref=NS1") == L"bachmann_gas_prices");
+        CHECK(ParseTitleFromFileName(
+                  L"http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/?iref=NS1") ==
+              wxString{ L"bachmann_gas_prices" });
         }
     }
 
@@ -138,11 +142,11 @@ TEST_CASE("Path resolver", "[pathresolve]")
 
         pathResolve.ResolvePath(L"file://localhost/C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"C:\\Testing\\Text\\file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
 
         pathResolve.ResolvePath(L"file:///C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"C:\\Testing\\Text\\file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
         }
 
     SECTION("Resetting")
@@ -151,7 +155,7 @@ TEST_CASE("Path resolver", "[pathresolve]")
 
         pathResolve.ResolvePath(L"file://localhost/C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"C:\\Testing\\Text\\file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
 
         pathResolve.ResolvePath(L"");
         CHECK(pathResolve.IsInvalidFile());
@@ -159,7 +163,7 @@ TEST_CASE("Path resolver", "[pathresolve]")
 
         pathResolve.ResolvePath(L"C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"C:\\Testing\\Text\\file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
         }
 
     SECTION("Web Paths")
@@ -169,27 +173,30 @@ TEST_CASE("Path resolver", "[pathresolve]")
         pathResolve.ResolvePath(L" https:\\\\www.acme.com\\about us info.html  ");
         CHECK(pathResolve.IsWebFile());
         CHECK(pathResolve.GetFileType() == FilePathType::HTTPS);
-        CHECK(pathResolve.GetResolvedPath() == L"https://www.acme.com/about%20us%20info.html");
+        CHECK(pathResolve.GetResolvedPath() ==
+              wxString{ L"https://www.acme.com/about%20us%20info.html" });
 
         pathResolve.ResolvePath(L"http:\\\\www.acme.com\\about us info.html");
         CHECK(pathResolve.IsWebFile());
         CHECK(pathResolve.GetFileType() == FilePathType::HTTP);
-        CHECK(pathResolve.GetResolvedPath() == L"http://www.acme.com/about%20us%20info.html");
+        CHECK(pathResolve.GetResolvedPath() ==
+              wxString{ L"http://www.acme.com/about%20us%20info.html" });
 
         pathResolve.ResolvePath(L"www.acme.com\\about us info.html");
         CHECK(pathResolve.IsWebFile());
         CHECK(pathResolve.GetFileType() == FilePathType::HTTP);// safe assumption to fallback to
-        CHECK(pathResolve.GetResolvedPath() == L"http://www.acme.com/about%20us%20info.html");
+        CHECK(pathResolve.GetResolvedPath() ==
+              wxString{ L"http://www.acme.com/about%20us%20info.html" });
 
         pathResolve.ResolvePath(L"ftp:\\\\acme.com\\dataset.zip");
         CHECK(pathResolve.IsWebFile());
         CHECK(pathResolve.GetFileType() == FilePathType::FTP);
-        CHECK(pathResolve.GetResolvedPath() == L"ftp://acme.com/dataset.zip");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"ftp://acme.com/dataset.zip" });
 
         pathResolve.ResolvePath(L"gopher:\\\\acme.com\\dataset.zip");
         CHECK(pathResolve.IsWebFile());
         CHECK(pathResolve.GetFileType() == FilePathType::Gopher);
-        CHECK(pathResolve.GetResolvedPath() == L"gopher://acme.com/dataset.zip");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"gopher://acme.com/dataset.zip" });
         }
 
     SECTION("Not Paths")
@@ -212,17 +219,17 @@ TEST_CASE("Path resolver", "[pathresolve]")
 
         pathResolve.ResolvePath(L"C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"C:\\Testing\\Text\\file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
 
         // different drive
         pathResolve.ResolvePath(L"Z:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"Z:\\Testing\\Text\\file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"Z:\\Testing\\Text\\file.txt" });
     
         // bad slash, should still work
         pathResolve.ResolvePath(L"Z:/Testing\\Text/file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
-        CHECK(pathResolve.GetResolvedPath() == L"Z:/Testing\\Text/file.txt");
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"Z:/Testing\\Text/file.txt" });
 
         // missing slash
         pathResolve.ResolvePath(L"Z:Testing\\Text\\file.txt");
