@@ -80,7 +80,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 add_executable(${TEST_APP} WIN32 MACOSX_BUNDLE ${WISTERIA_SRC} ${TEST_SRC_FILES})
 
 message(STATUS "Finding Catch2...")
-find_directory("Catch2" CATCH_DIR)
+find_cmake_project_directory("Catch2" CATCH_DIR)
 # place Catch2 at the same folder level as this repo (or somewhere above it)
 if(EXISTS ${CATCH_DIR})
     add_subdirectory(${CATCH_DIR} ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
