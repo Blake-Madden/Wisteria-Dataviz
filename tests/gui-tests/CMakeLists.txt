@@ -73,7 +73,7 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 # Build Wisteria GUI test runner
 ########################
 set(TEST_APP WisteriaGuiTestRunner)
-# (run "tools/Build CMake Files List.R" to update this)
+# (run "tools/build_cmake_files_list.R" to update this)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/guilibfiles_testing.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/guitestfiles.cmake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)

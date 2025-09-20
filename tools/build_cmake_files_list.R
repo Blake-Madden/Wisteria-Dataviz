@@ -7,8 +7,8 @@ testFolder <- str_glue('{this.path::this.dir()}/../tests')
 guiTestFolder <- str_glue('{this.path::this.dir()}/../tests/gui-tests')
 
 buildLibFile <- str_glue('{this.path::this.dir()}/libfiles.cmake')
-buildFile <- str_glue('{this.path::this.dir()}/files.cmake')
 buildFileTestGuiLib <- str_glue('{this.path::this.dir()}/guilibfiles_testing.cmake')
+# manifest of Catch2 test files
 buildFileTests <- str_glue('{this.path::this.dir()}/testfiles.cmake')
 buildFileTestsGui <- str_glue('{this.path::this.dir()}/guitestfiles.cmake')
 
@@ -24,19 +24,11 @@ write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
 SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
            file=buildLibFile)
 
-# Files for full application and testing library
+# Library files for GUI testing library
 ################################################
 files <- str_glue("src/{list.files(path=srcFolder, pattern='(*[.]cpp|cJSON[.]c)', recursive=TRUE)}")
 # remove test and sample files from submodules
-files <- files[!grepl("(testmainc|rc_file_review.cpp|gtktextview-helper.cpp|codeeditor.cpp|functionbrowserdlg.cpp|demo.cpp|main.cpp|i18n-check/samples|i18n-check/tests/|cpp_i18n_review.cpp|i18n_review.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern)", files)]
-write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
-# DO NOT MODIFY MANUALLY!
-
-SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
-           file=buildFile)
-
-# Library files for GUI testing library
-################################################
+files <- files[!grepl("(testmainc|formattedtextctrl.cpp|gtktextview-helper.cpp|codeeditor.cpp|functionbrowserdlg.cpp|demo.cpp|main.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern)", files)]
 files <- stringr::str_replace(files, "src/", "../../src/")
 write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
 # This should be used for the unit test runner.

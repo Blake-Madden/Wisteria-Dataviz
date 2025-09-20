@@ -66,7 +66,6 @@ SET(WISTERIA_SRC
     ../../src/import/rtf_extract_text.cpp
     ../../src/import/xlsx_extract_text.cpp
     ../../src/ui/app.cpp
-    ../../src/ui/controls/formattedtextctrl.cpp
     ../../src/ui/controls/htmltablewin.cpp
     ../../src/ui/controls/htmltablewinprintout.cpp
     ../../src/ui/controls/listctrlex.cpp
