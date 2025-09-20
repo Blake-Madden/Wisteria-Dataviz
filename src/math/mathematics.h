@@ -533,7 +533,7 @@ namespace geometry
         auto p1 = polygon[0];
 
         // check all rays
-        for (int i = 1; i <= polygon.size(); ++i)
+        for (size_t i = 1; i <= polygon.size(); ++i)
             {
             constexpr bool BOUND{ true };
             // point is a vertex
