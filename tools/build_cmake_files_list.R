@@ -17,13 +17,12 @@ buildFileTestsGui <- str_glue('{this.path::this.dir()}/guitestfiles.cmake')
 files <- str_glue("src/{list.files(path=srcFolder, pattern='(*[.]cpp|cJSON[.]c)', recursive=TRUE)}")
 # remove test, sample files from submodules, and other
 # files not relevant to the core library
-files <- files[!grepl("(testmainc|rc_file_review|xml_format|rtf_extract|postscript_extract|cpp_extract|odt_odp_extract|doc_extract|docx_extract|ui/app.cpp|codeeditor.cpp|htmltablewin.cpp|infobarex.cpp|listctrlex.cpp|listctrlexdataprovider.cpp|searchpanel.cpp|warningmanager.cpp|screenshot.cpp|resource_manager.cpp|idhelpers.cpp|mainframe.cpp|warningmessagesdlg.cpp|startpage.cpp|htmltablepanel.cpp|htmltablewinprintout.cpp|listctrlitemviewdlg.cpp|listdlg.cpp|listctrlsortdlg.cpp|artmetro.cpp|filelistdlg.cpp|functionbrowserdlg.cpp|getdirdlg.cpp|gridexportdlg.cpp|archivedlg.cpp|edittextdlg.cpp|excelpreviewdlg.cpp|sidebar.cpp|sidebarbook.cpp|downloadfile.cpp|formattedtextctrl.cpp|gtktextview-helper.cpp|demo.cpp|main.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern)", files)]
+files <- files[!grepl("(testmainc|xml_format|rtf_extract|postscript_extract|cpp_extract|odt_odp_extract|doc_extract|docx_extract|ui/app.cpp|codeeditor.cpp|htmltablewin.cpp|listctrlex.cpp|listctrlexdataprovider.cpp|searchpanel.cpp|warningmanager.cpp|screenshot.cpp|resource_manager.cpp|idhelpers.cpp|mainframe.cpp|warningmessagesdlg.cpp|startpage.cpp|htmltablepanel.cpp|htmltablewinprintout.cpp|listctrlitemviewdlg.cpp|listdlg.cpp|listctrlsortdlg.cpp|artmetro.cpp|filelistdlg.cpp|functionbrowserdlg.cpp|getdirdlg.cpp|gridexportdlg.cpp|archivedlg.cpp|edittextdlg.cpp|excelpreviewdlg.cpp|sidebar.cpp|sidebarbook.cpp|downloadfile.cpp|formattedtextctrl.cpp|gtktextview-helper.cpp|demo.cpp|main.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern)", files)]
 write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
 # DO NOT MODIFY MANUALLY!
 
 SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
            file=buildLibFile)
-
 
 # Files for full application and testing library
 ################################################
@@ -36,7 +35,6 @@ write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
 SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
            file=buildFile)
 
-
 # Library files for GUI testing library
 ################################################
 files <- stringr::str_replace(files, "src/", "../../src/")
@@ -47,7 +45,6 @@ write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
 SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
            file=buildFileTestGuiLib)
 
-
 # Catch2 test files
 ################################################
 files <- str_glue("{list.files(path=testFolder, pattern='(*[.]cpp)', recursive=FALSE)}")
@@ -57,7 +54,6 @@ write_file(str_glue("# Automatically generated from 'build_cmake_files_list.R'
 
 SET(TEST_SRC_FILES\n    {paste(files, collapse='\n    ')})"),
            file=buildFileTests)
-
 
 # GUI Catch2 test files
 ################################################
