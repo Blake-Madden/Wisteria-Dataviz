@@ -314,19 +314,23 @@ namespace lily_of_the_valley
             @param[out] nDay The day from the serial value.
             @param[out] nMonth The month from the serial value.
             @param[out] nYear The year from the serial value.
+            @warning This uses the Excel leap year bug calculation.
+                (Technically, this was a Lotus 1-2-3 bug that they emulated for compatibility.)
+                Values before 2/2/1990 will be one off compared to LibreOffice,
+                    Google Sheets, and others.
             @details Source:
-            https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa
-            @todo Add unit test.*/
+            https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa*/
         static void excel_serial_date_to_dmy(int nSerialDate, int& nDay, int& nMonth, int& nYear);
 
-        /** @brief Converts day, month, and year values into an Excel serial date.
+        /** @brief Converts day, month, and year values into an *Excel* serial date.
             @returns The date converted into an Excel serial date.
             @param nDay The day.
             @param nMonth The month.
             @param nYear The year.
+            @warning This uses the Excel leap year bug calculation. Values before 2/2/1990 will be one
+                off compared to LibreOffice, Google Sheets, and others.
             @details Source:
-            https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa
-            @todo Add unit test.*/
+            https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa*/
         [[nodiscard]]
         static int dmy_to_excel_serial_date(int nDay, int nMonth, int nYear);
 

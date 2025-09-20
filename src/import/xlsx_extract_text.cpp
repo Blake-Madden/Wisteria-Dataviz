@@ -27,10 +27,10 @@ namespace lily_of_the_valley
                            ((3 * (((nYear + 4'900 + ((nMonth - 14) / 12)) / 100))) / 4) + nDay -
                            2'415'019 - 32'075;
 
-        if (nSerialDate < 60)
+        if (nSerialDate <= 60)
             {
             // Because of the 29-02-1900 quirk, any serial date
-            // under 60 is one off... Compensate.
+            // from 60 and below is one off...compensate.
             --nSerialDate;
             }
 
