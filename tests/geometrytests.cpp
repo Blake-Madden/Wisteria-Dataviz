@@ -9,6 +9,242 @@
 using namespace Catch::Matchers;
 using namespace geometry;
 
+struct MyPoint
+    {
+    int x;
+    int y;
+    [[nodiscard]]
+    bool operator==(const MyPoint that) const noexcept { return x == that.x && y == that.y; }
+    };
+
+TEST_CASE("geometry::get_polygon_area basic polygons", "[polygon]")
+    {
+    struct Point
+        {
+        double x;
+        double y;
+        };
+
+    SECTION("Empty polygon has area 0")
+        {
+        std::vector<Point> polygon{};
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinAbs(0.0, 1e-6));
+        }
+
+    SECTION("Triangle with base 4 and height 3")
+        {
+        std::vector<Point> polygon{ { 0.0, 0.0 }, { 4.0, 0.0 }, { 0.0, 3.0 } };
+        // Area = 1/2 * base * height = 6
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinRel(6.0, 1e-6));
+        }
+
+    SECTION("Square with side length 2")
+        {
+        std::vector<Point> polygon{ { 0.0, 0.0 }, { 2.0, 0.0 }, { 2.0, 2.0 }, { 0.0, 2.0 } };
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinRel(4.0, 1e-6));
+        }
+
+    SECTION("Rectangle 3x5")
+        {
+        std::vector<Point> polygon{ { 0.0, 0.0 }, { 5.0, 0.0 }, { 5.0, 3.0 }, { 0.0, 3.0 } };
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinRel(15.0, 1e-6));
+        }
+
+    SECTION("Pentagon (convex, irregular)")
+        {
+        std::vector<Point> polygon{
+            { 0.0, 0.0 }, { 2.0, 0.0 }, { 3.0, 1.5 }, { 1.0, 3.0 }, { -1.0, 1.5 }
+        };
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinRel(7.5, 1e-6));
+        }
+
+    SECTION("Collinear points yield zero area")
+        {
+        std::vector<Point> polygon{ { 0.0, 0.0 }, { 1.0, 1.0 }, { 2.0, 2.0 } };
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinAbs(0.0, 1e-6));
+        }
+
+    SECTION("Polygon with reversed point order yields same area")
+        {
+        std::vector<Point> polygonCW{ { 0.0, 0.0 }, { 4.0, 0.0 }, { 4.0, 3.0 }, { 0.0, 3.0 } };
+        std::vector<Point> polygonCCW{ { 0.0, 0.0 }, { 0.0, 3.0 }, { 4.0, 3.0 }, { 4.0, 0.0 } };
+        CHECK_THAT(geometry::get_polygon_area(polygonCW), Catch::Matchers::WithinRel(12.0, 1e-6));
+        CHECK_THAT(geometry::get_polygon_area(polygonCCW), Catch::Matchers::WithinRel(12.0, 1e-6));
+        }
+
+    SECTION("Concave polygon (L-shape)")
+        {
+        std::vector<Point> polygon{ { 0.0, 0.0 }, { 4.0, 0.0 }, { 4.0, 3.0 },
+                                    { 2.0, 3.0 }, { 2.0, 1.0 }, { 0.0, 1.0 } };
+        // L-shape: area = area of 4x3 rectangle (12) - cutout 2x2 rectangle (4) = 8
+        CHECK_THAT(geometry::get_polygon_area(polygon), Catch::Matchers::WithinRel(8.0, 1e-6));
+        }
+    }
+
+TEST_CASE("geometry::is_inside_polygon basic and concave polygons", "[polygon]")
+    {
+    SECTION("Empty polygon returns false")
+        {
+        std::vector<MyPoint> polygon{};
+        MyPoint pt{ 0, 0 };
+        CHECK_FALSE(geometry::is_inside_polygon(pt, polygon));
+        }
+
+    SECTION("Single point polygon")
+        {
+        std::vector<MyPoint> polygon{ { 1, 1 } };
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 1 }, polygon)); // point on vertex
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        }
+
+    SECTION("Triangle polygon")
+        {
+        std::vector<MyPoint> polygon{ { 0, 0 }, { 5, 0 }, { 0, 3 } };
+
+        // Inside
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 1 }, polygon));
+
+        // Outside
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 5, 3 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -1, -1 }, polygon));
+
+        // On vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+
+        // On edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));
+        }
+
+    SECTION("Rectangle polygon")
+        {
+        std::vector<MyPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
+
+        // Inside
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 3, 2 }, polygon));
+
+        // Outside
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 5, 1 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -1, 2 }, polygon));
+
+        // On vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 4, 3 }, polygon));
+
+        // On edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 4, 1 }, polygon));
+        }
+
+    SECTION("Concave L-shape polygon (integer points, deterministic)")
+        {
+        std::vector<MyPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
+
+        // Safe inside points (bottom rectangle)
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
+
+        // Safe outside points
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 5, 1 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 4 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -1, 0 }, polygon));
+
+        // Vertices (considered inside)
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 4, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 3 }, polygon));
+
+        // Edges (considered inside)
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
+        }
+
+    SECTION("Rotated square (diamond shape)")
+        {
+        std::vector<MyPoint> polygon{ { 0, 2 }, { 2, 0 }, { 0, -2 }, { -2, 0 } };
+
+        // Inside
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, -1 }, polygon));
+
+        // Outside
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 3 }, polygon));
+
+        // On vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 2 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+
+        // On edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ -1, -1 }, polygon));
+        }
+
+    SECTION("Concave rotated polygon (diamond with notch, integer points, deterministic)")
+        {
+        std::vector<MyPoint> polygon{ { 0, 3 },  { 2, 1 },   { 1, 0 },  { 2, -1 },
+                                      { 0, -3 }, { -2, -1 }, { -1, 0 }, { -2, 1 } };
+
+        // Safe inside points (main polygon body)
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ -1, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, -1 }, polygon));
+
+        // Points on edges or vertices (considered inside)
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));   // edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 3 }, polygon));   // vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, -1 }, polygon));  // vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 2 }, polygon));   // edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ -1, -1 }, polygon)); // edge
+
+        // Outside points (must be false)
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 4 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -3, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, -4 }, polygon));
+        }
+    }
+
+TEST_CASE("geometry::get_polygon_width", "[polygon]")
+    {
+    SECTION("geometry::get_polygon_width - deterministic, integer polygons")
+        {
+        // Simple rectangle 4x3
+        std::vector<MyPoint> rectangle{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
+        CHECK(geometry::get_polygon_width(rectangle) ==
+              5); // x goes from 0 to 4, plus one extra from loop
+
+        // Square 3x3
+        std::vector<MyPoint> square{ { 1, 1 }, { 3, 1 }, { 3, 3 }, { 1, 3 } };
+        CHECK(geometry::get_polygon_width(square) == 3); // x from 1 to 3 → width = 3
+
+        // L-shape polygon (concave)
+        std::vector<MyPoint> lshape{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
+        // Width is determined by the farthest x that remains inside polygon
+        // For this L-shape, x from 0 to 4 → width = 5
+        CHECK(geometry::get_polygon_width(lshape) == 5);
+
+        // Diamond with notch (concave rotated polygon)
+        std::vector<MyPoint> diamond{ { 0, 3 },  { 2, 1 },   { 1, 0 },  { 2, -1 },
+                                      { 0, -3 }, { -2, -1 }, { -1, 0 }, { -2, 1 } };
+        // Width is from -2 to 2 → 5
+        CHECK(geometry::get_polygon_width(diamond) == 5);
+
+        // Single point polygon
+        std::vector<MyPoint> pointPolygon{ { 0, 0 } };
+        CHECK(geometry::get_polygon_width(pointPolygon) == 1);
+
+        // Line polygon (horizontal)
+        std::vector<MyPoint> horizontalLine{ { 0, 0 }, { 3, 0 } };
+        CHECK(geometry::get_polygon_width(horizontalLine) == 4);
+        }
+    }
+
 TEST_CASE("Point inside", "[geometry]")
     {
     SECTION("Points distance")
