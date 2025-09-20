@@ -517,7 +517,7 @@ namespace geometry
         @returns Whether the point is inside the polygon.*/
     template<typename pointT, typename polygonT>
     [[nodiscard]]
-    static bool is_inside_polygon(const pointT pt, const polygonT& polygon)
+    inline bool is_inside_polygon(const pointT pt, const polygonT& polygon)
         {
         if (polygon.empty())
             {
@@ -633,6 +633,25 @@ namespace geometry
             {
             return true;
             }
+        }
+
+    /** @returns The widest area of the polygon.
+        @param polygon The polygon to review.*/
+    template<typename polygonT>
+    [[nodiscard]]
+    inline double get_polygon_width(const polygonT& polygon)
+        {
+        double areaWidth{ 0.0 };
+        for (auto pt : polygon)
+            {
+            auto startX{ pt.x };
+            while (is_inside_polygon(pt, polygon))
+                {
+                ++pt.x;
+                }
+            areaWidth = std::max<double>(pt.x - startX, areaWidth);
+            }
+        return areaWidth;
         }
 
     /** @brief Gets the distance between points.

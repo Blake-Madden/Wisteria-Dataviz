@@ -197,10 +197,9 @@ namespace Wisteria::GraphItems
             @brief Helper functions for collision detection and shape calculations.*/
         /// @{
 
-        /** @returns The widest area of the polygon.
-            @param polygon The polygon to review.*/
+        /** @deprecated Use `geometry::get_polygon_width()`..*/
         template<typename polygonT>
-        [[nodiscard]]
+        [[nodiscard]] [[deprecated("Use geometry::get_polygon_width()")]]
         static double GetPolygonWidth(const polygonT& polygon)
             {
             double areaWidth{ 0.0 };

@@ -205,38 +205,38 @@ TEST_CASE("geometry::is_inside_polygon basic and concave polygons", "[polygon]")
         }
     }
 
-TEST_CASE("Polygon::GetPolygonWidth", "[polygon]")
+TEST_CASE("geometry::get_polygon_width", "[polygon]")
     {
-    SECTION("Polygon::GetPolygonWidth - deterministic, integer polygons")
+    SECTION("geometry::get_polygon_width - deterministic, integer polygons")
         {
         // Simple rectangle 4x3
         std::vector<wxPoint> rectangle{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
-        CHECK(Polygon::GetPolygonWidth(rectangle) ==
+        CHECK(geometry::get_polygon_width(rectangle) ==
               5); // x goes from 0 to 4, plus one extra from loop
 
         // Square 3x3
         std::vector<wxPoint> square{ { 1, 1 }, { 3, 1 }, { 3, 3 }, { 1, 3 } };
-        CHECK(Polygon::GetPolygonWidth(square) == 3); // x from 1 to 3 → width = 3
+        CHECK(geometry::get_polygon_width(square) == 3); // x from 1 to 3 → width = 3
 
         // L-shape polygon (concave)
         std::vector<wxPoint> lshape{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
         // Width is determined by the farthest x that remains inside polygon
         // For this L-shape, x from 0 to 4 → width = 5
-        CHECK(Polygon::GetPolygonWidth(lshape) == 5);
+        CHECK(geometry::get_polygon_width(lshape) == 5);
 
         // Diamond with notch (concave rotated polygon)
         std::vector<wxPoint> diamond{ { 0, 3 },  { 2, 1 },   { 1, 0 },  { 2, -1 },
                                       { 0, -3 }, { -2, -1 }, { -1, 0 }, { -2, 1 } };
         // Width is from -2 to 2 → 5
-        CHECK(Polygon::GetPolygonWidth(diamond) == 5);
+        CHECK(geometry::get_polygon_width(diamond) == 5);
 
         // Single point polygon
         std::vector<wxPoint> pointPolygon{ { 0, 0 } };
-        CHECK(Polygon::GetPolygonWidth(pointPolygon) == 1);
+        CHECK(geometry::get_polygon_width(pointPolygon) == 1);
 
         // Line polygon (horizontal)
         std::vector<wxPoint> horizontalLine{ { 0, 0 }, { 3, 0 } };
-        CHECK(Polygon::GetPolygonWidth(horizontalLine) == 4);
+        CHECK(geometry::get_polygon_width(horizontalLine) == 4);
         }
     }
 

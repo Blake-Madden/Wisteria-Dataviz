@@ -202,7 +202,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
         const auto polygonBoundingBox = GraphItems::Polygon::GetPolygonBoundingBox(polygon);
 
         const auto getWidthRescale =
-            safe_divide<double>(GraphItems::Polygon::GetPolygonWidth(polygon), maxWidth);
+            safe_divide<double>(geometry::get_polygon_width(polygon), maxWidth);
         const auto getHeightRescale =
             safe_divide<double>(polygonBoundingBox.GetHeight(), maxHeight);
         const double rescaleValue =
