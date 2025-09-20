@@ -197,7 +197,7 @@ namespace Wisteria::GraphItems
             @brief Helper functions for collision detection and shape calculations.*/
         /// @{
 
-        /** @deprecated Use `geometry::get_polygon_width()`..*/
+        /** @deprecated Use `geometry::get_polygon_width()`.*/
         template<typename polygonT>
         [[nodiscard]] [[deprecated("Use geometry::get_polygon_width()")]]
         static double GetPolygonWidth(const polygonT& polygon)
@@ -215,12 +215,9 @@ namespace Wisteria::GraphItems
             return areaWidth;
             }
 
-        /** @returns The area of a polygon using the shoelace formula.
-            @param polygon The polygon's points.
-            @details Based on
-            https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.*/
+        /** @deprecated Use `geometry::get_polygon_area()`.*/
         template<typename polygonT>
-        [[nodiscard]]
+        [[nodiscard]] [[deprecated("Use geometry::get_polygon_area()")]]
         static double GetPolygonArea(const polygonT& polygon)
             {
             if (polygon.empty())

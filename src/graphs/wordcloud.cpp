@@ -198,7 +198,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                              (GetPlotAreaBoundingBox().GetHeight() * math_constants::eighth)) },
         };
 
-        const auto polyArea = GraphItems::Polygon::GetPolygonArea(polygon) * math_constants::half;
+        const auto polyArea = geometry::get_polygon_area(polygon) * math_constants::half;
         const auto polygonBoundingBox = GraphItems::Polygon::GetPolygonBoundingBox(polygon);
 
         const auto getWidthRescale =

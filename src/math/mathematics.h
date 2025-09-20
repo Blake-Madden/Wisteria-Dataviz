@@ -654,6 +654,33 @@ namespace geometry
         return areaWidth;
         }
 
+    /** @returns The area of a polygon using the shoelace formula.
+        @param polygon The polygon's points.
+        @details Based on
+        https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.*/
+    template<typename polygonT>
+    [[nodiscard]]
+    static double get_polygon_area(const polygonT& polygon)
+        {
+        if (polygon.empty())
+            {
+            return 0.0;
+            }
+        // Initialize area
+        double area{ 0.0 };
+
+        // Calculate value of shoelace formula
+        auto j = polygon.size() - 1;
+        for (size_t i = 0; i < polygon.size(); i++)
+            {
+            area += (polygon[j].x + polygon[i].x) * (polygon[j].y - polygon[i].y);
+            j = i; // j is previous vertex to i
+            }
+
+        // Return absolute value
+        return std::abs(area / 2.0);
+        }
+
     /** @brief Gets the distance between points.
         @param pt1 The first point.
         @param pt2 The second point.
