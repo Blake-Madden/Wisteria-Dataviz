@@ -86,10 +86,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
             for (;;)
                 {
                 if (auto labelBox = pieSliceLabel->GetBoundingBox(dc);
-                    Polygon::IsInsidePolygon(labelBox.GetTopLeft(), points) &&
-                    Polygon::IsInsidePolygon(labelBox.GetBottomLeft(), points) &&
-                    Polygon::IsInsidePolygon(labelBox.GetTopRight(), points) &&
-                    Polygon::IsInsidePolygon(labelBox.GetBottomRight(), points))
+                    geometry::is_inside_polygon(labelBox.GetTopLeft(), points) &&
+                    geometry::is_inside_polygon(labelBox.GetBottomLeft(), points) &&
+                    geometry::is_inside_polygon(labelBox.GetTopRight(), points) &&
+                    geometry::is_inside_polygon(labelBox.GetBottomRight(), points))
                     {
                     break;
                     }

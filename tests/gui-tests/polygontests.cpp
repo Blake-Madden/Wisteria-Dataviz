@@ -4,6 +4,14 @@
 
 using namespace Wisteria::GraphItems;
 
+struct MyPoint
+    {
+    int x;
+    int y;
+    [[nodiscard]]
+    bool operator==(const MyPoint that) const noexcept { return x == that.x && y == that.y; }
+    };
+
 TEST_CASE("GetPolygonArea basic polygons", "[polygon]")
     {
     struct Point
@@ -68,133 +76,132 @@ TEST_CASE("GetPolygonArea basic polygons", "[polygon]")
         }
     }
 
-TEST_CASE("Polygon::IsInsidePolygon basic and concave polygons", "[polygon]")
+TEST_CASE("geometry::is_inside_polygon basic and concave polygons", "[polygon]")
     {
     SECTION("Empty polygon returns false")
         {
-        std::vector<wxPoint> polygon{};
-        wxPoint pt{ 0, 0 };
-        CHECK_FALSE(Polygon::IsInsidePolygon(pt, polygon));
+        std::vector<MyPoint> polygon{};
+        MyPoint pt{ 0, 0 };
+        CHECK_FALSE(geometry::is_inside_polygon(pt, polygon));
         }
 
     SECTION("Single point polygon")
         {
-        std::vector<wxPoint> polygon{ { 1, 1 } };
-        CHECK(
-            Polygon::IsInsidePolygon(wxPoint{ 1, 1 }, polygon)); // point on vertex
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
+        std::vector<MyPoint> polygon{ { 1, 1 } };
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 1 }, polygon)); // point on vertex
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
         }
 
     SECTION("Triangle polygon")
         {
-        std::vector<wxPoint> polygon{ { 0, 0 }, { 5, 0 }, { 0, 3 } };
+        std::vector<MyPoint> polygon{ { 0, 0 }, { 5, 0 }, { 0, 3 } };
 
         // Inside
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 1 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 1 }, polygon));
 
         // Outside
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 5, 3 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -1, -1 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 5, 3 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -1, -1 }, polygon));
 
         // On vertex
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
 
         // On edge
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));
         }
 
     SECTION("Rectangle polygon")
         {
-        std::vector<wxPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
+        std::vector<MyPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 0, 3 } };
 
         // Inside
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 1 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 3, 2 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 3, 2 }, polygon));
 
         // Outside
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 5, 1 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -1, 2 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 5, 1 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -1, 2 }, polygon));
 
         // On vertex
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 4, 3 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 4, 3 }, polygon));
 
         // On edge
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 4, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 4, 1 }, polygon));
         }
 
     SECTION("Concave L-shape polygon (integer points, deterministic)")
         {
-        std::vector<wxPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
+        std::vector<MyPoint> polygon{ { 0, 0 }, { 4, 0 }, { 4, 3 }, { 2, 3 }, { 2, 1 }, { 0, 1 } };
 
         // Safe inside points (bottom rectangle)
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
 
         // Safe outside points
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 5, 1 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 4 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -1, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 5, 1 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 4 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -1, 0 }, polygon));
 
         // Vertices (considered inside)
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 4, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 3 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 4, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 3 }, polygon));
 
         // Edges (considered inside)
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
         }
 
     SECTION("Rotated square (diamond shape)")
         {
-        std::vector<wxPoint> polygon{ { 0, 2 }, { 2, 0 }, { 0, -2 }, { -2, 0 } };
+        std::vector<MyPoint> polygon{ { 0, 2 }, { 2, 0 }, { 0, -2 }, { -2, 0 } };
 
         // Inside
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, -1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, -1 }, polygon));
 
         // Outside
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 3 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 3 }, polygon));
 
         // On vertex
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 2 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 2 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, 0 }, polygon));
 
         // On edge
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 1 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ -1, -1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ -1, -1 }, polygon));
         }
 
     SECTION("Concave rotated polygon (diamond with notch, integer points, deterministic)")
         {
-        std::vector<wxPoint> polygon{ { 0, 3 },  { 2, 1 },   { 1, 0 },  { 2, -1 },
+        std::vector<MyPoint> polygon{ { 0, 3 },  { 2, 1 },   { 1, 0 },  { 2, -1 },
                                       { 0, -3 }, { -2, -1 }, { -1, 0 }, { -2, 1 } };
 
         // Safe inside points (main polygon body)
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 0 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 1 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ -1, 1 }, polygon));
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, -1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 0 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ -1, 1 }, polygon));
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, -1 }, polygon));
 
         // Points on edges or vertices (considered inside)
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 1, 0 }, polygon)); // edge
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 3 }, polygon)); // vertex
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 2, -1 }, polygon)); // vertex
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ 0, 2 }, polygon));  // edge
-        CHECK(Polygon::IsInsidePolygon(wxPoint{ -1, -1 }, polygon)); // edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ 1, 0 }, polygon));   // edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 3 }, polygon));   // vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 2, -1 }, polygon));  // vertex
+        CHECK(geometry::is_inside_polygon(MyPoint{ 0, 2 }, polygon));   // edge
+        CHECK(geometry::is_inside_polygon(MyPoint{ -1, -1 }, polygon)); // edge
 
         // Outside points (must be false)
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 3, 0 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, 4 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ -3, 0 }, polygon));
-        CHECK_FALSE(Polygon::IsInsidePolygon(wxPoint{ 0, -4 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 3, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, 4 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ -3, 0 }, polygon));
+        CHECK_FALSE(geometry::is_inside_polygon(MyPoint{ 0, -4 }, polygon));
         }
     }
 

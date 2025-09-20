@@ -133,7 +133,7 @@ namespace Wisteria::GraphItems
         bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
             {
             auto points = GetPolygon();
-            return Polygon::IsInsidePolygon(pt, points);
+            return geometry::is_inside_polygon(pt, points);
             }
 
         void Offset(const int x, const int y) final { m_pieArea.Offset(x, y); }

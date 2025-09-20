@@ -86,7 +86,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Polygon::HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const
         {
-        return IsInsidePolygon(pt, m_scaledPoints);
+        return geometry::is_inside_polygon(pt, m_scaledPoints);
         }
 
     //-------------------------------------------
