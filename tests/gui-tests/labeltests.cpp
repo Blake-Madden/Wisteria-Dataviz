@@ -100,7 +100,11 @@ TEST_CASE("Label Fonts", "[label]")
         Label::FixFont(ft);
         CHECK(ft.IsOk());
         CHECK(ft.GetPointSize() > 0);
+        // macOS's default font facename will be a mapping value,
+        // not a real facename
+#ifndef __WXOSX__
         CHECK(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName() == ft.GetFaceName());
+#endif
         }
     SECTION("Fix Font Nothing Wrong")
         {

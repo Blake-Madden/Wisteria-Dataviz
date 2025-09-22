@@ -49,17 +49,6 @@ public:
             {
             m_runTests = false;
 
-#ifdef __WXOSX__
-            // we need to wait until the window is activated and fully ready
-            // otherwise no events can be posted
-            wxEventLoopBase* const loop = wxEventLoop::GetActive();
-            if ( loop )
-            {
-                loop->DispatchTimeout(1000);
-                loop->Yield();
-            }
-#endif // __WXOSX__
-
             m_exitcode = RunTests();
             ExitMainLoop();
             }

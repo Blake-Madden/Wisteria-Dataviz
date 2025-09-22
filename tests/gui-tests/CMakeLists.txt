@@ -122,7 +122,7 @@ elseif(UNIX)
 endif()
 
 # Link required libraries to the executable
-if(WIN32)
+if(WIN32 OR APPLE)
     target_link_libraries(${TEST_APP} PRIVATE Catch2::Catch2 ${wxWidgets_LIBRARIES})
 elseif(UNIX)
     find_library(TBB_LIB tbb)

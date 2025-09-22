@@ -163,7 +163,11 @@ TEST_CASE("Path resolver", "[pathresolve]")
 
         pathResolve.ResolvePath(L"C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
+#ifdef __WXMSW__
         CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
+#else
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"/Testing/Text/file.txt" });
+#endif
         }
 
     SECTION("Web Paths")
@@ -219,17 +223,29 @@ TEST_CASE("Path resolver", "[pathresolve]")
 
         pathResolve.ResolvePath(L"C:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
+#ifdef __WXMSW__
         CHECK(pathResolve.GetResolvedPath() == wxString{ L"C:\\Testing\\Text\\file.txt" });
+#else
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"/Testing/Text/file.txt" });
+#endif
 
         // different drive
         pathResolve.ResolvePath(L"Z:\\Testing\\Text\\file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
+#ifdef __WXMSW__
         CHECK(pathResolve.GetResolvedPath() == wxString{ L"Z:\\Testing\\Text\\file.txt" });
+#else
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"/Testing/Text/file.txt" });
+#endif
     
         // bad slash, should still work
         pathResolve.ResolvePath(L"Z:/Testing\\Text/file.txt");
         CHECK(pathResolve.IsLocalOrNetworkFile());
+#ifdef __WXMSW__
         CHECK(pathResolve.GetResolvedPath() == wxString{ L"Z:/Testing\\Text/file.txt" });
+#else
+        CHECK(pathResolve.GetResolvedPath() == wxString{ L"/Testing/Text/file.txt" });
+#endif
 
         // missing slash
         pathResolve.ResolvePath(L"Z:Testing\\Text\\file.txt");
