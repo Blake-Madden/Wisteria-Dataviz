@@ -656,7 +656,7 @@ namespace Wisteria
         const auto bracketsNode = axisNode->GetProperty(L"brackets");
         if (bracketsNode->IsOk())
             {
-            wxPen bracketPen{ wxPenInfo(*wxBLACK, 2) };
+            wxPen bracketPen{ wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2) };
             // individually defined brackets
             if (bracketsNode->IsValueArray())
                 {
@@ -3279,7 +3279,9 @@ namespace Wisteria
                 .Anchoring(Anchoring::TopLeftCorner)
                 .Pen(pen)
                 .Brush(brush)
-                .FontColor((shapeLabel != nullptr ? shapeLabel->GetFontColor() : *wxBLACK)),
+                .FontColor((shapeLabel != nullptr ?
+                                shapeLabel->GetFontColor() :
+                                Colors::ColorBrewer::GetColor(Colors::Color::Black))),
             loadedShape.value(), sz, fillPercent);
         // center by default, but allow LoadItems (below) to override that
         // if client asked for something else
@@ -3365,7 +3367,9 @@ namespace Wisteria
                 .Anchoring(Anchoring::TopLeftCorner)
                 .Pen(pen)
                 .Brush(brush)
-                .FontColor((shapeLabel != nullptr ? shapeLabel->GetFontColor() : *wxBLACK)),
+                .FontColor((shapeLabel != nullptr ?
+                                shapeLabel->GetFontColor() :
+                                Colors::ColorBrewer::GetColor(Colors::Color::Black))),
             loadedShape.value(), sz);
         // center by default, but allow LoadItems (below) to override that
         // if client asked for something else
@@ -5330,7 +5334,8 @@ namespace Wisteria
             const auto lineStyleValues = lineStyleSchemeNode->AsNodes();
             for (const auto& lineStyle : lineStyleValues)
                 {
-                wxPen pn(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SOLID);
+                wxPen pn(Colors::ColorBrewer::GetColor(Colors::Color::Black), 1,
+                         wxPenStyle::wxPENSTYLE_SOLID);
                 LoadPen(lineStyle->GetProperty(L"pen-style"), pn);
                 const auto foundPos = lineStyleEnums.find(std::wstring_view(
                     lineStyle->GetProperty(L"line-style")->AsString().MakeLower().wc_str()));

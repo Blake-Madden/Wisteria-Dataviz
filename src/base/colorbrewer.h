@@ -317,7 +317,8 @@ namespace Wisteria::Colors
         [[nodiscard]]
         static wxColour BlackOrWhiteContrast(const wxColour& color)
             {
-            return (IsDark(color) ? *wxWHITE : *wxBLACK);
+            return (IsDark(color) ? ColorBrewer::GetColor(Color::White) :
+                                    ColorBrewer::GetColor(Color::Black));
             }
 
         /// @returns @c true if two colors' luminance values are close.

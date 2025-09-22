@@ -163,7 +163,10 @@ namespace Wisteria::GraphItems
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
         const bool penIsLight{ (scaledPen.GetColour().IsOk() &&
                                 Wisteria::Colors::ColorContrast::IsLight(scaledPen.GetColour())) };
-        const wxDCPenChanger pc(dc, IsSelected() ? wxPen(penIsLight ? *wxWHITE : *wxBLACK,
+        const wxDCPenChanger pc(
+            dc,
+            IsSelected() ?
+                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                          2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
                                                    scaledPen);
 

@@ -123,7 +123,8 @@ namespace Wisteria::GraphItems
         if (IsSelected())
             {
             const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
-            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            const wxDCPenChanger pc(
+                dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(drawRect);
             }
 

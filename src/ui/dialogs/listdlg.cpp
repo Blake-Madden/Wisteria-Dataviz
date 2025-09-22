@@ -479,7 +479,7 @@ namespace Wisteria::UI
                 if (rowColor.IsOk())
                     {
                     GetListCtrl()->SetRowAttributes(
-                        i, wxListItemAttr(*wxBLACK, rowColor, GetListCtrl()->GetFont()));
+                        i, wxListItemAttr(wxColour{ 0, 0, 0 }, rowColor, GetListCtrl()->GetFont()));
                     }
                 }
 

@@ -36,7 +36,8 @@ namespace Wisteria::GraphItems
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
             }
         const wxDCPenChanger pc(dc, IsSelected() ?
-                                        wxPen(*wxBLACK, 2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                        wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                              2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
                                         scaledPen);
         for (const auto& line : m_lines)
             {

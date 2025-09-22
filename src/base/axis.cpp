@@ -48,7 +48,7 @@ namespace Wisteria::GraphItems
         if (level == AxisResetLevel::CosmeticSettings || level == AxisResetLevel::AllSettings)
             {
             GetFont() = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeSmaller();
-            SetFontColor(wxColour(*wxBLACK));
+            SetFontColor(wxColour(Colors::ColorBrewer::GetColor(Colors::Color::Black)));
             SetFontBackgroundColor(wxNullColour);
             SetTextAlignment(TextAlignment::Centered);
             m_axisLabelAlignment = AxisLabelAlignment::AlignWithAxisLine;
@@ -2672,8 +2672,10 @@ namespace Wisteria::GraphItems
         // draw the selection outline
         if (IsSelected())
             {
-            const wxDCPenChanger pc(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK,
-                                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            const wxDCPenChanger pc(
+                dc,
+                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                      ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             std::array<wxPoint, 5> pts;
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
             dc.DrawLines(pts.size(), pts.data());
@@ -2681,9 +2683,10 @@ namespace Wisteria::GraphItems
 
         if (GetOutlineSize().IsFullySpecified())
             {
-            const wxDCPenChanger pc(dc,
-                                    wxPen(penIsLight ? *wxWHITE : *wxBLACK,
-                                          ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
+            const wxDCPenChanger pc(
+                dc,
+                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                      ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
             std::array<wxPoint, 5> pts;
             // area rect was already inflated from GetBoundingBox()
             GraphItems::Polygon::GetRectPoints(axisRect, pts);

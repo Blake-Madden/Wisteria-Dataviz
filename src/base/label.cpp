@@ -809,7 +809,9 @@ namespace Wisteria::GraphItems
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
                 {
-                const DCPenChangerIfDifferent pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                const DCPenChangerIfDifferent pc2(
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                              ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
@@ -955,7 +957,9 @@ namespace Wisteria::GraphItems
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
                 {
-                const DCPenChangerIfDifferent pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                const DCPenChangerIfDifferent pc2(
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                              ScaleToScreenAndCanvas(1)));
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
@@ -1225,7 +1229,9 @@ namespace Wisteria::GraphItems
                  Wisteria::Colors::ColorContrast::IsLight(GetFontBackgroundColor())) ||
                 (GetFontColor().IsOk() && Wisteria::Colors::ColorContrast::IsLight(GetFontColor()))
             };
-            const DCPenChangerIfDifferent pc2(dc, wxPen(penIsLight ? *wxWHITE : *wxBLACK,
+            const DCPenChangerIfDifferent pc2(
+                dc,
+                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                         ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             const DCBrushChangerIfDifferent bcBg(dc, *wxTRANSPARENT_BRUSH);
             if (GetBoxCorners() == BoxCorners::Rounded)

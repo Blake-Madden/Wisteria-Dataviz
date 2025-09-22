@@ -530,7 +530,7 @@ namespace Wisteria::GraphItems
         if (!opaque)
             {
             silhouette = ChangeColor(
-                silhouette, *wxBLACK,
+                silhouette, Colors::ColorBrewer::GetColor(Colors::Color::Black),
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::LightGray));
             }
         return silhouette;
@@ -1094,14 +1094,16 @@ namespace Wisteria::GraphItems
             wxPen scaledPen(GetPen());
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
             const wxDCPenChanger pc(
-                dc, IsSelected() ? wxPen(*wxBLACK, 2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                dc, IsSelected() ? wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                         2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
                                    scaledPen);
             dc.DrawLines(pts.size(), pts.data());
             }
         // just draw selection outline if regular pen isn't in use
         else if (IsSelected())
             {
-            const wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            const wxDCPenChanger pc(
+                dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2, wxPENSTYLE_DOT));
             dc.DrawLines(pts.size(), pts.data());
             }
 
