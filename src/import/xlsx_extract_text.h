@@ -327,8 +327,8 @@ namespace lily_of_the_valley
             @param nDay The day.
             @param nMonth The month.
             @param nYear The year.
-            @warning This uses the Excel leap year bug calculation. Values before 2/2/1990 will be one
-                off compared to LibreOffice, Google Sheets, and others.
+            @warning This uses the Excel leap year bug calculation. Values before 2/2/1990 will be
+                one off compared to LibreOffice, Google Sheets, and others.
             @details Source:
             https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa*/
         [[nodiscard]]
