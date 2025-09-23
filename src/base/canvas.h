@@ -968,7 +968,7 @@ namespace Wisteria
         wxSize m_watermarkImgSizeDIPs{ 100, 100 };
 
         // background values
-        wxColour m_bgColor{ *wxWHITE };
+        wxColour m_bgColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
         uint8_t m_bgOpacity{ wxALPHA_OPAQUE };
         bool m_bgColorUseLinearGradient{ false };
         wxBitmapBundle m_bgImage;

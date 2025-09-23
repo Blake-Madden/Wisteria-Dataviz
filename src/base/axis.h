@@ -108,10 +108,11 @@ namespace Wisteria::GraphItems
         /// @warning If specifying ReferenceLabelPlacement::OppositeAxis as the label placement,
         ///     then the settings of the opposite axis will be overridden. It will mirror the
         ///     settings of the main axis, as well be set to only show custom labels.
-        ReferenceLine(const AxisType axisType, const double axisPosition, wxString label,
-                      const wxPen& pen = wxPen{ *wxLIGHT_GREY, 1,
-                                                wxPenStyle::wxPENSTYLE_LONG_DASH },
-                      ReferenceLabelPlacement labelPlacement = ReferenceLabelPlacement::Legend)
+        ReferenceLine(
+            const AxisType axisType, const double axisPosition, wxString label,
+            const wxPen& pen = wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::LightGray), 1,
+                                      wxPenStyle::wxPENSTYLE_LONG_DASH },
+            ReferenceLabelPlacement labelPlacement = ReferenceLabelPlacement::Legend)
             : m_axisType(axisType), m_axisPosition(axisPosition), m_label(std::move(label)),
               m_pen(pen), m_compKey(m_label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX)),
               m_labelPlacement(labelPlacement)
@@ -137,7 +138,8 @@ namespace Wisteria::GraphItems
         AxisType m_axisType{ AxisType::RightYAxis };
         double m_axisPosition{ 0 };
         wxString m_label;
-        wxPen m_pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
+        wxPen m_pen{ Colors::ColorBrewer::GetColor(Colors::Color::LightGray), 1,
+                     wxPenStyle::wxPENSTYLE_LONG_DASH };
         // used by lambdas to sort by label and color (instead of axis position)
         wxString m_compKey;
         ReferenceLabelPlacement m_labelPlacement{ ReferenceLabelPlacement::Legend };
@@ -161,11 +163,12 @@ namespace Wisteria::GraphItems
         /// @param label The label to describe what the line represents.
         /// @param pen The pen to use for the line.
         /// @param refAreaStyle The visual style of the reference area.
-        ReferenceArea(const AxisType axisType, const double axisPosition1,
-                      const double axisPosition2, const wxString& label,
-                      const wxPen& pen = wxPen{ *wxLIGHT_GREY, 1,
-                                                wxPenStyle::wxPENSTYLE_LONG_DASH },
-                      const ReferenceAreaStyle refAreaStyle = ReferenceAreaStyle::Solid)
+        ReferenceArea(
+            const AxisType axisType, const double axisPosition1, const double axisPosition2,
+            const wxString& label,
+            const wxPen& pen = wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::LightGray), 1,
+                                      wxPenStyle::wxPENSTYLE_LONG_DASH },
+            const ReferenceAreaStyle refAreaStyle = ReferenceAreaStyle::Solid)
             : ReferenceLine(axisType, axisPosition1, label, pen), m_refAreaStyle(refAreaStyle),
               m_axisPosition2(axisPosition2)
             {
@@ -2226,7 +2229,7 @@ namespace Wisteria::GraphItems
         bool m_stackLabelsToFit{ false };
         bool m_enableAutoStacking{ true };
         double m_labelSpacingPhysicalOffset{ 0 };
-        wxPen m_axisLinePen{ *wxBLACK_PEN };
+        wxPen m_axisLinePen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         wxPen m_gridlinePen{ wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT)) };
 
         // date information (if being used to display date intervals)

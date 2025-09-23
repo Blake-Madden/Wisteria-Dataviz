@@ -1002,7 +1002,7 @@ namespace Wisteria::Graphs
 
         wxBitmapBundle m_stipple;
         Icons::IconShape m_stippleShape{ Icons::IconShape::Square };
-        wxColour m_stippleShapeColour{ *wxWHITE };
+        wxColour m_stippleShapeColour{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
 
         std::map<wxString, wxVariant> m_properties;
 
@@ -1014,7 +1014,7 @@ namespace Wisteria::Graphs
 
         std::shared_ptr<Wisteria::Images::Schemes::ImageScheme> m_imageScheme{ nullptr };
         wxBitmapBundle m_emptyImage;
-        wxColour m_imageOutlineColor{ *wxBLACK };
+        wxColour m_imageOutlineColor{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         Wisteria::Canvas* m_parentCanvas{ nullptr };
         Wisteria::GraphItems::Axis m_bottomXAxis{ AxisType::BottomXAxis };

@@ -557,7 +557,7 @@ namespace Wisteria::Graphs
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
             TableCellFormat m_valueFormat{ TableCellFormat::General };
             uint8_t m_precision{ 0 };
-            wxColour m_bgColor{ *wxWHITE };
+            wxColour m_bgColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
             wxString m_prefix;
             // setting to true will make the prefix red if the value is negative
@@ -656,7 +656,8 @@ namespace Wisteria::Graphs
             m_table.resize(rows);
             for (auto& row : m_table)
                 {
-                row.resize(cols, TableCell(std::numeric_limits<double>::quiet_NaN(), *wxWHITE,
+                row.resize(cols, TableCell(std::numeric_limits<double>::quiet_NaN(),
+                                           Colors::ColorBrewer::GetColor(Colors::Color::White),
                                            m_showTopBorder, m_showRightBorder, m_showBottomBorder,
                                            m_showLeftBorder));
                 }
@@ -874,14 +875,15 @@ namespace Wisteria::Graphs
             {
             if (GetColumnCount())
                 {
-                m_table.insert(
-                    m_table.cbegin() +
-                        // clamp indices going beyond the row count to m_table.cend()
-                        std::clamp<size_t>(rowIndex, 0, GetRowCount()),
-                    std::vector<TableCell>(GetColumnCount(),
-                                           TableCell(std::numeric_limits<double>::quiet_NaN(),
-                                                     *wxWHITE, m_showTopBorder, m_showRightBorder,
-                                                     m_showBottomBorder, m_showLeftBorder)));
+                m_table.insert(m_table.cbegin() +
+                                   // clamp indices going beyond the row count to m_table.cend()
+                                   std::clamp<size_t>(rowIndex, 0, GetRowCount()),
+                               std::vector<TableCell>(
+                                   GetColumnCount(),
+                                   TableCell(std::numeric_limits<double>::quiet_NaN(),
+                                             Colors::ColorBrewer::GetColor(Colors::Color::White),
+                                             m_showTopBorder, m_showRightBorder, m_showBottomBorder,
+                                             m_showLeftBorder)));
                 return true;
                 }
             return false;
@@ -903,7 +905,8 @@ namespace Wisteria::Graphs
                     row.insert(row.cbegin() +
                                    // clamp indices going beyond the column count to row.cend()
                                    std::clamp<size_t>(colIndex, 0, row.size()),
-                               TableCell(std::numeric_limits<double>::quiet_NaN(), *wxWHITE,
+                               TableCell(std::numeric_limits<double>::quiet_NaN(),
+                                         Colors::ColorBrewer::GetColor(Colors::Color::White),
                                          m_showTopBorder, m_showRightBorder, m_showBottomBorder,
                                          m_showLeftBorder));
                     }
@@ -1626,7 +1629,7 @@ namespace Wisteria::Graphs
 
         std::vector<CellAnnotation> m_cellAnnotations;
 
-        wxPen m_highlightPen{ wxPen(*wxRED_PEN) };
+        wxPen m_highlightPen{ wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red)) };
 
         // default borders
         bool m_showTopBorder{ true };

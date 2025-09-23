@@ -128,7 +128,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
             const wxBrush br =
                 (GetBrushScheme() ? GetBrushScheme()->GetBrush(schemeIndex) :
                  GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(schemeIndex)) :
-                                    *wxTRANSPARENT_BRUSH);
+                                    wxColour{ 0, 0, 0, 0 });
             legend->GetLegendIcons().emplace_back(
                 (GetShapeScheme() ? GetShapeScheme()->GetShape(schemeIndex) : m_defaultLegendShape),
                 Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), br,
@@ -152,7 +152,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GroupGraph2D, Wisteria::Graphs::Grap
                 const wxBrush brush =
                     (GetBrushScheme() ? GetBrushScheme()->GetBrush(mdSchemeIndex) :
                      GetColorScheme() ? wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
-                                        *wxTRANSPARENT_BRUSH);
+                                        wxColour{ 0, 0, 0, 0 });
                 legend->GetLegendIcons().emplace_back(
                     (GetShapeScheme() ? GetShapeScheme()->GetShape(mdSchemeIndex) :
                                         m_defaultLegendShape),

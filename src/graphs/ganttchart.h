@@ -322,7 +322,7 @@ namespace Wisteria::Graphs
             wxDateTime m_end;
             uint8_t m_percentFinished{ 0 };
             TaskLabelDisplay m_labelDisplay{ TaskLabelDisplay::Days };
-            wxColour m_color{ *wxBLACK };
+            wxColour m_color{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
             };
 
         /** @brief Adds a task to the chart.

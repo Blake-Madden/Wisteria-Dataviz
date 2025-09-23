@@ -473,7 +473,8 @@ namespace Wisteria::UI
                     (currentRow.find(_DT(L"Error: ", DTExplanation::LogMessage)) !=
                      wxString::npos) ?
                         wxColour(242, 94, 101) :
-                    (currentRow.find(_DT(L"Warning: ")) != wxString::npos) ? *wxYELLOW :
+                    (currentRow.find(_DT(L"Warning: ")) != wxString::npos) ?
+                        Colors::ColorBrewer::GetColor(Colors::Color::Yellow) :
                     (currentRow.find(_DT(L"Debug: ")) != wxString::npos) ? wxColour(143, 214, 159) :
                                                                            wxNullColour;
                 if (rowColor.IsOk())

@@ -871,7 +871,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                     }
                                 }
                             // draw the column header text
-                            drawDC.SetTextForeground(*wxWHITE);
+                            drawDC.SetTextForeground(
+                                Colors::ColorBrewer::GetColor(Colors::Color::White));
                             currentX = marginX + GetCellSidePadding() + currentTableOffset;
                             for (auto columnCounter = 0; columnCounter < m_list->GetColumnCount();
                                  ++columnCounter)
@@ -883,7 +884,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                     currentX += GetColumnsInfo()[columnCounter].m_width;
                                     }
                                 }
-                            drawDC.SetTextForeground(*wxBLACK);
+                            drawDC.SetTextForeground(
+                                Colors::ColorBrewer::GetColor(Colors::Color::Black));
                             // draw the data
                             for (auto i = currentPageTableRowStart;
                                  i < currentPageTableRowStart + currentPage.GetRowsPerPage() &&
@@ -947,7 +949,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                         wxColour cellTextColor =
                                             rowAttributes.GetTextColour().IsOk() ?
                                                 rowAttributes.GetTextColour() :
-                                                *wxBLACK;
+                                                Colors::ColorBrewer::GetColor(Colors::Color::Black);
 
                                         // if no custom text color but a custom background is being
                                         // used, then set the font color for this cell to contrast
@@ -958,8 +960,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                             {
                                             cellTextColor = (rowAttributes.GetBackgroundColour()
                                                                  .GetLuminance() < .5f) ?
-                                                                *wxWHITE :
-                                                                *wxBLACK;
+                                                                Colors::ColorBrewer::GetColor(
+                                                                    Colors::Color::White) :
+                                                                Colors::ColorBrewer::GetColor(
+                                                                    Colors::Color::Black);
                                             }
 
                                         wxDCTextColourChanger cellTextCCH(drawDC, cellTextColor);
@@ -2920,7 +2924,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             // (Don't consider "zebra-striped" rows as custom colors,
             // that looks odd exporting data like that)
             if (!GetAlternateRowColour().IsOk() && rowAttributes.GetBackgroundColour().IsOk() &&
-                rowAttributes.GetBackgroundColour() != *wxWHITE)
+                rowAttributes.GetBackgroundColour() !=
+                    Colors::ColorBrewer::GetColor(Colors::Color::White))
                 {
                 rowStyle += wxString::Format(
                     _DT(L"background:%s;"),
@@ -2981,7 +2986,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 // changes the border color as well--we just want to change the text color.
                 outputText += L"<td>";
                 if (rowAttributes.GetTextColour().IsOk() &&
-                    rowAttributes.GetTextColour() != *wxBLACK)
+                    rowAttributes.GetTextColour() !=
+                        Colors::ColorBrewer::GetColor(Colors::Color::Black))
                     {
                     outputText += wxString::Format(
                         L"<span style='color:%s;'>%s</span>",
@@ -2994,8 +3000,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                          !rowAttributes.GetTextColour().IsOk())
                     {
                     const auto cellTextColor =
-                        (rowAttributes.GetBackgroundColour().GetLuminance() < .5f) ? *wxWHITE :
-                                                                                     *wxBLACK;
+                        (rowAttributes.GetBackgroundColour().GetLuminance() < .5f) ?
+                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                            Colors::ColorBrewer::GetColor(Colors::Color::Black);
                     outputText +=
                         wxString::Format(L"<span style='color:%s;'>%s</span>",
                                          cellTextColor.GetAsString(wxC2S_HTML_SYNTAX), itemText);

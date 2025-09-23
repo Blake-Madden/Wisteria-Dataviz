@@ -74,8 +74,9 @@ namespace Wisteria::Graphs
             return;
             }
 
-        legend.GetLegendIcons().emplace_back(Icons::IconShape::HorizontalSeparator,
-                                             wxPen(*wxBLACK, 2), *wxTRANSPARENT_BRUSH);
+        legend.GetLegendIcons().emplace_back(
+            Icons::IconShape::HorizontalSeparator,
+            wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2), wxColour{ 0, 0, 0, 0 });
         wxString textLines;
 
         // combine lines with the same color and label,
@@ -153,10 +154,10 @@ namespace Wisteria::Graphs
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
             legend.GetGraphItemInfo()
-                .Pen(*wxBLACK_PEN)
+                .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                 .Padding(4, 4, 4,
                          (legend.HasLegendIcons() ? GraphItems::Label::GetMinLegendWidthDIPs() : 4))
-                .FontBackgroundColor(*wxWHITE);
+                .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White));
             legend.GetFont().MakeSmaller();
             legend.GetHeaderInfo().GetFont().MakeSmaller();
             }
@@ -827,12 +828,12 @@ namespace Wisteria::Graphs
             {
             std::array<wxPoint, 4> boxPoints;
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
-            AddObject(
-                std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo()
-                                                          .Pen(*wxBLACK_PEN)
-                                                          .Brush(wxColour(GetPlotBackgroundColor()))
-                                                          .Scaling(GetScaling()),
-                                                      boxPoints));
+            AddObject(std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo()
+                    .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                    .Brush(wxColour(GetPlotBackgroundColor()))
+                    .Scaling(GetScaling()),
+                boxPoints));
             }
 
         // fill in the plot background image
@@ -1196,7 +1197,8 @@ namespace Wisteria::Graphs
                     GetBottomXAxis().GetPhysicalCoordinate(interestPoint.m_x, interestPt.x) &&
                     GetLeftYAxis().GetPhysicalCoordinate(interestPoint.m_y, interestPt.y))
                     {
-                    GraphItems::Lines ln(wxPen(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SHORT_DASH),
+                    GraphItems::Lines ln(wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               1, wxPenStyle::wxPENSTYLE_SHORT_DASH),
                                          GetScaling());
                     ln.AddLine(anchorPt, interestPt);
                     ln.SetLineStyle(LineStyle::Arrows);
@@ -1212,7 +1214,8 @@ namespace Wisteria::Graphs
                 // regular outline
                 {
                 const wxDCPenChanger pc(dc,
-                                        wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                                        wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 std::array<wxPoint, 5> pts;
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), pts);
                 dc.DrawLines(pts.size(), pts.data());
@@ -1224,23 +1227,31 @@ namespace Wisteria::Graphs
                 {
                     // highlight horizontal axes
                     {
-                    const wxDCPenChanger pc(
-                        dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                    const wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_BDIAGONAL_HATCH));
+                    const wxDCPenChanger pc(dc,
+                                            wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                                                  ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                    const wxDCBrushChanger bc(
+                        dc, wxBrush(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                                    wxBRUSHSTYLE_BDIAGONAL_HATCH));
                     dc.DrawRectangle(GetTopXAxis().GetBoundingBox(dc));
                     dc.DrawRectangle(GetBottomXAxis().GetBoundingBox(dc));
                     }
                     // vertical axes
                     {
-                    const wxDCPenChanger pc(
-                        dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                    const wxDCBrushChanger bc(dc, wxBrush(*wxRED, wxBRUSHSTYLE_FDIAGONAL_HATCH));
+                    const wxDCPenChanger pc(dc,
+                                            wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                                                  ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                    const wxDCBrushChanger bc(
+                        dc, wxBrush(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                                    wxBRUSHSTYLE_FDIAGONAL_HATCH));
                     dc.DrawRectangle(GetLeftYAxis().GetBoundingBox(dc));
                     dc.DrawRectangle(GetRightYAxis().GetBoundingBox(dc));
                     }
                     // ruler along the top, showing a 100-pixel legend
                     {
-                    const wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
+                    const wxDCPenChanger pc(
+                        dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Blue),
+                                  ScaleToScreenAndCanvas(4)));
                     dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // left-to-right
                     for (auto i = GetBoundingBox(dc).GetTopLeft().x;
@@ -1264,10 +1275,11 @@ namespace Wisteria::Graphs
                                 GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
                                 GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25)))
                             .Anchoring(Anchoring::TopRightCorner)
-                            .FontColor(*wxBLUE)
-                            .Pen(*wxBLUE_PEN)
+                            .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
+                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
                             .DPIScaling(GetDPIScaleFactor())
-                            .FontBackgroundColor(*wxWHITE)
+                            .FontBackgroundColor(
+                                Colors::ColorBrewer::GetColor(Colors::Color::White))
                             .Padding(2, 2, 2, 2));
                     rulerLabel.SetMinimumUserSizeDIPs(90, std::nullopt);
                     rulerLabel.Draw(dc);
@@ -1280,7 +1292,9 @@ namespace Wisteria::Graphs
                     }
                     // ruler along the left, showing a 100-pixel legend
                     {
-                    const wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
+                    const wxDCPenChanger pc(
+                        dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Blue),
+                                  ScaleToScreenAndCanvas(4)));
                     dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // top-to-bottom
                     for (auto i = GetBoundingBox(dc).GetTopLeft().y;
@@ -1317,10 +1331,10 @@ namespace Wisteria::Graphs
                             m_calculatedLeftPadding, m_debugDrawInfoLabel))
                         .AnchorPoint(GetBoundingBox(dc).GetBottomRight())
                         .Anchoring(Anchoring::BottomRightCorner)
-                        .FontColor(*wxBLUE)
-                        .Pen(*wxBLUE_PEN)
+                        .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
+                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
                         .DPIScaling(GetDPIScaleFactor())
-                        .FontBackgroundColor(*wxWHITE)
+                        .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
                         .Padding(2, 2, 2, 2));
                 infoLabel.Draw(dc);
                 }

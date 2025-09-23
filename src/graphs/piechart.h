@@ -1095,7 +1095,7 @@ namespace Wisteria::Graphs
         bool m_includeDonutHole{ false };
         Wisteria::GraphItems::Label m_donutHoleLabel;
         double m_donutHoleProportion{ math_constants::half };
-        wxColour m_donutHoleColor{ *wxWHITE };
+        wxColour m_donutHoleColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
         };
     } // namespace Wisteria::Graphs
 

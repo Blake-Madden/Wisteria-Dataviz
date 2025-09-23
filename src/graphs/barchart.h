@@ -101,7 +101,8 @@ namespace Wisteria::Graphs
             {
             // this bar will have two sections to it, where a red section
             // refers to the more critical bugs
-            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(
+                Colors::ColorBrewer::GetColor(Colors::Color::Red))),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
             wxString{}, Label(_(L"Bugs")), BoxEffect::Glassy,
@@ -288,7 +289,7 @@ namespace Wisteria::Graphs
                 }
 
           private:
-            wxBrush m_brush{ *wxGREEN_BRUSH };
+            wxBrush m_brush{ Colors::ColorBrewer::GetColor(Colors::Color::Green) };
             wxPen m_outlinePen{ wxNullPen };
             wxColour m_color;
             double m_length{ 0 };
@@ -496,7 +497,7 @@ namespace Wisteria::Graphs
             /// @brief The brush (color and pattern) of the block.
             /// @note The bar block's opacity will override the parent bar's opacity
             ///    if different from the default (i.e., fully opaque).
-            wxBrush m_brush{ *wxGREEN_BRUSH };
+            wxBrush m_brush{ Colors::ColorBrewer::GetColor(Colors::Color::Green) };
             /// @brief Explicitly sets the outline of the block. Normally, the
             ///    parent chart will determine the best outline color.
             wxPen m_outlinePen{ wxNullPen };

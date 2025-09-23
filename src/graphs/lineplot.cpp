@@ -295,8 +295,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             legendText.append(currentLabel.c_str()).append(L"\n");
             if (showingMarkers)
                 {
-                legend->GetLegendIcons().emplace_back(line.GetShape(), *wxBLACK,
-                                                      line.GetPen().GetColour());
+                legend->GetLegendIcons().emplace_back(
+                    line.GetShape(), Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                    line.GetPen().GetColour());
                 }
             else
                 {

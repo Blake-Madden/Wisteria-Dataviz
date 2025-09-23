@@ -43,7 +43,6 @@ RibbonMetroArtProvider::RibbonMetroArtProvider(bool set_colour_scheme)
     : wxRibbonMSWArtProvider(set_colour_scheme)
     {
     m_flags = 0;
-    m_tab_label_font = *wxNORMAL_FONT;
     m_button_bar_label_font = m_tab_label_font;
     m_panel_label_font = m_tab_label_font;
 
@@ -207,7 +206,7 @@ void RibbonMetroArtProvider::SetFlags(long flags)
 void RibbonMetroArtProvider::DrawTabCtrlBackground(wxDC& dc, [[maybe_unused]] wxWindow* wnd,
                                                    const wxRect& rect)
     {
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetPen(wxColour{ 0, 0, 0, 0 });
     dc.SetBrush(m_tab_ctrl_background_brush);
     dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
@@ -298,7 +297,7 @@ void RibbonMetroArtProvider::DrawTab(wxDC& dc, [[maybe_unused]] wxWindow* wnd,
             background.width -= 3;
             background.height -= 1;
 
-            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetPen(wxColour{ 0, 0, 0, 0 });
             dc.SetBrush(m_tab_active_background_colour);
             dc.DrawRectangle(background);
             }
@@ -310,7 +309,7 @@ void RibbonMetroArtProvider::DrawTab(wxDC& dc, [[maybe_unused]] wxWindow* wnd,
             background.y += 1;
             background.width -= 3;
             background.height -= 2;
-            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetPen(wxColour{ 0, 0, 0, 0 });
             dc.SetBrush(m_tab_hover_background_colour);
             dc.DrawRectangle(background);
             }
@@ -423,7 +422,7 @@ void RibbonMetroArtProvider::DrawPartialPageBackground(wxDC& dc, wxWindow* wnd, 
     background.x = 0;
     background.width = INT_MAX;
 
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetPen(wxColour{ 0, 0, 0, 0 });
     dc.SetBrush(m_page_background_colour);
     dc.DrawRectangle(rect);
     }
@@ -433,7 +432,7 @@ void RibbonMetroArtProvider::DrawPageBackground(wxDC& dc, [[maybe_unused]] wxWin
     {
     wxRect background(rect);
 
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetPen(wxColour{ 0, 0, 0, 0 });
     dc.SetBrush(m_page_background_colour);
     dc.DrawRectangle(background);
     background.width += 1;
@@ -452,8 +451,8 @@ void RibbonMetroArtProvider::DrawPanelBackground(wxDC& dc, wxRibbonPanel* wnd, c
         {
         const bool has_ext_button = wnd->HasExtButton();
         dc.SetFont(m_panel_label_font);
-        dc.SetPen(*wxTRANSPARENT_PEN);
-        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.SetPen(wxColour{ 0, 0, 0, 0 });
+        dc.SetBrush(wxColour{ 0, 0, 0, 0 });
         dc.SetTextForeground(m_panel_label_colour);
 
         wxRect label_rect(true_rect);
@@ -538,10 +537,10 @@ void RibbonMetroArtProvider::DrawPanelBackground(wxDC& dc, wxRibbonPanel* wnd, c
         wxRect shadow(rect);
         shadow.x += 4;
         shadow.y += 4;
-        dc.SetPen(*wxRED);
+        dc.SetPen(Colors::ColorBrewer::GetColor(Colors::Color::Red));
         dc.DrawLine(shadow.GetBottomLeft(), shadow.GetBottomRight());
         dc.DrawLine(shadow.GetTopRight(), shadow.GetBottomRight());
-        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.SetBrush(wxColour{ 0, 0, 0, 0 });
         dc.SetPen(m_panel_border_pen);
         dc.DrawRoundedRectangle(rect, 1.0);
         }
@@ -656,7 +655,7 @@ void RibbonMetroArtProvider::DrawMinimisedPanelCommon(wxDC& dc, wxRibbonPanel* w
         arrow_points[2] = arrow_points[0] + wxPoint(3, -3);
         }
 
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetPen(wxColour{ 0, 0, 0, 0 });
     wxBrush B(m_panel_minimised_label_colour);
     dc.SetBrush(B);
     dc.DrawPolygon(sizeof(arrow_points) / sizeof(wxPoint), arrow_points, true_rect.x, true_rect.y);
@@ -716,8 +715,8 @@ void RibbonMetroArtProvider::DrawPartialPageBackground(wxDC& dc, wxWindow* wnd, 
         }
 
     // No page found - fallback to painting with a stock brush
-    dc.SetBrush(*wxWHITE_BRUSH);
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
+    dc.SetPen(wxColour{ 0, 0, 0, 0 });
     dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
     }
 
@@ -808,14 +807,14 @@ void RibbonMetroArtProvider::DrawButtonBarButton(wxDC& dc, [[maybe_unused]] wxWi
 
         if (state & wxRIBBON_BUTTONBAR_BUTTON_ACTIVE_MASK)
             {
-            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetPen(wxColour{ 0, 0, 0, 0 });
             dc.SetBrush(m_button_bar_active_background_colour);
             dc.DrawRectangle(bg_rect_top);
             dc.DrawRectangle(bg_rect);
             }
         else
             {
-            dc.SetPen(*wxTRANSPARENT_PEN);
+            dc.SetPen(wxColour{ 0, 0, 0, 0 });
             dc.SetBrush(m_button_bar_hover_background_colour);
             dc.DrawRectangle(bg_rect_top);
             dc.DrawRectangle(bg_rect);
@@ -830,7 +829,7 @@ void RibbonMetroArtProvider::DrawButtonBarButton(wxDC& dc, [[maybe_unused]] wxWi
             dc.SetPen(m_button_bar_hover_border_pen);
             }
 
-        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.SetBrush(wxColour{ 0, 0, 0, 0 });
         dc.DrawRectangle(rect);
         }
 
@@ -996,7 +995,7 @@ void RibbonMetroArtProvider::DrawTool(wxDC& dc, [[maybe_unused]] wxWindow* wnd, 
             nonrect.x += nonrect.width - 8;
             nonrect.width = 7;
             }
-        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.SetPen(wxColour{ 0, 0, 0, 0 });
         dc.SetBrush(m_page_background_top_gradient_colour);
         dc.DrawRectangle(nonrect.x, nonrect.y, nonrect.width, nonrect.height);
         }

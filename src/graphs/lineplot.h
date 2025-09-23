@@ -108,7 +108,8 @@ namespace Wisteria::Graphs
          // add a note
          auto note = std::make_shared<Label>(
             GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???")).
-            Pen(*wxLIGHT_GREY).FontBackgroundColor(*wxWHITE).
+            Pen(Colors::ColorBrewer::GetColor(Colors::Color::LightGray))
+                .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White)).
             Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
          linePlot->AddAnnotation(note,
             // top corner of note
@@ -244,7 +245,7 @@ namespace Wisteria::Graphs
             LineStyle m_lineStyle{ LineStyle::Lines };
             Icons::IconShape m_shape{ Icons::IconShape::Circle };
             wxBitmapBundle m_shapeImg;
-            wxPen m_linePen{ wxPen{ *wxBLACK, 2 } };
+            wxPen m_linePen{ wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 2 } };
             };
 
         /** @brief Constructor.

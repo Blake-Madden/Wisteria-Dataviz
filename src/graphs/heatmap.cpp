@@ -18,9 +18,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                      const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors :
-                                           std::make_unique<Colors::Schemes::ColorScheme>(
-                                               Colors::Schemes::ColorScheme{ *wxWHITE, *wxBLACK }));
+        SetColorScheme(
+            colors != nullptr ?
+                colors :
+                std::make_unique<Colors::Schemes::ColorScheme>(Colors::Schemes::ColorScheme{
+                    Colors::ColorBrewer::GetColor(Colors::Color::White),
+                    Colors::ColorBrewer::GetColor(Colors::Color::Black) }));
 
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);
@@ -411,7 +414,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                             (cell.m_color.IsOk() ?
                                  Colors::ColorContrast::BlackOrWhiteContrast(cellColor) :
                                  // if NaN, then set 'X' to red
-                                 Colors::ColorContrast::ShadeOrTintIfClose(*wxRED, cellColor)))
+                                 Colors::ColorContrast::ShadeOrTintIfClose(
+                                     Colors::ColorBrewer::GetColor(Colors::Color::Red), cellColor)))
                         .Anchoring(Anchoring::Center)
                         .AnchorPoint(wxPoint{ boxRect.GetLeft() + (boxRect.GetWidth() / 2),
                                               boxRect.GetTop() + (boxRect.GetHeight() / 2) })));

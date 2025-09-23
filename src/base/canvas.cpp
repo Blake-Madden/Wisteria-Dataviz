@@ -485,7 +485,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         SetCanvasMinWidthDIPs(GetDefaultCanvasWidthDIPs());
         SetCanvasMinHeightDIPs(GetDefaultCanvasHeightDIPs());
         wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-        wxWindow::SetBackgroundColour(*wxWHITE);
+        wxWindow::SetBackgroundColour(Colors::ColorBrewer::GetColor(Colors::Color::White));
         SetVirtualSize(size);
         SetScrollRate(10, 10);
         wxGCDC gdc(this);
@@ -1440,14 +1440,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // fill in the background color with a linear gradient (if there is a user defined color)
         if (m_bgColorUseLinearGradient && GetBackgroundColor().IsOk())
             {
-            dc.GradientFillLinear(GetCanvasRect(dc), GetBackgroundColor(), *wxWHITE, wxSOUTH);
+            dc.GradientFillLinear(GetCanvasRect(dc), GetBackgroundColor(),
+                                  Colors::ColorBrewer::GetColor(Colors::Color::White), wxSOUTH);
             }
         else
             {
             // If background color is bad, then just fill the canvas with white.
             // Otherwise, fill with color
-            wxDCBrushChanger bc(dc, !GetBackgroundColor().IsOk() ? *wxWHITE_BRUSH :
-                                                                   wxBrush(GetBackgroundColor()));
+            wxDCBrushChanger bc(dc,
+                                !GetBackgroundColor().IsOk() ?
+                                    wxBrush{ Colors::ColorBrewer::GetColor(Colors::Color::White) } :
+                                    wxBrush(GetBackgroundColor()));
             dc.DrawRectangle(GetCanvasRect(dc));
             }
 
@@ -1529,14 +1532,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);
-            Wisteria::GraphItems::Label infoLabel(Wisteria::GraphItems::GraphItemInfo(m_debugInfo)
-                                                      .AnchorPoint(bBox.GetBottomRight())
-                                                      .Anchoring(Anchoring::BottomRightCorner)
-                                                      .FontColor(*wxBLUE)
-                                                      .Pen(*wxBLUE_PEN)
-                                                      .DPIScaling(GetDPIScaleFactor())
-                                                      .FontBackgroundColor(*wxWHITE)
-                                                      .Padding(2, 2, 2, 2));
+            Wisteria::GraphItems::Label infoLabel(
+                Wisteria::GraphItems::GraphItemInfo(m_debugInfo)
+                    .AnchorPoint(bBox.GetBottomRight())
+                    .Anchoring(Anchoring::BottomRightCorner)
+                    .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
+                    .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
+                    .DPIScaling(GetDPIScaleFactor())
+                    .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
+                    .Padding(2, 2, 2, 2));
             infoLabel.Draw(dc);
             }
         }

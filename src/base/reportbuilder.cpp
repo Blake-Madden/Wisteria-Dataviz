@@ -3248,10 +3248,10 @@ namespace Wisteria
             sz.y = sizeNode->GetProperty(L"height")->AsDouble(32);
             }
 
-        wxPen pen(*wxBLACK_PEN);
+        wxPen pen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
         LoadPen(shapeNode->GetProperty(L"pen"), pen);
 
-        wxBrush brush(*wxBLACK_BRUSH);
+        wxBrush brush(Colors::ColorBrewer::GetColor(Colors::Color::Black));
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
         double fillPercent{ math_constants::empty };
@@ -3315,10 +3315,10 @@ namespace Wisteria
             sz.y = sizeNode->GetProperty(L"height")->AsDouble(32);
             }
 
-        wxPen pen(*wxBLACK_PEN);
+        wxPen pen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
         LoadPen(shapeNode->GetProperty(L"pen"), pen);
 
-        wxBrush brush(*wxWHITE_BRUSH);
+        wxBrush brush(Colors::ColorBrewer::GetColor(Colors::Color::White));
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
@@ -3353,10 +3353,10 @@ namespace Wisteria
             sz.y = sizeNode->GetProperty(L"height")->AsDouble(32);
             }
 
-        wxPen pen(*wxBLACK_PEN);
+        wxPen pen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
         LoadPen(shapeNode->GetProperty(L"pen"), pen);
 
-        wxBrush brush(*wxWHITE_BRUSH);
+        wxBrush brush(Colors::ColorBrewer::GetColor(Colors::Color::White));
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
@@ -4061,7 +4061,7 @@ namespace Wisteria
             auto rowColor{ ConvertColor(altRowColorNode->GetProperty(L"color")) };
             if (!rowColor.IsOk())
                 {
-                rowColor = *wxWHITE;
+                rowColor = Colors::ColorBrewer::GetColor(Colors::Color::White);
                 }
             table->ApplyAlternateRowColors(rowColor, startRow.value_or(0), colStops);
             }
@@ -5872,7 +5872,7 @@ namespace Wisteria
                 // add outline and background color if not provided in config file
                 if (!label->GetPen().IsOk())
                     {
-                    label->GetPen() = *wxBLACK_PEN;
+                    label->GetPen() = wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
                     }
                 if (!label->GetFontBackgroundColor().IsOk())
                     {
@@ -5945,7 +5945,8 @@ namespace Wisteria
                     refLine->GetProperty(L"axis-type")->AsString());
                 if (axisType.has_value())
                     {
-                    wxPen pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
+                    wxPen pen{ Colors::ColorBrewer::GetColor(Colors::Color::LightGray), 1,
+                               wxPenStyle::wxPENSTYLE_LONG_DASH };
                     LoadPen(refLine->GetProperty(L"pen"), pen);
 
                     const auto axisPos =
@@ -5983,7 +5984,8 @@ namespace Wisteria
                     refArea->GetProperty(L"axis-type")->AsString());
                 if (axisType.has_value())
                     {
-                    wxPen pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
+                    wxPen pen{ Colors::ColorBrewer::GetColor(Colors::Color::LightGray), 1,
+                               wxPenStyle::wxPENSTYLE_LONG_DASH };
                     LoadPen(refArea->GetProperty(L"pen"), pen);
 
                     auto& axis = graph->GetAxis(axisType.value_or(AxisType::BottomXAxis));

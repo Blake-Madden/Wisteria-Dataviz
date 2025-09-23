@@ -79,7 +79,7 @@ bool Screenshot::AnnotateScreenshot(const wxString& filePath, const wxString& te
         wxMemoryDC memDC;
         memDC.SelectObject(bmp);
         memDC.SetPen(GetOutlinePen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
-        memDC.SetBrush(*wxWHITE);
+        memDC.SetBrush(wxColour{ 255, 255, 255 });
         memDC.DrawRectangle(wxRect(topLeftCorner, bottomRightCorner));
         memDC.DrawText(text, topLeftCorner);
 
@@ -125,7 +125,8 @@ void Screenshot::AddBorderToImage(wxBitmap& bmp) // cppcheck-suppress constParam
     wxMemoryDC memDC;
     memDC.SelectObject(bmp);
 
-    memDC.SetPen(wxPen(*wxLIGHT_GREY, wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
+    memDC.SetPen(wxPen(wxColour{ 241, 241, 241 },
+                       wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
     const wxPoint corners[] = { wxPoint(0, 0),
                                 wxPoint(memDC.GetSize().GetWidth() - memDC.GetPen().GetWidth(), 0),
                                 wxPoint(memDC.GetSize().GetWidth() - memDC.GetPen().GetWidth(),
@@ -359,7 +360,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
             highlightRect.y += listCtrl->GetScrollPos(wxVERTICAL);
             wxDCPenChanger pc(
                 memDC, GetScreenshotHighlightPen(wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
-            wxDCBrushChanger bc(memDC, *wxTRANSPARENT_BRUSH);
+            wxDCBrushChanger bc(memDC, wxColour{ 0, 0, 0, 0 });
             memDC.DrawRectangle(highlightRect);
             }
         }
@@ -815,7 +816,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
                 }
 
             memDC.SetPen(GetOutlinePen(windowToCapture->GetDPIScaleFactor()));
-            memDC.SetBrush(*wxWHITE);
+            memDC.SetBrush(wxColour{ 255, 255, 255 });
             memDC.DrawRectangle(
                 wxRect{ wxPoint{ startPoint.x, startPoint.y }, wxPoint{ endPoint.x, endPoint.y } });
             memDC.DrawText(annotation, wxPoint(startPoint.x + 2, startPoint.y + 2));

@@ -329,7 +329,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             auto invalidLabel = std::make_unique<GraphItems::Label>(
                 GraphItems::GraphItemInfo(_(L"Too many boxes. Plot cannot be drawn."))
                     .Scaling(GetScaling())
-                    .Pen(*wxBLACK_PEN)
+                    .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                     .Font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeLarger())
                     .AnchorPoint(textCoordinate));
 
@@ -758,8 +758,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                             wxNumberFormatter::ToString(box.GetMiddlePoint(), GetLabelPrecision(),
                                                         Settings::GetDefaultNumberFormat()))
                             .Scaling(GetScaling())
-                            .Pen(*wxBLACK_PEN)
-                            .FontBackgroundColor(*wxWHITE)
+                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                            .FontBackgroundColor(
+                                Colors::ColorBrewer::GetColor(Colors::Color::White))
                             .Padding(2, 2, 2, 2)
                             .AnchorPoint(box.m_middleCoordinate));
                     middleLabel->SetShadowType(GetShadowType());
@@ -776,8 +777,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                                             GetLabelPrecision(),
                                                             Settings::GetDefaultNumberFormat()))
                                 .Scaling(GetScaling())
-                                .Pen(*wxBLACK_PEN)
-                                .FontBackgroundColor(*wxWHITE)
+                                .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                                .FontBackgroundColor(
+                                    Colors::ColorBrewer::GetColor(Colors::Color::White))
                                 .Padding(2, 2, 2, 2)
                                 .AnchorPoint(box.m_lowerQuartileCoordinate));
                         label->SetShadowType(GetShadowType());
@@ -792,8 +794,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                                             GetLabelPrecision(),
                                                             Settings::GetDefaultNumberFormat()))
                                 .Scaling(GetScaling())
-                                .Pen(*wxBLACK_PEN)
-                                .FontBackgroundColor(*wxWHITE)
+                                .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                                .FontBackgroundColor(
+                                    Colors::ColorBrewer::GetColor(Colors::Color::White))
                                 .Padding(2, 2, 2, 2)
                                 .AnchorPoint(box.m_upperQuartileCoordinate));
                         label->SetShadowType(GetShadowType());
@@ -808,8 +811,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                                             GetLabelPrecision(),
                                                             Settings::GetDefaultNumberFormat()))
                                 .Scaling(GetScaling())
-                                .Pen(*wxBLACK_PEN)
-                                .FontBackgroundColor(*wxWHITE)
+                                .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                                .FontBackgroundColor(
+                                    Colors::ColorBrewer::GetColor(Colors::Color::White))
                                 .Padding(2, 2, 2, 2)
                                 .AnchorPoint(box.m_lowerOutlierRangeCoordinate));
                         label->SetShadowType(GetShadowType());
@@ -824,8 +828,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                                             GetLabelPrecision(),
                                                             Settings::GetDefaultNumberFormat()))
                                 .Scaling(GetScaling())
-                                .Pen(*wxBLACK_PEN)
-                                .FontBackgroundColor(*wxWHITE)
+                                .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                                .FontBackgroundColor(
+                                    Colors::ColorBrewer::GetColor(Colors::Color::White))
                                 .Padding(2, 2, 2, 2)
                                 .AnchorPoint(box.m_upperOutlierRangeCoordinate));
                         label->SetShadowType(GetShadowType());

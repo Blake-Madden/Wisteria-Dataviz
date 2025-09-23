@@ -165,10 +165,10 @@ class Screenshot
 
     static wxPen GetScreenshotHighlightPen(const int width)
         {
-        return wxPen(*wxRED, width, wxPenStyle::wxPENSTYLE_DOT);
+        return wxPen(wxColour{ 255, 0, 0 }, width, wxPenStyle::wxPENSTYLE_DOT);
         }
 
-    static wxPen GetOutlinePen(const int width) { return wxPen(*wxLIGHT_GREY, width); }
+    static wxPen GetOutlinePen(const int width) { return wxPen(wxColour{ 241, 241, 241 }, width); }
     };
 
     /** @}*/

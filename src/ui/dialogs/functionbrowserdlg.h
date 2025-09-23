@@ -202,7 +202,8 @@ namespace Wisteria::UI
                               BatchProjectFunctions, ListTypeEnum;
         StandardProjectFunctions.insert(L"Open()\tOpens a project.\tStandardProject");
         functionBrowser = new FunctionBrowserDlg(this, scriptCtrl, wxID_ANY,
-                _(L"Library Browser"), _(L"Libraries/Classes"), _(L"Functions"), *wxBLUE);
+                _(L"Library Browser"), _(L"Libraries/Classes"), _(L"Functions"),
+                Colors::ColorBrewer::GetColor(Colors::Color::Blue));
         functionBrowser->GetFunctionBrowserCtrl()->AddCategory(L"Libraries", 1000);
         functionBrowser->GetFunctionBrowserCtrl()->AddCategory(L"Classes", 1001);
         functionBrowser->GetFunctionBrowserCtrl()->AddCategory(L"Enumerations", 1002);

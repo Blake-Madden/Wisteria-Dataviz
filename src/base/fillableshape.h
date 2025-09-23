@@ -43,8 +43,9 @@ namespace Wisteria::GraphItems
             // a valid brush is needed, so fall back to black if one is not provided
             if (!itemInfo.GetBrush().IsOk())
                 {
-                GetBrush() = *wxBLACK_BRUSH;
-                GetRenderer().GetGraphItemInfo().Brush(*wxBLACK_BRUSH);
+                GetBrush() = Colors::ColorBrewer::GetColor(Colors::Color::Black);
+                GetRenderer().GetGraphItemInfo().Brush(
+                    Colors::ColorBrewer::GetColor(Colors::Color::Black));
                 }
             }
 

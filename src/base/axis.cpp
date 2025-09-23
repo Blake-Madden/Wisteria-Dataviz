@@ -52,7 +52,7 @@ namespace Wisteria::GraphItems
             SetFontBackgroundColor(wxNullColour);
             SetTextAlignment(TextAlignment::Centered);
             m_axisLabelAlignment = AxisLabelAlignment::AlignWithAxisLine;
-            m_axisLinePen = *wxBLACK_PEN;
+            m_axisLinePen = Colors::ColorBrewer::GetColor(Colors::Color::Black);
             m_gridlinePen = wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT));
             m_outlineSize = wxDefaultSize;
             }
@@ -2094,7 +2094,9 @@ namespace Wisteria::GraphItems
                         {
                         if (IsSelected())
                             {
-                            axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT);
+                            axisLabel.GetPen() =
+                                wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red), 2,
+                                      wxPENSTYLE_DOT);
                             }
                         }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
@@ -2414,7 +2416,9 @@ namespace Wisteria::GraphItems
                         {
                         if (IsSelected())
                             {
-                            axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT);
+                            axisLabel.GetPen() =
+                                wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red), 2,
+                                      wxPENSTYLE_DOT);
                             }
                         }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
@@ -2673,9 +2677,9 @@ namespace Wisteria::GraphItems
         if (IsSelected())
             {
             const wxDCPenChanger pc(
-                dc,
-                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                      ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             std::array<wxPoint, 5> pts;
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
             dc.DrawLines(pts.size(), pts.data());
@@ -2684,9 +2688,9 @@ namespace Wisteria::GraphItems
         if (GetOutlineSize().IsFullySpecified())
             {
             const wxDCPenChanger pc(
-                dc,
-                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                      ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
+                dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                          ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
             std::array<wxPoint, 5> pts;
             // area rect was already inflated from GetBoundingBox()
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
@@ -2700,8 +2704,10 @@ namespace Wisteria::GraphItems
                 {
                 std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
-                const wxDCPenChanger pcDebug{ dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
-                                                        wxPENSTYLE_SHORT_DASH) };
+                const wxDCPenChanger pcDebug{
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                              ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH)
+                };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
@@ -2735,10 +2741,10 @@ namespace Wisteria::GraphItems
                                 1, wxNumberFormatter::Style::Style_NoTrailingZeroes)))
                         .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth() / 2,
                                              bBox.GetBottomRight().y))
-                        .FontColor(*wxRED)
-                        .Pen(*wxBLUE_PEN)
+                        .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Red))
+                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
                         .DPIScaling(GetDPIScaleFactor())
-                        .FontBackgroundColor(*wxWHITE)
+                        .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
                         .Padding(2, 2, 2, 2));
                 if (GetAxisType() == AxisType::LeftYAxis)
                     {

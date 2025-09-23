@@ -260,7 +260,7 @@ namespace Wisteria::GraphItems
             wxBitmap bmp(imgWidth, maxHeightImg->GetHeight());
 
             wxMemoryDC memDC(bmp);
-            memDC.SetBrush(*wxWHITE);
+            memDC.SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
             memDC.Clear();
 
             int currentX{ 0 };
@@ -297,7 +297,7 @@ namespace Wisteria::GraphItems
             wxBitmap bmp(maxWidthImg->GetWidth(), imgHeight);
 
             wxMemoryDC memDC(bmp);
-            memDC.SetBrush(*wxWHITE);
+            memDC.SetBrush(Colors::ColorBrewer::GetColor(Colors::Color::White));
             memDC.Clear();
 
             int currentY{ 0 };

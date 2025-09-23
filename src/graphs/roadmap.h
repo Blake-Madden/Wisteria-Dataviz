@@ -238,7 +238,7 @@ namespace Wisteria::Graphs
         double m_magnitude{ 0 };
         wxString m_goalLabel{ _(L"Goal") };
 
-        wxPen m_roadPen{ *wxBLACK, 10 };
+        wxPen m_roadPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 10 };
         wxPen m_laneSeparatorPen{ wxPenInfo(
             Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow), 1,
             wxPenStyle::wxPENSTYLE_LONG_DASH) };

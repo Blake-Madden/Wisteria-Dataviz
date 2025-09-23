@@ -174,8 +174,8 @@ namespace Wisteria::Graphs
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
 
-        wxBrush m_lossBrush{ *wxRED };
-        wxBrush m_gainBrush{ *wxGREEN };
+        wxBrush m_lossBrush{ Colors::ColorBrewer::GetColor(Colors::Color::Red) };
+        wxBrush m_gainBrush{ Colors::ColorBrewer::GetColor(Colors::Color::Green) };
 
         std::vector<Ohlc> m_ohlcs;
         PlotType m_chartType{ PlotType::Candlestick };

@@ -30,10 +30,10 @@ namespace Wisteria::GraphItems
             GraphItems::Label selectionLabel(
                 GraphItemInfo(GetGraphItemInfo())
                     .Scaling(scaling)
-                    .Pen(*wxBLACK_PEN)
+                    .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                     .DPIScaling(GetDPIScaleFactor())
                     .Padding(2, 2, 2, 2)
-                    .FontBackgroundColor(*wxWHITE)
+                    .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
                     .Anchoring(Anchoring::Center)
                     .AnchorPoint(
                         ItemBoundingBox.GetTopLeft() +
@@ -82,7 +82,7 @@ namespace Wisteria::GraphItems
         const wxRect BoundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
         wxBitmap bmp{ BoundingBox.GetWidth(), BoundingBox.GetHeight() };
         wxMemoryDC memDc(bmp);
-        memDc.SetBackground(*wxTRANSPARENT_BRUSH);
+        memDc.SetBackground(wxColour{ 0, 0, 0, 0 });
         memDc.Clear();
         memDc.SetLogicalOrigin(BoundingBox.GetPosition().x, BoundingBox.GetPosition().y);
         Draw(memDc);

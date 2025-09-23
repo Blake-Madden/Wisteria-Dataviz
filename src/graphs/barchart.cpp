@@ -1170,7 +1170,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                         }
                     box = std::make_unique<GraphItems::Polygon>(
                         Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
-                            .Pen(*wxBLACK_PEN)
+                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Scaling(GetScaling())
                             .Outline(true, true, true, true)
@@ -1230,7 +1230,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     }();
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
                         Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
-                            .Pen(*wxBLACK_PEN)
+                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Scaling(GetScaling())
                             .Outline(true, true, true, true)
@@ -1248,8 +1248,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     {
                     box->GetPen().SetColour(
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            *wxWHITE :
-                            *wxBLACK);
+                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
                     }
                 if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                     {
@@ -1277,14 +1277,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
                     box->GetPen().SetColour(
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            *wxWHITE :
-                            *wxBLACK);
+                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
                     }
 
                 // if the bar is totally transparent, then draw a contrasting outline
                 // (unless the client also made the outline explicitly transparent)
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
-                    box->GetPen() != *wxTRANSPARENT_PEN)
+                    box->GetPen() != wxColour{ 0, 0, 0, 0 })
                     {
                     box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                         GetPlotOrCanvasColor()));
@@ -1386,7 +1386,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     decalLabel->GetGraphItemInfo()
                         .FontBackgroundColor(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                             decalLabel->GetFontColor()))
-                        .Pen(*wxBLACK_PEN);
+                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
                     }
                 }
             // make multiline decals a little more compact so that
@@ -1405,9 +1405,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     barRenderInfo.m_defaultFontPointSize / 2)
                 {
                 decalLabel->GetFont().SetFractionalPointSize(barRenderInfo.m_defaultFontPointSize);
-                decalLabel->GetPen().SetColour(*wxBLACK);
-                decalLabel->SetFontColor(*wxBLACK);
-                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                decalLabel->GetPen().SetColour(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontBackgroundColor(
+                    Colors::ColorBrewer::GetColor(Colors::Color::White));
                 }
             const wxRect labelBox = decalLabel->GetBoundingBox(barRenderInfo.m_dc);
             if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
@@ -1437,9 +1438,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             if (bar.GetEffect() == BoxEffect::Solid && barBlock.GetColor().IsOk() &&
                 barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
                 {
-                decalLabel->GetPen().SetColour(*wxBLACK);
-                decalLabel->SetFontColor(*wxBLACK);
-                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                decalLabel->GetPen().SetColour(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontBackgroundColor(
+                    Colors::ColorBrewer::GetColor(Colors::Color::White));
                 }
             // This will be added to the plot's collection of object AFTER
             // all blocks have been added.
@@ -1738,7 +1740,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
                         Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
-                            .Pen(*wxBLACK_PEN)
+                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Scaling(GetScaling())
                             .Outline(true, true, true, true)
@@ -1801,7 +1803,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
                     box = std::make_unique<Wisteria::GraphItems::Polygon>(
                         Wisteria::GraphItems::GraphItemInfo(barBlock.GetSelectionLabel().GetText())
-                            .Pen(*wxBLACK_PEN)
+                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                             .Brush(blockBrush)
                             .Outline(true, true, true, true)
                             .Scaling(GetScaling())
@@ -1818,8 +1820,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     {
                     box->GetPen().SetColour(
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            *wxWHITE :
-                            *wxBLACK);
+                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
                     }
 
                 if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
@@ -1847,14 +1849,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     box->SetBackgroundFill(Colors::GradientFill(barBlock.GetColor()));
                     box->GetPen().SetColour(
                         Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                            *wxWHITE :
-                            *wxBLACK);
+                            Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                            Colors::ColorBrewer::GetColor(Colors::Color::Black));
                     }
 
                 // if the bar is totally transparent, then draw a contrasting outline
                 // (unless the client also made the outline explicitly transparent)
                 if (bar.GetOpacity() == wxALPHA_TRANSPARENT && box->GetPen().IsOk() &&
-                    box->GetPen() != *wxTRANSPARENT_PEN)
+                    box->GetPen() != wxColour{ 0, 0, 0, 0 })
                     {
                     box->GetPen().SetColour(Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                         GetPlotOrCanvasColor()));
@@ -1976,9 +1978,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                     barRenderInfo.m_defaultFontPointSize / 2)
                 {
                 decalLabel->GetFont().SetFractionalPointSize(barRenderInfo.m_defaultFontPointSize);
-                decalLabel->SetFontColor(*wxBLACK);
-                decalLabel->GetPen().SetColour(*wxBLACK);
-                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                decalLabel->SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->GetPen().SetColour(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontBackgroundColor(
+                    Colors::ColorBrewer::GetColor(Colors::Color::White));
                 }
             const wxRect labelBoundingBox = decalLabel->GetBoundingBox(barRenderInfo.m_dc);
             if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushBottom)
@@ -2010,9 +2013,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             if (bar.GetEffect() == BoxEffect::Solid && barBlock.GetColor().IsOk() &&
                 barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
                 {
-                decalLabel->GetPen().SetColour(*wxBLACK);
-                decalLabel->SetFontColor(*wxBLACK);
-                decalLabel->SetFontBackgroundColor(*wxWHITE);
+                decalLabel->GetPen().SetColour(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::Black));
+                decalLabel->SetFontBackgroundColor(
+                    Colors::ColorBrewer::GetColor(Colors::Color::White));
                 }
             barRenderInfo.m_decals.push_back(std::move(decalLabel));
             }
@@ -2088,7 +2092,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 if (barRenderInfo.m_barRect.Intersects(bBox))
                     {
                     barLabel->SetPadding(2, 2, 2, 2);
-                    barLabel->GetPen() = *wxBLACK_PEN;
+                    barLabel->GetPen() = Colors::ColorBrewer::GetColor(Colors::Color::Black);
                     barLabel->SetFontBackgroundColor(
                         Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                             barLabel->GetFontColor()));
@@ -2120,7 +2124,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 if (barRenderInfo.m_barRect.Intersects(bBox))
                     {
                     barLabel->SetPadding(2, 2, 2, 2);
-                    barLabel->GetPen() = *wxBLACK_PEN;
+                    barLabel->GetPen() = Colors::ColorBrewer::GetColor(Colors::Color::Black);
                     barLabel->SetFontBackgroundColor(
                         Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                             barLabel->GetFontColor()));

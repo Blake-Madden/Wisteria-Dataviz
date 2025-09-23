@@ -253,7 +253,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             legendText.append(currentLabel.c_str()).append(L"\n");
             if (showingMarkers)
                 {
-                legend->GetLegendIcons().emplace_back(line.GetShape(), *wxBLACK,
+                legend->GetLegendIcons().emplace_back(
+                    line.GetShape(), Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                       line.GetPen().GetColour());
                 }
             else

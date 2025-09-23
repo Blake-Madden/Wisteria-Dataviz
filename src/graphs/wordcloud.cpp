@@ -231,7 +231,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             AddObject(std::make_unique<GraphItems::Polygon>(
-                GraphItems::GraphItemInfo().Pen(*wxBLUE), polygon));
+                GraphItems::GraphItemInfo().Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue)),
+                polygon));
             }
 
         std::vector<wxRect> drawnRects;

@@ -155,10 +155,10 @@ namespace Wisteria::GraphItems
                 GraphItems::Label selectionLabel(
                     GraphItemInfo(point.GetText())
                         .Scaling(scaling)
-                        .Pen(*wxBLACK_PEN)
+                        .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
                         .DPIScaling(GetDPIScaleFactor())
                         .Padding(2, 2, 2, 2)
-                        .FontBackgroundColor(*wxWHITE)
+                        .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
                         .AnchorPoint(itemBoundingBox.GetTopLeft() +
                                      wxPoint(itemBoundingBox.GetWidth() / 2,
                                              itemBoundingBox.GetHeight() / 2)));
@@ -385,8 +385,10 @@ namespace Wisteria::GraphItems
                 {
                 std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
-                const wxDCPenChanger pcDebug{ dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
-                                                        wxPENSTYLE_SHORT_DASH) };
+                const wxDCPenChanger pcDebug{
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                              ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH)
+                };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }

@@ -71,7 +71,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
             .AnchorPoint(wxPoint(arcMiddle.first, arcMiddle.second))
             .FontColor((GetBrush().IsOk() && GetBrush().GetColour().IsOk()) ?
                            Colors::ColorContrast::BlackOrWhiteContrast(GetBrush().GetColour()) :
-                           *wxBLACK);
+                           Colors::ColorBrewer::GetColor(Colors::Color::Black));
         pieLabel->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
         pieLabel->GetHeaderInfo().Enable(false);
 
@@ -297,7 +297,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     wxRect PieSlice::Draw(wxDC & dc) const
         {
-        wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
+        wxPen scaledPen(GetPen().IsOk() ? GetPen() : wxColour{ 0, 0, 0, 0 });
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
 
         const wxPoint centerPoint{ m_pieArea.GetWidth() / 2 + m_pieArea.GetLeft(),
@@ -312,7 +312,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
             wxPen scaledArcPen((GetArcPen().has_value() && GetArcPen().value().IsOk()) ?
                                    GetArcPen().value() :
                                GetPen().IsOk() ? GetPen() :
-                                                 *wxTRANSPARENT_PEN);
+                                                 wxColour{ 0, 0, 0, 0 });
             scaledArcPen.SetWidth(ScaleToScreenAndCanvas(scaledArcPen.GetWidth()));
 
             const wxDCPenChanger pc{ dc, scaledArcPen };
@@ -351,16 +351,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         if (IsSelected())
             {
             auto points = GetPolygon();
-            const wxDCPenChanger pc{ dc,
-                                     wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT) };
+            const wxDCPenChanger pc{ dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT) };
             dc.DrawLines(points.size(), points.data());
             // highlight the selected protruding bounding box in debug mode
             if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
                 std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(m_pieArea, debugOutline);
-                const wxDCPenChanger pcDebug{ dc, wxPen(*wxGREEN, ScaleToScreenAndCanvas(2),
-                                                        wxPENSTYLE_SHORT_DASH) };
+                const wxDCPenChanger pcDebug{
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Green),
+                              ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH)
+                };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
@@ -387,7 +389,7 @@ namespace Wisteria::Graphs
         GetLeftYAxis().Show(false);
         GetRightYAxis().Show(false);
 
-        GetPen() = *wxWHITE_PEN;
+        GetPen() = wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
 
         GetDonutHoleLabel().GetGraphItemInfo().LabelAlignment(TextAlignment::Justified);
         }
@@ -1018,7 +1020,7 @@ namespace Wisteria::Graphs
             if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
                 (!parentIsGhosted || innerPie.IsGhosted()))
                 {
-                pSlice->GetBrush() = *wxTRANSPARENT_BRUSH;
+                pSlice->GetBrush() = wxColour{ 0, 0, 0, 0 };
                 }
 
             if (innerPie.m_showText)

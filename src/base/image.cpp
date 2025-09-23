@@ -526,7 +526,7 @@ namespace Wisteria::GraphItems
             return wxNullImage;
             }
         wxImage silhouette = image.ConvertToMono(0, 0, 0);
-        SetColorTransparent(silhouette, *wxWHITE);
+        SetColorTransparent(silhouette, Colors::ColorBrewer::GetColor(Colors::Color::White));
         if (!opaque)
             {
             silhouette = ChangeColor(

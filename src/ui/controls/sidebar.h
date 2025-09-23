@@ -712,9 +712,9 @@ namespace Wisteria::UI
         wxSize m_iconSizeDIPs{ 16, 16 };
 
         wxColour m_selectedColor{ wxColour(L"#FDB759") };
-        wxColour m_selectedFontColor{ *wxBLACK };
+        wxColour m_selectedFontColor{ wxColour{ 0, 0, 0 } };
         wxColour m_highlightColor{ wxColour(253, 211, 155) };
-        wxColour m_highlightFontColor{ *wxBLACK };
+        wxColour m_highlightFontColor{ wxColour{ 0, 0, 0 } };
         wxColour m_parentColor{ wxColour(180, 189, 207) };
 
         bool m_highlightedIsSelected{ false };

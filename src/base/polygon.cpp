@@ -159,16 +159,16 @@ namespace Wisteria::GraphItems
 
         const wxRect boundingBox = GetBoundingBox(dc);
 
-        wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
+        wxPen scaledPen(GetPen().IsOk() ? GetPen() : wxColour{ 0, 0, 0, 0 });
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
         const bool penIsLight{ (scaledPen.GetColour().IsOk() &&
                                 Wisteria::Colors::ColorContrast::IsLight(scaledPen.GetColour())) };
         const wxDCPenChanger pc(
-            dc,
-            IsSelected() ?
-                wxPen(penIsLight ? *wxWHITE : Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                                         2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
-                                                   scaledPen);
+            dc, IsSelected() ?
+                    wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                          2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                    scaledPen);
 
         // don't use manual outline drawing unless one side is explicitly turned off
         const bool usingCustomOutline = (!GetGraphItemInfo().IsShowingTopOutline() ||
@@ -205,7 +205,7 @@ namespace Wisteria::GraphItems
                              GetBackgroundFill().GetDirection() == FillDirection::East  ? wxEAST :
                              GetBackgroundFill().GetDirection() == FillDirection::West  ? wxWEST :
                                                                                           wxSOUTH));
-                        const wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
+                        const wxDCBrushChanger bc2(dc, wxColour{ 0, 0, 0, 0 });
                         const wxDCPenChanger pc2(dc,
                                                  (usingCustomOutline ? wxNullPen : dc.GetPen()));
                         dc.DrawRectangle(theRect);
@@ -416,7 +416,7 @@ namespace Wisteria::GraphItems
         // just drawing an outline (hasn't already be drawn with a background color above)
         else if (!GetBackgroundFill().IsOk())
             {
-            const wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+            const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
             if (GetShape() == PolygonShape::Spline)
                 {
                 dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
@@ -434,8 +434,10 @@ namespace Wisteria::GraphItems
                 {
                 std::array<wxPoint, 5> debugOutline;
                 GetRectPoints(boundingBox, debugOutline);
-                const wxDCPenChanger pcDebug{ dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
-                                                        wxPENSTYLE_SHORT_DASH) };
+                const wxDCPenChanger pcDebug{
+                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
+                              ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH)
+                };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }
@@ -492,7 +494,7 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
         // need to turn off the pen because a thicker pen will cause an odd-looking
         // effect when the two lines converge at the tip of the arrowhead
-        const wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
+        const wxDCPenChanger pc(dc, wxColour{ 0, 0, 0, 0 });
         dc.DrawPolygon(arrowHead.size(), arrowHead.data());
         }
 

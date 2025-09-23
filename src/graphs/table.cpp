@@ -1457,7 +1457,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                  Colors::ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
                                  Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
                                      GetPlotOrCanvasColor())))
-                        .FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE)
+                        .FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor :
+                                                                     Colors::ColorBrewer::GetColor(
+                                                                         Colors::Color::White))
                         .Anchoring(Anchoring::TopLeftCorner)
                         .AnchorPoint(boxRect.GetTopLeft()));
 
@@ -1485,7 +1487,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                       cell.GetDoubleValue() < 0         ? L"\u25BC" :
                                                                           L"\u25B2")) :
                             cell.GetPrefix();
-                    const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE };
+                    const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor :
+                                                                    Colors::ColorBrewer::GetColor(
+                                                                        Colors::Color::White) };
                     auto cellPrefixLabel = std::make_unique<GraphItems::Label>(
                         GraphItems::GraphItemInfo{ prefix }
                             .Pen(wxNullPen)

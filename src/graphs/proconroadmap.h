@@ -92,7 +92,8 @@ namespace Wisteria::Graphs
          SWroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
          // use road signs and a white road line
          SWroadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
-         SWroadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
+         SWroadmap->GetLaneSeparatorPen().SetColour(
+            Colors::ColorBrewer::GetColor(Colors::Color::White));
 
          // opportunities and threats
          auto OTroadmap = std::make_shared<ProConRoadmap>(canvas);
@@ -110,7 +111,8 @@ namespace Wisteria::Graphs
          OTroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
          // use road signs and a white road line
          OTroadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
-         OTroadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
+         OTroadmap->GetLaneSeparatorPen().SetColour(
+            Colors::ColorBrewer::GetColor(Colors::Color::White));
 
          // add the legend at the bottom (beneath the explanatory caption)
          OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
@@ -133,9 +135,10 @@ namespace Wisteria::Graphs
             "Employee Survey Results Regarding Proposed Migration to new ERP Software")).
             Padding(5, 5, 5, 5).
             ChildAlignment(RelativeAlignment::FlushLeft).
-            FontColor(*wxWHITE).
+            FontColor(Colors::ColorBrewer::GetColor(Colors::Color::White)).
             FontBackgroundColor(ColorBrewer::GetColor(Colors::Color::HunterGreen)));
-         topTitle.GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
+         topTitle.GetHeaderInfo().Enable(true).FontColor(
+            Colors::ColorBrewer::GetColor(Colors::Color::White)).GetFont().MakeBold();
          canvas->GetTopTitles().push_back(topTitle);
 
          // set a common scale for the road stop sizes between the two roadmaps

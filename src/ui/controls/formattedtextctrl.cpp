@@ -368,7 +368,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         m_printWindow = new FormattedTextCtrl(this);
         }
     m_printWindow->Show(false);
-    m_printWindow->SetBackgroundColour(*wxWHITE);
+    m_printWindow->SetBackgroundColour(Colors::ColorBrewer::GetColor(Colors::Color::White));
     m_printWindow->SetFormattedText(GetUnthemedFormattedText().length() ?
                                         GetUnthemedFormattedTextRtf(false) :
                                         GetFormattedTextRtf(false));
@@ -589,7 +589,7 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
         m_printWindow = new FormattedTextCtrl(this);
         }
     m_printWindow->Show(false);
-    m_printWindow->SetBackgroundColour(*wxWHITE);
+    m_printWindow->SetBackgroundColour(Colors::ColorBrewer::GetColor(Colors::Color::White));
     m_printWindow->SetFormattedText(GetUnthemedFormattedText().length() ?
                                         GetUnthemedFormattedTextRtf(false) :
                                         GetFormattedTextRtf(false));

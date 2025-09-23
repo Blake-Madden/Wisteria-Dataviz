@@ -66,7 +66,7 @@ namespace Wisteria::UI
     void EnlargedImageWindow::OnPaint([[maybe_unused]] wxPaintEvent& event)
         {
         wxAutoBufferedPaintDC dc(this);
-        dc.SetBackground(*wxWHITE_BRUSH);
+        dc.SetBackground(Colors::ColorBrewer::GetColor(Colors::Color::White));
         dc.Clear();
         dc.DrawBitmap(GetBitmap(), 0, 0);
         }
@@ -270,8 +270,8 @@ namespace Wisteria::UI
             memDC.SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize(),
                                  wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
                                  false, L"Times New Roman"));
-            memDC.SetTextForeground(*wxBLUE);
-            memDC.SetPen(*wxBLACK_PEN);
+            memDC.SetTextForeground(Colors::ColorBrewer::GetColor(Colors::Color::Blue));
+            memDC.SetPen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
             memDC.SetBrush(wxBrush(wxColour(L"#FFFFDD")));
             wxCoord width, height;
             const wxString label(_(L"Click to close"));
@@ -282,7 +282,7 @@ namespace Wisteria::UI
             memDC.DrawText(label, canvasBmp.GetWidth() - (width + 10),
                            canvasBmp.GetHeight() - (height + 10));
             // draw a border around the image (some platforms don't put a border around dialogs)
-            memDC.SetPen(*wxBLACK_PEN);
+            memDC.SetPen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
             memDC.DrawLine(0, 0, memDC.GetSize().GetWidth(), 0);
             memDC.DrawLine(0, memDC.GetSize().GetHeight() - 1, memDC.GetSize().GetWidth(),
                            memDC.GetSize().GetHeight() - 1);

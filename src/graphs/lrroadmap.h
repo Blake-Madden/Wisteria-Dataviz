@@ -79,9 +79,9 @@ namespace Wisteria::Graphs
             "How do background characteristics and decisions affect First - Year Students' GPA?"));
          // add a title with a blue banner background and white font
          roadmap->GetTitle().GetHeaderInfo().Enable(true).
-            FontColor(*wxWHITE).GetFont().MakeBold();
+            FontColor(Colors::ColorBrewer::GetColor(Colors::Color::White)).GetFont().MakeBold();
          roadmap->GetTitle().SetPadding(5, 5, 5, 5);
-         roadmap->GetTitle().SetFontColor(*wxWHITE);
+         roadmap->GetTitle().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::White));
          roadmap->GetTitle().SetFontBackgroundColor(
             ColorBrewer::GetColor(Colors::Color::NavyBlue));
 

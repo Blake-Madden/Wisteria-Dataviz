@@ -34,7 +34,7 @@ namespace Wisteria::Colors
          cb.SetColorScale(
              {
              // the color for the min value
-             *wxBLUE,
+             Colors::ColorBrewer::GetColor(Colors::Color::Blue),
              // the color for the max value (because it's the last color added)
              ColorBrewer::GetColor(Color::Red)
              });
@@ -352,7 +352,7 @@ namespace Wisteria::Colors
             }
 
       private:
-        wxColour m_baseColor{ *wxWHITE };
+        wxColour m_baseColor{ ColorBrewer::GetColor(Color::White) };
         constexpr static double M_TOLERANCE{ math_constants::half };
         };
 
@@ -407,11 +407,11 @@ namespace Wisteria::Colors
             [[nodiscard]]
             wxColour GetColor(const size_t index) const
                 {
-                return (m_colors.empty()              ? *wxWHITE :
+                return (m_colors.empty()              ? ColorBrewer::GetColor(Color::White) :
                         (index < m_colors.size())     ? m_colors.at(index) :
                         (index < m_colors.size() * 2) ? ColorContrast::ShadeOrTint(
                                                             m_colors.at(index % m_colors.size())) :
-                                                        *wxWHITE);
+                                                        ColorBrewer::GetColor(Color::White));
                 }
 
             /** @brief Gets the color from a given index and applies an opacity value to it.
@@ -437,7 +437,8 @@ namespace Wisteria::Colors
             [[nodiscard]]
             wxColour GetRecycledColor(const size_t index) const
                 {
-                return (m_colors.empty() ? *wxWHITE : m_colors.at(index % m_colors.size()));
+                return (m_colors.empty() ? ColorBrewer::GetColor(Color::White) :
+                                           m_colors.at(index % m_colors.size()));
                 }
 
             /** @brief Adds a color to the scheme.

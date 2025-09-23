@@ -35,8 +35,12 @@ wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
     // code-folding options
     SetProperty(L"fold", L"1");
     SetProperty(L"fold.compact", L"1");
-    const wxColour markerColor{ wxSystemSettings::SelectLightDark(*wxWHITE, *wxBLACK) };
-    const wxColour markerContrastColor{ wxSystemSettings::SelectLightDark(*wxBLACK, *wxWHITE) };
+    const wxColour markerColor{ wxSystemSettings::SelectLightDark(
+        Colors::ColorBrewer::GetColor(Colors::Color::White),
+        Colors::ColorBrewer::GetColor(Colors::Color::Black)) };
+    const wxColour markerContrastColor{ wxSystemSettings::SelectLightDark(
+        Colors::ColorBrewer::GetColor(Colors::Color::Black),
+        Colors::ColorBrewer::GetColor(Colors::Color::White)) };
     MarkerDefine(wxSTC_MARKNUM_FOLDER, wxSTC_MARK_DOTDOTDOT, markerColor, markerColor);
     MarkerDefine(wxSTC_MARKNUM_FOLDEROPEN, wxSTC_MARK_ARROWDOWN, markerColor, markerColor);
     MarkerDefine(wxSTC_MARKNUM_FOLDERSUB, wxSTC_MARK_EMPTY, markerColor, markerColor);

@@ -539,7 +539,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     }
 
                 auto homeGameLine = std::make_unique<GraphItems::Lines>(
-                    wxPenInfo{ *wxBLACK, 2 }.Cap(wxCAP_BUTT), GetScaling());
+                    wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 2 }.Cap(
+                        wxCAP_BUTT),
+                    GetScaling());
                 auto winLine = std::make_unique<GraphItems::Lines>(
                     wxPenInfo{ m_winColor, 2 }.Cap(wxCAP_BUTT), GetScaling());
                 auto lossLine = std::make_unique<GraphItems::Lines>(
@@ -803,7 +805,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             }
         legend->GetLegendIcons().emplace_back(Icons::IconShape::VerticalLine, m_tieColor,
                                               wxNullBrush);
-        legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine, *wxBLACK_PEN,
+        legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
+                                              Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                               wxNullBrush);
         legend->GetLegendIcons().emplace_back(
             Icons::IconShape::CrossedOut, Colors::ColorBrewer::GetColor(Colors::Color::PastelGray),
