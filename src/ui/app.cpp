@@ -198,7 +198,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
             .Pen(wxNullPen)
             .Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD,
                          false, theFontName))
-            .FontColor(*wxWHITE)
+            .FontColor(wxColour{ 255, 255, 255 })
             .DPIScaling(1.0)
             .Anchoring(Anchoring::TopLeftCorner)
             .AnchorPoint({ 0, 0 })
@@ -210,8 +210,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 
         // draw translucent backscreens on image so that text written on it can be read
         {
-        const wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
-        const wxDCBrushChanger bc(gcdc, wxBrush(wxColour(61, 60, 59, 175)));
+        const wxDCPenChanger pc(gcdc, wxColour{ 0, 0, 0 });
+        const wxDCBrushChanger bc(gcdc, wxBrush(wxColour{ 61, 60, 59, 175 }));
         gcdc.DrawRectangle(wxRect(0, 0, canvasBmp.GetWidth(), backscreenHeight));
         gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetWidth(), backscreenHeight);
         if (includeCopyright)
@@ -242,7 +242,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         boundingBox = appLabel.GetBoundingBox(gcdc);
         appLabel.Draw(gcdc);
 
-        appLabel.GetGraphItemInfo().FontColor(wxColour(L"#F89522")).Padding(4, 4, 4, 2);
+        appLabel.GetGraphItemInfo().FontColor(wxColour{ L"#F89522" }).Padding(4, 4, 4, 2);
         appLabel.Offset(boundingBox.GetWidth(), 0);
         appLabel.SetText(appSubName);
         appLabel.Draw(gcdc);
@@ -261,7 +261,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
                 .Pen(wxNullPen)
                 .Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
                              false, theFontName))
-                .FontColor(*wxWHITE)
+                .FontColor(wxColour{ 255, 255, 255 })
                 .Padding(4, 4, 4, 4)
                 .DPIScaling(1.0)
                 .Anchoring(Anchoring::BottomRightCorner)
@@ -272,7 +272,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         }
 
     // draw a border around the image
-    gcdc.SetPen(*wxLIGHT_GREY_PEN);
+    gcdc.SetPen(wxColour{ 241, 241, 241 });
     const auto penWidth = gcdc.GetPen().GetWidth();
     gcdc.DrawLine(0, 0, 0, canvasBmp.GetHeight() - penWidth);
     gcdc.DrawLine(0, canvasBmp.GetHeight() - penWidth, canvasBmp.GetWidth() - penWidth,

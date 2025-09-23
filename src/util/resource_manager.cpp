@@ -157,7 +157,7 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     {
         wxMemoryDC memDC(bmp);
         memDC.SetBrush(wxBrush(color));
-        memDC.SetPen(*wxBLACK_PEN);
+        memDC.SetPen(wxColour{ 0, 0, 0 });
         memDC.Clear();
         memDC.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight());
         memDC.SelectObject(wxNullBitmap);
