@@ -71,7 +71,7 @@ namespace Wisteria::GraphItems
             Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
             wxMemoryDC memDC(bmp);
             wxGCDC gdc(memDC);
-            gdc.SetBrush(wxColour{ 0, 0, 0 , 0 });
+            gdc.SetBrush(wxColour{ 0, 0, 0, 0 });
             gdc.Clear();
 
             Shape::Draw(wxRect(drawRect.GetSize()), gdc);
@@ -83,7 +83,7 @@ namespace Wisteria::GraphItems
             Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT);
             wxMemoryDC memDC(ghostedBmp);
             wxGCDC gdc(memDC);
-            gdc.SetBrush(wxColour{ 0, 0, 0 , 0 });
+            gdc.SetBrush(wxColour{ 0, 0, 0, 0 });
             gdc.Clear();
 
             auto shapeInfo{ GraphItemBase::GetGraphItemInfo() };
@@ -122,7 +122,7 @@ namespace Wisteria::GraphItems
         // draw the bounding box outline
         if (IsSelected())
             {
-            const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0 , 0 });
+            const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
             const wxDCPenChanger pc(
                 dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(drawRect);

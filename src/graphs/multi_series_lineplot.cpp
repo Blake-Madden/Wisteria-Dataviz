@@ -255,7 +255,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                 {
                 legend->GetLegendIcons().emplace_back(
                     line.GetShape(), Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                                      line.GetPen().GetColour());
+                    line.GetPen().GetColour());
                 }
             else
                 {

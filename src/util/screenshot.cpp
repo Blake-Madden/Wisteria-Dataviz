@@ -125,8 +125,7 @@ void Screenshot::AddBorderToImage(wxBitmap& bmp) // cppcheck-suppress constParam
     wxMemoryDC memDC;
     memDC.SelectObject(bmp);
 
-    memDC.SetPen(wxPen(wxColour{ 241, 241, 241 },
-                       wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
+    memDC.SetPen(wxPen(wxColour{ 241, 241, 241 }, wxTheApp->GetTopWindow()->GetDPIScaleFactor()));
     const wxPoint corners[] = { wxPoint(0, 0),
                                 wxPoint(memDC.GetSize().GetWidth() - memDC.GetPen().GetWidth(), 0),
                                 wxPoint(memDC.GetSize().GetWidth() - memDC.GetPen().GetWidth(),
