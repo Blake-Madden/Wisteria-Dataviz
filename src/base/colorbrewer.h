@@ -14,10 +14,15 @@
 
 #include "../math/statistics.h"
 #include "colors.h"
+#include <concepts>
 #include <initializer_list>
 #include <vector>
 #include <wx/string.h>
 #include <wx/wx.h>
+
+// @private
+template<typename T>
+concept CssChar = std::same_as<T, char> || std::same_as<T, wchar_t>;
 
 /// @brief Color management features (building, brewing, contrasting, etc.).
 /// @sa The [color management](../../Colors.md) overview for more information.
@@ -58,7 +63,7 @@ namespace Wisteria::Colors
         {
       public:
         /// @brief Converts RGBA values into a @c wxUint32 that can be
-        /// used with @c wxColour::SetRGBA().
+        ///     used with @c wxColour::SetRGBA().
         /// @param red The red channel.
         /// @param green The green channel.
         /// @param blue The blue channel.
@@ -75,6 +80,63 @@ namespace Wisteria::Colors
             color |= static_cast<wxUint32>(green) << 8;
             color |= static_cast<wxUint32>(red);
             return color;
+            }
+
+        /// @brief Convert a CSS-style hex color string literal to a long value.
+        /// @tparam charT Character type (`char` or `wchar_t`).
+        /// @tparam N Array size (deduced from the string literal).
+        /// @param css CSS color string literal (must be exactly "#RRGGBB").
+        /// @return Encoded color value (0xBBGGRR), or `-1` if invalid.
+        /// @note This performs compile-time validation of string length.
+        /// @code
+        /// constexpr long red = ColorBrewer::CSS_HEX_TO_LONG("#FF0000"); // OK
+        /// constexpr long bad = ColorBrewer::CSS_HEX_TO_LONG("#123");    // Compile error
+        /// @endcode
+        template<CssChar charT, std::size_t N>
+        constexpr static long CSS_HEX_TO_LONG(const charT (&css)[N])
+            {
+            if (css == nullptr)
+                {
+                return -1;
+                }
+            if (css[0] != static_cast<charT>('#'))
+                {
+                return -1;
+                }
+
+            // hex conversion
+            constexpr auto hexDigit = [](charT c) -> int
+            {
+                if (c >= static_cast<charT>('0') && c <= static_cast<charT>('9'))
+                    {
+                    return c - static_cast<charT>('0');
+                    }
+                if (c >= static_cast<charT>('a') && c <= static_cast<charT>('f'))
+                    {
+                    return 10 + (c - static_cast<charT>('a'));
+                    }
+                if (c >= static_cast<charT>('A') && c <= static_cast<charT>('F'))
+                    {
+                    return 10 + (c - static_cast<charT>('A'));
+                    }
+                return -1;
+            };
+
+            int r1 = hexDigit(css[1]), r2 = hexDigit(css[2]);
+            int g1 = hexDigit(css[3]), g2 = hexDigit(css[4]);
+            int b1 = hexDigit(css[5]), b2 = hexDigit(css[6]);
+
+            if (r1 < 0 || r2 < 0 || g1 < 0 || g2 < 0 || b1 < 0 || b2 < 0)
+                {
+                return -1;
+                }
+
+            int r = r1 * 16 + r2;
+            int g = g1 * 16 + g2;
+            int b = b1 * 16 + b2;
+
+            return (static_cast<long>(b) << 16) | (static_cast<long>(g) << 8) |
+                   static_cast<long>(r);
             }
 
         /** @brief Creates a color from a Colors::Color value.

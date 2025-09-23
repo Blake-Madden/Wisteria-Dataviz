@@ -5,6 +5,27 @@
 using namespace Wisteria;
 using namespace Wisteria::Colors;
 
+TEST_CASE("CSS_HEX_TO_LONG", "[colorbrewer]")
+    {
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#FFFFFF") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#FFFFFF" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#000000") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#000000" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#FF0000") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#FF0000" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#00FF00") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#00FF00" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#0000FF") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#0000FF" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#F0B25F") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#F0B25F" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#50FFA7") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#50FFA7" });
+    CHECK(wxColour{ ColorBrewer::CSS_HEX_TO_LONG("#AB0600") }.GetAsString(wxC2S_HTML_SYNTAX) ==
+          wxString{ "#AB0600" });
+    CHECK(ColorBrewer::CSS_HEX_TO_LONG("#G0B25F") == -1);
+    }
+
 TEST_CASE("Data range", "[colorbrewer]")
     {
     std::vector<wxColour> colorSpectrum;
