@@ -80,7 +80,7 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
         else
             {
             wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
-            assert(bmp.IsOk() && "Failed to load image from resources!");
+            wxASSERT_MSG(bmp.IsOk(), "Failed to load image from resources!");
             wxLogDebug(L"%s extracted from resource file. Width=%d, Height=%d", filePath,
                        bmp.GetWidth(), bmp.GetHeight());
             return m_imageMap[filePath] = bmp;
@@ -101,20 +101,20 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
         // load bitmap from disk if a local file
         if (wxFile::Exists(path))
             {
-            assert(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).IsOk() &&
-                   L"Failed to load SVG icon!");
+            wxASSERT_MSG(wxBitmapBundle::FromSVGFile(path, wxSize{ 16, 16 }).IsOk(),
+                         L"Failed to load SVG icon!");
 
             wxVector<wxBitmap> bmps;
             bmps.push_back(
-                wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).GetBitmap(wxSize(16, 16)));
+                wxBitmapBundle::FromSVGFile(path, wxSize{ 16, 16 }).GetBitmap(wxSize{ 16, 16 }));
             bmps.push_back(
-                wxBitmapBundle::FromSVGFile(path, wxSize(32, 32)).GetBitmap(wxSize(32, 32)));
+                wxBitmapBundle::FromSVGFile(path, wxSize{ 32, 32 }).GetBitmap(wxSize{ 32, 32 }));
             bmps.push_back(
-                wxBitmapBundle::FromSVGFile(path, wxSize(64, 64)).GetBitmap(wxSize(64, 64)));
-            bmps.push_back(
-                wxBitmapBundle::FromSVGFile(path, wxSize(128, 128)).GetBitmap(wxSize(128, 128)));
-            bmps.push_back(
-                wxBitmapBundle::FromSVGFile(path, wxSize(256, 256)).GetBitmap(wxSize(256, 256)));
+                wxBitmapBundle::FromSVGFile(path, wxSize{ 64, 64 }).GetBitmap(wxSize{ 64, 64 }));
+            bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize{ 128, 128 })
+                               .GetBitmap(wxSize{ 128, 128 }));
+            bmps.push_back(wxBitmapBundle::FromSVGFile(path, wxSize{ 256, 256 })
+                               .GetBitmap(wxSize{ 256, 256 }));
 
             const auto [node, inserted] =
                 m_bmpBundleMap.insert(std::make_pair(path, wxBitmapBundle::FromBitmaps(bmps)));
@@ -124,11 +124,11 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
         else
             {
             wxVector<wxBitmap> bmps;
-            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(16, 16)));
-            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(32, 32)));
-            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(64, 64)));
-            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(128, 128)));
-            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize(256, 256)));
+            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize{ 16, 16 }));
+            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize{ 32, 32 }));
+            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize{ 64, 64 }));
+            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize{ 128, 128 }));
+            bmps.push_back(m_zipCatalog.ReadSVG(path, wxSize{ 256, 256 }));
 
             const auto [node, inserted] =
                 m_bmpBundleMap.insert(std::make_pair(path, wxBitmapBundle::FromBitmaps(bmps)));
@@ -145,23 +145,24 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
 //-------------------------------------------------------
 wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     {
-    assert(color.IsOk());
+    wxASSERT(color.IsOk());
 
     wxVector<wxBitmap> bmps;
-    bmps.push_back(wxBitmap(16, 16));
-    bmps.push_back(wxBitmap(32, 32));
-    bmps.push_back(wxBitmap(64, 64));
-    bmps.push_back(wxBitmap(128, 128));
+    bmps.push_back(wxBitmap{ 16, 16 });
+    bmps.push_back(wxBitmap{ 32, 32 });
+    bmps.push_back(wxBitmap{ 64, 64 });
+    bmps.push_back(wxBitmap{ 128, 128 });
+    bmps.push_back(wxBitmap{ 256, 256 });
 
     const auto fillIcon = [&color](wxBitmap& bmp)
     {
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(wxBrush(color));
+        wxMemoryDC memDC{ bmp };
+        memDC.SetBrush(wxBrush{ color });
         memDC.SetPen(wxColour{ 0, 0, 0 });
         memDC.Clear();
         memDC.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight());
         memDC.SelectObject(wxNullBitmap);
-        assert(bmp.IsOk());
+        wxASSERT(bmp.IsOk());
     };
 
     std::ranges::for_each(bmps, fillIcon);
