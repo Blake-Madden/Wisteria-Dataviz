@@ -108,27 +108,6 @@ bool Wisteria::UI::BaseApp::OnInit()
         wxLogMessage(L"System Theme: %s", wxSystemSettings::GetAppearance().GetName());
         }
 
-    // subroutine to log the system colors
-    const auto logSystemColor = [](const wxSystemColour color, const wxString& description)
-    {
-        if (const auto sysColor = wxSystemSettings::GetColour(color); sysColor.IsOk())
-            {
-            wxLogVerbose(L"%s: %s %s", description, sysColor.GetAsString(wxC2S_HTML_SYNTAX),
-                         wxTheColourDatabase->FindName(sysColor.GetRGB()).MakeCapitalized());
-            }
-    };
-
-    logSystemColor(wxSYS_COLOUR_WINDOW, DONTTRANSLATE(L"Window Color"));
-    logSystemColor(wxSYS_COLOUR_MENU, DONTTRANSLATE(L"Menu Color"));
-    logSystemColor(wxSYS_COLOUR_WINDOWFRAME, DONTTRANSLATE(L"Window Frame Color"));
-    logSystemColor(wxSYS_COLOUR_BTNFACE, DONTTRANSLATE(L"Dialog/Controls Color"));
-    logSystemColor(wxSYS_COLOUR_HIGHLIGHT, DONTTRANSLATE(L"Highlighted Item Color"));
-    logSystemColor(wxSYS_COLOUR_WINDOWTEXT, DONTTRANSLATE(L"Window Text Color"));
-    logSystemColor(wxSYS_COLOUR_MENUTEXT, DONTTRANSLATE(L"Menu Text Color"));
-    logSystemColor(wxSYS_COLOUR_HIGHLIGHTTEXT, DONTTRANSLATE(L"Highlighted Text Color"));
-    logSystemColor(wxSYS_COLOUR_GRAYTEXT, DONTTRANSLATE(L"Grayed Text Color"));
-    logSystemColor(wxSYS_COLOUR_HOTLIGHT, DONTTRANSLATE(L"Hyperlink Color"));
-
     // fix color mapping on Windows
     wxSystemOptions::SetOption(DONTTRANSLATE(L"msw.remap"), 0);
 
