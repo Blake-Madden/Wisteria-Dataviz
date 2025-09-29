@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-# clang_tidy_html_report.py — Parse clang-tidy stdout logs -> rich HTML
-import re, sys, html, argparse, pathlib, json
+# Parse clang-tidy stdout logs -> rich HTML (filterable)
+
+import re, sys, html, argparse, pathlib
+from string import Template
 from collections import defaultdict, Counter
 
 ROW_RE = re.compile(
@@ -9,44 +11,37 @@ ROW_RE = re.compile(
     r'(?P<msg>.*?)(?:\s\[(?P<check>[^\]]+)\])?\s*$'
 )
 
-HTML = """<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+HTML = Template("""<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clang-Tidy Report</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  :root { --bg:#0b0d10; --fg:#e6edf3; --muted:#9aa7b1; --row:#11151a; --accent:#2f81f7; --warn:#f5a623; --err:#ff4d4f; --note:#7aa2f7; }
-  body { background:var(--bg); color:var(--fg); font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:24px; }
-  h1 { margin:0 0 16px 0; font-size:22px; }
-  .muted { color:var(--muted); }
-  .chips { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 16px 0; }
-  .chip { background:#1a2129; border:1px solid #223041; padding:4px 10px; border-radius:999px; font-size:12px; }
-  .chip strong { color:var(--fg); }
-  .filters { display:flex; gap:12px; margin:14px 0 18px 0; align-items:center; }
-  select, input[type="search"] { background:#0f141a; color:var(--fg); border:1px solid #223041; padding:6px 10px; border-radius:8px; }
-  table { width:100%; border-collapse:collapse; }
-  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid #1f2630; }
-  tr { background:var(--row); }
-  tr:hover { background:#141a22; }
-  th { position:sticky; top:0; background:#0e141b; z-index:2; }
-  code { background:#0f141a; padding:2px 6px; border-radius:6px; }
-  .sev-warning { color: var(--warn); }
-  .sev-error   { color: var(--err); }
-  .sev-note    { color: var(--note); }
-  .footer { margin-top:18px; font-size:12px; color:var(--muted); }
-  .nowrap { white-space:nowrap; }
+  :root{--bg:#0b0d10;--fg:#e6edf3;--muted:#9aa7b1;--row:#11151a;--accent:#2f81f7;--warn:#f5a623;--err:#ff4d4f;--note:#7aa2f7}
+  body{background:var(--bg);color:var(--fg);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:24px}
+  h1{margin:0 0 16px 0;font-size:22px}
+  .muted{color:var(--muted)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px 0}
+  .chip{background:#1a2129;border:1px solid #223041;padding:4px 10px;border-radius:999px;font-size:12px}
+  .chip strong{color:var(--fg)}
+  .filters{display:flex;gap:12px;margin:14px 0 18px 0;align-items:center}
+  select,input[type="search"]{background:#0f141a;color:var(--fg);border:1px solid #223041;padding:6px 10px;border-radius:8px}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #1f2630}
+  tr{background:var(--row)} tr:hover{background:#141a22}
+  th{position:sticky;top:0;background:#0e141b;z-index:2}
+  code{background:#0f141a;padding:2px 6px;border-radius:6px}
+  .sev-warning{color:var(--warn)} .sev-error{color:var(--err)} .sev-note{color:var(--note)}
+  .footer{margin-top:18px;font-size:12px;color:var(--muted)} .nowrap{white-space:nowrap}
 </style>
-</head>
-<body>
+</head><body>
   <h1>Clang-Tidy Report</h1>
   <div class="chips">
-    <div class="chip"><strong>Total</strong> {total}</div>
-    <div class="chip"><span class="sev-error"><strong>Errors</strong></span> {n_err}</div>
-    <div class="chip"><span class="sev-warning"><strong>Warnings</strong></span> {n_warn}</div>
-    <div class="chip"><span class="sev-note"><strong>Notes</strong></span> {n_note}</div>
-    <div class="chip"><strong>Files</strong> {files_count}</div>
-    <div class="chip"><strong>Checks</strong> {checks_count}</div>
+    <div class="chip"><strong>Total</strong> $total</div>
+    <div class="chip"><span class="sev-error"><strong>Errors</strong></span> $n_err</div>
+    <div class="chip"><span class="sev-warning"><strong>Warnings</strong></span> $n_warn</div>
+    <div class="chip"><span class="sev-note"><strong>Notes</strong></span> $n_note</div>
+    <div class="chip"><strong>Files</strong> $files_count</div>
+    <div class="chip"><strong>Checks</strong> $checks_count</div>
   </div>
 
   <div class="filters">
@@ -61,7 +56,7 @@ HTML = """<!doctype html>
     <label>Check:
       <select id="check">
         <option value="">All</option>
-        {check_opts}
+        $check_opts
       </select>
     </label>
     <label class="nowrap">Search:
@@ -70,18 +65,16 @@ HTML = """<!doctype html>
   </div>
 
   <table id="tbl">
-    <thead>
-      <tr>
-        <th class="nowrap">Severity</th>
-        <th>Check</th>
-        <th>Message</th>
-        <th>File</th>
-        <th class="nowrap">Line:Col</th>
-      </tr>
-    </thead>
+    <thead><tr>
+      <th class="nowrap">Severity</th>
+      <th>Check</th>
+      <th>Message</th>
+      <th>File</th>
+      <th class="nowrap">Line:Col</th>
+    </tr></thead>
     <tbody>
-      {rows}
-      {empty_row}
+      $rows
+      $empty_row
     </tbody>
   </table>
 
@@ -89,9 +82,7 @@ HTML = """<!doctype html>
     <h2>By Check</h2>
     <table>
       <thead><tr><th>Check</th><th>Count</th><th>Examples</th></tr></thead>
-      <tbody>
-        {by_check_rows}
-      </tbody>
+      <tbody>$by_check_rows</tbody>
     </table>
   </div>
 
@@ -99,55 +90,45 @@ HTML = """<!doctype html>
 
 <script>
 (() => {
-  const sevSel = document.getElementById('sev');
-  const chkSel = document.getElementById('check');
-  const q = document.getElementById('q');
-  const rows = Array.from(document.querySelectorAll('#tbl tbody tr[data-sev]'));
-
-  function matches(r) {
-    const s = sevSel.value, c = chkSel.value, term = q.value.toLowerCase().trim();
-    if (s && r.dataset.sev !== s) return false;
-    if (c && r.dataset.check !== c) return false;
-    if (term) {
-      const hay = (r.dataset.file + ' ' + r.dataset.msg).toLowerCase();
-      if (!hay.includes(term)) return false;
-    }
+  const sevSel=document.getElementById('sev');
+  const chkSel=document.getElementById('check');
+  const q=document.getElementById('q');
+  const rows=Array.from(document.querySelectorAll('#tbl tbody tr[data-sev]'));
+  function matches(r){
+    const s=sevSel.value,c=chkSel.value,t=q.value.toLowerCase().trim();
+    if(s && r.dataset.sev!==s) return false;
+    if(c && r.dataset.check!==c) return false;
+    if(t){const hay=(r.dataset.file+' '+r.dataset.msg).toLowerCase(); if(!hay.includes(t)) return false;}
     return true;
   }
-  function apply() {
-    let any = false;
-    rows.forEach(r => {
-      const ok = matches(r);
-      r.style.display = ok ? '' : 'none';
-      if (ok) any = true;
-    });
+  function apply(){
+    let any=false;
+    rows.forEach(r=>{const ok=matches(r); r.style.display=ok?'':'none'; if(ok) any=true;});
     document.getElementById('empty')?.remove();
-    if (!any) {
-      const tr = document.createElement('tr');
-      tr.id = 'empty';
-      tr.innerHTML = `<td colspan="5" class="muted">No rows match.</td>`;
+    if(!any){
+      const tr=document.createElement('tr'); tr.id='empty';
+      tr.innerHTML=`<td colspan="5" class="muted">No rows match.</td>`;
       document.querySelector('#tbl tbody').appendChild(tr);
     }
   }
-  [sevSel, chkSel].forEach(e => e.addEventListener('change', apply));
-  q.addEventListener('input', apply);
+  [sevSel,chkSel].forEach(e=>e.addEventListener('change',apply));
+  q.addEventListener('input',apply);
 })();
 </script>
-</body>
-</html>
-"""
+</body></html>
+""")
 
 def parse_logs(paths):
-    entries = []
+    entries=[]
     for p in paths:
         try:
-            text = pathlib.Path(p).read_text(encoding='utf-8', errors='replace').splitlines()
+            text=pathlib.Path(p).read_text(encoding='utf-8', errors='replace').splitlines()
         except Exception:
             continue
         for line in text:
-            m = ROW_RE.match(line.strip())
+            m=ROW_RE.match(line.strip())
             if not m: continue
-            d = m.groupdict()
+            d=m.groupdict()
             entries.append({
                 'file': d['file'],
                 'line': int(d['line']),
@@ -159,25 +140,25 @@ def parse_logs(paths):
     return entries
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap=argparse.ArgumentParser()
     ap.add_argument("--logs", nargs='+', required=True, help="One or more clang-tidy *.txt logs")
     ap.add_argument("--out", required=True, help="Output HTML path")
-    a = ap.parse_args()
+    a=ap.parse_args()
 
-    items = parse_logs(a.logs)
+    items=parse_logs(a.logs)
     items.sort(key=lambda x: (x['sev']!='error', x['sev']!='warning', x['file'], x['line'], x['col'], x['check']))
 
-    by_check = defaultdict(list)
-    files = set()
-    sev_ct = Counter()
+    by_check=defaultdict(list)
+    files=set()
+    sev_ct=Counter()
     for it in items:
         by_check[it['check']].append(it)
         files.add(it['file'])
-        sev_ct[it['sev']] += 1
+        sev_ct[it['sev']]+=1
 
-    def esc(s): return html.escape(str(s or ""))
+    esc=lambda s: html.escape(str(s or ""))
 
-    row_html = []
+    row_html=[]
     for it in items:
         row_html.append(
             f"<tr data-sev='{esc(it['sev'])}' data-check='{esc(it['check'])}' "
@@ -189,43 +170,38 @@ def main():
             f"<td class='nowrap'>{it['line']}:{it['col']}</td>"
             f"</tr>"
         )
-    if not row_html:
-        empty_row = "<tr id='empty'><td colspan='5' class='muted'>No diagnostics.</td></tr>"
-    else:
-        empty_row = ""
+    empty_row = "" if row_html else "<tr id='empty'><td colspan='5' class='muted'>No diagnostics.</td></tr>"
 
-    check_opts = "\n".join(
+    check_opts="\n".join(
         f"<option value='{esc(k)}'>{esc(k)} ({len(v)})</option>"
-        for k, v in sorted(by_check.items(), key=lambda kv: (-len(kv[1]), kv[0]))
-        if k
+        for k,v in sorted(by_check.items(), key=lambda kv: (-len(kv[1]), kv[0])) if k
     )
 
-    by_check_rows = []
-    for chk, lst in sorted(by_check.items(), key=lambda kv: (-len(kv[1]), kv[0])):
-        examples = "".join(
+    by_check_rows=[]
+    for chk,lst in sorted(by_check.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        examples="".join(
             f"<div><span class='nowrap'>{esc(it['file'])}:{it['line']}</span> — {esc(it['msg'])}</div>"
             for it in lst[:3]
         )
-        by_check_rows.append(
-            f"<tr><td><code>{esc(chk) or '—'}</code></td><td>{len(lst)}</td><td>{examples}</td></tr>"
-        )
+        by_check_rows.append(f"<tr><td><code>{esc(chk) or '—'}</code></td><td>{len(lst)}</td><td>{examples}</td></tr>")
+    by_check_html = "\n".join(by_check_rows) if by_check_rows else "<tr><td colspan='3' class='muted'>No diagnostics.</td></tr>"
 
-    html_out = HTML.format(
+    html_out = HTML.substitute(
         total=len(items),
         n_err=sev_ct['error'],
         n_warn=sev_ct['warning'],
         n_note=sev_ct['note'],
         files_count=len(files),
-        checks_count=sum(1 for k in by_check.keys() if k),
+        checks_count=sum(1 for k in by_check if k),
         check_opts=check_opts,
         rows="\n".join(row_html),
         empty_row=empty_row,
-        by_check_rows="\n".join(by_check_rows) if by_check_rows else "<tr><td colspan='3' class='muted'>No diagnostics.</td></tr>"
+        by_check_rows=by_check_html
     )
 
-    outp = pathlib.Path(a.out)
+    outp=pathlib.Path(a.out)
     outp.parent.mkdir(parents=True, exist_ok=True)
     outp.write_text(html_out, encoding='utf-8')
 
-if __name__ == "__main__":
+if __name__=="__main__":
     main()
