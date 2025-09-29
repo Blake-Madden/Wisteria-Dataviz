@@ -26,7 +26,7 @@ class NoAppInfoAppend
     ~NoAppInfoAppend() { wxStandardPaths::Get().UseAppInfo(wxStandardPaths::AppInfo_AppName); }
     };
 
-using namespace Wisteria::UI
+namespace Wisteria::UI
     {
     //----------------------------------------------------------
     BaseApp::BaseApp()
@@ -94,7 +94,7 @@ using namespace Wisteria::UI
         }
 
     //----------------------------------------------------------
-    static int LogSystemInfo()
+    void BaseApp::LogSystemInfo() const
         {
         // log some system information
         wxDateTime buildDate;
@@ -121,7 +121,7 @@ using namespace Wisteria::UI
                          wxFileName::GetHumanReadableSize(
                              static_cast<wxULongLong>(physicalMemory.GetValue())));
             }
-        if (wxGraphicsRenderer::GetDefaultRenderer())
+        if (wxGraphicsRenderer::GetDefaultRenderer() != nullptr)
             {
             wxLogMessage(L"Graphics Renderer: %s",
                          wxGraphicsRenderer::GetDefaultRenderer()->GetName());
@@ -340,7 +340,8 @@ using namespace Wisteria::UI
     //----------------------------------------------------------
     void BaseApp::LoadFileHistoryMenu()
         {
-        if (GetMainFrame()->GetMenuBar() && GetMainFrame()->GetMenuBar()->GetMenuCount())
+        if ((GetMainFrame()->GetMenuBar() != nullptr) &&
+            (GetMainFrame()->GetMenuBar()->GetMenuCount() != 0U))
             {
             GetDocManager()->FileHistoryUseMenu(GetMainFrame()->GetMenuBar()->GetMenu(0));
             }
@@ -353,7 +354,7 @@ using namespace Wisteria::UI
     //----------------------------------------------------------
     void BaseApp::ClearFileHistoryMenu()
         {
-        while (GetDocManager()->GetHistoryFilesCount())
+        while (GetDocManager()->GetHistoryFilesCount() != 0U)
             {
             GetDocManager()->GetFileHistory()->RemoveFileFromHistory(0);
             }
@@ -430,7 +431,7 @@ using namespace Wisteria::UI
             }
         // give up, can't find it anywhere
         wxLogWarning(L"'%s': unable to find resource file.", subFile);
-        return wxString{};
+        return {};
         }
 
     //----------------------------------------------------------
@@ -506,19 +507,19 @@ using namespace Wisteria::UI
             return foundFolder;
             }
         // give up, can't find it anywhere
-        return wxString{};
+        return {};
         }
 
     //----------------------------------------------------------
-    wxString BaseApp::FindResourceFileWithAppInfo(const wxString& folder, const wxString& subFile)
-        const
+    wxString BaseApp::FindResourceFileWithAppInfo(const wxString& folder,
+                                                  const wxString& subFile) const
         {
         wxString appFolderNameNoSpaces = GetAppName();
         appFolderNameNoSpaces.Replace(L" ", wxString{}, true);
 
         if (appFolderNameNoSpaces.empty())
             {
-            return wxString{};
+            return {};
             }
 
         // try the folder + program name + file
@@ -542,7 +543,7 @@ using namespace Wisteria::UI
             {
             return foundFile;
             }
-        return wxString{};
+        return {};
         }
 
     //----------------------------------------------------------
@@ -554,7 +555,7 @@ using namespace Wisteria::UI
 
         if (appFolderNameNoSpaces.empty())
             {
-            return wxString{};
+            return {};
             }
 
         // try the folder + program name + file
@@ -578,7 +579,7 @@ using namespace Wisteria::UI
             {
             return foundFolder;
             }
-        return wxString{};
+        return {};
         }
 
     //----------------------------------------------------------
@@ -609,4 +610,4 @@ using namespace Wisteria::UI
             }
         return GetTopWindow();
         }
-    }
+    } // namespace Wisteria::UI

@@ -61,7 +61,7 @@ namespace Wisteria::UI
 
         /// @brief Logs various information about the system.
         /// @description Call this after OnInit().
-        static void LogSystemInfo();
+        void LogSystemInfo() const;
 
         /// @private
         void OnFatalException() final;
