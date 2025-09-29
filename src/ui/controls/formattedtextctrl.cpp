@@ -571,10 +571,14 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         fullFooter += expandedCenterFooter;
         fullFooter += expandedRightFooter;
         }
+    #ifdef HAS_MAC_TEXT_PRINTING
     /// @todo test this
     m_printWindow->GetTextPeer()->Print(wxSize(PaperWidthInInches * 72, PaperHeightInInches * 72),
                                         static_cast<int>(m_printData->GetOrientation()), fullHeader,
                                         fullFooter);
+    #else
+        #warning "Text Control printing will not be available."
+    #endif
 #endif
     }
 
