@@ -12,7 +12,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Download wxwidgets
+      - name: Download wxWidgets
         run: |
              export DISPLAY=:0.0
              export DEBIAN_FRONTEND=noninteractive

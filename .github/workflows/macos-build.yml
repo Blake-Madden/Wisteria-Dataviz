@@ -15,7 +15,7 @@ jobs:
         with:
           submodules: recursive
   
-      - name: Download wxwidgets
+      - name: Download wxWidgets
         run: |
              brew install grep
              brew install tbb
