@@ -31,7 +31,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           submodules: recursive
 
       - name: Download wxWidgets
@@ -98,29 +97,37 @@ jobs:
       - name: Run clang-tidy
         if: ${{ steps.files.outputs.files != '' }}
         shell: bash
+        env:
+          FIXES_DIR: clang_tidy_fixes
         run: |
           set -euo pipefail
           mkdir -p "$FIXES_DIR" logs
-          for file in ${{ steps.files.outputs.files }}; do
+
+          # Read the newline-separated list
+          while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
             echo "=== clang-tidy -> $file ==="
-            base="${file//\//__}"
-            # Disable fixes; capture plain diagnostics (uncolored for easier parsing)
+
+            # POSIX-safe path mangling (avoid ${var//.../...} which is a bashism)
+            base="$(printf '%s' "$file" | sed 's#/#__#g')"
+
             clang-tidy -p "$BUILD_DIR" -fix=false "$file" \
               --extra-arg=-fno-color-diagnostics \
               --extra-arg=-fdiagnostics-color=never \
               > "logs/${base}.txt" 2>&1 || true
-          done
+          done <<< "${{ steps.files.outputs.files }}"
 
       - name: Generate HTML report
         if: ${{ steps.files.outputs.files != '' }}
         run: |
           python3 .github/scripts/clang_tidy_html_report.py \
             --logs logs/*.txt \
-            --out clang-tidy-report.html
+            --out "$REPORT_HTML"
+
           {
-            echo "### Clang-Tidy Report";
+            echo "### Clang-Tidy Report (read-only)";
             echo;
-            echo "Generated **clang-tidy-report.html** with searchable, filterable diagnostics.";
+            echo "Generated **$REPORT_HTML** from included roots, with folder excludes applied.";
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifacts
