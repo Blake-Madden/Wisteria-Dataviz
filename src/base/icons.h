@@ -220,7 +220,7 @@ namespace Wisteria::Icons
             void AddShape(const IconShape shape) { m_shapes.push_back(shape); }
 
             /** @returns The image used for icons (if shape is set to @c IconShape::ImageIcon).\n
-                    If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
+                    If no image(s) is available, returns an empty image (be sure to call @c IsOk()).
                 @param index The index into the image list to return. If index is outside
                     number of images, then it will recycle (i.e., wrap around).
                     For example, if there are 2 images, index 1 will return 1;

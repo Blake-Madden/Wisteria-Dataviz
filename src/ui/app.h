@@ -43,8 +43,7 @@
 namespace Wisteria::UI
     {
     /// @brief Application class with file history, file logger, profiler,
-    ///      exception handling, document manager, and ribbon-based
-    ///     main frame built-in.
+    ///     exception handling, document manager, and ribbon-based main frame built-in.
     class BaseApp : public wxApp
         {
       public:
@@ -59,6 +58,10 @@ namespace Wisteria::UI
         bool OnInit() override;
         /// @private
         int OnExit() override;
+
+        /// @brief Logs various information about the system.
+        /// @description Call this after OnInit().
+        static void LogSystemInfo();
 
         /// @private
         void OnFatalException() final;
