@@ -1357,7 +1357,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         std::vector<std::unique_ptr<GraphItems::Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         size_t currentRow{ 0 }, currentColumn{ 0 };
-        wxCoord currentXPos{ drawArea.GetX() };
+        wxCoord currentXPos{ 0 };
         wxCoord currentYPos{ drawArea.GetY() };
         int columnsToOverwrite{ 0 };
         std::set<std::pair<size_t, size_t>> rowCellsToSkip;

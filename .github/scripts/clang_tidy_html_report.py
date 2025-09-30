@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
-# Parse clang-tidy stdout logs -> rich HTML (filterable)
+# Parse clang-tidy stdout logs -> rich HTML (filterable, with suppression)
 
-import re, sys, html, argparse, pathlib
+import re, sys, html, argparse, pathlib, os
 from string import Template
 from collections import defaultdict, Counter
+
+# ---------- configurable suppression ----------
+# Hide checks by exact check name:
+SUPPRESS_CHECKS = {
+    "IgnoreClassesWithAllMemberVariablesBeingPublic",
+}
+# Hide diagnostics whose *message* contains any of these substrings:
+SUPPRESS_MSG_SUBSTR = {
+    "IgnoreClassesWithAllMemberVariablesBeingPublic",
+}
+# Optionally allow comma-separated overrides via env:
+SUPPRESS_CHECKS |= {s for s in os.getenv("CT_SUPPRESS_CHECKS", "").split(",") if s.strip()}
+SUPPRESS_MSG_SUBSTR |= {s for s in os.getenv("CT_SUPPRESS_MSG_SUBSTR", "").split(",") if s.strip()}
+# ----------------------------------------------
 
 ROW_RE = re.compile(
     r'^(?P<file>[^:\n]+):(?P<line>\d+):(?P<col>\d+):\s+'
@@ -146,6 +160,18 @@ def main():
     a=ap.parse_args()
 
     items=parse_logs(a.logs)
+
+    # ---------- suppression applied here ----------
+    def suppressed(it):
+        if it['check'] in SUPPRESS_CHECKS:
+            return True
+        for sub in SUPPRESS_MSG_SUBSTR:
+            if sub and sub in it['msg']:
+                return True
+        return False
+    items=[it for it in items if not suppressed(it)]
+    # ----------------------------------------------
+
     items.sort(key=lambda x: (x['sev']!='error', x['sev']!='warning', x['file'], x['line'], x['col'], x['check']))
 
     by_check=defaultdict(list)
