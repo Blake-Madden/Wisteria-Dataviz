@@ -281,10 +281,15 @@ namespace Wisteria::GraphItems
             @details Can be one shape, or multiple shapes that will be drawn
                 on top of each other.
             @param shpInfo A description of the shape(s).
+            @param offset The offset (in DIPs) from the top to draw the shape.\n
+                This can be useful for drawing the icon below the ascender line of the text
+                (or even underneath the text).
             @sa SetTopImage().*/
-        void SetTopShape(const std::optional<std::vector<ShapeInfo>>& shpInfo)
+        void SetTopShape(const std::optional<std::vector<ShapeInfo>>& shpInfo,
+                         const size_t offset = 0)
             {
             m_topShape = shpInfo;
+            m_topImageOffset = offset;
             }
 
         /// @}

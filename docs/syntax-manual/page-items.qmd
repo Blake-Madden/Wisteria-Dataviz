@@ -204,6 +204,7 @@ Properties for `"label"` nodes:
     - `"height"`: The height.
   - `"fill-percent"`: The percent to fill the shape, which is a number between `0.0` and `1.0`.
   Note that if multiple shapes are provided, then they will be drawn on top of each other, creating a composite shape.
+- `"top-shape-offset"`: A number specifying how far from the top of the label's box to draw the top shape or image. (Default is `0`.)
 - `"header"`: Attributes to apply to the first row of the label. \
   The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.

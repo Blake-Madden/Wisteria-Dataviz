@@ -1095,7 +1095,8 @@ namespace Wisteria::GraphItems
                                 safe_divide(scaledSize.GetWidth(), 2);
                 // ensure shape doesn't go below (and outside) the text
                 leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
-                                                          scaledSize.GetHeight());
+                                                          scaledSize.GetHeight()) +
+                               m_topImageOffset;
 
                 if (shpInfo.GetFillPercent() < 1.0)
                     {
