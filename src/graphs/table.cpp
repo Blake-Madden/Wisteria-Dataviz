@@ -1552,7 +1552,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             }
 
         // draw the row borders
-        currentRow = currentColumn = 0;
+        currentRow = 0;
         rowCellsToSkip.clear();
         for (size_t rowHeightCounter = 0; rowHeightCounter < rowHeights.size(); ++rowHeightCounter)
             {
@@ -1581,8 +1581,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             std::make_unique<GraphItems::Lines>(GetHighlightPen(), GetScaling());
         auto borderLines = std::make_unique<GraphItems::Lines>(GetPen(), GetScaling());
         borderLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
-        currentRow = currentColumn = 0;
-        currentXPos = drawArea.GetX();
+        currentRow = 0;
         currentYPos = drawArea.GetY();
         columnsToOverwrite = 0;
         if (m_clearTrailingRowFormatting && m_dataSize.first < rowHeights.size())
