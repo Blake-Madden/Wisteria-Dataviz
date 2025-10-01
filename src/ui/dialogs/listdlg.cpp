@@ -237,6 +237,7 @@ namespace Wisteria::UI
             {
             m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxRIBBON_BAR_FLOW_HORIZONTAL);
+            // NOLINTNEXTLINE
             auto* homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
             // export
             if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
