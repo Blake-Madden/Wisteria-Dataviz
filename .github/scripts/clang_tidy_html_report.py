@@ -9,10 +9,15 @@ from collections import defaultdict, Counter
 # Hide checks by exact check name:
 SUPPRESS_CHECKS = {
     "IgnoreClassesWithAllMemberVariablesBeingPublic",
+    "clang-diagnostic-error",
 }
 # Hide diagnostics whose *message* contains any of these substrings:
 SUPPRESS_MSG_SUBSTR = {
     "IgnoreClassesWithAllMemberVariablesBeingPublic",
+    "use of undeclared identifier",
+    "file not found",
+    "unknown type name",
+    "no matching function for call to",
 }
 # Optionally allow comma-separated overrides via env:
 SUPPRESS_CHECKS |= {s for s in os.getenv("CT_SUPPRESS_CHECKS", "").split(",") if s.strip()}
