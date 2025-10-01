@@ -143,8 +143,21 @@ jobs:
           print("No warnings/errors found.")
           EOF
 
+      - name: Package raw clang-tidy outputs
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/raw
+          cp -r logs artifacts/raw/
+          if [ -d clang_tidy_fixes ]; then
+            cp -r clang_tidy_fixes artifacts/raw/
+          fi
+          cp "$BUILD_DIR/compile_commands.json" artifacts/raw/ 2>/dev/null || true
+          printf "%s\n" "${{ steps.files.outputs.files }}" > artifacts/raw/filelist.txt
+          tar -czf raw-clang-tidy.tar.gz -C artifacts/raw .
+
       - name: Upload artifacts
-        if: always()   # ensure report is uploaded even if job failed
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: clang-tidy-report
@@ -152,3 +165,17 @@ jobs:
             ${{ env.REPORT_HTML }}
             logs/
           if-no-files-found: warn
+
+      - name: Upload raw outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy-raw
+          path: |
+            raw-clang-tidy.tar.gz
+            artifacts/raw/filelist.txt
+            artifacts/raw/logs/
+            artifacts/raw/clang_tidy_fixes/
+            artifacts/raw/compile_commands.json
+          if-no-files-found: warn
+          retention-days: 14
