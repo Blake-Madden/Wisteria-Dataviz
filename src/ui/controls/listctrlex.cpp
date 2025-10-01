@@ -791,7 +791,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         // if the list only has a few, narrow columns and the paper is wide, then
                         // we split the data to fit more on the page.
                         wxCoord currentTableOffset{ 0 };
-                        const auto& currentPage = GetPagesInfo()[page - 1];
+                        const auto& currentPage = GetAllPagesInfo()[page - 1];
                         // draw table caption (title) if requested
                         if (IsIncludingTableCaption() && page == 1)
                             {
@@ -1317,7 +1317,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         [[nodiscard]]
         size_t GetPageCount() const noexcept
             {
-            return GetPagesInfo().size();
+            return GetAllPagesInfo().size();
             }
 
         /// @returns The top / bottom padding inside the cells.
@@ -1379,7 +1379,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         /// @returns The pages' info (widths and columns that are multiline)
         [[nodiscard]]
-        const std::vector<PrintPageInfo>& GetPagesInfo() const noexcept
+        const std::vector<PrintPageInfo>& GetAllPagesInfo() const noexcept
             {
             return m_pageStarts;
             }
@@ -3024,15 +3024,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         // format the data
         if (usePrinterSettings)
             {
-            for (size_t pageCounter = 0; pageCounter < printOut.GetPagesInfo().size();
+            for (size_t pageCounter = 0; pageCounter < printOut.GetAllPagesInfo().size();
                  ++pageCounter)
                 {
                 // if multiple tables on the same page, wrap them in a flex box
-                if (printOut.GetPagesInfo()[pageCounter].m_rowStarts.size() > 1)
+                if (printOut.GetAllPagesInfo()[pageCounter].m_rowStarts.size() > 1)
                     {
                     outputText += L"\n<div style='display:flex;'>";
                     }
-                const auto& pageTable = printOut.GetPagesInfo()[pageCounter];
+                const auto& pageTable = printOut.GetAllPagesInfo()[pageCounter];
                 for (size_t pageTableCounter = 0; pageTableCounter < pageTable.m_rowStarts.size();
                      ++pageTableCounter)
                     {
@@ -3056,7 +3056,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     outputText += tableStart + colGroup + columnHeader;
                     for (long i = pageTable.m_rowStarts[pageTableCounter];
                          i < pageTable.m_rowStarts[pageTableCounter] +
-                                 printOut.GetPagesInfo()[pageCounter].GetRowsPerPage() &&
+                                 printOut.GetAllPagesInfo()[pageCounter].GetRowsPerPage() &&
                          i <= printOut.GetLastRow();
                          ++i)
                         {
@@ -3073,7 +3073,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     outputText += L"\n</div>";
                     }
                 // add the page break (unless this is the last or only page)
-                if (pageCounter != printOut.GetPagesInfo().size() - 1)
+                if (pageCounter != printOut.GetAllPagesInfo().size() - 1)
                     {
                     outputText += "\n" + pageBreak;
                     }
