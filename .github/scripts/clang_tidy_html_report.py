@@ -10,6 +10,7 @@ from collections import defaultdict, Counter
 SUPPRESS_CHECKS = {
     "IgnoreClassesWithAllMemberVariablesBeingPublic",
     "clang-diagnostic-error",
+    "—",
 }
 # Hide diagnostics whose *message* contains any of these substrings:
 SUPPRESS_MSG_SUBSTR = {
