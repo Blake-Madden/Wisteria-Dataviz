@@ -581,7 +581,8 @@ namespace geometry
                     else
                         {
                         // cross point of x
-                        const auto xinters = ((pt.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
+                        const auto xinters =
+                            safe_divide((pt.y - p1.y) * (p2.x - p1.x), (p2.y - p1.y)) + p1.x;
 
                         // overlies on a ray
                         if (constexpr double DOUBLE_EPSILON{ .01f };
