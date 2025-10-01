@@ -198,17 +198,26 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
 //------------------------------------------------
 void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, const wxString& text)
     {
-    /* Use buffered output stream, NOT text output stream. Text output buffer
-       messes around with the newlines in the text, whereas buffer streams preserve the text.*/
-    wxBufferedOutputStream txt(zip);
-    zip.PutNextEntry(fileName);
-    wxCharBuffer fileTextConvertedBuffer = text.mb_str(wxConvUTF8);
-    zip.Write(lily_of_the_valley::unicode_extract_text::get_bom_utf8(),
-              std::strlen(lily_of_the_valley::unicode_extract_text::get_bom_utf8()));
-    assert(fileTextConvertedBuffer.length() == std::strlen(fileTextConvertedBuffer.data()) &&
-           L"Invalid buffer size when writing from ZipCatalog!");
-    zip.Write(fileTextConvertedBuffer.data(), fileTextConvertedBuffer.length());
-    txt.Close();
+    // Convert first so we don't start an entry we can't finish.
+    const wxScopedCharBuffer utf8 = text.ToUTF8();
+    if (!utf8)
+        {
+        wxASSERT_MSG(false, L"UTF-8 conversion in zip file failed");
+        return;
+        }
+
+    if (!zip.PutNextEntry(fileName))
+        {
+        wxASSERT_MSG(false, L"PutNextEntry() failed");
+        return;
+        }
+
+    if (!zip.WriteAll(utf8.data(), utf8.length()) || !zip.IsOk())
+        {
+        wxASSERT_MSG(false, L"Write to zip file failed");
+        }
+
+    zip.CloseEntry();
     }
 
 //------------------------------------------------
