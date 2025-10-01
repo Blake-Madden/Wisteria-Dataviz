@@ -123,21 +123,32 @@ jobs:
           python3 .github/scripts/clang_tidy_html_report.py \
             --logs logs/*.txt \
             --out "$REPORT_HTML"
-
           {
             echo "### Clang-Tidy Report (read-only)";
             echo;
-            echo "Generated **$REPORT_HTML** from included roots, with folder excludes applied.";
+            echo "Generated **$REPORT_HTML** with filterable diagnostics.";
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload artifacts
+      - name: Fail if warnings/errors exist
         if: ${{ steps.files.outputs.files != '' }}
+        run: |
+          python3 - <<'EOF'
+          import pathlib, re, sys
+          logs = pathlib.Path("logs").glob("*.txt")
+          pat = re.compile(r":[0-9]+:[0-9]+:\s+(warning|error):")
+          for log in logs:
+              text = log.read_text(encoding="utf-8", errors="ignore")
+              if pat.search(text):
+                  sys.exit("clang-tidy warnings/errors found.")
+          print("No warnings/errors found.")
+          EOF
+
+      - name: Upload artifacts
+        if: always()   # ensure report is uploaded even if job failed
         uses: actions/upload-artifact@v4
         with:
           name: clang-tidy-report
           path: |
             ${{ env.REPORT_HTML }}
-            clang-tidy-all.txt
-            ${{ env.FIXES_DIR }}/
             logs/
           if-no-files-found: warn
