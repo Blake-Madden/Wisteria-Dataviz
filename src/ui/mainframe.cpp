@@ -14,78 +14,62 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
                                                             const int noTemplates,
                                                             const bool sortDocs)
     {
-    wxArrayString strings;
-    auto** data = new wxDocTemplate*[noTemplates];
-    int i{ 0 };
-    int n{ 0 };
+    std::vector<wxDocTemplate*> data;
+    data.reserve(noTemplates);
 
-    for (i = 0; i < noTemplates; i++)
+    // Collect visible + unique (by doc/view pair)
+    for (int i = 0; i < noTemplates; ++i)
         {
-        if (templates[i]->IsVisible())
+        if (!templates[i]->IsVisible())
             {
-            bool want = true;
-            for (int j = 0; j < n; j++)
-                {
-                // filter out NOT unique documents + view combinations
-                if (templates[i]->GetDocumentName() == data[j]->GetDocumentName() &&
-                    templates[i]->GetViewName() == data[j]->GetViewName())
-                    {
-                    want = false;
-                    }
-                }
+            continue;
+            }
 
-            if (want)
+        bool want = true;
+        for (size_t j = 0; j < data.size(); ++j)
+            {
+            if (templates[i]->GetDocumentName() == data[j]->GetDocumentName() &&
+                templates[i]->GetViewName() == data[j]->GetViewName())
                 {
-                strings.Add(templates[i]->GetDescription());
-
-                data[n] = templates[i];
-                n++;
+                want = false;
+                break; // stop scanning; we found a duplicate
                 }
+            }
+
+        if (want)
+            {
+            data.push_back(templates[i]);
             }
         }
 
-    if (sortDocs)
+    if (sortDocs && data.size() > 1)
         {
-        strings.Sort(); // ascending sort
-        // Yes, this will be slow, but template lists
-        // are typically short.
-        assert(noTemplates >= static_cast<int>(strings.Count()));
-        n = std::min<int>(strings.Count(), noTemplates);
-        for (i = 0; i < n; i++)
-            {
-            for (int j = 0; j < noTemplates; j++)
-                {
-                if (strings[i] == templates[j]->GetDescription())
-                    {
-                    data[i] = templates[j];
-                    }
-                }
-            }
+        std::stable_sort(data.begin(), data.end(),
+                         [](const wxDocTemplate* a, const wxDocTemplate* b)
+                         { return a->GetDescription() < b->GetDescription(); });
         }
 
     wxDocTemplate* theTemplate{ nullptr };
 
-    switch (n)
+    switch (data.size())
         {
     case 0:
-        // no visible templates, hence nothing to choose from
-        theTemplate = nullptr;
+        theTemplate = nullptr; // nothing to choose from
         break;
 
     case 1:
-        // don't propose the user to choose if they have no choice
-        theTemplate = data[0];
+        theTemplate = data[0]; // only one choice
         break;
 
     default:
-        // wxGetSingleChoiceData is used in the default implementation of this function,
-        // but we are overriding it here to use a more advanced selection dialog
+        {
         wxArrayString docNames;
-        const wxArrayString docDescriptions;
-        for (i = 0; i < noTemplates; i++)
+
+        for (size_t i = 0; i < data.size(); ++i)
             {
             docNames.Add(data[i]->GetDescription());
             }
+
         // find a suitable parent window
         wxWindow* parentWindow = [this]()
         {
@@ -100,19 +84,21 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate** temp
                 }
             return wxTheApp->GetTopWindow();
         }();
+
         RadioBoxDlg radioDlg(parentWindow, _(L"Select Project Type"), wxString{},
-                             _(L"Project types:"), _(L"New Project"), docNames, docDescriptions);
+                             _(L"Project types:"), _(L"New Project"), docNames, wxArrayString{});
+
         if (radioDlg.ShowModal() == wxID_OK)
             {
-            theTemplate = data[radioDlg.GetSelection()];
-            }
-        else
-            {
-            theTemplate = nullptr;
+            const int sel = radioDlg.GetSelection();
+            if (sel >= 0 && static_cast<size_t>(sel) < data.size())
+                {
+                theTemplate = data[sel];
+                }
             }
         }
-
-    delete[] data;
+        break;
+        }
 
     return theTemplate;
     }
