@@ -3440,6 +3440,15 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc != nullptr)
             {
+            const auto centerPt =
+                rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+            gc->PushState();
+            // move origin to pivot
+            gc->Translate(centerPt.x, centerPt.y);
+            // rotate about the new origin
+            gc->Rotate(geometry::degrees_to_radians(45));
+            // move origin back
+            gc->Translate(-centerPt.x, -centerPt.y);
             // draw the leaf
             gc->SetPen(wxColour{ 0, 0, 0, 0 });
             auto leafBrush = gc->CreateLinearGradientBrush(
@@ -3468,11 +3477,10 @@ namespace Wisteria::GraphItems
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
 
+            // draw the stem
             const auto stemWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
             gc->SetPen(wxPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkBrown),
                              ScaleToScreenAndCanvas(stemWidth)));
-
-            // draw the stem
             auto stemPath = gc->CreatePath();
             // start at the top middle
             stemPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
@@ -3488,6 +3496,7 @@ namespace Wisteria::GraphItems
                 GetXPosFromLeft(rect, .4), GetYPosFromTop(rect, math_constants::full - .025));
 
             gc->StrokePath(stemPath);
+            gc->PopState();
             }
         }
 

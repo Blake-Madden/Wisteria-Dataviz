@@ -842,7 +842,8 @@ namespace Wisteria
                         {
                         shapes.push_back(LoadShapeInfo(shpNode));
                         }
-                    label->SetTopShape(shapes);
+                    label->SetTopShape(shapes,
+                                       labelNode->GetProperty(L"top-shape-offset")->AsDouble(0));
                     }
                 else
                     {
