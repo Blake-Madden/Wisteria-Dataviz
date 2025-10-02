@@ -282,3 +282,116 @@ TEST_CASE("LeftJoinUnique: throws on invalid arguments", "[Join][LeftJoinUnique]
     // empty suffix
     REQUIRE_THROWS(DatasetJoin::LeftJoinUnique(ds, ds, { { "ID", "ID" } }, wxString{}));
     }
+
+namespace
+    {
+    // quick helper to build a wxDateTime(Y, M, D)
+    static wxDateTime DMY(int y, wxDateTime::Month m, int d)
+        {
+        wxDateTime dt;
+        dt.Set(d, m, y);
+        return dt;
+        }
+
+    static void AddRow(Dataset& ds, const std::optional<wxString>& id,
+                       const std::vector<wxDateTime>& dates, const std::vector<double>& conts = {})
+        {
+        RowInfo r;
+        if (id)
+            {
+            r.Id(*id);
+            }
+        if (!dates.empty())
+            {
+            r.Dates(dates);
+            }
+        if (!conts.empty())
+            {
+            r.Continuous(conts);
+            }
+        ds.AddRow(r);
+        }
+    } // namespace
+
+// -----------------------------------------------------------------------------
+// 1) Join by ID: Right contributes a Date column; unmatched stays missing
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUnique: date join by ID (unmatched stays missing)", "[Join][Date]")
+    {
+    Dataset left, right;
+
+    // define schemas
+    left.GetIdColumn().SetName("ID");
+    left.AddDateColumn("LeftWhen");   // left already has its own date
+    left.AddContinuousColumn("LVal"); // some payload
+
+    right.GetIdColumn().SetName("ID");
+    right.AddDateColumn("When"); // right date to copy over
+
+    // rows
+    AddRow(left, wxString{ "A" }, { DMY(2024, wxDateTime::Jan, 10) }, { 1.0 });
+    AddRow(left, wxString{ "B" }, { DMY(2024, wxDateTime::Feb, 20) }, { 2.0 });
+    AddRow(left, wxString{ "C" }, { DMY(2024, wxDateTime::Mar, 30) }, { 3.0 }); // will be unmatched
+
+    AddRow(right, wxString{ "A" }, { DMY(2025, wxDateTime::Apr, 5) });
+    AddRow(right, wxString{ "B" }, { DMY(2025, wxDateTime::May, 15) });
+    AddRow(right, wxString{ "Z" }, { DMY(2025, wxDateTime::Jun, 25) }); // right-only, ignored
+
+    auto out =
+        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+                                    std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    // shape checks
+    REQUIRE(out->GetRowCount() == 3);
+
+    // new right date column is present (name doesn't collide here)
+    const auto dateIt = out->GetDateColumn("When");
+    REQUIRE(dateIt != out->GetDateColumns().cend());
+
+    // matched rows copy the right date
+    CHECK(dateIt->GetValue(0) == DMY(2025, wxDateTime::Apr, 5));  // A
+    CHECK(dateIt->GetValue(1) == DMY(2025, wxDateTime::May, 15)); // B
+
+    // unmatched left row remains missing in new date column
+    CHECK(dateIt->IsMissingData(2)); // C had no match
+    }
+
+// -----------------------------------------------------------------------------
+// 2) Name collision on Date column: suffix applied (e.g., ".x")
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUnique: date name collision applies suffix", "[Join][Date][Suffix]")
+    {
+    Dataset left, right;
+
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    // both sides have a date column called "When"
+    left.AddDateColumn("When");
+    right.AddDateColumn("When");
+
+    // left rows
+    AddRow(left, wxString{ "K1" }, { DMY(2020, wxDateTime::Sep, 9) });
+    AddRow(left, wxString{ "K2" }, { DMY(2020, wxDateTime::Oct, 10) });
+
+    // right rows (same IDs)
+    AddRow(right, wxString{ "K1" }, { DMY(2030, wxDateTime::Nov, 11) });
+    AddRow(right, wxString{ "K2" }, { DMY(2030, wxDateTime::Dec, 12) });
+
+    // use default suffix ".x"
+    auto out =
+        DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+                                    std::make_shared<const Dataset>(right), { { "ID", "ID" } });
+
+    // left's "When" must remain unchanged
+    const auto leftWhen = out->GetDateColumn("When");
+    REQUIRE(leftWhen != out->GetDateColumns().cend());
+    CHECK(leftWhen->GetValue(0) == DMY(2020, wxDateTime::Sep, 9));
+    CHECK(leftWhen->GetValue(1) == DMY(2020, wxDateTime::Oct, 10));
+
+    // right's "When" is added with suffix
+    const auto rightWhen = out->GetDateColumn("When.x");
+    REQUIRE(rightWhen != out->GetDateColumns().cend());
+    CHECK(rightWhen->GetValue(0) == DMY(2030, wxDateTime::Nov, 11));
+    CHECK(rightWhen->GetValue(1) == DMY(2030, wxDateTime::Dec, 12));
+    }

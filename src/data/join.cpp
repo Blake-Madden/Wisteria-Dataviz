@@ -28,7 +28,7 @@ namespace Wisteria::Data
         if (byColumns.empty())
             {
             throw std::runtime_error(
-                _(L"No comparison columns where provided when left joining.").ToUTF8());
+                _(L"No comparison columns were provided when left joining.").ToUTF8());
             }
         if (suffix.empty())
             {
@@ -132,6 +132,11 @@ namespace Wisteria::Data
                                               continuousCol.GetName() + suffix :
                                               continuousCol.GetName();
             mergedData->AddContinuousColumn(mergeColName);
+            auto newCol = mergedData->GetContinuousColumn(mergeColName);
+            if (newCol != mergedData->GetContinuousColumns().cend())
+                {
+                newCol->FillWithMissingData();
+                }
             outContinuousColNamesMap.emplace_back(continuousCol.GetName(), mergeColName);
             }
         // add datetime
@@ -141,6 +146,11 @@ namespace Wisteria::Data
                                               dateCol.GetName() + suffix :
                                               dateCol.GetName();
             mergedData->AddDateColumn(mergeColName);
+            auto newCol = mergedData->GetDateColumn(mergeColName);
+            if (newCol != mergedData->GetDateColumns().cend())
+                {
+                newCol->FillWithMissingData();
+                }
             outDateColNamesMap.emplace_back(dateCol.GetName(), mergeColName);
             }
 
