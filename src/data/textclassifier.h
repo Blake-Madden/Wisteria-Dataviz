@@ -90,7 +90,6 @@ namespace Wisteria::Data
          | COMMENTS                                       |
          | :--                                            |
          | The printer in the library was out of paper :( |
-        @todo Add unit tests.
     */
     // clang-format on
 

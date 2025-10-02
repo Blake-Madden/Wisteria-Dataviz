@@ -17,5 +17,6 @@ SET(TEST_SRC_FILES
     testableframe.cpp
     testingmain.cpp
     testzip.cpp
+    textclassifytests.cpp
     textstreamtests.cpp
     xmlformattests.cpp)
