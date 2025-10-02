@@ -395,3 +395,146 @@ TEST_CASE("LeftJoinUnique: date name collision applies suffix", "[Join][Date][Su
     CHECK(rightWhen->GetValue(0) == DMY(2030, wxDateTime::Nov, 11));
     CHECK(rightWhen->GetValue(1) == DMY(2030, wxDateTime::Dec, 12));
     }
+
+namespace
+    {
+    static void AddRow(Dataset& ds, const wxString& id, const std::vector<GroupIdType>& cats = {},
+                       const std::vector<double>& conts = {})
+        {
+        RowInfo r;
+        r.Id(id);
+        if (!cats.empty())
+            {
+            r.Categoricals(cats);
+            }
+        if (!conts.empty())
+            {
+            r.Continuous(conts);
+            }
+        ds.AddRow(r);
+        }
+    } // namespace
+
+// -----------------------------------------------------------------------------
+// Categorical: Left has "Group" and "Group.x"; Right also has "Group"
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUnique: chained suffix collision (categorical)", "[Join][Suffix][Categorical]")
+    {
+    Dataset left, right;
+
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    // Left already has both base and first-suffixed categorical columns.
+    auto st = MakeST({ "A", "B" });
+    left.AddCategoricalColumn("Group", st);
+    left.AddCategoricalColumn("Group.x", st);
+
+    // Give them some data so they’re legit
+    AddRow(left, "K1", { 0, 1 });
+    AddRow(left, "K2", { 1, 0 });
+
+    // Right comes in with the original name "Group"
+    right.AddCategoricalColumn("Group", st);
+    AddRow(right, "K1", { 0 });
+    AddRow(right, "K2", { 1 });
+
+    // One-step suffixer will try to append "Group.x" again
+    auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+                                               std::make_shared<const Dataset>(right),
+                                               { { "ID", "ID" } }, L".x");
+    CHECK(joined->ContainsColumn(L"Group.x2"));
+    }
+
+// -----------------------------------------------------------------------------
+// Continuous: Left has "Score" and "Score.x"; Right also has "Score"
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUnique: chained suffix collision (continuous)", "[Join][Suffix][Continuous]")
+    {
+    Dataset left, right;
+
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    // Left already holds base + first-suffixed continuous columns
+    left.AddContinuousColumn("Score");
+    left.AddContinuousColumn("Score.x");
+
+        {
+        RowInfo r;
+        r.Id("A");
+        r.Continuous({ 1.0, 10.0 });
+        left.AddRow(r);
+        }
+
+        {
+        RowInfo r;
+        r.Id("B");
+        r.Continuous({ 2.0, 20.0 });
+        left.AddRow(r);
+        }
+
+    // Right brings another "Score"
+    right.AddContinuousColumn("Score");
+        {
+        RowInfo r;
+        r.Id("A");
+        r.Continuous({ 100.0 });
+        right.AddRow(r);
+        }
+        {
+        RowInfo r;
+        r.Id("B");
+        r.Continuous({ 200.0 });
+        right.AddRow(r);
+        }
+
+    // Attempting to add "Score" from Right → suffix to "Score.x"
+    auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+                                               std::make_shared<const Dataset>(right),
+                                               { { "ID", "ID" } }, L".x");
+    CHECK(joined->ContainsColumn(L"Score.x2"));
+    }
+
+// -----------------------------------------------------------------------------
+// Date: Left has "When" and "When.x"; Right also has "When"
+// -----------------------------------------------------------------------------
+TEST_CASE("LeftJoinUnique: chained suffix collision (date)", "[Join][Suffix][Date]")
+    {
+    Dataset left, right;
+
+    left.GetIdColumn().SetName("ID");
+    right.GetIdColumn().SetName("ID");
+
+    left.AddDateColumn("When");
+    left.AddDateColumn("When.x");
+        // Fill a couple rows with any dates; values don’t matter for this test
+        {
+        RowInfo r;
+        r.Id("X");
+        r.Dates({ wxDateTime::Now(), wxDateTime::Now() });
+        left.AddRow(r);
+        RowInfo s;
+        s.Id("Y");
+        s.Dates({ wxDateTime::Now(), wxDateTime::Now() });
+        left.AddRow(s);
+        }
+
+    right.AddDateColumn("When");
+        {
+        RowInfo r;
+        r.Id("X");
+        r.Dates({ wxDateTime::Now() });
+        right.AddRow(r);
+        RowInfo s;
+        s.Id("Y");
+        s.Dates({ wxDateTime::Now() });
+        right.AddRow(s);
+        }
+
+    // Right's "When" → wants to become "When.x" by suffix
+    auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
+                                               std::make_shared<const Dataset>(right),
+                                               { { "ID", "ID" } }, L".x");
+    CHECK(joined->ContainsColumn(L"When.x2"));
+    }

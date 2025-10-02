@@ -106,6 +106,19 @@ namespace Wisteria::Data
                 L"'%s': ID column from right dataset will not be copied while left joining.",
                 rightDataset->GetIdColumn().GetName());
             }
+
+        const auto makeUniqueColumnName = [&](const wxString& colName)
+        {
+            wxString name = colName;
+            int n{ 1 };
+            while (mergedData->ContainsColumn(name))
+                {
+                name = colName + suffix + (n == 1 ? wxString{} : wxString(std::to_wstring(n)));
+                ++n;
+                }
+            return name;
+        };
+
         // add categoricals
         for (const auto& catCol : rightDataset->GetCategoricalColumns())
             {
@@ -114,9 +127,7 @@ namespace Wisteria::Data
                 {
                 continue;
                 }
-            const wxString mergeColName = mergedData->ContainsColumn(catCol.GetName()) ?
-                                              catCol.GetName() + suffix :
-                                              catCol.GetName();
+            const wxString mergeColName = makeUniqueColumnName(catCol.GetName());
             mergedData->AddCategoricalColumn(mergeColName, catCol.GetStringTable());
             auto newCol = mergedData->GetCategoricalColumn(mergeColName);
             if (newCol != mergedData->GetCategoricalColumns().cend())
@@ -128,9 +139,7 @@ namespace Wisteria::Data
         // add continuous
         for (const auto& continuousCol : rightDataset->GetContinuousColumns())
             {
-            const wxString mergeColName = mergedData->ContainsColumn(continuousCol.GetName()) ?
-                                              continuousCol.GetName() + suffix :
-                                              continuousCol.GetName();
+            const wxString mergeColName = makeUniqueColumnName(continuousCol.GetName());
             mergedData->AddContinuousColumn(mergeColName);
             auto newCol = mergedData->GetContinuousColumn(mergeColName);
             if (newCol != mergedData->GetContinuousColumns().cend())
@@ -142,9 +151,7 @@ namespace Wisteria::Data
         // add datetime
         for (const auto& dateCol : rightDataset->GetDateColumns())
             {
-            const wxString mergeColName = mergedData->ContainsColumn(dateCol.GetName()) ?
-                                              dateCol.GetName() + suffix :
-                                              dateCol.GetName();
+            const wxString mergeColName = makeUniqueColumnName(dateCol.GetName());
             mergedData->AddDateColumn(mergeColName);
             auto newCol = mergedData->GetDateColumn(mergeColName);
             if (newCol != mergedData->GetDateColumns().cend())
