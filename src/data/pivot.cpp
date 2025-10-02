@@ -431,6 +431,7 @@ namespace Wisteria::Data
         size_t pivotDataRow{ 0 };
         for (size_t i = 0; i < dataset->GetRowCount(); ++i)
             {
+            GroupIdType fromCounter{ 0 };
             // ...and pivot its "from" columns
             for (const auto& fromName : fromNamesList)
                 {
@@ -486,8 +487,9 @@ namespace Wisteria::Data
                 // fill in the name column(s)
                 for (auto& toName : toNamesList)
                     {
-                    toName->SetValue(pivotDataRow, pivotDataRow % fromColumns.size());
+                    toName->SetValue(pivotDataRow, fromCounter);
                     }
+
                     // fill in the value column
                     // if continuous
                     {
@@ -498,6 +500,7 @@ namespace Wisteria::Data
                         }
                     }
                 ++pivotDataRow;
+                ++fromCounter;
                 }
             }
 
