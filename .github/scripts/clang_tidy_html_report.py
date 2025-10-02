@@ -3,8 +3,9 @@
 # Parse clang-tidy stdout logs -> rich HTML (filterable)
 # - Filters out "note" severity entirely
 # - Suppresses checks/messages via hard-coded sets and env overrides
+# - Emits post-filter counts (--counts) and can fail the process (--fail-on)
 
-import re, sys, html, argparse, pathlib, os
+import re, sys, html, argparse, pathlib, os, json
 from string import Template
 from collections import defaultdict, Counter
 
@@ -100,7 +101,7 @@ HTML = Template("""<!doctype html>
   </table>
 
   <div class="section">
-    <h2>By Check</</h2>
+    <h2>By Check</h2>
     <table>
       <thead><tr><th>Check</th><th>Count</th><th>Examples</th></tr></thead>
       <tbody>$by_check_rows</tbody>
@@ -148,7 +149,7 @@ def parse_logs(paths):
             continue
         for line in text:
             m=ROW_RE.match(line.strip())
-            if not m: 
+            if not m:
                 continue
             d=m.groupdict()
             entries.append({
@@ -165,6 +166,11 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--logs", nargs='+', required=True, help="One or more clang-tidy *.txt logs")
     ap.add_argument("--out", required=True, help="Output HTML path")
+    # counts + failure control
+    ap.add_argument("--counts", help="Write post-filter counts to this JSON file")
+    ap.add_argument("--fail-on", choices=["none", "errors", "warnings"], default="none",
+                    help="Exit non-zero if errors/warnings remain after filters")
+
     a=ap.parse_args()
 
     items=parse_logs(a.logs)
@@ -221,6 +227,7 @@ def main():
             f"<div><span class='nowrap'>{esc(it['file'])}:{it['line']}</span> — {esc(it['msg'])}</div>"
             for it in lst[:3]
         )
+    # NOTE: keep by_check_rows even if empty
         by_check_rows.append(f"<tr><td><code>{esc(chk) or '—'}</code></td><td>{len(lst)}</td><td>{examples}</td></tr>")
     by_check_html = "\n".join(by_check_rows) if by_check_rows else "<tr><td colspan='3' class='muted'>No diagnostics.</td></tr>"
 
@@ -239,6 +246,20 @@ def main():
     outp=pathlib.Path(a.out)
     outp.parent.mkdir(parents=True, exist_ok=True)
     outp.write_text(html_out, encoding='utf-8')
+
+    # write counts + optional failure
+    if a.counts:
+        with open(a.counts, "w", encoding="utf-8") as f:
+            json.dump({
+                "errors": int(sev_ct["error"]),
+                "warnings": int(sev_ct["warning"]),
+                "total": int(len(items)),
+            }, f)
+
+    if a.fail_on == "errors" and sev_ct["error"] > 0:
+        sys.exit(1)
+    if a.fail_on == "warnings" and (sev_ct["error"] > 0 or sev_ct["warning"] > 0):
+        sys.exit(1)
 
 if __name__=="__main__":
     main()

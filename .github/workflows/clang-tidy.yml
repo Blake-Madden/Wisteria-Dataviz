@@ -122,39 +122,14 @@ jobs:
         run: |
           python3 .github/scripts/clang_tidy_html_report.py \
             --logs logs/*.txt \
-            --out "$REPORT_HTML"
+            --out "$REPORT_HTML" \
+            --counts ct_counts.json \
+            --fail-on warnings
           {
             echo "### Clang-Tidy Report (read-only)";
             echo;
-            echo "Generated **$REPORT_HTML** with filterable diagnostics.";
+            echo "Generated **$REPORT_HTML** (fail-on=warnings after suppressions).";
           } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Fail if warnings/errors exist
-        if: ${{ steps.files.outputs.files != '' }}
-        run: |
-          python3 - <<'EOF'
-          import pathlib, re, sys
-          logs = pathlib.Path("logs").glob("*.txt")
-          pat = re.compile(r":[0-9]+:[0-9]+:\s+(warning|error):")
-          for log in logs:
-              text = log.read_text(encoding="utf-8", errors="ignore")
-              if pat.search(text):
-                  sys.exit("clang-tidy warnings/errors found.")
-          print("No warnings/errors found.")
-          EOF
-
-      - name: Package raw clang-tidy outputs
-        if: always()
-        run: |
-          set -euo pipefail
-          mkdir -p artifacts/raw
-          cp -r logs artifacts/raw/
-          if [ -d clang_tidy_fixes ]; then
-            cp -r clang_tidy_fixes artifacts/raw/
-          fi
-          cp "$BUILD_DIR/compile_commands.json" artifacts/raw/ 2>/dev/null || true
-          printf "%s\n" "${{ steps.files.outputs.files }}" > artifacts/raw/filelist.txt
-          tar -czf raw-clang-tidy.tar.gz -C artifacts/raw .
 
       - name: Upload artifacts
         if: always()
@@ -164,18 +139,6 @@ jobs:
           path: |
             ${{ env.REPORT_HTML }}
             logs/
-          if-no-files-found: warn
-
-      - name: Upload raw outputs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: clang-tidy-raw
-          path: |
-            raw-clang-tidy.tar.gz
-            artifacts/raw/filelist.txt
-            artifacts/raw/logs/
-            artifacts/raw/clang_tidy_fixes/
-            artifacts/raw/compile_commands.json
+            ct_counts.json
           if-no-files-found: warn
           retention-days: 14
