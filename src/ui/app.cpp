@@ -199,7 +199,7 @@ namespace Wisteria::UI
         auto boundingBox = appLabel.GetBoundingBox(gcdc);
         const auto fontUpscaling =
             safe_divide<double>(backscreenHeight, boundingBox.GetHeight()) * math_constants::half;
-        appLabel.SetScaling(fontUpscaling);
+        appLabel.SetScaling(std::max(fontUpscaling, 1.0));
 
             // draw translucent backscreens on image so that text written on it can be read
             {
@@ -218,7 +218,7 @@ namespace Wisteria::UI
 
         const auto spacePos = appName.find(L' ');
 
-        if (spacePos == std::wstring::npos)
+        if (spacePos == wxString::npos)
             {
             appLabel.Draw(gcdc);
             }
@@ -306,9 +306,9 @@ namespace Wisteria::UI
         if (wxDebugReportPreviewStd().Show(*report))
             {
             report->Process();
-            const wxString newReportPath = wxStandardPaths::Get().GetDocumentsDir() +
-                                           wxFileName::GetPathSeparator() + GetAppName() +
-                                           L"CrashReport.zip";
+            const wxString newReportPath = wxFileName(wxStandardPaths::Get().GetDocumentsDir(),
+                                                      GetAppName() + " CrashReport.zip")
+                                               .GetFullPath();
             if (wxCopyFile(report->GetCompressedFileName(), newReportPath, true))
                 {
                 wxMessageBox(
