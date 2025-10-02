@@ -60,7 +60,7 @@ namespace Wisteria::UI
         int OnExit() override;
 
         /// @brief Logs various information about the system.
-        /// @description Call this after OnInit().
+        /// @details Call this after OnInit().
         void LogSystemInfo() const;
 
         /// @private

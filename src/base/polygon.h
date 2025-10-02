@@ -197,7 +197,9 @@ namespace Wisteria::GraphItems
             @brief Helper functions for collision detection and shape calculations.*/
         /// @{
 
-        /** @deprecated Use `geometry::get_polygon_width()` instead.*/
+        /** @deprecated Use `geometry::get_polygon_width()` instead.
+            @param polygon The polygon to review.
+            @returns The width.*/
         template<typename polygonT>
         [[nodiscard]] [[deprecated("Use geometry::get_polygon_width() instead")]]
         static double GetPolygonWidth(const polygonT& polygon)
@@ -215,7 +217,9 @@ namespace Wisteria::GraphItems
             return areaWidth;
             }
 
-        /** @deprecated Use `geometry::get_polygon_area()` instead.*/
+        /** @deprecated Use `geometry::get_polygon_area()` instead.
+            @param polygon The polygon to review.
+            @returns The area.*/
         template<typename polygonT>
         [[nodiscard]] [[deprecated("Use geometry::get_polygon_area() instead")]]
         static double GetPolygonArea(const polygonT& polygon)
@@ -239,7 +243,11 @@ namespace Wisteria::GraphItems
             return std::abs(area / 2.0);
             }
 
-        /** @deprecated Use `geometry::is_inside_polygon()` instead.*/
+        /** @deprecated Use `geometry::is_inside_polygon()` instead.
+            @param pt The point.
+            @param polygon The polygon.
+            @param N The number of points in the polygon.
+            @returns The area.*/
         [[nodiscard]] [[deprecated("Use geometry::is_inside_polygon() instead")]]
         static bool IsInsidePolygon(wxPoint pt, const wxPoint* polygon, int N)
             {
