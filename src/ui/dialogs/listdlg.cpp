@@ -237,11 +237,14 @@ namespace Wisteria::UI
             {
             m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxRIBBON_BAR_FLOW_HORIZONTAL);
-            auto* homePage = new wxRibbonPage(
-                m_ribbon, wxID_ANY, wxString{}); // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
+            wxRibbonPage* homePage{ nullptr };
             // export
             if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
                 {
+                if (homePage == nullptr)
+                    {
+                    homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
+                    }
                 wxRibbonPanel* exportPage = new wxRibbonPanel(
                     homePage, wxID_ANY, _(L"Export"), wxNullBitmap, wxDefaultPosition,
                     wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE);
@@ -268,6 +271,10 @@ namespace Wisteria::UI
                 (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_CLEAR_BUTTON) ||
                 (m_buttonStyle & LD_REFRESH_BUTTON) || (m_buttonStyle & LD_LOG_VERBOSE_BUTTON))
                 {
+                if (homePage == nullptr)
+                    {
+                    homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
+                    }
                 auto* editPage = new wxRibbonPanel(homePage, ID_EDIT_PANEL, _(L"Edit"),
                                                    wxNullBitmap, wxDefaultPosition, wxDefaultSize,
                                                    wxRIBBON_PANEL_NO_AUTO_MINIMISE);
