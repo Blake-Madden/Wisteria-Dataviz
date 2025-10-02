@@ -122,7 +122,7 @@ namespace
 TEST_CASE("ZipCatalog: basic catalog and path queries", "[ZipCatalog]")
     {
     WxBoot boot;
-    REQUIRE(boot.ok);
+    REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
         { "docs/readme.txt", MakeUtf8(u8"Hello \xF0\x9F\x8C\x8D") }, // "Hello 🌍" as UTF-8
@@ -160,7 +160,7 @@ TEST_CASE("ZipCatalog: basic catalog and path queries", "[ZipCatalog]")
 TEST_CASE("ZipCatalog: ReadTextFile", "[ZipCatalog]")
     {
     WxBoot boot;
-    REQUIRE(boot.ok);
+    REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
         { "docs/readme.txt", MakeUtf8(u8"Hello \xF0\x9F\x8C\x8D") }, // "Hello 🌍"
@@ -186,7 +186,7 @@ TEST_CASE("ZipCatalog: ReadTextFile", "[ZipCatalog]")
 TEST_CASE("ZipCatalog: ReadBitmap (PNG)", "[ZipCatalog][Image]")
     {
     WxBoot boot;
-    REQUIRE(boot.ok);
+    REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
         { "res/pixel.png", MakePngBytes() },
@@ -207,7 +207,7 @@ TEST_CASE("ZipCatalog: ReadBitmap (PNG)", "[ZipCatalog][Image]")
 TEST_CASE("ZipCatalog: ReadSVG", "[ZipCatalog][SVG]")
     {
     WxBoot boot;
-    REQUIRE(boot.ok);
+    REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
         { "icons/box.svg", MakeSvgBytes() },
@@ -228,7 +228,7 @@ TEST_CASE("ZipCatalog: ReadSVG", "[ZipCatalog][SVG]")
 TEST_CASE("ZipCatalog: ReadFile behavior and errors", "[ZipCatalog]")
     {
     WxBoot boot;
-    REQUIRE(boot.ok);
+    REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
         { "empty.txt", {} },
