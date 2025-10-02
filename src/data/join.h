@@ -58,7 +58,6 @@ namespace Wisteria::Data
                 right dataset.\n
                 Also, if duplicate keys are encountered in the right dataset, a warning will
                 be issued via @c wxLogWarning().
-            @todo Add unit tests.
             @throws std::runtime_error If invalid columns or dataset are provided,
                 throws an exception.*/
         [[nodiscard]]

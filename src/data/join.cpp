@@ -17,11 +17,6 @@ namespace Wisteria::Data
                                 const std::vector<std::pair<wxString, wxString>>& byColumns,
                                 const wxString& suffix /*= L".x"*/)
         {
-        assert(leftDataset && L"Invalid left dataset when left joining!");
-        assert(rightDataset && L"Invalid right dataset when left joining!");
-        assert(!byColumns.empty() && L"No 'by' keys provided when left joining!");
-        assert(!suffix.empty() && L"Suffix should not be empty when left joining!");
-
         if (leftDataset == nullptr)
             {
             throw std::runtime_error(_(L"Invalid left dataset when left joining.").ToUTF8());
