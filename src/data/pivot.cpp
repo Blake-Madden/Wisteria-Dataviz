@@ -52,7 +52,8 @@ namespace Wisteria::Data
             }
         if (IdColumns.empty())
             {
-            throw std::runtime_error(_(L"ID column is required to pivot dataset.").ToUTF8());
+            throw std::runtime_error(
+                _(L"At least one identifier column must be specified.").ToUTF8());
             }
 
         std::set<PivotedWiderRow> pivotedRows;
@@ -278,7 +279,8 @@ namespace Wisteria::Data
             }
         if (columnsToKeep.empty())
             {
-            throw std::runtime_error(_(L"ID column is required to pivot dataset.").ToUTF8());
+            throw std::runtime_error(
+                _(L"At least one column must be kept (e.g., an ID column).").ToUTF8());
             }
         if (fromColumns.empty())
             {
