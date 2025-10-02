@@ -34,6 +34,7 @@ Programa = "Programa"
 objets = "objets"
 sur = "sur"
 Hel = "Hel"
+caf = "caf"
 
 [type.svg]
 extend-glob = ["*.svg"]

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-# Parse clang-tidy stdout logs -> rich HTML (filterable, with suppression)
+# clang_tidy_html_report.py
+# Parse clang-tidy stdout logs -> rich HTML (filterable)
+# - Filters out "note" severity entirely
+# - Suppresses checks/messages via hard-coded sets and env overrides
 
 import re, sys, html, argparse, pathlib, os
 from string import Template
 from collections import defaultdict, Counter
 
 # ---------- configurable suppression ----------
-# Hide checks by exact check name:
+# Hide diagnostics whose check name exactly matches any of these:
 SUPPRESS_CHECKS = {
     "IgnoreClassesWithAllMemberVariablesBeingPublic",
     "clang-diagnostic-error",
@@ -20,10 +23,10 @@ SUPPRESS_MSG_SUBSTR = {
     "unknown type name",
     "no matching function for call to",
 }
-# Optionally allow comma-separated overrides via env:
-SUPPRESS_CHECKS |= {s for s in os.getenv("CT_SUPPRESS_CHECKS", "").split(",") if s.strip()}
-SUPPRESS_MSG_SUBSTR |= {s for s in os.getenv("CT_SUPPRESS_MSG_SUBSTR", "").split(",") if s.strip()}
-# ----------------------------------------------
+# Optional env overrides (comma-separated lists)
+SUPPRESS_CHECKS |= {s.strip() for s in os.getenv("CT_SUPPRESS_CHECKS", "").split(",") if s.strip()}
+SUPPRESS_MSG_SUBSTR |= {s.strip() for s in os.getenv("CT_SUPPRESS_MSG_SUBSTR", "").split(",") if s.strip()}
+# ------------------------------------------------
 
 ROW_RE = re.compile(
     r'^(?P<file>[^:\n]+):(?P<line>\d+):(?P<col>\d+):\s+'
@@ -36,7 +39,7 @@ HTML = Template("""<!doctype html>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clang-Tidy Report</title>
 <style>
-  :root{--bg:#0b0d10;--fg:#e6edf3;--muted:#9aa7b1;--row:#11151a;--accent:#2f81f7;--warn:#f5a623;--err:#ff4d4f;--note:#7aa2f7}
+  :root{--bg:#0b0d10;--fg:#e6edf3;--muted:#9aa7b1;--row:#11151a;--accent:#2f81f7;--warn:#f5a623;--err:#ff4d4f}
   body{background:var(--bg);color:var(--fg);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:24px}
   h1{margin:0 0 16px 0;font-size:22px}
   .muted{color:var(--muted)}
@@ -50,7 +53,7 @@ HTML = Template("""<!doctype html>
   tr{background:var(--row)} tr:hover{background:#141a22}
   th{position:sticky;top:0;background:#0e141b;z-index:2}
   code{background:#0f141a;padding:2px 6px;border-radius:6px}
-  .sev-warning{color:var(--warn)} .sev-error{color:var(--err)} .sev-note{color:var(--note)}
+  .sev-warning{color:var(--warn)} .sev-error{color:var(--err)}
   .footer{margin-top:18px;font-size:12px;color:var(--muted)} .nowrap{white-space:nowrap}
 </style>
 </head><body>
@@ -59,7 +62,6 @@ HTML = Template("""<!doctype html>
     <div class="chip"><strong>Total</strong> $total</div>
     <div class="chip"><span class="sev-error"><strong>Errors</strong></span> $n_err</div>
     <div class="chip"><span class="sev-warning"><strong>Warnings</strong></span> $n_warn</div>
-    <div class="chip"><span class="sev-note"><strong>Notes</strong></span> $n_note</div>
     <div class="chip"><strong>Files</strong> $files_count</div>
     <div class="chip"><strong>Checks</strong> $checks_count</div>
   </div>
@@ -70,7 +72,6 @@ HTML = Template("""<!doctype html>
         <option value="">All</option>
         <option value="error">Error</option>
         <option value="warning">Warning</option>
-        <option value="note">Note</option>
       </select>
     </label>
     <label>Check:
@@ -99,7 +100,7 @@ HTML = Template("""<!doctype html>
   </table>
 
   <div class="section">
-    <h2>By Check</h2>
+    <h2>By Check</</h2>
     <table>
       <thead><tr><th>Check</th><th>Count</th><th>Examples</th></tr></thead>
       <tbody>$by_check_rows</tbody>
@@ -147,7 +148,8 @@ def parse_logs(paths):
             continue
         for line in text:
             m=ROW_RE.match(line.strip())
-            if not m: continue
+            if not m: 
+                continue
             d=m.groupdict()
             entries.append({
                 'file': d['file'],
@@ -167,17 +169,21 @@ def main():
 
     items=parse_logs(a.logs)
 
-    # ---------- suppression applied here ----------
-    def suppressed(it):
+    # 1) drop notes entirely
+    items=[it for it in items if it['sev'] != 'note']
+
+    # 2) apply check/message suppressions
+    def _suppressed(it):
         if it['check'] in SUPPRESS_CHECKS:
             return True
+        msg = it['msg']
         for sub in SUPPRESS_MSG_SUBSTR:
-            if sub and sub in it['msg']:
+            if sub and sub in msg:
                 return True
         return False
-    items=[it for it in items if not suppressed(it)]
-    # ----------------------------------------------
+    items=[it for it in items if not _suppressed(it)]
 
+    # sort with errors first, then warnings, then by file/loc/check
     items.sort(key=lambda x: (x['sev']!='error', x['sev']!='warning', x['file'], x['line'], x['col'], x['check']))
 
     by_check=defaultdict(list)
@@ -222,7 +228,6 @@ def main():
         total=len(items),
         n_err=sev_ct['error'],
         n_warn=sev_ct['warning'],
-        n_note=sev_ct['note'],
         files_count=len(files),
         checks_count=sum(1 for k in by_check if k),
         check_opts=check_opts,
