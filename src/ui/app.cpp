@@ -418,7 +418,7 @@ namespace Wisteria::UI
 #endif
         // ...or, program dir + file
         foundFile =
-            wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPathWithSep() + subFile;
+            wxFileName{ wxStandardPaths::Get().GetExecutablePath() }.GetPathWithSep() + subFile;
         if (wxFileName::FileExists(foundFile))
             {
             return foundFile;
@@ -495,7 +495,7 @@ namespace Wisteria::UI
 #endif
         // ...or, program dir + subfolder
         foundFolder =
-            wxStandardPaths::Get().GetExecutablePath() + wxFileName::GetPathSeparator() + subDir;
+            wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPathWithSep() + subDir;
         if (wxFileName::DirExists(foundFolder))
             {
             return foundFolder;
