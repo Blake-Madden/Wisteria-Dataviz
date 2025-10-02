@@ -110,7 +110,7 @@ std::wstring ZipCatalog::ReadTextFile(const wxString& path) const
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
         {
-        return std::wstring{};
+        return {};
         }
     const wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
     assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile()!");
@@ -118,7 +118,7 @@ std::wstring ZipCatalog::ReadTextFile(const wxString& path) const
     if (theBuffer == nullptr || theBuffer->GetBufferSize() == 0 ||
         theBuffer->GetBufferStart() == nullptr)
         {
-        return std::wstring{};
+        return {};
         }
     return Wisteria::TextStream::CharStreamToUnicode(
         static_cast<const char*>(theBuffer->GetBufferStart()), theBuffer->GetBufferSize());
@@ -130,7 +130,7 @@ wxBitmap ZipCatalog::ReadSVG(const wxString& path, const wxSize size) const
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
         {
-        return wxBitmap{};
+        return {};
         }
     // convert it from the stream
     const auto bmp = wxBitmapBundle::FromSVG(
@@ -163,28 +163,40 @@ wxBitmap ZipCatalog::ReadBitmap(const wxString& path, const wxBitmapType bitmapT
 bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
                       const size_t bufferSize) const
     {
-    if (bufferSize == 0)
+    if (stream_in == nullptr || bufferSize == 0)
         {
+        // Reset only clears error flags; it doesn't truncate any output target.
+        // If you intended to clear the destination, that must be done by the caller.
         stream_out.Reset();
         return false;
         }
+
     m_readBuffer.resize(bufferSize);
     std::ranges::fill(m_readBuffer, 0);
 
-    for (;;)
+    size_t totalWritten{ 0 };
+
+    while (stream_in->IsOk() && !stream_in->Eof() && stream_out.IsOk())
         {
-        const size_t bytes_read = stream_in->Read(&m_readBuffer[0], bufferSize).LastRead();
-        if (!bytes_read)
+        stream_in->Read(m_readBuffer.data(), bufferSize);
+        const size_t bytesRead = stream_in->LastRead();
+        if (bytesRead == 0)
             {
             break;
             }
 
-        if (stream_out.Write(&m_readBuffer[0], bytes_read).LastWrite() != bytes_read)
+        const size_t bytesWrote = stream_out.Write(m_readBuffer.data(), bytesRead).LastWrite();
+
+        totalWritten += bytesWrote;
+
+        if (bytesWrote != bytesRead)
             {
+            // short write: stop; let success be judged by totalWritten.
             break;
             }
         }
-    if (stream_out.GetLength() == 0 && !m_readErrorShown)
+
+    if (totalWritten == 0 && !m_readErrorShown)
         {
         m_messages.emplace_back(
             _(L"Unable to read file from archive. Archive may be corrupt or password protected."),
@@ -192,13 +204,15 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
         m_readErrorShown = true;
         return false;
         }
-    return true;
+
+    // true if we managed to write anything and the sink looks healthy.
+    return totalWritten > 0 && stream_out.IsOk();
     }
 
 //------------------------------------------------
 void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, const wxString& text)
     {
-    // Convert first so we don't start an entry we can't finish.
+    // convert first so we don't start an entry we can't finish.
     const wxScopedCharBuffer utf8 = text.ToUTF8();
     if (!utf8)
         {
@@ -224,18 +238,26 @@ void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, con
 wxArrayString ZipCatalog::GetFilesInFolder(const wxString& path) const
     {
     wxArrayString files;
+    files.Alloc(m_catalog.size());
+
     wxString formattedPath = path;
-    if (!path.empty() && path[path.length() - 1] != L'/' && path[path.length() - 1] != L'\\')
+    if (!formattedPath.empty() && formattedPath[formattedPath.length() - 1] != L'/' &&
+        formattedPath[formattedPath.length() - 1] != L'\\')
         {
-        formattedPath = path + L'/';
+        formattedPath += L'/';
         }
+
+    const wxString prefix = wxZipEntry::GetInternalName(formattedPath);
+
     for (const auto& entry : m_catalog)
         {
-        if (entry.first.StartsWith(wxZipEntry::GetInternalName(formattedPath)))
+        const wxString name = wxZipEntry::GetInternalName(entry.first);
+        if (name.starts_with(prefix) && !name.ends_with(L"/"))
             {
-            files.Add(wxZipEntry::GetInternalName(entry.first));
+            files.Add(name);
             }
         }
+
     return files;
     }
 
