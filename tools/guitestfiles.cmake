@@ -9,6 +9,7 @@ SET(TEST_SRC_FILES
     fileutiltests.cpp
     labeltests.cpp
     listctrlextests.cpp
+    pivottests.cpp
     polygontests.cpp
     sidebartests.cpp
     subsettests.cpp

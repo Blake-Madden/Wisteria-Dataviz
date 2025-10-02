@@ -87,7 +87,6 @@ namespace Wisteria::Data
                 that other observations have, then an empty cell will be added for that
                 column. This value will be used for fill this cell, with missing data (i.e., NaN)
                 being the default.
-            @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
         static std::shared_ptr<Dataset>
@@ -125,7 +124,6 @@ namespace Wisteria::Data
                 will be the name of a new target column.\n
                 Leave blank (the default) to use the full name(s) of the
                 @c fromColumns as the labels.
-            @todo Add unit test.
             @returns The pivoted dataset.*/
         [[nodiscard]]
         static std::shared_ptr<Dataset>
