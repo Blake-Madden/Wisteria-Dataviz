@@ -57,7 +57,8 @@ namespace Wisteria::Data
                 but instead merge data from the last row from any duplicate keys from the
                 right dataset.\n
                 Also, if duplicate keys are encountered in the right dataset, a warning will
-                be issued via @c wxLogWarning().
+                be issued via @c wxLogWarning().\n
+                Finally, categorical labels must match textually between datasets.
             @throws std::runtime_error If invalid columns or dataset are provided,
                 throws an exception.*/
         [[nodiscard]]
