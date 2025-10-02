@@ -2,6 +2,7 @@
 #include "../../src/util/zipcatalog.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <climits>
 #include <wx/bmpbndl.h>
 #include <wx/image.h>
 #include <wx/init.h>
@@ -125,7 +126,7 @@ TEST_CASE("ZipCatalog: basic catalog and path queries", "[ZipCatalog]")
     REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
-        { "docs/readme.txt", MakeUtf8(u8"Hello \xF0\x9F\x8C\x8D") }, // "Hello 🌍" as UTF-8
+        { "docs/readme.txt", MakeUtf8(u8"Hello \U0001F30D") }, // "Hello 🌍" as UTF-8
         { "res/pixel.png", MakePngBytes() },
         { "empty.txt", {} },
         { "folder/sub/a.txt", MakeUtf8("A") },
@@ -163,7 +164,7 @@ TEST_CASE("ZipCatalog: ReadTextFile", "[ZipCatalog]")
     REQUIRE(boot.m_ok);
 
     auto bytes = MakeZip({
-        { "docs/readme.txt", MakeUtf8(u8"Hello \xF0\x9F\x8C\x8D") }, // "Hello 🌍"
+        { "docs/readme.txt", MakeUtf8(u8"Hello \U0001F30D") }, // "Hello 🌍"
         { "empty.txt", {} },
     });
 
@@ -172,8 +173,7 @@ TEST_CASE("ZipCatalog: ReadTextFile", "[ZipCatalog]")
     SECTION("Existing UTF-8 file decodes to wstring")
         {
         const std::wstring w = zc.ReadTextFile("docs/readme.txt");
-        CHECK_FALSE(w.empty());
-        CHECK(w == L"Hello 🌍");
+        CHECK(w == std::wstring{ L"Hello \U0001F30D" });
         }
 
     SECTION("Missing or zero-length returns empty")
@@ -181,6 +181,19 @@ TEST_CASE("ZipCatalog: ReadTextFile", "[ZipCatalog]")
         CHECK(zc.ReadTextFile("does/not/exist.txt").empty());
         CHECK(zc.ReadTextFile("empty.txt").empty());
         }
+    }
+
+TEST_CASE("ZipCatalog: ReadTextFile – 2-byte UTF-8 (é)", "[ZipCatalog][UTF8]")
+    {
+    // Build ZIP with a simple 2-byte UTF-8 char (é)
+    auto bytes = MakeZip({
+        { "docs/eacute.txt", MakeUtf8(u8"Hello caf\u00E9") } // "Hello café"
+    });
+
+    Wisteria::ZipCatalog zc(bytes.data(), bytes.size());
+
+    const std::wstring w = zc.ReadTextFile("docs/eacute.txt");
+    CHECK(w == L"Hello caf\u00E9");
     }
 
 TEST_CASE("ZipCatalog: ReadBitmap (PNG)", "[ZipCatalog][Image]")
