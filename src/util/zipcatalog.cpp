@@ -112,16 +112,18 @@ std::wstring ZipCatalog::ReadTextFile(const wxString& path) const
         {
         return {};
         }
+
     const wxStreamBuffer* theBuffer = memstream.GetOutputStreamBuffer();
     assert(theBuffer && L"Invalid buffer in call to ZipCatalog::ReadTextFile()!");
     // empty file
-    if (theBuffer == nullptr || theBuffer->GetBufferSize() == 0 ||
-        theBuffer->GetBufferStart() == nullptr)
+    if (theBuffer == nullptr || theBuffer->GetBufferStart() == nullptr ||
+        theBuffer->GetBufferSize() == 0 || memstream.GetLength() == 0)
         {
         return {};
         }
+
     return Wisteria::TextStream::CharStreamToUnicode(
-        static_cast<const char*>(theBuffer->GetBufferStart()), theBuffer->GetBufferSize());
+        static_cast<const char*>(theBuffer->GetBufferStart()), memstream.GetLength());
     }
 
 //------------------------------------------------
