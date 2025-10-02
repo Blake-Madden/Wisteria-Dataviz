@@ -328,7 +328,7 @@ namespace Wisteria::Data
             }
 
         auto pivotedData = std::make_shared<Dataset>();
-        pivotedData->GetContinuousColumns().reserve(dataset->GetCategoricalColumns().size());
+        pivotedData->GetContinuousColumns().reserve(dataset->GetContinuousColumns().size());
         pivotedData->GetCategoricalColumns().reserve(dataset->GetCategoricalColumns().size());
         pivotedData->GetDateColumns().reserve(dataset->GetDateColumns().size());
 
