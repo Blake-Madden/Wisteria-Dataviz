@@ -408,3 +408,262 @@ TEST_CASE("PivotWider: two valuesFrom columns expand with <valueName>_<label>", 
     CHECK_THAT(colA_X->GetValue(1), WithinAbs(0.0, 1e-12));
     CHECK_THAT(colB_X->GetValue(1), WithinAbs(0.0, 1e-12));
     }
+
+namespace
+    {
+    // Convenience for building a simple source dataset:
+    // ID (string), Group (categorical), and one or two value columns.
+    struct SrcBuilder
+        {
+        Dataset ds;
+        ColumnWithStringTable::StringTableType stGroup;
+
+        SrcBuilder()
+            {
+            ds.GetIdColumn().SetName("ID");
+            stGroup.clear();
+            ds.AddCategoricalColumn("Group", stGroup);
+            }
+
+        // ensure Group label exists, return its id
+        GroupIdType ensure_group(const wxString& label)
+            {
+            // naive: insert with next id if not present
+            for (const auto& kv : stGroup)
+                {
+                if (kv.second == label)
+                    {
+                    return kv.first;
+                    }
+                }
+            const GroupIdType nextId =
+                stGroup.empty() ?
+                    0 :
+                    (std::max_element(stGroup.begin(), stGroup.end(),
+                                      [](auto& a, auto& b) { return a.first < b.first; })
+                         ->first +
+                     1);
+            stGroup.insert({ nextId, label });
+            // rebind (wx column holds a copy by value in your impl)
+            ds.GetCategoricalColumns().begin()->SetStringTable(stGroup);
+            return nextId;
+            }
+
+        // add row with one value column
+        void add_row_1v(const wxString& id, const wxString& groupLabel, double v)
+            {
+            const auto gid = ensure_group(groupLabel);
+            RowInfo r;
+            r.Id(id);
+            r.Categoricals({ gid });
+            r.Continuous({ v });
+            ds.AddRow(r);
+            }
+
+        // add row with two value columns
+        void add_row_2v(const wxString& id, const wxString& groupLabel, double a, double b)
+            {
+            const auto gid = ensure_group(groupLabel);
+            RowInfo r;
+            r.Id(id);
+            r.Categoricals({ gid });
+            r.Continuous({ a, b });
+            ds.AddRow(r);
+            }
+        };
+    } // namespace
+
+// -----------------------------------------------------------------------------
+// Single valuesFrom: new labels appear late → earlier rows must expand repeatedly
+// -----------------------------------------------------------------------------
+TEST_CASE("PivotWider expansion under growing label set (single valuesFrom)",
+          "[Pivot][Wider][ExpandStress]")
+    {
+    SrcBuilder sb;
+    sb.ds.AddContinuousColumn("Val");
+
+    // Intentionally introduce labels in this order:
+    //   early:   L1, L2
+    //   later:   L3
+    //   much later (forces another expansion): L4, L5
+    //
+    // And spread them across different IDs so many rows need expansion.
+
+    // Early rows (only L1/L2 exist yet)
+    sb.add_row_1v("rowA", "L1", 10);
+    sb.add_row_1v("rowB", "L2", 20);
+    sb.add_row_1v("rowC", "L1", 30);
+
+    // Introduce a new label L3 (forces expand on prior rows)
+    sb.add_row_1v("rowA", "L3", 13);
+
+    // Later introduce L4 and L5 (another expand pass needed)
+    sb.add_row_1v("rowB", "L4", 24);
+    sb.add_row_1v("rowC", "L5", 35);
+
+    // Wider with fill = -1 so we can see expansions clearly
+    auto wide = Pivot::PivotWider(std::make_shared<const Dataset>(sb.ds),
+                                  /*IdColumns*/ { "ID" },
+                                  /*namesFrom*/ "Group",
+                                  /*valuesFrom*/ { "Val" },
+                                  /*namesSep*/ "_",
+                                  /*namesPrefix*/ wxEmptyString,
+                                  /*fillValue*/ -1.0);
+
+    // Column names (single valuesFrom => just labels)
+    const auto cL1 = wide->GetContinuousColumn("L1");
+    const auto cL2 = wide->GetContinuousColumn("L2");
+    const auto cL3 = wide->GetContinuousColumn("L3");
+    const auto cL4 = wide->GetContinuousColumn("L4");
+    const auto cL5 = wide->GetContinuousColumn("L5");
+
+    REQUIRE(cL1 != wide->GetContinuousColumns().cend());
+    REQUIRE(cL2 != wide->GetContinuousColumns().cend());
+    REQUIRE(cL3 != wide->GetContinuousColumns().cend());
+    REQUIRE(cL4 != wide->GetContinuousColumns().cend());
+    REQUIRE(cL5 != wide->GetContinuousColumns().cend());
+
+    // Expect 3 rows: rowA, rowB, rowC (order depends on your comparator; we’ll discover indices)
+    REQUIRE(wide->GetRowCount() == 3);
+
+    auto idx = [&](const wxString& id)
+    {
+        for (size_t i = 0; i < wide->GetRowCount(); ++i)
+            {
+            if (wide->GetIdColumn().GetValue(i) == id)
+                {
+                return static_cast<int>(i);
+                }
+            }
+        return -1;
+    };
+
+    const int ia = idx("rowA");
+    const int ib = idx("rowB");
+    const int ic = idx("rowC");
+    REQUIRE(ia >= 0);
+    REQUIRE(ib >= 0);
+    REQUIRE(ic >= 0);
+
+    using Catch::Matchers::WithinAbs;
+
+    // rowA: L1=10, L3=13, others = -1
+    CHECK_THAT(cL1->GetValue(ia), WithinAbs(10.0, 1e-12));
+    CHECK_THAT(cL3->GetValue(ia), WithinAbs(13.0, 1e-12));
+    CHECK_THAT(cL2->GetValue(ia), WithinAbs(-1.0, 1e-12));
+    CHECK_THAT(cL4->GetValue(ia), WithinAbs(-1.0, 1e-12));
+    CHECK_THAT(cL5->GetValue(ia), WithinAbs(-1.0, 1e-12));
+
+    // rowB: L2=20, L4=24, others = -1
+    CHECK_THAT(cL2->GetValue(ib), WithinAbs(20.0, 1e-12));
+    CHECK_THAT(cL4->GetValue(ib), WithinAbs(24.0, 1e-12));
+    CHECK_THAT(cL1->GetValue(ib), WithinAbs(-1.0, 1e-12));
+    CHECK_THAT(cL3->GetValue(ib), WithinAbs(-1.0, 1e-12));
+    CHECK_THAT(cL5->GetValue(ib), WithinAbs(-1.0, 1e-12));
+
+    // rowC: L1=30, L5=35, others = -1
+    CHECK_THAT(cL1->GetValue(ic), WithinAbs(30.0, 1e-12));
+    CHECK_THAT(cL5->GetValue(ic), WithinAbs(35.0, 1e-12));
+    CHECK_THAT(cL2->GetValue(ic), WithinAbs(-1.0, 1e-12));
+    CHECK_THAT(cL3->GetValue(ic), WithinAbs(-1.0, 1e-12));
+    CHECK_THAT(cL4->GetValue(ic), WithinAbs(-1.0, 1e-12));
+    }
+
+// -----------------------------------------------------------------------------
+// Two valuesFrom: ensure both sets expand properly and values don't get clobbered
+// -----------------------------------------------------------------------------
+TEST_CASE("PivotWider expansion with two valuesFrom columns", "[Pivot][Wider][ExpandStress]")
+    {
+    SrcBuilder sb;
+    sb.ds.AddContinuousColumn("ValA");
+    sb.ds.AddContinuousColumn("ValB");
+
+    // Similar plan: introduce labels X, Y early; Z later; W much later
+    sb.add_row_2v("R1", "X", 1, 100);
+    sb.add_row_2v("R2", "Y", 2, 200);
+    sb.add_row_2v("R3", "X", 3, 300);
+
+    sb.add_row_2v("R1", "Z", 4, 400); // new label Z
+
+    sb.add_row_2v("R2", "W", 5, 500); // much later W
+    sb.add_row_2v("R3", "Z", 6, 600); // mix Z again
+
+    auto wide = Pivot::PivotWider(std::make_shared<const Dataset>(sb.ds),
+                                  /*IdColumns*/ { "ID" },
+                                  /*namesFrom*/ "Group",
+                                  /*valuesFrom*/ { "ValA", "ValB" },
+                                  /*namesSep*/ "_",
+                                  /*namesPrefix*/ wxEmptyString,
+                                  /*fillValue*/ 0.0);
+
+    // Expect expanded names: ValA_X, ValA_Y, ValA_Z, ValA_W; and ValB_* variants
+    const wxString aX = "ValA_X", aY = "ValA_Y", aZ = "ValA_Z", aW = "ValA_W";
+    const wxString bX = "ValB_X", bY = "ValB_Y", bZ = "ValB_Z", bW = "ValB_W";
+    const auto cAX = wide->GetContinuousColumn(aX);
+    const auto cAY = wide->GetContinuousColumn(aY);
+    const auto cAZ = wide->GetContinuousColumn(aZ);
+    const auto cAW = wide->GetContinuousColumn(aW);
+    const auto cBX = wide->GetContinuousColumn(bX);
+    const auto cBY = wide->GetContinuousColumn(bY);
+    const auto cBZ = wide->GetContinuousColumn(bZ);
+    const auto cBW = wide->GetContinuousColumn(bW);
+    REQUIRE(cAX != wide->GetContinuousColumns().cend());
+    REQUIRE(cAY != wide->GetContinuousColumns().cend());
+    REQUIRE(cAZ != wide->GetContinuousColumns().cend());
+    REQUIRE(cAW != wide->GetContinuousColumns().cend());
+    REQUIRE(cBX != wide->GetContinuousColumns().cend());
+    REQUIRE(cBY != wide->GetContinuousColumns().cend());
+    REQUIRE(cBZ != wide->GetContinuousColumns().cend());
+    REQUIRE(cBW != wide->GetContinuousColumns().cend());
+
+    // Row index lookup by ID
+    auto idx = [&](const wxString& id)
+    {
+        for (size_t i = 0; i < wide->GetRowCount(); ++i)
+            {
+            if (wide->GetIdColumn().GetValue(i) == id)
+                {
+                return static_cast<int>(i);
+                }
+            }
+        return -1;
+    };
+    const int i1 = idx("R1");
+    const int i2 = idx("R2");
+    const int i3 = idx("R3");
+    REQUIRE(i1 >= 0);
+    REQUIRE(i2 >= 0);
+    REQUIRE(i3 >= 0);
+
+    using Catch::Matchers::WithinAbs;
+
+    // R1: X(1/100), Z(4/400), others 0
+    CHECK_THAT(cAX->GetValue(i1), WithinAbs(1.0, 1e-12));
+    CHECK_THAT(cBX->GetValue(i1), WithinAbs(100.0, 1e-12));
+    CHECK_THAT(cAZ->GetValue(i1), WithinAbs(4.0, 1e-12));
+    CHECK_THAT(cBZ->GetValue(i1), WithinAbs(400.0, 1e-12));
+    CHECK_THAT(cAY->GetValue(i1), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cAW->GetValue(i1), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cBY->GetValue(i1), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cBW->GetValue(i1), WithinAbs(0.0, 1e-12));
+
+    // R2: Y(2/200), W(5/500), others 0
+    CHECK_THAT(cAY->GetValue(i2), WithinAbs(2.0, 1e-12));
+    CHECK_THAT(cBY->GetValue(i2), WithinAbs(200.0, 1e-12));
+    CHECK_THAT(cAW->GetValue(i2), WithinAbs(5.0, 1e-12));
+    CHECK_THAT(cBW->GetValue(i2), WithinAbs(500.0, 1e-12));
+    CHECK_THAT(cAX->GetValue(i2), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cAZ->GetValue(i2), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cBX->GetValue(i2), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cBZ->GetValue(i2), WithinAbs(0.0, 1e-12));
+
+    // R3: X(3/300), Z(6/600), others 0
+    CHECK_THAT(cAX->GetValue(i3), WithinAbs(3.0, 1e-12));
+    CHECK_THAT(cBX->GetValue(i3), WithinAbs(300.0, 1e-12));
+    CHECK_THAT(cAZ->GetValue(i3), WithinAbs(6.0, 1e-12));
+    CHECK_THAT(cBZ->GetValue(i3), WithinAbs(600.0, 1e-12));
+    CHECK_THAT(cAY->GetValue(i3), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cAW->GetValue(i3), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cBY->GetValue(i3), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(cBW->GetValue(i3), WithinAbs(0.0, 1e-12));
+    }

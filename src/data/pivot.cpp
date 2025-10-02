@@ -184,12 +184,13 @@ namespace Wisteria::Data
             {
             if (pivotedRowsIter->m_pivotedColumns.size() < pivotedColumnNames.size())
                 {
+                auto nextRow = std::next(pivotedRowsIter);
+
                 auto nodeHandle = pivotedRows.extract(pivotedRowsIter);
                 nodeHandle.value().Expand(pivotedColumnNames, fillValue);
                 pivotedRows.insert(std::move(nodeHandle));
-                // go back to the start after updating this row,
-                // assuming that we don't know where this was inserted
-                pivotedRowsIter = pivotedRows.begin();
+
+                pivotedRowsIter = nextRow;
                 }
             else
                 {
