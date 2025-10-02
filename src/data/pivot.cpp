@@ -131,6 +131,10 @@ namespace Wisteria::Data
                 }
             for (const auto& catCol : idColumnsIters.m_catColumns)
                 {
+                if (!currentKey.empty())
+                    {
+                    currentKey += L'\x1F'; // insert separator
+                    }
                 currentKey += catCol->GetValueAsLabel(i);
                 idColumns.emplace_back(catCol->GetName(),
                                        // ID, not the string, to be optimal

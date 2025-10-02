@@ -26,30 +26,20 @@ namespace
         ds.AddRow(r);
         }
 
-    // UTF-8 helpers to accept both char and char8_t (C++20) literals
-    static std::vector<unsigned char> MakeUtf8(const char* s)
+    // Helper to add a row: no string ID column used; we rely on two categorical IDs + one value
+    static void AddRow(Dataset& ds, const std::vector<GroupIdType>& cats,
+                       const std::vector<double>& vals)
         {
-        const auto* p = reinterpret_cast<const unsigned char*>(s);
-        return std::vector<unsigned char>(p, p + std::strlen(s));
-        }
-
-    static std::vector<unsigned char> MakeUtf8(std::string_view sv)
-        {
-        const auto* p = reinterpret_cast<const unsigned char*>(sv.data());
-        return std::vector<unsigned char>(p, p + sv.size());
-        }
-
-    static std::vector<unsigned char> MakeUtf8(const char8_t* s)
-        {
-        const auto* p = reinterpret_cast<const unsigned char*>(s);
-        const auto n = std::char_traits<char8_t>::length(s);
-        return std::vector<unsigned char>(p, p + n);
-        }
-
-    static std::vector<unsigned char> MakeUtf8(std::u8string_view sv)
-        {
-        const auto* p = reinterpret_cast<const unsigned char*>(sv.data());
-        return std::vector<unsigned char>(p, p + sv.size());
+        RowInfo r;
+        if (!cats.empty())
+            {
+            r.Categoricals(cats);
+            }
+        if (!vals.empty())
+            {
+            r.Continuous(vals);
+            }
+        ds.AddRow(r);
         }
     } // namespace
 
@@ -267,4 +257,154 @@ TEST_CASE("PivotLonger: multiple namesTo via regex split", "[Pivot][Longer]")
     CHECK(metricCol->GetValueAsLabel(3) == "M");
     CHECK(indexCol->GetValueAsLabel(3) == "2");
     CHECK_THAT(valueCol->GetValue(3), WithinAbs(11.0, 1e-9));
+    }
+
+TEST_CASE("PivotWider: ID collision when concatenating labels without a separator",
+          "[Pivot][Wider]")
+    {
+    // Build a dataset with TWO categorical ID columns whose labels collide when concatenated:
+    //
+    //   Row A: K1="AB", K2="C"   → "AB" + "C"  → "ABC"
+    //   Row B: K1="A",  K2="BC"  → "A"  + "BC" → "ABC"
+    //
+    // These represent DISTINCT IDs and must remain separate rows.
+    // If the implementation fuses IDs by naive concatenation, they will MERGE into one row.
+
+    Dataset src;
+
+    // Define categorical ID columns K1, K2
+    ColumnWithStringTable::StringTableType stK1, stK2, stGroup;
+    stK1.insert({ 0, "AB" });
+    stK1.insert({ 1, "A" });
+    stK2.insert({ 0, "C" });
+    stK2.insert({ 1, "BC" });
+
+    // namesFrom column "Group" with a single level "G"
+    stGroup.insert({ 0, "G" });
+
+    // Order matters: add K1, K2, Group in this order
+    src.AddCategoricalColumn("K1", stK1);
+    src.AddCategoricalColumn("K2", stK2);
+    src.AddCategoricalColumn("Group", stGroup);
+
+    // One continuous value column
+    src.AddContinuousColumn("Val");
+
+    // Two rows that should be distinct identifiers:
+    // Row A: K1=AB (0), K2=C (0),  Group=G (0)  → Val=1
+    // Row B: K1=A  (1), K2=BC(1),  Group=G (0)  → Val=2
+    AddRow(src, /*cats*/ { 0, 0, 0 }, /*vals*/ { 1.0 });
+    AddRow(src, /*cats*/ { 1, 1, 0 }, /*vals*/ { 2.0 });
+
+    // Pivot wider using the TWO ID columns; names come from "Group"; values from "Val".
+    auto wide = Pivot::PivotWider(std::make_shared<const Dataset>(src),
+                                  /*IdColumns*/ { "K1", "K2" },
+                                  /*namesFrom*/ "Group",
+                                  /*valuesFrom*/ { "Val" },
+                                  /*namesSep*/ "_",
+                                  /*namesPrefix*/ wxEmptyString,
+                                  /*fillValue*/ 0.0);
+
+    // Expected behavior: TWO distinct rows (AB,C) and (A,BC).
+    CHECK(wide->GetRowCount() == 2);
+
+    // Column must exist
+    const auto col = wide->GetContinuousColumn("G");
+    REQUIRE(col != wide->GetContinuousColumns().cend());
+
+    // Values should NOT be summed together in a single row.
+    if (wide->GetRowCount() == 1)
+        {
+        CHECK_THAT(col->GetValue(0), WithinAbs(1.0, 1e-12)); // would fail (likely 3.0)
+        }
+
+    // Optional: verify IDs remain distinct (labels preserved per row)
+    // NOTE: depends on how your wider output represents ID columns.
+    // If K1 and K2 are preserved as categoricals, you can re-check them:
+    const auto k1Col = wide->GetCategoricalColumn("K1");
+    const auto k2Col = wide->GetCategoricalColumn("K2");
+    if (k1Col != wide->GetCategoricalColumns().cend() &&
+        k2Col != wide->GetCategoricalColumns().cend() && wide->GetRowCount() == 2)
+        {
+        // Row order may be implementation-defined; check as a set
+        wxString r0 = k1Col->GetValueAsLabel(0) + "/" + k2Col->GetValueAsLabel(0);
+        wxString r1 = k1Col->GetValueAsLabel(1) + "/" + k2Col->GetValueAsLabel(1);
+
+        const bool seenAB_C = (r0 == "AB/C") || (r1 == "AB/C");
+        const bool seenA_BC = (r0 == "A/BC") || (r1 == "A/BC");
+        CHECK(seenAB_C);
+        CHECK(seenA_BC);
+        }
+    }
+
+TEST_CASE("PivotWider: two valuesFrom columns expand with <valueName>_<label>", "[Pivot][Wider]")
+    {
+    using namespace Wisteria::Data;
+    using Catch::Matchers::WithinAbs;
+
+    Dataset src;
+
+    // ID column (string)
+    src.GetIdColumn().SetName("ID");
+
+    // namesFrom column with two categories: X, Y
+    ColumnWithStringTable::StringTableType stGroup;
+    stGroup.insert({ 0, "X" });
+    stGroup.insert({ 1, "Y" });
+    src.AddCategoricalColumn("Group", stGroup);
+
+    // two continuous value columns
+    src.AddContinuousColumn("ValA");
+    src.AddContinuousColumn("ValB");
+
+        // Row 1: ID=row1, Group=X  → ValA=10,  ValB=100
+        {
+        RowInfo r;
+        r.Id("row1");
+        r.Categoricals({ 0 }); // Group: X
+        r.Continuous({ 10.0, 100.0 });
+        src.AddRow(r);
+        }
+        // Row 2: ID=row2, Group=Y  → ValA=20,  ValB=200
+        {
+        RowInfo r;
+        r.Id("row2");
+        r.Categoricals({ 1 }); // Group: Y
+        r.Continuous({ 20.0, 200.0 });
+        src.AddRow(r);
+        }
+
+    // Pivot wider using Group as namesFrom, both value cols
+    auto wide = Pivot::PivotWider(std::make_shared<const Dataset>(src),
+                                  /*IdColumns*/ { "ID" },
+                                  /*namesFrom*/ "Group",
+                                  /*valuesFrom*/ { "ValA", "ValB" },
+                                  /*namesSep*/ "_",
+                                  /*namesPrefix*/ wxEmptyString,
+                                  /*fillValue*/ 0.0);
+
+    CHECK(wide->GetRowCount() == 2);
+
+    // Expect four expanded columns: ValA_X, ValA_Y, ValB_X, ValB_Y
+    const auto colA_X = wide->GetContinuousColumn("ValA_X");
+    const auto colA_Y = wide->GetContinuousColumn("ValA_Y");
+    const auto colB_X = wide->GetContinuousColumn("ValB_X");
+    const auto colB_Y = wide->GetContinuousColumn("ValB_Y");
+
+    REQUIRE(colA_X != wide->GetContinuousColumns().cend());
+    REQUIRE(colA_Y != wide->GetContinuousColumns().cend());
+    REQUIRE(colB_X != wide->GetContinuousColumns().cend());
+    REQUIRE(colB_Y != wide->GetContinuousColumns().cend());
+
+    // row 0 is "row1" (Group=X)
+    CHECK_THAT(colA_X->GetValue(0), WithinAbs(10.0, 1e-12));
+    CHECK_THAT(colB_X->GetValue(0), WithinAbs(100.0, 1e-12));
+    CHECK_THAT(colA_Y->GetValue(0), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(colB_Y->GetValue(0), WithinAbs(0.0, 1e-12));
+
+    // row 1 is "row2" (Group=Y)
+    CHECK_THAT(colA_Y->GetValue(1), WithinAbs(20.0, 1e-12));
+    CHECK_THAT(colB_Y->GetValue(1), WithinAbs(200.0, 1e-12));
+    CHECK_THAT(colA_X->GetValue(1), WithinAbs(0.0, 1e-12));
+    CHECK_THAT(colB_X->GetValue(1), WithinAbs(0.0, 1e-12));
     }
