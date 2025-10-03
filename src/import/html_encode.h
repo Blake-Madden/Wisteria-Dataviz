@@ -190,10 +190,9 @@ namespace lily_of_the_valley
     class html_format
         {
       public:
-        /// @brief Adds a title to an HTML buffer.
+        /// @brief Adds a title to an HTML block.
         /// @param[in,out] HtmlText The HTML to set the title within.
         /// @param Title The title to use.
-        /// @todo needs unit test.
         static void set_title(std::wstring& HtmlText, const std::wstring& Title)
             {
             auto titleStart = HtmlText.find(L"<title>");
@@ -226,7 +225,7 @@ namespace lily_of_the_valley
                 }
             // skip over <title>
             titleStart += 7;
-            const auto titleEnd = HtmlText.find(L"</", titleStart);
+            const auto titleEnd = HtmlText.find(L"</title>", titleStart);
             if (titleEnd == std::wstring::npos)
                 {
                 return;
@@ -234,10 +233,9 @@ namespace lily_of_the_valley
             HtmlText.replace(titleStart, (titleEnd - titleStart), Title);
             }
 
-        /// @brief Specifies the encoding of an HTML buffer.
+        /// @brief Specifies the encoding of an HTML block.
         /// @param[in,out] HtmlText The HTML to set edit.
         /// @param encoding The encoding to use.
-        /// @todo needs unit test.
         static void set_encoding(std::wstring& HtmlText, const std::wstring& encoding = L"UTF-8")
             {
             auto headStart = HtmlText.find(L"<head");
@@ -287,8 +285,7 @@ namespace lily_of_the_valley
                 bookmarks in them that need to be removed prior to printing or saving them.
             @param[in,out] HtmlText The text to strip hyperlinks from.
             @param preserveInPageBookmarks Whether to preserve hyperlinks to bookmarks that
-                happen to be in the current block of text.
-            @todo needs unit test.*/
+                happen to be in the current block of text.*/
         static void strip_hyperlinks(std::wstring& HtmlText,
                                      const bool preserveInPageBookmarks = true)
             {
@@ -373,10 +370,9 @@ namespace lily_of_the_valley
                 }
             }
 
-        /// @brief Removes any image tags from an HTML block
+        /// @brief Removes any image tags from an HTML block.
         /// @param[in,out] HtmlText The HTML to strip.
         /// @param removePadding @c true to remove padding (i.e., `&nbsp;`) around the images.
-        /// @todo needs unit test.
         /// @todo use wstring_view.
         static void strip_images(std::wstring& HtmlText, const bool removePadding = true)
             {
@@ -410,7 +406,6 @@ namespace lily_of_the_valley
 
         /// @brief Removes any attributes in the `<body>` element.
         /// @param[in,out] HtmlText The HTML to strip.
-        /// @todo needs unit test.
         static void strip_body_attributes(std::wstring& HtmlText)
             {
             auto start = HtmlText.find(L"<body ");

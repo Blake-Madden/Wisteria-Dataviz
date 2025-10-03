@@ -46,9 +46,15 @@ namespace Wisteria::Data
 
       protected:
         /// @returns @c true if there are more rows that can be copied or skipped.
+        /// @pre SetSourceData() has been called successfully.
         [[nodiscard]]
         bool HasMoreRows() const noexcept
             {
+            wxASSERT_MSG(m_fromDataset, L"Call SetSourceData() before calling this!");
+            if (m_fromDataset == nullptr)
+                {
+                return false;
+                }
             return m_currentSrcRow < m_fromDataset->GetRowCount();
             }
 
@@ -93,10 +99,11 @@ namespace Wisteria::Data
         size_t m_currentSrcRow{ 0 };
 
         // column mappings between datasets
-        std::map<const Column<wxString>*, Column<wxString>*> m_idColumnsMap;
-        std::map<const Column<wxDateTime>*, Column<wxDateTime>*> m_dateColumnsMap;
-        std::map<const ColumnWithStringTable*, ColumnWithStringTable*> m_catColumnsMap;
-        std::map<const Column<double>*, Column<double>*> m_continuousColumnsMap;
+        std::vector<std::pair<const Column<wxString>*, Column<wxString>*>> m_idColumnsMap;
+        std::vector<std::pair<const Column<wxDateTime>*, Column<wxDateTime>*>> m_dateColumnsMap;
+        std::vector<std::pair<const ColumnWithStringTable*, ColumnWithStringTable*>>
+            m_catColumnsMap;
+        std::vector<std::pair<const Column<double>*, Column<double>*>> m_continuousColumnsMap;
         };
     } // namespace Wisteria::Data
 

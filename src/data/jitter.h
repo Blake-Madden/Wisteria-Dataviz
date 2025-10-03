@@ -68,8 +68,6 @@ namespace Wisteria::Data
             // draw the point, or add it to a Points2D collection to manage
             }
         @endcode
-
-        @date 2020
        */
     class Jitter
         {
@@ -141,6 +139,11 @@ namespace Wisteria::Data
                 (or SetJitterWidth()) before performing another series of calls to this function.*/
         bool JitterPoint(wxPoint& point)
             {
+            if (m_numberOfPointsOnEachSide == 0 || m_jitterSideWidth == 0)
+                {
+                return false;
+                }
+
             if (m_dominantAxis == AxisType::LeftYAxis || m_dominantAxis == AxisType::RightYAxis)
                 {
                 const auto plottedPointInfo = m_plottedPoints.insert(point.y);
@@ -151,12 +154,12 @@ namespace Wisteria::Data
                     point.x +=
                         is_even(plottedPointInfo->second) ?
                             -static_cast<wxCoord>(
-                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                                safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
                                 std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
                                                    1, m_numberOfPointsOnEachSide)) :
                             // or to the right if odd
                             static_cast<wxCoord>(
-                                safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                                safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
                                 std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2),
                                                    1, m_numberOfPointsOnEachSide));
                     return true;
@@ -169,11 +172,11 @@ namespace Wisteria::Data
                 point.y +=
                     is_even(plottedPointInfo->second) ?
                         -static_cast<wxCoord>(
-                            safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                            safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
                             std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2), 1,
                                                m_numberOfPointsOnEachSide)) :
                         static_cast<wxCoord>(
-                            safe_divide(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
+                            safe_divide<double>(m_jitterSideWidth, m_numberOfPointsOnEachSide) *
                             std::clamp<size_t>(safe_divide<size_t>(plottedPointInfo->second, 2), 1,
                                                m_numberOfPointsOnEachSide));
                 return true;
@@ -183,7 +186,7 @@ namespace Wisteria::Data
 
       private:
         frequency_set<wxCoord> m_plottedPoints;
-        size_t m_jitterSideWidth{ 0 };
+        double m_jitterSideWidth{ 0 };
         size_t m_numberOfPointsOnEachSide{ 50 };
         AxisType m_dominantAxis{ AxisType::LeftYAxis };
         };

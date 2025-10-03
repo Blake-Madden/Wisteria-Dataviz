@@ -330,6 +330,152 @@ TEST_CASE("Frequency sets", "[frequencymaps]")
         CHECK(waspsValues->first == L"Papyrus");
         CHECK(waspsValues->second == 2);
         }
+    SECTION("Multi value frequency double aggregate map")
+        {
+        // key aggregate is the pair.second; subvalue counts/aggregates are in the values_set
+        multi_value_frequency_double_aggregate_map<std::wstring, std::wstring> theMap;
+
+        // Bees
+        theMap.insert(L"Bees", L"Honey", /*key agg*/ 2, /*sub agg*/ 5);   // Bees:2 | Honey:(1,5)
+        theMap.insert(L"Bees", L"Wax",   /*key agg*/ 1, /*sub agg*/ 2);   // Bees:3 | Wax:(1,2)
+        theMap.insert(L"Bees", L"Honey", /*key agg*/ 3, /*sub agg*/ 7);   // Bees:6 | Honey:(2,12)
+
+        // Wasps
+        theMap.insert(L"Wasps", L"Paper",   /*key agg*/ 1, /*sub agg*/ 3); // Wasps:1 | Paper:(1,3)
+        theMap.insert(L"Wasps", L"Papyrus", /*key agg*/ 4, /*sub agg*/10); // Wasps:5 | Papyrus:(1,10)
+        theMap.insert(L"Wasps", L"Paper",   /*key agg*/ 2, /*sub agg*/ 1); // Wasps:7 | Paper:(2,4)
+
+        CHECK(theMap.get_data().size() == 2);
+
+        // Bees totals
+        {
+        const auto it = theMap.get_data().find(L"Bees");
+        REQUIRE(it != theMap.get_data().cend());
+        // key aggregate
+        CHECK(it->second.second == 6);
+        // subitems
+        const auto& subs = it->second.first.get_data();
+        REQUIRE(subs.size() == 2);
+
+        auto sub = subs.find(L"Honey");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 2);   // count
+        CHECK(sub->second.second == 12);  // aggregate 5 + 7
+
+        sub = subs.find(L"Wax");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 1);
+        CHECK(sub->second.second == 2);
+        }
+
+        // Wasps totals
+        {
+        const auto it = theMap.get_data().find(L"Wasps");
+        REQUIRE(it != theMap.get_data().cend());
+        CHECK(it->second.second == 7);
+
+        const auto& subs = it->second.first.get_data();
+        REQUIRE(subs.size() == 2);
+
+        auto sub = subs.find(L"Paper");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 2);
+        CHECK(sub->second.second == 4);   // 3 + 1
+
+        sub = subs.find(L"Papyrus");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 1);
+        CHECK(sub->second.second == 10);
+        }
+
+        // erase returns next iterator
+        {
+        auto it = theMap.get_data().cbegin();
+        const std::wstring erasedKey = it->first;
+        auto next = theMap.erase(it);
+        CHECK(theMap.get_data().size() == 1);
+        // 'next' is valid and should now be begin()
+        CHECK((next == theMap.get_data().begin()));
+        CHECK(theMap.get_data().find(erasedKey) == theMap.get_data().cend());
+        }
+        }
+
+    SECTION("Multi value frequency double aggregate map (rvalue overload + clear)")
+        {
+        multi_value_frequency_double_aggregate_map<std::wstring, std::wstring> theMap;
+
+        // rvalue insertions
+        std::wstring k1 = L"Birds", v1 = L"Seeds";
+        theMap.insert(std::move(k1), std::move(v1), 1, 2);
+        CHECK(theMap.get_data().size() == 1);
+        {
+        const auto it = theMap.get_data().find(L"Birds");
+        REQUIRE(it != theMap.get_data().cend());
+        CHECK(it->second.second == 1);
+        const auto& subs = it->second.first.get_data();
+        REQUIRE(subs.size() == 1);
+        CHECK(subs.begin()->first == L"Seeds");
+        CHECK(subs.begin()->second.first == 1);
+        CHECK(subs.begin()->second.second == 2);
+        }
+
+        theMap.clear();
+        CHECK(theMap.get_data().empty());
+        }
+
+    SECTION("Multi value frequency double aggregate map (case-insensitive)")
+        {
+        using CI = string_util::less_basic_string_i_compare<std::wstring>;
+        multi_value_frequency_double_aggregate_map<std::wstring, std::wstring, CI, CI> theMap;
+
+        theMap.insert(L"Bees",  L"Honey", 2, 5);
+        theMap.insert(L"BEES",  L"WAX",   1, 2);
+        theMap.insert(L"bees",  L"honey", 3, 7);
+
+        theMap.insert(L"WASPS", L"Paper",   1, 3);
+        theMap.insert(L"wasps", L"papyrus", 4,10);
+        theMap.insert(L"Wasps", L"PAPER",   2, 1);
+
+        CHECK(theMap.get_data().size() == 2);
+
+        // Bees case-insensitive merge
+        {
+        const auto it = theMap.get_data().find(L"bees");
+        REQUIRE(it != theMap.get_data().cend());
+        CHECK(it->second.second == 6);
+        const auto& subs = it->second.first.get_data();
+        REQUIRE(subs.size() == 2);
+
+        auto sub = subs.find(L"honey");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 2);
+        CHECK(sub->second.second == 12);
+
+        sub = subs.find(L"wax");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 1);
+        CHECK(sub->second.second == 2);
+        }
+
+        // Wasps case-insensitive merge
+        {
+        const auto it = theMap.get_data().find(L"wasps");
+        REQUIRE(it != theMap.get_data().cend());
+        CHECK(it->second.second == 7);
+        const auto& subs = it->second.first.get_data();
+        REQUIRE(subs.size() == 2);
+
+        auto sub = subs.find(L"paper");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 2);
+        CHECK(sub->second.second == 4);
+
+        sub = subs.find(L"papyrus");
+        REQUIRE(sub != subs.cend());
+        CHECK(sub->second.first  == 1);
+        CHECK(sub->second.second == 10);
+        }
+        }
     }
 
 // NOLINTEND

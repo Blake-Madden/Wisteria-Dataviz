@@ -4,9 +4,11 @@
 
 SET(TEST_SRC_FILES
     basetests.cpp
+    clonetests.cpp
     colortests.cpp
     datatests.cpp
     fileutiltests.cpp
+    jittertests.cpp
     jointests.cpp
     labeltests.cpp
     listctrlextests.cpp

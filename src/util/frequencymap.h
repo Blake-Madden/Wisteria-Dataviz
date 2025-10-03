@@ -576,8 +576,7 @@ class multi_value_frequency_aggregate_map
 
 /** @brief Same as a @c std::map (where the key is a single value), but also
         supports multiple (unique) values (with their own frequency counts and aggregates)
-        connected to each key. Includes an aggregate for each key and each subitem under each key.
-    @todo Add unit test.*/
+        connected to each key. Includes an aggregate for each key and each subitem under each key.*/
 template<typename T1, typename T2, typename Compare = std::less<T1>,
          typename CompareSecondaryValues = std::less<T2>>
 class multi_value_frequency_double_aggregate_map
