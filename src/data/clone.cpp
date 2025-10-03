@@ -107,8 +107,7 @@ namespace Wisteria::Data
                        m_toDataset->GetContinuousColumn(i).GetName() &&
                    L"Continuous columns aren't mapped correctly!");
             m_continuousColumnsMap.emplace_back(std::make_pair(
-                &m_fromDataset->GetContinuousColumn(i),
-                                                         &m_toDataset->GetContinuousColumn(i)));
+                &m_fromDataset->GetContinuousColumn(i), &m_toDataset->GetContinuousColumn(i)));
             }
 
         // categoricals
@@ -124,7 +123,7 @@ namespace Wisteria::Data
                        m_toDataset->GetCategoricalColumn(i).GetName() &&
                    L"Categorical columns aren't mapped correctly!");
             m_catColumnsMap.emplace_back(std::make_pair(&m_fromDataset->GetCategoricalColumn(i),
-                                                  &m_toDataset->GetCategoricalColumn(i)));
+                                                        &m_toDataset->GetCategoricalColumn(i)));
             }
 
         // dates
