@@ -4,6 +4,7 @@
 
 SET(TEST_SRC_FILES
     basetests.cpp
+    clipboardtests.cpp
     clonetests.cpp
     colortests.cpp
     datatests.cpp

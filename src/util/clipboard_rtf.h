@@ -12,6 +12,7 @@
 #ifndef __WX_CLIPBOARD_RTF_H__
 #define __WX_CLIPBOARD_RTF_H__
 
+#include <cstring>
 #include <memory>
 #include <wx/dataobj.h>
 #include <wx/string.h>
@@ -54,8 +55,8 @@ class wxRtfDataObject : public wxDataObjectSimple
     [[nodiscard]]
     size_t GetDataSize() const final
         {
-        const wxCharBuffer cBuffer = m_rtf.mb_str();
-        return cBuffer.length();
+        const wxScopedCharBuffer utf8 = m_rtf.utf8_str();
+        return utf8.length();
         }
 
     /** @brief Copy the data to the buffer.
@@ -74,9 +75,37 @@ class wxRtfDataObject : public wxDataObjectSimple
     [[nodiscard]]
     bool GetDataHere(void* buf) const final
         {
-        const wxCharBuffer cBuffer = m_rtf.mb_str();
-        std::memcpy(buf, cBuffer.data(), cBuffer.length());
+        if (buf == nullptr)
+            {
+            return false;
+            }
+        const wxScopedCharBuffer utf8 = m_rtf.utf8_str();
+        std::memcpy(buf, utf8.data(), utf8.length());
         return true;
+        }
+
+    /// @brief Receives RTF from clipboard/drop.
+    /// @param format Not used.
+    /// @param len The length of the content.
+    /// @param buf The buffer.
+    /// @returns @c true if successful.
+    bool SetData([[maybe_unused]] const wxDataFormat& format, size_t len, const void* buf) override
+        {
+        if (buf == nullptr || len == 0)
+            {
+            m_rtf.clear();
+            return false;
+            }
+        // RTF bytes are 7-bit/8-bit; interpret as UTF-8 best-effort for storage.
+        m_rtf = wxString::FromUTF8(static_cast<const char*>(buf), len);
+        return true;
+        }
+
+    /// @returns The RTF text.
+    [[nodiscard]]
+    const wxString& GetText() const
+        {
+        return m_rtf;
         }
 
   private:
