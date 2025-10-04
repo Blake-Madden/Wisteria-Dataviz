@@ -190,7 +190,8 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
             }
         }
 #else
-    m_hFile = open(filePath.utf8_str().data(), readOnly ? O_RDONLY : O_RDWR);
+    m_hFile = open(filePath.utf8_str().data(), (readOnly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
+
     if (-1 == m_hFile)
         {
         wxLogWarning(L"Unable to map file (unable to get file handle): %s", GetFilePath());
