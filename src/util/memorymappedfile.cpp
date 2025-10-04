@@ -276,7 +276,7 @@ void MemoryMappedFile::UnmapFile()
             wxLogWarning(L"munmap() failed for file %s: %s", GetFilePath(),
                          wxString::FromUTF8(strerror(errno)));
             }
-    m_data = nullptr;
+        m_data = nullptr;
         }
     if (m_hFile >= 0)
         {
@@ -285,7 +285,7 @@ void MemoryMappedFile::UnmapFile()
             wxLogWarning(L"close() failed for file %s: %s", GetFilePath(),
                          wxString::FromUTF8(strerror(errno)));
             }
-    m_hFile = -1;
+        m_hFile = -1;
         }
 #endif
     Reset();
@@ -301,8 +301,6 @@ bool MemoryMappedFile::Buffer()
     if (!theFile.Open(GetFilePath(), wxFile::read))
         {
         wxLogError(L"Unable to open file for buffering: %s", GetFilePath());
-        wxMessageBox(wxString::Format(_(L"Unable to open file for buffering:\n%s"), GetFilePath()),
-                     _(L"Read Error"), wxOK | wxICON_EXCLAMATION);
         return false;
         }
     try
@@ -312,8 +310,6 @@ bool MemoryMappedFile::Buffer()
     catch (const std::bad_alloc&)
         {
         wxLogError(L"Not enough memory to open file: %s", GetFilePath());
-        wxMessageBox(wxString::Format(_(L"Not enough memory to open file:\n%s"), GetFilePath()),
-                     _(L"Read Error"), wxOK | wxICON_EXCLAMATION);
         return false;
         }
     std::memset(m_bufferedData, 0, theFile.Length() + 1);
