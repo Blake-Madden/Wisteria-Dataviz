@@ -269,10 +269,24 @@ void MemoryMappedFile::UnmapFile()
         m_hFile = INVALID_HANDLE_VALUE;
         }
 #else
-    munmap(m_data, static_cast<size_t>(m_mapSize));
+    if (m_data != nullptr && m_mapSize > 0)
+        {
+        if (munmap(m_data, static_cast<size_t>(m_mapSize)) != 0)
+            {
+            wxLogWarning(L"munmap() failed for file %s: %s", GetFilePath(),
+                         wxString::FromUTF8(strerror(errno)));
+            }
     m_data = nullptr;
-    close(m_hFile);
+        }
+    if (m_hFile >= 0)
+        {
+        if (close(m_hFile) != 0)
+            {
+            wxLogWarning(L"close() failed for file %s: %s", GetFilePath(),
+                         wxString::FromUTF8(strerror(errno)));
+            }
     m_hFile = -1;
+        }
 #endif
     Reset();
     }
