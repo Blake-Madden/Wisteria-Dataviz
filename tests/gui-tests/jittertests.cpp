@@ -1,5 +1,5 @@
-#include "../../src/data/jitter.h"
 #include "../../src/base/axis.h"
+#include "../../src/data/jitter.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
@@ -54,8 +54,6 @@ static frequency_set<wxCoord> freq_from_x(const std::vector<wxPoint>& pts)
         }
     return f;
     }
-
-static int abs_i(int v) { return v < 0 ? -v : v; }
 
 TEST_CASE("Jitter: Y-dominant alternates sides and respects width")
     {

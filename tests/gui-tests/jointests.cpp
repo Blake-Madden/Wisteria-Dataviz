@@ -431,18 +431,18 @@ TEST_CASE("LeftJoinUnique: chained suffix collision (categorical)", "[Join][Suff
     left.AddCategoricalColumn("Group.x", st);
 
     // Give them some data so they’re legit
-    AddRow(left, "K1", { 0, 1 });
-    AddRow(left, "K2", { 1, 0 });
+    AddRow(left, "K1", std::vector<GroupIdType>{ 0, 1 });
+    AddRow(left, "K2", std::vector<GroupIdType>{ 1, 0 });
 
     // Right comes in with the original name "Group"
     right.AddCategoricalColumn("Group", st);
-    AddRow(right, "K1", { 0 });
-    AddRow(right, "K2", { 1 });
+    AddRow(right, "K1", std::vector<GroupIdType>{ 0 });
+    AddRow(right, "K2", std::vector<GroupIdType>{ 1 });
 
     // One-step suffixer will try to append "Group.x" again
     auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
-                                               std::make_shared<const Dataset>(right),
-                                               { { "ID", "ID" } }, L".x");
+                                              std::make_shared<const Dataset>(right),
+                                              { { "ID", "ID" } }, L".x");
     CHECK(joined->ContainsColumn(L"Group.x2"));
     }
 
@@ -491,8 +491,8 @@ TEST_CASE("LeftJoinUnique: chained suffix collision (continuous)", "[Join][Suffi
 
     // Attempting to add "Score" from Right → suffix to "Score.x"
     auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
-                                               std::make_shared<const Dataset>(right),
-                                               { { "ID", "ID" } }, L".x");
+                                              std::make_shared<const Dataset>(right),
+                                              { { "ID", "ID" } }, L".x");
     CHECK(joined->ContainsColumn(L"Score.x2"));
     }
 
@@ -534,7 +534,7 @@ TEST_CASE("LeftJoinUnique: chained suffix collision (date)", "[Join][Suffix][Dat
 
     // Right's "When" → wants to become "When.x" by suffix
     auto joined = DatasetJoin::LeftJoinUnique(std::make_shared<const Dataset>(left),
-                                               std::make_shared<const Dataset>(right),
-                                               { { "ID", "ID" } }, L".x");
+                                              std::make_shared<const Dataset>(right),
+                                              { { "ID", "ID" } }, L".x");
     CHECK(joined->ContainsColumn(L"When.x2"));
     }

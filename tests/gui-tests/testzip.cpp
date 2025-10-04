@@ -56,24 +56,12 @@ namespace
         return std::vector<unsigned char>(p, p + std::strlen(s));
         }
 
-    static std::vector<unsigned char> MakeUtf8(std::string_view sv)
-        {
-        const auto* p = reinterpret_cast<const unsigned char*>(sv.data());
-        return std::vector<unsigned char>(p, p + sv.size());
-        }
-
     static std::vector<unsigned char> MakeUtf8(const char8_t* s)
         {
         const auto* p = reinterpret_cast<const unsigned char*>(s);
         // std::char_traits<char8_t>::length is available in C++20
         const auto n = std::char_traits<char8_t>::length(s);
         return std::vector<unsigned char>(p, p + n);
-        }
-
-    static std::vector<unsigned char> MakeUtf8(std::u8string_view sv)
-        {
-        const auto* p = reinterpret_cast<const unsigned char*>(sv.data());
-        return std::vector<unsigned char>(p, p + sv.size());
         }
 
     // Build an in-memory ZIP with (name, bytes) entries.
