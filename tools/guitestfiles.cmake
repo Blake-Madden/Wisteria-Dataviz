@@ -13,6 +13,7 @@ SET(TEST_SRC_FILES
     jointests.cpp
     labeltests.cpp
     listctrlextests.cpp
+    memmaptests.cpp
     pivottests.cpp
     polygontests.cpp
     sidebartests.cpp
