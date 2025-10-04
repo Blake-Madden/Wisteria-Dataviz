@@ -12,7 +12,7 @@
 
 namespace __debug
     {
-    std::string __profile_reporter::m_outputPath = "profile.csv";
+    std::filesystem::path __profile_reporter::m_outputPath = "profile.csv";
     std::set<__profile_info> __profile_reporter::m_profiles;
     std::vector<__profiler*> __profile_reporter::m_profilers;
     static __profile_reporter __profile_reporter__;
@@ -86,10 +86,10 @@ namespace __debug
 
     void __profile_reporter::dump_results()
         {
-        std::fstream output;
-        if (m_outputPath.length())
+        std::ofstream output;
+        if (!m_outputPath.empty())
             {
-            output.open(m_outputPath.c_str(), std::ios::out | std::ios::trunc);
+            output.open(m_outputPath, std::ios::out | std::ios::trunc | std::ios::binary);
             }
 
         if (m_profiles.size())

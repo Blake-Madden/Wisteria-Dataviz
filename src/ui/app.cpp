@@ -43,11 +43,20 @@ namespace Wisteria::UI
     //----------------------------------------------------------
     bool BaseApp::OnInit()
         {
+        constexpr auto wxStringToFsPath = [](const wxString& s)
+        {
+#ifdef _WIN32
+            return std::filesystem::path(s.wc_str()); // UTF-16 on Windows
+#else
+            return std::filesystem::path(s.utf8_str().data()); // UTF-8 on POSIX
+#endif
+        };
+
         // prepare profile report (only if compiled with profiling)
         m_profileReportPath =
             wxString(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
                      GetAppName() + L" Profile.dat");
-        SET_PROFILER_REPORT_PATH(m_profileReportPath.mb_str());
+        SET_PROFILER_REPORT_PATH(wxStringToFsPath(m_profileReportPath));
         DUMP_PROFILER_REPORT(); // flush out data in temp file from previous run
 
         // Logs will be written to file now, delete the old logging system.

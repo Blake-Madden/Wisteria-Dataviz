@@ -68,6 +68,7 @@ This is an important distinction from other profiling systems.
 #include <chrono>
 #include <cmath>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <locale>
@@ -258,10 +259,10 @@ namespace __debug
 
         ~__profile_reporter() { dump_results(); }
 
-        static void set_output_path(const char* path) { m_outputPath = path; }
+        static void set_output_path(const std::filesystem::path& path) { m_outputPath = path; }
 
         static void dump_results();
-        static std::string m_outputPath;
+        static std::filesystem::path m_outputPath;
         static std::set<__profile_info> m_profiles;
         static std::vector<__profiler*> m_profilers;
         };

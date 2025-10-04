@@ -41,7 +41,11 @@ class wxRtfDataObject : public wxDataObjectSimple
 
     /** @brief Sets the (Rich Text Formatted) text.
         @param rtf The RTF data.*/
-    void SetText(const wxString& rtf) { m_rtf = rtf; }
+    void SetText(const wxString& rtf)
+        {
+        wxASSERT_MSG(rtf.IsAscii(), L"RTF content must be 7-bit ASCII!");
+        m_rtf = rtf;
+        }
 
     /** @param format The data's format (not used).
         @returns The size of the RTF data in bytes. */
@@ -55,6 +59,7 @@ class wxRtfDataObject : public wxDataObjectSimple
     [[nodiscard]]
     size_t GetDataSize() const final
         {
+        wxASSERT_MSG(m_rtf.IsAscii(), L"RTF content must be 7-bit ASCII!");
         const wxScopedCharBuffer utf8 = m_rtf.utf8_str();
         return utf8.length();
         }
@@ -89,15 +94,16 @@ class wxRtfDataObject : public wxDataObjectSimple
     /// @param len The length of the content.
     /// @param buf The buffer.
     /// @returns @c true if successful.
-    bool SetData([[maybe_unused]] const wxDataFormat& format, size_t len, const void* buf) override
+    bool SetData([[maybe_unused]] const wxDataFormat& format, size_t len, const void* buf) final
         {
         if (buf == nullptr || len == 0)
             {
             m_rtf.clear();
             return false;
             }
-        // RTF bytes are 7-bit/8-bit; interpret as UTF-8 best-effort for storage.
+        // RTF bytes should be 7-bit; interpret as UTF-8 best-effort for storage though.
         m_rtf = wxString::FromUTF8(static_cast<const char*>(buf), len);
+        wxASSERT_MSG(m_rtf.IsAscii(), L"RTF content must be 7-bit ASCII!");
         return true;
         }
 
