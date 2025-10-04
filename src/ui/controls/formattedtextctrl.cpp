@@ -958,17 +958,19 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextHtml(
 #if defined(__WXMSW__) || defined(__WXOSX__)
     wxString rtfText = GetUnthemedFormattedText().length() ? GetUnthemedFormattedTextRtf(false) :
                                                              GetFormattedTextRtf(false);
+    wxASSERT_MSG(rtfText.IsAscii(), L"RTF content must be 7-bit ASCII!");
 
     lily_of_the_valley::rtf_extract_text filter_rtf(
         lily_of_the_valley::rtf_extract_text::rtf_extraction_type::rtf_to_html);
     filter_rtf.set_style_prefix(CssStylePrefix.wc_str());
-    wxCharBuffer buf = rtfText.mb_str();
-    assert(buf.length() == std::strlen(buf.data()));
+    wxScopedCharBuffer buf = rtfText.mb_str(/* wxConvLibc is used, as this is 7-bit ASCII */);
+    wxASSERT(buf.length() == std::strlen(buf.data()));
     const wchar_t* htmlBody = filter_rtf(buf.data(), buf.length());
-    if (!htmlBody)
+    if (htmlBody == nullptr)
         {
-        return wxString{};
+        return {};
         }
+    // RTF is always 7-bit ASCII, including the font name that we read from it
     wxString fontString(filter_rtf.get_font().c_str(), wxConvLibc);
     wxString text = wxString::Format(
         L"\n<head>"
