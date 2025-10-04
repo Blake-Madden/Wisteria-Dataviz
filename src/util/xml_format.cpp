@@ -457,8 +457,7 @@ bool XmlFormat::GetBoolean(const wchar_t* sectionStart, const wchar_t* sectionEn
                 {
                 return defaultValue;
                 }
-            return (std::wcsncmp(currentPos, WTRUE_TAG.data(), WTRUE_TAG.length()) == 0) ? true :
-                                                                                           false;
+            return (std::wcsncmp(currentPos, WTRUE_TAG.data(), WTRUE_TAG.length()) == 0);
             }
         else
             {
