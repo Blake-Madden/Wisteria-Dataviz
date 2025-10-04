@@ -964,7 +964,7 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextHtml(
         lily_of_the_valley::rtf_extract_text::rtf_extraction_type::rtf_to_html);
     filter_rtf.set_style_prefix(CssStylePrefix.wc_str());
     // Should be 7-bit ASCII, but if not then at least convert to something usable and parse that.
-    // Using mb_str() uses the system locale, which isn't deterministic and can comletely fail
+    // Using mb_str() uses the system locale, which isn't deterministic and can completely fail
     // if this isn't valid 7-bit ASCII.
     const wxScopedCharBuffer buf = rtfText.utf8_str();
     const wchar_t* htmlBody = filter_rtf(buf.data(), buf.length());
