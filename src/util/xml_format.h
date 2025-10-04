@@ -15,6 +15,7 @@
 #include "../import/html_encode.h"
 #include "../math/mathematics.h"
 #include "../util/donttranslate.h"
+#include <string_view>
 #include <vector>
 #include <wx/string.h>
 #include <wx/wx.h>
@@ -24,77 +25,91 @@
 class XmlFormat
     {
   public:
-    [[nodiscard]]
+    [[deprecated("Use INCLUDE_TAG instead")]] [[nodiscard]]
     static wxString GetInclude()
         {
         return _DT(L"include");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use TRUE_TAG or WTRUE_TAG instead")]] [[nodiscard]]
     static wxString GetTrue()
         {
         return _DT(L"1");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FALSE_TAG instead")]] [[nodiscard]]
     static wxString GetFalse()
         {
         return _DT(L"0");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use RED_TAG instead")]] [[nodiscard]]
     static wxString GetRed()
         {
         return _DT(L"red");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use GREEN_TAG instead")]] [[nodiscard]]
     static wxString GetGreen()
         {
         return _DT(L"green");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use BLUE_TAG instead")]] [[nodiscard]]
     static wxString GetBlue()
         {
         return _DT(L"blue");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FONT_FAMILY_TAG instead")]] [[nodiscard]]
     static wxString GetFontFamily()
         {
         return _DT(L"font-family");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FONT_POINT_SIZE_TAG instead")]] [[nodiscard]]
     static wxString GetFontPointSize()
         {
         return _DT(L"font-point-size");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FONT_STYLE_TAG instead")]] [[nodiscard]]
     static wxString GetFontStyle()
         {
         return _DT(L"font-style");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FONT_WEIGHT_TAG instead")]] [[nodiscard]]
     static wxString GetFontWeight()
         {
         return _DT(L"font-weight");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FONT_UNDERLINE_TAG instead")]] [[nodiscard]]
     static wxString GetFontUnderline()
         {
         return _DT(L"font-underline");
         }
 
-    [[nodiscard]]
+    [[deprecated("Use FONT_FACE_NAME_TAG instead")]] [[nodiscard]]
     static wxString GetFontFaceName()
         {
         return _DT(L"font-face-name");
         }
+
+    inline constexpr static std::string_view INCLUDE_TAG = _DT("include");
+    inline constexpr static std::string_view TRUE_TAG = "1";
+    inline constexpr static std::wstring_view WTRUE_TAG = L"1";
+    inline constexpr static std::string_view FALSE_TAG = "0";
+    inline constexpr static std::string_view RED_TAG = _DT("red");
+    inline constexpr static std::string_view GREEN_TAG = _DT("green");
+    inline constexpr static std::string_view BLUE_TAG = _DT("blue");
+    inline constexpr static std::string_view FONT_FAMILY_TAG = "font-family";
+    inline constexpr static std::string_view FONT_POINT_SIZE_TAG = "font-point-size";
+    inline constexpr static std::string_view FONT_STYLE_TAG = "font-style";
+    inline constexpr static std::string_view FONT_WEIGHT_TAG = "font-weight";
+    inline constexpr static std::string_view FONT_UNDERLINE_TAG = "font-underline";
+    inline constexpr static std::string_view FONT_FACE_NAME_TAG = "font-face-name";
 
     [[nodiscard]]
     static long GetLong(const wchar_t* sectionStart, const wchar_t* sectionEnd,
