@@ -181,6 +181,23 @@ namespace Wisteria::UI
             L"Translation Catalogs Location: %s",
             wxStandardPaths::Get().GetLocalizedResourcesDir(wxUILocale::GetCurrent().GetName(),
                                                             wxStandardPaths::ResourceCat_Messages));
+        // log any command lines
+        if (argc > 1)
+            {
+            wxString cmdline;
+            for (int i = 1; i < argc; ++i)
+                {
+                if (i > 1)
+                    {
+                    cmdline += L" ";
+                    }
+                cmdline += argv[i];
+                }
+            if (!cmdline.empty())
+                {
+                wxLogMessage(L"Command Line: %s", cmdline);
+                }
+            }
         }
 
     //----------------------------------------------------------
