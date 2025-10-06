@@ -43,6 +43,11 @@ namespace Wisteria::UI
     //----------------------------------------------------------
     bool BaseApp::OnInit()
         {
+        if (!wxApp::OnInit())
+            {
+            return false;
+            }
+
         [[maybe_unused]]
         constexpr auto wxStringToFsPath = [](const wxString& s)
         {
