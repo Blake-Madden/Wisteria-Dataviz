@@ -187,12 +187,14 @@ namespace Wisteria
                     {
                     conversionResult = wxCSConv(srcCharSet).ToWChar(dest, destLength, text, length);
                     }
+                // quneiform-suppress-begin
                 // really is plain ASCII text with extended ASCII in it.
                 // Just convert using current locale.
-                else
+                else if (wxConvCurrent != nullptr)
                     {
                     conversionResult = wxConvCurrent->ToWChar(dest, destLength, text, length);
                     }
+                // quneiform-suppress-end
                 // if the conversion above failed, then fallback to Windows-1252 (Western European)
                 if (conversionResult == wxCONV_FAILED)
                     {
@@ -217,8 +219,9 @@ namespace Wisteria
                         {
                         return FixBrokenUtf8Stream(dest, destLength, text, length);
                         }
+                    // quneiform-suppress-begin
                     // or fall back to the system default
-                    else
+                    else if (wxConvCurrent != nullptr)
                         {
                         conversionResult = wxConvCurrent->ToWChar(dest, destLength, text, length);
                         // if the conversion with current locale failed,
@@ -229,6 +232,7 @@ namespace Wisteria
                                                    .ToWChar(dest, destLength, text, length);
                             }
                         }
+                    // quneiform-suppress-end
                     }
                 }
             }
