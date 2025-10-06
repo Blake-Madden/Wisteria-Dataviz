@@ -13,6 +13,7 @@
 #define __DOC_EXTRACTOR_H__
 
 #include "extract_text.h"
+#include <array>
 #include <cassert>
 #include <vector>
 
@@ -204,7 +205,7 @@ namespace lily_of_the_valley
             /// @private
             cfb_iostream(const char* start, const size_t size) noexcept
                 : m_start(start), m_current_position(start), m_buffer_size(size),
-                  m_eof(m_start + size)
+                  m_eof(start + size)
                 {
                 }
 
@@ -613,6 +614,22 @@ namespace lily_of_the_valley
             return safe_divide(m_sector_size, m_short_sector_size);
             }
 
+        /// @returns @c true if a stream starts with a Word header.
+        inline bool starts_with_doc_header(const char* stream, const size_t len)
+            {
+            constexpr static std::array<unsigned char, 8> MAGIC_NUMBER = { 0xD0, 0xCF, 0x11, 0xE0,
+                                                                           0xA1, 0xB1, 0x1A, 0xE1 };
+
+            // Used in old beta versions of OLE2
+            constexpr static std::array<unsigned char, 8> MAGIC_NUMBER_BETA = { 14, 17,   0xFC,
+                                                                                13, 0xD0, 0xCF,
+                                                                                17, 14 };
+
+            return len >= MAGIC_NUMBER.size() &&
+                   (std::memcmp(stream, MAGIC_NUMBER.data(), MAGIC_NUMBER.size()) == 0 ||
+                    std::memcmp(stream, MAGIC_NUMBER_BETA.data(), MAGIC_NUMBER_BETA.size()) == 0);
+            }
+
         // File Information Block (FIB) flags
         constexpr static int fComplex = 0x0004; /// Set when file is in complex, fast-saved format.
         constexpr static int fEncrypted = 0x0100; /// Set if file is encrypted.
@@ -630,9 +647,6 @@ namespace lily_of_the_valley
         // file signatures
         static const std::string RTF_SIGNATURE;
         static const uint8_t UTF8_SIGNATURE[];
-        static const std::string MAGIC_NUMBER;
-        static const std::string MAGIC_NUMBER_BETA; // used in old beta versions of OLE2
-
         charset_type m_read_type{ charset_type::utf16 };
 
         size_t m_file_length{ 0 };

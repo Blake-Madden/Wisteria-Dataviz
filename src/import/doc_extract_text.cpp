@@ -16,12 +16,6 @@ namespace lily_of_the_valley
     const std::string word1997_extract_text::file_system_entry::ROOT_ENTRY = "Root Entry";
     const std::string word1997_extract_text::RTF_SIGNATURE = "{\\rtf";
     const uint8_t word1997_extract_text::UTF8_SIGNATURE[] = { 0xEF, 0xBB, 0xBF };
-    const std::string word1997_extract_text::MAGIC_NUMBER = {
-        -48, -49, 17, -32, -95, -79, 26, -31
-    };
-    const std::string word1997_extract_text::MAGIC_NUMBER_BETA = {
-        14, 17, -4, 13, -48, -49, 17, 14
-    };
 
     //----------------------------------------------------
     const wchar_t* word1997_extract_text::operator()(const char* const doc_buffer,
@@ -50,10 +44,7 @@ namespace lily_of_the_valley
             return nullptr;
             }
 
-        if (MAGIC_NUMBER.compare(0, MAGIC_NUMBER.length(), buffer.data(), MAGIC_NUMBER.length()) ==
-                0 ||
-            MAGIC_NUMBER_BETA.compare(0, MAGIC_NUMBER_BETA.length(), buffer.data(),
-                                      MAGIC_NUMBER_BETA.length()) == 0)
+        if (starts_with_doc_header(buffer.data(), buffer.size()))
             {
             if (load_header(&input))
                 {
@@ -862,8 +853,7 @@ namespace lily_of_the_valley
             {
             return false;
             }
-        if (std::memcmp(cfbBuf.data(), MAGIC_NUMBER.c_str(), 8) != 0 &&
-            std::memcmp(cfbBuf.data(), MAGIC_NUMBER_BETA.c_str(), 8) != 0)
+        if (!starts_with_doc_header(cfbBuf.data(), cfbBuf.size()))
             {
             return false;
             }
