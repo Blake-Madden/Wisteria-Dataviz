@@ -973,7 +973,7 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextHtml(
         return {};
         }
     // RTF is always 7-bit ASCII, including the font name that we read from it
-    wxString fontString(filter_rtf.get_font().c_str(), wxConvLibc);
+    wxString fontString(filter_rtf.get_font().c_str());
     wxString text = wxString::Format(
         L"\n<head>"
         "\n<meta http-equiv='content-type' content='text/html; charset=UTF-8' />"
