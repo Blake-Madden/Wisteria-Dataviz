@@ -32,7 +32,7 @@ namespace lily_of_the_valley
 
         m_file_end_sentinel = doc_buffer + text_length;
 
-        auto input = cfb_iostream(doc_buffer, text_length + 1);
+        auto input = cfb_iostream(doc_buffer, text_length);
 
         allocate_text_buffer(text_length);
 
