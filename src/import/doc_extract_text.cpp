@@ -259,15 +259,16 @@ namespace lily_of_the_valley
                     // while NOT at the start of a section
                     while (safe_modulus(offset, SECTOR_SIZE) != 0)
                         {
+                        const auto posInSector = safe_modulus(offset, SECTOR_SIZE);
                         if (m_read_type == charset_type::utf16)
                             {
                             currentChar = static_cast<decltype(currentChar)>(read_short(
-                                currentSectorBuffer.data(), static_cast<int>(currSectorPos)));
+                                currentSectorBuffer.data(), static_cast<int>(posInSector)));
                             offset += 2;
                             }
                         else
                             {
-                            currentChar = currentSectorBuffer[currSectorPos];
+                            currentChar = currentSectorBuffer[posInSector];
                             ++offset;
                             }
                         if (currentChar != 0)
