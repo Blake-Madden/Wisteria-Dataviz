@@ -580,7 +580,7 @@ namespace Wisteria::GraphItems
         std::shared_ptr<wxBitmapBundle> m_iconImage{ nullptr };
         mutable double m_xOffsetPercentage{ 0.0 };
         mutable double m_yOffsetPercentage{ 0.0 };
-        static std::mt19937 m_mt;
+        thread_local static std::mt19937 m_mt;
         };
 
     /// @brief Simple descriptive information about a shape.

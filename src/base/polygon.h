@@ -134,6 +134,7 @@ namespace Wisteria::GraphItems
             if (polygon.size() > 0)
                 {
                 m_points.clear();
+                m_points.reserve(polygon.size());
                 std::ranges::copy(std::as_const(polygon), std::back_inserter(m_points));
                 UpdatePointPositions();
                 }
@@ -389,7 +390,7 @@ namespace Wisteria::GraphItems
             @param outerRect the larger rect.
             @returns @c true if @c innerRect is inside @c outerRect.*/
         [[nodiscard]]
-        static bool IsRectInsideRect(wxRect innerRect, wxRect outerRect);
+        static bool IsRectInsideRect(const wxRect& innerRect, const wxRect& outerRect);
         /** @brief Determines how much of a rectangle fits into another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
@@ -398,7 +399,7 @@ namespace Wisteria::GraphItems
                 For example, if 3/4 of the smaller rect's width is inside the larger rect
                 and 1/2 of its height fits, then this will return @c 0.75 and @c 0.5.*/
         [[nodiscard]]
-        static std::pair<double, double> GetPercentInsideRect(wxRect innerRect, wxRect outerRect);
+        static std::pair<double, double> GetPercentInsideRect(const wxRect& innerRect, const wxRect& outerRect);
         /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
             @details The line is drawn with the current pen and the arrowhead is filled
                 with the current brush. Adapted from code by Adrian McCarthy.

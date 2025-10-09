@@ -226,7 +226,7 @@ namespace Wisteria::GraphItems
             @returns The cropped image, or an invalid image if the original image if
                 smaller than the rect.*/
         [[nodiscard]]
-        static wxImage CropImageToRect(const wxImage& img, wxRect rect, bool centerImage);
+        static wxImage CropImageToRect(const wxImage& img, const wxRect& rect, bool centerImage);
 
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.

@@ -44,6 +44,10 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     GraphicsContextFallback::~GraphicsContextFallback()
         {
+        if (m_gc == nullptr)
+            {
+            return;
+            }
         // flush drawing commands to bitmap and then blit it
         // onto the original DC
         if (m_drawingToBitmap)
@@ -294,7 +298,7 @@ namespace Wisteria::GraphItems
         }
 
     // random number engine for water color and other "hand drawn" effects
-    std::mt19937 ShapeRenderer::m_mt{ std::random_device{}() };
+    thread_local std::mt19937 ShapeRenderer::m_mt{ std::random_device{}() };
 
     //---------------------------------------------------
     void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc,

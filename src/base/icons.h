@@ -75,7 +75,7 @@ namespace Wisteria::Icons
         ChevronDownward,               /*!< A downward pointing chevron.*/
         ChevronUpward,                 /*!< An upward pointing chevron.*/
         Text,                          /*!< A provided string.*/
-        Tack,                          /*!< A tack (i.e., pen that holds paper to a corkboard).*/
+        Tack,                          /*!< A tack (i.e., pin that holds paper to a corkboard).*/
         Banner,                        /*!< A banner sign (with custom text written across it).*/
         WaterColorRectangle,      /*!< A warped rectangle that looks like a watercolor-filled box.*/
         ThickWaterColorRectangle, /*!< A warped rectangle that looks like a watercolor-filled box,
@@ -148,9 +148,9 @@ namespace Wisteria::Icons
         wxBrush m_brush;                       /*!< The brush to paint with.*/
         /// @brief A color to show under the brush if it is hatch pattern.
         std::optional<wxColour> m_baseColor{ std::nullopt };
-        /// @brief The image to draw (if shape is set to ImageIcon).
+        /// @brief The image to draw (if shape is set to IconShape::Image).
         wxImage m_img;
-        /// @brief The color gradient to draw (if shape is set to @c ColorGradientIcon).
+        /// @brief The color gradient to draw (if shape is set to @c ColorGradient).
         std::vector<wxColour> m_colors;
 
         /// @returns The minimum width that should be used for legend icons.
@@ -162,7 +162,7 @@ namespace Wisteria::Icons
             return 16;
             }
 
-        /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowSeparator)
+        /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowRightSeparator)
         ///     in DIPs.
         [[nodiscard]]
         static wxSize GetArrowheadSizeDIPs()
@@ -171,7 +171,7 @@ namespace Wisteria::Icons
             }
         };
 
-    /// @brief Icons schemes for use on plots and legends.
+    /// @brief Icon schemes for use on plots and legends.
     namespace Schemes
         {
         /// @brief Base class for a list of shapes to use for groups.
@@ -189,7 +189,7 @@ namespace Wisteria::Icons
             /// @brief Constructor.
             /// @param shapes The list of shapes to fill the scheme with.
             /// @param images The list of images to use for the points if point is
-            ///     using IconShape::ImageIcon.
+            ///     using IconShape::Image.
             IconScheme(std::vector<IconShape> shapes, std::vector<wxBitmapBundle> images)
                 : m_shapes(std::move(shapes)), m_iconImages(std::move(images))
                 {
@@ -210,16 +210,16 @@ namespace Wisteria::Icons
                     however, index 2 will wrap around and return shape 0 and
                     index 3 will return shape 1.*/
             [[nodiscard]]
-            IconShape GetShape(const size_t index) const
+            IconShape GetShape(const size_t index) const noexcept
                 {
-                return (m_shapes.empty() ? IconShape::Blank : m_shapes.at(index % m_shapes.size()));
+                return (m_shapes.empty() ? IconShape::Blank : m_shapes[index % m_shapes.size()]);
                 }
 
             /** @brief Adds a shape to the scheme.
                 @param shape The shape to add.*/
             void AddShape(const IconShape shape) { m_shapes.push_back(shape); }
 
-            /** @returns The image used for icons (if shape is set to @c IconShape::ImageIcon).\n
+            /** @returns The image used for icons (if shape is set to @c IconShape::Image).\n
                     If no image(s) is available, returns an empty image (be sure to call @c IsOk()).
                 @param index The index into the image list to return. If index is outside
                     number of images, then it will recycle (i.e., wrap around).
