@@ -22,7 +22,7 @@ namespace Wisteria::GraphItems
             {
             return { 32, 32 };
             }
-        wxXmlNode* docNode = doc.GetDocumentNode()->GetChildren();
+        wxXmlNode* docNode = doc.GetRoot();
         if (docNode == nullptr)
             {
             return { 32, 32 };
@@ -42,8 +42,8 @@ namespace Wisteria::GraphItems
             {
             if (docNode->GetAttribute(L"viewBox", &viewBoxStr))
                 {
-                const wxRegEx re(L"([[:digit:].]+[ ]+){2}([[:digit:].]+)[ ]+([[:digit:].]+)");
-                if (re.Matches(viewBoxStr) && re.GetMatchCount() >= 3)
+                const wxRegEx re(L"([[:digit:].]+[, ]+){2}([[:digit:].]+)[, ]+([[:digit:].]+)");
+                if (re.Matches(viewBoxStr) && re.GetMatchCount() > 3)
                     {
                     widthStr = re.GetMatch(viewBoxStr, 2);
                     heightStr = re.GetMatch(viewBoxStr, 3);
