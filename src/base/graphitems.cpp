@@ -80,13 +80,15 @@ namespace Wisteria::GraphItems
     wxBitmap GraphItemBase::ToBitmap(wxDC& dc) const
         {
         const wxRect BoundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
-        wxBitmap bmp{ BoundingBox.GetWidth(), BoundingBox.GetHeight() };
-        wxMemoryDC memDc(bmp);
-        memDc.SetBackground(wxColour{ 0, 0, 0, 0 });
-        memDc.Clear();
-        memDc.SetLogicalOrigin(BoundingBox.GetPosition().x, BoundingBox.GetPosition().y);
-        Draw(memDc);
-        memDc.SelectObject(wxNullBitmap);
+        wxBitmap bmp{ BoundingBox.GetWidth(), BoundingBox.GetHeight(), 32 };
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+
+            {
+            wxMemoryDC memDc(bmp);
+            memDc.SetLogicalOrigin(BoundingBox.GetPosition().x, BoundingBox.GetPosition().y);
+            Draw(memDc);
+            }
+
         return bmp;
         }
     } // namespace Wisteria::GraphItems

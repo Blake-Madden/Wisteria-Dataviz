@@ -10,6 +10,7 @@
 #include "image.h"
 #include "polygon.h"
 #include <array>
+#include <wx/rawbmp.h>
 
 namespace Wisteria::GraphItems
     {
@@ -64,7 +65,7 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------
-    wxImage Image::ShrinkImageToRect(const wxImage& img, const wxRect rect)
+    wxImage Image::ShrinkImageToRect(const wxImage& img, const wxRect& rect)
         {
         if (rect.GetWidth() >= img.GetWidth() && rect.GetHeight() >= img.GetHeight())
             {
@@ -78,7 +79,7 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------
-    wxImage Image::CropImageToRect(const wxImage& img, const wxRect rect, const bool centerImage)
+    wxImage Image::CropImageToRect(const wxImage& img, const wxRect& rect, const bool centerImage)
         {
         wxImage croppedImg;
         if (img.IsOk() && img.GetWidth() >= rect.GetSize().GetWidth() &&
@@ -482,9 +483,12 @@ namespace Wisteria::GraphItems
                 dBlue = tone;
                 }
 
-            imgOutData[index] = dRed;
-            imgOutData[index + 1] = dGreen;
-            imgOutData[index + 2] = dBlue;
+            imgOutData[index] =
+                static_cast<unsigned char>(std::clamp(dRed, 0.0, 255.0));
+            imgOutData[index + 1] =
+                static_cast<unsigned char>(std::clamp(dGreen, 0.0, 255.0));
+            imgOutData[index + 2] =
+                static_cast<unsigned char>(std::clamp(dBlue, 0.0, 255.0));
             }
 
         return outImg;
@@ -540,7 +544,7 @@ namespace Wisteria::GraphItems
     wxImage Image::CreateColorFilteredImage(const wxImage& image, const wxColour& color,
                                             const uint8_t opacity /*= 100*/)
         {
-        wxBitmap bmp(image);
+        wxBitmap bmp(image, 32);
         wxMemoryDC memDC(bmp);
         auto* gc = wxGraphicsContext::Create(memDC);
         assert(gc && L"Failed to get graphics context for filtered image!");
@@ -586,18 +590,28 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                           const bool preserveTransparentPixels /*= false*/)
+    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity)
         {
-        if (!bmp.IsOk())
+        // note: don't call HasAlpha as this is disabled (for legacy reasons) on Windows
+        // by default, even though its depth is 32. You have to explicitly call UseAlpha,
+        // which caller may not have done.
+        if (bmp.IsOk() && bmp.GetDepth() == 32)
             {
-            return;
+            wxAlphaPixelData data(bmp);
+            if (data)
+                {
+                wxAlphaPixelData::Iterator alphaRow(data);
+                for (int y = 0; y < bmp.GetHeight(); ++y)
+                    {
+                    auto row = alphaRow;
+                    for (int x = 0; x < bmp.GetWidth(); ++x, ++row)
+                        {
+                        row.Alpha() = opacity;
+                        }
+                    alphaRow.OffsetY(data, 1);
+                    }
+                }
             }
-        wxImage bkImage = bmp.ConvertToImage();
-        SetOpacity(bkImage, opacity, preserveTransparentPixels);
-
-        bmp = wxBitmap(bkImage);
-        assert(bmp.IsOk());
         }
 
     //-------------------------------------------
@@ -623,10 +637,9 @@ namespace Wisteria::GraphItems
             {
             return wxNullImage;
             }
-        wxBitmap background(fillSize);
+        wxBitmap background(fillSize, 32);
         SetOpacity(background, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(background);
-        memDC.Clear();
 
         if (direction == Orientation::Horizontal)
             {
@@ -1060,8 +1073,9 @@ namespace Wisteria::GraphItems
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
-            imgTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
-                                  safe_divide<double>(GetImageSize().GetWidth() * GetScaling(), 2);
+            imgTopLeftCorner.x += static_cast<int>(
+                std::lround(safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
+                            safe_divide<double>(GetImageSize().GetWidth() * GetScaling(), 2)));
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
@@ -1075,8 +1089,9 @@ namespace Wisteria::GraphItems
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
-            imgTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
-                                  safe_divide<double>(GetImageSize().GetHeight() * GetScaling(), 2);
+            imgTopLeftCorner.y += static_cast<int>(
+                std::lround(safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
+                            safe_divide<double>(GetImageSize().GetHeight() * GetScaling(), 2)));
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
