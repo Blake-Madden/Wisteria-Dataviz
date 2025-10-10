@@ -1,2 +1,13 @@
 *.R linguist-generated=true
 *.SVG linguist-generated=true
+# Normalize all source files to use LF line endings on commit
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.h   text eol=lf
+*.cc  text eol=lf
+*.cxx text eol=lf
+*.hh  text eol=lf
+*.hxx text eol=lf
+*.md text eol=lf
+*.qmd text eol=lf
+*.R text eol=lf
