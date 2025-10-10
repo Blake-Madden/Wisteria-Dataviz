@@ -24,22 +24,40 @@ namespace Wisteria
             axisType = AxisType::LeftYAxis;
             }
 
-        if (graphs.size() < 2)
+        if (canvas == nullptr || graphs.size() < 2)
+            {
+            return nullptr;
+            }
+
+        std::vector<std::shared_ptr<Graphs::Graph2D>> valid;
+        valid.reserve(graphs.size());
+        for (const auto& graph : graphs)
+            {
+            if (graph == nullptr)
+                {
+                continue;
+                }
+            valid.push_back(graph);
+            }
+
+        // need at least two usable graphs
+        if (valid.size() < 2)
             {
             return nullptr;
             }
 
         // see which plot has the largest range end and use that
         // (note that we will be assuming all plots are using the same range start [usually zero])
-        GraphItems::Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetLeftYAxis() };
-        for (const auto& graph : graphs)
+        GraphItems::Axis axisWithMaxRangeEnd{ valid.front()->GetLeftYAxis() };
+        for (const auto& graph : valid)
             {
             if (graph->GetLeftYAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
                 {
                 axisWithMaxRangeEnd.CopySettings(graph->GetLeftYAxis());
                 }
             }
-        for (const auto& graph : graphs)
+
+        for (const auto& graph : valid)
             {
             // copy the left axis range from the tallest plot to this one,
             // then turn off the labels
@@ -81,25 +99,43 @@ namespace Wisteria
             axisType = AxisType::BottomXAxis;
             }
 
-        if (graphs.size() < 2)
+        if (canvas == nullptr || graphs.size() < 2)
+            {
+            return nullptr;
+            }
+
+        std::vector<std::shared_ptr<Graphs::Graph2D>> valid;
+        valid.reserve(graphs.size());
+        for (const auto& graph : graphs)
+            {
+            if (graph == nullptr)
+                {
+                continue;
+                }
+            valid.push_back(graph);
+            }
+
+        // need at least two usable graphs
+        if (valid.size() < 2)
             {
             return nullptr;
             }
 
         // see which plot has the largest range end and use that
         // (note that we will be assuming all plots are using the same range start [usually zero])
-        GraphItems::Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetBottomXAxis() };
-        for (const auto& graph : graphs)
+        GraphItems::Axis axisWithMaxRangeEnd{ valid.front()->GetBottomXAxis() };
+        for (const auto& graph : valid)
             {
             if (graph->GetBottomXAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
                 {
                 axisWithMaxRangeEnd.CopySettings(graph->GetBottomXAxis());
                 }
             }
-        for (const auto& graph : graphs)
+
+        // apply to each graph; copy the bottom axis range from the widest plot,
+        // then turn off labels
+        for (const auto& graph : valid)
             {
-            // copy the bottom axis range from the widest plot to this one,
-            // then turn off the labels
             graph->GetBottomXAxis().CopySettings(axisWithMaxRangeEnd);
             graph->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetBottomXAxis().GetTitle().Show(false);
@@ -107,6 +143,7 @@ namespace Wisteria
             graph->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetTopXAxis().GetTitle().Show(false);
             }
+
         // create a common axis, also copied from the widest plot's bottom axis
         auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
