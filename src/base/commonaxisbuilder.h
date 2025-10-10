@@ -78,7 +78,7 @@ namespace Wisteria
                 Note that these graphs' bottom X axis will have their labels turned off after
                 calling this function.
             @param axisType The axis type to create; AxisType::BottomXAxis or AxisType::TopXAxis.
-            @param useCommonLeftAxis If @c true, gets the min and max of the graphs' left X
+            @param useCommonLeftAxis If @c true, gets the min and max of the graphs' left Y
                 axes and sets all the graphs to use that range.\n
                 This is useful for further homogenizing the graphs.
             @returns The common axis for the graphs, which should be added to the canvas

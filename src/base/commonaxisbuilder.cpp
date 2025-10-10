@@ -50,12 +50,12 @@ namespace Wisteria
             graph->GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetRightYAxis().GetTitle().Show(false);
             }
+
         // create a common axis, also copied from the tallest plot's left axis
         auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(axisWithMaxRangeEnd);
-        // tell the canvas to align the axis line to the left side of its
-        // bounding box
+        // tell the canvas to align the axis line to the left side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         // Get the canvas size of the axis and add it to the canvas.
         commonAxis->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(*commonAxis));
@@ -111,7 +111,7 @@ namespace Wisteria
         auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(axisWithMaxRangeEnd);
-        // tell the canvas to align the axis line to the bottom side of its bounding box
+        // anchor the axis line's top to the bottom side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         // get the canvas size of the axis and add it to the canvas
         commonAxis->SetCanvasHeightProportion(canvas->CalcMinHeightProportion(*commonAxis));
