@@ -483,12 +483,9 @@ namespace Wisteria::GraphItems
                 dBlue = tone;
                 }
 
-            imgOutData[index] =
-                static_cast<unsigned char>(std::clamp(dRed, 0.0, 255.0));
-            imgOutData[index + 1] =
-                static_cast<unsigned char>(std::clamp(dGreen, 0.0, 255.0));
-            imgOutData[index + 2] =
-                static_cast<unsigned char>(std::clamp(dBlue, 0.0, 255.0));
+            imgOutData[index] = static_cast<unsigned char>(std::clamp(dRed, 0.0, 255.0));
+            imgOutData[index + 1] = static_cast<unsigned char>(std::clamp(dGreen, 0.0, 255.0));
+            imgOutData[index + 2] = static_cast<unsigned char>(std::clamp(dBlue, 0.0, 255.0));
             }
 
         return outImg;

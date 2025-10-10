@@ -399,7 +399,8 @@ namespace Wisteria::GraphItems
                 For example, if 3/4 of the smaller rect's width is inside the larger rect
                 and 1/2 of its height fits, then this will return @c 0.75 and @c 0.5.*/
         [[nodiscard]]
-        static std::pair<double, double> GetPercentInsideRect(const wxRect& innerRect, const wxRect& outerRect);
+        static std::pair<double, double> GetPercentInsideRect(const wxRect& innerRect,
+                                                              const wxRect& outerRect);
         /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
             @details The line is drawn with the current pen and the arrowhead is filled
                 with the current brush. Adapted from code by Adrian McCarthy.
