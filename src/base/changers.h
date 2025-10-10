@@ -26,9 +26,9 @@ namespace Wisteria
             @param dc The drawing DC.
             @param pen The pen to (possibly) switch to.*/
         DCPenChangerIfDifferent(wxDC& dc, const wxPen& pen)
-            : m_dc(dc), m_penOld(dc.GetPen()), m_swapPens(pen != dc.GetPen())
+            : m_dc(dc), m_penOld(dc.GetPen()), m_swapPens(pen.IsOk() && (pen != dc.GetPen()))
             {
-            if (m_swapPens && pen.IsOk())
+            if (m_swapPens)
                 {
                 m_dc.SetPen(pen);
                 }
@@ -40,9 +40,9 @@ namespace Wisteria
         DCPenChangerIfDifferent& operator=(const DCPenChangerIfDifferent&) = delete;
 
         /// @private
-        ~DCPenChangerIfDifferent()
+        ~DCPenChangerIfDifferent() noexcept
             {
-            if (m_swapPens && m_penOld.IsOk())
+            if (m_swapPens)
                 {
                 m_dc.SetPen(m_penOld);
                 }
@@ -64,9 +64,10 @@ namespace Wisteria
             @param dc The drawing DC.
             @param brush The brush to (possibly) switch to.*/
         DCBrushChangerIfDifferent(wxDC& dc, const wxBrush& brush)
-            : m_dc(dc), m_brushOld(dc.GetBrush()), m_swapBrushes(brush != dc.GetBrush())
+            : m_dc(dc), m_brushOld(dc.GetBrush()),
+              m_swapBrushes(brush.IsOk() && (brush != dc.GetBrush()))
             {
-            if (m_swapBrushes && brush.IsOk())
+            if (m_swapBrushes)
                 {
                 m_dc.SetBrush(brush);
                 }
@@ -78,9 +79,9 @@ namespace Wisteria
         DCBrushChangerIfDifferent& operator=(const DCBrushChangerIfDifferent&) = delete;
 
         /// @private
-        ~DCBrushChangerIfDifferent()
+        ~DCBrushChangerIfDifferent() noexcept
             {
-            if (m_swapBrushes && m_brushOld.IsOk())
+            if (m_swapBrushes)
                 {
                 m_dc.SetBrush(m_brushOld);
                 }
@@ -102,9 +103,9 @@ namespace Wisteria
             @param dc The drawing DC.
             @param font The font to (possibly) switch to.*/
         DCFontChangerIfDifferent(wxDC& dc, const wxFont& font)
-            : m_dc(dc), m_fontOld(dc.GetFont()), m_swapFonts(font != dc.GetFont())
+            : m_dc(dc), m_fontOld(dc.GetFont()), m_swapFonts(font.IsOk() && (font != dc.GetFont()))
             {
-            if (m_swapFonts && font.IsOk())
+            if (m_swapFonts)
                 {
                 m_dc.SetFont(font);
                 }
@@ -116,9 +117,9 @@ namespace Wisteria
         DCFontChangerIfDifferent& operator=(const DCFontChangerIfDifferent&) = delete;
 
         /// @private
-        ~DCFontChangerIfDifferent()
+        ~DCFontChangerIfDifferent() noexcept
             {
-            if (m_swapFonts && m_fontOld.IsOk())
+            if (m_swapFonts)
                 {
                 m_dc.SetFont(m_fontOld);
                 }
@@ -141,9 +142,9 @@ namespace Wisteria
             @param col The text color to (possibly) switch to.*/
         DCTextColourChangerIfDifferent(wxDC& dc, const wxColour& col)
             : m_dc(dc), m_colFgOld(dc.GetTextForeground()),
-              m_swapColors(col != dc.GetTextForeground())
+              m_swapColors(col.IsOk() && (col != dc.GetTextForeground()))
             {
-            if (m_swapColors && col.IsOk())
+            if (m_swapColors)
                 {
                 m_dc.SetTextForeground(col);
                 }
@@ -155,9 +156,9 @@ namespace Wisteria
         DCTextColourChangerIfDifferent& operator=(const DCTextColourChangerIfDifferent&) = delete;
 
         /// @private
-        ~DCTextColourChangerIfDifferent()
+        ~DCTextColourChangerIfDifferent() noexcept
             {
-            if (m_swapColors && m_colFgOld.IsOk())
+            if (m_swapColors)
                 {
                 m_dc.SetTextForeground(m_colFgOld);
                 }
