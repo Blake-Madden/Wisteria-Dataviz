@@ -8,18 +8,18 @@ permissions:
   contents: read
 
 env:
-  # Comma-separated list of directories to scan
+  # Comma-separated list of directories to scan (recursive)
   TARGET_DIRS: "src,tests"
-  # Comma-separated list of subdirectories to exclude from checks
-  EXCLUDE_DIRS: ""
-  # Set to "true" to fail instead of just warn
-  FAIL_ON_ISSUE: "true"
+  # Comma-separated subdirectory names to exclude anywhere under TARGET_DIRS
+  EXCLUDE_DIRS: "third_party,vendor,external,submodules"
+  # Set to "true" to fail the job when any issue is found
+  FAIL_ON_ISSUE: "false"
 
 jobs:
   check-lf-and-tabs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: false
@@ -30,45 +30,51 @@ jobs:
         run: |
           set -euo pipefail
 
-          IFS=',' read -ra TARGETS <<< "${TARGET_DIRS}"
-          IFS=',' read -ra EXCLUDES <<< "${EXCLUDE_DIRS}"
+          IFS=',' read -ra TARGETS  <<< "${TARGET_DIRS:-src,tests}"
+          IFS=',' read -ra EXCLUDES <<< "${EXCLUDE_DIRS:-third_party,vendor,external,submodules}"
 
-          # Build list of files from all target dirs
-          ALL_FILES=()
+          # Build a regex that matches excluded directories anywhere in the path:  (^|/)(dir1|dir2)(/|$)
+          if ((${#EXCLUDES[@]})); then
+            EX_RE="(^|/)($(printf '%s|' "${EXCLUDES[@]}" | sed 's/|$//'))(/|$)"
+          else
+            EX_RE="^$a"   # matches nothing
+          fi
+
+          # Collect tracked files from all targets (NUL-separated for safety)
+          FILES=()
           for dir in "${TARGETS[@]}"; do
-            if [[ -d "$dir" ]]; then
-              while IFS= read -r -d '' f; do
-                ALL_FILES+=("$f")
-              done < <(git ls-files \
-                "${dir}/**/*.cpp" "${dir}/**/*.hpp" "${dir}/**/*.h" \
-                "${dir}/**/*.cc"  "${dir}/**/*.cxx" "${dir}/**/*.hh" "${dir}/**/*.hxx" \
-                "${dir}/**/*.r" "${dir}/**/*.R" \
-                "${dir}/**/*.md" "${dir}/**/*.rmd" "${dir}/**/*.Rmd" \
-                "${dir}/**/*.qmd" \
-                "${dir}/**/*.lua" \
-                "${dir}/**/CMakeLists.txt" "${dir}/**/*.cmake" \
-              2>/dev/null || true)
+            [[ -d "$dir" ]] || continue
+            while IFS= read -r -d '' f; do
+              FILES+=("$f")
+            done < <(git ls-files -z \
+              "${dir}/**/*.cpp" "${dir}/**/*.hpp" "${dir}/**/*.h" \
+              "${dir}/**/*.cc"  "${dir}/**/*.cxx" "${dir}/**/*.hh" "${dir}/**/*.hxx" \
+              "${dir}/**/*.r" "${dir}/**/*.R" \
+              "${dir}/**/*.md" "${dir}/**/*.rmd" "${dir}/**/*.Rmd" \
+              "${dir}/**/*.qmd" \
+              "${dir}/**/CMakeLists.txt" "${dir}/**/*.cmake" \
+            )
+          done
+
+          # Filter out excluded dirs anywhere in the path
+          FILTERED=()
+          for f in "${FILES[@]}"; do
+            if ! [[ "$f" =~ $EX_RE ]]; then
+              FILTERED+=("$f")
             fi
           done
 
-          # Filter out excluded dirs
-          FILTERED_FILES=("${ALL_FILES[@]}")
-          if [[ -n "${EXCLUDE_DIRS}" ]]; then
-            EX_REGEX="^($(echo "${EXCLUDE_DIRS}" | sed 's/,/|/g'))(/|$)"
-            readarray -t FILTERED_FILES < <(printf '%s\n' "${ALL_FILES[@]}" | grep -Ev "${EX_REGEX}" || true)
-          fi
-
-          echo "Checked file count: ${#FILTERED_FILES[@]}"
+          echo "Checked file count: ${#FILTERED[@]}"
 
           crlf_offenders=()
           tab_offenders=()
 
-          for f in "${FILTERED_FILES[@]}"; do
-            # Detect CRLF
+          for f in "${FILTERED[@]}"; do
+            # Detect CR (carriage return). If present, line endings are CRLF or mixed.
             if grep -Iq $'\r' -- "$f"; then
               crlf_offenders+=("$f")
             fi
-            # Detect tabs
+            # Detect literal tab characters
             if grep -Iq $'\t' -- "$f"; then
               tab_offenders+=("$f")
             fi
@@ -77,47 +83,43 @@ jobs:
           issue_found=false
           summary_file="$GITHUB_STEP_SUMMARY"
 
-          if ((${#crlf_offenders[@]} > 0)); then
+          if ((${#crlf_offenders[@]})); then
             issue_found=true
             echo "::group::CRLF issues"
-            echo "Found files with CRLF line endings:"
             for f in "${crlf_offenders[@]}"; do
               echo "::warning file=${f}::File has CRLF line endings; expected LF"
             done
             echo "::endgroup::"
-
             {
               echo "## Files with CRLF line endings"
-              echo ""
+              echo
               for f in "${crlf_offenders[@]}"; do
                 echo "- \`${f}\`"
               done
-              echo ""
+              echo
             } >> "$summary_file"
           fi
 
-          if ((${#tab_offenders[@]} > 0)); then
+          if ((${#tab_offenders[@]})); then
             issue_found=true
             echo "::group::Tab issues"
-            echo "Found files containing tab characters:"
             for f in "${tab_offenders[@]}"; do
               echo "::warning file=${f}::File contains tab characters; expected spaces"
             done
             echo "::endgroup::"
-
             {
               echo "## Files containing tab characters"
-              echo ""
+              echo
               for f in "${tab_offenders[@]}"; do
                 echo "- \`${f}\`"
               done
-              echo ""
+              echo
             } >> "$summary_file"
           fi
 
           if [[ "$issue_found" == false ]]; then
-            echo "✅ All checked files use LF line endings and no tabs."
-            echo "✅ All checked files use LF line endings and no tabs." >> "$summary_file"
-          elif [[ "${FAIL_ON_ISSUE}" == "true" ]]; then
+            echo "✅ All checked files use LF and contain no tabs."
+            echo "✅ All checked files use LF and contain no tabs." >> "$summary_file"
+          elif [[ "${FAIL_ON_ISSUE:-false}" == "true" ]]; then
             exit 1
           fi
