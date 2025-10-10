@@ -11,16 +11,66 @@ using namespace statistics;
 
 TEST_CASE("Valid N", "[stats][validN]")
     {
+    using std::numeric_limits;
+
     CHECK(statistics::valid_n({}) == 0);
-    CHECK(statistics::valid_n(std::vector<double>{ std::numeric_limits<double>::quiet_NaN() }) == 0);
+
     CHECK(statistics::valid_n(std::vector<double>{
-        std::numeric_limits<double>::quiet_NaN(),
-        std::numeric_limits<double>::quiet_NaN() }) == 0);
+        numeric_limits<double>::quiet_NaN() }) == 0);
+
     CHECK(statistics::valid_n(std::vector<double>{
-        std::numeric_limits<double>::quiet_NaN(),
-        1.0,
-        std::numeric_limits<double>::quiet_NaN() }) == 1);
+        numeric_limits<double>::quiet_NaN(),
+        numeric_limits<double>::quiet_NaN() }) == 0);
+
+    CHECK(statistics::valid_n(std::vector<double>{
+        numeric_limits<double>::quiet_NaN(), 1.0,
+        numeric_limits<double>::quiet_NaN() }) == 1);
+
     CHECK(statistics::valid_n(std::vector<double>{ -7.8, 1.0, 5.1 }) == 3);
+    }
+
+TEST_CASE("Valid N excludes infinities", "[stats][validN][inf]")
+    {
+    using std::numeric_limits;
+
+    CHECK(statistics::valid_n(std::vector<double>{
+        numeric_limits<double>::infinity(),
+        -numeric_limits<double>::infinity() }) == 0);
+
+    CHECK(statistics::valid_n(std::vector<double>{
+        numeric_limits<double>::infinity(), 2.0,
+        -numeric_limits<double>::infinity(), -3.5 }) == 2);
+    }
+
+TEST_CASE("Valid N includes signed zero, subnormals, and extremes", "[stats][validN][edge]")
+    {
+    using std::numeric_limits;
+
+    // signed zeros are finite
+    CHECK(statistics::valid_n(std::vector<double>{ +0.0, -0.0 }) == 2);
+
+    // subnormal (denormal) magnitudes are finite
+    constexpr double dmin = numeric_limits<double>::denorm_min();
+    CHECK(statistics::valid_n(std::vector<double>{ dmin, -dmin }) == 2);
+
+    // extreme but finite values are included
+    CHECK(statistics::valid_n(std::vector<double>{
+        numeric_limits<double>::max(),
+        numeric_limits<double>::lowest(),
+        42.0 }) == 3);
+    }
+
+TEST_CASE("Valid N mixed bag", "[stats][validN][mixed]")
+    {
+    using std::numeric_limits;
+
+    CHECK(statistics::valid_n(std::vector<double>{
+        numeric_limits<double>::quiet_NaN(),
+        numeric_limits<double>::infinity(),
+        -1.25,
+        -numeric_limits<double>::infinity(),
+        0.0,
+        numeric_limits<double>::quiet_NaN() }) == 2);
     }
 
 TEST_CASE("Normalize", "[stats][normalize]")
@@ -33,11 +83,185 @@ TEST_CASE("Normalize", "[stats][normalize]")
     CHECK_THAT(statistics::normalize(-50,50,-50), WithinRel(0, 1e-4));
     }
 
-TEST_CASE("Normalize excepctions", "[stats][normalize]")
+TEST_CASE("Normalize exceptions", "[stats][normalize]")
     {
     double noWarn;
     CHECK_THROWS(noWarn = statistics::normalize(1,50,51)); // value out of range
     CHECK_THROWS(noWarn = statistics::normalize(51,50,50)); // bad range
+    }
+
+TEST_CASE("normalize returns input value when any argument is non-finite",
+          "[stats][normalize][nan][inf]")
+    {
+    using std::numeric_limits;
+
+    const double inf  = numeric_limits<double>::infinity();
+    const double ninf = -numeric_limits<double>::infinity();
+    const double nan  = numeric_limits<double>::quiet_NaN();
+    const double v    = 42.0;
+
+    // value non-finite → return that same non-finite value
+    CHECK(std::isinf(statistics::normalize(0.0, 100.0, inf)));
+    CHECK(std::isinf(statistics::normalize(0.0, 100.0, ninf)));
+    CHECK(std::isnan(statistics::normalize(0.0, 100.0, nan)));
+
+    // range_min non-finite → return finite value unchanged
+    CHECK(statistics::normalize(inf, 100.0, v)  == v);
+    CHECK(statistics::normalize(ninf, 100.0, v) == v);
+    CHECK(statistics::normalize(nan, 100.0, v)  == v);
+
+    // range_max non-finite → return finite value unchanged
+    CHECK(statistics::normalize(0.0, inf, v)  == v);
+    CHECK(statistics::normalize(0.0, ninf, v) == v);
+    CHECK(statistics::normalize(0.0, nan, v)  == v);
+
+    // both bounds non-finite → still return finite value unchanged
+    CHECK(statistics::normalize(inf,  inf,  v) == v);
+    CHECK(statistics::normalize(ninf, inf,  v) == v);
+    CHECK(statistics::normalize(ninf, ninf, v) == v);
+    }
+
+TEST_CASE("normalize behaves normally for finite inputs", "[stats][normalize]")
+{
+    // Exactly representable finite cases
+    CHECK(statistics::normalize(0.0, 100.0, 50.0) == 0.5);
+    CHECK(statistics::normalize(0.0, 100.0, 0.0)  == 0.0);
+    CHECK(statistics::normalize(0.0, 100.0, 100.0) == 1.0);
+    }
+
+TEST_CASE("mean handles finite and non-finite inputs correctly", "[stats][mean]")
+    {
+    using namespace statistics;
+    using std::numeric_limits;
+
+    constexpr double inf  = numeric_limits<double>::infinity();
+    constexpr double ninf = -numeric_limits<double>::infinity();
+    constexpr double nan  = numeric_limits<double>::quiet_NaN();
+
+    SECTION("all finite → valid mean")
+        {
+        CHECK(mean({1.0, 2.0, 3.0}) == 2.0);
+        }
+
+    SECTION("mixture of finite and NaN → NaNs ignored")
+        {
+        CHECK(mean({1.0, 2.0, nan, 3.0}) == 2.0);
+        }
+
+    SECTION("mixture of finite and infinities → infinities ignored")
+        {
+        CHECK(mean({1.0, inf, 2.0, ninf, 3.0}) == 2.0);
+        }
+
+    SECTION("only non-finite values → throws invalid_argument")
+        {
+        CHECK_THROWS_AS(mean({nan, nan, inf, ninf}), std::invalid_argument);
+        }
+
+    SECTION("empty vector → throws invalid_argument")
+        {
+        CHECK_THROWS_AS(mean({}), std::invalid_argument);
+        }
+
+    SECTION("sum zero but finite values → returns 0")
+        {
+        // mean = (−1 + 1 + 0) / 3 = 0
+        CHECK(mean({-1.0, 1.0, 0.0}) == 0.0);
+        }
+
+    SECTION("finite plus one infinity → ignores infinity, averages finite ones")
+        {
+        // ignoring +inf leaves {10, 20}
+        CHECK(mean({10.0, 20.0, inf}) == 15.0);
+        }
+
+    SECTION("single finite among non-finites → returns that value")
+        {
+        CHECK(mean({inf, nan, 7.5, ninf}) == 7.5);
+        }
+    }
+
+TEST_CASE("median incorrectly includes infinities", "[stats][median][inf]")
+    {
+    using namespace statistics;
+    using std::numeric_limits;
+    using Catch::Matchers::WithinAbs;
+
+    constexpr double inf  = numeric_limits<double>::infinity();
+    constexpr double ninf = -numeric_limits<double>::infinity();
+
+    const std::vector<double> data{ 1.0, 3.0, 2.0, inf, ninf };
+
+    const double m = median(data);
+
+    CHECK_THAT(m, WithinAbs(2.0, 1e-6));
+    }
+
+TEST_CASE("sum_of_powers ignores infinities and NaNs", "[stats][sum_of_powers][inf][nan]")
+    {
+    using namespace statistics;
+    using std::numeric_limits;
+    using std::isfinite;
+
+    SECTION("finite values only")
+        {
+        const std::vector<double> data{ 1.0, 2.0, 3.0 };
+        // mean = 2.0 → (1−2)² + (2−2)² + (3−2)² = 2
+        CHECK_THAT(sum_of_powers(data, 2.0), Catch::Matchers::WithinAbs(2.0, 1e-12));
+        }
+
+    SECTION("infinities are skipped")
+        {
+        const std::vector<double> data{ 1.0, 2.0, 3.0,
+                                        numeric_limits<double>::infinity(),
+                                        -numeric_limits<double>::infinity() };
+        // same finite subset {1,2,3} → result still 2
+        CHECK_THAT(sum_of_powers(data, 2.0), Catch::Matchers::WithinAbs(2.0, 1e-12));
+        }
+
+    SECTION("NaNs are skipped")
+        {
+        const std::vector<double> data{ 1.0, numeric_limits<double>::quiet_NaN(),
+                                        2.0, 3.0 };
+        // mean of finite {1,2,3} = 2 → sum of squares = 2
+        CHECK_THAT(sum_of_powers(data, 2.0), Catch::Matchers::WithinAbs(2.0, 1e-12));
+        }
+
+    SECTION("mix of NaN and infinities ignored")
+        {
+        const std::vector<double> data{
+            numeric_limits<double>::quiet_NaN(),
+            1.0, 2.0, 3.0,
+            numeric_limits<double>::infinity(),
+            -numeric_limits<double>::infinity()
+        };
+        CHECK_THAT(sum_of_powers(data, 2.0), Catch::Matchers::WithinAbs(2.0, 1e-12));
+        }
+
+    SECTION("only non-finite values → mean() throws")
+        {
+        const std::vector<double> data{
+            numeric_limits<double>::quiet_NaN(),
+            numeric_limits<double>::infinity(),
+            -numeric_limits<double>::infinity()
+        };
+        CHECK_THROWS_AS(sum_of_powers(data, 2.0), std::invalid_argument);
+        }
+    }
+
+TEST_CASE("sum_of_powers: only non-finite values → throws via mean()", "[stats][sum_of_powers][guard]")
+    {
+    using namespace statistics;
+    using std::numeric_limits;
+
+    // mean(data) throws (no finite observations), so sum_of_powers should propagate that
+    const std::vector<double> data{
+        numeric_limits<double>::infinity(),
+        -numeric_limits<double>::infinity(),
+        numeric_limits<double>::quiet_NaN()
+    };
+
+    CHECK_THROWS_AS(sum_of_powers(data, /*power=*/2.0), std::invalid_argument);
     }
 
 TEST_CASE("Mode", "[stats][mode]")
@@ -527,6 +751,20 @@ TEST_CASE("Std Dev No Obs", "[stats][stddev]")
     CHECK_THROWS(WithinRel(statistics::standard_deviation(values, true), 1e-6));
     }
 
+TEST_CASE("Standard deviation throws with only one valid value", "[stats][stddev]")
+    {
+    using namespace statistics;
+    using std::numeric_limits;
+
+    // one finite, one NaN → valid_n() == 1
+    std::vector<double> data{
+        numeric_limits<double>::quiet_NaN(),
+        42.0
+    };
+
+    CHECK_THROWS_AS(standard_deviation(data, /*is_sample=*/true), std::invalid_argument);
+    }
+
 TEST_CASE("Skewness", "[stats][skewness]")
     {
     std::vector<double> values = { 5, 9, 6, 7, 6, 4, 3, -3, 17, 6 };
@@ -593,6 +831,96 @@ TEST_CASE("Outliers container", "[stats][outliers]")
     CHECK(values.begin()+9  ==  fo());
     CHECK(values.end() == fo()); // end of the trail
     CHECK(values.end() == fo()); // end of the trail still
+    }
+
+// This set assumes: 
+// - statistics::find_outliers is constructed with a const reference to the data vector.
+// - operator() returns an iterator into that same vector.
+// - It returns end() when there are no more outliers.
+
+TEST_CASE("find_outliers: NaN present but no numeric outliers", "[stats][outliers][nan]")
+    {
+    using std::numeric_limits;
+
+    const std::vector<double> data{
+        10.0, 10.2, 9.8, 10.1, 9.9, 10.05,
+        numeric_limits<double>::quiet_NaN()
+    };
+
+    statistics::find_outliers fo{ data };
+
+    auto it1 = fo();
+    CHECK(it1 == data.cend());
+
+    // persistent: second call should also yield end()
+    auto it2 = fo();
+    CHECK(it2 == data.cend());
+    }
+
+TEST_CASE("find_outliers: NaN before a real outlier is ignored", "[stats][outliers][nan][order]")
+    {
+    using std::numeric_limits;
+
+    const std::vector<double> data{
+        1.0, 1.02, 0.98, 1.01,
+        numeric_limits<double>::quiet_NaN(),
+        100.0
+    };
+
+    statistics::find_outliers fo{ data };
+
+    auto it1 = fo();
+    REQUIRE(it1 != data.cend());
+    CHECK(std::isfinite(*it1));
+    CHECK(*it1 == 100.0);
+
+    auto it2 = fo();
+    CHECK(it2 == data.cend());
+    }
+
+TEST_CASE("find_outliers: only NaNs and infinities", "[stats][outliers][nan][inf]")
+    {
+    using std::numeric_limits;
+
+    const std::vector<double> data{
+        numeric_limits<double>::quiet_NaN(),
+        numeric_limits<double>::infinity(),
+        -numeric_limits<double>::infinity()
+    };
+
+    statistics::find_outliers fo{ data };
+
+    auto it = fo();
+    CHECK(it == data.cend());
+    }
+
+TEST_CASE("find_outliers: multiple finite outliers, NaNs interspersed", "[stats][outliers][nan][multi]")
+    {
+    using std::numeric_limits;
+
+    const std::vector<double> data{
+        2.0, 2.1, 1.9, 2.05,
+        numeric_limits<double>::quiet_NaN(),
+        -50.0,
+        2.02,
+        numeric_limits<double>::quiet_NaN(),
+        75.0
+    };
+
+    statistics::find_outliers fo{ data };
+
+    auto it1 = fo();
+    REQUIRE(it1 != data.cend());
+    CHECK(std::isfinite(*it1));
+    CHECK(*it1 == -50.0);
+
+    auto it2 = fo();
+    REQUIRE(it2 != data.cend());
+    CHECK(std::isfinite(*it2));
+    CHECK(*it2 == 75.0);
+
+    auto it3 = fo();
+    CHECK(it3 == data.cend());
     }
 
 // ---------------- z_score tests ----------------
@@ -687,8 +1015,6 @@ TEST_CASE("phi_coefficient mismatched array sizes throws", "[phi_coefficient]")
     }
 
 // ---------------- phi_coefficient deterministic fuzz-style test ----------------
-
-#include <array>
 
 TEST_CASE("phi_coefficient always in [-1, 1] for all 0/1 arrays", "[phi_coefficient][fuzz]")
     {

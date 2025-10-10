@@ -33,9 +33,8 @@ namespace statistics
     [[nodiscard]]
     inline size_t valid_n(const std::vector<double>& data) noexcept
         {
-        return static_cast<size_t>(std::accumulate(
-            data.cbegin(), data.cend(), 0.0, [](const auto initVal, const auto val) noexcept
-            { return initVal + (std::isnan(val) ? 0 : 1); }));
+        return std::count_if(data.cbegin(), data.cend(),
+                             [](double val) noexcept { return std::isfinite(val); });
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
@@ -147,14 +146,14 @@ namespace statistics
         const auto N = valid_n(data);
         const double summation = std::accumulate(
             data.cbegin(), data.cend(), 0.0, [](const double initVal, const double val) noexcept
-            { return initVal + (std::isnan(val) ? 0.0 : val); });
+            { return initVal + (!std::isfinite(val) ? 0.0 : val); });
         if (N == 0)
             {
             throw std::invalid_argument("No observations in mean calculation.");
             }
-        if (summation == 0.0f)
+        if (summation == 0.0)
             {
-            return 0.0f;
+            return 0.0;
             }
         return safe_divide<double>(summation, static_cast<double>(N));
         }
@@ -210,7 +209,7 @@ namespace statistics
         dest.reserve(data.size());
         // don't copy NaN into buffer
         std::ranges::copy_if(data, std::back_inserter(dest),
-                             [](const auto val) noexcept { return !std::isnan(val); });
+                             [](const auto val) noexcept { return std::isfinite(val); });
         std::ranges::sort(dest);
         return median_presorted(dest);
         }
@@ -229,8 +228,8 @@ namespace statistics
             {
                 return lhs +
                        // ignore NaN
-                       (std::isnan(rhs) ? 0.0 :
-                                          std::pow(static_cast<double>(rhs - mean_val), power));
+                       (!std::isfinite(rhs) ? 0.0 :
+                                              std::pow(static_cast<double>(rhs - mean_val), power));
             });
         }
 
@@ -249,9 +248,9 @@ namespace statistics
             {
             throw std::invalid_argument("Not enough observations to calculate variance.");
             }
-        if (sos == 0.0f)
+        if (sos == 0.0)
             {
-            return 0.0f;
+            return 0.0;
             }
         return safe_divide<double>(sos, static_cast<double>(is_sample ? (N - 1) : N));
         }
@@ -449,7 +448,7 @@ namespace statistics
             m_temp_buffer.reserve(data.size());
             // don't copy NaN into buffer
             std::ranges::copy_if(data, std::back_inserter(m_temp_buffer),
-                                 [](const auto val) noexcept { return !std::isnan(val); });
+                                 [](const auto val) noexcept { return std::isfinite(val); });
             // if no valid data, then leave boundaries as NaN and bail
             if (m_temp_buffer.empty())
                 {
@@ -467,9 +466,9 @@ namespace statistics
         [[nodiscard]]
         std::vector<double>::const_iterator operator()() noexcept
             {
-            m_current_position =
-                std::find_if(m_current_position, m_end, [this](const auto& val) noexcept
-                             { return !is_within<double>(std::make_pair(lo, uo), val); });
+            m_current_position = std::find_if(
+                m_current_position, m_end, [this](const auto& val) noexcept
+                { return std::isfinite(val) && !is_within<double>(std::make_pair(lo, uo), val); });
             return (m_end == m_current_position) ? m_end : m_current_position++;
             }
 
@@ -524,7 +523,7 @@ namespace statistics
     inline double normalize(const T range_min, const T range_max, T value)
         {
         if (std::is_floating_point_v<T> &&
-            (std::isnan(range_min) || std::isnan(range_max) || std::isnan(value)))
+            (!std::isfinite(range_min) || !std::isfinite(range_max) || !std::isfinite(value)))
             {
             return value;
             }
