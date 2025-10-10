@@ -22,20 +22,20 @@ namespace Wisteria
       public:
         /// @brief Constructor.
         /// @param Id The unique ID for this table linker.
-        explicit TableLink(const size_t Id) : m_Id(Id) {}
+        explicit TableLink(const size_t Id) : m_id(Id) {}
 
         /// @returns The table linker's ID.
         [[nodiscard]]
         size_t GetId() const noexcept
             {
-            return m_Id;
+            return m_id;
             }
 
         /// @private
         [[nodiscard]]
         bool operator<(const TableLink& that) const noexcept
             {
-            return m_Id < that.m_Id;
+            return m_id < that.m_id;
             }
 
         /// @brief Adds a table to the list of connected tables.
@@ -53,28 +53,28 @@ namespace Wisteria
                 {
                 return;
                 }
-            const auto maxRowCount =
-                std::ranges::max_element(
-                    m_tables, [](const auto& lhv, const auto& rhv) noexcept
-                    { return lhv->GetTableSize().first < rhv->GetTableSize().first; })
-                    ->get()
-                    ->GetTableSize()
-                    .first;
-            const auto maxColumnCount =
-                std::ranges::max_element(
-                    m_tables, [](const auto& lhv, const auto& rhv) noexcept
-                    { return lhv->GetTableSize().second < rhv->GetTableSize().second; })
-                    ->get()
-                    ->GetTableSize()
-                    .second;
+            // validate all tables
+            if (std::ranges::any_of(m_tables,
+                                    [](const auto& table) noexcept { return table == nullptr; }))
+                {
+                return;
+                }
+
+            size_t maxRows{ 0 }, maxCols{ 0 };
             for (const auto& table : m_tables)
                 {
-                table->SetTableSize(maxRowCount, maxColumnCount);
+                const auto [row, col] = table->GetTableSize();
+                maxRows = std::max(maxRows, row);
+                maxCols = std::max(maxCols, col);
+                }
+            for (const auto& table : m_tables)
+                {
+                table->SetTableSize(maxRows, maxCols);
                 }
             }
 
       private:
-        size_t m_Id{ 0 };
+        size_t m_id{ 0 };
         std::vector<std::shared_ptr<Graphs::Table>> m_tables;
         };
     } // namespace Wisteria

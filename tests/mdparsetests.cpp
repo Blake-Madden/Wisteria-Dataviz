@@ -54,10 +54,10 @@ The End.)" }) } ==
 
 
  
-    Interval 
-    Period 
-    Int 
-    More 
+	Interval 
+	Period 
+	Int 
+	More 
 
 
  The End.)" });
@@ -92,7 +92,7 @@ The End.)" }) } ==
 
  Interval Period Int More  
 
-    0 to 20 	8 	Supported. 	Not supported.  
+ 	0 to 20 	8 	Supported. 	Not supported.  
 
 
  The End.)" });

@@ -32,6 +32,8 @@ namespace Wisteria::Brushes::Schemes
         explicit BrushScheme(const std::vector<wxBrushStyle>& brushStyles,
                              const Colors::Schemes::ColorScheme& colorScheme)
             {
+            m_brushes.reserve(std::max(brushStyles.size(), colorScheme.GetColors().size()));
+
             // fill with brushes and colors
             // (which may be the default black if there are fewer colors than brush styles)
             if (brushStyles.size() >= colorScheme.GetColors().size())
@@ -75,7 +77,7 @@ namespace Wisteria::Brushes::Schemes
             }
 
         /** @returns The brush from a given index.\n
-                If no brushes are available, returns a blank icon.
+                If no brushes are available, returns a solid black brush.
             @param index The index into the brush list to return. If index is outside
                 number of brushes, then it will recycle (i.e., wrap around).
                 For example, if there are 2 brushes, index 1 will return 1;
@@ -84,8 +86,9 @@ namespace Wisteria::Brushes::Schemes
         [[nodiscard]]
         wxBrush GetBrush(const size_t index) const
             {
-            return (m_brushes.empty()) ? Colors::ColorBrewer::GetColor(Colors::Color::Black) :
-                                         m_brushes.at(index % m_brushes.size());
+            return (m_brushes.empty()) ?
+                       wxBrush{ Colors::ColorBrewer::GetColor(Colors::Color::Black) } :
+                       m_brushes.at(index % m_brushes.size());
             }
 
         /** @brief Adds a brush to the scheme.

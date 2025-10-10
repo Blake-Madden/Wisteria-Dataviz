@@ -77,10 +77,13 @@ namespace Wisteria::GraphItems
                 {
                 newString += lineTokenizer.GetNextToken();
                 }
-            newString += L"\n";
+
+            if (lineTokenizer.HasMoreTokens())
+                {
+                newString += L"\n";
+                }
             ++currentRow;
             }
-        newString.Trim();
         SetText(newString);
         }
 
@@ -232,6 +235,11 @@ namespace Wisteria::GraphItems
                  std::max<wxCoord>(
                      CalcTopGraphicSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
                  0);
+
+        measureWidthNoSideImages = std::max<wxCoord>(0, measureWidthNoSideImages);
+        measuredHeightNoSideImages = std::max<wxCoord>(0, measuredHeightNoSideImages);
+        textAreaWidthNoSideImages = std::max<wxCoord>(0, textAreaWidthNoSideImages);
+        textAreaHeightNoSideImages = std::max<wxCoord>(0, textAreaHeightNoSideImages);
 
         if (!m_boundingBoxScalingLocked &&
             ( // too small in both dimensions, so upscale
@@ -996,18 +1004,23 @@ namespace Wisteria::GraphItems
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
-        assert((GetLegendIcons().empty() ||
-                (!GetLegendIcons().empty() && GetTextOrientation() == Orientation::Horizontal)) &&
-               L"Vertical legend not supported!");
-        wxASSERT_LEVEL_2_MSG(
-            GetLegendIcons().empty() || !HasLegendIcons() ||
-                (GetTextOrientation() == Orientation::Horizontal &&
-                 GetLeftPadding() >= GetMinLegendWidthDIPs()),
-            wxString::Format(L"Left margin of text label should be at least %d DIPs "
-                             "if using legend icons! It is currently %d.",
-                             GetMinLegendWidthDIPs(), GetLeftPadding()));
+        wxASSERT_MSG(
+            (GetLegendIcons().empty() ||
+             (!GetLegendIcons().empty() && GetTextOrientation() == Orientation::Horizontal)),
+            L"Vertical legend not supported!");
+        if (GetTextOrientation() != Orientation::Horizontal && !GetLegendIcons().empty())
+            {
+            return GetBoundingBox(dc);
+            }
 
-        assert(GetFont().IsOk() && L"Invalid font in label!");
+        wxASSERT_MSG(GetLegendIcons().empty() || !HasLegendIcons() ||
+                         (GetTextOrientation() == Orientation::Horizontal &&
+                          GetLeftPadding() >= GetMinLegendWidthDIPs()),
+                     wxString::Format(L"Left margin of text label should be at least %d DIPs "
+                                      "if using legend icons! It is currently %d.",
+                                      GetMinLegendWidthDIPs(), GetLeftPadding()));
+
+        wxASSERT_MSG(GetFont().IsOk(), L"Invalid font in label!");
         const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
 
         const wxRect boundingBox = GetBoundingBox(dc);
