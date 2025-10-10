@@ -102,7 +102,7 @@ TEST_CASE("Cell trim", "[text import]")
     }
 
 TEST_CASE("Test Tabbed Different Column", "[text import]")
-	{
+    {
     const wchar_t* fileText = L"First:Second\tThird";
 
     std::vector<std::vector<std::wstring>> words;
@@ -153,7 +153,7 @@ TEST_CASE("Test Tabbed Different Column", "[text import]")
     CHECK(1 == words.size()); // only 1 row
     CHECK(1 == words[0].size()); // only first column read
     CHECK(words[0][0] == L"First");
-	}
+    }
 
 TEST_CASE("Tabbed Unknown Column Count", "[text import]")
     {

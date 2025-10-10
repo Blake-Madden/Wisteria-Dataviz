@@ -6,14 +6,14 @@ using namespace Wisteria;
 using namespace Wisteria::Data;
 
 TEST_CASE("Data range", "[data]")
-	{
+    {
     Data::Dataset ds;
 
     ds.AddRow(Data::RowInfo().Continuous({ 5, 6 }).Id(L"label1"));
     ds.AddRow(Data::RowInfo().Continuous({ 5, 6 }).Id(L"label2"));
     CHECK(ds.GetIdColumn().GetValue(0) == L"label1");
     CHECK(ds.GetIdColumn().GetValue(1) == L"label2");
-	}
+    }
 
 SCENARIO("Add continuous variables", "[data]")
     {

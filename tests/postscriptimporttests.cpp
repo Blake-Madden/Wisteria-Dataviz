@@ -9,7 +9,7 @@ using namespace Catch::Matchers;
 using namespace lily_of_the_valley;
 
 TEST_CASE("Postscript Import", "[postscript import]")
-	{
+    {
     SECTION("Nulls")
         {
         postscript_extract_text ext;

@@ -8,7 +8,7 @@
 using namespace Catch::Matchers;
 
 TEST_CASE("Round", "[round]")
-	{
+    {
     SECTION("Round")
         {
         CHECK_THAT(2, WithinRel(round_to_integer(1.5), 1e-6));
@@ -78,7 +78,7 @@ TEST_CASE("Round", "[round]")
         CHECK_THAT(-9895452451.449719, WithinRel(round_decimal_place(-9895452451.44971854, 1000000), 10e-6));
         CHECK_THAT(-9895452451.4497185, WithinRel(round_decimal_place(-9895452451.44971854, 10000000), 10e-7));
         }
-	}
+    }
 
 // NOLINTEND
 // clang-format on

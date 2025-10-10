@@ -103,7 +103,7 @@ TEST_CASE("StrIStr Not Quoted", "[html import]")
     }
 
 TEST_CASE("Str Chr Not Quoted", "[html import]")
-	{
+    {
     SECTION("Nulls")
         {
         CHECK(html_extract_text::strchr_not_quoted(nullptr, L'a') == nullptr);
@@ -192,7 +192,7 @@ TEST_CASE("Str Chr Not Quoted", "[html import]")
         //should find nothing and return null
         CHECK(html_extract_text::strchr_not_quoted(L"", L'w') == nullptr);
         }
-	}
+    }
 
 TEST_CASE("HTML parser subscripts", "[html import]")
     {

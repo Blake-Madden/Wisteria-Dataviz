@@ -9,7 +9,7 @@ using namespace Catch::Matchers;
 using namespace lily_of_the_valley;
 
 TEST_CASE("Tag filter", "[tag filter]")
-	{
+    {
     SECTION("Has Ignore Tags")
         {
         const wchar_t* blah = L"Some text [[ignore this]] is written[[ignore]] here.";
@@ -103,7 +103,7 @@ TEST_CASE("Tag filter", "[tag filter]")
         const wchar_t* result = tfilter(blah, std::wcslen(blah));
         CHECK(std::wcscmp(result, L"Some text  is written here.") == 0);
         }
-	}
+    }
 
 // NOLINTEND
 // clang-format on

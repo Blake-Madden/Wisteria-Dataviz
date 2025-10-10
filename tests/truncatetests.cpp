@@ -8,7 +8,7 @@
 using namespace Catch::Matchers;
 
 TEST_CASE("Truncate decimals", "[truncate]")
-	{
+    {
     SECTION("Integer")
         {
         CHECK_THAT(1.0, WithinRel(truncate_decimal_place(1.59, 0), 1e-6));
@@ -55,7 +55,7 @@ TEST_CASE("Truncate decimals", "[truncate]")
         CHECK_THAT(-9895452451.449718, WithinRel(truncate_decimal_place(-9895452451.44971854, 1000000), 10e-6));
         CHECK_THAT(-9895452451.4497185, WithinRel(truncate_decimal_place(-9895452451.44971854, 10000000), 10e-7));
         }
-	}
+    }
 
 // NOLINTEND
 // clang-format on

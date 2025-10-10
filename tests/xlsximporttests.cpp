@@ -1243,7 +1243,7 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
     }
 
 TEST_CASE("XLSX import", "[xlsx]")
-	{
+    {
     SECTION("Share Strings")
         {
         xlsx_extract_text ext{ true };
@@ -1377,7 +1377,7 @@ TEST_CASE("XLSX import", "[xlsx]")
     }
 
 TEST_CASE("XLSX shared strings", "[xlsx]")
-	{
+    {
     SECTION("Null")
         {
         xlsx_extract_text::worksheet wrk;
@@ -1493,7 +1493,7 @@ TEST_CASE("XLSX shared strings", "[xlsx]")
         CHECK(info.first.m_position == static_cast<size_t>(-1));
         CHECK(info.second == static_cast<size_t>(-1));
         }
-	}
+    }
 
 // NOLINTEND
 // clang-format on

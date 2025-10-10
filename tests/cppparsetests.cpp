@@ -10,7 +10,7 @@ using namespace lily_of_the_valley;
 using namespace Catch::Matchers;
 
 TEST_CASE("CPP", "[cpp]")
-	{
+    {
     SECTION("NULL")
         {
         cpp_extract_text ext;
