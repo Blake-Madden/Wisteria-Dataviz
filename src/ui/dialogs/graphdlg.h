@@ -44,7 +44,7 @@ namespace Wisteria::UI
         /// @private
         GraphDlg(const GraphDlg&) = delete;
         /// @private
-        GraphDlg& operator==(const GraphDlg&) = delete;
+        GraphDlg& operator=(const GraphDlg&) = delete;
 
         /// @returns Access to the canvas, where you can add the graph
         ///     (it has already been initialized to hold one graph).

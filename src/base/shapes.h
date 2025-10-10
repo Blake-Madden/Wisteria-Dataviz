@@ -710,7 +710,7 @@ namespace Wisteria::GraphItems
         ///     own functions to draw shapes.
         Shape(const Shape&) = delete;
         /// @private
-        Shape& operator==(const Shape&) = delete;
+        Shape& operator=(const Shape&) = delete;
         /** @brief Bounds the shape to the given rectangle.
             @param rect The rectangle to bound the shape to.
             @param dc This parameter is ignored.

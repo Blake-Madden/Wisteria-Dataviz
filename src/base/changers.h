@@ -37,7 +37,7 @@ namespace Wisteria
         /// @private
         DCPenChangerIfDifferent(const DCPenChangerIfDifferent&) = delete;
         /// @private
-        DCPenChangerIfDifferent& operator==(const DCPenChangerIfDifferent&) = delete;
+        DCPenChangerIfDifferent& operator=(const DCPenChangerIfDifferent&) = delete;
 
         /// @private
         ~DCPenChangerIfDifferent()
@@ -75,7 +75,7 @@ namespace Wisteria
         /// @private
         DCBrushChangerIfDifferent(const DCBrushChangerIfDifferent&) = delete;
         /// @private
-        DCBrushChangerIfDifferent& operator==(const DCBrushChangerIfDifferent&) = delete;
+        DCBrushChangerIfDifferent& operator=(const DCBrushChangerIfDifferent&) = delete;
 
         /// @private
         ~DCBrushChangerIfDifferent()
@@ -113,7 +113,7 @@ namespace Wisteria
         /// @private
         DCFontChangerIfDifferent(const DCFontChangerIfDifferent&) = delete;
         /// @private
-        DCFontChangerIfDifferent& operator==(const DCFontChangerIfDifferent&) = delete;
+        DCFontChangerIfDifferent& operator=(const DCFontChangerIfDifferent&) = delete;
 
         /// @private
         ~DCFontChangerIfDifferent()
@@ -152,7 +152,7 @@ namespace Wisteria
         /// @private
         DCTextColourChangerIfDifferent(const DCTextColourChangerIfDifferent&) = delete;
         /// @private
-        DCTextColourChangerIfDifferent& operator==(const DCTextColourChangerIfDifferent&) = delete;
+        DCTextColourChangerIfDifferent& operator=(const DCTextColourChangerIfDifferent&) = delete;
 
         /// @private
         ~DCTextColourChangerIfDifferent()
