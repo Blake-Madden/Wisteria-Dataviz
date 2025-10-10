@@ -8,13 +8,47 @@
 
 using namespace Catch::Matchers;
 
+TEST_CASE("adjust_intervals: reversed inputs yield same adjusted range", "[math][intervals][reverse]")
+    {
+    const auto fwd = adjust_intervals(0.0, 123.0);
+    const auto rev = adjust_intervals(123.0, 0.0);
+
+    CHECK(fwd == rev);
+    }
+
+TEST_CASE("adjust_intervals: reversed negative/positive inputs yield same adjusted range", "[math][intervals][reverse]")
+    {
+    const auto fwd = adjust_intervals(-10.0, 10.0);
+    const auto rev = adjust_intervals(10.0, -10.0);
+
+    CHECK(fwd == rev);
+    }
+
+TEST_CASE("adjust_intervals: reversed non-integer inputs yield same adjusted range", "[math][intervals][reverse]")
+    {
+    const auto fwd = adjust_intervals(3.1, 7.25);
+    const auto rev = adjust_intervals(7.25, 3.1);
+
+    CHECK(fwd == rev);
+    }
+
+TEST_CASE("adjust_intervals: identical endpoints remain ordered", "[math][intervals][degenerate]")
+    {
+    const auto same = adjust_intervals(5.0, 5.0);
+
+    CHECK(same.first <= same.second);
+    // Optional: ensure exact echo if that's your contract
+    CHECK(same.first == 5.0);
+    CHECK(same.second == 5.0);
+    }
+
 TEST_CASE("safe_divide returns 0 for NaN or infinity (double)", "[safe_math][safe_divide][double]")
 {
     using std::numeric_limits;
 
-    const double NaN   = numeric_limits<double>::quiet_NaN();
-    const double Inf   = numeric_limits<double>::infinity();
-    const double NInf  = -numeric_limits<double>::infinity();
+    constexpr double NaN   = numeric_limits<double>::quiet_NaN();
+    constexpr double Inf   = numeric_limits<double>::infinity();
+    constexpr double NInf  = -numeric_limits<double>::infinity();
 
     // NaN in either operand → 0
     CHECK(safe_divide(NaN,  5.0) == 0.0);
@@ -42,9 +76,9 @@ TEST_CASE("safe_divide returns 0 for NaN or infinity (float)", "[safe_math][safe
 {
     using std::numeric_limits;
 
-    const float NaN   = numeric_limits<float>::quiet_NaN();
-    const float Inf   = numeric_limits<float>::infinity();
-    const float NInf  = -numeric_limits<float>::infinity();
+    constexpr float NaN   = numeric_limits<float>::quiet_NaN();
+    constexpr float Inf   = numeric_limits<float>::infinity();
+    constexpr float NInf  = -numeric_limits<float>::infinity();
 
     CHECK(safe_divide(NaN,  5.0f) == 0.0f);
     CHECK(safe_divide(5.0f, NaN)  == 0.0f);
@@ -138,12 +172,6 @@ TEST_CASE("Safe Modulus By Zero", "[safemath]")
 TEST_CASE("Safe Modulus By Negative", "[safemath]")
     {
     CHECK(0 == safe_modulus<int>(100, -1));
-    }
-
-TEST_CASE("Infinity", "[infinity]")
-    {
-    CHECK_FALSE(is_infinity(0.017453));
-    CHECK(is_infinity(log((float)0)));
     }
 
 TEST_CASE("Comparable first pair", "[comparable]")

@@ -203,6 +203,9 @@ constexpr std::basic_string<T> coalesce(std::initializer_list<std::basic_string_
 /// @returns The first item with a size (length) from a list.
 /// @param list The list of items.
 template<typename T>
+    requires requires(const T& t) {
+        { t.length() } -> std::convertible_to<size_t>;
+    }
 [[nodiscard]]
 constexpr T coalesce(std::initializer_list<T> list)
     {
@@ -281,9 +284,14 @@ inline constexpr double previous_interval(const double value, const uint8_t inte
      For example:\n
      - 0.75 & 4.2 -> 0-5*/
 [[nodiscard]]
-inline constexpr std::pair<double, double> adjust_intervals(const double start,
-                                                            const double end) noexcept
+inline constexpr std::pair<double, double> adjust_intervals(double start, double end) noexcept
     {
+    // in case the values are backwards
+    if (end < start)
+        {
+        std::swap(start, end);
+        }
+
     const auto rangeSize = (end - start);
     uint8_t intervalSize{};
     if (rangeSize > 100'000'000)
@@ -358,28 +366,6 @@ inline double get_mantissa(const double value) noexcept
     return std::modf(value, &ifpart);
     }
 
-/// @returns @c -1 for negative infinity, @c +1 for positive infinity, and @c 0 if finite.
-/// @param value The value to review.
-template<typename T>
-[[nodiscard]]
-inline int is_infinity(T value) noexcept
-    {
-    if (!std::numeric_limits<T>::has_infinity)
-        {
-        return 0;
-        }
-    const T inf = std::numeric_limits<T>::infinity();
-    if (value == +inf)
-        {
-        return +1;
-        }
-    if (value == -inf)
-        {
-        return -1;
-        }
-    return 0;
-    }
-
 /// @returns Whether a double value has any floating-point data (up to 1e-6).
 /// @param value The value to review.
 [[nodiscard]]
@@ -387,7 +373,7 @@ inline bool has_fractional_part(const double value) noexcept
     {
     double ifpart = 0, fpart = 0;
     fpart = std::modf(value, &ifpart);
-    return !compare_doubles(fpart, 0.000000, 1e-6);
+    return !compare_doubles(fpart, 0.0, 1e-6);
     }
 
 /** @brief Rounds a (floating-point) number. Anything less than .5 is rounded down, anything equal
@@ -404,11 +390,11 @@ inline double round_to_integer(const T x) noexcept
     // treated like .4999. Here we do a high precision comparison of the mantissa
     // so that if .5 was assigned then it gets seen as such, and .4999 assigned
     // gets seen as such too.
-    if (compare_doubles(std::fabs(fpart), 0.500f, 1e-3))
+    if (compare_doubles(std::fabs(fpart), 0.500, 1e-3))
         {
         return (x < 0) ? ipart - 1 : ipart + 1;
         }
-    return (x < 0) ? (std::ceil(x - 0.5f)) : (std::floor(x + 0.5f));
+    return (x < 0) ? (std::ceil(x - 0.5)) : (std::floor(x + 0.5));
     }
 
 /** @brief Rounds a double value to a specified precision (e.g., 5.16 -> 5.2).
@@ -585,7 +571,7 @@ namespace geometry
                             safe_divide((pt.y - p1.y) * (p2.x - p1.x), (p2.y - p1.y)) + p1.x;
 
                         // overlies on a ray
-                        if (constexpr double DOUBLE_EPSILON{ .01f };
+                        if (constexpr double DOUBLE_EPSILON{ .01 };
                             std::fabs(pt.x - xinters) < DOUBLE_EPSILON)
                             {
                             return BOUND;
