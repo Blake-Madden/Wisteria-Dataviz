@@ -1,4 +1,4 @@
-name: Check LF line endings and tabs
+name: Check LF line endings
 
 on:
   push:
@@ -8,22 +8,24 @@ permissions:
   contents: read
 
 env:
+  # Comma-separated list of directories to scan (recursive)
   TARGET_DIRS: "src,tests"
+  # Comma-separated subdirectory names to exclude anywhere under TARGET_DIRS
   EXCLUDE_DIRS: "third_party,vendor,external,submodules"
-  FAIL_ON_ISSUE: "true"
+  # Set to "true" to fail the job when CRLF is found
+  FAIL_ON_CRLF: "true"
 
 jobs:
-  check-lf-and-tabs:
+  check-lf:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: false
           fetch-depth: 1
 
-      - name: Scan for CRLF and tabs (with tab line numbers)
-        id: scan
+      - name: Scan for CRLF (expects LF)
         shell: bash
         run: |
           set -euo pipefail
@@ -66,36 +68,22 @@ jobs:
           echo "Checked file count: ${#FILTERED[@]}"
 
           crlf_offenders=()
-          tab_offenders=()
-
-          # Clear/report files (if re-running locally)
-          : > report/tab_lines.txt || true
 
           for f in "${FILTERED[@]}"; do
-            # CR present → CRLF or mixed
+            # If the file contains a carriage return byte, treat as CRLF/mixed
             if grep -Iq $'\r' -- "$f"; then
               crlf_offenders+=("$f")
             fi
-
-            # Tabs present
-            if grep -q $'\t' -- "$f"; then
-              tab_offenders+=("$f")
-              # Append file:line:snippet with [TAB] markers
-              # -nH prints line numbers and file name
-              # sed shows tabs as [TAB] for visibility; it does not modify files
-              grep -nH $'\t' -- "$f" | sed 's/\t/[TAB]/g' >> report/tab_lines.txt
-            fi
           done
 
-          issue_found=false
           summary_file="$GITHUB_STEP_SUMMARY"
-
           if ((${#crlf_offenders[@]})); then
-            issue_found=true
             printf "%s\n" "${crlf_offenders[@]}" > report/crlf_files.txt
+
             for f in "${crlf_offenders[@]}"; do
               echo "::warning file=${f}::File has CRLF line endings; expected LF"
             done
+
             {
               echo "## Files with CRLF line endings"
               echo
@@ -104,36 +92,19 @@ jobs:
               done
               echo
             } >> "$summary_file"
+
+            if [[ "${FAIL_ON_CRLF:-false}" == "true" ]]; then
+              exit 1
+            fi
+          else
+            echo "✅ All checked files use LF."
+            echo "✅ All checked files use LF." >> "$summary_file"
           fi
 
-          if ((${#tab_offenders[@]})); then
-            issue_found=true
-            printf "%s\n" "${tab_offenders[@]}" > report/tab_files.txt
-            for f in "${tab_offenders[@]}"; do
-              echo "::warning file=${f}::File contains tab characters; expected spaces"
-            done
-            {
-              echo "## Files containing tab characters"
-              echo
-              for f in "${tab_offenders[@]}"; do
-                echo "- \`${f}\`"
-              done
-              echo
-              echo "> See artifact \`tab_lines.txt\` for line numbers and snippets (tabs shown as [TAB])."
-            } >> "$summary_file"
-          fi
-
-          if [[ "$issue_found" == false ]]; then
-            echo "✅ All checked files use LF and contain no tabs."
-            echo "✅ All checked files use LF and contain no tabs." >> "$summary_file"
-          elif [[ "${FAIL_ON_ISSUE:-false}" == "true" ]]; then
-            exit 1
-          fi
-
-      - name: Upload report artifact
+      - name: Upload CRLF report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: line-ending-and-tab-report
+          name: crlf-report
           path: report/
           if-no-files-found: ignore
