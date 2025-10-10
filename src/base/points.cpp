@@ -29,31 +29,32 @@ namespace Wisteria::GraphItems
                     pt.SetSelected(selected);
                     }
                 }
-            if (m_lastHitPointIndex < GetPoints().size())
+            if (selected && m_lastHitPointIndex < m_points.size())
                 {
-                // toggle selection on individual point
-                m_points[m_lastHitPointIndex].SetSelected(
-                    !m_points[m_lastHitPointIndex].IsSelected());
-                // update list of selected items
-                // (based on whether this is newly selected or just unselected)
-                if (m_points[m_lastHitPointIndex].IsSelected())
+                auto& pt = m_points[m_lastHitPointIndex];
+                const bool newState = !pt.IsSelected();
+                pt.SetSelected(newState);
+                if (newState)
                     {
-                    GetSelectedIds().insert(m_points[m_lastHitPointIndex].GetId());
+                    GetSelectedIds().insert(pt.GetId());
                     }
                 else
                     {
-                    auto unselectedItem =
-                        GetSelectedIds().find(m_points[m_lastHitPointIndex].GetId());
-                    if (unselectedItem != GetSelectedIds().end())
-                        {
-                        GetSelectedIds().erase(unselectedItem);
-                        }
-                    // if last point was unselected, then mark the entire collection as unselected
+                    GetSelectedIds().erase(pt.GetId());
                     if (GetSelectedIds().empty())
                         {
                         GraphItemBase::SetSelected(false);
                         }
                     }
+                }
+            else if (!selected)
+                {
+                // full clear when unselecting collection
+                for (auto& pt : m_points)
+                    {
+                    pt.SetSelected(false);
+                    }
+                GetSelectedIds().clear();
                 }
             }
         else
@@ -61,6 +62,10 @@ namespace Wisteria::GraphItems
             for (auto& point : m_points)
                 {
                 point.SetSelected(selected);
+                }
+            if (!selected)
+                {
+                GetSelectedIds().clear();
                 }
             }
         }
