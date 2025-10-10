@@ -31,10 +31,10 @@ namespace Wisteria::GraphItems
         if (m_gc == nullptr)
             {
             m_drawingToBitmap = true;
-            m_bmp = wxBitmap(m_dc->GetSize());
-            Image::SetOpacity(m_bmp, wxALPHA_OPAQUE);
+            m_bmp = wxBitmap(m_rect.GetSize(), 32);
+            Image::SetOpacity(m_bmp, wxALPHA_TRANSPARENT);
             m_memDC.SelectObject(m_bmp);
-            m_memDC.Clear();
+            m_memDC.SetDeviceOrigin(-m_rect.x, -m_rect.y);
 
             m_gc = wxGraphicsContext::Create(m_memDC);
             }
@@ -44,6 +44,10 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     GraphicsContextFallback::~GraphicsContextFallback()
         {
+        if (m_gc == nullptr)
+            {
+            return;
+            }
         // flush drawing commands to bitmap and then blit it
         // onto the original DC
         if (m_drawingToBitmap)
@@ -51,7 +55,6 @@ namespace Wisteria::GraphItems
             delete m_gc;
             m_gc = nullptr;
             m_memDC.SelectObject(wxNullBitmap);
-            m_bmp = m_bmp.GetSubBitmap(m_rect);
             m_dc->DrawBitmap(m_bmp, m_rect.GetTopLeft());
             }
         else
@@ -288,13 +291,13 @@ namespace Wisteria::GraphItems
         else if (GetAnchoring() == Anchoring::Center)
             {
             rect.SetTopLeft(GetAnchorPoint());
-            rect.Offset(rect.GetWidth() / 2, rect.GetHeight() / 2);
+            rect.Offset(-(rect.GetWidth() / 2), -(rect.GetHeight() / 2));
             }
         return rect;
         }
 
     // random number engine for water color and other "hand drawn" effects
-    std::mt19937 ShapeRenderer::m_mt{ std::random_device{}() };
+    thread_local std::mt19937 ShapeRenderer::m_mt{ std::random_device{}() };
 
     //---------------------------------------------------
     void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc,

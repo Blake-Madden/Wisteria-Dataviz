@@ -27,7 +27,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    bool Polygon::IsRectInsideRect(const wxRect innerRect, const wxRect outerRect)
+    bool Polygon::IsRectInsideRect(const wxRect& innerRect, const wxRect& outerRect)
         {
         return (outerRect.Contains(innerRect.GetTopLeft()) &&
                 outerRect.Contains(innerRect.GetTopRight()) &&
@@ -36,8 +36,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    std::pair<double, double> Polygon::GetPercentInsideRect(const wxRect innerRect,
-                                                            const wxRect outerRect)
+    std::pair<double, double> Polygon::GetPercentInsideRect(const wxRect& innerRect,
+                                                            const wxRect& outerRect)
         {
         return { safe_divide<double>(
                      std::max(0, std::min(innerRect.GetRight(), outerRect.GetRight()) -
@@ -147,6 +147,14 @@ namespace Wisteria::GraphItems
             {
             return {};
             }
+        if (m_scaledPoints.empty())
+            {
+            if (GetClippingRect())
+                {
+                dc.DestroyClippingRegion();
+                }
+            return {};
+            }
         if (IsInDragState())
             {
             return GetBoundingBox(dc);
@@ -252,7 +260,7 @@ namespace Wisteria::GraphItems
                         isVertical ? wxSOUTH : wxEAST);
                     }
                 // a spline doesn't use a fill color, so just draw it
-                else if (GetShape() == PolygonShape::Spline)
+                else if (GetShape() == PolygonShape::Spline && m_scaledPoints.size() >= 2)
                     {
                     dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
                     }
@@ -321,7 +329,7 @@ namespace Wisteria::GraphItems
             const wxDCBrushChanger bc(dc, (IsSelected() && GetSelectionBrush().IsOk()) ?
                                               GetSelectionBrush() :
                                               GetBrush());
-            if (GetShape() == PolygonShape::Spline)
+            if (GetShape() == PolygonShape::Spline && m_scaledPoints.size() >= 2)
                 {
                 dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
                 }
@@ -417,7 +425,7 @@ namespace Wisteria::GraphItems
         else if (!GetBackgroundFill().IsOk())
             {
             const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
-            if (GetShape() == PolygonShape::Spline)
+            if (GetShape() == PolygonShape::Spline && m_scaledPoints.size() >= 2)
                 {
                 dc.DrawSpline(m_scaledPoints.size(), m_scaledPoints.data());
                 }

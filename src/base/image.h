@@ -213,7 +213,7 @@ namespace Wisteria::GraphItems
             @returns The shrunk image, or the original image if
                 smaller than the rect.*/
         [[nodiscard]]
-        static wxImage ShrinkImageToRect(const wxImage& img, wxRect rect);
+        static wxImage ShrinkImageToRect(const wxImage& img, const wxRect& rect);
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
             @details The image must be larger than the target rect; otherwise, an invalid
                 image will be returned.\n
@@ -226,7 +226,7 @@ namespace Wisteria::GraphItems
             @returns The cropped image, or an invalid image if the original image if
                 smaller than the rect.*/
         [[nodiscard]]
-        static wxImage CropImageToRect(const wxImage& img, wxRect rect, bool centerImage);
+        static wxImage CropImageToRect(const wxImage& img, const wxRect& rect, bool centerImage);
 
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
@@ -344,11 +344,8 @@ namespace Wisteria::GraphItems
                                                 uint8_t opacity = 100);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
-            @param opacity The opacity to set the bitmap to.
-            @param preserveTransparentPixels Set to @c true to not alter pixels
-                that are already transparent in the image.*/
-        static void SetOpacity(wxBitmap& bmp, uint8_t opacity,
-                               bool preserveTransparentPixels = false);
+            @param opacity The opacity to set the bitmap to.*/
+        static void SetOpacity(wxBitmap& bmp, uint8_t opacity);
         /** @brief Sets the opacity of an image.
             @param image The image to edit.
             @param opacity The opacity to set the bitmap to.

@@ -35,18 +35,19 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
             }
+        const int penW = scaledPen.IsOk() ? scaledPen.GetWidth() : ScaleToScreenAndCanvas(1);
         const wxDCPenChanger pc(dc, IsSelected() ?
                                         wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                              2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                              2 * penW, wxPENSTYLE_DOT) :
                                         scaledPen);
         for (const auto& line : m_lines)
             {
             if (GetLineStyle() == LineStyle::Arrows)
                 {
-                Polygon::DrawArrow(dc, line.first, line.second,
-                                   wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
+                const int head = std::max<int>(ScaleToScreenAndCanvas(5), penW * 3);
+                Polygon::DrawArrow(dc, line.first, line.second, wxSize(head, head));
                 }
-            else // Lines or Spline
+            else
                 {
                 dc.DrawLine(line.first, line.second);
                 }
@@ -58,10 +59,9 @@ namespace Wisteria::GraphItems
                 {
                 std::array<wxPoint, 5> debugOutline;
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
-                const wxDCPenChanger pcDebug{
-                    dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Red),
-                              2 * scaledPen.GetWidth(), wxPENSTYLE_SHORT_DASH)
-                };
+                const wxDCPenChanger pcDebug{ dc, wxPen(Colors::ColorBrewer::GetColor(
+                                                            Colors::Color::Red),
+                                                        2 * penW, wxPENSTYLE_SHORT_DASH) };
                 dc.DrawLines(debugOutline.size(), debugOutline.data());
                 }
             }

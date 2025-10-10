@@ -314,7 +314,7 @@ namespace Wisteria::GraphItems
         wxColour GetMaybeGhostedColor(const wxColour& color) const
             {
             return (IsGhosted() && color.IsOk()) ?
-                       Wisteria::Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
+                       Colors::ColorContrast::ChangeOpacity(color, GetGhostOpacity()) :
                        color;
             }
 
@@ -329,7 +329,7 @@ namespace Wisteria::GraphItems
         bool m_singlePointSelection{ true };
         LineStyle m_lineStyle{ LineStyle::Lines };
 
-        long m_currentAssignedId{ 0 };
+        uint32_t m_currentAssignedId{ 0 };
 
         bool m_ghost{ false };
         uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };

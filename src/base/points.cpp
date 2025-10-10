@@ -29,31 +29,32 @@ namespace Wisteria::GraphItems
                     pt.SetSelected(selected);
                     }
                 }
-            if (m_lastHitPointIndex < GetPoints().size())
+            if (selected && m_lastHitPointIndex < m_points.size())
                 {
-                // toggle selection on individual point
-                m_points[m_lastHitPointIndex].SetSelected(
-                    !m_points[m_lastHitPointIndex].IsSelected());
-                // update list of selected items
-                // (based on whether this is newly selected or just unselected)
-                if (m_points[m_lastHitPointIndex].IsSelected())
+                auto& pt = m_points[m_lastHitPointIndex];
+                const bool newState = !pt.IsSelected();
+                pt.SetSelected(newState);
+                if (newState)
                     {
-                    GetSelectedIds().insert(m_points[m_lastHitPointIndex].GetId());
+                    GetSelectedIds().insert(pt.GetId());
                     }
                 else
                     {
-                    auto unselectedItem =
-                        GetSelectedIds().find(m_points[m_lastHitPointIndex].GetId());
-                    if (unselectedItem != GetSelectedIds().end())
-                        {
-                        GetSelectedIds().erase(unselectedItem);
-                        }
-                    // if last point was unselected, then mark the entire collection as unselected
+                    GetSelectedIds().erase(pt.GetId());
                     if (GetSelectedIds().empty())
                         {
                         GraphItemBase::SetSelected(false);
                         }
                     }
+                }
+            else if (!selected)
+                {
+                // full clear when unselecting collection
+                for (auto& pt : m_points)
+                    {
+                    pt.SetSelected(false);
+                    }
+                GetSelectedIds().clear();
                 }
             }
         else
@@ -61,6 +62,10 @@ namespace Wisteria::GraphItems
             for (auto& point : m_points)
                 {
                 point.SetSelected(selected);
+                }
+            if (!selected)
+                {
+                GetSelectedIds().clear();
                 }
             }
         }
@@ -80,50 +85,7 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            // adjust top left corner
-            if (ptBoundingBox.GetTopLeft().x < GetBoundingBox(dc).GetTopLeft().x)
-                {
-                m_boundingBox.SetTopLeft(
-                    wxPoint(ptBoundingBox.GetTopLeft().x, GetBoundingBox(dc).GetTopLeft().y));
-                }
-            if (ptBoundingBox.GetTopLeft().y < GetBoundingBox(dc).GetTopLeft().y)
-                {
-                m_boundingBox.SetTopLeft(
-                    wxPoint(GetBoundingBox(dc).GetTopLeft().x, ptBoundingBox.GetTopLeft().y));
-                }
-            // adjust bottom left corner
-            if (ptBoundingBox.GetBottomLeft().x < GetBoundingBox(dc).GetBottomLeft().x)
-                {
-                m_boundingBox.SetBottomLeft(
-                    wxPoint(ptBoundingBox.GetBottomLeft().x, GetBoundingBox(dc).GetBottomLeft().y));
-                }
-            if (ptBoundingBox.GetBottomLeft().y > GetBoundingBox(dc).GetBottomLeft().y)
-                {
-                m_boundingBox.SetBottomLeft(
-                    wxPoint(GetBoundingBox(dc).GetBottomLeft().x, ptBoundingBox.GetBottomLeft().y));
-                }
-            // adjust top right corner
-            if (ptBoundingBox.GetTopRight().x > GetBoundingBox(dc).GetTopRight().x)
-                {
-                m_boundingBox.SetTopRight(
-                    wxPoint(ptBoundingBox.GetTopRight().x, GetBoundingBox(dc).GetTopRight().y));
-                }
-            if (ptBoundingBox.GetTopRight().y < GetBoundingBox(dc).GetTopRight().y)
-                {
-                m_boundingBox.SetTopRight(
-                    wxPoint(GetBoundingBox(dc).GetTopRight().x, ptBoundingBox.GetTopRight().y));
-                }
-            // adjust bottom right corner
-            if (ptBoundingBox.GetBottomRight().x > GetBoundingBox(dc).GetBottomRight().x)
-                {
-                m_boundingBox.SetBottomRight(wxPoint(ptBoundingBox.GetBottomRight().x,
-                                                     GetBoundingBox(dc).GetBottomRight().y));
-                }
-            if (ptBoundingBox.GetBottomRight().y > GetBoundingBox(dc).GetBottomRight().y)
-                {
-                m_boundingBox.SetBottomRight(wxPoint(GetBoundingBox(dc).GetBottomRight().x,
-                                                     ptBoundingBox.GetBottomRight().y));
-                }
+            m_boundingBox = m_boundingBox.Union(ptBoundingBox);
             }
         }
 
@@ -230,6 +192,10 @@ namespace Wisteria::GraphItems
                 std::ranges::count_if(m_points, [](const auto& pt) noexcept { return pt.IsOk(); });
             if (okPointsCount == 0)
                 {
+                if (GetClippingRect())
+                    {
+                    dc.DestroyClippingRegion();
+                    }
                 return {};
                 }
             // just one point, so no line to draw
@@ -304,9 +270,13 @@ namespace Wisteria::GraphItems
                             }
                         else if (GetLineStyle() == LineStyle::Arrows)
                             {
-                            Polygon::DrawArrow(
-                                dc, m_points[i].GetAnchorPoint(), m_points[i + 1].GetAnchorPoint(),
-                                wxSize(ScaleToScreenAndCanvas(10), ScaleToScreenAndCanvas(10)));
+                            const int arrowHeadDimension =
+                                std::max<int>(ScaleToScreenAndCanvas(10),
+                                              scaledPen.IsOk() ? scaledPen.GetWidth() * 3 :
+                                                                 ScaleToScreenAndCanvas(10));
+                            Polygon::DrawArrow(dc, m_points[i].GetAnchorPoint(),
+                                               m_points[i + 1].GetAnchorPoint(),
+                                               wxSize(arrowHeadDimension, arrowHeadDimension));
                             }
                         }
                     }
@@ -372,7 +342,6 @@ namespace Wisteria::GraphItems
             Shape sh(GraphItemInfo()
                          .Brush(GetBrush())
                          .Pen(GetPen())
-                         .Anchoring(Anchoring::TopLeftCorner)
                          .Scaling(GetScaling())
                          .DPIScaling(GetDPIScaleFactor()),
                      m_shape, boundingBox.GetSize(), m_iconImage);

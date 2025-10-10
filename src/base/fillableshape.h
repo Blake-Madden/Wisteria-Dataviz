@@ -52,11 +52,11 @@ namespace Wisteria::GraphItems
         /// @private
         FillableShape(const FillableShape&) = delete;
         /// @private
-        FillableShape& operator==(const FillableShape&) = delete;
+        FillableShape& operator=(const FillableShape&) = delete;
         /** @brief Draws the shape onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/
-        wxRect Draw(wxDC& dc) const override final;
+        wxRect Draw(wxDC& dc) const final;
 
       private:
         double m_fillPercent{ math_constants::empty };
