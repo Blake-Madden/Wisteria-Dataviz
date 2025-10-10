@@ -46,22 +46,38 @@ namespace Wisteria
             return nullptr;
             }
 
-        // see which plot has the largest range end and use that
-        // (note that we will be assuming all plots are using the same range start [usually zero])
-        GraphItems::Axis axisWithMaxRangeEnd{ valid.front()->GetLeftYAxis() };
+        // determine the full Y range across all graphs
+        GraphItems::Axis axisTemplate{ valid.front()->GetLeftYAxis() };
+
+        double minStart = axisTemplate.GetRange().first;
+        double maxEnd = axisTemplate.GetRange().second;
+
+        // find true global min start and max end
         for (const auto& graph : valid)
             {
-            if (graph->GetLeftYAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
+            const auto range = graph->GetLeftYAxis().GetRange();
+            minStart = std::min(minStart, range.first);
+            maxEnd = std::max(maxEnd, range.second);
+            }
+
+        // pick the style from whichever graph extends farthest
+        for (const auto& graph : valid)
+            {
+            if (graph->GetLeftYAxis().GetRange().second > axisTemplate.GetRange().second)
                 {
-                axisWithMaxRangeEnd.CopySettings(graph->GetLeftYAxis());
+                axisTemplate.CopySettings(graph->GetLeftYAxis());
                 }
             }
+
+        // enforce unified numeric range on the style template
+        axisTemplate.SetRange(minStart, maxEnd);
 
         for (const auto& graph : valid)
             {
             // copy the left axis range from the tallest plot to this one,
             // then turn off the labels
-            graph->GetLeftYAxis().CopySettings(axisWithMaxRangeEnd);
+            graph->GetLeftYAxis().CopySettings(axisTemplate);
+            graph->GetLeftYAxis().SetRange(minStart, maxEnd);
             graph->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetLeftYAxis().GetTitle().Show(false);
             // turn off right too
@@ -72,7 +88,7 @@ namespace Wisteria
         // create a common axis, also copied from the tallest plot's left axis
         auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
-        commonAxis->CopySettings(axisWithMaxRangeEnd);
+        commonAxis->CopySettings(axisTemplate);
         // tell the canvas to align the axis line to the left side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         // Get the canvas size of the axis and add it to the canvas.
@@ -121,22 +137,35 @@ namespace Wisteria
             return nullptr;
             }
 
-        // see which plot has the largest range end and use that
-        // (note that we will be assuming all plots are using the same range start [usually zero])
-        GraphItems::Axis axisWithMaxRangeEnd{ valid.front()->GetBottomXAxis() };
+        // determine the full X range across all graphs
+        GraphItems::Axis axisTemplate{ valid.front()->GetBottomXAxis() };
+
+        double minStart = axisTemplate.GetRange().first;
+        double maxEnd = axisTemplate.GetRange().second;
+
         for (const auto& graph : valid)
             {
-            if (graph->GetBottomXAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
+            const auto range = graph->GetBottomXAxis().GetRange();
+            minStart = std::min(minStart, range.first);
+            maxEnd = std::max(maxEnd, range.second);
+            }
+
+        for (const auto& graph : valid)
+            {
+            if (graph->GetBottomXAxis().GetRange().second > axisTemplate.GetRange().second)
                 {
-                axisWithMaxRangeEnd.CopySettings(graph->GetBottomXAxis());
+                axisTemplate.CopySettings(graph->GetBottomXAxis());
                 }
             }
+
+        axisTemplate.SetRange(minStart, maxEnd);
 
         // apply to each graph; copy the bottom axis range from the widest plot,
         // then turn off labels
         for (const auto& graph : valid)
             {
-            graph->GetBottomXAxis().CopySettings(axisWithMaxRangeEnd);
+            graph->GetBottomXAxis().CopySettings(axisTemplate);
+            graph->GetBottomXAxis().SetRange(minStart, maxEnd);
             graph->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetBottomXAxis().GetTitle().Show(false);
             // turn off top too
@@ -147,7 +176,7 @@ namespace Wisteria
         // create a common axis, also copied from the widest plot's bottom axis
         auto commonAxis = std::make_unique<GraphItems::Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
-        commonAxis->CopySettings(axisWithMaxRangeEnd);
+        commonAxis->CopySettings(axisTemplate);
         // anchor the axis line's top to the bottom side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         // get the canvas size of the axis and add it to the canvas
