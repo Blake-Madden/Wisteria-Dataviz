@@ -63,19 +63,15 @@ namespace Wisteria::GraphItems
         drawRect.SetTopLeft(shapeTopLeftCorner);
 
         // draw the full shape to a bitmap
-        wxBitmap bmp(drawRect.GetSize());
-        wxBitmap ghostedBmp(drawRect.GetSize());
+        wxBitmap bmp(drawRect.GetSize(), 32);
+        wxBitmap ghostedBmp(drawRect.GetSize(), 32);
 
             // main image
             {
             Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
             wxMemoryDC memDC(bmp);
             wxGCDC gdc(memDC);
-            gdc.SetBrush(wxColour{ 0, 0, 0, 0 });
-            gdc.Clear();
-
             Shape::Draw(wxRect(drawRect.GetSize()), gdc);
-            memDC.SelectObject(wxNullBitmap);
             }
             // ghosted image (brush is translucent, the pen remains the same to show an
             // outline/skeleton of the shape)
@@ -83,8 +79,6 @@ namespace Wisteria::GraphItems
             Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT);
             wxMemoryDC memDC(ghostedBmp);
             wxGCDC gdc(memDC);
-            gdc.SetBrush(wxColour{ 0, 0, 0, 0 });
-            gdc.Clear();
 
             auto shapeInfo{ GraphItemBase::GetGraphItemInfo() };
             shapeInfo.Brush(wxBrush(Wisteria::Colors::ColorContrast::ChangeOpacity(
@@ -93,7 +87,6 @@ namespace Wisteria::GraphItems
             const Shape ghostShape(shapeInfo, GetShape(), GetSizeDIPS());
 
             ghostShape.Draw(wxRect(drawRect.GetSize()), gdc);
-            memDC.SelectObject(wxNullBitmap);
             }
 
         // if 100% "filled," then just draw the regular bitmap
@@ -103,15 +96,16 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            const auto yCutOff = bmp.GetHeight() * (math_constants::full - m_fillPercent);
+            const auto yCutOff =
+                static_cast<int>(bmp.GetHeight() * (math_constants::full - m_fillPercent));
 
-            ghostedBmp = ghostedBmp.GetSubBitmap(wxSize(bmp.GetWidth(), yCutOff));
+            ghostedBmp = ghostedBmp.GetSubBitmap(wxRect{ wxSize{ bmp.GetWidth(), yCutOff } });
             dc.DrawBitmap(ghostedBmp, drawRect.GetLeftTop(), true);
 
             // nothing to draw above the ghosted image if empty
             if (compare_doubles_greater(m_fillPercent, math_constants::empty))
                 {
-                auto filledBmp = bmp.GetSubBitmap(wxRect(
+                const auto filledBmp = bmp.GetSubBitmap(wxRect(
                     wxPoint(0, yCutOff), wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
                 dc.DrawBitmap(filledBmp,
                               drawRect.GetLeftTop() + wxPoint{ 0, static_cast<int>(yCutOff) },
@@ -123,8 +117,8 @@ namespace Wisteria::GraphItems
         if (IsSelected())
             {
             const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
-            const wxDCPenChanger pc(
-                dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2, wxPENSTYLE_DOT));
+            const wxDCPenChanger pc(dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             dc.DrawRectangle(drawRect);
             }
 
@@ -133,6 +127,6 @@ namespace Wisteria::GraphItems
             dc.DestroyClippingRegion();
             }
 
-        return { dc.GetSize() };
+        return drawRect;
         }
     } // namespace Wisteria::GraphItems
