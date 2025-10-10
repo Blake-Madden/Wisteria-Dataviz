@@ -24,7 +24,7 @@ namespace Wisteria::GraphItems
     {
     /** @brief Collection of lines to be drawn together (e.g., an axis's gridlines).
         @details Although meant for axes, this can also be used to draw an arbitrary
-         series on lines on a canvas.
+         series of lines on a canvas.
         @note The points in this collection are not all connected; rather, each
          pair of points are drawn as a separate line. For example, if there are six
          points, then three separate lines will be drawn.*/
