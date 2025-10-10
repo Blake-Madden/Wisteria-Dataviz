@@ -8,11 +8,8 @@ permissions:
   contents: read
 
 env:
-  # Comma-separated list of directories to scan (recursive)
   TARGET_DIRS: "src,tests"
-  # Comma-separated subdirectory names to exclude anywhere under TARGET_DIRS
   EXCLUDE_DIRS: "third_party,vendor,external,submodules"
-  # Set to "true" to fail the job when any issue is found
   FAIL_ON_ISSUE: "false"
 
 jobs:
@@ -26,21 +23,21 @@ jobs:
           fetch-depth: 1
 
       - name: Scan for CRLF and tabs
+        id: scan
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p report
 
           IFS=',' read -ra TARGETS  <<< "${TARGET_DIRS:-src,tests}"
           IFS=',' read -ra EXCLUDES <<< "${EXCLUDE_DIRS:-third_party,vendor,external,submodules}"
 
-          # Build a regex that matches excluded directories anywhere in the path:  (^|/)(dir1|dir2)(/|$)
           if ((${#EXCLUDES[@]})); then
             EX_RE="(^|/)($(printf '%s|' "${EXCLUDES[@]}" | sed 's/|$//'))(/|$)"
           else
-            EX_RE="^$a"   # matches nothing
+            EX_RE="^$a"
           fi
 
-          # Collect tracked files from all targets (NUL-separated for safety)
           FILES=()
           for dir in "${TARGETS[@]}"; do
             [[ -d "$dir" ]] || continue
@@ -56,7 +53,6 @@ jobs:
             )
           done
 
-          # Filter out excluded dirs anywhere in the path
           FILTERED=()
           for f in "${FILES[@]}"; do
             if ! [[ "$f" =~ $EX_RE ]]; then
@@ -70,14 +66,8 @@ jobs:
           tab_offenders=()
 
           for f in "${FILTERED[@]}"; do
-            # Detect CR (carriage return). If present, line endings are CRLF or mixed.
-            if grep -Iq $'\r' -- "$f"; then
-              crlf_offenders+=("$f")
-            fi
-            # Detect literal tab characters
-            if grep -Iq $'\t' -- "$f"; then
-              tab_offenders+=("$f")
-            fi
+            grep -Iq $'\r' -- "$f" && crlf_offenders+=("$f")
+            grep -Iq $'\t' -- "$f" && tab_offenders+=("$f")
           done
 
           issue_found=false
@@ -85,11 +75,10 @@ jobs:
 
           if ((${#crlf_offenders[@]})); then
             issue_found=true
-            echo "::group::CRLF issues"
+            printf "%s\n" "${crlf_offenders[@]}" > report/crlf_files.txt
             for f in "${crlf_offenders[@]}"; do
               echo "::warning file=${f}::File has CRLF line endings; expected LF"
             done
-            echo "::endgroup::"
             {
               echo "## Files with CRLF line endings"
               echo
@@ -102,11 +91,10 @@ jobs:
 
           if ((${#tab_offenders[@]})); then
             issue_found=true
-            echo "::group::Tab issues"
+            printf "%s\n" "${tab_offenders[@]}" > report/tab_files.txt
             for f in "${tab_offenders[@]}"; do
               echo "::warning file=${f}::File contains tab characters; expected spaces"
             done
-            echo "::endgroup::"
             {
               echo "## Files containing tab characters"
               echo
@@ -123,3 +111,11 @@ jobs:
           elif [[ "${FAIL_ON_ISSUE:-false}" == "true" ]]; then
             exit 1
           fi
+
+      - name: Upload report artifact
+        if: always() # always upload, even if job fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: line-ending-and-tab-report
+          path: report/
+          if-no-files-found: ignore
