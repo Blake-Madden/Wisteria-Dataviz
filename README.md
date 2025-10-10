@@ -22,6 +22,7 @@ Wisteria Dataviz
 | Spellcheck | [![Spell Check](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/spell-check.yml) |
 | Profanity Check | [![Profanity Check](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/profanity-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/profanity-check.yml) |
 | clang-format | [![clang-format](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/clang-format-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/clang-format-check.yml) |
+| UNIX Newlines | [![Check LF line endings](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/newlines-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/newlines-check.yml) |
 
 About
 =============================
