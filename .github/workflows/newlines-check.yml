@@ -10,7 +10,7 @@ permissions:
 env:
   TARGET_DIRS: "src,tests"
   EXCLUDE_DIRS: "third_party,vendor,external,submodules"
-  FAIL_ON_ISSUE: "false"
+  FAIL_ON_ISSUE: "true"
 
 jobs:
   check-lf-and-tabs:
@@ -22,7 +22,7 @@ jobs:
           submodules: false
           fetch-depth: 1
 
-      - name: Scan for CRLF and tabs
+      - name: Scan for CRLF and tabs (with tab line numbers)
         id: scan
         shell: bash
         run: |
@@ -32,12 +32,14 @@ jobs:
           IFS=',' read -ra TARGETS  <<< "${TARGET_DIRS:-src,tests}"
           IFS=',' read -ra EXCLUDES <<< "${EXCLUDE_DIRS:-third_party,vendor,external,submodules}"
 
+          # Exclusion regex: (^|/)(dir1|dir2)(/|$)
           if ((${#EXCLUDES[@]})); then
             EX_RE="(^|/)($(printf '%s|' "${EXCLUDES[@]}" | sed 's/|$//'))(/|$)"
           else
-            EX_RE="^$a"
+            EX_RE="^$a"  # match nothing
           fi
 
+          # Collect tracked files (NUL-safe)
           FILES=()
           for dir in "${TARGETS[@]}"; do
             [[ -d "$dir" ]] || continue
@@ -53,6 +55,7 @@ jobs:
             )
           done
 
+          # Filter out excluded dirs anywhere in path
           FILTERED=()
           for f in "${FILES[@]}"; do
             if ! [[ "$f" =~ $EX_RE ]]; then
@@ -65,9 +68,23 @@ jobs:
           crlf_offenders=()
           tab_offenders=()
 
+          # Clear/report files (if re-running locally)
+          : > report/tab_lines.txt || true
+
           for f in "${FILTERED[@]}"; do
-            grep -Iq $'\r' -- "$f" && crlf_offenders+=("$f")
-            grep -Iq $'\t' -- "$f" && tab_offenders+=("$f")
+            # CR present → CRLF or mixed
+            if grep -Iq $'\r' -- "$f"; then
+              crlf_offenders+=("$f")
+            fi
+
+            # Tabs present
+            if grep -q $'\t' -- "$f"; then
+              tab_offenders+=("$f")
+              # Append file:line:snippet with [TAB] markers
+              # -nH prints line numbers and file name
+              # sed shows tabs as [TAB] for visibility; it does not modify files
+              grep -nH $'\t' -- "$f" | sed 's/\t/[TAB]/g' >> report/tab_lines.txt
+            fi
           done
 
           issue_found=false
@@ -102,6 +119,7 @@ jobs:
                 echo "- \`${f}\`"
               done
               echo
+              echo "> See artifact \`tab_lines.txt\` for line numbers and snippets (tabs shown as [TAB])."
             } >> "$summary_file"
           fi
 
@@ -113,7 +131,7 @@ jobs:
           fi
 
       - name: Upload report artifact
-        if: always() # always upload, even if job fails
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: line-ending-and-tab-report
