@@ -8,6 +8,77 @@
 
 using namespace Catch::Matchers;
 
+TEST_CASE("safe_divide returns 0 for NaN or infinity (double)", "[safe_math][safe_divide][double]")
+{
+    using std::numeric_limits;
+
+    const double NaN   = numeric_limits<double>::quiet_NaN();
+    const double Inf   = numeric_limits<double>::infinity();
+    const double NInf  = -numeric_limits<double>::infinity();
+
+    // NaN in either operand → 0
+    CHECK(safe_divide(NaN,  5.0) == 0.0);
+    CHECK(safe_divide(5.0,  NaN) == 0.0);
+    CHECK(safe_divide(NaN,  NaN) == 0.0);
+
+    // ±∞ in either operand → 0
+    CHECK(safe_divide(Inf,   2.0) == 0.0);
+    CHECK(safe_divide(NInf,  2.0) == 0.0);
+    CHECK(safe_divide(2.0,   Inf) == 0.0);
+    CHECK(safe_divide(2.0,   NInf) == 0.0);
+    CHECK(safe_divide(Inf,   NInf) == 0.0);
+
+    // Zero divisor/dividend cases → 0
+    CHECK(safe_divide(0.0,   3.0) == 0.0);
+    CHECK(safe_divide(6.0,   0.0) == 0.0);
+    CHECK(safe_divide(0.0,   0.0) == 0.0);
+
+    // Baseline finite division still works
+    CHECK(safe_divide(6.0,   3.0) == 2.0);
+    CHECK(safe_divide(-8.0,  2.0) == -4.0);
+}
+
+TEST_CASE("safe_divide returns 0 for NaN or infinity (float)", "[safe_math][safe_divide][float]")
+{
+    using std::numeric_limits;
+
+    const float NaN   = numeric_limits<float>::quiet_NaN();
+    const float Inf   = numeric_limits<float>::infinity();
+    const float NInf  = -numeric_limits<float>::infinity();
+
+    CHECK(safe_divide(NaN,  5.0f) == 0.0f);
+    CHECK(safe_divide(5.0f, NaN)  == 0.0f);
+
+    CHECK(safe_divide(Inf,  2.0f) == 0.0f);
+    CHECK(safe_divide(2.0f, Inf)  == 0.0f);
+
+    CHECK(safe_divide(0.0f, 3.0f) == 0.0f);
+    CHECK(safe_divide(6.0f, 0.0f) == 0.0f);
+
+    CHECK(safe_divide(6.0f, 3.0f) == 2.0f);
+}
+
+TEST_CASE("zero_if_nan incorrectly keeps infinities", "[safe_math][zero_if_nan][inf]")
+    {
+    using std::numeric_limits;
+
+    constexpr double inf  = numeric_limits<double>::infinity();
+    constexpr double ninf = -numeric_limits<double>::infinity();
+    constexpr double nan  = numeric_limits<double>::quiet_NaN();
+
+    // should zero out NaN — current behavior OK
+    CHECK(zero_if_nan(nan) == 0.0);
+
+    // should also zero out infinities, but currently does not
+    CHECK(zero_if_nan(inf)  == 0.0);
+    CHECK(zero_if_nan(ninf) == 0.0);
+
+    // finite values should pass through unchanged
+    CHECK(zero_if_nan(0.0)   == 0.0);
+    CHECK(zero_if_nan(42.0)  == 42.0);
+    CHECK(zero_if_nan(-7.25) == -7.25);
+    }
+
 TEST_CASE("Safe LDivides By Zero", "[safemath]")
     {
     CHECK(0 == safe_ldiv(0, 100).quot);
@@ -25,9 +96,6 @@ TEST_CASE("Safe LDivides", "[safemath]")
 
     CHECK((-5) == safe_ldiv(107, -20).quot);
     CHECK((7) == safe_ldiv(107, -20).rem);
-    
-    CHECK((183) == safe_ldiv(2759.5, 15.0).quot);
-    CHECK((14) == safe_ldiv(2759.5, 15.0).rem);
 
     CHECK((-10) == safe_ldiv(-207, 20).quot);
     CHECK((-7) == safe_ldiv(-207, 20).rem);

@@ -13,6 +13,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 
 /// @brief Returns the given value, unless it is NaN. In that case, returns zero.
 /// @param val The value to review.
@@ -20,7 +21,7 @@
 [[nodiscard]]
 constexpr double zero_if_nan(const double val) noexcept
     {
-    return std::isnan(val) ? 0 : val;
+    return std::isfinite(val) ? val : 0.0;
     }
 
 // DIVISION OPERATIONS
@@ -32,6 +33,7 @@ constexpr double zero_if_nan(const double val) noexcept
 /// @param divisor The divisor (i.e., the value dividing by).
 /// @returns The remainder of the modulus operation, or zero if one of the values was invalid.
 template<typename T>
+    requires std::is_integral_v<T>
 [[nodiscard]]
 inline constexpr T safe_modulus(const T dividend, const T divisor) noexcept
     {
@@ -57,6 +59,13 @@ inline constexpr T safe_divide(const T dividend, const T divisor) noexcept
         {
         return 0;
         }
+    if constexpr (std::is_floating_point_v<T>)
+        {
+        if (!std::isfinite(dividend) || !std::isfinite(divisor))
+            {
+            return 0;
+            }
+        }
     return dividend / static_cast<T>(divisor);
     }
 
@@ -67,6 +76,7 @@ inline constexpr T safe_divide(const T dividend, const T divisor) noexcept
 /// @returns The quotient of the division operation and its remainder (as longs),
 ///     or zeros if the input was invalid.
 template<typename T>
+    requires std::is_integral_v<T> && (sizeof(long) >= sizeof(T))
 [[nodiscard]]
 inline constexpr ldiv_t safe_ldiv(const T dividend, const T divisor) noexcept
     {
@@ -87,7 +97,7 @@ inline constexpr ldiv_t safe_ldiv(const T dividend, const T divisor) noexcept
     @param actual The value being reviewed.
     @param expected The expected value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
-        higher precision used in the comparison.
+        lower precision used in the comparison.
     @returns @c true if the value matches the expected value.*/
 [[nodiscard]]
 inline bool compare_doubles(const double actual, const double expected,
