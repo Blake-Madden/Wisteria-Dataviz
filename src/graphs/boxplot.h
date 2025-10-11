@@ -207,6 +207,10 @@ namespace Wisteria::Graphs
             [[nodiscard]]
             bool operator<(const BoxAndWhisker& that) const noexcept
                 {
+                if (!m_useGrouping || !that.m_useGrouping)
+                    {
+                    return false;
+                    }
                 return wxUILocale::GetCurrent().CompareStrings(
                            m_groupColumn->GetLabelFromID(m_groupId),
                            that.m_groupColumn->GetLabelFromID(that.m_groupId),
