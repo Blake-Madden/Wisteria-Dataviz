@@ -380,8 +380,8 @@ namespace Wisteria::Graphs
         : Graph2D(canvas)
         {
         SetBrushScheme(brushes != nullptr ? brushes :
-                                            std::make_unique<Brushes::Schemes::BrushScheme>(
-                                                *Settings::GetDefaultColorScheme()));
+                                            std::make_shared<Brushes::Schemes::BrushScheme>(
+                                                Settings::GetDefaultColorScheme()));
         SetColorScheme(colors);
 
         GetBottomXAxis().Show(false);

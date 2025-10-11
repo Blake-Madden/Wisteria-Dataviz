@@ -286,7 +286,9 @@ namespace Wisteria::Graphs
                                   std::make_shared<LineStyleScheme>(LineStyleScheme{
                                       { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
             {
-            SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+            SetColorScheme(colors != nullptr ? colors :
+                                               std::make_shared<Colors::Schemes::ColorScheme>(
+                                                   Settings::GetDefaultColorScheme()));
             SetShapeScheme(shapes != nullptr ?
                                shapes :
                                std::make_unique<Wisteria::Icons::Schemes::IconScheme>(

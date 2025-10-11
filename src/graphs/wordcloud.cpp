@@ -18,7 +18,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                          const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : Graph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors :
+                                           std::make_shared<Colors::Schemes::ColorScheme>(
+                                               Settings::GetDefaultColorScheme()));
 
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);

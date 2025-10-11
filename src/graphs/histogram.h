@@ -217,7 +217,7 @@ namespace Wisteria::Graphs
             {
             SetBrushScheme(brushes != nullptr ? brushes :
                                                 std::make_shared<Brushes::Schemes::BrushScheme>(
-                                                    *Settings::GetDefaultColorScheme()));
+                                                    Settings::GetDefaultColorScheme()));
             SetColorScheme(colors);
             GetBarAxis().GetGridlinePen() = wxNullPen;
             // doesn't make sense to show these on a histogram

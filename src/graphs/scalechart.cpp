@@ -18,9 +18,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
         : Wisteria::Graphs::BarChart(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors :
+                                           std::make_shared<Colors::Schemes::ColorScheme>(
+                                               Settings::GetDefaultColorScheme()));
         SetShapeScheme(shapes != nullptr ? shapes :
-                                           std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
+                                           std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
 
         SetBarOrientation(Wisteria::Orientation::Vertical);

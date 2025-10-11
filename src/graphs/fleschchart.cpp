@@ -19,9 +19,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FleschChart, Wisteria::Graphs::Group
         const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors :
+                                           std::make_shared<Colors::Schemes::ColorScheme>(
+                                               Settings::GetDefaultColorScheme()));
         SetShapeScheme(shapes != nullptr ? shapes :
-                                           std::make_unique<Wisteria::Icons::Schemes::IconScheme>(
+                                           std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
 
         if (GetCanvas() != nullptr)

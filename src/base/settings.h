@@ -226,9 +226,9 @@ namespace Wisteria
 
         /// @returns The default color scheme to use for groups with the graphs.
         [[nodiscard]]
-        static std::unique_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
+        static Colors::Schemes::ColorScheme GetDefaultColorScheme()
             {
-            return std::make_unique<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk());
+            return Colors::Schemes::Dusk{};
             }
 
         /// @brief The default opacity when ghosting items.

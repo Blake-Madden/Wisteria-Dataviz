@@ -157,10 +157,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         {
         SetColorScheme(colors);
         SetBrushScheme((brushes != nullptr ? brushes :
-                                             std::make_unique<Brushes::Schemes::BrushScheme>(
-                                                 *Settings::GetDefaultColorScheme())));
+                                             std::make_shared<Brushes::Schemes::BrushScheme>(
+                                                 Settings::GetDefaultColorScheme())));
         SetShapeScheme(
-            (shapes != nullptr ? shapes : std::make_unique<Icons::Schemes::StandardShapes>()));
+            (shapes != nullptr ? shapes : std::make_shared<Icons::Schemes::StandardShapes>()));
 
         GetRightYAxis().Show(false);
         if (GetTopXAxis().GetAxisLinePen().IsOk())

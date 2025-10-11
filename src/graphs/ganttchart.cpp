@@ -15,10 +15,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
     //----------------------------------------------------------------
     GanttChart::GanttChart(
         Wisteria::Canvas * canvas,
-        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors /*= nullptr*/)
+        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : BarChart(canvas)
         {
-        SetColorScheme(colors != nullptr ? std::move(colors) : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors :
+                                           std::make_shared<Colors::Schemes::ColorScheme>(
+                                               Settings::GetDefaultColorScheme()));
         SetBarOrientation(Orientation::Horizontal);
         GetRightYAxis().Show(false);
         GetScalingAxis().Show(false);

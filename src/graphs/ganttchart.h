@@ -135,7 +135,7 @@ namespace Wisteria::Graphs
         /// @param colors The color scheme to apply to the boxes.
         ///     Leave as @c nullptr to use the default theme.
         explicit GanttChart(Wisteria::Canvas* canvas,
-                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
+                            const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr);
         /** @brief Sets the data.
             @param data The data to use for the chart.
             @param interval The date interval to display across the axis.\n

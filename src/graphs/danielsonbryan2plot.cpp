@@ -19,7 +19,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
         const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>& shapes /*= nullptr*/)
         : GroupGraph2D(canvas)
         {
-        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
+        SetColorScheme(colors != nullptr ? colors :
+                                           std::make_shared<Colors::Schemes::ColorScheme>(
+                                               Settings::GetDefaultColorScheme()));
         SetShapeScheme(shapes != nullptr ? shapes :
                                            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                                                Wisteria::Icons::Schemes::StandardShapes()));
