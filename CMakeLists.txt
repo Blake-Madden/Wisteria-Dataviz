@@ -100,12 +100,19 @@ endif()
 # Add wxWidgets to the build
 include(cmake/folders.cmake)
 
-set(wxUSE_WEBVIEW_EDGE ON)
-set(wxBUILD_SHARED OFF)
+set(PROJECT_WX_DEBUG_LEVEL 1)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(__WXDEBUG__ 0)
-    set(wxBUILD_OPTIMISE ON)
-    set(wxBUILD_STRIPPED_RELEASE ON)
+    set(PROJECT_WX_DEBUG_LEVEL 0)
+else()
+    set(PROJECT_WX_DEBUG_LEVEL 1)
+endif()
+
+set(wxUSE_WEBVIEW_EDGE ON CACHE BOOL "Use Edge backend for WebView (MSW)" FORCE)
+set(wxBUILD_SHARED OFF CACHE BOOL "Build wxWidgets statically" FORCE)
+set(wxBUILD_DEBUG_LEVEL ${PROJECT_WX_DEBUG_LEVEL} CACHE STRING "wxWidgets runtime debug level" FORCE)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(wxBUILD_OPTIMISE ON BOOL "Optimize wxWidgets for Release" FORCE)
+    set(wxBUILD_STRIPPED_RELEASE ON CACHE BOOL "Strip symbols from wxWidgets Release builds" FORCE)
 endif()
 find_directory("wxWidgets" wxWidgets_BASEDIR)
 add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
@@ -132,6 +139,10 @@ elseif(UNIX)
     find_library(TBB_LIB tbb)
     target_link_libraries(${WISTIER_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES})
 endif()
+
+# Define wxDEBUG_LEVEL consistently for all platforms
+target_compile_definitions(${WISTIER_LIB} PUBLIC 
+    wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 if(MSVC)
@@ -170,6 +181,10 @@ elseif(UNIX)
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+endif()
+
+if(DEFINED wxBUILD_DEBUG_LEVEL AND NOT "${wxBUILD_DEBUG_LEVEL}" STREQUAL "${PROJECT_WX_DEBUG_LEVEL}")
+    message(FATAL_ERROR "Mismatch: wxBUILD_DEBUG_LEVEL=${wxBUILD_DEBUG_LEVEL} but your code uses wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL}")
 endif()
 
 # Build the library demo
