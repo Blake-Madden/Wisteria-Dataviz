@@ -284,15 +284,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
 
         // see how much room is needed for the whiskers and data points
         // (outliers would go beyond the whiskers).
-        const auto [fullDataMin, fullDataMax] =
-            std::minmax_element(currentBox.m_continuousColumn->GetValues().cbegin(),
-                                currentBox.m_continuousColumn->GetValues().cend());
         const auto [minValue, maxValue] =
             currentBox.m_useGrouping ?
                 currentBox.GetDataset()->GetContinuousMinMax(currentBox.m_continuousColumnName,
                                                              currentBox.m_groupColumnName,
                                                              currentBox.m_groupId) :
-                std::make_pair(*fullDataMin, *fullDataMax);
+                currentBox.GetDataset()->GetContinuousMinMax(currentBox.m_continuousColumnName);
+        if (!std::isfinite(minValue) || !std::isfinite(maxValue))
+            {
+            wxLogWarning(L"Box plot cannot be drawn; data contains no finite values.");
+            return;
+            }
         const double yMin = std::min(currentBox.GetLowerWhisker(), minValue);
         const double yMax = std::max(currentBox.GetUpperWhisker(), maxValue);
 
