@@ -842,7 +842,7 @@ namespace Wisteria::Graphs
 
         /// @brief Random number engine that can be used with a @c uniform_int_distribution.
         /// @details For example, this could be used to generate random coordinates for an object.
-        static std::mt19937 m_mt;
+        static thread_local std::mt19937 m_mt;
 
       private:
         /// @brief Sets a non-const pointer to the parent canvas.

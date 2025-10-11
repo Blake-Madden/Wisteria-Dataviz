@@ -393,7 +393,7 @@ namespace Wisteria::Graphs
         /** @brief Overlays a legend on top of the plot.
             @param overlay @c true to include the legend on the plot.
             @note This only applies when a displaying single-series box.*/
-        void IncludedOverlayingLegend(const bool overlay) noexcept { m_overlayLegend = overlay; }
+        void IncludeOverlayingLegend(const bool overlay) noexcept { m_overlayLegend = overlay; }
 
         /** @brief Builds and returns a legend for single-box plots,
                 showing the various statistics.
@@ -401,7 +401,7 @@ namespace Wisteria::Graphs
             @param options The options for how to build the legend.\n
                 Legend placement is the only field used here.
             @returns The legend for the plot.
-            @sa IncludedOverlayingLegend().
+            @sa IncludeOverlayingLegend().
             @note By default, this legend will be created and laid on top of the plot
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
@@ -539,8 +539,8 @@ namespace Wisteria::Graphs
             @param box The box to draw.
             @note If only one box is on the plot, then no labels will be shown on the bottom X axis
                 (even if a custom label is provided for where the box is). To override this,
-                call `GetBottomXAxis().ShowAxisLabels(true)` after adding the box and its custom
-           label.*/
+                call `GetBottomXAxis().SetLabelDisplay(...)` after adding the box and
+                its custom label.*/
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes(wxDC& dc) override final;
 

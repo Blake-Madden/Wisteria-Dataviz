@@ -113,6 +113,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                  [](const auto val) noexcept { return !std::isnan(val); });
             }
 
+        if (dest.empty())
+            {
+            // reset stats to NaN; rendering will naturally short-circuit
+            m_middlePoint = m_lowerControlLimit = m_upperControlLimit = m_lowerWhisker =
+                m_upperWhisker = std::numeric_limits<double>::quiet_NaN();
+            return;
+            }
+
         std::ranges::sort(dest);
         statistics::quartiles_presorted(dest, m_lowerControlLimit, m_upperControlLimit);
         const double outlierRange = 1.5 * (m_upperControlLimit - m_lowerControlLimit);
@@ -291,13 +299,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
 
         // adjust the range (if necessary) to accommodate the plot
-        while (rangeStart > yMin)
+        if (GetLeftYAxis().GetInterval() > 0 && std::isfinite(yMin) && std::isfinite(yMax))
             {
-            rangeStart -= GetLeftYAxis().GetInterval();
-            }
-        while (rangeEnd < yMax)
-            {
-            rangeEnd += GetLeftYAxis().GetInterval();
+            while (rangeStart > yMin)
+                {
+                rangeStart -= GetLeftYAxis().GetInterval();
+                }
+            while (rangeEnd < yMax)
+                {
+                rangeEnd += GetLeftYAxis().GetInterval();
+                }
             }
 
         GetLeftYAxis().SetRange(rangeStart, rangeEnd, GetLeftYAxis().GetPrecision());
@@ -702,14 +713,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             AddObject(std::move(outliers));
         };
 
-        std::vector<wxPoint> boxCorners;
         for (auto& box : m_boxes)
             {
             drawBox(box, true, 0); // index just used for images, not irrelevant here
-            boxCorners.push_back(box.m_boxRect.GetTopLeft());
-            boxCorners.push_back(box.m_boxRect.GetTopRight());
-            boxCorners.push_back(box.m_boxRect.GetBottomLeft());
-            boxCorners.push_back(box.m_boxRect.GetBottomRight());
             }
 
         // scale the common image to the plot area's size

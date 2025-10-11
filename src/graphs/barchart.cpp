@@ -899,7 +899,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             const size_t overallBarSpacing = (barRenderInfo.m_barSpacing * (barSlots - 1));
             barRenderInfo.m_barWidth = safe_divide<double>(
                 GetPlotAreaBoundingBox().GetHeight() -
-                    (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth() + barSlots ?
+                    (overallBarSpacing < GetPlotAreaBoundingBox().GetHeight() + barSlots ?
                          overallBarSpacing :
                          0),
                 (barSlots + 1));
