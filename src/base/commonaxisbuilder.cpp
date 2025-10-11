@@ -70,14 +70,14 @@ namespace Wisteria
             }
 
         // enforce unified numeric range on the style template
-        axisTemplate.SetRange(minStart, maxEnd);
+        axisTemplate.SetRange(minStart, maxEnd, axisTemplate.GetPrecision());
 
         for (const auto& graph : valid)
             {
             // copy the left axis range from the tallest plot to this one,
             // then turn off the labels
             graph->GetLeftYAxis().CopySettings(axisTemplate);
-            graph->GetLeftYAxis().SetRange(minStart, maxEnd);
+            graph->GetLeftYAxis().SetRange(minStart, maxEnd, axisTemplate.GetPrecision());
             graph->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetLeftYAxis().GetTitle().Show(false);
             // turn off right too
@@ -158,14 +158,14 @@ namespace Wisteria
                 }
             }
 
-        axisTemplate.SetRange(minStart, maxEnd);
+        axisTemplate.SetRange(minStart, maxEnd, axisTemplate.GetPrecision());
 
         // apply to each graph; copy the bottom axis range from the widest plot,
         // then turn off labels
         for (const auto& graph : valid)
             {
             graph->GetBottomXAxis().CopySettings(axisTemplate);
-            graph->GetBottomXAxis().SetRange(minStart, maxEnd);
+            graph->GetBottomXAxis().SetRange(minStart, maxEnd, axisTemplate.GetPrecision());
             graph->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             graph->GetBottomXAxis().GetTitle().Show(false);
             // turn off top too

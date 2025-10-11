@@ -121,7 +121,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             {
             const auto [minXValue, maxXValue] = GetXMinMaxDates();
 
-            GetBottomXAxis().SetRange(minXValue, maxXValue);
+            GetBottomXAxis().SetDateRange(minXValue, maxXValue);
             }
         else
             {

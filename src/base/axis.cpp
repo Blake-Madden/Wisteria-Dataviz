@@ -3044,7 +3044,7 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
-    void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate)
+    void Axis::SetDateRange(const wxDateTime& startDate, const wxDateTime& endDate)
         {
         assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
         assert(startDate <= endDate && L"Start date should be before end date!");
@@ -3053,7 +3053,7 @@ namespace Wisteria::GraphItems
             return;
             }
         const auto numberOfDays = endDate.Subtract(startDate).GetDays();
-        SetRange(startDate, endDate,
+        SetDateRange(startDate, endDate,
                  (numberOfDays <= 10  ? DateInterval::Daily :
                   numberOfDays <= 70  ? DateInterval::Weekly :
                   numberOfDays <= 500 ? DateInterval::Monthly :
@@ -3062,8 +3062,8 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
-    void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
-                        const DateInterval displayInterval, const FiscalYear fyType)
+    void Axis::SetDateRange(const wxDateTime& startDate, const wxDateTime& endDate,
+                            const DateInterval displayInterval, const FiscalYear fyType)
         {
         assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
         assert(startDate <= endDate && L"Start date should be before end date!");
