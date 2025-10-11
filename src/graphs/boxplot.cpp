@@ -60,7 +60,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             {
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
-                if (std::isnan(m_continuousColumn->GetValue(i)))
+                if (!std::isfinite(m_continuousColumn->GetValue(i)))
                     {
                     continue;
                     }
@@ -75,7 +75,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             {
             for (const auto& datum : m_continuousColumn->GetValues())
                 {
-                if (std::isnan(datum))
+                if (!std::isfinite(datum))
                     {
                     continue;
                     }
@@ -100,7 +100,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
                 if (m_groupColumn->GetValue(i) == m_groupId &&
-                    !std::isnan(m_continuousColumn->GetValue(i)))
+                    std::isfinite(m_continuousColumn->GetValue(i)))
                     {
                     dest.push_back(m_continuousColumn->GetValue(i));
                     }
@@ -110,7 +110,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             {
             dest.reserve(GetDataset()->GetRowCount());
             std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(dest),
-                                 [](const auto val) noexcept { return !std::isnan(val); });
+                                 [](const auto val) noexcept { return std::isfinite(val); });
             }
 
         if (dest.empty())
@@ -659,7 +659,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             dataPoints->SetDPIScaleFactor(GetDPIScaleFactor());
             for (size_t i = 0; i < box.GetDataset()->GetRowCount(); ++i)
                 {
-                if (std::isnan(box.m_continuousColumn->GetValue(i)))
+                if (!std::isfinite(box.m_continuousColumn->GetValue(i)))
                     {
                     continue;
                     }
