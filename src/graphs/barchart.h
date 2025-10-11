@@ -502,7 +502,9 @@ namespace Wisteria::Graphs
             ///    parent chart will determine the best outline color.
             wxPen m_outlinePen{ wxNullPen };
             /// @brief An optional background color to use in conjunction with the brush.
-            ///    Will be invalid by default, so that the brush is what is used exclusively.
+            /// @deails Useful with patterned (hatched) brushes;
+            ///    the color is painted under the hatch.
+            ///    Will be invalid by default; the brush is what is used exclusively.
             wxColour m_color;
             /// The length of the block (i.e., how much of the scaling axis the block consumes).
             double m_length{ 0 };

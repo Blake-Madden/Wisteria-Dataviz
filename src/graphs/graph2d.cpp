@@ -14,7 +14,7 @@ wxIMPLEMENT_ABSTRACT_CLASS(Wisteria::Graphs::Graph2D, Wisteria::GraphItems::Grap
 namespace Wisteria::Graphs
     {
     // random number generator that can be used by the graph
-    std::mt19937 Graph2D::m_mt{ std::random_device{}() };
+    thread_local std::mt19937 Graph2D::m_mt{ std::random_device{}() };
 
     //----------------------------------------------------------------
     void Graph2D::ContrastColors()
@@ -1386,8 +1386,17 @@ namespace Wisteria::Graphs
                 {
                 // toggle selection (or if it has subitems, then set it to selected
                 // and let it perform its own selection logic)
-                plotObject->SetSelected(
-                    !plotObject->GetSelectedIds().empty() ? true : !plotObject->IsSelected());
+                if (!plotObject->GetSelectedIds().empty())
+                    {
+                    // has sub-items selected
+                    plotObject->SetSelected(true);
+                    }
+                else
+                    {
+                    // toggle simple selection
+                    plotObject->SetSelected(!plotObject->IsSelected());
+                    }
+
                 // update list of selected items
                 // (based on whether this is newly selected or just unselected)
                 if (plotObject->IsSelected())
