@@ -3054,11 +3054,11 @@ namespace Wisteria::GraphItems
             }
         const auto numberOfDays = endDate.Subtract(startDate).GetDays();
         SetDateRange(startDate, endDate,
-                 (numberOfDays <= 10  ? DateInterval::Daily :
-                  numberOfDays <= 70  ? DateInterval::Weekly :
-                  numberOfDays <= 500 ? DateInterval::Monthly :
-                                        DateInterval::FiscalQuarterly),
-                 FiscalYear::USBusiness);
+                     (numberOfDays <= 10  ? DateInterval::Daily :
+                      numberOfDays <= 70  ? DateInterval::Weekly :
+                      numberOfDays <= 500 ? DateInterval::Monthly :
+                                            DateInterval::FiscalQuarterly),
+                     FiscalYear::USBusiness);
         }
 
     //--------------------------------------

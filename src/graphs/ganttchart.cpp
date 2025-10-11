@@ -161,7 +161,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
         if (firstDay.IsValid() && lastDay.IsValid())
             {
             GetScalingAxis().SetDateRange(firstDay, lastDay, GetDateDisplayInterval(),
-                                      GetFiscalYearType());
+                                          GetFiscalYearType());
             }
 
         GetTopXAxis().CopySettings(GetScalingAxis());

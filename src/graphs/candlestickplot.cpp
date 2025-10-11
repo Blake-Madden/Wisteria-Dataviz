@@ -119,7 +119,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
         if (firstDay.IsValid() && lastDay.IsValid())
             {
             GetBottomXAxis().SetDateRange(firstDay, lastDay, DateInterval::Monthly,
-                                      FiscalYear::USBusiness);
+                                          FiscalYear::USBusiness);
             }
 
         if (GetBottomXAxis().GetRangeDates().first.IsValid() &&
