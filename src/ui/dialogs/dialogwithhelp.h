@@ -70,20 +70,20 @@ namespace Wisteria::UI
             m_helpTopic = topicPath;
             }
 
-        /** @brief Fixes a wxBitmap from a wxBitmapBundle for use in wxGenericStaticBitmap on GTK.
+        /** @brief Fixes a wxBitmap from a wxBitmapBundle for use in wxStaticBitmap.
 
-            @details On wxGTK, wxGenericStaticBitmap has a quirk where power-of-2 bitmap sizes
-            (e.g., 16x16, 32x32, 128x128) can be interpreted as stock icon sizes, causing
-            them to be drawn at 16x16 regardless of the actual bitmap size.
+            @details On non-Windows platforms, wxStaticBitmap interprets power-of-2 bitmap sizes
+            (e.g., 16x16, 32x32, 128x128) as stock icon sizes, causing them to be drawn at 16x16
+            regardless of the actual bitmap size.
 
-            This function applies a 1-pixel downscale to power-of-2 sizes on GTK to bypass the
-            stock icon shortcut. Non-power-of-2 sizes, and all sizes on non-GTK platforms,
+            This function applies a 1-pixel downscale to power-of-2 sizes to bypass the
+            stock icon shortcut. Non-power-of-2 sizes, and all sizes on Windows,
             are returned unmodified.
 
             @param bundle The @c  wxBitmapBundle containing the bitmap(s) to display.
             @param size The intended display size of the bitmap. Must be fully specified
                         (width and height > 0).
-            @return A wxBitmap suitable for use in @c wxGenericStaticBitmap.
+            @return A wxBitmap suitable for use in @c wxStaticBitmap.
                     Returns @c wxNullBitmap if size is invalid.
         */
         static wxBitmap FixStaticBitmapImage(const wxBitmapBundle& bundle, const wxSize size)
@@ -98,7 +98,7 @@ namespace Wisteria::UI
                 return wxNullBitmap;
                 }
 
-#ifdef __WXGTK__
+#ifndef __WXMSW__
             if (!is_power_of_two(static_cast<uint32_t>(size.GetWidth())) ||
                 !is_power_of_two(static_cast<uint32_t>(size.GetHeight())))
                 {
@@ -106,13 +106,13 @@ namespace Wisteria::UI
                 return bundle.GetBitmap(size);
                 }
 
-            // power-of-2 size: downscale by 1 pixel to avoid GTK 16x16 quirk
+            // power-of-2 size: downscale by 1 pixel to avoid GTK/Cocoa 16x16 quirk
             wxBitmap bmp = bundle.GetBitmap(size);
             wxBitmap::Rescale(bmp, wxSize{ size.GetWidth() - 1, size.GetHeight() - 1 });
 
             return bmp;
 #else
-            // non-GTK: just return the requested size
+            // just return the requested size
             return bundle.GetBitmap(size);
 #endif
             }
