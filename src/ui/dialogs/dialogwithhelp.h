@@ -99,7 +99,7 @@ namespace Wisteria::UI
                 }
 
 #ifndef __WXMSW__
-            // e.g. 2.0 on Retina, 1.25 on 125% MSW
+            // For example, 2.0 on Retina
             const double scaling = GetContentScaleFactor();
 
             size = wxSize{ static_cast<int>(std::lround(size.GetWidth() * scaling)),
