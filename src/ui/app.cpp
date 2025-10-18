@@ -233,6 +233,9 @@ namespace Wisteria::UI
             safe_divide<double>(backscreenHeight, boundingBox.GetHeight()) * math_constants::half;
         appLabel.SetScaling(std::max(fontUpscaling, 1.0));
 
+        wxRect bottomBackScreen(0, canvasBmp.GetLogicalHeight() - backscreenHeight,
+                                canvasBmp.GetLogicalWidth(), backscreenHeight);
+
             // draw translucent backscreens on image so that text written on it can be read
             {
             const wxDCPenChanger pc{ gcdc, wxColour{ 0, 0, 0 } };
@@ -241,8 +244,7 @@ namespace Wisteria::UI
             gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetLogicalWidth(), backscreenHeight);
             if (includeCopyright)
                 {
-                gcdc.DrawRectangle(wxRect(0, canvasBmp.GetLogicalHeight() - backscreenHeight,
-                                          canvasBmp.GetLogicalWidth(), backscreenHeight));
+                gcdc.DrawRectangle(bottomBackScreen);
                 gcdc.DrawLine(0, canvasBmp.GetLogicalHeight() - backscreenHeight,
                               canvasBmp.GetLogicalWidth(),
                               canvasBmp.GetLogicalHeight() - backscreenHeight);
@@ -290,9 +292,14 @@ namespace Wisteria::UI
                     .FontColor(wxColour{ 255, 255, 255 })
                     .Padding(4, 4, 4, 4)
                     .DPIScaling(1.0)
-                    .Anchoring(Anchoring::BottomRightCorner)
-                    .AnchorPoint(wxRect{ gcdc.GetSize() }.GetBottomRight()));
-            copyrightInfo.SetScaling(fontUpscaling * math_constants::third);
+                    .Anchoring(Anchoring::BottomRightCorner));
+
+            const auto adjustedLeft{ bottomBackScreen.GetWidth() * math_constants::quarter };
+            bottomBackScreen.SetWidth(bottomBackScreen.GetWidth() * math_constants::three_quarters);
+            bottomBackScreen.SetLeft(adjustedLeft);
+            copyrightInfo.SetBoundingBox(bottomBackScreen, gcdc, 1.0);
+            copyrightInfo.SetAnchorPoint(bottomBackScreen.GetBottomRight());
+            copyrightInfo.SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned);
 
             copyrightInfo.Draw(gcdc);
             }
