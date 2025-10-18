@@ -655,6 +655,18 @@ namespace Wisteria::UI
             }
 
         [[nodiscard]]
+        wxSize ScaleToContentSize(const wxSize sz) const
+            {
+            auto scaledSize{ sz };
+            // for Retina display
+            const double scaling = GetContentScaleFactor();
+
+            scaledSize = wxSize{ static_cast<int>(std::lround(scaledSize.GetWidth() * scaling)),
+                                 static_cast<int>(std::lround(scaledSize.GetHeight() * scaling)) };
+            return scaledSize;
+            }
+
+        [[nodiscard]]
         static wxCoord GetPaddingWidth()
             {
             return wxSizerFlags::GetDefaultBorder() * 2;
