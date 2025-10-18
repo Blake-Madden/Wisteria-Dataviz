@@ -208,7 +208,7 @@ namespace Wisteria::UI
         {
         wxASSERT_MSG(bitmap.IsOk(), L"Invalid base image for splashscreen");
         const int ftSize = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
-        const auto backscreenHeight = bitmap.GetHeight() * math_constants::fifth;
+        const auto backscreenHeight = bitmap.GetLogicalHeight() * math_constants::fifth;
 
         const wxString theFontName{ Wisteria::GraphItems::Label::GetFirstAvailableFont(
             { DONTTRANSLATE(L"Roboto"), DONTTRANSLATE(L"Orbitron"), DONTTRANSLATE(L"Georgia") }) };
@@ -218,8 +218,8 @@ namespace Wisteria::UI
         wxGCDC gcdc(memDC);
 
         // prepare font for drawing the app name
-        Wisteria::GraphItems::Label appLabel(
-            Wisteria::GraphItems::GraphItemInfo(appName)
+        GraphItems::Label appLabel(
+            GraphItems::GraphItemInfo(appName)
                 .Pen(wxNullPen)
                 .Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD,
                              false, theFontName))
@@ -237,14 +237,15 @@ namespace Wisteria::UI
             {
             const wxDCPenChanger pc{ gcdc, wxColour{ 0, 0, 0 } };
             const wxDCBrushChanger bc{ gcdc, wxBrush{ wxColour{ 61, 60, 59, 175 } } };
-            gcdc.DrawRectangle(wxRect(0, 0, canvasBmp.GetWidth(), backscreenHeight));
-            gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetWidth(), backscreenHeight);
+            gcdc.DrawRectangle(wxRect(0, 0, canvasBmp.GetLogicalWidth(), backscreenHeight));
+            gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetLogicalWidth(), backscreenHeight);
             if (includeCopyright)
                 {
-                gcdc.DrawRectangle(wxRect(0, canvasBmp.GetHeight() - backscreenHeight,
-                                          canvasBmp.GetWidth(), backscreenHeight));
-                gcdc.DrawLine(0, canvasBmp.GetHeight() - backscreenHeight, canvasBmp.GetWidth(),
-                              canvasBmp.GetHeight() - backscreenHeight);
+                gcdc.DrawRectangle(wxRect(0, canvasBmp.GetLogicalHeight() - backscreenHeight,
+                                          canvasBmp.GetLogicalWidth(), backscreenHeight));
+                gcdc.DrawLine(0, canvasBmp.GetLogicalHeight() - backscreenHeight,
+                              canvasBmp.GetLogicalWidth(),
+                              canvasBmp.GetLogicalHeight() - backscreenHeight);
                 }
             }
 
@@ -279,10 +280,10 @@ namespace Wisteria::UI
             wxDateTime buildDate;
             buildDate.ParseDate(__DATE__);
 
-            Wisteria::GraphItems::Label copyrightInfo(
-                Wisteria::GraphItems::GraphItemInfo(
-                    wxString::Format(L"%s\u00A9%d %s. %s", copyrightPrefix, buildDate.GetYear(),
-                                     vendorName, _(L"All rights reserved.")))
+            GraphItems::Label copyrightInfo(
+                GraphItems::GraphItemInfo(wxString::Format(L"%s\u00A9%d %s. %s", copyrightPrefix,
+                                                           buildDate.GetYear(), vendorName,
+                                                           _(L"All rights reserved.")))
                     .Pen(wxNullPen)
                     .Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
                                  wxFONTWEIGHT_NORMAL, false, theFontName))
@@ -299,12 +300,14 @@ namespace Wisteria::UI
         // draw a border around the image
         gcdc.SetPen(wxColour{ 241, 241, 241 });
         const auto penWidth = gcdc.GetPen().GetWidth();
-        gcdc.DrawLine(0, 0, 0, canvasBmp.GetHeight() - penWidth);
-        gcdc.DrawLine(0, canvasBmp.GetHeight() - penWidth, canvasBmp.GetWidth() - penWidth,
-                      canvasBmp.GetHeight() - penWidth);
-        gcdc.DrawLine(canvasBmp.GetWidth() - penWidth, canvasBmp.GetHeight() - penWidth,
-                      canvasBmp.GetWidth() - penWidth, 0);
-        gcdc.DrawLine(canvasBmp.GetWidth() - penWidth, 0, 0, 0);
+        gcdc.DrawLine(0, 0, 0, canvasBmp.GetLogicalHeight() - penWidth);
+        gcdc.DrawLine(0, canvasBmp.GetLogicalHeight() - penWidth,
+                      canvasBmp.GetLogicalWidth() - penWidth,
+                      canvasBmp.GetLogicalHeight() - penWidth);
+        gcdc.DrawLine(canvasBmp.GetLogicalWidth() - penWidth,
+                      canvasBmp.GetLogicalHeight() - penWidth,
+                      canvasBmp.GetLogicalWidth() - penWidth, 0);
+        gcdc.DrawLine(canvasBmp.GetLogicalWidth() - penWidth, 0, 0, 0);
 
         memDC.SelectObject(wxNullBitmap);
 
