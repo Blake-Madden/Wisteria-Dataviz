@@ -82,11 +82,11 @@ namespace Wisteria::UI
 
             @param bundle The @c  wxBitmapBundle containing the bitmap(s) to display.
             @param size The intended display size of the bitmap. Must be fully specified
-                        (width and height > 0).
+                        (width and height > 0). This should be in DIPs (logical units).
             @return A wxBitmap suitable for use in @c wxStaticBitmap.
                     Returns @c wxNullBitmap if size is invalid.
         */
-        static wxBitmap FixStaticBitmapImage(const wxBitmapBundle& bundle, const wxSize size)
+        wxBitmap FixStaticBitmapImage(const wxBitmapBundle& bundle, wxSize size) const
             {
             wxASSERT_MSG(size.GetWidth() > 0 && size.GetHeight() > 0,
                          "FixStaticBitmapImage requires positive, fully-specified size!");
@@ -99,6 +99,12 @@ namespace Wisteria::UI
                 }
 
 #ifndef __WXMSW__
+            // For example, 2.0 on Retina
+            const double scaling = GetContentScaleFactor();
+
+            size = wxSize{ static_cast<int>(std::lround(size.GetWidth() * scaling)),
+                           static_cast<int>(std::lround(size.GetHeight() * scaling)) };
+
             if (!is_power_of_two(static_cast<uint32_t>(size.GetWidth())) ||
                 !is_power_of_two(static_cast<uint32_t>(size.GetHeight())))
                 {
@@ -108,12 +114,14 @@ namespace Wisteria::UI
 
             // power-of-2 size: downscale by 1 pixel to avoid GTK/Cocoa 16x16 quirk
             wxBitmap bmp = bundle.GetBitmap(size);
-            wxBitmap::Rescale(bmp, wxSize{ size.GetWidth() - 1, size.GetHeight() - 1 });
+            const int scaledPixel{ static_cast<int>(1 * scaling) };
+            wxBitmap::Rescale(
+                bmp, wxSize{ size.GetWidth() - scaledPixel, size.GetHeight() - scaledPixel });
+            bmp.SetScaleFactor(scaling);
 
             return bmp;
 #else
-            // just return the requested size
-            return bundle.GetBitmap(size);
+            return bundle.GetBitmap(FromDIP(size));
 #endif
             }
 
