@@ -16,8 +16,6 @@
 #include <optional>
 #include <set>
 #include <vector>
-#include <wx/artprov.h>
-#include <wx/dcgraph.h>
 #include <wx/scrolwin.h>
 #include <wx/uilocale.h>
 #include <wx/window.h>
@@ -107,7 +105,7 @@ namespace Wisteria::UI
             /// @brief Opens the folder to display its children nodes.
             void Expand() noexcept
                 {
-                if (m_subItems.size())
+                if (!m_subItems.empty())
                     {
                     m_isExpanded = true;
                     }
@@ -116,7 +114,7 @@ namespace Wisteria::UI
             /// @brief Closes the folder, hiding its children.
             void Collapse() noexcept
                 {
-                if (m_subItems.size())
+                if (!m_subItems.empty())
                     {
                     m_isExpanded = false;
                     }
@@ -134,7 +132,7 @@ namespace Wisteria::UI
             /// @warning Folders store the selected subitem even when it isn't active.
             ///     To see if a folder is the currently selected one, use IsActive().
             [[nodiscard]]
-            bool IsSubItemSelected() const noexcept
+            bool IsSubItemSelected() const
                 {
                 return (m_selectedItem.has_value() && m_selectedItem.value() < m_subItems.size());
                 }
@@ -380,7 +378,7 @@ namespace Wisteria::UI
 
         /** @returns Whether a (root-level) item is selected in the sidebar.*/
         [[nodiscard]]
-        bool IsFolderSelected() const noexcept
+        bool IsFolderSelected() const
             {
             return (m_selectedFolder.has_value() && m_selectedFolder.value() < GetFolderCount());
             }
