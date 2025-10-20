@@ -8,7 +8,7 @@
 
 #include "listdlg.h"
 #include "../../import/text_matrix.h"
-#include "../ribbon/artmetro.h"
+#include <wx/ribbon/art.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -340,7 +340,7 @@ namespace Wisteria::UI
                     m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                     }
                 }
-            m_ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
+            m_ribbon->SetArtProvider(new wxRibbonMSWArtProvider);
             mainSizer->Add(m_ribbon, wxSizerFlags{}.Expand().Border());
             m_ribbon->Realise();
             }
