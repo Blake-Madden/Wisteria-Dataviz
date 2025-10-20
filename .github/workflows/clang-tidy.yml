@@ -56,63 +56,41 @@ jobs:
           # If your project generates headers, you can add a light build:
           # cmake --build "$BUILD_DIR" -j
       
-      - name: Collect changed .cpp files
+      - name: Collect target files (include + prune excludes)
         id: files
         shell: bash
         run: |
-            set -euo pipefail
+          set -euo pipefail
+          # Build: find <INCLUDE_DIRS> \( -path EX1/* -o -path EX2/* ... \) -prune -o -type f -name '*.cpp' -print
+          readarray -t roots <<<"$(printf "%s\n" "$INCLUDE_DIRS" | sed '/^\s*$/d')"
+          readarray -t exdirs <<<"$(printf "%s\n" "$EXCLUDE_DIRS" | sed '/^\s*$/d')"
 
-            # 1) Determine diff range
-            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-              base="${{ github.event.pull_request.base.sha }}"
-              head="${{ github.event.pull_request.head.sha }}"
-            else
-              base="${{ github.event.before }}"
-              head="${{ github.event.after }}"
-            fi
+          if [[ ${#roots[@]} -eq 0 ]]; then
+            echo "No INCLUDE_DIRS configured"; exit 0
+          fi
 
-            echo "Diffing $base...$head"
+          # Assemble prune expression
+          prune=()
+          if [[ ${#exdirs[@]} -gt 0 ]]; then
+            prune+=( "(" )
+            for i in "${!exdirs[@]}"; do
+              d="${exdirs[$i]}"; [[ -z "$d" ]] && continue
+              [[ $i -gt 0 ]] && prune+=( -o )
+              prune+=( -path "$d/*" )
+            done
+            prune+=( ")" -prune -o )
+          fi
 
-            # 2) Start with changed .cpp files only
-            changed_cpp=$(git diff --name-only "$base" "$head" -- '*.cpp' | sort || true)
+          files=$(
+            find "${roots[@]}" "${prune[@]}" -type f -name '*.cpp' -print | sort
+          )
 
-            # Helper to escape regex special chars
-            esc_re() { sed -e 's/[.[\*^$()+?{}|]/\\&/g'; }
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
-            # 3) Keep only files under INCLUDE_DIRS (if provided)
-            #    (INCLUDE_DIRS is a newline-separated list via job env)
-            mapfile -t roots < <(printf '%s\n' "$INCLUDE_DIRS" | sed '/^\s*$/d')
-            if [[ ${#roots[@]} -gt 0 ]]; then
-              # Build a single regex: ^(dir1|dir2|...)/  (dirs escaped)
-              inc_rx="$(printf '%s\n' "${roots[@]}" \
-                        | sed 's#/*$##' \
-                        | esc_re \
-                        | paste -sd'|' -)"
-              if [[ -n "${inc_rx}" ]]; then
-                changed_cpp="$(printf '%s\n' "$changed_cpp" | grep -E "^(${inc_rx})/" || true)"
-              fi
-            fi
-
-            # 4) Drop anything under EXCLUDE_DIRS (if provided)
-            mapfile -t exdirs < <(printf '%s\n' "$EXCLUDE_DIRS" | sed '/^\s*$/d')
-            if [[ ${#exdirs[@]} -gt 0 && -n "${changed_cpp}" ]]; then
-              filtered="$changed_cpp"
-              for d in "${exdirs[@]}"; do
-                d="${d%/}"                                 # trim trailing slash
-                rx="$(printf '%s' "$d" | esc_re)"
-                # Remove lines that start with d/ or exactly d (covers file-at-root edge cases)
-                filtered="$(printf '%s\n' "$filtered" | grep -v -E "^${rx}(/|$)" || true)"
-              done
-              changed_cpp="$filtered"
-            fi
-
-            # 5) Output to step output
-            echo "files<<EOF" >> "$GITHUB_OUTPUT"
-            echo "$changed_cpp" >> "$GITHUB_OUTPUT"
-            echo "EOF" >> "$GITHUB_OUTPUT"
-
-            echo "Changed .cpp files after include/exclude filtering:"
-            printf '%s\n' $changed_cpp || true
+          echo "Selected files:"
+          printf '%s\n' $files || true
 
       - name: Short-circuit if none
         if: ${{ steps.files.outputs.files == '' }}
