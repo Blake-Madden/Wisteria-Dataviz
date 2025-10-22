@@ -2869,24 +2869,148 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRightArrow(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen = GetGraphItemInfo().GetPen();
-        if (scaledPen.IsOk())
+        const wxDCPenChanger penScope{ dc, wxNullPen };
+        const wxDCBrushChanger brScope{ dc, wxNullBrush };
+
+        // Base color from brush (fallback HunterGreen)
+        const wxColour baseColor = (GetGraphItemInfo().GetBrush().IsOk() &&
+                                    GetGraphItemInfo().GetBrush().GetColour().IsOk()) ?
+                                       GetGraphItemInfo().GetBrush().GetColour() :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::HunterGreen);
+
+        // Derived colors via Tint (your request)
+        const wxColour innerOutlineColor = Colors::ColorContrast::Tint(baseColor, 0.55);
+        const wxColour fillColor = Colors::ColorContrast::Tint(baseColor, 0.15);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        wxGraphicsContext* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for right arrow!");
+        if (gc == nullptr)
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            return;
             }
-        const DCPenChangerIfDifferent pc{ dc, scaledPen };
-        DrawWithBaseColorAndBrush(
-            dc,
-            [&]()
+
+        // Geometry
+        const double shaftRatio = math_constants::half;
+        const int left = rect.GetLeft();
+        const int top = rect.GetTop();
+        const int right = rect.GetRight();
+        const int bottom = rect.GetBottom();
+        const int midY = rect.GetTop() + rect.GetHeight() / 2;
+        const int shaftEndX = left + static_cast<int>(rect.GetWidth() * shaftRatio);
+
+        const int shaftHeight = rect.GetHeight() / 3;
+        const int shaftTop = midY - shaftHeight / 2;
+        const int shaftBottom = midY + shaftHeight / 2;
+
+        // Arrow path
+        wxGraphicsPath arrowPath = gc->CreatePath();
+        arrowPath.MoveToPoint(left, shaftTop);
+        arrowPath.AddLineToPoint(shaftEndX, shaftTop);
+        arrowPath.AddLineToPoint(shaftEndX, top);
+        arrowPath.AddLineToPoint(right, midY);
+        arrowPath.AddLineToPoint(shaftEndX, bottom);
+        arrowPath.AddLineToPoint(shaftEndX, shaftBottom);
+        arrowPath.AddLineToPoint(left, shaftBottom);
+        arrowPath.CloseSubpath();
+
+        // Fill
+        gc->SetPen(wxNullPen);
+        gc->SetBrush(wxBrush(fillColor));
+        gc->FillPath(arrowPath);
+
+            // —— Sheen: spans full width and fills the entire upper head ——
             {
-                Polygon::DrawArrow(
-                    dc, wxPoint(rect.GetLeft(), rect.GetTop() + rect.GetHeight() / 2),
-                    wxPoint(rect.GetRight(), rect.GetTop() + rect.GetHeight() / 2),
-                    wxSize(ScaleToScreenAndCanvas(
-                               Icons::LegendIcon::GetArrowheadSizeDIPs().GetWidth()),
-                           ScaleToScreenAndCanvas(
-                               Icons::LegendIcon::GetArrowheadSizeDIPs().GetHeight())));
-            });
+            const double w = static_cast<double>(rect.GetWidth());
+            const double h = static_cast<double>(rect.GetHeight());
+
+            // arrow geometry we've already used
+            const double shaftRatio = math_constants::half;
+            const double xShaftEnd = rect.GetLeft() + rect.GetWidth() * shaftRatio;
+            const double yMid = rect.GetTop() + rect.GetHeight() * 0.5;
+            const double yTop = rect.GetTop();
+            const double xLeft = rect.GetLeft();
+            const double xRight = rect.GetRight();
+
+            // head top line: (xShaftEnd, yTop) -> (xRight, yMid)
+            const double headSlope = (yMid - yTop) / std::max(1.0, (xRight - xShaftEnd));
+            auto yOnHeadTop = [&](double x) { return yTop + headSlope * (x - xShaftEnd); };
+
+            // band thickness and caps
+            const double bandThickness = std::max(h * 0.22, 2.0);
+            const double capRadius = bandThickness * 0.45;
+
+            // left: start just inside shaft, a touch above its mid
+            const double xL = xLeft + w * 0.04;
+            const double yMidL = (yTop + yMid) * 0.5 + h * 0.03; // comfortable height on the body
+            const double y1L = yMidL - bandThickness * 0.5;
+            const double y2L = yMidL + bandThickness * 0.5;
+
+            // junction: force-contact with head top (epsilon tucked in)
+            const double epsPx = std::max(1.0, ScaleToScreenAndCanvas(1.0));
+            const double xJ = xShaftEnd + epsPx; // 1px inside the head
+            const double yJ = yTop + epsPx;      // exactly on head top at junction
+
+            // right end: almost at tip; upper edge glued to head-top line
+            const double xR = xRight - w * 0.005;
+            const double y1R = yOnHeadTop(xR) + epsPx;
+            const double y2R = y1R + bandThickness;
+
+            wxGraphicsPath sheen = gc->CreatePath();
+
+            // Upper edge: left S-curve -> EXACTLY the junction -> along head-top to near tip
+            sheen.MoveToPoint(xL, y1L);
+            sheen.AddCurveToPoint(xL + w * 0.30, y1L - h * 0.14,        // lift early (pronounced)
+                                  xShaftEnd - w * 0.02, y1L + h * 0.08, // approach from body side
+                                  xJ, yJ); // land right on the head's top corner
+            sheen.AddLineToPoint(xR, y1R); // ride the head-top edge to the right
+
+            // Rounded right cap down to lower edge
+            sheen.AddQuadCurveToPoint(xR + capRadius * 0.70, (y1R + y2R) * 0.5, xR, y2R);
+
+            // Lower edge: counter-wave back to left (keeps thickness even)
+            sheen.AddCurveToPoint(xShaftEnd - w * 0.06, y2L - h * 0.10, xL + w * 0.28,
+                                  y2L + h * 0.05, xL, y2L);
+
+            // Rounded left cap back to start
+            sheen.AddQuadCurveToPoint(xL - capRadius * 0.70, (y1L + y2L) * 0.5, xL, y1L);
+
+            sheen.CloseSubpath();
+
+            // vertical gradient (brighter at the upper edge)
+            const double gradTop = std::min(y1L, y1R);
+            const double gradBottom = std::max(y2L, y2R);
+
+            const auto sheenBrush = gc->CreateLinearGradientBrush(
+                0, gradTop, 0, gradBottom,
+                Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(175)),
+                Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(70)));
+
+            gc->SetBrush(sheenBrush);
+            gc->SetPen(wxNullPen);
+            gc->FillPath(sheen);
+            }
+
+            // Double outline: outer (base), inner (lighter tint)
+            {
+            const int outerW = std::max<int>(2, ScaleToScreenAndCanvas(2));
+            const int innerW = std::max<int>(1, ScaleToScreenAndCanvas(1));
+
+            wxPen outerPen(baseColor, outerW);
+            outerPen.SetJoin(wxJOIN_ROUND);
+            outerPen.SetCap(wxCAP_ROUND);
+            gc->SetPen(outerPen);
+            gc->StrokePath(arrowPath);
+
+            wxPen innerPen(innerOutlineColor, innerW);
+            innerPen.SetJoin(wxJOIN_ROUND);
+            innerPen.SetCap(wxCAP_ROUND);
+            gc->SetPen(innerPen);
+            gc->StrokePath(arrowPath);
+            }
+
+        gc->SetPen(wxNullPen);
+        gc->SetBrush(wxNullBrush);
         }
 
     //---------------------------------------------------
