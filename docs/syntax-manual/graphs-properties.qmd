@@ -111,6 +111,7 @@ Properties common to all graphs:
   - `"warning-road-sign"`
   - `"sun"`
   - `"flower"`
+  - `"sunflower"`
   - `"fall-leaf"`
   - `"top-curly-brace"`
   - `"right-curly-brace"`

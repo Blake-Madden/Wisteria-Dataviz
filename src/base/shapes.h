@@ -144,6 +144,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the flower within.
         /// @param dc The DC to draw to.
         void DrawFlower(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a sunflower shape (stigma and petals).
+        /// @param rect The area to draw the flower within.
+        /// @param dc The DC to draw to.
+        void DrawSunFlower(wxRect rect, wxDC& dc) const;
         /// @brief Draws an orange red leaf.
         /// @param rect The area to draw the leaf within.
         /// @param dc The DC to draw to.
@@ -446,6 +450,8 @@ namespace Wisteria::GraphItems
             None
             };
 
+        void DrawBaseFlower(wxRect rect, wxDC& dc, const wxColour& foregroundColor,
+                            const wxColour& backgroundColor) const;
         void DrawBaseBuilding(wxRect rect, wxDC& dc, const wxColour& color) const;
         void DrawThermometer(wxRect rect, wxDC& dc, Temperature temp) const;
         void DrawApple(wxRect rect, wxDC& dc, const wxColour& color) const;

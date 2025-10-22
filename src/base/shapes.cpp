@@ -193,6 +193,7 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
             { Icons::IconShape::Sun, &ShapeRenderer::DrawSun },
             { Icons::IconShape::Flower, &ShapeRenderer::DrawFlower },
+            { Icons::IconShape::Sunflower, &ShapeRenderer::DrawSunFlower },
             { Icons::IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
             { Icons::IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
             { Icons::IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
@@ -374,57 +375,213 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawBaseFlower(wxRect rect, wxDC& dc, const wxColour& foregroundColor,
+                                       const wxColour& backgroundColor) const
         {
-        // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-
-        const auto centerPt = rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+        const wxDCPenChanger penGuard{ dc, wxNullPen };
+        const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto* gc = gcf.GetGraphicsContext();
-        assert(gc && L"Failed to get graphics context for flower icon!");
-        if (gc != nullptr)
+        wxGraphicsContext* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
             {
-            gc->SetPen(wxNullPen);
-            gc->SetBrush(
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChapelBlue)));
-            // a line going from the middle of the left side to the middle of the right
-            wxRect petalRect(centerPt,
-                             wxSize{ static_cast<int>((rect.GetWidth() * math_constants::half) -
-                                                      ScaleToScreenAndCanvas(1)),
-                                     rect.GetHeight() / 6 });
-            petalRect.Offset(wxPoint{ 0, -(petalRect.GetHeight() / 2) });
-
-            // save current transform matrix state
-            gc->PushState();
-            // move matrix to center of drawing area
-            gc->Translate(centerPt.x, centerPt.y);
-            // draw the petals, which will be the horizontal line going across the middle,
-            // but rotated 45 degrees around the center
-            double angle{ 0.0 };
-            while (angle < 360)
-                {
-                gc->Rotate(geometry::degrees_to_radians(angle));
-                // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over from
-                // the translated origin
-                gc->DrawEllipse(petalRect.GetTopLeft().x - centerPt.x,
-                                petalRect.GetTopLeft().y - centerPt.y, petalRect.GetWidth(),
-                                petalRect.GetHeight());
-                angle += 45;
-                }
-            // restore transform matrix
-            gc->PopState();
-            // draw the middle of flower
-            gc->SetBrush(
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldenYellow)));
-            const wxRect flowerRect =
-                wxRect{ rect }.Deflate(safe_divide<double>(rect.GetWidth(), 2.5));
-            gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
-                            flowerRect.GetWidth(), flowerRect.GetHeight());
+            return;
             }
+
+        wxRect drawRect{ rect };
+        const int pad = static_cast<int>(
+            std::floor(std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.03));
+        drawRect.Deflate(pad, pad);
+
+        const double centerX = drawRect.GetX() + drawRect.GetWidth() * 0.5;
+        const double centerY = drawRect.GetY() + drawRect.GetHeight() * 0.5;
+        const double radius = std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.5;
+
+        const wxColour foregroundColorWarm{ Wisteria::Colors::ColorContrast::Tint(foregroundColor,
+                                                                                  0.48) };
+        const wxColour darkBackgroundColor{ Wisteria::Colors::ColorContrast::Shade(backgroundColor,
+                                                                                   0.40) };
+        const wxColour receptacleColor{ 70, 50, 35 };
+
+        // Core + overlap (tuck petals under to avoid fringe)
+        const double coreR = radius * 0.30;
+        const double overlap = std::min(radius * 0.15, ScaleToScreenAndCanvas(4.0));
+
+        // Petal geometry
+        constexpr int petals = 10;             // fuller look
+        const double innerLen = radius * 0.70; // ellipse height (radial)
+        const double innerWid = radius * 0.22; // ellipse width  (tangential)
+        const double innerCtr = coreR + (innerLen * 0.5) - overlap;
+
+        // Back ring: slightly longer/slimmer, but clamp tip == front tip
+        double outerLen = innerLen * 1.08;
+        double outerWid = innerWid * 0.92;
+        const double innerTip = innerCtr + innerLen * 0.5;
+        const double outerCtr = innerTip - outerLen * 0.5; // makes outer tip == inner tip
+
+        // Helpers
+        const auto clampU8 = [](int val)
+        { return static_cast<wxColourBase::ChannelType>(std::clamp(val, 0, 255)); };
+
+        const auto outlineFrom = [&](const wxColour col)
+        {
+            const wxColour outlineColor{ clampU8(col.Red() - 60), clampU8(col.Green() - 60),
+                                         clampU8(col.Blue() - 60), clampU8(170) };
+
+            wxPen outlinePen{ outlineColor, std::max<int>(1, static_cast<int>(radius * 0.015)) };
+            outlinePen.SetJoin(wxJOIN_ROUND);
+            outlinePen.SetCap(wxCAP_ROUND);
+            return outlinePen;
+        };
+
+        // Draw one ring of outward-pointing elliptical petals.
+        const auto drawPetalRing = [&](auto colorAtIndex, const wxPen& outline, const int count,
+                                       const double petalWidth, const double petalLen,
+                                       const double centerRadius, const double rotationOffsetDeg,
+                                       const bool drawVeins)
+        {
+            // Ring-scope sandbox
+            gc->PushState();
+
+            const int veinWidth = std::max<int>(1, static_cast<int>(radius * 0.012));
+            wxPen veinPen{ wxColour(darkBackgroundColor.Red(), darkBackgroundColor.Green(),
+                                    darkBackgroundColor.Blue(), 50),
+                           veinWidth };
+            veinPen.SetCap(wxCAP_ROUND);
+
+            for (int i = 0; i < count; ++i)
+                {
+                const double aDeg = rotationOffsetDeg + (360.0 / count) * i;
+                const double a = aDeg * (std::numbers::pi / 180.0);
+
+                const double px = centerX + centerRadius * std::cos(a);
+                const double py = centerY + centerRadius * std::sin(a);
+
+                // Per-petal sandbox
+                gc->PushState();
+                gc->Translate(px, py);
+                // Long axis outward (radial)
+                gc->Rotate(a + std::numbers::pi / 2.0);
+
+                const wxColour petalColor = colorAtIndex(i);
+
+                const wxColour baseShade{ clampU8(petalColor.Red() - 18),
+                                          clampU8(petalColor.Green() - 18),
+                                          clampU8(petalColor.Blue() - 18) };
+
+                // Base -> tip gradient
+                const auto grad =
+                    gc->CreateLinearGradientBrush(0, petalLen * 0.5,  // base (near core)
+                                                  0, -petalLen * 0.5, // tip
+                                                  baseShade, petalColor);
+
+                gc->SetBrush(grad);
+                gc->SetPen(outline);
+
+                // Petal ellipse (centered in this local space)
+                gc->DrawEllipse(-petalWidth * 0.5, -petalLen * 0.5, petalWidth, petalLen);
+
+                // Two thin, non-touching vein curves with slight deterministic jitter
+                if (drawVeins)
+                    {
+                    // Stroke-only setup and opaque pen
+                    gc->SetBrush(wxNullBrush);
+
+                    const double h = petalLen;
+                    const double w = petalWidth;
+                    const double y0 = h * 0.45;  // start near base (+Y)
+                    const double y1 = -h * 0.05; // end near mid
+
+                    // small index-based jitter (no RNG state)
+                    const double jitterL = ((i * 37) % 7 - 3) * (w * 0.01);
+                    const double jitterR = ((i * 53) % 7 - 3) * (w * 0.01);
+
+                    const auto crease = [&](double x0, double x1, double bulge)
+                    {
+                        // Set pen right before stroke; reset after to avoid leaks
+                        gc->SetPen(veinPen);
+
+                        wxGraphicsPath path = gc->CreatePath();
+                        path.MoveToPoint(x0, y0);
+                        path.AddCurveToPoint(x0 + bulge, y0 - h * 0.25, x1 + bulge * 0.5,
+                                             y1 + h * 0.10, x1, y1);
+                        gc->StrokePath(path);
+                    };
+
+                    // Left and right creases — thin, separated, slightly different curves
+                    crease(-w * 0.17 + jitterL, -w * 0.06 + jitterL, -w * 0.10);
+                    crease(w * 0.17 + jitterR, w * 0.06 + jitterR, w * 0.10);
+                    }
+
+                gc->PopState();
+                }
+
+            gc->PopState();
+        };
+
+        // Back ring first (backgroundColor), tips clamped to match front tips
+        drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor), petals,
+                      outerWid, outerLen, outerCtr, 0.0,
+                      rect.GetWidth() > ScaleToScreenAndCanvas(18));
+
+        // Front ring (alternate foregroundColor / warm-foregroundColor), staggered half-step
+        drawPetalRing([&](int i) { return (i & 1) ? foregroundColorWarm : foregroundColor; },
+                      outlineFrom(foregroundColor), petals, innerWid, innerLen, innerCtr,
+                      (180.0 / petals), rect.GetWidth() > ScaleToScreenAndCanvas(18));
+
+            // Center disk (radial gradient)
+            {
+            const wxColour coreLite{ clampU8(receptacleColor.Red() + 35),
+                                     clampU8(receptacleColor.Green() + 35),
+                                     clampU8(receptacleColor.Blue() + 35) };
+
+            gc->SetPen(wxNullPen);
+            const auto coreGrad = gc->CreateRadialGradientBrush(centerX, centerY, centerX, centerY,
+                                                                coreR, coreLite, receptacleColor);
+            gc->SetBrush(coreGrad);
+            gc->DrawEllipse(centerX - coreR, centerY - coreR, coreR * 2.0, coreR * 2.0);
+            }
+
+        // Seeds
+        if (rect.GetWidth() > ScaleToScreenAndCanvas(16))
+            {
+            const double maxSeedR = coreR * 0.92;
+            const int nSeeds = std::clamp<int>(static_cast<int>(radius * 0.7), 70, 170);
+            const double golden = std::numbers::pi * (3.0 - std::sqrt(5.0));
+            const double dotR = std::max(1.0, ScaleToScreenAndCanvas(0.7));
+
+            wxBrush seedA{ wxColour(120, 90, 70) };
+            wxBrush seedB{ wxColour(170, 135, 110) };
+
+            gc->SetPen(wxNullPen);
+
+            for (int i = 0; i < nSeeds; ++i)
+                {
+                const double t = (i + 0.5) / nSeeds;
+                const double rs = std::sqrt(t) * maxSeedR;
+                const double th = i * golden;
+
+                const double px = centerX + rs * std::cos(th);
+                const double py = centerY + rs * std::sin(th);
+
+                gc->SetBrush((i & 1) ? seedA : seedB);
+                gc->DrawEllipse(px - dotR, py - dotR, dotR * 2.0, dotR * 2.0);
+                }
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawSunFlower(const wxRect rect, wxDC& dc) const
+        {
+        DrawBaseFlower(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::Sunflower),
+                       Colors::ColorBrewer::GetColor(Colors::Color::Gamboge));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
+        {
+        DrawBaseFlower(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::Wisteria),
+                       Colors::ColorBrewer::GetColor(Colors::Color::Goldenrod));
         }
 
     //---------------------------------------------------
