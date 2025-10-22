@@ -3717,73 +3717,103 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
-        // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penReset{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushReset{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto* gc = gcf.GetGraphicsContext();
-        assert(gc && L"Failed to get graphics context for leaf icon!");
-        if (gc != nullptr)
+        wxGraphicsContext* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
+        if (gc == nullptr)
             {
-            const auto centerPt =
-                rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
-            gc->PushState();
-            // move origin to pivot
-            gc->Translate(centerPt.x, centerPt.y);
-            // rotate about the new origin
-            gc->Rotate(geometry::degrees_to_radians(45));
-            // move origin back
-            gc->Translate(-centerPt.x, -centerPt.y);
-            // draw the leaf
-            gc->SetPen(wxColour{ 0, 0, 0, 0 });
-            auto leafBrush = gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
-                GetXPosFromLeft(rect, math_constants::three_fourths),
-                GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChineseRed)),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
-            gc->SetBrush(leafBrush);
+            return;
+            }
 
-            auto leafPath = gc->CreatePath();
-            // left side of leaf
-            leafPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                 GetYPosFromTop(rect, math_constants::three_quarters));
-            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, .6),
-                                         // top
-                                         GetXPosFromLeft(rect, math_constants::half),
-                                         GetYPosFromTop(rect, 0));
+        // rotate 45° about center
+        const wxPoint centerPoint =
+            rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+        gc->PushState();
+        gc->Translate(centerPoint.x, centerPoint.y);
+        gc->Rotate(geometry::degrees_to_radians(45));
+        gc->Translate(-centerPoint.x, -centerPoint.y);
 
-            // right side
-            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 1), GetYPosFromTop(rect, .6),
-                                         // top
-                                         GetXPosFromLeft(rect, math_constants::half),
-                                         GetYPosFromTop(rect, math_constants::three_quarters));
-            leafPath.CloseSubpath();
-            gc->FillPath(leafPath);
-            gc->StrokePath(leafPath);
+        // leaf fill (red -> orange)
+        gc->SetPen(wxNullPen);
+        const auto leafBrush = gc->CreateLinearGradientBrush(
+            GetXPosFromLeft(rect, 0.00), GetYPosFromTop(rect, math_constants::half),
+            GetXPosFromLeft(rect, math_constants::three_fourths),
+            GetYPosFromTop(rect, math_constants::half),
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChineseRed)),
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
+        gc->SetBrush(leafBrush);
 
-            // draw the stem
-            const auto stemWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
-            gc->SetPen(wxPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkBrown),
-                             ScaleToScreenAndCanvas(stemWidth)));
-            auto stemPath = gc->CreatePath();
-            // start at the top middle
-            stemPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                 GetYPosFromTop(rect, .025));
-            // draw to the bottom middle of leaf
-            stemPath.AddLineToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                    GetYPosFromTop(rect, math_constants::three_quarters));
-            // draw a curled stem at the end of the leaf
-            stemPath.AddQuadCurveToPoint(
+        wxGraphicsPath leafPath = gc->CreatePath();
+        // left edge (bottom -> tip)
+        leafPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
+                             GetYPosFromTop(rect, math_constants::three_quarters));
+        leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 0.00), GetYPosFromTop(rect, 0.60),
+                                     GetXPosFromLeft(rect, math_constants::half),
+                                     GetYPosFromTop(rect, 0.00)); // tip
+        // right edge (tip -> bottom)
+        leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 1.00), GetYPosFromTop(rect, 0.60),
+                                     GetXPosFromLeft(rect, math_constants::half),
+                                     GetYPosFromTop(rect, math_constants::three_quarters));
+        leafPath.CloseSubpath();
+        gc->FillPath(leafPath);
+
+        // key points
+        const wxPoint2DDouble leafTipPoint{ GetXPosFromLeft(rect, math_constants::half),
+                                            GetYPosFromTop(rect, 0.00) };
+        const wxPoint2DDouble leafBottomPoint{ GetXPosFromLeft(rect, math_constants::half),
+                                               GetYPosFromTop(rect,
+                                                              math_constants::three_quarters) };
+        const wxPoint2DDouble stemCurlEndPoint{
+            GetXPosFromLeft(rect, 0.40), GetYPosFromTop(rect, math_constants::full - 0.025)
+        };
+
+        // stem styling
+        const wxColour stemDarkBrown = Colors::ColorBrewer::GetColor(Colors::Color::DarkBrown);
+        const int stemWidthPx = std::max<int>(
+            1, ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2));
+
+        // inside stem: same brown at 50% opacity
+        const wxPen insideStemPen(
+            Colors::ColorContrast::ChangeOpacity(stemDarkBrown, static_cast<uint8_t>(0.50 * 255)),
+            stemWidthPx);
+        // outside/curl: opaque brown
+        const wxPen outsideStemPen(stemDarkBrown, stemWidthPx);
+
+        // shorten at the tip end (so the inside stem doesn't poke past the leaf tip)
+        // move the start point down a hair from the tip; proportional with a small cap
+        const double shortenFromTipPx =
+            std::min<double>(rect.GetHeight() * 0.02, ScaleToScreenAndCanvas(3.0));
+        const double insideStartY = leafTipPoint.m_y + shortenFromTipPx;
+
+            // inside stem (just below tip -> bottom)
+            {
+            wxGraphicsPath insideStemPath = gc->CreatePath();
+            insideStemPath.MoveToPoint(leafTipPoint.m_x, insideStartY);
+            insideStemPath.AddLineToPoint(leafBottomPoint.m_x, leafBottomPoint.m_y);
+            gc->SetBrush(wxNullBrush);
+            gc->SetPen(insideStemPen);
+            gc->StrokePath(insideStemPath);
+            }
+
+            // outside curl (starts at the true bottom so it covers the seam)
+            {
+            wxGraphicsPath outsideStemPath = gc->CreatePath();
+            outsideStemPath.MoveToPoint(leafBottomPoint.m_x, leafBottomPoint.m_y);
+            outsideStemPath.AddQuadCurveToPoint(
                 GetXPosFromLeft(rect, math_constants::half),
                 GetYPosFromTop(rect, math_constants::three_quarters +
                                          (math_constants::quarter * math_constants::half)),
-                GetXPosFromLeft(rect, .4), GetYPosFromTop(rect, math_constants::full - .025));
-
-            gc->StrokePath(stemPath);
-            gc->PopState();
+                stemCurlEndPoint.m_x, stemCurlEndPoint.m_y);
+            gc->SetBrush(wxNullBrush);
+            gc->SetPen(outsideStemPen);
+            gc->StrokePath(outsideStemPath);
             }
+
+        gc->PopState();
         }
 
     //---------------------------------------------------
