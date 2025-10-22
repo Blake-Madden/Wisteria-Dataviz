@@ -1528,7 +1528,7 @@ namespace Wisteria::GraphItems
         // The heart drawing function uses Bézier curves, meaning it doesn't consume
         // all the rect it was given. Scale down the heart's bounding box to the area
         // that actually has content.
-        heartRect.SetWidth(heartRect.GetWidth() * 0.75);
+        heartRect.SetWidth(heartRect.GetWidth() * 0.7);
         heartRect.Offset((rect.GetWidth() - heartRect.GetWidth()) / 2, 0);
 
         wxRect flowerRect{ heartRect };
@@ -1542,7 +1542,9 @@ namespace Wisteria::GraphItems
             {
             while (flowerRect.GetRight() - flowerOverlayTolerance < heartRect.GetRight())
                 {
-                DrawFlower(flowerRect, dc);
+                DrawBaseFlower(flowerRect, dc,
+                               Colors::ColorBrewer::GetColor(Colors::Color::ChapelBlue),
+                               Colors::ColorBrewer::GetColor(Colors::Color::Sand));
                 flowerRect.Offset(flowerRect.GetWidth() * math_constants::half, 0);
                 }
             }
