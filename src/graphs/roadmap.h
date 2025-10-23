@@ -89,6 +89,7 @@ namespace Wisteria::Graphs
         ///     line in the middle of the road.\n
         ///     The width of this pen will always be ignored, though, as the lane separator
         ///     will always be a tenth the width of the road.
+        ///     (Will be a fifth of the width when using double lines.)
         /// @note Set this to @c wxNullPen to not draw a line down the middle of the road.
         /// @returns The pen used to draw the lane separator.
         [[nodiscard]]

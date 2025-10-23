@@ -75,8 +75,8 @@ namespace Wisteria::Graphs
             }
          catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                            _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -136,7 +136,7 @@ namespace Wisteria::Graphs
             Padding(5, 5, 5, 5).
             ChildAlignment(RelativeAlignment::FlushLeft).
             FontColor(Colors::ColorBrewer::GetColor(Colors::Color::White)).
-            FontBackgroundColor(ColorBrewer::GetColor(Colors::Color::HunterGreen)));
+            FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::HunterGreen)));
          topTitle.GetHeaderInfo().Enable(true).FontColor(
             Colors::ColorBrewer::GetColor(Colors::Color::White)).GetFont().MakeBold();
          canvas->GetTopTitles().push_back(topTitle);

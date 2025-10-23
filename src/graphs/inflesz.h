@@ -22,7 +22,7 @@ namespace Wisteria::Graphs
             and Flesch Reading Ease scales for comparison.
 
         @par %Data:
-         This plot accepts a Data::Dataset where one continuous column contains the values(s).
+         This plot accepts a Data::Dataset where one continuous column contains the value(s).
          The ID column's labels will be associated with each point,
          so it is recommended to fill this column with meaningful names.
 

@@ -313,7 +313,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             }
 
         // start plotting the points
-        const auto middleRuler{ GetCustomAxes()[1] };
+        const auto& middleRuler{ GetCustomAxes()[1] };
         const double ptLeft{ GetCustomAxes()[0].GetPhysicalCustomXPosition() };
         const double ptRight{ GetCustomAxes()[2].GetPhysicalCustomXPosition() };
 

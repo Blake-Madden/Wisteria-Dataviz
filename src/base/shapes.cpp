@@ -423,7 +423,7 @@ namespace Wisteria::GraphItems
         const auto clampU8 = [](int val)
         { return static_cast<wxColourBase::ChannelType>(std::clamp(val, 0, 255)); };
 
-        const auto outlineFrom = [&](const wxColour col)
+        const auto outlineFrom = [&](const wxColour& col)
         {
             const wxColour outlineColor{ clampU8(col.Red() - 60), clampU8(col.Green() - 60),
                                          clampU8(col.Blue() - 60), clampU8(170) };
@@ -2891,7 +2891,7 @@ namespace Wisteria::GraphItems
             }
 
         // Geometry
-        const double shaftRatio = math_constants::half;
+        constexpr double shaftRatio = math_constants::half;
         const int left = rect.GetLeft();
         const int top = rect.GetTop();
         const int right = rect.GetRight();
@@ -2921,12 +2921,12 @@ namespace Wisteria::GraphItems
 
             // —— Sheen: spans full width and fills the entire upper head ——
             {
-            const double w = static_cast<double>(rect.GetWidth());
-            const double h = static_cast<double>(rect.GetHeight());
+            const auto w = static_cast<double>(rect.GetWidth());
+            const auto h = static_cast<double>(rect.GetHeight());
 
             // arrow geometry we've already used
-            const double shaftRatio = math_constants::half;
-            const double xShaftEnd = rect.GetLeft() + rect.GetWidth() * shaftRatio;
+            const double sheenShaftRatio = math_constants::half;
+            const double xShaftEnd = rect.GetLeft() + rect.GetWidth() * sheenShaftRatio;
             const double yMid = rect.GetTop() + rect.GetHeight() * 0.5;
             const double yTop = rect.GetTop();
             const double xLeft = rect.GetLeft();
@@ -3930,9 +3930,9 @@ namespace Wisteria::GraphItems
         if (gc != nullptr)
             {
             const auto strayLinesAlongTopBottom = std::max<size_t>(
-                safe_divide<size_t>(rect.GetWidth(), ScaleToScreenAndCanvas(100)), 1);
+                safe_divide<int>(rect.GetWidth(), ScaleToScreenAndCanvas(100)), 1);
             const auto strayLinesAlongLeftRight = std::max<size_t>(
-                safe_divide<size_t>(rect.GetHeight(), ScaleToScreenAndCanvas(100)), 1);
+                safe_divide<int>(rect.GetHeight(), ScaleToScreenAndCanvas(100)), 1);
 
             // get the min percent of the height needed, which is the lesser of 3 DIPs or 33%
             const auto heightMinDIPsPercent =
@@ -4018,7 +4018,7 @@ namespace Wisteria::GraphItems
             previousXPos = math_constants::full;
             for (long i = static_cast<long>(strayLinesAlongTopBottom); i > 0; --i)
                 {
-                auto xPos =
+                const auto xPos =
                     safe_divide<double>(math_constants::full, strayLinesAlongTopBottom + 1) * i;
                 fillPath.AddQuadCurveToPoint(
                     GetXPosFromLeft(rect, xPos + safe_divide<double>(previousXPos - xPos, 2)),

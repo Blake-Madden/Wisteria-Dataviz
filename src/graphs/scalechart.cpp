@@ -260,7 +260,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
         const double ptLeft{ GetCustomAxes()[0].GetPhysicalCustomXPosition() };
         const double ptRight{ GetCustomAxes()[2].GetPhysicalCustomXPosition() };
 
-        m_jitter.SetJitterWidth(static_cast<size_t>(ptRight - ptLeft));
+        m_jitter.SetJitterWidth(std::max<size_t>(1, static_cast<size_t>(ptRight - ptLeft)));
 
         auto points = std::make_unique<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());

@@ -35,9 +35,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
                     positiveColumnName)
                     .ToUTF8());
             }
-        auto positiveValueColumn = (positiveValueColumnName.has_value() ?
-                                        data->GetContinuousColumn(positiveValueColumnName.value()) :
-                                        data->GetContinuousColumns().cend());
+        const auto positiveValueColumn =
+            (positiveValueColumnName.has_value() ?
+                 data->GetContinuousColumn(positiveValueColumnName.value()) :
+                 data->GetContinuousColumns().cend());
         if (positiveValueColumnName && positiveValueColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(
@@ -47,7 +48,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
             }
 
         // get negative columns
-        auto negativeColumn = data->GetCategoricalColumn(negativeColumnName);
+        const auto negativeColumn = data->GetCategoricalColumn(negativeColumnName);
         if (negativeColumn == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -56,9 +57,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
                     negativeColumnName)
                     .ToUTF8());
             }
-        auto negativeValueColumn = (negativeValueColumnName.has_value() ?
-                                        data->GetContinuousColumn(negativeValueColumnName.value()) :
-                                        data->GetContinuousColumns().cend());
+        const auto negativeValueColumn =
+            (negativeValueColumnName.has_value() ?
+                 data->GetContinuousColumn(negativeValueColumnName.value()) :
+                 data->GetContinuousColumns().cend());
         if (negativeValueColumnName && negativeValueColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(
@@ -74,7 +76,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
             // only include item if it has a valid label and a
             // valid aggregate count (if aggregate value is in use)
             if (!(positiveValueColumnName.has_value() &&
-                  std::isnan(positiveValueColumn->GetValue(i))) &&
+                  !std::isfinite(positiveValueColumn->GetValue(i))) &&
                 !positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)).empty())
                 {
                 influencers.insert(positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)),
@@ -85,7 +87,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
                                         1));
                 }
             if (!(negativeValueColumnName.has_value() &&
-                  std::isnan(negativeValueColumn->GetValue(i))) &&
+                  !std::isfinite(negativeValueColumn->GetValue(i))) &&
                 !negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)).empty())
                 {
                 influencers.insert(negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)),
@@ -133,6 +135,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
         SetMagnitude(std::abs(*maxVal));
 
         // add the influencers as road stops
+        GetRoadStops().clear();
         for (const auto& [fst, snd] : influencers.get_data())
             {
             GetRoadStops().push_back(RoadStopInfo(fst).Value(snd.second));
@@ -143,6 +146,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
     void ProConRoadmap::AddDefaultCaption()
         {
         GetCaption().SetText(_(L"The larger the map marker and deeper the curve, "
-                               "the more responses for the positive or negative sentiment"));
+                               "the more responses mentioning that sentiment"));
         }
     } // namespace Wisteria::Graphs

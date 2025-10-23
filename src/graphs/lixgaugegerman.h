@@ -91,7 +91,6 @@ namespace Wisteria::Graphs
         void UseEnglishLabels(const bool useEnglish) noexcept { m_useEnglishLabels = useEnglish; }
 
         /// @returns Whether the score is being showcased.
-        /// @returns Whether the score is being showcased.
         /// @sa ShowcaseScore().
         [[nodiscard]]
         bool IsShowcasingScore() const noexcept
