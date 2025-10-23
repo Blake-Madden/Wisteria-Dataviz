@@ -257,7 +257,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                                                                                              8;
             wxCoord yPt{ 0 };
             wxASSERT_MSG(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt),
-                   L"Unable to find point on DB2 Plot!");
+                         L"Unable to find point on DB2 Plot!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.

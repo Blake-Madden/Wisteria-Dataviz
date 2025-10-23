@@ -110,11 +110,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
                             .Decal(GraphItems::Label(
                                 GraphItems::GraphItemInfo{ _DT(L"BASTANTE DIFÍCIL") }.LabelFitting(
                                     LabelFit::DisplayAsIs))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(15)
-                                            .Brush(wxColour{ L"#FFFBD5" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ _DT(L"NORMAL") }.LabelFitting(
-                                                    LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(15)
+                            .Brush(wxColour{ L"#FFFBD5" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"NORMAL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
                                             .Brush(wxColour{ L"#F7A770" })
                                             .Decal(GraphItems::Label(

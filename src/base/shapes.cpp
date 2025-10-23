@@ -493,8 +493,8 @@ namespace Wisteria::GraphItems
                     const double y1 = -h * 0.05; // end near mid
 
                     // small index-based jitter (no RNG state)
-                    const double jitterL = ((i * 37) % 7 - 3) * (w * 0.01);
-                    const double jitterR = ((i * 53) % 7 - 3) * (w * 0.01);
+                    const double jitterLeft = ((i * 37) % 7 - 3) * (w * 0.01);
+                    const double jitterRight = ((i * 53) % 7 - 3) * (w * 0.01);
 
                     const auto crease = [&](double x0, double x1, double bulge)
                     {
@@ -509,8 +509,8 @@ namespace Wisteria::GraphItems
                     };
 
                     // Left and right creases — thin, separated, slightly different curves
-                    crease(-w * 0.17 + jitterL, -w * 0.06 + jitterL, -w * 0.10);
-                    crease(w * 0.17 + jitterR, w * 0.06 + jitterR, w * 0.10);
+                    crease(-w * 0.17 + jitterLeft, -w * 0.06 + jitterLeft, -w * 0.10);
+                    crease(w * 0.17 + jitterRight, w * 0.06 + jitterRight, w * 0.10);
                     }
 
                 gc->PopState();
@@ -3929,8 +3929,8 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for water color effect!");
         if (gc != nullptr)
             {
-            const auto strayLinesAlongTopBottom = std::max<size_t>(
-                safe_divide<int>(rect.GetWidth(), ScaleToScreenAndCanvas(100)), 1);
+            const auto strayLinesAlongTopBottom =
+                std::max<size_t>(safe_divide<int>(rect.GetWidth(), ScaleToScreenAndCanvas(100)), 1);
             const auto strayLinesAlongLeftRight = std::max<size_t>(
                 safe_divide<int>(rect.GetHeight(), ScaleToScreenAndCanvas(100)), 1);
 
