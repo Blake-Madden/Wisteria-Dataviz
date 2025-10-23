@@ -89,7 +89,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
         {
         const auto getMinMaxForRange = [this]()
         {
-            if (GetDataset() != nullptr)
+            if (GetDataset() != nullptr && m_scoresColumn != nullptr)
                 {
                 const auto [minVal, maxVal] = std::minmax_element(
                     m_scoresColumn->GetValues().cbegin(), m_scoresColumn->GetValues().cend());
@@ -204,6 +204,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     void LixGauge::UpdateCustomAxes()
         {
+        if (GetDataset() == nullptr || m_scoresColumn == nullptr)
+            {
+            return;
+            }
+
         std::vector<double> activeScoreAreas;
         std::vector<double> activeScoreAreasMainAxis;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
@@ -270,15 +275,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
     //----------------------------------------------------------------
     void LixGauge::RecalcSizes(wxDC & dc)
         {
+        if (GetDataset() == nullptr || m_scoresColumn == nullptr)
+            {
+            return;
+            }
+
         AdjustAxes();
         UpdateCustomAxes();
 
         Graph2D::RecalcSizes(dc);
-
-        if (GetDataset() == nullptr)
-            {
-            return;
-            }
 
         // draw outer lines
         auto outerLines = std::make_unique<GraphItems::Lines>(
@@ -321,8 +326,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             const auto currentScore = std::clamp<double>(m_scoresColumn->GetValue(i), 0, 100);
 
             wxCoord yPt{ 0 };
-            assert(middleRuler.GetPhysicalCoordinate(currentScore, yPt) &&
-                   L"Unable to find point on Lix gauge!");
+            wxASSERT_MSG(middleRuler.GetPhysicalCoordinate(currentScore, yPt),
+                         L"Unable to find point on Lix gauge!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.

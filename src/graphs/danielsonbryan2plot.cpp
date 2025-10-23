@@ -93,19 +93,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             GraphItems::Axis leftRuler(Wisteria::AxisType::LeftYAxis);
             leftRuler.SetFontColor(GetLeftYAxis().GetFontColor());
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            leftRuler.SetCustomXPosition(.7f);
+            leftRuler.SetCustomXPosition(0.7);
             leftRuler.SetCustomYPosition(8);
             leftRuler.SetRange(0, 8, 0);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(2, 2, 2, L"  0-29"));
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(3, 3, 3, L"30-49"));
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(4, 4, 4, L"50-59"));
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(5, 5, 5, L"60-69"));
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(6, 6, 6, L"70-79"));
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(7, 7, 7, L"80-89"));
-            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(8, 8, 8, L"90-100"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(2, 2, 2, L"  0–29"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(3, 3, 3, L"30–49"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(4, 4, 4, L"50–59"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(5, 5, 5, L"60–69"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(6, 6, 6, L"70–79"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(7, 7, 7, L"80–89"));
+            leftRuler.AddBracket(GraphItems::Axis::AxisBracket(8, 8, 8, L"90–100"));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.SetTickmarkLength(0);
@@ -145,7 +145,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             rightRuler.SetCustomYPosition(8);
             rightRuler.SetRange(0, 8, 0);
             rightRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            rightRuler.SetId(100);
+            rightRuler.SetId(102);
             rightRuler.GetAxisLinePen() = wxNullPen;
             rightRuler.AddBracket(
                 GraphItems::Axis::AxisBracket(2, 2, 2, _(L"very difficult, college level")));
@@ -173,6 +173,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
     //----------------------------------------------------------------
     void DanielsonBryan2Plot::UpdateCustomAxes()
         {
+        if (GetDataset() == nullptr || m_scoresColumn == nullptr)
+            {
+            return;
+            }
+
         std::vector<double> activeScoreAreas;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
@@ -222,7 +227,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
             }
 
         // start plotting the points
-        const auto middleRuler{ GetCustomAxes()[1] };
+        const auto& middleRuler{ GetCustomAxes()[1] };
         const double ptLeft{ GetCustomAxes()[0].GetPhysicalCustomXPosition() };
         const double ptRight{ GetCustomAxes()[2].GetPhysicalCustomXPosition() };
 
@@ -251,8 +256,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DanielsonBryan2Plot, Wisteria::Graph
                                   is_within<size_t>(std::make_pair(90, 100), currentScore) ? 8 :
                                                                                              8;
             wxCoord yPt{ 0 };
-            assert(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt) &&
-                   L"Unable to find point on DB2 Plot!");
+            wxASSERT_MSG(middleRuler.GetPhysicalCoordinate(yAxisPos, yPt),
+                         L"Unable to find point on DB2 Plot!");
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.

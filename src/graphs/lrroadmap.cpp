@@ -31,7 +31,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
             SetGoalLabel(dvName.value());
             }
 
-        auto predictorColumn = data->GetCategoricalColumn(predictorColumnName);
+        const auto predictorColumn = data->GetCategoricalColumn(predictorColumnName);
         if (predictorColumn == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
@@ -40,7 +40,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
                                  predictorColumnName)
                     .ToUTF8());
             }
-        auto coefficientColumn = data->GetContinuousColumn(coefficientColumnName);
+        const auto coefficientColumn = data->GetContinuousColumn(coefficientColumnName);
         if (coefficientColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(
@@ -48,7 +48,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
                                  coefficientColumnName)
                     .ToUTF8());
             }
-        auto pValueColumn =
+        const auto pValueColumn =
             (pValueColumnName.has_value() ? data->GetContinuousColumn(pValueColumnName.value()) :
                                             data->GetContinuousColumns().cend());
         if (pValueColumnName && pValueColumn == data->GetContinuousColumns().cend())
@@ -59,25 +59,40 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
                     .ToUTF8());
             }
 
-        const auto maxVal =
-            std::ranges::max_element(coefficientColumn->GetValues(),
-                                     [](auto lh, auto rh) { return std::abs(lh) < std::abs(rh); });
+        const auto& vals = coefficientColumn->GetValues();
+        std::vector<double> finite;
+        finite.reserve(vals.size());
+        for (const double val : vals)
+            {
+            if (std::isfinite(val))
+                {
+                finite.push_back(std::abs(val));
+                }
+            }
+
+        if (finite.empty())
+            {
+            return;
+            }
+
         // set the magnitude to the strongest coefficient (either negative or positive)
-        SetMagnitude(std::abs(*maxVal));
+        SetMagnitude(*std::ranges::max_element(finite));
         // if no valid coefficients, then quit
-        if (std::isnan(GetMagnitude()))
+        if (!std::isfinite(GetMagnitude()))
             {
             return;
             }
 
         const auto includePredictor = [&](const double value, const std::optional<double> pValue)
         {
-            if (std::isnan(value))
+            if (!std::isfinite(value))
                 {
                 return false;
                 }
-            if (pLevel.has_value() && !std::isnan(pLevel.value()) && pValue.has_value() &&
-                (std::isnan(pValue.value()) || pValue >= pLevel.value()))
+            // if there is a provided p-level cutoff and the p-level is either invalid
+            // or higher than the cutoff, then this predictor is not significant
+            if (pLevel.has_value() && std::isfinite(pLevel.value()) && pValue.has_value() &&
+                (!std::isfinite(pValue.value()) || pValue.value() >= pLevel.value()))
                 {
                 return false;
                 }
@@ -92,25 +107,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
                 }
             if ((predictorsToIncludes.value() & Influence::InfluenceNegative) ==
                     Influence::InfluenceNegative &&
-                value < 0)
+                compare_doubles_less(value, 0))
                 {
                 return true;
                 }
             if ((predictorsToIncludes.value() & Influence::InfluenceNeutral) ==
                     Influence::InfluenceNeutral &&
-                value == 0)
+                compare_doubles(value, 0))
                 {
                 return true;
                 }
             if ((predictorsToIncludes.value() & Influence::InfluencePositive) ==
                     Influence::InfluencePositive &&
-                value > 0)
+                compare_doubles_greater(value, 0))
                 {
                 return true;
                 }
             return false;
         };
 
+        GetRoadStops().clear();
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
             if (includePredictor(coefficientColumn->GetValue(i),

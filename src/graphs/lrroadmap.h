@@ -117,7 +117,7 @@ namespace Wisteria::Graphs
             @param predictorColumnName The column containing the independent variables'
                 (i.e., predictors) names.
             @param coefficientColumnName The column containing the predictors'
-                correlation coefficients.
+                regression coefficients.
             @param pValueColumnName The (optional) column containing the predictors' p-values.
             @param pLevel If a p-value column is supplied, only predictors with p-values lower than
                 this will be included. (Predictors with missing p-values will be excluded.)\n

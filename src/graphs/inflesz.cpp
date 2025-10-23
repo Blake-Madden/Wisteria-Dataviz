@@ -28,7 +28,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
         */
         SetDataColumnHeader(_DT(L"PUNTUACIÓN"));
 
-        // graph has an odd scale where the "very difficult" section and crunched down,
+        // graph has an odd scale where the "very difficult" section is crunched down,
         // even though it consumes 40% of the range
         GetScalingAxis().GetAxisPoints().clear();
         GetScalingAxis().AddUnevenAxisPoint(-5, L" ");
@@ -110,11 +110,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszChart, Wisteria::Graphs::Scal
                             .Decal(GraphItems::Label(
                                 GraphItems::GraphItemInfo{ _DT(L"BASTANTE DIFÍCIL") }.LabelFitting(
                                     LabelFit::DisplayAsIs))) },
-                    BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(15)
-                                            .Brush(wxColour{ L"#FFFBD5" })
-                                            .Decal(GraphItems::Label(
-                                                GraphItems::GraphItemInfo{ L"NORMAL" }.LabelFitting(
-                                                    LabelFit::DisplayAsIs))) },
+                    BarChart::BarBlock{
+                        Wisteria::Graphs::BarChart::BarBlockInfo(15)
+                            .Brush(wxColour{ L"#FFFBD5" })
+                            .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _DT(L"NORMAL") }
+                                                         .LabelFitting(LabelFit::DisplayAsIs))) },
                     BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(10)
                                             .Brush(wxColour{ L"#F7A770" })
                                             .Decal(GraphItems::Label(

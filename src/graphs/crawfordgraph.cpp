@@ -31,9 +31,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
             GetCanvas()->SetLabel(_(L"Crawford Graph"));
             GetCanvas()->SetName(_(L"Crawford Graph"));
             }
-        GetTitle() = GraphItems::Label(GraphItems::GraphItemInfo(_(L"SPANISH READABILITY GRAPH"))
-                                           .Scaling(GetScaling())
-                                           .Pen(wxNullPen));
+        GetTitle() = GraphItems::Label(
+            /* TRANSLATORS: Title is in all CAPS in the original article. */
+            GraphItems::GraphItemInfo(_(L"SPANISH READABILITY GRAPH"))
+                .Scaling(GetScaling())
+                .Pen(wxNullPen));
         GetLeftYAxis().GetTitle().SetText(_(L"Number of Syllables per 100 Words"));
         GetBottomXAxis().GetTitle().SetText(_(L"Approximate Grade Level of Reading Difficulty"));
 
@@ -50,10 +52,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         }
 
     //----------------------------------------------------------------
-    void CrawfordGraph::SetData(
-        const std::shared_ptr<const Data::Dataset>& data, const wxString& scoreColumnName,
-        const wxString& syllablesPer100WordsColumnName,
-        const std::optional<const wxString>& groupColumnName /*= std::nullopt*/)
+    void CrawfordGraph::SetData(const std::shared_ptr<const Data::Dataset>& data,
+                                const wxString& scoreColumnName,
+                                const wxString& syllablesPer100WordsColumnName,
+                                const std::optional<wxString>& groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -105,6 +107,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
                 AddObject(std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo()
                         .Scaling(GetScaling())
+                        .DPIScaling(GetDPIScaleFactor())
                         .Pen(wxNullPen)
                         .Padding(0, 0, 0, 0)
                         .MinimumUserSizeDIPs(commonLabelSize.GetWidth(), std::nullopt)
@@ -279,7 +282,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CrawfordGraph, Wisteria::Graphs::Gro
         addTextPoint(6.5, 208, 1.4, 1);
         addTextPoint(6.5, 206, 1.0, 1);
 
-        if (GetDataset() == nullptr)
+        if (GetDataset() == nullptr || m_scoresColumn == nullptr ||
+            m_syllablesPer100WordsColumn == nullptr)
             {
             return;
             }

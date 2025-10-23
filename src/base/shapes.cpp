@@ -193,6 +193,7 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::BoxPlot, &ShapeRenderer::DrawBoxPlot },
             { Icons::IconShape::Sun, &ShapeRenderer::DrawSun },
             { Icons::IconShape::Flower, &ShapeRenderer::DrawFlower },
+            { Icons::IconShape::Sunflower, &ShapeRenderer::DrawSunFlower },
             { Icons::IconShape::FallLeaf, &ShapeRenderer::DrawFallLeaf },
             { Icons::IconShape::WarningRoadSign, &ShapeRenderer::DrawWarningRoadSign },
             { Icons::IconShape::LocationMarker, &ShapeRenderer::DrawGeoMarker },
@@ -374,57 +375,213 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawBaseFlower(wxRect rect, wxDC& dc, const wxColour& foregroundColor,
+                                       const wxColour& backgroundColor) const
         {
-        // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-
-        const auto centerPt = rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+        const wxDCPenChanger penGuard{ dc, wxNullPen };
+        const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto* gc = gcf.GetGraphicsContext();
-        assert(gc && L"Failed to get graphics context for flower icon!");
-        if (gc != nullptr)
+        wxGraphicsContext* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
             {
-            gc->SetPen(wxNullPen);
-            gc->SetBrush(
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChapelBlue)));
-            // a line going from the middle of the left side to the middle of the right
-            wxRect petalRect(centerPt,
-                             wxSize{ static_cast<int>((rect.GetWidth() * math_constants::half) -
-                                                      ScaleToScreenAndCanvas(1)),
-                                     rect.GetHeight() / 6 });
-            petalRect.Offset(wxPoint{ 0, -(petalRect.GetHeight() / 2) });
-
-            // save current transform matrix state
-            gc->PushState();
-            // move matrix to center of drawing area
-            gc->Translate(centerPt.x, centerPt.y);
-            // draw the petals, which will be the horizontal line going across the middle,
-            // but rotated 45 degrees around the center
-            double angle{ 0.0 };
-            while (angle < 360)
-                {
-                gc->Rotate(geometry::degrees_to_radians(angle));
-                // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over from
-                // the translated origin
-                gc->DrawEllipse(petalRect.GetTopLeft().x - centerPt.x,
-                                petalRect.GetTopLeft().y - centerPt.y, petalRect.GetWidth(),
-                                petalRect.GetHeight());
-                angle += 45;
-                }
-            // restore transform matrix
-            gc->PopState();
-            // draw the middle of flower
-            gc->SetBrush(
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::GoldenYellow)));
-            const wxRect flowerRect =
-                wxRect{ rect }.Deflate(safe_divide<double>(rect.GetWidth(), 2.5));
-            gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
-                            flowerRect.GetWidth(), flowerRect.GetHeight());
+            return;
             }
+
+        wxRect drawRect{ rect };
+        const int pad = static_cast<int>(
+            std::floor(std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.03));
+        drawRect.Deflate(pad, pad);
+
+        const double centerX = drawRect.GetX() + drawRect.GetWidth() * 0.5;
+        const double centerY = drawRect.GetY() + drawRect.GetHeight() * 0.5;
+        const double radius = std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.5;
+
+        const wxColour foregroundColorWarm{ Wisteria::Colors::ColorContrast::Tint(foregroundColor,
+                                                                                  0.48) };
+        const wxColour darkBackgroundColor{ Wisteria::Colors::ColorContrast::Shade(backgroundColor,
+                                                                                   0.40) };
+        const wxColour receptacleColor{ 70, 50, 35 };
+
+        // Core + overlap (tuck petals under to avoid fringe)
+        const double coreR = radius * 0.30;
+        const double overlap = std::min(radius * 0.15, ScaleToScreenAndCanvas(4.0));
+
+        // Petal geometry
+        constexpr int petals = 10;             // fuller look
+        const double innerLen = radius * 0.70; // ellipse height (radial)
+        const double innerWid = radius * 0.22; // ellipse width  (tangential)
+        const double innerCtr = coreR + (innerLen * 0.5) - overlap;
+
+        // Back ring: slightly longer/slimmer, but clamp tip == front tip
+        double outerLen = innerLen * 1.08;
+        double outerWid = innerWid * 0.92;
+        const double innerTip = innerCtr + innerLen * 0.5;
+        const double outerCtr = innerTip - outerLen * 0.5; // makes outer tip == inner tip
+
+        // Helpers
+        const auto clampU8 = [](int val)
+        { return static_cast<wxColourBase::ChannelType>(std::clamp(val, 0, 255)); };
+
+        const auto outlineFrom = [&](const wxColour& col)
+        {
+            const wxColour outlineColor{ clampU8(col.Red() - 60), clampU8(col.Green() - 60),
+                                         clampU8(col.Blue() - 60), clampU8(170) };
+
+            wxPen outlinePen{ outlineColor, std::max<int>(1, static_cast<int>(radius * 0.015)) };
+            outlinePen.SetJoin(wxJOIN_ROUND);
+            outlinePen.SetCap(wxCAP_ROUND);
+            return outlinePen;
+        };
+
+        // Draw one ring of outward-pointing elliptical petals.
+        const auto drawPetalRing = [&](auto colorAtIndex, const wxPen& outline, const int count,
+                                       const double petalWidth, const double petalLen,
+                                       const double centerRadius, const double rotationOffsetDeg,
+                                       const bool drawVeins)
+        {
+            // Ring-scope sandbox
+            gc->PushState();
+
+            const int veinWidth = std::max<int>(1, static_cast<int>(radius * 0.012));
+            wxPen veinPen{ wxColour(darkBackgroundColor.Red(), darkBackgroundColor.Green(),
+                                    darkBackgroundColor.Blue(), 50),
+                           veinWidth };
+            veinPen.SetCap(wxCAP_ROUND);
+
+            for (int i = 0; i < count; ++i)
+                {
+                const double aDeg = rotationOffsetDeg + (360.0 / count) * i;
+                const double a = aDeg * (std::numbers::pi / 180.0);
+
+                const double px = centerX + centerRadius * std::cos(a);
+                const double py = centerY + centerRadius * std::sin(a);
+
+                // Per-petal sandbox
+                gc->PushState();
+                gc->Translate(px, py);
+                // Long axis outward (radial)
+                gc->Rotate(a + std::numbers::pi / 2.0);
+
+                const wxColour petalColor = colorAtIndex(i);
+
+                const wxColour baseShade{ clampU8(petalColor.Red() - 18),
+                                          clampU8(petalColor.Green() - 18),
+                                          clampU8(petalColor.Blue() - 18) };
+
+                // Base -> tip gradient
+                const auto grad =
+                    gc->CreateLinearGradientBrush(0, petalLen * 0.5,  // base (near core)
+                                                  0, -petalLen * 0.5, // tip
+                                                  baseShade, petalColor);
+
+                gc->SetBrush(grad);
+                gc->SetPen(outline);
+
+                // Petal ellipse (centered in this local space)
+                gc->DrawEllipse(-petalWidth * 0.5, -petalLen * 0.5, petalWidth, petalLen);
+
+                // Two thin, non-touching vein curves with slight deterministic jitter
+                if (drawVeins)
+                    {
+                    // Stroke-only setup and opaque pen
+                    gc->SetBrush(wxNullBrush);
+
+                    const double h = petalLen;
+                    const double w = petalWidth;
+                    const double y0 = h * 0.45;  // start near base (+Y)
+                    const double y1 = -h * 0.05; // end near mid
+
+                    // small index-based jitter (no RNG state)
+                    const double jitterLeft = ((i * 37) % 7 - 3) * (w * 0.01);
+                    const double jitterRight = ((i * 53) % 7 - 3) * (w * 0.01);
+
+                    const auto crease = [&](double x0, double x1, double bulge)
+                    {
+                        // Set pen right before stroke; reset after to avoid leaks
+                        gc->SetPen(veinPen);
+
+                        wxGraphicsPath path = gc->CreatePath();
+                        path.MoveToPoint(x0, y0);
+                        path.AddCurveToPoint(x0 + bulge, y0 - h * 0.25, x1 + bulge * 0.5,
+                                             y1 + h * 0.10, x1, y1);
+                        gc->StrokePath(path);
+                    };
+
+                    // Left and right creases — thin, separated, slightly different curves
+                    crease(-w * 0.17 + jitterLeft, -w * 0.06 + jitterLeft, -w * 0.10);
+                    crease(w * 0.17 + jitterRight, w * 0.06 + jitterRight, w * 0.10);
+                    }
+
+                gc->PopState();
+                }
+
+            gc->PopState();
+        };
+
+        // Back ring first (backgroundColor), tips clamped to match front tips
+        drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor), petals,
+                      outerWid, outerLen, outerCtr, 0.0,
+                      rect.GetWidth() > ScaleToScreenAndCanvas(18));
+
+        // Front ring (alternate foregroundColor / warm-foregroundColor), staggered half-step
+        drawPetalRing([&](int i) { return (i & 1) ? foregroundColorWarm : foregroundColor; },
+                      outlineFrom(foregroundColor), petals, innerWid, innerLen, innerCtr,
+                      (180.0 / petals), rect.GetWidth() > ScaleToScreenAndCanvas(18));
+
+            // Center disk (radial gradient)
+            {
+            const wxColour coreLite{ clampU8(receptacleColor.Red() + 35),
+                                     clampU8(receptacleColor.Green() + 35),
+                                     clampU8(receptacleColor.Blue() + 35) };
+
+            gc->SetPen(wxNullPen);
+            const auto coreGrad = gc->CreateRadialGradientBrush(centerX, centerY, centerX, centerY,
+                                                                coreR, coreLite, receptacleColor);
+            gc->SetBrush(coreGrad);
+            gc->DrawEllipse(centerX - coreR, centerY - coreR, coreR * 2.0, coreR * 2.0);
+            }
+
+        // Seeds
+        if (rect.GetWidth() > ScaleToScreenAndCanvas(16))
+            {
+            const double maxSeedR = coreR * 0.92;
+            const int nSeeds = std::clamp<int>(static_cast<int>(radius * 0.7), 70, 170);
+            const double golden = std::numbers::pi * (3.0 - std::sqrt(5.0));
+            const double dotR = std::max(1.0, ScaleToScreenAndCanvas(0.7));
+
+            wxBrush seedA{ wxColour(120, 90, 70) };
+            wxBrush seedB{ wxColour(170, 135, 110) };
+
+            gc->SetPen(wxNullPen);
+
+            for (int i = 0; i < nSeeds; ++i)
+                {
+                const double t = (i + 0.5) / nSeeds;
+                const double rs = std::sqrt(t) * maxSeedR;
+                const double th = i * golden;
+
+                const double px = centerX + rs * std::cos(th);
+                const double py = centerY + rs * std::sin(th);
+
+                gc->SetBrush((i & 1) ? seedA : seedB);
+                gc->DrawEllipse(px - dotR, py - dotR, dotR * 2.0, dotR * 2.0);
+                }
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawSunFlower(const wxRect rect, wxDC& dc) const
+        {
+        DrawBaseFlower(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::Sunflower),
+                       Colors::ColorBrewer::GetColor(Colors::Color::Gamboge));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
+        {
+        DrawBaseFlower(rect, dc, Colors::ColorBrewer::GetColor(Colors::Color::Wisteria),
+                       Colors::ColorBrewer::GetColor(Colors::Color::Goldenrod));
         }
 
     //---------------------------------------------------
@@ -1371,7 +1528,7 @@ namespace Wisteria::GraphItems
         // The heart drawing function uses Bézier curves, meaning it doesn't consume
         // all the rect it was given. Scale down the heart's bounding box to the area
         // that actually has content.
-        heartRect.SetWidth(heartRect.GetWidth() * 0.75);
+        heartRect.SetWidth(heartRect.GetWidth() * 0.7);
         heartRect.Offset((rect.GetWidth() - heartRect.GetWidth()) / 2, 0);
 
         wxRect flowerRect{ heartRect };
@@ -1385,7 +1542,9 @@ namespace Wisteria::GraphItems
             {
             while (flowerRect.GetRight() - flowerOverlayTolerance < heartRect.GetRight())
                 {
-                DrawFlower(flowerRect, dc);
+                DrawBaseFlower(flowerRect, dc,
+                               Colors::ColorBrewer::GetColor(Colors::Color::ChapelBlue),
+                               Colors::ColorBrewer::GetColor(Colors::Color::Sand));
                 flowerRect.Offset(flowerRect.GetWidth() * math_constants::half, 0);
                 }
             }
@@ -2710,24 +2869,148 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawRightArrow(const wxRect rect, wxDC& dc) const
         {
-        wxPen scaledPen = GetGraphItemInfo().GetPen();
-        if (scaledPen.IsOk())
+        const wxDCPenChanger penScope{ dc, wxNullPen };
+        const wxDCBrushChanger brScope{ dc, wxNullBrush };
+
+        // Base color from brush (fallback HunterGreen)
+        const wxColour baseColor = (GetGraphItemInfo().GetBrush().IsOk() &&
+                                    GetGraphItemInfo().GetBrush().GetColour().IsOk()) ?
+                                       GetGraphItemInfo().GetBrush().GetColour() :
+                                       Colors::ColorBrewer::GetColor(Colors::Color::HunterGreen);
+
+        // Derived colors via Tint (your request)
+        const wxColour innerOutlineColor = Colors::ColorContrast::Tint(baseColor, 0.55);
+        const wxColour fillColor = Colors::ColorContrast::Tint(baseColor, 0.15);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        wxGraphicsContext* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for right arrow!");
+        if (gc == nullptr)
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            return;
             }
-        const DCPenChangerIfDifferent pc{ dc, scaledPen };
-        DrawWithBaseColorAndBrush(
-            dc,
-            [&]()
+
+        // Geometry
+        constexpr double shaftRatio = math_constants::half;
+        const int left = rect.GetLeft();
+        const int top = rect.GetTop();
+        const int right = rect.GetRight();
+        const int bottom = rect.GetBottom();
+        const int midY = rect.GetTop() + rect.GetHeight() / 2;
+        const int shaftEndX = left + static_cast<int>(rect.GetWidth() * shaftRatio);
+
+        const int shaftHeight = rect.GetHeight() / 3;
+        const int shaftTop = midY - shaftHeight / 2;
+        const int shaftBottom = midY + shaftHeight / 2;
+
+        // Arrow path
+        wxGraphicsPath arrowPath = gc->CreatePath();
+        arrowPath.MoveToPoint(left, shaftTop);
+        arrowPath.AddLineToPoint(shaftEndX, shaftTop);
+        arrowPath.AddLineToPoint(shaftEndX, top);
+        arrowPath.AddLineToPoint(right, midY);
+        arrowPath.AddLineToPoint(shaftEndX, bottom);
+        arrowPath.AddLineToPoint(shaftEndX, shaftBottom);
+        arrowPath.AddLineToPoint(left, shaftBottom);
+        arrowPath.CloseSubpath();
+
+        // Fill
+        gc->SetPen(wxNullPen);
+        gc->SetBrush(wxBrush(fillColor));
+        gc->FillPath(arrowPath);
+
+            // —— Sheen: spans full width and fills the entire upper head ——
             {
-                Polygon::DrawArrow(
-                    dc, wxPoint(rect.GetLeft(), rect.GetTop() + rect.GetHeight() / 2),
-                    wxPoint(rect.GetRight(), rect.GetTop() + rect.GetHeight() / 2),
-                    wxSize(ScaleToScreenAndCanvas(
-                               Icons::LegendIcon::GetArrowheadSizeDIPs().GetWidth()),
-                           ScaleToScreenAndCanvas(
-                               Icons::LegendIcon::GetArrowheadSizeDIPs().GetHeight())));
-            });
+            const auto w = static_cast<double>(rect.GetWidth());
+            const auto h = static_cast<double>(rect.GetHeight());
+
+            // arrow geometry we've already used
+            const double sheenShaftRatio = math_constants::half;
+            const double xShaftEnd = rect.GetLeft() + rect.GetWidth() * sheenShaftRatio;
+            const double yMid = rect.GetTop() + rect.GetHeight() * 0.5;
+            const double yTop = rect.GetTop();
+            const double xLeft = rect.GetLeft();
+            const double xRight = rect.GetRight();
+
+            // head top line: (xShaftEnd, yTop) -> (xRight, yMid)
+            const double headSlope = (yMid - yTop) / std::max(1.0, (xRight - xShaftEnd));
+            auto yOnHeadTop = [&](double x) { return yTop + headSlope * (x - xShaftEnd); };
+
+            // band thickness and caps
+            const double bandThickness = std::max(h * 0.22, 2.0);
+            const double capRadius = bandThickness * 0.45;
+
+            // left: start just inside shaft, a touch above its mid
+            const double xL = xLeft + w * 0.04;
+            const double yMidL = (yTop + yMid) * 0.5 + h * 0.03; // comfortable height on the body
+            const double y1L = yMidL - bandThickness * 0.5;
+            const double y2L = yMidL + bandThickness * 0.5;
+
+            // junction: force-contact with head top (epsilon tucked in)
+            const double epsPx = std::max(1.0, ScaleToScreenAndCanvas(1.0));
+            const double xJ = xShaftEnd + epsPx; // 1px inside the head
+            const double yJ = yTop + epsPx;      // exactly on head top at junction
+
+            // right end: almost at tip; upper edge glued to head-top line
+            const double xR = xRight - w * 0.005;
+            const double y1R = yOnHeadTop(xR) + epsPx;
+            const double y2R = y1R + bandThickness;
+
+            wxGraphicsPath sheen = gc->CreatePath();
+
+            // Upper edge: left S-curve -> EXACTLY the junction -> along head-top to near tip
+            sheen.MoveToPoint(xL, y1L);
+            sheen.AddCurveToPoint(xL + w * 0.30, y1L - h * 0.14,        // lift early (pronounced)
+                                  xShaftEnd - w * 0.02, y1L + h * 0.08, // approach from body side
+                                  xJ, yJ); // land right on the head's top corner
+            sheen.AddLineToPoint(xR, y1R); // ride the head-top edge to the right
+
+            // Rounded right cap down to lower edge
+            sheen.AddQuadCurveToPoint(xR + capRadius * 0.70, (y1R + y2R) * 0.5, xR, y2R);
+
+            // Lower edge: counter-wave back to left (keeps thickness even)
+            sheen.AddCurveToPoint(xShaftEnd - w * 0.06, y2L - h * 0.10, xL + w * 0.28,
+                                  y2L + h * 0.05, xL, y2L);
+
+            // Rounded left cap back to start
+            sheen.AddQuadCurveToPoint(xL - capRadius * 0.70, (y1L + y2L) * 0.5, xL, y1L);
+
+            sheen.CloseSubpath();
+
+            // vertical gradient (brighter at the upper edge)
+            const double gradTop = std::min(y1L, y1R);
+            const double gradBottom = std::max(y2L, y2R);
+
+            const auto sheenBrush = gc->CreateLinearGradientBrush(
+                0, gradTop, 0, gradBottom,
+                Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(175)),
+                Colors::ColorContrast::ChangeOpacity(*wxWHITE, static_cast<uint8_t>(70)));
+
+            gc->SetBrush(sheenBrush);
+            gc->SetPen(wxNullPen);
+            gc->FillPath(sheen);
+            }
+
+            // Double outline: outer (base), inner (lighter tint)
+            {
+            const int outerW = std::max<int>(2, ScaleToScreenAndCanvas(2));
+            const int innerW = std::max<int>(1, ScaleToScreenAndCanvas(1));
+
+            wxPen outerPen(baseColor, outerW);
+            outerPen.SetJoin(wxJOIN_ROUND);
+            outerPen.SetCap(wxCAP_ROUND);
+            gc->SetPen(outerPen);
+            gc->StrokePath(arrowPath);
+
+            wxPen innerPen(innerOutlineColor, innerW);
+            innerPen.SetJoin(wxJOIN_ROUND);
+            innerPen.SetCap(wxCAP_ROUND);
+            gc->SetPen(innerPen);
+            gc->StrokePath(arrowPath);
+            }
+
+        gc->SetPen(wxNullPen);
+        gc->SetBrush(wxNullBrush);
         }
 
     //---------------------------------------------------
@@ -3434,73 +3717,103 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
-        // just to reset when we are done
-        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
-        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCPenChanger penReset{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushReset{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
         GraphicsContextFallback gcf{ &dc, rect };
-        auto* gc = gcf.GetGraphicsContext();
-        assert(gc && L"Failed to get graphics context for leaf icon!");
-        if (gc != nullptr)
+        wxGraphicsContext* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
+        if (gc == nullptr)
             {
-            const auto centerPt =
-                rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
-            gc->PushState();
-            // move origin to pivot
-            gc->Translate(centerPt.x, centerPt.y);
-            // rotate about the new origin
-            gc->Rotate(geometry::degrees_to_radians(45));
-            // move origin back
-            gc->Translate(-centerPt.x, -centerPt.y);
-            // draw the leaf
-            gc->SetPen(wxColour{ 0, 0, 0, 0 });
-            auto leafBrush = gc->CreateLinearGradientBrush(
-                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, math_constants::half),
-                GetXPosFromLeft(rect, math_constants::three_fourths),
-                GetYPosFromTop(rect, math_constants::half),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChineseRed)),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
-            gc->SetBrush(leafBrush);
+            return;
+            }
 
-            auto leafPath = gc->CreatePath();
-            // left side of leaf
-            leafPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                 GetYPosFromTop(rect, math_constants::three_quarters));
-            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, .6),
-                                         // top
-                                         GetXPosFromLeft(rect, math_constants::half),
-                                         GetYPosFromTop(rect, 0));
+        // rotate 45° about center
+        const wxPoint centerPoint =
+            rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+        gc->PushState();
+        gc->Translate(centerPoint.x, centerPoint.y);
+        gc->Rotate(geometry::degrees_to_radians(45));
+        gc->Translate(-centerPoint.x, -centerPoint.y);
 
-            // right side
-            leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 1), GetYPosFromTop(rect, .6),
-                                         // top
-                                         GetXPosFromLeft(rect, math_constants::half),
-                                         GetYPosFromTop(rect, math_constants::three_quarters));
-            leafPath.CloseSubpath();
-            gc->FillPath(leafPath);
-            gc->StrokePath(leafPath);
+        // leaf fill (red -> orange)
+        gc->SetPen(wxNullPen);
+        const auto leafBrush = gc->CreateLinearGradientBrush(
+            GetXPosFromLeft(rect, 0.00), GetYPosFromTop(rect, math_constants::half),
+            GetXPosFromLeft(rect, math_constants::three_fourths),
+            GetYPosFromTop(rect, math_constants::half),
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::ChineseRed)),
+            ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::SunsetOrange)));
+        gc->SetBrush(leafBrush);
 
-            // draw the stem
-            const auto stemWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
-            gc->SetPen(wxPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkBrown),
-                             ScaleToScreenAndCanvas(stemWidth)));
-            auto stemPath = gc->CreatePath();
-            // start at the top middle
-            stemPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                 GetYPosFromTop(rect, .025));
-            // draw to the bottom middle of leaf
-            stemPath.AddLineToPoint(GetXPosFromLeft(rect, math_constants::half),
-                                    GetYPosFromTop(rect, math_constants::three_quarters));
-            // draw a curled stem at the end of the leaf
-            stemPath.AddQuadCurveToPoint(
+        wxGraphicsPath leafPath = gc->CreatePath();
+        // left edge (bottom -> tip)
+        leafPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
+                             GetYPosFromTop(rect, math_constants::three_quarters));
+        leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 0.00), GetYPosFromTop(rect, 0.60),
+                                     GetXPosFromLeft(rect, math_constants::half),
+                                     GetYPosFromTop(rect, 0.00)); // tip
+        // right edge (tip -> bottom)
+        leafPath.AddQuadCurveToPoint(GetXPosFromLeft(rect, 1.00), GetYPosFromTop(rect, 0.60),
+                                     GetXPosFromLeft(rect, math_constants::half),
+                                     GetYPosFromTop(rect, math_constants::three_quarters));
+        leafPath.CloseSubpath();
+        gc->FillPath(leafPath);
+
+        // key points
+        const wxPoint2DDouble leafTipPoint{ GetXPosFromLeft(rect, math_constants::half),
+                                            GetYPosFromTop(rect, 0.00) };
+        const wxPoint2DDouble leafBottomPoint{ GetXPosFromLeft(rect, math_constants::half),
+                                               GetYPosFromTop(rect,
+                                                              math_constants::three_quarters) };
+        const wxPoint2DDouble stemCurlEndPoint{
+            GetXPosFromLeft(rect, 0.40), GetYPosFromTop(rect, math_constants::full - 0.025)
+        };
+
+        // stem styling
+        const wxColour stemDarkBrown = Colors::ColorBrewer::GetColor(Colors::Color::DarkBrown);
+        const int stemWidthPx = std::max<int>(
+            1, ScaleToScreenAndCanvas(rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2));
+
+        // inside stem: same brown at 50% opacity
+        const wxPen insideStemPen(
+            Colors::ColorContrast::ChangeOpacity(stemDarkBrown, static_cast<uint8_t>(0.50 * 255)),
+            stemWidthPx);
+        // outside/curl: opaque brown
+        const wxPen outsideStemPen(stemDarkBrown, stemWidthPx);
+
+        // shorten at the tip end (so the inside stem doesn't poke past the leaf tip)
+        // move the start point down a hair from the tip; proportional with a small cap
+        const double shortenFromTipPx =
+            std::min<double>(rect.GetHeight() * 0.02, ScaleToScreenAndCanvas(3.0));
+        const double insideStartY = leafTipPoint.m_y + shortenFromTipPx;
+
+            // inside stem (just below tip -> bottom)
+            {
+            wxGraphicsPath insideStemPath = gc->CreatePath();
+            insideStemPath.MoveToPoint(leafTipPoint.m_x, insideStartY);
+            insideStemPath.AddLineToPoint(leafBottomPoint.m_x, leafBottomPoint.m_y);
+            gc->SetBrush(wxNullBrush);
+            gc->SetPen(insideStemPen);
+            gc->StrokePath(insideStemPath);
+            }
+
+            // outside curl (starts at the true bottom so it covers the seam)
+            {
+            wxGraphicsPath outsideStemPath = gc->CreatePath();
+            outsideStemPath.MoveToPoint(leafBottomPoint.m_x, leafBottomPoint.m_y);
+            outsideStemPath.AddQuadCurveToPoint(
                 GetXPosFromLeft(rect, math_constants::half),
                 GetYPosFromTop(rect, math_constants::three_quarters +
                                          (math_constants::quarter * math_constants::half)),
-                GetXPosFromLeft(rect, .4), GetYPosFromTop(rect, math_constants::full - .025));
-
-            gc->StrokePath(stemPath);
-            gc->PopState();
+                stemCurlEndPoint.m_x, stemCurlEndPoint.m_y);
+            gc->SetBrush(wxNullBrush);
+            gc->SetPen(outsideStemPen);
+            gc->StrokePath(outsideStemPath);
             }
+
+        gc->PopState();
         }
 
     //---------------------------------------------------
@@ -3616,10 +3929,10 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for water color effect!");
         if (gc != nullptr)
             {
-            const auto strayLinesAlongTopBottom = std::max<size_t>(
-                safe_divide<size_t>(rect.GetWidth(), ScaleToScreenAndCanvas(100)), 1);
+            const auto strayLinesAlongTopBottom =
+                std::max<size_t>(safe_divide<int>(rect.GetWidth(), ScaleToScreenAndCanvas(100)), 1);
             const auto strayLinesAlongLeftRight = std::max<size_t>(
-                safe_divide<size_t>(rect.GetHeight(), ScaleToScreenAndCanvas(100)), 1);
+                safe_divide<int>(rect.GetHeight(), ScaleToScreenAndCanvas(100)), 1);
 
             // get the min percent of the height needed, which is the lesser of 3 DIPs or 33%
             const auto heightMinDIPsPercent =
@@ -3705,7 +4018,7 @@ namespace Wisteria::GraphItems
             previousXPos = math_constants::full;
             for (long i = static_cast<long>(strayLinesAlongTopBottom); i > 0; --i)
                 {
-                auto xPos =
+                const auto xPos =
                     safe_divide<double>(math_constants::full, strayLinesAlongTopBottom + 1) * i;
                 fillPath.AddQuadCurveToPoint(
                     GetXPosFromLeft(rect, xPos + safe_divide<double>(previousXPos - xPos, 2)),

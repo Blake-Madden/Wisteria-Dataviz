@@ -27,7 +27,7 @@ namespace Wisteria::Graphs
         @image html ScaleChart.svg width=90%
 
         @par %Data:
-         This plot accepts a Data::Dataset where one continuous column contains the values(s).
+         This plot accepts a Data::Dataset where one continuous column contains the value(s).
          The ID column's labels will be associated with each point,
          so it is recommended to fill this column with meaningful names.
 
@@ -63,7 +63,7 @@ namespace Wisteria::Graphs
             }
           catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())), _(L"Import Error"),
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
                             wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
@@ -72,13 +72,14 @@ namespace Wisteria::Graphs
           plot->AddScale(
             std::vector<BarChart::BarBlock>{
                 BarChart::BarBlock{ Wisteria::Graphs::BarChart::BarBlockInfo(59)
-                                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
+                                        .Brush(Colors::ColorBrewer::GetColor
+                                                (Colors::Color::PastelRed, 150))
                                         .Decal(
                         GraphItems::Label(GraphItems::GraphItemInfo{ L"F (fail)" }.LabelFitting(
                             LabelFit::ScaleFontToFit))) },
                 BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
+                        .Brush(Colors::ColorBrewer::GetColor(Colors::Color::Corn, 150))
                         .Decal(
                         GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
                             LabelFit::ScaleFontToFit))) },
