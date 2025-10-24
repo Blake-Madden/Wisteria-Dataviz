@@ -38,8 +38,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         const std::shared_ptr<const Data::Dataset>& data, const wxString& seasonColumnName,
         const wxString& wonColumnName, const wxString& shutoutColumnName,
         const wxString& homeGameColumnName,
-        const std::optional<wxString>& postSeasonColumnName /*= std::nullopt*/)
+        const std::optional<wxString>& postseasonColumnName /*= std::nullopt*/)
         {
+        if (data == nullptr || data->GetRowCount() == 0)
+            {
+            return;
+            }
+
         GetSelectedIds().clear();
         m_longestWinningStreak = 0;
         m_hadShutoutWins = m_hadShutoutLosses = false;
@@ -67,16 +72,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     .ToUTF8());
             }
 
-        const auto postseasonColIter = [this, &data, &postSeasonColumnName]()
+        const auto postseasonColIter = [this, &data, &postseasonColumnName]()
         {
-            if (postSeasonColumnName)
+            if (postseasonColumnName)
                 {
-                const auto colIter = data->GetContinuousColumn(postSeasonColumnName.value());
+                const auto colIter = data->GetContinuousColumn(postseasonColumnName.value());
                 if (colIter == data->GetContinuousColumns().cend())
                     {
                     throw std::runtime_error(
                         wxString::Format(_(L"'%s': column not found for graph."),
-                                         postSeasonColumnName.value())
+                                         postseasonColumnName.value())
                             .ToUTF8());
                     }
                 m_hasPostseasonData = true;
@@ -100,6 +105,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         for (const auto& groupId : seasonColIter->GetValues())
             {
             seasons.insert(groupId);
+            }
+        if (seasons.get_data().empty())
+            {
+            return;
             }
         // if more columns than seasons, then fix the column count
         m_matrix.resize(seasons.get_data().size());
@@ -128,10 +137,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 currentGroupId = seasonColIter->GetValue(i);
                 }
             wxASSERT_MSG(currentRow < m_matrix.size(),
-                         L"Invalid row when filling heatmap matrix! "
+                         L"Invalid row when filling WL sparkline matrix! "
                          "Data should be sorted by season before calling SetData().!");
             wxASSERT_MSG(currentColumn < m_matrix[currentRow].second.size(),
-                         L"Invalid column when filling heatmap matrix!");
+                         L"Invalid column when filling WL sparkline matrix!");
             // should not happen, just do this to prevent crash if data was not sorted by
             // value and then by season first. What's displayed if this happens is the data
             // won't be grouped properly, but it's showing it how the client passed it in.
@@ -159,7 +168,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             m_matrix[currentRow].second[currentColumn].m_result = static_cast<GameResult>(wonVal);
             m_matrix[currentRow].second[currentColumn].m_shutout = static_cast<bool>(shutoutVal);
             m_matrix[currentRow].second[currentColumn].m_homeGame = static_cast<bool>(homeGameVal);
-            if (postSeasonColumnName && postseasonColIter != data->GetContinuousColumns().cend())
+            if (postseasonColumnName && postseasonColIter != data->GetContinuousColumns().cend())
                 {
                 const auto postSeasonVal = postseasonColIter->GetValue(i);
                 if (std::isfinite(postSeasonVal))
@@ -311,6 +320,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         }
                     }
                 }
+            // commit a season that ends on wins
+            longestWinningStreak = std::max(longestWinningStreak, consecutiveWins);
+
             rowWinningStreaks.push_back(longestWinningStreak);
             }
         m_longestWinningStreak = std::ranges::max(rowWinningStreaks);
@@ -564,7 +576,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
                 if (game.m_result == GameResult::Won)
                     {
-                    // if not already known to be in a longest winning streak,
+                    // if not already known to be in the longest winning streak,
                     // scan ahead and see if we are in the start of one
                     if (!inWinningStreak)
                         {

@@ -60,7 +60,9 @@ namespace Wisteria::Graphs
          ...
 
         @par Missing Data:
-         - Any missing data in an observation will result in listwise deletion.
+         - Any missing data in either the "from" or "to" weight columns will result in
+           listwise deletion.
+         - Missing data in other columns will result in empty labels.
 
         @par Example:
         @code
@@ -92,7 +94,8 @@ namespace Wisteria::Graphs
              }
 
          auto sankey = std::make_shared<SankeyDiagram>(canvas);
-         sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt);
+         sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt,
+                         std::nullopt), std::nullopt));
          sankey->SetCanvasMargins(5, 5, 5, 5);
 
          canvas->SetFixedObject(0, 0, sankey);
@@ -125,7 +128,7 @@ namespace Wisteria::Graphs
                 the "to" column.
             @param fromSortColumnName The (optional) column used to sort the groups in the
                 "from" column.\n
-                Note that if a group from @c fromWeightColumnName occurs with multiple values
+                Note that if a group from @c fromSortColumnName occurs with multiple values
                 from this column, then it will be sorted by the first value from this column
                 that it encountered.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to

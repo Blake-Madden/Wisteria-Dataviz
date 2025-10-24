@@ -327,16 +327,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     (startPoint.has_value() ? startPoint.value() :
                                               GetScalingAxis().GetRange().first);
 
-                Bar arrowBar(
-                    GetBars().size(),
-                    { { BarBlock(
-                        BarBlockInfo(daysDiff)
-                            .Brush(taskInfo.m_color)
-                            .SelectionLabel(GraphItems::Label(
-                                wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description)
-                                    .Trim(true)
-                                    .Trim(false)))) } },
-                    wxString{}, GraphItems::Label(axisLabel), GetBarEffect(), GetBarOpacity());
+                Bar arrowBar(GetBars().size(),
+                             { { BarBlock(BarBlockInfo(daysDiff)
+                                              .Brush(taskInfo.m_color)
+                                              .SelectionLabel(GraphItems::Label(
+                                                  wxString(taskInfo.m_resource + L"\n" +
+                                                           taskInfo.m_description)
+                                                      .Trim(true)
+                                                      .Trim(false)))) } },
+                             wxString{}, axisLabel, GetBarEffect(), GetBarOpacity());
                 arrowBar.SetCustomScalingAxisStartPosition(startPoint);
                 arrowBar.SetShape(GetScalingAxis().IsReversed() ? BarShape::ReverseArrow :
                                                                   BarShape::Arrow);
