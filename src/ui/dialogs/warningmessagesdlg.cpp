@@ -16,9 +16,9 @@ namespace Wisteria::UI
     //---------------------------------------------------
     void WarningMessagesDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        wxStaticBoxSizer* checksBoxSizer = new wxStaticBoxSizer(
+        auto* checksBoxSizer = new wxStaticBoxSizer(
             new wxStaticBox(this, wxID_ANY, _(L"Display the following prompts:")), wxVERTICAL);
 
         // sort the warnings by display label
@@ -31,7 +31,7 @@ namespace Wisteria::UI
             }
         for (const auto& warningLabel : warningsSortedByLabel)
             {
-            wxCheckBox* checkBox = new wxCheckBox(
+            auto* checkBox = new wxCheckBox(
                 checksBoxSizer->GetStaticBox(), wxID_ANY, warningLabel.second->GetDescription(),
                 wxDefaultPosition, wxDefaultSize, 0,
                 wxGenericValidator(&warningLabel.second->ShouldBeShown()));
@@ -45,5 +45,7 @@ namespace Wisteria::UI
 
         SetSizer(mainSizer);
         mainSizer->Fit(this);
+
+        TransferDataToWindow();
         }
     } // namespace Wisteria::UI

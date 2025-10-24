@@ -20,7 +20,7 @@ OpacityDlg::OpacityDlg(wxWindow* parent, const uint8_t opacity, wxBitmap image,
                        const wxString& caption /*= _(L"Set Opacity")*/,
                        const wxPoint& pos /*= wxDefaultPosition*/,
                        const wxSize& size /*= wxDefaultSize*/,
-                       const long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
+                       const long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/)
     : m_opacity(opacity), m_image(std::move(image))
     {
     wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);

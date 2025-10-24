@@ -26,7 +26,7 @@ namespace Wisteria::UI
     {
     /** @brief Dialog which displays images that can be merged into another one
         (vertically or horizontally).*/
-    class ImageMergeDlg final : public Wisteria::UI::DialogWithHelp
+    class ImageMergeDlg final : public DialogWithHelp
         {
       public:
         /** @brief Constructor.
@@ -49,7 +49,7 @@ namespace Wisteria::UI
             {
             wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
                                             wxWS_EX_CONTEXTHELP);
-            Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
+            DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
             CreateControls(imgPaths);
             Centre();

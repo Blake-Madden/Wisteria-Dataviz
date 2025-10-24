@@ -11,13 +11,12 @@
 
 using namespace Wisteria::UI;
 
-GridExportDlg::GridExportDlg(wxWindow* parent, const int rowCount, const int columnCount,
-                             const GridExportFormat& exportFormat,
-                             const wxWindowID id /*= wxID_ANY*/,
-                             const wxString& caption /*= _(L"List Export Options")*/,
-                             const wxPoint& pos /*= wxDefaultPosition*/,
-                             const wxSize& size /*= wxDefaultSize*/,
-                             const long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
+GridExportDlg::GridExportDlg(
+    wxWindow* parent, const int rowCount, const int columnCount,
+    const GridExportFormat& exportFormat, const wxWindowID id /*= wxID_ANY*/,
+    const wxString& caption /*= _(L"List Export Options")*/,
+    const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+    const long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/)
     : m_exportFormat(exportFormat)
     {
     m_options.m_toRow = rowCount;
@@ -38,7 +37,10 @@ GridExportDlg::GridExportDlg(wxWindow* parent, const int rowCount, const int col
                 {
                 child->Enable(false);
                 }
-            m_paginateCheckBox->Enable();
+            if (m_paginateCheckBox != nullptr)
+                {
+                m_paginateCheckBox->Enable();
+                }
         },
         ControlIDs::ID_EXPORT_ALL_OPTION);
 
@@ -75,7 +77,10 @@ GridExportDlg::GridExportDlg(wxWindow* parent, const int rowCount, const int col
                 {
                 rangeWindow->Enable(false);
                 }
-            m_paginateCheckBox->Enable(false);
+            if (m_paginateCheckBox != nullptr)
+                {
+                m_paginateCheckBox->Enable();
+                }
         },
         ControlIDs::ID_EXPORT_SELECTED_OPTION);
 
@@ -88,7 +93,10 @@ GridExportDlg::GridExportDlg(wxWindow* parent, const int rowCount, const int col
                 {
                 child->Enable();
                 }
-            m_paginateCheckBox->Enable();
+            if (m_paginateCheckBox != nullptr)
+                {
+                m_paginateCheckBox->Enable();
+                }
         },
         ControlIDs::ID_EXPORT_RANGE_OPTION);
     }

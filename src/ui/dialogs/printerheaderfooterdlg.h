@@ -42,7 +42,7 @@ namespace Wisteria::UI
             @param centerPrinterFooter The default center printer footer.
             @param rightPrinterFooter The default right printer footer.
             @param id The window ID.
-            @param caption The title of the export dialog.
+            @param caption The title of the dialog.
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/

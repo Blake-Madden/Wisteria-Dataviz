@@ -8,7 +8,6 @@
 
 #include "radioboxdlg.h"
 #include "../../base/colorbrewer.h"
-#include <wx/htmllbox.h>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -30,7 +29,7 @@ namespace Wisteria::UI
                            m_choices, 0, wxRA_SPECIFY_ROWS, wxGenericValidator{ &m_selected });
 
         mainSizer->Add(radioBox, 0, wxALIGN_LEFT | wxALL, wxSizerFlags::GetDefaultBorder());
-        mainSizer->AddStretchSpacer(wxSizerFlags::GetDefaultBorder());
+        mainSizer->AddStretchSpacer();
         if (m_descriptions.GetCount() > 0)
             {
             m_descriptionLabel =
@@ -58,6 +57,8 @@ namespace Wisteria::UI
 
         mainSizer->SetMinSize(FromDIP(wxSize{ 500, 250 }));
         SetSizerAndFit(mainSizer);
+
+        TransferDataToWindow();
         }
 
     //----------------------------------------------------------
