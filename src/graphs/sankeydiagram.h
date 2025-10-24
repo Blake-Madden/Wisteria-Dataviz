@@ -95,7 +95,7 @@ namespace Wisteria::Graphs
 
          auto sankey = std::make_shared<SankeyDiagram>(canvas);
          sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt,
-                         std::nullopt), std::nullopt));
+                         std::nullopt, std::nullopt);
          sankey->SetCanvasMargins(5, 5, 5, 5);
 
          canvas->SetFixedObject(0, 0, sankey);
