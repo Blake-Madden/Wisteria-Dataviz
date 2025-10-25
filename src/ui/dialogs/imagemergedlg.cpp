@@ -110,8 +110,7 @@ namespace Wisteria::UI
 
                 for (const auto* sizerItem : thumbSize->GetChildren())
                     {
-                    if (const auto* thumb{
-                            dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
+                    if (const auto* thumb{ dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
                         thumb != nullptr)
                         {
                         images.push_back(thumb->GetImage().GetOriginalImage());
@@ -131,16 +130,14 @@ namespace Wisteria::UI
 
                 if (m_orientRadio == 0)
                     {
-                    if (!GraphItems::Image::StitchHorizontally(images).SaveFile(
-                            m_mergedFilePath))
+                    if (!GraphItems::Image::StitchHorizontally(images).SaveFile(m_mergedFilePath))
                         {
                         wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
                         }
                     }
                 else
                     {
-                    if (!GraphItems::Image::StitchVertically(images).SaveFile(
-                            m_mergedFilePath))
+                    if (!GraphItems::Image::StitchVertically(images).SaveFile(m_mergedFilePath))
                         {
                         wxMessageBox(_(L"Unable to save merged image."), _(L"Save"), wxOK);
                         }
@@ -165,8 +162,7 @@ namespace Wisteria::UI
         int maxHeight{ 0 };
         for (const auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
             {
-            if (const auto* thumb{
-                    dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
+            if (const auto* thumb{ dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
                 thumb != nullptr)
                 {
                 maxHeight = std::max(thumb->GetImage().GetOriginalImage().GetHeight(), maxHeight);
@@ -174,8 +170,7 @@ namespace Wisteria::UI
             }
         for (auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
             {
-            if (auto* thumb{ dynamic_cast<Thumbnail*>(sizerItem->GetWindow()) };
-                thumb != nullptr)
+            if (auto* thumb{ dynamic_cast<Thumbnail*>(sizerItem->GetWindow()) }; thumb != nullptr)
                 {
                 const double percentOfMaxHeight{ safe_divide<double>(
                     thumb->GetImage().GetOriginalImage().GetHeight(), maxHeight) };
@@ -198,8 +193,7 @@ namespace Wisteria::UI
         int maxWidth{ 0 };
         for (const auto* sizerItem : m_verticalThumbsSizer->GetChildren())
             {
-            if (const auto* thumb{
-                    dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
+            if (const auto* thumb{ dynamic_cast<const Thumbnail*>(sizerItem->GetWindow()) };
                 thumb != nullptr)
                 {
                 maxWidth = std::max(thumb->GetImage().GetOriginalImage().GetWidth(), maxWidth);
@@ -207,8 +201,7 @@ namespace Wisteria::UI
             }
         for (auto* sizerItem : m_verticalThumbsSizer->GetChildren())
             {
-            if (auto* thumb{ dynamic_cast<Thumbnail*>(sizerItem->GetWindow()) };
-                thumb != nullptr)
+            if (auto* thumb{ dynamic_cast<Thumbnail*>(sizerItem->GetWindow()) }; thumb != nullptr)
                 {
                 const double percentOfMaxWidth{ safe_divide<double>(
                     thumb->GetImage().GetOriginalImage().GetWidth(), maxWidth) };

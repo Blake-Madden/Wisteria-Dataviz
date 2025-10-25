@@ -241,13 +241,13 @@ namespace Wisteria::UI
             // export
             if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
                 {
-                if (homePage == nullptr) //NOLINT
+                if (homePage == nullptr) // NOLINT
                     {
                     homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
                     }
-                auto* exportPage = new wxRibbonPanel(
-                    homePage, wxID_ANY, _(L"Export"), wxNullBitmap, wxDefaultPosition,
-                    wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+                auto* exportPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Export"), wxNullBitmap,
+                                                     wxDefaultPosition, wxDefaultSize,
+                                                     wxRIBBON_PANEL_NO_AUTO_MINIMISE);
                 auto* buttonBar = new wxRibbonButtonBar(exportPage);
                 if (m_buttonStyle & LD_SAVE_BUTTON)
                     {
