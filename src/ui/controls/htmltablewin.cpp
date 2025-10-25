@@ -269,7 +269,7 @@ bool HtmlTableWindow::Save(const wxFileName& path) const
 
     wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
     wxFile file(path.GetFullPath(), wxFile::write);
-    assert(GetParser());
+    wxASSERT(GetParser());
     std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
     lily_of_the_valley::html_format::strip_body_attributes(htmlText);
     lily_of_the_valley::html_format::strip_hyperlinks(htmlText);
@@ -287,10 +287,11 @@ bool HtmlTableWindow::Save(const wxFileName& path) const
 //------------------------------------------------------
 void HtmlTableWindow::Copy()
     {
+    wxASSERT(GetParser());
     if (wxTheClipboard->Open())
         {
         wxTheClipboard->Clear();
-        wxDataObjectComposite* obj = new wxDataObjectComposite();
+        auto* obj = new wxDataObjectComposite();
         std::wstring htmlText{ (GetParser()->GetSource())->wc_str() };
         lily_of_the_valley::html_format::strip_hyperlinks(htmlText);
         lily_of_the_valley::html_format::strip_images(htmlText);

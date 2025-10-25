@@ -203,13 +203,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         {
         Hide();
         if (m_editedRow != wxNOT_FOUND && m_editedColumn != wxNOT_FOUND &&
-            (m_owner->GetItemTextEx(m_editedRow, m_editedColumn) !=
-             wxString::Format(L"%0.1f", GetValue())))
+            (m_owner->GetItemTextEx(m_editedRow, m_editedColumn) != std::to_wstring(GetValue())))
             {
-            // if user deleted contents of control,
-            // then set the cell in the list control to empty string as well
-            m_owner->SetItemText(m_editedRow, m_editedColumn,
-                                 wxString::Format(L"%0.1f", GetValue()));
+            m_owner->SetItemText(m_editedRow, m_editedColumn, std::to_wstring(GetValue()));
             m_owner->Refresh();
             m_owner->SetItemBeenEditedByUser(true);
             }
@@ -512,6 +508,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DeleteSelectedItems()
         {
+        wxWindowUpdateLocker noUpdates(this);
+
         long item = wxNOT_FOUND;
         const long firstSelected = GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
         for (;;)
@@ -524,7 +522,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             if (m_enableFileDelete)
                 {
                 const wxString filePath = GetItemFilePath(item);
-                if (filePath.length() && wxFile::Exists(filePath) && m_deletePrompt.length())
+                if (!filePath.empty() && wxFile::Exists(filePath) && !m_deletePrompt.empty())
                     {
                     if (wxMessageBox(m_deletePrompt, _(L"Delete Item"),
                                      wxYES_NO | wxICON_WARNING) == wxYES)
@@ -538,11 +536,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 DeleteItem(item--);
                 }
-            Refresh();
             }
 
         // select item after the one that was deleted
-        if (firstSelected < GetItemCount())
+        if (firstSelected != wxNOT_FOUND && firstSelected < GetItemCount())
             {
             Select(firstSelected);
             }
@@ -738,7 +735,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 m_currentPage = page;
                 wxDC* dc = GetDC();
-                if (dc)
+                if (dc != nullptr)
                     {
                     dc->SetFont(m_list->GetFont());
 
@@ -746,8 +743,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     GetScreenToPageScaling(scaleX, scaleY);
 
                     // set a suitable scaling factor
-                    const double scaleXReciprical = safe_divide<double>(1.0f, scaleX);
-                    const double scaleYReciprical = safe_divide<double>(1.0f, scaleY);
+                    const double scaleXReciprocal = safe_divide<double>(1.0f, scaleX);
+                    const double scaleYReciprocal = safe_divide<double>(1.0f, scaleY);
                     dc->SetUserScale(scaleX, scaleY);
 
                     // get the size of the DC's drawing area in pixels
@@ -755,8 +752,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     int dcWidth, dcHeight;
                     dc->GetSize(&dcWidth, &dcHeight);
                     dc->GetSize(&drawingWidth, &drawingHeight);
-                    drawingWidth *= scaleXReciprical;
-                    drawingHeight *= scaleYReciprical;
+                    drawingWidth *= scaleXReciprocal;
+                    drawingHeight *= scaleYReciprocal;
 
                     // let's have at least 10 device units margin
                     const auto marginX = GetMarginPadding();
@@ -1123,7 +1120,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
             // calculate lines per page and line height
             wxDC* dc = GetDC();
-            if (dc)
+            if (dc != nullptr)
                 {
                 dc->SetFont(m_list->GetFont());
 
@@ -1134,7 +1131,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 wxCoord dcWidth{ 0 }, dcHeight{ 0 };
                 dc->GetSize(&dcWidth, &dcHeight);
                 dc->SetUserScale(safe_divide<double>(1.0f, scaleDownX),
-                                 safe_divide<double>(1.0f, scaleDownX));
+                                 safe_divide<double>(1.0f, scaleDownY));
 
                 const wxCoord drawingWidth = static_cast<wxCoord>(dcWidth * scaleDownX) -
                                              (2 * GetMarginPadding()) /*side margins*/;

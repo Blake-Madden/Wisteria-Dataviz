@@ -755,7 +755,7 @@ namespace Wisteria::UI
             else
                 {
                 // go through all the columns
-                for (unsigned long col : m_columnsToCompare)
+                for (const auto col : m_columnsToCompare)
                     {
                     const int result = row1[col].Compare(row2[col]);
                     // if the cells are equal, then we need to compare the next
@@ -789,6 +789,8 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString GetItemText(const size_t row, const size_t column) const final
             {
+            assert(row < m_virtualData.size());
+            assert(column < m_virtualData.operator[](row).size());
             return m_virtualData.operator[](row).operator[](column).m_strVal.c_str();
             }
 
@@ -854,12 +856,19 @@ namespace Wisteria::UI
             cell.SetNumberFormatType(format);
             }
 
-        /// @returns The item's index into the image list if it has an icon.
+        /// @returns The item's index into the image list if it has an icon;
+        ///     @c wxNOT_FOUND otherwise.
         /// @param row The row to access.
         /// @param column The column to access.
         [[nodiscard]]
         int GetItemImage(const size_t row, const size_t column) const final
             {
+            if (m_virtualData.empty())
+                {
+                return wxNOT_FOUND;
+                }
+            assert(row < m_virtualData.size());
+            assert(column < m_virtualData.operator[](row).size());
             return m_virtualData.operator[](row).operator[](column).GetImage();
             }
 
