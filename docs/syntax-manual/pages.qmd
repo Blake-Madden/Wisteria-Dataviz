@@ -9,7 +9,8 @@ Pages can contain the following properties:
   Note that this will override the report's watermark section for this page. \
   Available options are:
   - `"label"`: String to write across the pages.
-  - `"color"`: The watermark's color. This can be either a color name or hex-encoded value.
+  - `"color"`: The watermark's color. \
+    This can be either a color name or hex-encoded value.
 - `"background-color"`: A string specifying the page's background color.
 - `"background-image"`: A string specifying the path to an image to use as the page's background.
 - `"rows"`: The definitions of rows of content in the report. \

@@ -1,5 +1,5 @@
 # Notes {#notes}
 
-Color values can either be hex encoded (e.g., `"#FF0000"` for red) or a named value (`"pumpkin"`). For a full list
-of color names available, refer to the `Wisteria::Colors::Color` enumeration. Specifying `null` for a color
-will result in a transparent color.
+Color values can either be hex encoded (e.g., `"#FF0000"` for red) or a named value (`"pumpkin"`).
+For a full list of color names available, refer to the `Wisteria::Colors::Color` enumeration.
+Specifying `null` for a color will result in a transparent color.

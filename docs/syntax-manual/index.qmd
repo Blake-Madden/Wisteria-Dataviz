@@ -6,10 +6,8 @@ source('R/appdown.r')
 
 A report can be loaded directly from a JSON project file using the `ReportBuilder` class.
 These reports can consist of a single page (i.e., a canvas), or a series of multiple pages.
-On each page, items such as tables, plots, notes, etc. are embedded, and the project file
-specifies how these items are laid out.
+On each page, items such as tables, plots, notes, etc. are embedded, and the project file specifies how these items are laid out.
 
-Along with the objects on the pages, a project file can also define the datasets and
-user-defined values used by report's objects, printer settings, etc.
+Along with the objects on the pages, a project file can also define the datasets and user-defined values used by report's objects, printer settings, etc.
 
 The following details the available options for JSON project files.

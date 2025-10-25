@@ -41,7 +41,8 @@ Properties common to all bar-chart derived graphs:
 - `"showcase-bars"`: An array of strings specifying which bars to showcase.
 - `"hide-ghosted-labels"`: A boolean specifying whether to hide labels on bars that are being ghosted.\
   This will only have an effect if `"showcase-bars"` is in use.
-- `"bar-icons"`: An array of bar icon specifications. Each specification contains the following:
+- `"bar-icons"`: An array of bar icon specifications. \
+  Each specification contains the following:
   - `"label"`: The label of the bar to add an icon to.
   - `"image"`: The path to the image to add to the bar label.
 - `"bar-shapes"`: Properties specifying the shapes of the bars.\
@@ -56,7 +57,8 @@ Properties common to all bar-chart derived graphs:
     Available options are:
     - `"ascending"`
     - `"descending"`
-  - `"by"`: How to sort the bars, by label or length. This will override any `"labels"` option. \
+  - `"by"`: How to sort the bars, by label or length. \
+    This will override any `"labels"` option. \
     Available options are:
     - `"length"`
     - `"label"`
@@ -75,10 +77,13 @@ Properties common to all bar-chart derived graphs:
   - `"end"`: The axis label or numeric position to end the group.
   - `"decal"`: A label to display on the group bar.
   - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
-  - `"color"`: The base color to paint under the brush. This is useful if the brush is using a hatch pattern.
-- `"decals"`: An array of decals to add to the bars. This will be an array of nodes containing the following properties:
+  - `"color"`: The base color to paint under the brush. \
+    This is useful if the brush is using a hatch pattern.
+- `"decals"`: An array of decals to add to the bars.
+  This will be an array of nodes containing the following properties:
   - `"bar"`: The axis label of the bar.
-  - `"block"`: The number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
+  - `"block"`: The number specifying which block in the bar to add the decal to.
+    If not specified, defaults to `0`.
   - `"decal"`: The decal to add to the bar, which will contain [label](#label-properties) properties. \
     Embedded constants can be included in this string, including: \
     `@COUNT@`: The length value of the block.
@@ -98,7 +103,7 @@ Properties common to all bar-chart derived graphs:
 - `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
 
 ::: {.notesection data-latex=""}
-Bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
-any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
-if specifying start and end points for your brackets, be aware that the bars will already be sorted.
+Bar sorting is performed prior to adding bar groups.
+When specifying the start and end of your bar groups, any bar sorting that you specified will be in effect.
+Likewise, axis brackets are also added after the bars are sorted; if specifying start and end points for your brackets, be aware that the bars will already be sorted.
 :::

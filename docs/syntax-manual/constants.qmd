@@ -3,9 +3,10 @@
 Properties for the `"constants"` node:
 
 - `"constants"`: contains an array of key and value pairs, which are referenced by other items in the project. \
-  Items reference key/value pairs via text labels using a special syntax. For example, `Wisteria::GraphItems::Label` objects or graph
-  titles can embed a reference to a run-time value, which will be expanded when the report is rendered.
-  - `"name"`: The key used for the item. Other items reference this using the syntax `{{name}}`, where *name* is the look-up key.
+  Items reference key/value pairs via text labels using a special syntax.
+  For example, `Wisteria::GraphItems::Label` objects or graph titles can embed a reference to a run-time value, which will be expanded when the report is rendered.
+  - `"name"`: The key used for the item. \
+    Other items reference this using the syntax `{{name}}`, where *name* is the look-up key.
   - `"value"` either a string or numeric value to associate with the key. \
     If a number, then it will be formatted to the current locale when displayed in the report. \
     

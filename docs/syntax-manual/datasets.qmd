@@ -22,14 +22,17 @@ Each dataset property will contain the following properties (loaded in the follo
 - `"md-codes"`: An array of string values to import as missing data during the import. \
   This property is optional.
 - `"treat-leading-zeros-as-text"`: whether to import numeric columns with leading zeros as text. \
-  This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
+  This property is optional.
+  Also, this is only used if you are auto-detecting the columns and their types.
 - `"treat-years-as-text"`: whether to import numeric columns that are four-digits as text
   (going under the assumption that they are years). \
-  This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
+  This property is optional.
+  Also, this is only used if you are auto-detecting the columns and their types.
 - `"max-discrete-value"`: The max value that can be seen as discrete when deducing between
-  continuous and categorical data. If an integer is larger then this value
-  in a column, then it will classify the column as continuous. \
-  This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
+  continuous and categorical data.
+  If an integer is larger then this value in a column, then it will classify the column as continuous. \
+  This property is optional.
+  Also, this is only used if you are auto-detecting the columns and their types.
 - `"id-column"`: The ID column. \
   This property is optional.
 - `"continuous-columns"`: An array of continuous column names to import. \
@@ -44,7 +47,8 @@ Each dataset property will contain the following properties (loaded in the follo
       Note that missing data in this column will be recoded to 0. \
       If you have discrete data with zeros and missing data, it is recommended to import it as a continuous column instead.
       This will ensure that the missing data remains as missing data, instead of being recoded to 0.
-    - `"as-strings"`: imports the column as text. (If not specified, this will be the default).
+    - `"as-strings"`: imports the column as text.
+     (If not specified, this will be the default).
 - `"date-columns"`: An array of date column specifications. \
   This property is optional. \
   Each specification consists of the following:
@@ -83,7 +87,8 @@ Example:
 
 ## Transformations {-}
 
-Next, any transformation commands for a dataset node are executed. These are performed in the following order:
+Next, any transformation commands for a dataset node are executed.
+These are performed in the following order:
 
 - `"columns-rename"`: An array of column rename commands, which contain either of the following:
   - `"name"`: The column to rename.
@@ -94,34 +99,39 @@ Next, any transformation commands for a dataset node are executed. These are per
   - `"name-re"`: The column to rename (using a regular expression pattern).
   - `"new-name-re"`: The new name for the column (an include regular expression pattern relative to `"name-re"`).
 - `"mutate-categorical-columns"`: An array of categorical column mutation commands. \
-  Each command will either create or update
-  a categorical columns and fill it with values based on the provided categorical column. This will use a map of
-  regular expression patterns and corresponding replacements, where each value in the source column is compared
-  against the regex patterns. When the first match is encountered, then the corresponding replacement will then
-  be applied to the target column. \
+  Each command will either create or update a categorical columns and fill it with values based on the provided categorical column.
+  This will use a map of regular expression patterns and corresponding replacements, where each value in the source column is compared
+  against the regex patterns.
+  When the first match is encountered, then the corresponding replacement will then be applied to the target column. \
   Each set of commands contains the following properties:
   - `"source-column"`: The source categorical column to review.
-  - `"target-column"`: The categorical column being mutated. (If it doesn't exist, then it will be added.)
-  - `"replacements"`: An array of pattern and replacement pairs. Each of these contain the following:
+  - `"target-column"`: The categorical column being mutated.
+    (If it doesn't exist, then it will be added.)
+  - `"replacements"`: An array of pattern and replacement pairs.
+    Each of these contain the following:
     - `"pattern"`: The regular expression pattern to match against the source column.
     - `"replacement"`: The replacement text.
 - `"columns-select"`: The columns to select (using a regular expression pattern). \
     Columns that do not match this pattern will be removed.
-- `"recode-re"`: An array of categorical column recode commands. This will apply a regular expression
-    text replace for each label in the provided column(s). Each set of commands contains the following properties:
+- `"recode-re"`: An array of categorical column recode commands.
+    This will apply a regular expression text replace for each label in the provided column(s).
+    Each set of commands contains the following properties:
   - `"column"`: The categorical column to recode.
   - `"pattern"`: The regular expression pattern to search for.
-  - `"replacement"`: The replacement text. Note that capture groups are supported.
-- `"collapse-min"`: collapses strings which appear fewer than a minimum number of times. This is an array of
-    specifications which contain the following:
+  - `"replacement"`: The replacement text.
+    Note that capture groups are supported.
+- `"collapse-min"`: collapses strings which appear fewer than a minimum number of times.
+    This is an array of specifications which contain the following:
    - `"column"`: The categorical column to collapse.
    - `"min"`: The minimum number of times a string must appear in the column to remain in the string table.
-   - `"other-label"`: The label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
+   - `"other-label"`: The label to use for the new category where low-frequency values are lumped into.
+     Default is `"Other"`.
 - `"collapse-except"`: Command to collapse strings into an `"Other"` category, except for a list of provided labels. \
     This is an array of specifications which contain the following:
    - `"column"`: The categorical column to collapse.
    - `"labels-to-keep"`: An array of strings to preserve; all others will be lumped into a new `"Other"` category.
-   - `"other-label"`: The label to use for the new category where other labels are lumped into. Default is `"Other"`.
+   - `"other-label"`: The label to use for the new category where other labels are lumped into.
+     Default is `"Other"`.
    
 ```json
  "datasets": [
@@ -153,7 +163,8 @@ Next, a `"formulas"` section can also be loaded from within the dataset's node.
 In this context, this is a formula string which references the dataset. \
 This is an array of specifications which include the following properties:
 
-- `"name"`: The key used for the item. Other items in the project reference this using the syntax `{{name}}`, where *name* is the look-up key.
+- `"name"`: The key used for the item.
+  Other items in the project reference this using the syntax `{{name}}`, where *name* is the look-up key.
 - `"value"`: A string containing one of the following formulas:
   - ``Min(`column`)``:
     Returns the minimum value of the given column from the dataset.
@@ -198,8 +209,8 @@ N(`Degree`, `Academic Year`, {{max(`Academic Year`)}})
 ```
 
 Also, instead of referencing columns by name, functions are also available for referencing columns by index.
-- ``ContinuousColumn(index)``: Returns the name of the continuous column at the given index. Index can either
-  be a number or `` `last` `` (returns the last continuous column).
+- ``ContinuousColumn(index)``: Returns the name of the continuous column at the given index.
+  Index can either be a number or `` `last` `` (returns the last continuous column).
 
 The following example would return the total of the first continuous column:
 
@@ -235,14 +246,15 @@ Example:
 :::: {.minipage data-latex="{\textwidth}"}
 ## Subsetting {-}
 
-Next, the `"subsets"` section of the dataset's node is parsed. This is an array of subset specifications which
-contain the following properties:
+Next, the `"subsets"` section of the dataset's node is parsed.
+This is an array of subset specifications which contain the following properties:
 
-- `"name"`: The name of the subset. (This should be different from the dataset that it is subsetting;
-  otherwise, it will overwrite it.) \
+- `"name"`: The name of the subset.
+  (This should be different from the dataset that it is subsetting; otherwise, it will overwrite it.) \
   This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
 - `"filter"`: The subset filtering definition, which will contain the following:
-  - `"column"`: The column from the dataset to filter on. The following values can also be used:
+  - `"column"`: The column from the dataset to filter on.
+    The following values can also be used:
     - `"last-continuous-column"`
   - `"operator"`: How to compare the values from the column with the filter's value. \
     Available options are:
@@ -252,16 +264,16 @@ contain the following properties:
     - `"<="`: Less than or equal to
     - `">"`: Greater than
     - `">="`: Great than or equal to
-  - `"values"`: An array of values to filter the column on. These can be numbers, strings, or dates
-     (depending on the column's data type). \
+  - `"values"`: An array of values to filter the column on.
+     These can be numbers, strings, or dates (depending on the column's data type). \
      Multiple values will be an `OR` operation, where if a value in the data matches *any* of these
      values, then it's a match.
      Note that string values can reference constants loaded from the [constants](#constants-properties) section
      or `"formulas"` section of the parent dataset.
-- `"filter-or"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
-  are `OR`ed together, meaning that if any condition for a row is true, then it will be included in the subset.
-- `"filter-and"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
-  are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
+- `"filter-or"`: Same as `"filter"`, except that it takes an array of subset filtering definitions.
+  These criteria are `OR`ed together, meaning that if any condition for a row is true, then it will be included in the subset.
+- `"filter-and"`: Same as `"filter"`, except that it takes an array of subset filtering definitions.
+  These criteria are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
 - `"section"`: Creates a subset from a contiguous block of rows based on sentinel values. \
   Available options are:
   - `"column"`: The name of the column to filter on.
@@ -298,18 +310,19 @@ Subset nodes can contain their own transformation and formula sections, same as 
 :::: {.minipage data-latex="{\textwidth}"}
 ## Merging {-}
 
-Next, the `"merges"` section of the dataset's node is parsed. This is an array of pivot specifications which
-contain the following properties:
+Next, the `"merges"` section of the dataset's node is parsed.
+This is an array of pivot specifications which contain the following properties:
 
-- `"name"`: The name of the merged dataset. (This should be different from the datasets being merged;
-  otherwise, it will overwrite them.) \
+- `"name"`: The name of the merged dataset.
+  (This should be different from the datasets being merged; otherwise, it will overwrite them.) \
   This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
 - `"type"`: A string specifying which type of merge to use. \
   Available options are:
   - `"left-join-unique"`: A (unique) left join the dataset with another dataset (the default).
-- `"other-dataset"`: The other dataset to merge the current dataset with. This should be a name referencing
-  a previously loaded dataset.
-- `"by"`: An array of properties specifying which columns to join by. Each item should contain the following:
+- `"other-dataset"`: The other dataset to merge the current dataset with. \
+  This should be a name referencing a previously loaded dataset.
+- `"by"`: An array of properties specifying which columns to join by. \
+  Each item should contain the following:
   - `"left-column"`: The column from the current dataset.
   - `"right-column"`: The column from the other dataset.
 - `"suffix"`: If columns in the right dataset already appear in the left dataset, then append this suffix to
@@ -346,11 +359,11 @@ Merge nodes can contain their own transformation and formula sections, same as a
 :::: {.minipage data-latex="{\textwidth}"}
 ## Pivoting {-}
 
-Next, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
-contain the following properties:
+Next, the `"pivots"` section of the dataset's node is parsed.
+This is an array of pivot specifications which contain the following properties:
 
-- `"name"`: The name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
-  otherwise, it will overwrite it.) \
+- `"name"`: The name of the pivoted dataset.
+  (This should be different from the dataset that it is pivoting; otherwise, it will overwrite it.) \
   This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
 - `"type"`: A string specifying which type of pivot to use. \
   Available options are:
@@ -366,12 +379,13 @@ If pivoting wider, the following options are available:
 - `"names-separator"`: If multiple value columns are provided, then this separator will
   join the label from `"names-from-column"` and the value column name.
 - `"names-prefix"`: A string to prepend to newly created pivot columns.
-- `"fill-value"`: A numeric value to assign to missing data. The default it so leave it as missing data.
+- `"fill-value"`: A numeric value to assign to missing data.
+  The default it so leave it as missing data.
 
 If pivoting longer, the following options are available:
 
-- `"columns-to-keep"`: An array of strings specifying the columns to not pivot. These will be copied to the new dataset
-  and will have their values filled in all new rows created from their observation.
+- `"columns-to-keep"`: An array of strings specifying the columns to not pivot.
+   These will be copied to the new dataset and will have their values filled in all new rows created from their observation.
   These would usually the ID columns. \
   These columns can be of any type, including the ID column.
 - `"from-columns"`: An array of strings specifying the continuous column(s) to pivot into longer format.

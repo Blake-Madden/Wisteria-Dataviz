@@ -15,16 +15,18 @@ Properties common to all graphs:
 - `"caption"`: The caption of the graph, which contains [label](#label-properties) properties.
 - `"axes"`: An array of [axis](#axis-properties) objects.
 - `"background-color"`: A string specifying the plotting area's background color.
-- `"image-scheme"`: An array of image import specifications. (See [image file properties](#image-file-properties).)
+- `"image-scheme"`: An array of image import specifications.
+   (See [image file properties](#image-file-properties).)
 - `"common-box-image-outline"`: A string specifying the color for the outline around the bars/boxes
      if using a common box image.
 - `"stipple-shape"`: A shape to use for the shapes draw across bars (when shape stippling is in use). \
     This is an array of items which contain the following properties:
     - `"icon"`: The shape to use.
     - `"color"`: The color for the shape.
-- `"stipple-image"`: An image import specification. (See [image file properties](#image-file-properties).)
-- `"annotations"`: Text messages that can be added on top of the graph, optionally pointing to positions
-  on the graph. This is an array of annotation definitions, which contain the following properties:
+- `"stipple-image"`: An image import specification.
+   (See [image file properties](#image-file-properties).)
+- `"annotations"`: Text messages that can be added on top of the graph, optionally pointing to positions on the graph. \
+  This is an array of annotation definitions, which contain the following properties:
   - `"label"`: The label for the note, which contains [label](#label-properties) properties.
   - `"interest-points"`: The points that the note will point at. \
     This is an array of items which contain the following properties:
@@ -176,7 +178,8 @@ Properties common to all graphs:
   - `"title"`: If `"include-header"` is `true`, a string specifying the title of the legend.
   - `"ring"`: For pie charts, which ring to use for the legend. \
     Available options are:
-    - `"outer"`: Only the outer (or only) ring is included. (This is the default.)
+    - `"outer"`: Only the outer (or only) ring is included.
+      (This is the default.)
     - `"inner"`: The inner and outer rings are included in the legend.
 
 ## Common Features {-}
@@ -187,7 +190,8 @@ The following section details properties relevant to graphs and tables.
 
 Properties for pens:
 
-- `"color"`: The pen color. This can be either a color name or hex-encoded value.
+- `"color"`: The pen color. \
+  This can be either a color name or hex-encoded value.
 - `"width"`: The width of the pen's line.
 - `"style"`: The pen's style, which includes the following:
   - `"dot"`
@@ -206,7 +210,8 @@ Note that a pen can be set to `null` to turn it off.
 
 Properties for brushes:
 
-- `"color"`: The brush color. This can be either a color name or hex-encoded value.
+- `"color"`: The brush color. \
+   This can be either a color name or hex-encoded value.
 - `"style"`: The brush's pattern, which includes the following:
   - `"backwards-diagonal-hatch"`
   - `"forward-diagonal-hatch"`
@@ -310,11 +315,12 @@ Note that instead of properties, a single string can be specified indicating a f
   If building brackets from a dataset, use the following properties:
   - `"dataset"`: The name of the dataset to read the columns from. \
        Note that this dataset can be different from the dataset used for the first
-       child graph if you are wanting to use different labels. For this situation, the
-       `"value"` variable should have the same scale as the child graph.
+       child graph if you are wanting to use different labels.
+       For this situation, the `"value"` variable should have the same scale as the child graph.
   - `"variables"`: Which include the following properties:
     - `"label"`: The labels column.
-    - `"value"`: The values column. (This can be either a continuous, categorical, or date column.)
+    - `"value"`: The values column. \
+     (This can be either a continuous, categorical, or date column.)
   - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
   - `"style"`: The style of the braces. \
     Available options are:

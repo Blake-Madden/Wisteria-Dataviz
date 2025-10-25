@@ -19,7 +19,8 @@ Properties for `"box-plot"` nodes:
   - `"glassy"`
   - `"solid"` (the default)
   - `"stipple"`
-- `"show-all-points"`: `true` to show all points. By default, only outliers are shown.
+- `"show-all-points"`: `true` to show all points.
+  By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
 :::
 
@@ -94,8 +95,8 @@ Properties for `"heatmap"` nodes:
 - `"variables"`: An item containing the following properties:
   - `"continuous"`: The value column (each value will have its own cell).
   - `"group"`: The grouping column (this is optional).
-- `"group-column-count"`: If a grouping column is provided, then this number will specify the number of columns
-  to split the groups (rows) into. (This should be between 1-5.)
+- `"group-column-count"`: If a grouping column is provided, then this number will specify the number of columns to split the groups (rows) into. \
+  (This should be between 1-5.)
 - `"show-group-header"`: If a grouping column is provided, then `true` will show a header above each column.
 - `"group-header-prefix"`: If group columns are being shown, this will be the string used as a prefix for each column.
 :::
@@ -140,8 +141,8 @@ Properties for `"likert-chart"` nodes:
   These values can also be variable selection formulas, including the following:
   - ``{{Matches(`value`)}}``: Where *value* will be the regular expression search pattern, and any column
       in the dataset that contains this text will be included.
-  - ``{{Everything()}}``: Returns all columns from the dataset. The column order will be the ID column (if in use),
-      the categoricals, the continuous columns, and finally the date columns.
+  - ``{{Everything()}}``: Returns all columns from the dataset. \
+      The column order will be the ID column (if in use), the categoricals, the continuous columns, and finally the date columns.
   - ``{{EverythingExcept(`value`)}}``: Returns all columns from the dataset that do not match the
       regular expression pattern *value*. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
@@ -293,8 +294,8 @@ Properties for `"linear-regression-roadmap"` nodes:
   - `"predictor"`: The column containing the independent variables' (i.e., predictors) names.
   - `"coefficient"`: The column containing the predictors' correlation coefficients.
   - `"p-value"`: The (optional) column containing the predictors' p-values.
-- `"p-value-threshold"`: If a p-value column is supplied, only predictors with p-values lower than
-  this will be included. (Predictors with missing p-values will be excluded.) \
+- `"p-value-threshold"`: If a p-value column is supplied, only predictors with p-values lower than this will be included. \
+  (Predictors with missing p-values will be excluded.) \
   The recommendations are usually `0.05` or `0.01` (most strict).
 - `"predictors-to-include"`: Array of strings specifying which types of IVs (e.g., negative influencers) to include. \
   Available options are:
@@ -410,14 +411,14 @@ Properties for `"table"` nodes:
   These values can also be variable selection formulas, including the following:
   - ``{{Matches(`value`)}}``: Where *value* is a regular expression search pattern; any column name
       in the dataset that matches this text will be included.
-  - ``{{Everything()}}``: Returns all columns from the dataset. The column order will be the ID column (if in use),
-      the categoricals, the continuous columns, and finally the date columns.
+  - ``{{Everything()}}``: Returns all columns from the dataset.
+      The column order will be the ID column (if in use), the categoricals, the continuous columns, and finally the date columns.
   - ``{{EverythingExcept(`value`)}}``: Returns all columns from the dataset that do not match the
       regular expression pattern *value*. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
-- `"transpose"`: `true` to transpose the data at the time of import. This means that the columns will become
-      the rows and vice versa. \
-      This is performed immediately after loading the data.
+- `"transpose"`: `true` to transpose the data at the time of import.
+    This means that the columns will become the rows and vice versa. \
+    This is performed immediately after loading the data.
 - `"row-sort"`: Properties specifying how to sort the table. \
   Available options are:
   - `"direction"`: The direction to sort the rows. \
@@ -437,13 +438,13 @@ Properties for `"table"` nodes:
 - `"min-height-proportion"`: The minimum percent of the drawing area's height that the table should consume
       (between `0.0` to `1.0`, representing 0% to 100%).
 - `"highlight-pen"`: The pen used for highlighting cells, which includes [pen](#pen-properties) properties.
-- `"default-borders"`: An array of boolean values, representing whether the default borders of the
-      cell should be drawn. These values go clockwise, starting at 12 o'clock.
+- `"default-borders"`: An array of boolean values, representing whether the default borders of the cell should be drawn. \
+    These values go clockwise, starting at 12 o'clock.
 - `"clear-trailing-row-formatting"`: A boolean specifying whether to clear the formatting for any trailing, empty rows.
-- `"link-id"`: A numeric ID to link with other tables. All tables with the same ID will have their dimensions
-      set to a common number of rows and columns. This is useful for aligning tables next to each other and
-      ensuring that they have a common scaling. Note that string constants can also be used (e.g., `"{{PageNumber()}}"`
-      can link tables on the current page).
+- `"link-id"`: A numeric ID to link with other tables. \
+    All tables with the same ID will have their dimensions set to a common number of rows and columns. \
+    This is useful for aligning tables next to each other and ensuring that they have a common scaling. \
+    Note that string constants can also be used (e.g., `"{{PageNumber()}}"` can link tables on the current page).
 - Some base properties available to [graphs](#graph-properties).
 
 Note that it is recommended to set `"fit-row-to-content"` to `true` for shorter tables to better fit them to the page.
@@ -462,10 +463,11 @@ The remaining properties are executed in the following order:
      Down each provided column, this will combine consecutive cells with the same label into one cell.
 - `"alternate-row-color"`: Applies "zebra stripes" down the rows. \
   Available options are:
-  - `"color"`: The base row color for the starting row; a shaded/tinted version of this color will be applied
-       to every other row. (Default is white, creating a shaded white as the alternate color.)
-  - `"start"`: The row to start the alternating from. (Default is `0`.) \
-       Refer to [position](#position-properties) for available properties.
+  - `"color"`: The base row color for the starting row; a shaded/tinted version of this color will be applied to every other row. \
+    (Default is white, creating a shaded white as the alternate color.)
+  - `"start"`: The row to start the alternating from.
+    (Default is `0`.) \
+    Refer to [position](#position-properties) for available properties.
   - `"stops"`: An array of which columns to skip over when applying the row alternating color. \
        This is an array of `"position"` items.
 - `"row-add"`: Commands for a series of rows to be added, which is an array of row properties containing the following:
@@ -514,8 +516,8 @@ The remaining properties are executed in the following order:
        Refer to [position](#position-properties) for available properties.
   - `"end"`: If specifying a range of rows, this is the end column. \
        Refer to [position](#position-properties) for available properties.
-  - `"borders"`: An array of boolean values, representing whether the borders of the
-       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - `"borders"`: An array of boolean values, representing whether the borders of the cell should be drawn. \
+     These values go clockwise, starting at 12 o'clock.
   - `"right-border"`: A boolean specifying whether to show the cell's right border.
   - `"top-border"`: A boolean specifying whether to show the cell's top border.
   - `"bottom-border"`: A boolean specifying whether to show the cell's bottom border.
@@ -577,8 +579,8 @@ The remaining properties are executed in the following order:
      Refer to [position](#position-properties) for available properties.
   - `"end"`: If specifying a range of rows, this is the end column. \
      Refer to [position](#position-properties) for available properties.
-  - `"borders"`: An array of boolean values, representing whether the borders of the
-       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - `"borders"`: An array of boolean values, representing whether the borders of the cell should be drawn. \
+     These values go clockwise, starting at 12 o'clock.
   - `"right-border"`: A boolean specifying whether to show the cell's right border.
   - `"top-border"`: A boolean specifying whether to show the cell's top border.
   - `"bottom-border"`: A boolean specifying whether to show the cell's bottom border.
@@ -603,7 +605,8 @@ The remaining properties are executed in the following order:
     - `"percent-change"`
     - `"change"`
     - `"total"`
-  - `"background"`: The background color for the column/row. This can be either a color name or hex-encoded value.
+  - `"background"`: The background color for the column/row. \
+     This can be either a color name or hex-encoded value.
   - `"use-adjacent-color"`: `true` to use the color of the cell adjacent to this column.
      `false` will apply a light gray to the column.
   - `"name"`: The name for the newly added aggregate column/row.
@@ -616,8 +619,8 @@ The remaining properties are executed in the following order:
   - `"end"`: The last column/row that the aggregate column/row should use. \
       This property is optional, and if not included the last numeric column/row encountered will be used.
       Like `"start"`, this is optional and has the same properties.
-  - `"borders"`: An array of boolean values, representing whether the borders of the
-      cell should be drawn. These values go clockwise, starting at 12 o'clock. \
+  - `"borders"`: An array of boolean values, representing whether the borders of the cell should be drawn. \
+      These values go clockwise, starting at 12 o'clock. \
       This is optional and overrides the default cell borders.
 - `"row-totals"`: Adds a grand total row to the bottom of the table. \
   If the first column is grouped and the second locum is text, then this will also insert subtotal rows. \
@@ -635,15 +638,16 @@ The remaining properties are executed in the following order:
   - `"row-count"`: The number of rows that this cell should consume. \
       This can either be a number, or the string `"all"` (meaning all rows).
   - `"value"`: A numeric, string, or date value to assign to the cell.
-  - `"background"`: The background color. This can be either a color name or hex-encoded value.
+  - `"background"`: The background color. \
+    This can be either a color name or hex-encoded value.
   - `"bold"`: `true` to make the cell bold.
   - `"highlight"`: `true` to highlight the cell.
   - `"prefix"`: A character to display on the left side of the cell.
   - `"left-image"`: Properties specifying an image to display on the left side of the label. \
     Available options are:
     - `"path"`: A string specifying the image path to load.
-  - `"show-borders"`: An array of boolean values, representing whether the borders of the
-       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - `"show-borders"`: An array of boolean values, representing whether the borders of the cell should be drawn. \
+    These values go clockwise, starting at 12 o'clock.
   - `"horizontal-page-alignment"`: How to horizontally align the item within its area. \
     Available options are:
     - `"left-aligned"`
@@ -667,8 +671,10 @@ The remaining properties are executed in the following order:
     - `"column-top-n"`: A provided column, with *n* number of highest-value items annotated.
     - `"n"`: If `"column-top-n"` is in use, a number specifying how many top items should be returned.
 - `"footnotes"`: An array of footnote specifications, which each contain the following properties:
-  - `"value"`: The cell value (as a string) to add a footnote number to. Can include [constants](#constants-properties).
-  - `"footnote"`: The footnote to add to the caption. Can include [constants](#constants-properties).
+  - `"value"`: The cell value (as a string) to add a footnote number to. \
+    Can include [constants](#constants-properties).
+  - `"footnote"`: The footnote to add to the caption. \
+    Can include [constants](#constants-properties).
 
 ::: {.minipage data-latex="{\textwidth}"}
 ## Win/Loss Sparkline {#win-loss-sparkline-properties .unnumbered}

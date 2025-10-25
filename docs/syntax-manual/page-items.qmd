@@ -4,18 +4,18 @@
 
 Properties common to all items:
 
-- `"id"`: A (unique) numeric identifier for the item. This can be referenced by other items in the report. \
-     An example can be adding an ID to a graph and then inserting a [common-axis](#common-axis-properties) to the
-     report that accepts this ID.
+- `"id"`: A (unique) numeric identifier for the item. \
+   This can be referenced by other items in the report. \
+   An example can be adding an ID to a graph and then inserting a [common-axis](#common-axis-properties) to the report that accepts this ID.
 - `"canvas-margins"`: A numeric array (one to four numbers), representing the item's canvas margin going clockwise,
      starting at 12 o'clock.
 - `"padding"`: A numeric array (one to four numbers), representing the item's padding going clockwise,
      starting at 12 o'clock.
 - `"pen"`: The item's pen, which includes [pen](#pen-properties) properties.
-- `"outline"`: A boolean array, specifying the item's border outlines to draw going clockwise,
-     starting at 12 o'clock. Note that `"pen"` must be valid and that this is not supported by all objects.
-- `"scaling"`: A numeric value of how much to scale the object's size. For example, `2.0` will be double the
-     default size.
+- `"outline"`: A boolean array, specifying the item's border outlines to draw going clockwise, starting at 12 o'clock. \
+   Note that `"pen"` must be valid and that this is not supported by all objects.
+- `"scaling"`: A numeric value of how much to scale the object's size. \
+  For example, `2.0` will be double the default size.
 - `"show"`: A boolean value specifying whether to show the item.
 - `"anchoring"`: Controls the starting point of where the object is drawn. \
   This is usually only relative for objects being embedded on a plot (e.g., annotations). \
@@ -142,7 +142,8 @@ Example:
 
 Properties for `"image"` nodes:
 
-- `"image-import"`: An image import specification. (See [image file properties](#image-file-properties).)
+- `"image-import"`: An image import specification.
+  (See [image file properties](#image-file-properties).)
 - `"resize-method"`: How the image's size is adjusted when its bounding box is changed. \
   Available options are:
   - `"downscale-only"`
@@ -175,8 +176,10 @@ Properties for `"label"` nodes:
   Available options are:
   - `"vertical"`
   - `"horizontal"`
-- `"background"`: The background color. This can be either a color name or hex-encoded value.
-- `"color"`: The font color. This can be either a color name or hex-encoded value.
+- `"background"`: The background color. \
+  This can be either a color name or hex-encoded value.
+- `"color"`: The font color. \
+  This can be either a color name or hex-encoded value.
 - `"bold"`: `true` to make the text bold.
 - `"line-spacing"`: A number representing the spaces between lines (if text is multi-line).
 - `"text-alignment"`: How to align the label's text. \
@@ -188,11 +191,14 @@ Properties for `"label"` nodes:
   - `"justified-at-word"`
 - `"left-image"`: Properties specifying an image to display on the left side of the label. \
   The available options are:
-  - `"image-import"`: An image import specification. (See [image file properties](#image-file-properties).)
+  - `"image-import"`: An image import specification.
+    (See [image file properties](#image-file-properties).)
 - `"top-image"`: Properties specifying an image to display above the label. \
   The available options are:
-  - `"image-import"`: An image import specification. (See [image file properties](#image-file-properties).)
-  - `"offset"`: A number specifying how far from the top of the label's box to draw the image. (Default is `0`.)
+  - `"image-import"`: An image import specification.
+    (See [image file properties](#image-file-properties).)
+  - `"offset"`: A number specifying how far from the top of the label's box to draw the image.
+    (Default is `0`.)
 - `"top-shape"`: Properties specifying a shape (or array of shapes) to display above the label. \
   The available options are:
   - `"icon"`: A string specifying the icon to draw the shape as.
@@ -204,11 +210,13 @@ Properties for `"label"` nodes:
     - `"height"`: The height.
   - `"fill-percent"`: The percent to fill the shape, which is a number between `0.0` and `1.0`.
   Note that if multiple shapes are provided, then they will be drawn on top of each other, creating a composite shape.
-- `"top-shape-offset"`: A number specifying how far from the top of the label's box to draw the top shape or image. (Default is `0`.)
+- `"top-shape-offset"`: A number specifying how far from the top of the label's box to draw the top shape or image.
+  (Default is `0`.)
 - `"header"`: Attributes to apply to the first row of the label. \
   The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.
-  - `"color"`: The font color for the header. This can be either a color name or hex-encoded value.
+  - `"color"`: The font color for the header. \
+    This can be either a color name or hex-encoded value.
   - `"text-alignment"`: How to align the label's text. \
       The available options are:
     - `"flush-left"` or `"ragged-right"`
@@ -218,11 +226,10 @@ Properties for `"label"` nodes:
     - `"justified-at-word"`
   - `"relative-scaling:"`: numeric value of how much to scale the header's font size relative to the label's scaling.
        For example, `2.0` will double the header's default font size compared to the rest of the label. \
-       Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
-       `"scaling"` property.
+       Note that this will only affect the header scaling. \
+       To alter the label's scaling, use the label's root-level `"scaling"` property.
 
-Note that it is recommended to set `"fit-row-to-content"` to `true` if the label is a separate
-object on the canvas (i.e., not a label on another object).
+Note that it is recommended to set `"fit-row-to-content"` to `true` if the label is a separate object on the canvas (i.e., not a label on another object).
 
 Example:
 
@@ -269,8 +276,7 @@ Example with a colorful header and logo:
 }
 ```
 
-Note that empty labels can be used to draw divider lines, as well as a way to force another item in the same row
-to be stretched to the full width of the page.
+Note that empty labels can be used to draw divider lines, as well as a way to force another item in the same row to be stretched to the full width of the page.
 (A spacer is a shorthand for an empty label.)
 For example, a row could be written as this:
 
