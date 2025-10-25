@@ -14,6 +14,10 @@ namespace lily_of_the_valley
         {
         // reset metadata from last call
         reset_meta_data();
+        if (html_text == nullptr || text_length == 0)
+            {
+            return;
+            }
 
         constexpr std::wstring_view OFFICE_META(L"office:meta");
         constexpr std::wstring_view SUBJECT(L"dc:subject");

@@ -191,7 +191,7 @@ void HtmlTablePrintout::OnPreparePrinting()
         wxCoord dcWidth, dcHeight;
         dc->GetSize(&dcWidth, &dcHeight);
         dc->SetUserScale(safe_divide<double>(1.0f, scaleDownX),
-                         safe_divide<double>(1.0f, scaleDownX));
+                         safe_divide<double>(1.0f, scaleDownY));
 
         const wxCoord drawingWidth =
             (dcWidth * scaleDownX) - (GetMarginPadding() * 2) /*side margins*/;
@@ -225,7 +225,7 @@ void HtmlTablePrintout::OnPreparePrinting()
         memDc.Clear();
         wxGCDC gcdc(memDc);
         gcdc.SetUserScale(safe_divide<double>(1.0f, scaleDownX),
-                          safe_divide<double>(1.0f, scaleDownX));
+                          safe_divide<double>(1.0f, scaleDownY));
         wxHtmlDCRenderer htmlRenderer;
         htmlRenderer.SetDC(&gcdc);
         htmlRenderer.SetSize(drawingWidth, drawingHeight);

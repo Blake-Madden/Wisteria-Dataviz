@@ -72,7 +72,7 @@ namespace lily_of_the_valley
 
             while (start && (start < endSentinel))
                 {
-                bool isBulletedPreviousParagraph = isBulletedParagraph;
+                const bool isBulletedPreviousParagraph = isBulletedParagraph;
                 isBulletedParagraph = true;
                 paragraphEnd = find_closing_element(start, endSentinel, L"a:p");
                 if (!paragraphEnd)
@@ -99,9 +99,9 @@ namespace lily_of_the_valley
                         read_attribute_as_string(paragraphProperties, L"lvl", false, false);
                     if (!levelDepth.empty())
                         {
-                        wchar_t* dummy = nullptr;
-                        const double levelDepthValue = std::wcstod(levelDepth.c_str(), &dummy);
-                        if (levelDepthValue >= 1)
+                        wchar_t* endP = nullptr;
+                        const auto lvl = std::wcstol(levelDepth.c_str(), &endP, 10);
+                        for (long i = 0; i < std::max<long>(0, std::min<long>(lvl, 8)); ++i)
                             {
                             add_character(L'\t');
                             }
@@ -196,6 +196,11 @@ namespace lily_of_the_valley
             {
             // reset metadata from last call
             reset_meta_data();
+
+            if (html_text == nullptr || text_length == 0)
+                {
+                return;
+                }
 
             constexpr static std::wstring_view OFFICE_META(L"cp:coreProperties");
             constexpr static std::wstring_view SUBJECT(L"dc:subject");

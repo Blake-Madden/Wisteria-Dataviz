@@ -92,10 +92,10 @@ namespace Wisteria::UI
                 }
             selectedText.Trim(true);
             selectedText.Trim(false);
-            if (wxTheClipboard->Open() && selectedText.length() > 0)
+            if (!selectedText.empty() && wxTheClipboard->Open())
                 {
                 wxTheClipboard->Clear();
-                wxDataObjectComposite* obj = new wxDataObjectComposite();
+                auto* obj = new wxDataObjectComposite();
                 obj->Add(new wxTextDataObject(selectedText));
                 wxTheClipboard->SetData(obj);
                 wxTheClipboard->Close();
@@ -178,7 +178,7 @@ namespace Wisteria::UI
             wxEVT_RIBBONBUTTONBAR_CLICKED,
             [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
             {
-                if (m_logFile != nullptr)
+                if (m_logFile != nullptr && m_list != nullptr)
                     {
                     m_logFile->Clear();
                     m_list->DeleteAllItems();
@@ -241,14 +241,14 @@ namespace Wisteria::UI
             // export
             if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
                 {
-                if (homePage == nullptr)
+                if (homePage == nullptr) // NOLINT
                     {
                     homePage = new wxRibbonPage(m_ribbon, wxID_ANY, wxString{});
                     }
-                wxRibbonPanel* exportPage = new wxRibbonPanel(
-                    homePage, wxID_ANY, _(L"Export"), wxNullBitmap, wxDefaultPosition,
-                    wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE);
-                wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(exportPage);
+                auto* exportPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Export"), wxNullBitmap,
+                                                     wxDefaultPosition, wxDefaultSize,
+                                                     wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+                auto* buttonBar = new wxRibbonButtonBar(exportPage);
                 if (m_buttonStyle & LD_SAVE_BUTTON)
                     {
                     buttonBar->AddButton(wxID_SAVE, _(L"Save"),
@@ -416,6 +416,11 @@ namespace Wisteria::UI
         {
         m_logFile = log;
 
+        if (m_logFile == nullptr)
+            {
+            return;
+            }
+
         // toggle the verbose button to match what the logger is doing
         m_isLogVerbose = m_logFile->GetVerbose();
         if (m_editButtonBar != nullptr)
@@ -432,7 +437,7 @@ namespace Wisteria::UI
         // in case the list is being sorted or an item view request was sent,
         // process all that before reloading the list control
         wxTheApp->Yield();
-        if (m_logFile != nullptr)
+        if (m_logFile != nullptr && GetListCtrl() != nullptr)
             {
             const long style = GetListCtrl()->GetExtraStyle();
             GetListCtrl()->SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);

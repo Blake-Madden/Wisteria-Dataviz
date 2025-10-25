@@ -128,8 +128,11 @@ namespace Wisteria::UI
                 }
             if (m_functionList->GetCount())
                 {
-                m_functionList->SetSelection(
-                    (pos->m_lastSelectedItem == -1) ? 0 : pos->m_lastSelectedItem);
+                if (pos != m_functionCollection.cend())
+                    {
+                    m_functionList->SetSelection(
+                        (pos->m_lastSelectedItem == -1) ? 0 : pos->m_lastSelectedItem);
+                    }
                 m_functionDescriptionWindow->SetPage(wxString::Format(
                     L"<body bgcolor=%s text=%s>%s<br />%s</body>",
                     wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW).GetAsString(wxC2S_HTML_SYNTAX),
@@ -209,7 +212,7 @@ namespace Wisteria::UI
                 formattedSignature += wxString::Format(L"%s%c", param, m_paramSeparator);
                 }
             }
-        if (formattedSignature.RemoveLast(1) == m_paramSeparator)
+        if (formattedSignature.Last() == m_paramSeparator)
             {
             formattedSignature.RemoveLast(1);
             }

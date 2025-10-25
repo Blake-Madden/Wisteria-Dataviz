@@ -406,6 +406,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
 
         const auto alignColumns = [&, this]()
         {
+            if (std::ranges::any_of(m_sankeyColumns, [](const auto& col) { return col.empty(); }))
+                {
+                return;
+                }
+
             const auto lowestYPosition = [&, this]()
             {
                 const auto lowestHangingColumn = std::ranges::min_element(
@@ -706,7 +711,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                 assert(aGr.m_startGroup < m_sankeyColumns[0].size() &&
                        L"Axis group start out of range!");
                 assert(aGr.m_endGroup < m_sankeyColumns[0].size() &&
-                       L"Axis group start out of range!");
+                       L"Axis group end out of range!");
                 const auto groupTop = m_sankeyColumns[0].at(aGr.m_startGroup).m_yAxisTopPosition;
                 const auto groupBottom =
                     m_sankeyColumns[0].at(aGr.m_endGroup).m_yAxisBottomPosition;

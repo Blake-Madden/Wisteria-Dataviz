@@ -48,7 +48,7 @@ void PrinterHeaderFooterDlg::UCaseEmbeddedTags(wxString& str)
     {
     std::vector<wxString> embeddedTags;
 
-    wxRegEx re(L"(@[[:alpha:]]+@)");
+    const wxRegEx re(L"(@[[:alpha:]]+@)");
     size_t start{ 0 }, len{ 0 };
     wxString processText = str;
     while (re.Matches(processText))

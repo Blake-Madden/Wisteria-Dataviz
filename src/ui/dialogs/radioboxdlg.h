@@ -34,7 +34,7 @@ namespace Wisteria::UI
             @param bannerLabel A label to show at the top of the dialog.
             @param bannerDescription A label to show under the banner's title.
             @param optionsLabel Descriptive label shown above the radio buttons.
-            @param caption The title of the export dialog.
+            @param caption The title of the dialog.
             @param choices The choices for the radio buttons.
             @param descriptions Descriptions for the choices.
             @param showHelpButton @c true to show a help button.

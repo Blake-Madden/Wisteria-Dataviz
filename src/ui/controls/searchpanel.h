@@ -55,7 +55,7 @@ namespace Wisteria::UI
         void Activate();
         /// @brief Issues a search event.
         /// @param event The event.
-        /// @note The control's parent should handle @c @c wxEVT_FIND_NEXT to trap
+        /// @note The control's parent should handle @c wxEVT_COMMAND_FIND to trap
         ///     and process the results of this call.
         void OnSearch(const wxCommandEvent& event);
 
@@ -64,8 +64,7 @@ namespace Wisteria::UI
             {
             ID_SEARCH_TEXT_ENTRY = wxID_HIGHEST,
             ID_SEARCH_NEXT,
-            ID_SEARCH_PREVIOUS,
-            ID_SEARCH_OPTIONS
+            ID_SEARCH_PREVIOUS
             };
 
         void OnSearchButton(const wxCommandEvent& event);

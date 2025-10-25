@@ -65,6 +65,10 @@ bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID
                           const bool bSelect, const int imageId)
     {
     wxASSERT(page);
+    if (page == nullptr)
+        {
+        return false;
+        }
     const size_t position = GetPageCount();
     if (!DoInsertPage(position, page, text, bSelect, imageId))
         {
@@ -94,7 +98,7 @@ bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID
         selNew = 0;
         }
 
-    if (page != nullptr && selNew != m_selection)
+    if (selNew != m_selection)
         {
         page->Hide();
         }
@@ -113,7 +117,12 @@ bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID
 bool SideBarBook::AddSubPage(wxWindow* page, const wxString& text, const wxWindowID Id,
                              const bool bSelect /*= false*/, int imageId /*= wxNOT_FOUND*/)
     {
-    assert(page);
+    wxASSERT(page);
+    if (GetSideBar()->GetFolderCount() == 0)
+        {
+        // no folder to attach to
+        return false;
+        }
     if (!DoInsertPage(GetPageCount(), page, text, bSelect, imageId))
         {
         return false;
@@ -135,7 +144,11 @@ bool SideBarBook::DeleteAllPages()
     GetSideBar()->DeleteAllFolders();
     m_selection = wxNOT_FOUND;
     DoInvalidateBestSize();
-    WX_CLEAR_ARRAY(m_pages);
+    for (auto* page : m_pages)
+        {
+        delete page;
+        }
+    m_pages.clear();
     UpdateSize();
 
     return true;

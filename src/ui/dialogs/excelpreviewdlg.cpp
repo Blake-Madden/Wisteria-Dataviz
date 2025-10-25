@@ -17,8 +17,11 @@ namespace Wisteria::UI
         {
         Validate();
         TransferDataFromWindow();
-        m_grid->Enable(m_importMethod == 1);
-        m_grid->SetFocus();
+        if (m_grid != nullptr)
+            {
+            m_grid->Enable(m_importMethod == 1);
+            m_grid->SetFocus();
+            }
         }
 
     //-------------------------------------------------------------
@@ -81,7 +84,7 @@ namespace Wisteria::UI
                                       wxDefaultSize, choices, 0, wxRA_SPECIFY_ROWS,
                                       wxGenericValidator(&m_importMethod)),
                        0, wxLEFT | wxTOP | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
-        if (m_wrk->size() > 0)
+        if (m_wrk != nullptr && !m_wrk->empty())
             {
             m_grid = new wxGrid(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 800, 400 }));
             m_grid->SetTable(new ExcelTable(m_wrk, m_excelFile), true);

@@ -25,12 +25,12 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
             }
         }
     const wchar_t* const tagStart{ m_currentStart };
-    while (*m_currentStart == tag && m_currentStart < m_currentEndSentinel)
+    while (m_currentStart < m_currentEndSentinel && *m_currentStart == tag)
         {
         std::advance(m_currentStart, 1);
         }
-    std::wstring_view currentTag{ tagStart,
-                                  static_cast<size_t>(std::distance(tagStart, m_currentStart)) };
+    const std::wstring_view currentTag{ tagStart, static_cast<size_t>(
+                                                      std::distance(tagStart, m_currentStart)) };
     const wchar_t* endOfTag = string_util::find_unescaped_char_same_line_n(
         m_currentStart, tag, std::distance(m_currentStart, m_currentEndSentinel));
     if (endOfTag == nullptr || (endOfTag >= m_currentEndSentinel))
@@ -65,7 +65,7 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
             return false;
             }
         }
-    while (*endOfTag == tag && (endOfTag < m_currentEndSentinel))
+    while ((endOfTag < m_currentEndSentinel) && *endOfTag == tag)
         {
         std::advance(endOfTag, 1);
         }
@@ -85,11 +85,11 @@ bool lily_of_the_valley::markdown_extract_text::parse_styled_text(wchar_t& previ
         }
 
     [[maybe_unused]]
-    auto retval = m_subParser->operator()(
+    auto* retval = m_subParser->operator()(
         { m_currentStart, static_cast<size_t>(std::distance(m_currentStart, endOfTag)) });
     add_characters({ m_subParser->get_filtered_text(), m_subParser->get_filtered_text_length() });
     m_currentStart = endOfTag;
-    while (*m_currentStart == tag && (m_currentStart < m_currentEndSentinel))
+    while ((m_currentStart < m_currentEndSentinel) && *m_currentStart == tag)
         {
         std::advance(m_currentStart, 1);
         }
@@ -161,7 +161,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     // (or at least the part of the file requested to be reviewed)
     if (m_currentStart >= m_currentEndSentinel)
         {
-        return m_currentEndSentinel;
+        return get_filtered_text();
         }
 
     constexpr std::wstring_view QUARTO_PAGEBREAK{ L"{{< pagebreak >}}" };
@@ -184,8 +184,8 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
     bool headerMode{ false };
     wchar_t previousChar{ L'\n' };
 
-    while (m_currentStart != nullptr && *m_currentStart != 0 &&
-           (m_currentStart < m_currentEndSentinel))
+    while (m_currentStart != nullptr && (m_currentStart < m_currentEndSentinel) &&
+           (*m_currentStart != 0))
         {
         if (*m_currentStart == L'\\')
             {
@@ -256,7 +256,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             {
             if (!isEscaping && (previousChar == L'\n' || previousChar == L'\r'))
                 {
-                while (*m_currentStart == L'#' && (m_currentStart < m_currentEndSentinel))
+                while ((m_currentStart < m_currentEndSentinel) && *m_currentStart == L'#')
                     {
                     ++m_currentStart;
                     }
@@ -277,7 +277,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             if (!isEscaping && (previousChar == L'\n' || previousChar == L'\r'))
                 {
                 // space between > and quote text
-                while ((*m_currentStart == L':') && (m_currentStart < m_currentEndSentinel))
+                while ((m_currentStart < m_currentEndSentinel) && (*m_currentStart == L':'))
                     {
                     ++m_currentStart;
                     }
@@ -290,7 +290,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             if (!isEscaping && (previousChar == L'\n' || previousChar == L'\r'))
                 {
                 size_t tabCount{ 0 };
-                while (*m_currentStart == L'>' && (m_currentStart < m_currentEndSentinel))
+                while ((m_currentStart < m_currentEndSentinel) && *m_currentStart == L'>')
                     {
                     ++tabCount;
                     ++m_currentStart;
@@ -313,7 +313,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
             {
             if (!isEscaping)
                 {
-                auto endOfTag = std::wcsstr(m_currentStart, L";");
+                auto* endOfTag = std::wcsstr(m_currentStart, L";");
                 if (endOfTag != nullptr && (endOfTag < m_currentEndSentinel) &&
                     std::distance(m_currentStart, endOfTag) <= 6)
                     {
@@ -412,10 +412,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                                     }
                                 continue;
                                 }
-                            else
-                                {
-                                add_character(*m_currentStart);
-                                }
+                            add_character(*m_currentStart);
                             }
                         ++m_currentStart;
                         }
@@ -430,7 +427,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                 continue;
                 }
             // verbatim (inline) code
-            else if (!isEscaping)
+            if (!isEscaping)
                 {
                 // RMarkdown code should be left as-is, but with the 'r' prefix removed
                 // (or processed for known functions)
@@ -481,7 +478,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                         }
                     continue;
                     }
-                else if (std::wcsncmp(m_currentStart, L"`r drop_cap(", 11) == 0)
+                if (std::wcsncmp(m_currentStart, L"`r drop_cap(", 11) == 0)
                     {
                     m_currentStart += 11;
                     if (m_currentStart + 1 < m_currentEndSentinel &&
@@ -528,7 +525,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                         }
                     continue;
                     }
-                else if (std::wcsncmp(m_currentStart, L"`r menu(", 8) == 0)
+                if (std::wcsncmp(m_currentStart, L"`r menu(", 8) == 0)
                     {
                     m_currentStart += 8;
                     if (m_currentStart + 1 < m_currentEndSentinel && (m_currentStart[0] == L'c') &&
@@ -545,7 +542,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                             break;
                             }
                         [[maybe_unused]]
-                        auto retval = m_subParser->operator()(
+                        auto* retval = m_subParser->operator()(
                             { m_currentStart,
                               static_cast<size_t>(std::distance(m_currentStart, endOfTag - 1)) });
                         add_characters({ m_subParser->get_filtered_text(),
@@ -562,64 +559,61 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     continue;
                     }
                 // read content as-is otherwise
+                if (std::wcsncmp(m_currentStart, L"`r ", 3) == 0)
+                    {
+                    m_currentStart += 3;
+                    }
+                else if (std::wcsncmp(m_currentStart, L"`python ", 8) == 0)
+                    {
+                    m_currentStart += 8;
+                    }
                 else
                     {
-                    if (std::wcsncmp(m_currentStart, L"`r ", 3) == 0)
+                    ++m_currentStart;
+                    }
+                // `` section, which can have embedded backticks
+                if (*m_currentStart == '`')
+                    {
+                    auto endOfTag = std::wcsstr(++m_currentStart, L"``");
+                    if (endOfTag == nullptr || endOfTag > m_currentEndSentinel)
                         {
-                        m_currentStart += 3;
+                        log_message(L"Bad inline `` code block in markdown file.");
+                        break;
                         }
-                    else if (std::wcsncmp(m_currentStart, L"`python ", 8) == 0)
+                    // read in content verbatim
+                    while (m_currentStart < endOfTag)
                         {
-                        m_currentStart += 8;
+                        previousChar = *m_currentStart;
+                        add_character(*m_currentStart);
+                        ++m_currentStart;
                         }
-                    else
+                    m_currentStart += 2;
+                    }
+                // just a single backtick block, should be on one line
+                else
+                    {
+                    while (m_currentStart < m_currentEndSentinel && *m_currentStart != '`')
+                        {
+                        // inline blocks should be on one line, so bail if we hit a new line
+                        // as this would probably be a missing closing backtick
+                        if (*m_currentStart == L'\n' || *m_currentStart == L'\r')
+                            {
+                            log_message(L"Unterminated inline ` code block in markdown file.");
+                            previousChar = *m_currentStart;
+                            add_character(*m_currentStart);
+                            ++m_currentStart;
+                            break;
+                            }
+                        previousChar = *m_currentStart;
+                        add_character(*m_currentStart);
+                        ++m_currentStart;
+                        }
+                    if (*m_currentStart == '`')
                         {
                         ++m_currentStart;
                         }
-                    // `` section, which can have embedded backticks
-                    if (*m_currentStart == '`')
-                        {
-                        auto endOfTag = std::wcsstr(++m_currentStart, L"``");
-                        if (endOfTag == nullptr || endOfTag > m_currentEndSentinel)
-                            {
-                            log_message(L"Bad inline `` code block in markdown file.");
-                            break;
-                            }
-                        // read in content verbatim
-                        while (m_currentStart < endOfTag)
-                            {
-                            previousChar = *m_currentStart;
-                            add_character(*m_currentStart);
-                            ++m_currentStart;
-                            }
-                        m_currentStart += 2;
-                        }
-                    // just a single backtick block, should be on one line
-                    else
-                        {
-                        while (m_currentStart < m_currentEndSentinel && *m_currentStart != '`')
-                            {
-                            // inline blocks should be on one line, so bail if we hit a new line
-                            // as this would probably be a missing closing backtick
-                            if (*m_currentStart == L'\n' || *m_currentStart == L'\r')
-                                {
-                                log_message(L"Unterminated inline ` code block in markdown file.");
-                                previousChar = *m_currentStart;
-                                add_character(*m_currentStart);
-                                ++m_currentStart;
-                                break;
-                                }
-                            previousChar = *m_currentStart;
-                            add_character(*m_currentStart);
-                            ++m_currentStart;
-                            }
-                        if (*m_currentStart == '`')
-                            {
-                            ++m_currentStart;
-                            }
-                        }
-                    continue;
                     }
+                continue;
                 }
             }
         // images (we don't read in the alt text inside the [], just skip everything)
@@ -697,7 +691,7 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     if (labelStart < labelEnd)
                         {
                         [[maybe_unused]]
-                        auto retval = m_subParser->operator()(
+                        auto* retval = m_subParser->operator()(
                             { labelStart,
                               static_cast<size_t>(std::distance(labelStart, labelEnd)) });
                         add_characters({ m_subParser->get_filtered_text(),
@@ -718,7 +712,6 @@ lily_of_the_valley::markdown_extract_text::operator()(const std::wstring_view md
                     m_currentStart = labelStart;
                     previousChar = L'[';
                     add_character(L'[');
-                    continue;
                     }
                 continue;
                 }

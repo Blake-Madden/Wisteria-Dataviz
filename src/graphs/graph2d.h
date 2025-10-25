@@ -130,7 +130,8 @@ namespace Wisteria::Graphs
                 top of the plot.
                 An example would be inserting a GraphItems::Label as a sticky note.*/
         void
-        AddAnnotation(std::shared_ptr<GraphItems::GraphItemBase> object, const wxPoint2DDouble pt,
+        AddAnnotation(const std::shared_ptr<GraphItems::GraphItemBase>& object,
+                      const wxPoint2DDouble pt,
                       std::vector<wxPoint2DDouble> interestPts = std::vector<wxPoint2DDouble>{})
             {
             if (object != nullptr)
@@ -394,10 +395,10 @@ namespace Wisteria::Graphs
             @param opacity The opacity to render the image with.
             @note The image will be centered and cropped to fit the plot area in its entirety.\n
                 If the image is smaller than the plot area, then it will not be used.*/
-        void SetPlotBackgroundImage(wxBitmapBundle backgroundImage,
+        void SetPlotBackgroundImage(const wxBitmapBundle& backgroundImage,
                                     const uint8_t opacity = wxALPHA_OPAQUE) noexcept
             {
-            m_plotAreaBgImage = std::move(backgroundImage);
+            m_plotAreaBgImage = backgroundImage;
             m_bgImageOpacity = opacity;
             }
 
@@ -565,9 +566,6 @@ namespace Wisteria::Graphs
             }
 
         /// @private
-        void SetStippleBrush(wxBitmapBundle&& image) noexcept { m_stipple = std::move(image); }
-
-        /// @private
         [[nodiscard]]
         const Wisteria::GraphItems::Axis& GetBottomXAxis() const noexcept
             {
@@ -709,7 +707,7 @@ namespace Wisteria::Graphs
                 a derived graph type.
             @param[in,out] legend The legend to adjust.
             @param hint A hint about where the legend will be placed.*/
-        void AdjustLegendSettings(GraphItems::Label& legend, const LegendCanvasPlacementHint hint);
+        void AdjustLegendSettings(GraphItems::Label& legend, LegendCanvasPlacementHint hint);
         /** @brief Adds information about any reference lines/areas in the graph onto the legend.
             @details This will be a separate section added to the bottom of the legend,
                 with a separator line above it.
@@ -746,7 +744,7 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the DPI scaling.
             @param scaling The DPI scaling.*/
-        void SetDPIScaleFactor(const double scaling) override;
+        void SetDPIScaleFactor(double scaling) override;
 
         /** @brief Draws the plot.
             @param dc The DC to draw to.
@@ -921,8 +919,8 @@ namespace Wisteria::Graphs
             @param dc The canvas to draw the item on.
             @param scaling This parameter is ignored.
             @param boundingBox This parameter is ignored.*/
-        void DrawSelectionLabel(wxDC& dc, [[maybe_unused]] const double scaling,
-                                [[maybe_unused]] const wxRect boundingBox) const final;
+        void DrawSelectionLabel(wxDC& dc, [[maybe_unused]] double scaling,
+                                [[maybe_unused]] wxRect boundingBox) const final;
 
         /// @brief Unselects all objects on the plot.
         void ClearSelections() final
@@ -961,8 +959,8 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /** @returns @c true if @c pt is inside plot area.
-            @param pt The point to see that is in the plot.
+        /** @returns @c true if @c pt is inside the canvas.
+            @param pt The point to see that is in the canvas.
             @param dc The rendering DC.*/
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const final

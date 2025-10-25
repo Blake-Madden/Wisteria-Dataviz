@@ -84,7 +84,7 @@ SearchPanel::SearchPanel(wxWindow* parent, wxWindowID id) : wxWindow(parent, id)
 //---------------------------------------------------
 bool SearchPanel::SetBackgroundColour(const wxColour& color)
     {
-    auto& controls = GetSizer()->GetChildren();
+    const auto& controls = GetSizer()->GetChildren();
     for (size_t i = 0; i < controls.size(); ++i)
         {
         if (controls.Item(i)->GetData()->IsWindow() &&
@@ -109,7 +109,7 @@ void SearchPanel::Activate()
 //---------------------------------------------------
 void SearchPanel::OnSearchButton(const wxCommandEvent& event)
     {
-    wxCommandEvent cmd(wxEVT_NULL, event.GetId());
+    const wxCommandEvent cmd(wxEVT_NULL, event.GetId());
     OnSearch(cmd);
     }
 

@@ -71,7 +71,7 @@ namespace Wisteria::Graphs
          auto ganttChart = std::make_shared<GanttChart>(canvas);
          ganttChart->SetData(companyAcquisitionData,
             DateInterval::FiscalQuarterly, FiscalYear::USBusiness,
-            L"Task", L"Start", "End",
+            L"Task", L"Start", L"End",
             // these columns are optional
             L"Resource", L"Description", L"Completion", L"Resource");
 
