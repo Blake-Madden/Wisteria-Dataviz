@@ -2,13 +2,13 @@
 
 Properties for the `"constants"` node:
 
-- `"constants"`: contains an array of key and value pairs, which are referenced by other items in the project. \
+- `"constants"`: contains an array of key-value pairs, which are referenced by other items in the project. \
   Items reference key/value pairs via text labels using a special syntax.
-  For example, `Wisteria::GraphItems::Label` objects or graph titles can embed a reference to a run-time value, which will be expanded when the report is rendered.
+  For example, `Wisteria::GraphItems::Label` objects or graph titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
   - `"name"`: The key used for the item. \
     Other items reference this using the syntax `{{name}}`, where *name* is the look-up key.
   - `"value"` either a string or numeric value to associate with the key. \
-    If a number, then it will be formatted to the current locale when displayed in the report. \
+    If a number, then it will be formatted to the current locale when displayed in the report.
     
 Example:
 
@@ -26,13 +26,13 @@ Note that datasets have a similar `"formulas"` section which can create constant
 ::: {.minipage data-latex="{\textwidth}"}
 ## Additional Functions {#additional-functions .unnumbered}
 
-Along with constants and the dataset-related functions, other functions are also available.
+Along with constants and the dataset-related functions, additional functions are available.
 These functions can be used in a dataset's formulas section, the `"constants"` section, and even in-place (e.g., in a label's text value).
 
 - ``ReportName()``: Returns the report's name.
 - ``PageNumber()``: Returns the current page number.
 - ``Now(`value`)``: Returns the current date and time (or date component).
-    - *value*: the part of today's date to return (if not provided, then the full date is returned). \
+    - *value*: the part of today's date to return (if omitted, then the full date is returned). \
       The following options are available:
       - `` `Year` ``: The year.
       - `` `Day` ``: The day of the month.

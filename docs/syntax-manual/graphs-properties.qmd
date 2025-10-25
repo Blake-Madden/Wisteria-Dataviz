@@ -1,8 +1,9 @@
 # Common Properties
 
 The following section details properties common to all graphs.
+These properties can appear in any graph node.
 
-## Base-level Graph Properties {#graph-properties -}
+## Base-level Graph Properties {#graph-properties}
 
 Properties common to all graphs:
 
@@ -70,7 +71,7 @@ Properties common to all graphs:
   - `"label"`: The text to display on the legend referring to area.
   - `"pen"`: The definition for the [pen](#pen-properties) properties. \
         The color is used for the surrounding reference lines, and a tinted version
-        is used the area.
+        is used for the area.
   - `"style"`: The style to apply to the reference area. \
     Available options are:
     - `"fade-from-left-to-right"`
@@ -78,14 +79,14 @@ Properties common to all graphs:
     - `"solid"`
 - `"brush-scheme"`: For graphs that support brush schemes only. \
      Contains the following properties:
-     `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
-     `"color-scheme"`: A color scheme that is mapped to the brush styles.
-     This can also be a string specifying a named color scheme (e.g., `"icecream"`).
+     - `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
+     - `"color-scheme"`: A color scheme that is mapped to the brush styles. \
+       This can also be a string specifying a named color scheme (e.g., `"icecream"`).
 - `"color-scheme"`: For graphs that support color schemes only. \
      This can either be an array of color strings or the name of the color scheme. \
      Refer to `Wisteria::Colors::Schemes` for a list of color schemes.
 - `"icon-scheme"`: For graphs that support icon/marker schemes only. \
-  This an either be an icon scheme name or an array of icon strings (which can be recycled). \
+  This can either be an icon scheme name or an array of icon strings (which can be recycled). \
   Refer to `Wisteria::Icons::Schemes` for a list of icon schemes. \
   The following individual icons are available:
   - `"blank"`
@@ -166,7 +167,7 @@ Properties common to all graphs:
     - `"lines"`
     - `"arrows"`
     - `"spline"`
-  - `"pen-style"`: A [pen](#pen-properties) specification (although only the pen style is used)
+  - `"pen-style"`: A [pen](#pen-properties) specification (only the pen's style is used)
 - `"legend"`: An item containing the following properties:
   - `"placement"`: Where to place the legend. \
     Available options are:

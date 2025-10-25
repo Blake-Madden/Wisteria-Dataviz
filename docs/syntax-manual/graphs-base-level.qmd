@@ -1,10 +1,10 @@
 # Base-level Graphs
 
-The following are properties relevant to specific graphs' base-level graph type.
+The following properties apply to base-level variants of specific graph types.
 
 ## Bar Chart {#bar-chart-properties .unnumbered}
 
-Properties common to all bar-chart derived graphs:
+Properties common to all bar-chart-derived graphs:
 
 - `"box-effect"`: A string specifying the effects for the bars. \
   Available options are:
@@ -28,7 +28,7 @@ Properties common to all bar-chart derived graphs:
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
 - `"number-display"`: A string specifying how to display numeric bar labels. \
-  (`"bar-label-display"` must be set to `"value"`.)\
+  (Requires `"bar-label-display": "value"`.) \
   Available options are:
   - `"percentage"`
   - `"value"`
@@ -36,17 +36,18 @@ Properties common to all bar-chart derived graphs:
   - `"currency"`
 - `"bar-label-suffix"`: A string to add to the end of each bar label.
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
-- `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.\
+- `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars. \
   This will only have an effect if `"showcase-bars"` is in use.
 - `"showcase-bars"`: An array of strings specifying which bars to showcase.
-- `"hide-ghosted-labels"`: A boolean specifying whether to hide labels on bars that are being ghosted.\
+- `"hide-ghosted-labels"`: A boolean specifying whether to hide labels on bars that are being ghosted. \
   This will only have an effect if `"showcase-bars"` is in use.
 - `"bar-icons"`: An array of bar icon specifications. \
   Each specification contains the following:
   - `"label"`: The label of the bar to add an icon to.
   - `"image"`: The path to the image to add to the bar label.
-- `"bar-shapes"`: Properties specifying the shapes of the bars.\
-  If a single value, this shape will be applied to all bars.\
+- `"bar-shapes"`: Properties specifying the shapes of the bars. \
+  If a single value, this shape will be applied to all bars. \
+  If an array is provided, shapes map positionally to bars. \
   Available options (if applying same shape to all bars) are:
   - `"rectangle"` (the default)
   - `"arrow"`
@@ -82,7 +83,7 @@ Properties common to all bar-chart derived graphs:
 - `"decals"`: An array of decals to add to the bars.
   This will be an array of nodes containing the following properties:
   - `"bar"`: The axis label of the bar.
-  - `"block"`: The number specifying which block in the bar to add the decal to.
+  - `"block"`: An integer specifying which block in the bar to add the decal to.
     If not specified, defaults to `0`.
   - `"decal"`: The decal to add to the bar, which will contain [label](#label-properties) properties. \
     Embedded constants can be included in this string, including: \
@@ -93,14 +94,14 @@ Properties common to all bar-chart derived graphs:
   - `"start-block-re"`: A regular expression used to find the starting block for the bracket.
   - `"end-block-re"`: A regular expression used to find the ending block for the bracket.
 
-  If the `"re"` variations of the starting and ending labels are available, then these properties are used:
+  If the regex options aren’t provided, you can specify explicit tags with the following:
   - `"start-block"`: A string specifying the tag of the starting block of the bar.
   - `"end-block"`: A string specifying the tag of the ending block of the bar.
 - `"apply-brushes-to-ungrouped-bars"`: `true` to apply the brushes (from the brush scheme) to the series of bars. \
   This will only take effect if grouping is not in use for the bar chart.
-  Generally, this is not recommended as having different colored bars is bad dataviz practice, but can be useful if
+  Generally, this is not recommended as having different colored bars is generally discouraged in data visualization, but can be useful if
   only including two bars that need to be contrasted.
-- `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
+- `"constrain-scaling-axis-to-bars"`: `true` to constrain the scaling axis to the longest bar.
 
 ::: {.notesection data-latex=""}
 Bar sorting is performed prior to adding bar groups.

@@ -12,25 +12,25 @@ Each dataset property will contain the following properties (loaded in the follo
 - `"importer"`: How to import the dataset. \
   This is optional and the default is to import the file based on its file extension. \
   Available options are:
-- `"tsv"`: A tab-delimited text file.
-- `"csv"`: A comma-delimited text file.
-- `"xlsx"`: An *Excel* worksheet.
+  - `"tsv"`: A tab-delimited text file.
+  - `"csv"`: A comma-delimited text file.
+  - `"xlsx"`: An *Excel* worksheet.
 - `"skip-rows"`: The number of rows to skip in the file before parsing the text.
 - `"continuous-md-recode-value"`: The numeric value used to substitute missing data in continuous columns. \
   This property is optional.
 - `"worksheet"`: If importing an *Excel* worksheet, the name or 1-based index of the worksheet.
 - `"md-codes"`: An array of string values to import as missing data during the import. \
   This property is optional.
-- `"treat-leading-zeros-as-text"`: whether to import numeric columns with leading zeros as text. \
+- `"treat-leading-zeros-as-text"`: Whether to import numeric columns with leading zeros as text. \
   This property is optional.
   Also, this is only used if you are auto-detecting the columns and their types.
-- `"treat-years-as-text"`: whether to import numeric columns that are four-digits as text
+- `"treat-years-as-text"`: Whether to import numeric columns that are four-digits as text
   (going under the assumption that they are years). \
   This property is optional.
   Also, this is only used if you are auto-detecting the columns and their types.
 - `"max-discrete-value"`: The max value that can be seen as discrete when deducing between
   continuous and categorical data.
-  If an integer is larger then this value in a column, then it will classify the column as continuous. \
+  If an integer is larger than this value in a column, then it will classify the column as continuous. \
   This property is optional.
   Also, this is only used if you are auto-detecting the columns and their types.
 - `"id-column"`: The ID column. \
@@ -81,6 +81,7 @@ Example:
       "md-codes": [ "<10", "< 10", "NC" ],
       "treat-leading-zeros-as-text": true,
     }
+  ]
 ```
 
 \newpage
@@ -99,7 +100,7 @@ These are performed in the following order:
   - `"name-re"`: The column to rename (using a regular expression pattern).
   - `"new-name-re"`: The new name for the column (an include regular expression pattern relative to `"name-re"`).
 - `"mutate-categorical-columns"`: An array of categorical column mutation commands. \
-  Each command will either create or update a categorical columns and fill it with values based on the provided categorical column.
+  Each command creates or updates a categorical columns and fill it with values based on the provided categorical column.
   This will use a map of regular expression patterns and corresponding replacements, where each value in the source column is compared
   against the regex patterns.
   When the first match is encountered, then the corresponding replacement will then be applied to the target column. \
@@ -263,7 +264,7 @@ This is an array of subset specifications which contain the following properties
     - `"<"`: Less than
     - `"<="`: Less than or equal to
     - `">"`: Greater than
-    - `">="`: Great than or equal to
+    - `">="`: Greater than or equal to
   - `"values"`: An array of values to filter the column on.
      These can be numbers, strings, or dates (depending on the column's data type). \
      Multiple values will be an `OR` operation, where if a value in the data matches *any* of these
@@ -318,7 +319,7 @@ This is an array of pivot specifications which contain the following properties:
   This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
 - `"type"`: A string specifying which type of merge to use. \
   Available options are:
-  - `"left-join-unique"`: A (unique) left join the dataset with another dataset (the default).
+  - `"left-join-unique"`: A (unique) left join of the dataset with another dataset (the default).
 - `"other-dataset"`: The other dataset to merge the current dataset with. \
   This should be a name referencing a previously loaded dataset.
 - `"by"`: An array of properties specifying which columns to join by. \
@@ -380,13 +381,13 @@ If pivoting wider, the following options are available:
   join the label from `"names-from-column"` and the value column name.
 - `"names-prefix"`: A string to prepend to newly created pivot columns.
 - `"fill-value"`: A numeric value to assign to missing data.
-  The default it so leave it as missing data.
+  The default it to leave it as missing data.
 
 If pivoting longer, the following options are available:
 
 - `"columns-to-keep"`: An array of strings specifying the columns to not pivot.
    These will be copied to the new dataset and will have their values filled in all new rows created from their observation.
-  These would usually the ID columns. \
+  These are usually the ID columns. \
   These columns can be of any type, including the ID column.
 - `"from-columns"`: An array of strings specifying the continuous column(s) to pivot into longer format.
 - `"names-to"`: An array of strings specifying the target column(s) to move the names from the `"from-columns"` into.

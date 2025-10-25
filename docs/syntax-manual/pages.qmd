@@ -1,8 +1,8 @@
 # Pages {#page-properties}
 
-Pages can contain the following properties:
+A page can contain the following properties:
 
-- `"name"`: A string value, representing the name of the page.
+- `"name"`: A string value representing the name of the page.
 - `"page-numbering"`: Resets the internal page counter to 1. \
   Note that the page number can be referenced via the function ``PageNumber()``.
 - `"watermark"`: A watermark to add to each page. \
@@ -11,7 +11,8 @@ Pages can contain the following properties:
   - `"label"`: String to write across the pages.
   - `"color"`: The watermark's color. \
     This can be either a color name or hex-encoded value.
-- `"background-color"`: A string specifying the page's background color.
+- `"background-color"`: The page's background color (name or hex value).
 - `"background-image"`: A string specifying the path to an image to use as the page's background.
 - `"rows"`: The definitions of rows of content in the report. \
   This is where all embedded graphs, labels, images, etc. on the page are defined.
+  Each row can contain items such as graphs, labels, and images.

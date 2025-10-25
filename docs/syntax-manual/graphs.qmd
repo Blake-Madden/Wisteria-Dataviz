@@ -7,11 +7,11 @@ Properties for `"box-plot"` nodes:
 
 - `"variables"`: An item containing the following properties:
   - `"aggregate"`: The column containing the data.
-  - `"group-1"`: A (optional) grouping column to divide the boxes into (along the X axis).
+  - `"group-1"`: An (optional) grouping column to divide the boxes into (along the X axis).
 - `"box-effect"`: A string specifying the effects for the boxes. \
   Available options are:
   - `"common-image"` (This will require an `"image-scheme"` to be defined.)
-  - `"image" ` (This will require an `"image-scheme"` to be defined.)
+  - `"image"` (This will require an `"image-scheme"` to be defined.)
   - `"fade-from-bottom-to-top"`
   - `"fade-from-left-to-right"`
   - `"fade-from-right-to-left"`
@@ -25,7 +25,7 @@ Properties for `"box-plot"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
-## Candlestick/OHLC plot {#candlestick-plot-properties .unnumbered}
+## Candlestick/OHLC Plot {#candlestick-plot-properties .unnumbered}
 
 Properties for `"candlestick-plot"` nodes:
 
@@ -53,7 +53,7 @@ Properties for `"categorical-bar-chart"` nodes:
        These are the values accumulated into the respective labels from the group column(s). \
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
   - `"category"`: The categorical (or ID) column containing the items to group and count.
-  - `"group"`: A (optional) grouping column to further divide the main categorical data into.
+  - `"group"`: An (optional) grouping column to further divide the main categorical data into.
 - `"bar-orientation"`: string specifying the orientation of the bars. \
   Available options are:
   - `"vertical"`
@@ -95,9 +95,9 @@ Properties for `"heatmap"` nodes:
 - `"variables"`: An item containing the following properties:
   - `"continuous"`: The value column (each value will have its own cell).
   - `"group"`: The grouping column (this is optional).
-- `"group-column-count"`: If a grouping column is provided, then this number will specify the number of columns to split the groups (rows) into. \
+- `"group-column-count"`: If a grouping column is provided, then this specifies how many columns to split the groups (rows) into. \
   (This should be between 1-5.)
-- `"show-group-header"`: If a grouping column is provided, then `true` will show a header above each column.
+- `"show-group-header"`: If a grouping column is provided, `true` shows a header above each column.
 - `"group-header-prefix"`: If group columns are being shown, this will be the string used as a prefix for each column.
 :::
 
@@ -114,7 +114,7 @@ Properties for `"histogram"` nodes:
   - `"bin-by-integer-range"`
   - `"bin-by-range"`
   - `"bin-unique-values"`
-- `"interval-display"`: A string specifying how to sort the data. \
+- `"interval-display"`: A string specifying how to display the intervals. \
   Available options are:
   - `"cutpoints"`
   - `"midpoints"`
@@ -124,7 +124,7 @@ Properties for `"histogram"` nodes:
   - `"round"`
   - `"round-down"`
   - `"round-up"`
-- `"bins-start"`: A number specifying where on the X axis to start the bins.
+- `"bins-start"`: A number specifying where on the X-axis to start the bins.
 - `"suggested-bin-count"`: A number specifying the suggested number of bins.
 - `"max-bin-count"`: A number specifying the maximum number of bins.
 - Properties available to [bar charts](#bar-chart-properties).
@@ -214,7 +214,7 @@ Properties for `"pie-chart"` nodes:
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
   - `"group-1"`: The inner-ring grouping column (or only ring, if `"group-2"` isn't used).
   - `"group-2"`: The outer-ring grouping column (this is optional).
-- `"dynamic-margins"`: `true` to shift the pie chart to one side if either gutter has no outer labels.
+- `"dynamic-margins"`: `true` to shift the pie chart to one side if a gutter has no outer labels.
 - `"left-margin-note"`: A label specification for a label within the left margin of the chart.
 - `"right-margin-note"`: A label specification for a label within the right margin of the chart.
 - `"pie-slice-effect"`: A string specifying the effects for the pie slices. \
@@ -292,12 +292,12 @@ Properties for `"linear-regression-roadmap"` nodes:
 
 - `"variables"`: An item containing the following properties:
   - `"predictor"`: The column containing the independent variables' (i.e., predictors) names.
-  - `"coefficient"`: The column containing the predictors' correlation coefficients.
+  - `"coefficient"`: The column containing the predictors' regression coefficients.
   - `"p-value"`: The (optional) column containing the predictors' p-values.
 - `"p-value-threshold"`: If a p-value column is supplied, only predictors with p-values lower than this will be included. \
   (Predictors with missing p-values will be excluded.) \
-  The recommendations are usually `0.05` or `0.01` (most strict).
-- `"predictors-to-include"`: Array of strings specifying which types of IVs (e.g., negative influencers) to include. \
+  Common thresholds are `0.05` or `0.01` (most stringent).
+- `"predictors-to-include"`: Array of strings specifying which types of predictors (e.g., negative influencers) to include. \
   Available options are:
   - `"positive"`
   - `"negative"`
@@ -376,10 +376,10 @@ Properties for `"sankey-diagram"` nodes:
   - `"from-group"`: The (optional) column used to categorize the groups in the "from" column.
 - `"brush-scheme"`: For graphs that support brush schemes only. \
      Contains the following properties:
-     `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
-     `"color-scheme"`: A color scheme that is mapped to the brush styles.
-     This can also be a string specifying a named color scheme (e.g., `"icecream"`).
-- `"group-label-display"`: A string specifying how to display labels on the bars. \
+     - `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
+     - `"color-scheme"`: A color scheme that is mapped to the brush styles. \
+       This can also be a string specifying a named color scheme (e.g., `"icecream"`).
+- `"group-label-display"`: A string specifying how to display labels on the groups/nodes. \
   Available options are:
   - `"percentage"`
   - `"value"`
@@ -623,7 +623,7 @@ The remaining properties are executed in the following order:
       These values go clockwise, starting at 12 o'clock. \
       This is optional and overrides the default cell borders.
 - `"row-totals"`: Adds a grand total row to the bottom of the table. \
-  If the first column is grouped and the second locum is text, then this will also insert subtotal rows. \
+  If the first column is grouped and the second column is text, then this will also insert subtotal rows. \
   Available options are:
   - `"background"`: The background color for the row(s).
 - `"cell-update"`: An array of cell updating commands, which contain the following properties:
@@ -632,7 +632,7 @@ The remaining properties are executed in the following order:
   - `"row"`: The row position of the cell to update. \
       Refer to [position](#position-properties) for available properties.
   - `"value-to-find"`: If `"row"/"column"` are not provided, this is a cell value to search for. \
-      The first cell that matches this text will be returned and that is the cell that will be updated.
+      The first matching cell will be updated.
   - `"column-count"`: The number of columns that this cell should consume. \
       This can either be a number, or the string `"all"` (meaning all columns).
   - `"row-count"`: The number of rows that this cell should consume. \
@@ -685,7 +685,7 @@ Properties for `"win-loss-sparkline"` nodes:
   - `"season"`: The season label column (can be a team name or season).
   - `"won"`: The column indicating whether the team won the game.
   - `"shutout"`: The column indicating whether the losing team was held scoreless.
-  - `"home-game"`: The column indicating whether the was at the team's home stadium.
+  - `"home-game"`: The column indicating whether the game was at the team's home stadium.
   - `"postseason"`: The column indicating if a game was played during the postseason.
 - `"highlight-best-records"`: If `true`, will highlight the best season record and longest winning streak within the data.
 
