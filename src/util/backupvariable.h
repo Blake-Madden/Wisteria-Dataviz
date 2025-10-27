@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __BACKUP_VARIABLE_H__
-#define __BACKUP_VARIABLE_H__
+#ifndef BACKUP_VARIABLE_H
+#define BACKUP_VARIABLE_H
 
 /// @brief Class that remembers its original value from construction.
 template<typename T>
@@ -25,7 +25,10 @@ class BackupVariable
     BackupVariable() = delete;
 
     /// @private
-    void operator=(const T& value) noexcept { m_value = value; }
+    void operator=(const T& value) noexcept
+        {
+        m_value = value;
+        }
 
     /// @private
     [[nodiscard]]
@@ -63,25 +66,10 @@ class BackupVariable
         }
 
     /// @private
-    void operator+(const T& value) { m_value + value; }
-
-    /// @private
-    void operator+=(const T& value) { m_value += value; }
-
-    /// @private
-    void operator-(const T& value) { m_value - value; }
-
-    /// @private
-    void operator-=(const T& value) { m_value -= value; }
-
-    /// @private
-    [[nodiscard]] operator const T() const noexcept { return m_value; }
-
-    /// @private
     [[nodiscard]]
-    T* operator&() noexcept
+    explicit operator T() const noexcept
         {
-        return &m_value;
+        return m_value;
         }
 
     /// @returns The current value.
@@ -112,4 +100,4 @@ class BackupVariable
 
     /** @}*/
 
-#endif //__BACKUP_VARIABLE_H__
+#endif // BACKUP_VARIABLE_H
