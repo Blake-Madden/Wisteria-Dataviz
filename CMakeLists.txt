@@ -115,6 +115,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(wxBUILD_STRIPPED_RELEASE ON CACHE BOOL "Strip symbols from wxWidgets Release builds" FORCE)
 endif()
 find_directory("wxWidgets" wxWidgets_BASEDIR)
+if(NOT EXISTS "${wxWidgets_BASEDIR}")
+    message(FATAL_ERROR "wxWidgets base directory not found: ${wxWidgets_BASEDIR}")
+endif()
 add_subdirectory(${wxWidgets_BASEDIR} ${CMAKE_CURRENT_SOURCE_DIR}/wxWidgets_lib)
 set(wxWidgets_LIBRARIES wx::core wx::base wx::xrc wx::propgrid wx::xml wx::aui wx::ribbon wx::qa wx::stc wx::net wx::richtext)
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
@@ -162,12 +165,14 @@ if(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    target_compile_options(${WISTIER_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
+    target_compile_options(${WISTIER_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211 /openmp /permissive- /sdl
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 elseif(MINGW OR MSYS)
     target_compile_definitions(${WISTIER_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
             $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+                           $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
+                           $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(APPLE)
     target_compile_definitions(${WISTIER_LIB} PUBLIC __WXOSX__
@@ -175,12 +180,19 @@ elseif(APPLE)
     # TODO: add -Werror eventually.
     # Don't use -Werror for now because of warning from wxWidgets.
     target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow
+                           # Security hardening (only for GCC and Clang)
+                           $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
+                           $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 elseif(UNIX)
     target_compile_definitions(${WISTIER_LIB} PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     target_compile_options(${WISTIER_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
+                           $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
+                           $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+    target_link_options(${WISTIER_LIB} PUBLIC
+        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wl,-z,relro,-z,now>)
 endif()
 
 if(DEFINED wxBUILD_DEBUG_LEVEL AND NOT "${wxBUILD_DEBUG_LEVEL}" STREQUAL "${PROJECT_WX_DEBUG_LEVEL}")
