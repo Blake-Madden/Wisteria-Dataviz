@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "screenshot.h"
+#include "../math/mathematics.h"
+#include <wx/listctrl.h>
 #include <wx/ribbon/buttonbar.h>
 
 //---------------------------------------------------
@@ -309,7 +311,11 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
             }
         }
     auto* listCtrl = dynamic_cast<wxListCtrl*>(windowToCapture);
-    assert(listCtrl);
+    wxASSERT_MSG(listCtrl, L"Invalid list control for screenshot!");
+    if (listCtrl == nullptr)
+        {
+        return false;
+        }
 
     long columnsWidth{ 0 };
     for (auto i = 0; i < listCtrl->GetColumnCount(); ++i)
@@ -347,8 +353,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
     if (startRow != -1 || endRow != -1 || startColumn != -1 || endColumn != -1)
         {
         wxRect startRect, endRect;
-        if (listCtrl &&
-            listCtrl->GetSubItemRect((startRow == -1 ? 0 : startRow),
+        if (listCtrl->GetSubItemRect((startRow == -1 ? 0 : startRow),
                                      (startColumn == -1 ? 0 : startColumn), startRect) &&
             listCtrl->GetSubItemRect((endRow == -1 ? listCtrl->GetItemCount() - 1 : endRow),
                                      (endColumn == -1 ? listCtrl->GetColumnCount() - 1 : endColumn),
@@ -370,9 +375,9 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
     if (cutOffRow != -1 && cutOffRow + 1 < listCtrl->GetItemCount())
         {
         wxRect cutOffRect;
-        if (listCtrl && listCtrl->GetSubItemRect(
-                            // get the top of the row below the cut-off
-                            cutOffRow + 1, 0, cutOffRect))
+        if (listCtrl->GetSubItemRect(
+                // get the top of the row below the cut-off
+                cutOffRow + 1, 0, cutOffRect))
             {
             bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(), cutOffRect.GetTop()));
             }
@@ -432,7 +437,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
 
     PrepareWindowForScreenshot(windowToCapture);
 
-    if (highlightPoints.size())
+    if (!highlightPoints.empty())
         {
         dynamic_cast<wxTextCtrl*>(windowToCapture)->ShowPosition(highlightPoints[0].first);
         // give UI time to scroll and refresh
@@ -449,14 +454,14 @@ bool Screenshot::SaveScreenshotOfTextWindow(
 
     const wxTextCtrl* textWindow = dynamic_cast<wxTextCtrl*>(windowToCapture);
 
-    for (size_t i = 0; i < highlightPoints.size(); ++i)
+    for (const auto& highlightPoint : highlightPoints)
         {
         if (textWindow != nullptr)
             {
             wxTextAttr style;
-            wxPoint startPoint = textWindow->PositionToCoords(highlightPoints[i].first);
-            wxPoint endPoint = (highlightPoints[i].second != -1) ?
-                                   textWindow->PositionToCoords(highlightPoints[i].second) :
+            wxPoint startPoint = textWindow->PositionToCoords(highlightPoint.first);
+            wxPoint endPoint = (highlightPoint.second != -1) ?
+                                   textWindow->PositionToCoords(highlightPoint.second) :
                                    textWindow->PositionToCoords(textWindow->GetLastPosition());
             // if points are on different lines, then highlight the whole row
             if (startPoint.y != endPoint.y)
@@ -465,8 +470,8 @@ bool Screenshot::SaveScreenshotOfTextWindow(
                 endPoint.x = memDC.GetSize().GetWidth() - memDC.GetPen().GetWidth();
                 }
             long x{ 0 }, y{ 0 };
-            if ((highlightPoints[i].second != -1) &&
-                textWindow->PositionToXY(highlightPoints[i].second, &x, &y))
+            if ((highlightPoint.second != -1) &&
+                textWindow->PositionToXY(highlightPoint.second, &x, &y))
                 {
                 endPoint.y = textWindow->PositionToCoords(textWindow->XYToPosition(0, y + 1)).y;
                 }
@@ -496,7 +501,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     memDC.SelectObject(wxNullBitmap);
 
     // chop off whitespace if we scrolled to bottom of the file
-    if (clipContents)
+    if (clipContents && textWindow != nullptr)
         {
         wxPoint endOfWindowPoint = textWindow->PositionToCoords(textWindow->GetLastPosition());
         endOfWindowPoint.y += (textWindow->GetDefaultStyle().GetFontSize() * 2);

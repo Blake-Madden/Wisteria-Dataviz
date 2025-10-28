@@ -88,8 +88,8 @@ namespace Wisteria
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Datasets Section Error"), wxOK | wxICON_WARNING | wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Datasets Section Error"),
+                         wxOK | wxICON_WARNING | wxCENTRE);
             return reportPages;
             }
 
@@ -120,12 +120,13 @@ namespace Wisteria
         const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
             {
-            std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
+            std::vector<std::shared_ptr<Graphs::Graph2D>> embeddedGraphs;
             const auto pages = pagesProperty->AsNodes();
             for (const auto& page : pages)
                 {
                 // common axes are per page, where they must reference child graphs on the same page
                 m_commonAxesPlaceholders.clear();
+                embeddedGraphs.clear();
                 if (page->IsOk())
                     {
                     // create the canvas used for the page
@@ -169,8 +170,11 @@ namespace Wisteria
                     // background image
                     if (page->HasProperty(L"background-image"))
                         {
-                        canvas->SetBackgroundImage(
-                            wxBitmapBundle(LoadImageFile(page->GetProperty(L"background-image"))));
+                        const auto bmp = LoadImageFile(page->GetProperty(L"background-image"));
+                        if (bmp.IsOk())
+                            {
+                            canvas->SetBackgroundImage(wxBitmapBundle(bmp));
+                            }
                         }
 
                     // copy print settings from report
@@ -187,6 +191,7 @@ namespace Wisteria
                         // Empty page? Go to next one.
                         if (rows.empty())
                             {
+                            delete canvas;
                             continue;
                             }
                         canvas->SetFixedObjectsGridSize(rows.size(), 1);
@@ -486,6 +491,12 @@ namespace Wisteria
                     {
                     brush.SetStyle(foundStyle.value());
                     }
+                else
+                    {
+                    wxLogWarning(L"Unknown brush style '%s'. Using default solid.",
+                                 brushNode->GetProperty(L"style")->AsString());
+                    brush.SetStyle(wxBRUSHSTYLE_SOLID);
+                    }
                 }
             }
         }
@@ -529,6 +540,12 @@ namespace Wisteria
                     {
                     pen.SetStyle(style->second);
                     }
+                else
+                    {
+                    wxLogWarning(L"Unknown pen style '%s'. Using default solid.",
+                                 penNode->GetProperty(L"style")->AsString());
+                    pen.SetStyle(wxPENSTYLE_SOLID);
+                    }
                 }
             }
         }
@@ -536,13 +553,12 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
         {
-        static const std::map<std::wstring_view, Wisteria::GraphItems::Axis::TickMark::DisplayType>
-            tickmarkValues = {
-                { L"inner", Wisteria::GraphItems::Axis::TickMark::DisplayType::Inner },
-                { L"outer", Wisteria::GraphItems::Axis::TickMark::DisplayType::Outer },
-                { L"crossed", Wisteria::GraphItems::Axis::TickMark::DisplayType::Crossed },
-                { L"no-display", Wisteria::GraphItems::Axis::TickMark::DisplayType::NoDisplay }
-            };
+        static const std::map<std::wstring_view, GraphItems::Axis::TickMark::DisplayType>
+            tickmarkValues = { { L"inner", GraphItems::Axis::TickMark::DisplayType::Inner },
+                               { L"outer", GraphItems::Axis::TickMark::DisplayType::Outer },
+                               { L"crossed", GraphItems::Axis::TickMark::DisplayType::Crossed },
+                               { L"no-display",
+                                 GraphItems::Axis::TickMark::DisplayType::NoDisplay } };
 
         static const std::map<std::wstring_view, AxisLabelDisplay> labelDisplayValues = {
             { L"custom-labels-or-values", AxisLabelDisplay::DisplayCustomLabelsOrValues },
@@ -675,7 +691,7 @@ namespace Wisteria
 
                     if (axisPos1.has_value() && axisPos2.has_value())
                         {
-                        axis.AddBracket(Wisteria::GraphItems::Axis::AxisBracket(
+                        axis.AddBracket(GraphItems::Axis::AxisBracket(
                             axisPos1.value(), axisPos2.value(),
                             safe_divide<double>(axisPos1.value() + axisPos2.value(), 2),
                             bracket->GetProperty(L"label")->AsString(), bracketPen,
@@ -822,7 +838,11 @@ namespace Wisteria
             // an image to the left side of it
             if (const auto imgNode = labelNode->GetProperty(L"left-image"); imgNode->IsOk())
                 {
-                label->SetLeftImage(LoadImageFile(imgNode->GetProperty(L"image-import")));
+                if (const auto img = LoadImageFile(imgNode->GetProperty(L"image-import"));
+                    img.IsOk())
+                    {
+                    label->SetLeftImage(img);
+                    }
                 }
             // top image
             if (const auto imgNode = labelNode->GetProperty(L"top-image"); imgNode->IsOk())
@@ -3324,7 +3344,7 @@ namespace Wisteria
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
-        return Wisteria::GraphItems::ShapeInfo{}
+        return GraphItems::ShapeInfo{}
             .Shape(loadedShape.value())
             .Size(sz)
             .Pen(pen)
@@ -3362,9 +3382,8 @@ namespace Wisteria
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
-        auto sh = std::make_unique<Wisteria::GraphItems::Shape>(
-            Wisteria::GraphItems::GraphItemInfo(
-                (shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
+        auto sh = std::make_unique<GraphItems::Shape>(
+            GraphItems::GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
                 .Anchoring(Anchoring::TopLeftCorner)
                 .Pen(pen)
                 .Brush(brush)
@@ -3515,10 +3534,7 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
             return barChart;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for bar chart.").ToUTF8());
-            }
+        throw std::runtime_error(_(L"Variables not defined for bar chart.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3593,10 +3609,7 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, sankey);
             return sankey;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for Sankey diagram.").ToUTF8());
-            }
+        throw std::runtime_error(_(L"Variables not defined for Sankey diagram.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3630,10 +3643,7 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, wordCloud);
             return wordCloud;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for word cloud.").ToUTF8());
-            }
+        throw std::runtime_error(_(L"Variables not defined for word cloud.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3678,10 +3688,7 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, boxPlot);
             return boxPlot;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for box plot.").ToUTF8());
-            }
+        throw std::runtime_error(_(L"Variables not defined for box plot.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3872,10 +3879,7 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, pieChart);
             return pieChart;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for pie chart.").ToUTF8());
-            }
+        throw std::runtime_error(_(L"Variables not defined for pie chart.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -4749,7 +4753,7 @@ namespace Wisteria
                 const wxColour bkColor(
                     ConvertColor(columnRowAggregate->GetProperty(L"background")));
 
-                Wisteria::Graphs::Table::AggregateInfo aggInfo;
+                Graphs::Table::AggregateInfo aggInfo;
                 if (startColumn.has_value())
                     {
                     aggInfo.FirstCell(startColumn.value());
@@ -4822,7 +4826,7 @@ namespace Wisteria
                     LoadTablePosition(cellUpdate->GetProperty(L"row"), table);
                 const std::optional<size_t> columnPosition =
                     LoadTablePosition(cellUpdate->GetProperty(L"column"), table);
-                Wisteria::Graphs::Table::TableCell* currentCell =
+                Graphs::Table::TableCell* currentCell =
                     ((rowPosition.has_value() && columnPosition.has_value() &&
                       rowPosition.value() < table->GetRowCount() &&
                       columnPosition.value() < table->GetColumnCount()) ?
@@ -4983,7 +4987,7 @@ namespace Wisteria
             {
             for (const auto& annotation : annotationsNode)
                 {
-                Wisteria::Graphs::Table::CellAnnotation cellAnnotation{
+                Graphs::Table::CellAnnotation cellAnnotation{
                     annotation->GetProperty(L"value")->AsString(),
                     std::vector<Wisteria::Graphs::Table::CellPosition>{}, Side::Right, std::nullopt,
                     wxColour{}
@@ -5290,7 +5294,7 @@ namespace Wisteria
             {
             return nullptr;
             }
-        else if (colorSchemeNode->IsValueArray())
+        if (colorSchemeNode->IsValueArray())
             {
             std::vector<wxColour> colors;
             const auto colorValues = colorSchemeNode->AsStrings();
@@ -5305,7 +5309,7 @@ namespace Wisteria
                 }
             return std::make_shared<Colors::Schemes::ColorScheme>(colors);
             }
-        else if (colorSchemeNode->IsValueString())
+        if (colorSchemeNode->IsValueString())
             {
             return ReportEnumConvert::ConvertColorScheme(colorSchemeNode->AsString());
             }
@@ -5329,7 +5333,7 @@ namespace Wisteria
             return nullptr;
             }
         // a list of icons
-        else if (lineStyleSchemeNode->IsValueArray())
+        if (lineStyleSchemeNode->IsValueArray())
             {
             std::vector<std::pair<wxPenStyle, LineStyle>> lineStyles;
             const auto lineStyleValues = lineStyleSchemeNode->AsNodes();
@@ -5356,7 +5360,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>
+    std::shared_ptr<Icons::Schemes::IconScheme>
     ReportBuilder::LoadIconScheme(const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
         static const std::map<std::wstring_view,
@@ -5371,9 +5375,9 @@ namespace Wisteria
             return nullptr;
             }
         // a list of icons
-        else if (iconSchemeNode->IsValueArray())
+        if (iconSchemeNode->IsValueArray())
             {
-            std::vector<Wisteria::Icons::IconShape> icons;
+            std::vector<Icons::IconShape> icons;
             const auto iconValues = iconSchemeNode->AsStrings();
             if (iconValues.empty())
                 {
@@ -5394,7 +5398,7 @@ namespace Wisteria
             return std::make_shared<Wisteria::Icons::Schemes::IconScheme>(icons);
             }
         // a pre-defined icon scheme
-        else if (iconSchemeNode->IsValueString())
+        if (iconSchemeNode->IsValueString())
             {
             const auto foundPos = iconSchemes.find(
                 std::wstring_view(iconSchemeNode->AsString().MakeLower().wc_str()));
@@ -5465,10 +5469,7 @@ namespace Wisteria
             image->SetFixedWidthOnCanvas(true);
             return image;
             }
-        else
-            {
-            return nullptr;
-            }
+        return nullptr;
         }
 
     //---------------------------------------------------
@@ -5529,7 +5530,7 @@ namespace Wisteria
 
         if (bmpNode->GetProperty(L"opacity")->IsValueNumber())
             {
-            Wisteria::GraphItems::Image::SetOpacity(
+            GraphItems::Image::SetOpacity(
                 bmp, bmpNode->GetProperty(L"opacity")->AsDouble(wxALPHA_OPAQUE));
             }
 
@@ -5539,8 +5540,7 @@ namespace Wisteria
                 ReportEnumConvert::ConvertImageEffect(bmpNode->GetProperty(L"effect")->AsString());
             if (imgEffect)
                 {
-                bmp = Wisteria::GraphItems::Image::ApplyEffect(imgEffect.value(),
-                                                               bmp.ConvertToImage());
+                bmp = GraphItems::Image::ApplyEffect(imgEffect.value(), bmp.ConvertToImage());
                 }
             }
 
@@ -6005,7 +6005,7 @@ namespace Wisteria
 
                     if (axisPos1.has_value() && axisPos2.has_value())
                         {
-                        graph->AddReferenceArea(Wisteria::GraphItems::ReferenceArea(
+                        graph->AddReferenceArea(GraphItems::ReferenceArea(
                             axisType.value(), axisPos1.value(), axisPos2.value(),
                             refArea->GetProperty(L"label")->AsString(), pen, areaStyle));
                         }
@@ -6026,7 +6026,7 @@ namespace Wisteria
             if (placement.CmpNoCase(L"left") == 0)
                 {
                 auto legend =
-                    graph->CreateLegend(Wisteria::Graphs::LegendOptions()
+                    graph->CreateLegend(Graphs::LegendOptions()
                                             .RingPerimeter(ringPerimeter)
                                             .IncludeHeader(includeHeader)
                                             .PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
@@ -6041,7 +6041,7 @@ namespace Wisteria
             else if (placement.CmpNoCase(L"bottom") == 0)
                 {
                 auto legend = graph->CreateLegend(
-                    Wisteria::Graphs::LegendOptions()
+                    Graphs::LegendOptions()
                         .RingPerimeter(ringPerimeter)
                         .IncludeHeader(includeHeader)
                         .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
@@ -6055,7 +6055,7 @@ namespace Wisteria
             else if (placement.CmpNoCase(L"top") == 0)
                 {
                 auto legend = graph->CreateLegend(
-                    Wisteria::Graphs::LegendOptions()
+                    Graphs::LegendOptions()
                         .RingPerimeter(ringPerimeter)
                         .IncludeHeader(includeHeader)
                         .PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
@@ -6069,7 +6069,7 @@ namespace Wisteria
             else // right, the default
                 {
                 auto legend = graph->CreateLegend(
-                    Wisteria::Graphs::LegendOptions()
+                    Graphs::LegendOptions()
                         .RingPerimeter(ringPerimeter)
                         .IncludeHeader(includeHeader)
                         .PlacementHint(LegendCanvasPlacementHint::RightOfGraph));

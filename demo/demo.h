@@ -8,6 +8,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /////////////////////////////////////////////////////////////////////////////
 
+#ifndef WISTERIA_DEMO_H_
+#define WISTERIA_DEMO_H_
+
 #include "../src/base/canvas.h"
 #include "../src/base/commonaxisbuilder.h"
 #include "../src/base/image.h"
@@ -51,14 +54,11 @@
 #include <wx/uilocale.h>
 #include <wx/wx.h>
 
-#ifndef __WISTERIA_DEMO_H__
-    #define __WISTERIA_DEMO_H__
-
 // Define a new application
 class MyApp final : public wxApp
     {
   public:
-    virtual bool OnInit() final;
+    bool OnInit() final;
 
     enum ControlIDs
         {
@@ -126,10 +126,10 @@ class MyChild final : public wxMDIChildFrame
     friend MyFrame;
 
   public:
-    MyChild(wxMDIParentFrame* parent);
+    explicit MyChild(wxMDIParentFrame* parent);
 
   private:
     Wisteria::Canvas* m_canvas{ nullptr };
     };
 
-#endif //__WISTERIA_DEMO_H__
+#endif // WISTERIA_DEMO_H_

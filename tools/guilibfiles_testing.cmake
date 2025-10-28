@@ -91,7 +91,6 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/variableselectdlg.cpp
     ../../src/ui/dialogs/warningmessagesdlg.cpp
     ../../src/ui/mainframe.cpp
-    ../../src/ui/ribbon/artmetro.cpp
     ../../src/util/downloadfile.cpp
     ../../src/util/fileutil.cpp
     ../../src/util/formulaformat.cpp
