@@ -158,7 +158,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
 //--------------------------------------------------
 bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath)
     {
-    assert(m_handler && L"Call SetEventHandler() to connect an event handler!");
+    wxASSERT_MSG(m_handler, L"Call SetEventHandler() to connect an event handler!");
     if (m_handler == nullptr)
         {
         wxLogError(L"Download could not start because event handler "
@@ -174,7 +174,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
-    if (GetCookies().length() > 0)
+    if (!GetCookies().empty())
         {
         request.SetHeader(_DT(L"Cookie", DTExplanation::InternalKeyword), GetCookies());
         }
@@ -252,7 +252,7 @@ void FileDownload::RequestResponse(const wxString& url)
     request.SetStorage(wxWebRequest::Storage_None);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
-    if (GetCookies().length() > 0)
+    if (!GetCookies().empty())
         {
         request.SetHeader(L"Cookie", GetCookies());
         }
@@ -322,7 +322,7 @@ bool FileDownload::Read(const wxString& url)
     request.SetStorage(wxWebRequest::Storage_Memory);
     request.SetHeader(L"User-Agent", GetUserAgent());
     request.SetHeader(L"Sec-Fetch-Mode", _DT(L"navigate"));
-    if (GetCookies().length() > 0)
+    if (!GetCookies().empty())
         {
         request.SetHeader(L"Cookie", GetCookies());
         }
@@ -531,14 +531,14 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
             wxLogStatus(L"Unexpectedly missing authentication challenge");
             break;
             }
-        else if (IsPeerVerifyDisabled())
+        if (IsPeerVerifyDisabled())
             {
             wxLogStatus(L"Credentials were requested, but will not be used because "
-                        "SSL certificate verification is disabled.");
+                "SSL certificate verification is disabled.");
             break;
             }
 
-        wxWebCredentials cred;
+        const wxWebCredentials cred;
         wxCredentialEntryDialog dialog(
             wxTheApp->GetTopWindow(),
             wxString::Format(_(L"Please enter credentials for accessing\n%s"),

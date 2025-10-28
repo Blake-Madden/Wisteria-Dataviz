@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_SETTINGS_H__
-#define __WISTERIA_SETTINGS_H__
+#ifndef WISTERIA_SETTINGS_H_
+#define WISTERIA_SETTINGS_H_
 
 #include "colorbrewer.h"
 #include "version.h"
@@ -26,9 +26,9 @@ namespace Wisteria
     [[nodiscard]]
     static wxVersionInfo GetLibraryVersionInfo()
         {
-        return wxVersionInfo(_WISTERIA_APP_NAME, _WISTERIA_VERSION_MAJOR, _WISTERIA_VERSION_MINOR,
+        return {_WISTERIA_APP_NAME, _WISTERIA_VERSION_MAJOR, _WISTERIA_VERSION_MINOR,
                              _WISTERIA_VERSION_PATCH, _WISTERIA_VERSION_TWEAK, _WISTERIA_APP_NAME,
-                             _WISTERIA_COPYRIGHT);
+                             _WISTERIA_COPYRIGHT};
         }
     /// @private
     wxGCC_WARNING_RESTORE(unused-function)
@@ -99,7 +99,7 @@ namespace Wisteria
 
         /// @brief Sets the default point radius.
         /// @param radius The default point radius.
-        void SetPointRadius(const size_t radius) noexcept { m_pointRadius = radius; }
+        static void SetPointRadius(const size_t radius) noexcept { m_pointRadius = radius; }
 
         /// @returns The opacity value to use when making a color translucent.
         [[nodiscard]]
@@ -273,4 +273,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif // __WISTERIA_SETTINGS_H__
+#endif // WISTERIA_SETTINGS_H_

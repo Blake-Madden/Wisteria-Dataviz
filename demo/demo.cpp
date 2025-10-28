@@ -45,7 +45,7 @@ bool MyApp::OnInit()
     // auto logFile = new LogFile{ true };
     // delete wxLog::SetActiveTarget(logFile);
 
-    MyFrame* frame = new MyFrame;
+    auto* frame = new MyFrame;
     frame->Show(true);
 
     return true;
@@ -67,7 +67,7 @@ MyFrame::MyFrame()
     SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
     // Associate the menu bar with the frame
-    SetMenuBar(CreateMainMenubar());
+    wxMDIParentFrame::SetMenuBar(CreateMainMenubar());
 
     // This shows that the standard window menu may be customized:
     wxMenu* const windowMenu = GetWindowMenu();
@@ -90,12 +90,12 @@ MyFrame::MyFrame()
         windowMenu->Append(wxID_CLOSE_ALL, _(L"&Close All Windows\tCtrl-Shift-C"),
                            _(L"Close all open windows"));
 
-        SetWindowMenu(windowMenu);
+        wxMDIParentFrameBase::SetWindowMenu(windowMenu);
         }
 
-    CreateStatusBar();
-    CreateToolBar(wxNO_BORDER | wxTB_FLAT | wxTB_HORIZONTAL);
-    InitToolBar(GetToolBar());
+    wxFrameBase::CreateStatusBar();
+    wxFrame::CreateToolBar(wxNO_BORDER | wxTB_FLAT | wxTB_HORIZONTAL);
+    InitToolBar(wxFrameBase::GetToolBar());
 
     // Accelerators
     wxAcceleratorEntry entries[7]{ 0 };
@@ -107,7 +107,7 @@ MyFrame::MyFrame()
     entries[5].Set(wxACCEL_CTRL, L'C', wxID_COPY);
     entries[6].Set(wxACCEL_CTRL, L'O', wxID_OPEN);
     wxAcceleratorTable accel(std::size(entries), entries);
-    SetAcceleratorTable(accel);
+    wxWindowBase::SetAcceleratorTable(accel);
 
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BOXPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HISTOGRAM);
@@ -161,7 +161,7 @@ MyFrame::MyFrame()
 
 wxMenuBar* MyFrame::CreateMainMenubar()
     {
-    wxMenu* fileMenu = new wxMenu;
+    auto* fileMenu = new wxMenu;
 
     fileMenu->Append(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"));
@@ -227,10 +227,10 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 
     fileMenu->Append(wxID_EXIT, _(L"&Exit\tAlt-X"), _(L"Quit the program"));
 
-    wxMenu* menuHelp = new wxMenu;
+    auto* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT, _(L"&About...\tF1"));
 
-    wxMenuBar* mbar = new wxMenuBar;
+    auto* mbar = new wxMenuBar;
     mbar->Append(fileMenu, _(L"&File"));
     mbar->Append(menuHelp, _(L"&Help"));
 
@@ -409,11 +409,11 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         Wisteria::Data::TextClassifier textClassifier;
         textClassifier.SetClassifierData(
             classifierData, classifierVarDlg.GetSelectedVariables(0)[0],
-            (classifierVarDlg.GetSelectedVariables(1).size() > 0 ?
+            (!classifierVarDlg.GetSelectedVariables(1).empty() ?
                  std::optional<wxString>{ classifierVarDlg.GetSelectedVariables(1)[0] } :
                  std::nullopt),
             classifierVarDlg.GetSelectedVariables(2)[0],
-            (classifierVarDlg.GetSelectedVariables(3).size() > 0 ?
+            (!classifierVarDlg.GetSelectedVariables(3).empty() ?
                  std::optional<wxString>{ classifierVarDlg.GetSelectedVariables(3)[0] } :
                  std::nullopt));
         const auto [matchedData, unclassifiedData] =
@@ -466,7 +466,7 @@ void MyFrame::OnOpenProject([[maybe_unused]] wxCommandEvent& event)
     for (auto& page : report)
         {
         // create and show a child frame for each page
-        MyChild* subframe = new MyChild(this);
+        auto* subframe = new MyChild(this);
         page->Reparent(subframe);
         subframe->m_canvas = page;
         subframe->Show(true);
@@ -478,7 +478,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
 
     // create and show another child frame
-    MyChild* subframe = new MyChild(this);
+    auto* subframe = new MyChild(this);
 
     subframe->m_canvas = new Wisteria::Canvas(subframe);
 
@@ -726,7 +726,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             .Padding(4, 0, 0, 4)
             .Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).MakeLarger());
 
-        // use group and put all of the students' heatmaps into one column
+        // use group and put all the students' heatmaps into one column
         plot->SetData(testScoresData, L"TEST_SCORE", L"Name", 1);
         // say "Students" at the top instead of "Groups"
         plot->SetGroupHeaderPrefix(_(L"Students"));
@@ -816,7 +816,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                       // don't create range-based bins;
                       // instead, create one for each unique value.
                       Histogram::BinningMethod::BinUniqueValues,
-                      // If the data is floating point, you can tell it to
+                      // If the data is floating point, you can tell it
                       // to be rounded here when categorizing it into discrete bins.
                       // In this case, the data is already discrete, so no rounding needed.
                       RoundingMethod::NoRounding,
@@ -1098,7 +1098,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         ganttChart->SetCanvasMargins(5, 5, 5, 5);
         subframe->m_canvas->SetFixedObject(0, 0, ganttChart);
-        // add a legend, showing whom is assigned to which tasks
+        // add a legend, showing who is assigned to which tasks
         subframe->m_canvas->SetFixedObject(
             0, 1,
             ganttChart->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
@@ -1438,8 +1438,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
-                                    PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(plot->GetOuterPie(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1475,8 +1474,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
-                                    PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(plot->GetOuterPie(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1516,8 +1514,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
-                                    PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(plot->GetOuterPie(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1566,15 +1563,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->ShowOuterPieLabels(false);
         // show one of the outer labels for the inner ring
         // and add a custom description to it
-        std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
-                      [](auto& slice)
-                      {
-                          if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
+        std::ranges::for_each(plot->GetInnerPie(),
+                              [](auto& slice)
                               {
-                              slice.ShowGroupLabel(true);
-                              slice.SetDescription(_(L"Drop this from the catalog?"));
-                              }
-                      });
+                                  if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
+                                      {
+                                      slice.ShowGroupLabel(true);
+                                      slice.SetDescription(_(L"Drop this from the catalog?"));
+                                      }
+                              });
         // place the label around the pie, not off to the side
         plot->SetLabelPlacement(LabelPlacement::NextToParent);
 
@@ -1833,8 +1830,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->CalcRowDimensions();
 
         // make the canvas tall since we are stacking two graphs on top of each other
-        subframe->m_canvas->SetCanvasMinHeightDIPs(
-            subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2);
+        subframe->m_canvas->SetCanvasMinHeightDIPs(Wisteria::Canvas::GetDefaultCanvasHeightDIPs() *
+                                                   2);
         // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
@@ -2186,10 +2183,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // (above the plots)
         subframe->m_canvas->GetTopTitles().emplace_back(_(L"Average Grades"));
         subframe->m_canvas->GetTopTitles().emplace_back(
-            Label(GraphItemInfo(_(L"Average grades taken from last 5 weeks' spelling tests."))
-                      .FontColor(ColorBrewer::GetColor(Color::DarkGray))
-                      .Pen(wxNullPen)
-                      .Font(subframe->m_canvas->GetTopTitles().back().GetFont().MakeSmaller())));
+            GraphItemInfo(_(L"Average grades taken from last 5 weeks' spelling tests."))
+                .FontColor(ColorBrewer::GetColor(Color::DarkGray))
+                .Pen(wxNullPen)
+                .Font(subframe->m_canvas->GetTopTitles().back().GetFont().MakeSmaller()));
         }
     // Table
     else if (event.GetId() == MyApp::ID_NEW_TABLE)
@@ -2234,7 +2231,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             // z-scores > 2 as being outliers
             tableGraph->GetOutliers(tableGraph->GetColumnCount() - 1, 2);
         // if any outliers, make a note of it off to the side
-        if (ratioOutliers.size())
+        if (!ratioOutliers.empty())
             {
             tableGraph->AddCellAnnotation(
                 { _(L"Majors with the most lopsided female-to-male ratios"), ratioOutliers,
@@ -2246,12 +2243,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // tableGraph->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
 
         // add a title
-        subframe->m_canvas->GetTopTitles().push_back(
-            Label(GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)"))
-                      .Padding(5, 5, 5, 5)
-                      .Pen(wxNullPen)
-                      .ChildAlignment(RelativeAlignment::FlushLeft)
-                      .FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen))));
+        subframe->m_canvas->GetTopTitles().emplace_back(
+            GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)"))
+                .Padding(5, 5, 5, 5)
+                .Pen(wxNullPen)
+                .ChildAlignment(RelativeAlignment::FlushLeft)
+                .FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen)));
 
         tableGraph->GetCaption().SetText(_(L"Source: Office of Institutional Research"));
         tableGraph->GetCaption().SetPadding(5, 5, 5, 5);
@@ -2260,8 +2257,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, tableGraph);
 
         // make the canvas tall since it's a long table, but not very wide
-        subframe->m_canvas->SetCanvasMinHeightDIPs(subframe->m_canvas->GetDefaultCanvasWidthDIPs());
-        subframe->m_canvas->SetCanvasMinWidthDIPs(subframe->m_canvas->GetDefaultCanvasHeightDIPs());
+        subframe->m_canvas->SetCanvasMinHeightDIPs(Wisteria::Canvas::GetDefaultCanvasWidthDIPs());
+        subframe->m_canvas->SetCanvasMinWidthDIPs(Wisteria::Canvas::GetDefaultCanvasHeightDIPs());
         // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
@@ -2272,7 +2269,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
 void MyFrame::OnSaveWindow(wxCommandEvent& event)
     {
-    MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
+    auto* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
         {
         return;
@@ -2283,7 +2280,7 @@ void MyFrame::OnSaveWindow(wxCommandEvent& event)
 
 void MyFrame::OnPrintWindow(wxCommandEvent& event)
     {
-    MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
+    auto* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
         {
         return;
@@ -2306,7 +2303,7 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
             }
         canvases.push_back(pChild->m_canvas);
         }
-    if (canvases.size() == 0)
+    if (canvases.empty())
         {
         return;
         }
@@ -2328,7 +2325,7 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     if (!printer.Print(this, printOut.get(), true))
         {
         // just show a message if a real error occurred. They may have just cancelled.
-        if (printer.GetLastError() == wxPRINTER_ERROR)
+        if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
             {
             wxMessageBox(_(L"An error occurred while printing.\n"
                            "Your default printer may not be set correctly."),
@@ -2339,7 +2336,7 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
 
 void MyFrame::OnCopyWindow(wxCommandEvent& event)
     {
-    MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
+    auto* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
         {
         return;
@@ -2361,7 +2358,7 @@ void MyFrame::OnCloseAll([[maybe_unused]] wxCommandEvent& event)
 
 void MyFrame::OnClose([[maybe_unused]] wxCommandEvent& event)
     {
-    MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
+    auto* pChild = dynamic_cast<MyChild*>(GetActiveChild());
     if (pChild == nullptr)
         {
         return;
@@ -2506,12 +2503,12 @@ MyChild::MyChild(wxMDIParentFrame* parent) : wxMDIChildFrame(parent, wxID_ANY, L
     SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
     // create our menu bar and associate it with the frame
-    SetMenuBar(MyFrame::CreateMainMenubar());
+    wxFrameBase::SetMenuBar(MyFrame::CreateMainMenubar());
 
     // this should work for MDI frames as well as for normal ones, provided
     // they can be resized at all
-    if (!IsAlwaysMaximized())
+    if (!wxTopLevelWindowBase::IsAlwaysMaximized())
         {
-        SetSizeHints(FromDIP(200), FromDIP(200));
+        wxWindowBase::SetSizeHints(FromDIP(200), FromDIP(200));
         }
     }

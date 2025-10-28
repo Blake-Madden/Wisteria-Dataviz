@@ -12,12 +12,7 @@
 #ifndef __SCREENSHOT_HELPER_H__
 #define __SCREENSHOT_HELPER_H__
 
-#include "../math/mathematics.h"
-#include <wx/filename.h>
-#include <wx/listctrl.h>
-#include <wx/propgrid/manager.h>
 #include <wx/propgrid/propgrid.h>
-#include <wx/ribbon/bar.h>
 #include <wx/wx.h>
 
 /// @brief Class for creating and editing screenshots.

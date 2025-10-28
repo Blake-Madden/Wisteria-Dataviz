@@ -214,8 +214,8 @@ class QueueDownload
     constexpr static size_t MEGABYTE = 1024 * 1024;
 
   private:
-    wxString GetLocalPath(const int ID) const;
-    void Remove(const int ID);
+    wxString GetLocalPath(int ID) const;
+    void Remove(int ID);
     wxEvtHandler* m_handler{ nullptr };
     mutable std::mutex m_mutex;
     std::map<int, wxString> m_downloads;

@@ -43,14 +43,14 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         // (and add 50% for padding)
         const auto textHeight = dc->GetTextExtent(L"Aq").GetHeight();
         long headerFooterUsedHeight{ 0 };
-        if (canvas->GetLeftPrinterHeader().length() || canvas->GetCenterPrinterHeader().length() ||
-            canvas->GetRightPrinterHeader().length())
+        if (!canvas->GetLeftPrinterHeader().empty() || !canvas->GetCenterPrinterHeader().empty() ||
+            !canvas->GetRightPrinterHeader().empty())
             {
             maxY += textHeight * 1.5;
             headerFooterUsedHeight += textHeight * 1.5;
             }
-        if (canvas->GetLeftPrinterFooter().length() || canvas->GetCenterPrinterFooter().length() ||
-            canvas->GetRightPrinterFooter().length())
+        if (!canvas->GetLeftPrinterFooter().empty() || !canvas->GetCenterPrinterFooter().empty() ||
+            !canvas->GetRightPrinterFooter().empty())
             {
             maxY += textHeight * 1.5;
             headerFooterUsedHeight += textHeight * 1.5;
@@ -61,15 +61,15 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         dc->GetSize(&dcWidth, &dcHeight);
 
         // calculate a suitable scaling factor
-        const float scaleX = safe_divide<float>(dcWidth, maxX);
-        const float scaleY = safe_divide<float>(dcHeight, maxY);
-        const float scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
-        const float scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
+        const auto scaleX = safe_divide<float>(dcWidth, maxX);
+        const auto scaleY = safe_divide<float>(dcHeight, maxY);
+        const auto scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
+        const auto scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
 
         // calculate the position on the DC for centering the graphic
-        const float posX =
+        const auto posX =
             safe_divide<float>((dcWidth - ((maxX - (2 * marginX)) * std::min(scaleX, scaleY))), 2);
-        const float posY =
+        const auto posY =
             safe_divide<float>((dcHeight - ((maxY - (headerFooterUsedHeight + (2 * marginY))) *
                                             std::min(scaleX, scaleY))),
                                2);
@@ -130,15 +130,15 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         wxCoord width{ 0 }, height{ 0 };
 
         // draw the headers
-        if (canvas->GetLeftPrinterHeader().length() || canvas->GetCenterPrinterHeader().length() ||
-            canvas->GetRightPrinterHeader().length())
+        if (!canvas->GetLeftPrinterHeader().empty() || !canvas->GetCenterPrinterHeader().empty() ||
+            !canvas->GetRightPrinterHeader().empty())
             {
-            if (canvas->GetLeftPrinterHeader().length())
+            if (!canvas->GetLeftPrinterHeader().empty())
                 {
                 dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterHeader(), page),
                              static_cast<wxCoord>(marginX), static_cast<wxCoord>(marginY));
                 }
-            if (canvas->GetCenterPrinterHeader().length())
+            if (!canvas->GetCenterPrinterHeader().empty())
                 {
                 dc->GetTextExtent(ExpandPrintString(canvas->GetCenterPrinterHeader(), page), &width,
                                   &height);
@@ -148,7 +148,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
                                          safe_divide<float>(width, 2)),
                     static_cast<wxCoord>(marginY));
                 }
-            if (canvas->GetRightPrinterHeader().length())
+            if (!canvas->GetRightPrinterHeader().empty())
                 {
                 dc->GetTextExtent(ExpandPrintString(canvas->GetRightPrinterHeader(), page), &width,
                                   &height);
@@ -158,17 +158,17 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
                 }
             }
         // draw the footers
-        if (canvas->GetLeftPrinterFooter().length() || canvas->GetCenterPrinterFooter().length() ||
-            canvas->GetRightPrinterFooter().length())
+        if (!canvas->GetLeftPrinterFooter().empty() || !canvas->GetCenterPrinterFooter().empty() ||
+            !canvas->GetRightPrinterFooter().empty())
             {
             dc->GetTextExtent(L"MeasurementTestString", &width, &height);
             const long yPos = (dcHeight * scaleYReciprocal) - (marginY + height);
-            if (canvas->GetLeftPrinterFooter().length())
+            if (!canvas->GetLeftPrinterFooter().empty())
                 {
                 dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterFooter(), page),
                              static_cast<wxCoord>(marginX), yPos);
                 }
-            if (canvas->GetCenterPrinterFooter().length())
+            if (!canvas->GetCenterPrinterFooter().empty())
                 {
                 dc->GetTextExtent(ExpandPrintString(canvas->GetCenterPrinterFooter(), page), &width,
                                   &height);
@@ -178,7 +178,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
                                          safe_divide<float>(width, 2)),
                     yPos);
                 }
-            if (canvas->GetRightPrinterFooter().length())
+            if (!canvas->GetRightPrinterFooter().empty())
                 {
                 dc->GetTextExtent(ExpandPrintString(canvas->GetRightPrinterFooter(), page), &width,
                                   &height);

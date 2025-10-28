@@ -34,7 +34,7 @@ namespace Wisteria
         /** @returns @c true if specified page number is within the range of pages being printed.
             @param pageNum The page number to check for.
             @note Page # is 1-indexed.*/
-        bool HasPage(int pageNum) noexcept override final
+        bool HasPage(int pageNum) noexcept final
             {
             return (pageNum > 0 && static_cast<size_t>(pageNum) <= m_canvases.size());
             }
@@ -44,31 +44,32 @@ namespace Wisteria
             @param[out] maxPage The highest possible page index.
             @param[out] selPageFrom The starting page.
             @param[out] selPageTo The ending page.*/
-        void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom,
-                         int* selPageTo) override final
+        void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom, int* selPageTo) final
             {
-            assert(!m_canvases.empty() && L"No pages in ReportPrintout!");
+            wxASSERT_MSG(!m_canvases.empty(), L"No pages in ReportPrintout!");
             *minPage = (!m_canvases.empty() ? 1 : 0);
-            *maxPage = (!m_canvases.empty() ? m_canvases.size() : 0);
+            *maxPage = (!m_canvases.empty() ? static_cast<int>(m_canvases.size()) : 0);
             *selPageFrom = (!m_canvases.empty() ? 1 : 0);
-            *selPageTo = (!m_canvases.empty() ? m_canvases.size() : 0);
+            *selPageTo = (!m_canvases.empty() ? static_cast<int>(m_canvases.size()) : 0);
             }
 
         /** @brief Prints the specified page number.
             @param page The page to print.
             @returns @c true if printing page was successful.*/
-        bool OnPrintPage(int page) override final;
+        bool OnPrintPage(int page) final;
 
       private:
         /// @returns The margin around the printing area.
         [[nodiscard]]
         wxCoord GetMarginPadding(const size_t pageNumber) const
             {
-            if (GetCanvasFromPageNumber(pageNumber) == nullptr)
+            if (GetCanvasFromPageNumber(static_cast<int>(pageNumber)) == nullptr)
                 {
                 return 0;
                 }
-            return 10 * GetCanvasFromPageNumber(pageNumber)->GetDPIScaleFactor();
+            return 10 *
+                   static_cast<wxCoord>(
+                       GetCanvasFromPageNumber(static_cast<int>(pageNumber))->GetDPIScaleFactor());
             }
 
         /// @returns A header or footer with dynamic constants expanded in them.
