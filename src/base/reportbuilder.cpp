@@ -2782,7 +2782,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
-                                                Wisteria::Graphs::LinePlot* linePlot)
+                                                Wisteria::Graphs::LinePlot* linePlot) const
         {
         // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))
@@ -2794,7 +2794,7 @@ namespace Wisteria
         if (const auto showcaseNode = graphNode->GetProperty(L"showcase-lines");
             showcaseNode->IsOk() && showcaseNode->IsValueArray())
             {
-            linePlot->ShowcaseLines(showcaseNode->AsStrings());
+            linePlot->ShowcaseLines(ExpandConstants(showcaseNode->AsStrings()));
             }
         }
 
@@ -2998,7 +2998,7 @@ namespace Wisteria
             {
             const bool hideGhostedLabels =
                 graphNode->GetProperty(L"hide-ghosted-labels")->AsBool(true);
-            barChart->ShowcaseBars(showcaseNode->AsStrings(), hideGhostedLabels);
+            barChart->ShowcaseBars(ExpandConstants(showcaseNode->AsStrings()), hideGhostedLabels);
             }
 
         // decals to add to the bars
@@ -3812,8 +3812,9 @@ namespace Wisteria
                 {
                 const auto peri = ReportEnumConvert::ConvertPerimeter(
                     graphNode->GetProperty(L"showcased-ring-labels")->AsString());
-                pieChart->ShowcaseOuterPieSlices(
-                    showcaseNode->AsStrings(), peri.has_value() ? peri.value() : Perimeter::Outer);
+                pieChart->ShowcaseOuterPieSlices(ExpandConstants(showcaseNode->AsStrings()),
+                                                 peri.has_value() ? peri.value() :
+                                                                    Perimeter::Outer);
                 }
             else if (showcaseNode->IsOk())
                 {
