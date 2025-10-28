@@ -376,8 +376,8 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
         {
         wxRect cutOffRect;
         if (listCtrl->GetSubItemRect(
-                            // get the top of the row below the cut-off
-                            cutOffRow + 1, 0, cutOffRect))
+                // get the top of the row below the cut-off
+                cutOffRow + 1, 0, cutOffRect))
             {
             bitmap = bitmap.GetSubBitmap(wxRect(0, 0, bitmap.GetWidth(), cutOffRect.GetTop()));
             }

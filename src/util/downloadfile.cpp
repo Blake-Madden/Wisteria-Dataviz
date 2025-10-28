@@ -534,7 +534,7 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
         if (IsPeerVerifyDisabled())
             {
             wxLogStatus(L"Credentials were requested, but will not be used because "
-                "SSL certificate verification is disabled.");
+                        "SSL certificate verification is disabled.");
             break;
             }
 
