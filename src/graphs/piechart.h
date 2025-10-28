@@ -413,7 +413,7 @@ namespace Wisteria::Graphs
             bool
             operator==(const SliceInfo& that) const
                 {
-                return m_groupLabel.CmpNoCase(that.m_groupLabel) == 0;
+                return Data::CmpNoCaseIgnoreControlChars(m_groupLabel, that.m_groupLabel) == 0;
                 }
 
             /// @private
@@ -421,7 +421,7 @@ namespace Wisteria::Graphs
             bool
             operator<(const SliceInfo& that) const
                 {
-                return m_groupLabel.CmpNoCase(that.m_groupLabel) < 0;
+                return Data::CmpNoCaseIgnoreControlChars(m_groupLabel, that.m_groupLabel) < 0;
                 }
 
           private:

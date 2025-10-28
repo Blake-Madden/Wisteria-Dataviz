@@ -675,7 +675,12 @@ namespace Wisteria::Graphs
                     !outerLabel->GetHeaderInfo().IsEnabled())
                     {
                     outerLabel->GetFont().SetFractionalPointSize(currentFontSize);
-                    if (!outerLabel->SplitTextAuto())
+                    // try to auto split if we aren't appending something in parentheses;
+                    // otherwise, split into three lines
+                    if ((GetOuterLabelDisplay() == BinLabelDisplay::BinNameAndPercentage ||
+                         GetOuterLabelDisplay() == BinLabelDisplay::BinNameAndValue ||
+                         GetOuterLabelDisplay() == BinLabelDisplay::BinValueAndPercentage) ||
+                        !outerLabel->SplitTextAuto())
                         {
                         outerLabel->SplitTextToFitLength(outerLabel->GetText().length() *
                                                          math_constants::third);
@@ -1500,7 +1505,10 @@ namespace Wisteria::Graphs
             auto labelBox = labelAndLine.first->GetBoundingBox(dc);
             if (!GraphItems::Polygon::IsRectInsideRect(labelBox, GetPlotAreaBoundingBox()))
                 {
-                if (!labelAndLine.first->SplitTextAuto())
+                if ((GetOuterLabelDisplay() == BinLabelDisplay::BinNameAndPercentage ||
+                     GetOuterLabelDisplay() == BinLabelDisplay::BinNameAndValue ||
+                     GetOuterLabelDisplay() == BinLabelDisplay::BinValueAndPercentage) ||
+                    !labelAndLine.first->SplitTextAuto())
                     {
                     labelAndLine.first->SplitTextToFitLength(
                         labelAndLine.first->GetText().length() * math_constants::third);
@@ -1852,11 +1860,11 @@ namespace Wisteria::Graphs
             GetOuterPie(),
             [&](auto& slice) noexcept
             {
-                const bool inList =
-                    (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
-                                  [&slice](const auto& label)
-                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
-                     slicesToGhost.cend());
+                const bool inList = (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
+                                                  [&slice](const auto& label) {
+                                                      return Data::CmpNoCaseIgnoreControlChars(
+                                                                 label, slice.GetGroupLabel()) == 0;
+                                                  }) != slicesToGhost.cend());
                 slice.Ghost(inList ? ghost : !ghost);
             });
         }
@@ -1874,11 +1882,11 @@ namespace Wisteria::Graphs
             GetInnerPie(),
             [&](auto& slice) noexcept
             {
-                const bool inList =
-                    (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
-                                  [&slice](const auto& label)
-                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
-                     slicesToGhost.cend());
+                const bool inList = (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
+                                                  [&slice](const auto& label) {
+                                                      return Data::CmpNoCaseIgnoreControlChars(
+                                                                 label, slice.GetGroupLabel()) == 0;
+                                                  }) != slicesToGhost.cend());
                 slice.Ghost(inList ? ghost : !ghost);
             });
         }
@@ -1891,7 +1899,7 @@ namespace Wisteria::Graphs
             {
             for (size_t i = 0; i < GetOuterPie().size(); ++i)
                 {
-                if (GetOuterPie()[i].GetGroupLabel().CmpNoCase(label) == 0)
+                if (Data::CmpNoCaseIgnoreControlChars(GetOuterPie()[i].GetGroupLabel(), label) == 0)
                     {
                     indices.insert(i);
                     break;
@@ -1999,9 +2007,12 @@ namespace Wisteria::Graphs
         std::set<size_t> showcasedOuterIndices;
         for (const auto& pieSliceLabel : pieSlices)
             {
-            const auto foundSlice = std::ranges::find_if(
-                std::as_const(GetOuterPie()), [&pieSliceLabel](const auto& slice)
-                { return (slice.GetGroupLabel().CmpNoCase(pieSliceLabel) == 0); });
+            const auto foundSlice =
+                std::ranges::find_if(std::as_const(GetOuterPie()),
+                                     [&pieSliceLabel](const auto& slice) {
+                                         return (Data::CmpNoCaseIgnoreControlChars(
+                                                     slice.GetGroupLabel(), pieSliceLabel) == 0);
+                                     });
             if (foundSlice != GetOuterPie().cend())
                 {
                 showcasedOuterIndices.insert(std::distance(GetOuterPie().cbegin(), foundSlice));
@@ -2039,17 +2050,17 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowOuterPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
-        std::ranges::for_each(
-            GetOuterPie(),
-            [&](auto& slice) noexcept
-            {
-                const bool inList =
-                    (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                  [&slice](const auto& label)
-                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
-                     labelsToShow.cend());
-                slice.ShowGroupLabel(inList ? show : !show);
-            });
+        std::ranges::for_each(GetOuterPie(),
+                              [&](auto& slice) noexcept
+                              {
+                                  const bool inList =
+                                      (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
+                                                    [&slice](const auto& label) {
+                                                        return label.CmpNoCase(
+                                                                   slice.GetGroupLabel()) == 0;
+                                                    }) != labelsToShow.cend());
+                                  slice.ShowGroupLabel(inList ? show : !show);
+                              });
         }
 
     //----------------------------------------------------------------
@@ -2075,9 +2086,9 @@ namespace Wisteria::Graphs
             {
                 const bool inList =
                     (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                  [&slice](const auto& label)
-                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
-                     labelsToShow.cend());
+                                  [&slice](const auto& label) {
+                                      return label.CmpNoCase(slice.GetGroupLabel()) == 0;
+                                  }) != labelsToShow.cend());
                 if (inList)
                     {
                     slice.SetMidPointLabelDisplay(
@@ -2104,17 +2115,17 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
-        std::ranges::for_each(
-            GetInnerPie(),
-            [&show, &labelsToShow](auto& slice) noexcept
-            {
-                const bool inList =
-                    (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                  [&slice](const auto& label)
-                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
-                     labelsToShow.cend());
-                slice.ShowGroupLabel(inList ? show : !show);
-            });
+        std::ranges::for_each(GetInnerPie(),
+                              [&show, &labelsToShow](auto& slice) noexcept
+                              {
+                                  const bool inList =
+                                      (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
+                                                    [&slice](const auto& label) {
+                                                        return label.CmpNoCase(
+                                                                   slice.GetGroupLabel()) == 0;
+                                                    }) != labelsToShow.cend());
+                                  slice.ShowGroupLabel(inList ? show : !show);
+                              });
         }
 
     //----------------------------------------------------------------
@@ -2140,9 +2151,9 @@ namespace Wisteria::Graphs
             {
                 const bool inList =
                     (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                  [&slice](const auto& label)
-                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
-                     labelsToShow.cend());
+                                  [&slice](const auto& label) {
+                                      return label.CmpNoCase(slice.GetGroupLabel()) == 0;
+                                  }) != labelsToShow.cend());
                 if (inList)
                     {
                     slice.SetMidPointLabelDisplay(

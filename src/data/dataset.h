@@ -71,11 +71,40 @@ namespace Wisteria::Data
       public:
         /// @private
         [[nodiscard]]
-        bool operator()(const wxString& lhs, const wxString& rhs) const
+        bool
+        operator()(const wxString& lhs, const wxString& rhs) const
             {
             return lhs.CmpNoCase(rhs) < 0;
             }
         };
+
+    /** @brief Compares two strings case-insensitively, ignoring ASCII control characters.
+        @details All ASCII control characters (codes below 0x20) are removed from both strings
+            before performing a case-insensitive comparison with `wxString::CmpNoCase()`.
+        @param str1 The first string to compare.
+        @param str2 The second string to compare.
+        @returns A negative value if @p str1 is less than @p str2, zero if equal, or a positive
+            value if @p str1 is greater than @p str2. */
+    [[nodiscard]]
+    inline int CmpNoCaseIgnoreControlChars(const wxString& str1, const wxString& str2)
+        {
+        const auto normalize = [](const wxString& str) -> wxString
+        {
+            wxString out;
+            out.reserve(str.length());
+
+            for (wxChar chr : str)
+                {
+                if (chr >= 0x20)
+                    {
+                    out += chr;
+                    }
+                }
+            return out;
+        };
+
+        return normalize(str1).CmpNoCase(normalize(str2));
+        }
 
     /// @private
     enum class ColumnType
