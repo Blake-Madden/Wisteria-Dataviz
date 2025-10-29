@@ -79,7 +79,7 @@ namespace wxSystemHardwareInfo
         struct sysinfo status{};
         if (sysinfo(&status) == 0)
             {
-            return status.totalram;
+            return static_cast<wxMemorySize>(status.totalram) * status.mem_unit;
             }
 #endif
 
