@@ -71,8 +71,7 @@ namespace Wisteria::Data
       public:
         /// @private
         [[nodiscard]]
-        bool
-        operator()(const wxString& lhs, const wxString& rhs) const
+        bool operator()(const wxString& lhs, const wxString& rhs) const
             {
             return lhs.CmpNoCase(rhs) < 0;
             }

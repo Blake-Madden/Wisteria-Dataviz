@@ -131,7 +131,7 @@ namespace Wisteria
         /// @param[in,out] linePlot The line plot to load options into.
         /// @todo many features still needed!
         void LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
-                                            Graphs::LinePlot* linePlot) const;
+                                     Graphs::LinePlot* linePlot) const;
         /// @brief Loads a multi-series line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
