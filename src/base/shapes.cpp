@@ -243,7 +243,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::Sword, &ShapeRenderer::DrawSword },
             { Icons::IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop },
             { Icons::IconShape::CrescentBottom, &ShapeRenderer::DrawCrescentBottom },
-            { Icons::IconShape::CrescentRight, &ShapeRenderer::DrawCrescentRight }
+            { Icons::IconShape::CrescentRight, &ShapeRenderer::DrawCrescentRight },
+            { Icons::IconShape::CurvingRoad, &ShapeRenderer::DrawCurvingRoad }
         };
 
         // connect the rendering function to the shape
@@ -262,7 +263,7 @@ namespace Wisteria::GraphItems
         m_rendererNeedsUpdating = false;
 
         wxASSERT_MSG((m_shape == Icons::IconShape::Blank || m_drawFunction),
-               L"Shape failed to set drawing function!");
+                     L"Shape failed to set drawing function!");
         if (m_drawFunction != nullptr)
             {
             (m_renderer.*m_drawFunction)(drawRect, dc);
@@ -375,6 +376,171 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawCurvingRoad(const wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger penGuard{ dc, wxNullPen };
+        const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
+
+        GraphicsContextFallback gcWrap{ &dc, rect };
+        wxGraphicsContext* gc = gcWrap.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        // clip so stroke caps are cut flat at the edges of rect
+        gc->PushState();
+        gc->Clip(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+
+        const auto width = static_cast<double>(rect.GetWidth());
+        const auto height = static_cast<double>(rect.GetHeight());
+        // Base scale factor for size-independent drawing.
+        // Derived from the smaller rect dimension (clamped ≥1) so all widths,
+        // offsets, and tapers scale proportionally to the available space.
+        const double baseScale = std::max(1.0, std::min(width, height));
+
+        // perspective taper
+        const double roadW_near = baseScale * 0.40;
+        const double roadW_far = baseScale * 0.12;
+
+        const double shoulderPad = baseScale * 0.035;
+
+        // dashed centerline: thin, constant width
+        const double laneW_const = std::max(1.0, (roadW_near + roadW_far) * 0.05);
+
+        // ---- left->right spline that climbs upward; sway only in X ------------
+        constexpr int nodes = 6;
+        const double stepX = width / (nodes - 1);
+
+        const double baseY0 = rect.GetBottom() - height * 0.12; // near
+        const double baseY1 = rect.GetTop() + height * 0.02;    // far
+
+        const double ampMax = std::max(0.0, (width * 0.45) - roadW_near * 0.6);
+
+        // linear interpolation
+        const auto lerp = [](double a, double b, double t) noexcept { return a + (b - a) * t; };
+
+        const auto anchorAt = [&](int i) -> wxPoint2DDouble
+        {
+            const double t = static_cast<double>(i) / (nodes - 1); // 0..1 left->right
+            const double baseX = rect.GetLeft() - stepX * 0.25 + i * stepX * 1.05;
+            const double baseY = lerp(baseY0, baseY1, t); // climbs upward
+            const double amp = ampMax * (1.0 - t * 0.55); // sway fades with distance
+            const double dir = (i % 2 == 0) ? -1.0 : 1.0;
+            return { baseX + dir * amp, baseY };
+        };
+
+        std::vector<wxPoint2DDouble> points;
+        points.reserve(nodes + 2);
+        points.push_back(anchorAt(0));
+        for (int i = 0; i < nodes; ++i)
+            {
+            points.push_back(anchorAt(i));
+            }
+        points.push_back(anchorAt(nodes - 1));
+
+        // sample Catmull–Rom into a polyline
+        const auto catmullPoint = [&](int i, double u) -> wxPoint2DDouble
+        {
+            const wxPoint2DDouble& p0 = points[i - 1];
+            const wxPoint2DDouble& p1 = points[i];
+            const wxPoint2DDouble& p2 = points[i + 1];
+            const wxPoint2DDouble& p3 = points[i + 2];
+
+            const double t = 0.55, u2 = u * u, u3 = u2 * u;
+
+            const double m1x = (p2.m_x - p0.m_x) * (t / 2.0);
+            const double m1y = (p2.m_y - p0.m_y) * (t / 2.0);
+            const double m2x = (p3.m_x - p1.m_x) * (t / 2.0);
+            const double m2y = (p3.m_y - p1.m_y) * (t / 2.0);
+
+            const double h00 = (2 * u3 - 3 * u2 + 1);
+            const double h10 = (u3 - 2 * u2 + u);
+            const double h01 = (-2 * u3 + 3 * u2);
+            const double h11 = (u3 - u2);
+
+            return { h00 * p1.m_x + h10 * m1x + h01 * p2.m_x + h11 * m2x,
+                     h00 * p1.m_y + h10 * m1y + h01 * p2.m_y + h11 * m2y };
+        };
+
+        std::vector<wxPoint2DDouble> samples;
+        samples.reserve((nodes - 1) * 18 + 1);
+        for (int i = 1; i < static_cast<int>(points.size()) - 2; ++i)
+            {
+            constexpr int segsPerSpan = 18;
+            for (int j = 0; j < segsPerSpan; ++j)
+                {
+                const double u = static_cast<double>(j) / segsPerSpan;
+                samples.push_back(catmullPoint(i, u));
+                }
+            }
+        samples.push_back(points[points.size() - 2]);
+
+        // build one continuous GC path from samples (for shadow and lane)
+        wxGraphicsPath splinePath = gc->CreatePath();
+        splinePath.MoveToPoint(samples.front().m_x, samples.front().m_y);
+        for (size_t i = 1; i < samples.size(); ++i)
+            {
+            splinePath.AddLineToPoint(samples[i].m_x, samples[i].m_y);
+            }
+
+        // Helper to draw tapered strokes as short segments (for shoulder/asphalt/shadow)
+        const auto strokeTapered = [&](const wxColour& col, double wNear, double wFar)
+        {
+            for (size_t i = 1; i < samples.size(); ++i)
+                {
+                const double t = static_cast<double>(i) / (samples.size() - 1);
+                const double w = lerp(wNear, wFar, t);
+                wxGraphicsPen pen =
+                    gc->CreatePen(wxGraphicsPenInfo{ col, w }.Cap(wxCAP_ROUND).Join(wxJOIN_ROUND));
+                gc->SetPen(pen);
+                wxGraphicsPath seg = gc->CreatePath();
+                seg.MoveToPoint(samples[i - 1].m_x, samples[i - 1].m_y);
+                seg.AddLineToPoint(samples[i].m_x, samples[i].m_y);
+                gc->StrokePath(seg);
+                }
+        };
+
+            // ---- HARD SHADOW: same as outline, slightly offset to the right ----------
+            {
+            gc->PushState();
+
+            // push the entire tapered stroke slightly to the right
+            const double nudge = baseScale * 0.03; // small offset
+            gc->Translate(nudge, 0.0);
+
+            // darker, subtle version of the outline
+            const wxColour hardShadowCol{ 0, 0, 0, 20 };
+
+            // just reuse the existing tapered stroke logic
+            strokeTapered(hardShadowCol, roadW_near + shoulderPad, roadW_far + shoulderPad);
+
+            gc->PopState();
+            }
+
+        // ---- SHOULDERS (tapered) ----------------------------------------------
+        const wxColour shoulderCol{ 226, 232, 242 };
+        strokeTapered(shoulderCol, roadW_near + shoulderPad, roadW_far + shoulderPad);
+
+        // ---- ASPHALT (tapered) -------------------------------------------------
+        const wxColour asphalt{ 28, 31, 38 };
+        strokeTapered(asphalt, roadW_near * 1.03, roadW_far * 1.03);
+
+            // ---- CENTER LINE: thin, dashed, continuous stroke via GC --------------
+            {
+            const wxColour laneCol{ 255, 255, 255 };
+            wxGraphicsPen lanePen = gc->CreatePen(wxGraphicsPenInfo{ laneCol, laneW_const }
+                                                      .Style(wxPENSTYLE_SHORT_DASH)
+                                                      .Cap(wxCAP_ROUND)
+                                                      .Join(wxJOIN_ROUND));
+            gc->SetPen(lanePen);
+            gc->StrokePath(splinePath);
+            }
+
+        gc->PopState();
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawBaseFlower(const wxRect rect, wxDC& dc, const wxColour& foregroundColor,
                                        const wxColour& backgroundColor) const
         {
@@ -397,10 +563,8 @@ namespace Wisteria::GraphItems
         const double centerY = drawRect.GetY() + drawRect.GetHeight() * 0.5;
         const double radius = std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.5;
 
-        const wxColour foregroundColorWarm{ Wisteria::Colors::ColorContrast::Tint(foregroundColor,
-                                                                                  0.48) };
-        const wxColour darkBackgroundColor{ Wisteria::Colors::ColorContrast::Shade(backgroundColor,
-                                                                                   0.40) };
+        const wxColour foregroundColorWarm{ Colors::ColorContrast::Tint(foregroundColor, 0.48) };
+        const wxColour darkBackgroundColor{ Colors::ColorContrast::Shade(backgroundColor, 0.40) };
         const wxColour receptacleColor{ 70, 50, 35 };
 
         // Core + overlap (tuck petals under to avoid fringe)
@@ -2925,7 +3089,7 @@ namespace Wisteria::GraphItems
             const auto h = static_cast<double>(rect.GetHeight());
 
             // arrow geometry we've already used
-            const double sheenShaftRatio = math_constants::half;
+            constexpr double sheenShaftRatio = math_constants::half;
             const double xShaftEnd = rect.GetLeft() + rect.GetWidth() * sheenShaftRatio;
             const double yMid = rect.GetTop() + rect.GetHeight() * 0.5;
             const double yTop = rect.GetTop();
@@ -3783,14 +3947,13 @@ namespace Wisteria::GraphItems
         // outside/curl: opaque brown
         const wxPen outsideStemPen(stemDarkBrown, stemWidthPx);
 
-        // shorten at the tip end (so the inside stem doesn't poke past the leaf tip)
-        // move the start point down a hair from the tip; proportional with a small cap
-        const double shortenFromTipPx =
-            std::min<double>(rect.GetHeight() * 0.02, ScaleToScreenAndCanvas(3.0));
-        const double insideStartY = leafTipPoint.m_y + shortenFromTipPx;
-
             // inside stem (just below tip -> bottom)
             {
+            // shorten at the tip end (so the inside stem doesn't poke past the leaf tip)
+            // move the start point down a hair from the tip; proportional with a small cap
+            const double shortenFromTipPx =
+                std::min<double>(rect.GetHeight() * 0.02, ScaleToScreenAndCanvas(3.0));
+            const double insideStartY = leafTipPoint.m_y + shortenFromTipPx;
             wxGraphicsPath insideStemPath = gc->CreatePath();
             insideStemPath.MoveToPoint(leafTipPoint.m_x, insideStartY);
             insideStemPath.AddLineToPoint(leafBottomPoint.m_x, leafBottomPoint.m_y);
