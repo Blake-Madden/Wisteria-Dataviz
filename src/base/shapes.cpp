@@ -18,7 +18,7 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     GraphicsContextFallback::GraphicsContextFallback(wxDC* dc, const wxRect rect)
         {
-        assert(dc && L"Invalid DC for graphics context!");
+        wxASSERT_MSG(dc, L"Invalid DC for graphics context!");
         if (dc == nullptr)
             {
             return;
@@ -38,7 +38,7 @@ namespace Wisteria::GraphItems
 
             m_gc = wxGraphicsContext::Create(m_memDC);
             }
-        assert(m_gc && L"Failed to get graphics context!");
+        wxASSERT_MSG(m_gc, L"Failed to get graphics context!");
         }
 
     //---------------------------------------------------
@@ -105,26 +105,26 @@ namespace Wisteria::GraphItems
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
-        auto bBox = GetBoundingBox(dc);
+        const auto bBox = GetBoundingBox(dc);
         auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
         // keep drawing area inside the full area
         drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
         drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
 
         // position the shape inside its (possibly) larger box
-        wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
+        wxPoint shapeTopLeftCorner(bBox.GetLeftTop());
         // horizontal page alignment
         if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
             { /*noop*/
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
-            shapeTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
+            shapeTopLeftCorner.x += safe_divide<double>(bBox.GetWidth(), 2) -
                                     safe_divide<double>(drawRect.GetWidth(), 2);
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
-            shapeTopLeftCorner.x += GetBoundingBox(dc).GetWidth() - drawRect.GetWidth();
+            shapeTopLeftCorner.x += bBox.GetWidth() - drawRect.GetWidth();
             }
         // vertical page alignment
         if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
@@ -132,12 +132,12 @@ namespace Wisteria::GraphItems
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
-            shapeTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
+            shapeTopLeftCorner.y += safe_divide<double>(bBox.GetHeight(), 2) -
                                     safe_divide<double>(drawRect.GetHeight(), 2);
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
-            shapeTopLeftCorner.y += GetBoundingBox(dc).GetHeight() - drawRect.GetHeight();
+            shapeTopLeftCorner.y += bBox.GetHeight() - drawRect.GetHeight();
             }
 
         drawRect.SetTopLeft(shapeTopLeftCorner);
@@ -148,9 +148,9 @@ namespace Wisteria::GraphItems
         if (IsSelected())
             {
             const wxDCBrushChanger bc(dc, wxColour{ 0, 0, 0, 0 });
-            const wxDCPenChanger pc(
-                dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2, wxPENSTYLE_DOT));
-            dc.DrawRectangle(GetBoundingBox(dc));
+            const wxDCPenChanger pc(dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                              ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            dc.DrawRectangle(bBox);
             if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
                 const wxDCPenChanger pcDebug(
@@ -169,8 +169,8 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    Shape::Shape(const GraphItems::GraphItemInfo& itemInfo, const Icons::IconShape shape,
-                 const wxSize sz, const std::shared_ptr<wxBitmapBundle>& img /*= nullptr*/)
+    Shape::Shape(const GraphItemInfo& itemInfo, const Icons::IconShape shape, const wxSize sz,
+                 const std::shared_ptr<wxBitmapBundle>& img /*= nullptr*/)
         : GraphItemBase(itemInfo), m_shapeSizeDIPs(sz), m_sizeDIPs(sz), m_shape(shape),
           m_renderer(itemInfo, img)
         {
@@ -261,7 +261,7 @@ namespace Wisteria::GraphItems
             }
         m_rendererNeedsUpdating = false;
 
-        assert((m_shape == Icons::IconShape::Blank || m_drawFunction) &&
+        wxASSERT_MSG((m_shape == Icons::IconShape::Blank || m_drawFunction),
                L"Shape failed to set drawing function!");
         if (m_drawFunction != nullptr)
             {
@@ -375,7 +375,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawBaseFlower(wxRect rect, wxDC& dc, const wxColour& foregroundColor,
+    void ShapeRenderer::DrawBaseFlower(const wxRect rect, wxDC& dc, const wxColour& foregroundColor,
                                        const wxColour& backgroundColor) const
         {
         const wxDCPenChanger penGuard{ dc, wxNullPen };

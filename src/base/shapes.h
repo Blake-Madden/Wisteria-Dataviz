@@ -480,7 +480,7 @@ namespace Wisteria::GraphItems
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside the rect.
         [[nodiscard]]
-        double GetXPosFromLeft(const wxRect rect, const double percentFromLeft) const
+        double GetXPosFromLeft(const wxRect& rect, const double percentFromLeft) const
             {
             return rect.GetLeft() + (rect.GetWidth() * (percentFromLeft + m_xOffsetPercentage));
             }
@@ -496,7 +496,7 @@ namespace Wisteria::GraphItems
 
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]]
-        double GetYPosFromTop(const wxRect rect, const double percentFromTop) const
+        double GetYPosFromTop(const wxRect& rect, const double percentFromTop) const
             {
             return rect.GetTop() + (rect.GetHeight() * (percentFromTop + m_yOffsetPercentage));
             }
@@ -517,7 +517,7 @@ namespace Wisteria::GraphItems
 
         /// @returns The midpoint of a rect.
         [[nodiscard]]
-        static wxPoint GetMidPoint(const wxRect rect)
+        static wxPoint GetMidPoint(const wxRect& rect)
             {
             return rect.GetLeftTop() + wxPoint(rect.GetWidth() / 2, rect.GetHeight() / 2);
             }
@@ -525,7 +525,7 @@ namespace Wisteria::GraphItems
         /// @returns The radius of the largest circle that can fit in a rect.
         /// @note This is floored to be conservative.
         [[nodiscard]]
-        static double GetRadius(const wxRect rect)
+        static double GetRadius(const wxRect& rect)
             {
             return std::floor(safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2));
             }
