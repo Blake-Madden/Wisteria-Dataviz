@@ -1861,7 +1861,8 @@ namespace Wisteria::Graphs
             [&](auto& slice) noexcept
             {
                 const bool inList = (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
-                                                  [&slice](const auto& label) {
+                                                  [&slice](const auto& label)
+                                                  {
                                                       return Data::CmpNoCaseIgnoreControlChars(
                                                                  label, slice.GetGroupLabel()) == 0;
                                                   }) != slicesToGhost.cend());
@@ -1883,7 +1884,8 @@ namespace Wisteria::Graphs
             [&](auto& slice) noexcept
             {
                 const bool inList = (std::find_if(slicesToGhost.cbegin(), slicesToGhost.cend(),
-                                                  [&slice](const auto& label) {
+                                                  [&slice](const auto& label)
+                                                  {
                                                       return Data::CmpNoCaseIgnoreControlChars(
                                                                  label, slice.GetGroupLabel()) == 0;
                                                   }) != slicesToGhost.cend());
@@ -2009,7 +2011,8 @@ namespace Wisteria::Graphs
             {
             const auto foundSlice =
                 std::ranges::find_if(std::as_const(GetOuterPie()),
-                                     [&pieSliceLabel](const auto& slice) {
+                                     [&pieSliceLabel](const auto& slice)
+                                     {
                                          return (Data::CmpNoCaseIgnoreControlChars(
                                                      slice.GetGroupLabel(), pieSliceLabel) == 0);
                                      });
@@ -2050,17 +2053,17 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowOuterPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
-        std::ranges::for_each(GetOuterPie(),
-                              [&](auto& slice) noexcept
-                              {
-                                  const bool inList =
-                                      (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                                    [&slice](const auto& label) {
-                                                        return label.CmpNoCase(
-                                                                   slice.GetGroupLabel()) == 0;
-                                                    }) != labelsToShow.cend());
-                                  slice.ShowGroupLabel(inList ? show : !show);
-                              });
+        std::ranges::for_each(
+            GetOuterPie(),
+            [&](auto& slice) noexcept
+            {
+                const bool inList =
+                    (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     labelsToShow.cend());
+                slice.ShowGroupLabel(inList ? show : !show);
+            });
         }
 
     //----------------------------------------------------------------
@@ -2086,9 +2089,9 @@ namespace Wisteria::Graphs
             {
                 const bool inList =
                     (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                  [&slice](const auto& label) {
-                                      return label.CmpNoCase(slice.GetGroupLabel()) == 0;
-                                  }) != labelsToShow.cend());
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     labelsToShow.cend());
                 if (inList)
                     {
                     slice.SetMidPointLabelDisplay(
@@ -2115,17 +2118,17 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
-        std::ranges::for_each(GetInnerPie(),
-                              [&show, &labelsToShow](auto& slice) noexcept
-                              {
-                                  const bool inList =
-                                      (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                                    [&slice](const auto& label) {
-                                                        return label.CmpNoCase(
-                                                                   slice.GetGroupLabel()) == 0;
-                                                    }) != labelsToShow.cend());
-                                  slice.ShowGroupLabel(inList ? show : !show);
-                              });
+        std::ranges::for_each(
+            GetInnerPie(),
+            [&show, &labelsToShow](auto& slice) noexcept
+            {
+                const bool inList =
+                    (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     labelsToShow.cend());
+                slice.ShowGroupLabel(inList ? show : !show);
+            });
         }
 
     //----------------------------------------------------------------
@@ -2151,9 +2154,9 @@ namespace Wisteria::Graphs
             {
                 const bool inList =
                     (std::find_if(labelsToShow.cbegin(), labelsToShow.cend(),
-                                  [&slice](const auto& label) {
-                                      return label.CmpNoCase(slice.GetGroupLabel()) == 0;
-                                  }) != labelsToShow.cend());
+                                  [&slice](const auto& label)
+                                  { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) !=
+                     labelsToShow.cend());
                 if (inList)
                     {
                     slice.SetMidPointLabelDisplay(
