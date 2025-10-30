@@ -130,8 +130,8 @@ namespace Wisteria
         /// @param graphNode The graph node to parse.
         /// @param[in,out] linePlot The line plot to load options into.
         /// @todo many features still needed!
-        static void LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
-                                            Wisteria::Graphs::LinePlot* linePlot);
+        void LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
+                                     Graphs::LinePlot* linePlot) const;
         /// @brief Loads a multi-series line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -382,14 +382,14 @@ namespace Wisteria
         /// @param iconSchemeNode The node to parse.
         /// @returns The loaded icon scheme, or null upon failure.
         [[nodiscard]]
-        static std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>
+        static std::shared_ptr<Icons::Schemes::IconScheme>
         LoadIconScheme(const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         /// @brief Loads a line style scheme from a node.
         /// @param lineStyleSchemeNode The node to parse.
         /// @returns The loaded line style scheme, or null upon failure.
         [[nodiscard]]
-        std::shared_ptr<Wisteria::LineStyleScheme>
+        std::shared_ptr<LineStyleScheme>
         LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode) const;
 
         /** @brief Loads additional transformation features and applies them to a dataset.
@@ -428,14 +428,11 @@ namespace Wisteria
                 {
                 return node->AsDouble();
                 }
-            else if (node->IsValueString())
+            if (node->IsValueString())
                 {
                 return ExpandNumericConstant(node->AsString());
                 }
-            else
-                {
-                return std::nullopt;
-                }
+            return std::nullopt;
             }
 
         /** @brief Expands embedded placeholders in strings into their values.

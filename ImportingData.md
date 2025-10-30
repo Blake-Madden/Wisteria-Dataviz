@@ -7,6 +7,15 @@ which ones are which. For example, you would specify which column would be the Y
 the X data, another a grouping column, etc. Then you would pass the dataset to a graph's
 `SetData()` method and it will use the columns that it expects.
 
+Below is a summary of the column types and how *Wisteria* handles them during import.
+
+| Column Type | Import Function | Missing Data Handling | Notes |
+|--------------|-----------------|------------------------|--------|
+| **Continuous** | `ContinuousColumns()` | Imported as `NaN` | Parsed using `wxString::ToCDouble()` (requires `.` as radix) |
+| **Categorical** | `CategoricalColumns()` | Defaults to `0` (customizable) | Can be read as strings or integers; uses lookup table for labels |
+| **Date/Time** | `DateColumns()` | `wxInvalidDateTime` | Auto-detects or uses `DateImportMethod`; errors logged via `wxLogWarning()` |
+| **Other (ID or ignored)** | Omit from `ImportInfo` | — | Columns not classified are ignored during import |
+
 Importing
 =============================
 Datasets can be imported from tab- or comma-delimited text files via `Wisteria::Data::Dataset::ImportCSV()` or

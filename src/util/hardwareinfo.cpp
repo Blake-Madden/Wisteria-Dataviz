@@ -28,6 +28,10 @@
     #include <sysinfoapi.h>
     #include <windows.h>
 #elif defined(__APPLE__)
+    #include <mach/mach_init.h>
+    #include <mach/message.h>
+    #include <mach/task.h>
+    #include <mach/task_info.h>
     #include <sys/sysctl.h>
 #elif defined(__UNIX__)
     #include <sys/resource.h>
@@ -46,6 +50,14 @@ namespace wxSystemHardwareInfo
             {
             // PeakWorkingSetSize is in bytes
             return memCounter.PeakWorkingSetSize;
+            }
+#elif defined(__APPLE__)
+        struct task_basic_info info{};
+        mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
+        if (task_info(mach_task_self(), TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info),
+                      &count) == KERN_SUCCESS)
+            {
+            return info.resident_size;
             }
 #elif defined(__UNIX__)
         rusage usage{};
@@ -79,7 +91,7 @@ namespace wxSystemHardwareInfo
         struct sysinfo status{};
         if (sysinfo(&status) == 0)
             {
-            return status.totalram;
+            return static_cast<wxMemorySize>(status.totalram) * status.mem_unit;
             }
 #endif
 

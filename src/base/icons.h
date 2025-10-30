@@ -111,7 +111,8 @@ namespace Wisteria::Icons
         CrescentTop,              /*!< A crescent opening at the top.*/
         CrescentBottom,           /*!< A crescent opening at the bottom.*/
         CrescentRight,            /*!< A crescent opening at the right.*/
-        Sunflower                 /*!< A sunflower (stigma and petals).*/
+        Sunflower,                /*!< A sunflower (stigma and petals).*/
+        CurvingRoad               /*!< A curvy road.*/
         };
 
     /// @brief Item to draw on a legend.

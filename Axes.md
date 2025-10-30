@@ -251,7 +251,7 @@ Adding a Custom Axis
 Custom axes can also be added to a graph and customized via `AddCustomAxis()` and `GetCustomAxes()`.
 
 To build a custom axis, first an axis is constructed with a type. For example, to make a vertical custom axis,
-set its type to `Wisteria::AxisType::LeftYAxis`. Vertical custom axis will be anchored to the bottom X axis, while
+set its type to `Wisteria::AxisType::LeftYAxis`. Vertical custom axis are anchored to the bottom X axis, while
 horizontal custom axes will be anchored to the left Y axis.
 
 Next, you will need to specify where the custom axis connects with its parent axis. For vertical custom axis, this

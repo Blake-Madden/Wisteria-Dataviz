@@ -485,16 +485,15 @@ namespace Wisteria
                     brush.SetColour(brushColor);
                     }
 
-                const auto foundStyle = ReportEnumConvert::ConvertBrushStyle(
-                    brushNode->GetProperty(L"style")->AsString());
+                const auto brushStr{ brushNode->GetProperty(L"style")->AsString() };
+                const auto foundStyle = ReportEnumConvert::ConvertBrushStyle(brushStr);
                 if (foundStyle)
                     {
                     brush.SetStyle(foundStyle.value());
                     }
-                else
+                else if (!brushStr.empty())
                     {
-                    wxLogWarning(L"Unknown brush style '%s'. Using default solid.",
-                                 brushNode->GetProperty(L"style")->AsString());
+                    wxLogWarning(L"Unknown brush style '%s'. Using default solid.", brushStr);
                     brush.SetStyle(wxBRUSHSTYLE_SOLID);
                     }
                 }
@@ -534,16 +533,15 @@ namespace Wisteria
                     pen.SetWidth(penNode->GetProperty(L"width")->AsDouble(1));
                     }
 
-                const auto style = styleValues.find(
-                    penNode->GetProperty(L"style")->AsString().Lower().ToStdWstring());
+                const auto styleStr{ penNode->GetProperty(L"style")->AsString() };
+                const auto style = styleValues.find(styleStr.Lower().ToStdWstring());
                 if (style != styleValues.cend())
                     {
                     pen.SetStyle(style->second);
                     }
-                else
+                else if (!styleStr.empty())
                     {
-                    wxLogWarning(L"Unknown pen style '%s'. Using default solid.",
-                                 penNode->GetProperty(L"style")->AsString());
+                    wxLogWarning(L"Unknown pen style '%s'. Using default solid.", styleStr);
                     pen.SetStyle(wxPENSTYLE_SOLID);
                     }
                 }
@@ -1728,7 +1726,7 @@ namespace Wisteria
                             bys.emplace_back(byCol->GetProperty(L"left-column")->AsString(),
                                              byCol->GetProperty(L"right-column")->AsString());
                             }
-                        auto mergedData = Wisteria::Data::DatasetJoin::LeftJoinUnique(
+                        auto mergedData = Data::DatasetJoin::LeftJoinUnique(
                             datasetToMerge, foundPos->second, bys,
                             merge->GetProperty(L"suffix")->AsString(L".x"));
 
@@ -1765,7 +1763,7 @@ namespace Wisteria
                     const auto pivotType = pivot->GetProperty(L"type")->AsString(L"wider");
                     if (pivotType.CmpNoCase(L"wider") == 0)
                         {
-                        auto pivotedData = Wisteria::Data::Pivot::PivotWider(
+                        auto pivotedData = Data::Pivot::PivotWider(
                             parentToPivot, pivot->GetProperty(L"id-columns")->AsStrings(),
                             pivot->GetProperty(L"names-from-column")->AsString(),
                             pivot->GetProperty(L"values-from-columns")->AsStrings(),
@@ -1783,7 +1781,7 @@ namespace Wisteria
                         }
                     else if (pivotType.CmpNoCase(L"longer") == 0)
                         {
-                        auto pivotedData = Wisteria::Data::Pivot::PivotLonger(
+                        auto pivotedData = Data::Pivot::PivotLonger(
                             parentToPivot, pivot->GetProperty(L"columns-to-keep")->AsStrings(),
                             pivot->GetProperty(L"from-columns")->AsStrings(),
                             pivot->GetProperty(L"names-to")->AsStrings(),
@@ -1830,10 +1828,8 @@ namespace Wisteria
 
             if (valuesNode->IsOk())
                 {
-                Wisteria::Data::ColumnFilterInfo cFilter{
-                    filterNode->GetProperty(L"column")->AsString(), cmp,
-                    std::vector<Wisteria::Data::DatasetValueType>()
-                };
+                Data::ColumnFilterInfo cFilter{ filterNode->GetProperty(L"column")->AsString(), cmp,
+                                                std::vector<Data::DatasetValueType>() };
                 if (!parentToSubset->ContainsColumn(cFilter.m_columnName) &&
                     !parentToSubset->GetContinuousColumns().empty() &&
                     cFilter.m_columnName.CmpNoCase(L"last-continuous-column") == 0)
@@ -1853,11 +1849,10 @@ namespace Wisteria
                                          (dt.ParseDateTime(filterValue->AsString()) ||
                                           dt.ParseDate(filterValue->AsString())));
                     cFilter.m_values.push_back(
-                        isDate ? Wisteria::Data::DatasetValueType(dt) :
+                        isDate ? Data::DatasetValueType(dt) :
                         filterValue->IsValueString() ?
-                                 Wisteria::Data::DatasetValueType(
-                                     ExpandConstants(filterValue->AsString())) :
-                                 Wisteria::Data::DatasetValueType(filterValue->AsDouble()));
+                                 Data::DatasetValueType(ExpandConstants(filterValue->AsString())) :
+                                 Data::DatasetValueType(filterValue->AsDouble()));
                     }
 
                 return cFilter;
@@ -1894,7 +1889,7 @@ namespace Wisteria
                             _(L"Subset missing filters or section definition.").ToUTF8());
                         }
 
-                    Wisteria::Data::Subset dataSubsetter;
+                    Data::Subset dataSubsetter;
                     std::shared_ptr<Data::Dataset> subsettedDataset{ nullptr };
                     // single column filter
                     if (filterNode->IsOk())
@@ -1905,7 +1900,7 @@ namespace Wisteria
                     // ANDed filters
                     else if (filterAndNode->IsOk())
                         {
-                        std::vector<Wisteria::Data::ColumnFilterInfo> cf;
+                        std::vector<Data::ColumnFilterInfo> cf;
                         const auto filterAndNodes = filterAndNode->AsNodes();
                         if (filterAndNodes.empty())
                             {
@@ -1922,7 +1917,7 @@ namespace Wisteria
                     // ORed filters
                     else if (filterOrNode->IsOk())
                         {
-                        std::vector<Wisteria::Data::ColumnFilterInfo> cf;
+                        std::vector<Data::ColumnFilterInfo> cf;
                         const auto filterOrNodes = filterOrNode->AsNodes();
                         if (filterOrNodes.empty())
                             {
@@ -1982,7 +1977,7 @@ namespace Wisteria
             auto mutateCats = dsNode->GetProperty(L"mutate-categorical-columns")->AsNodes();
             for (const auto& mutateCat : mutateCats)
                 {
-                Wisteria::Data::RegExMap reMap;
+                Data::RegExMap reMap;
                 const auto replacements = mutateCat->GetProperty(L"replacements")->AsNodes();
                 for (const auto& replacement : replacements)
                     {
@@ -2146,16 +2141,16 @@ namespace Wisteria
                                 dateInfo.push_back(
                                     { dateName,
                                       (dateParser.CmpNoCase(L"iso-date") == 0 ?
-                                           Wisteria::Data::DateImportMethod::IsoDate :
+                                           Data::DateImportMethod::IsoDate :
                                        dateParser.CmpNoCase(L"time") == 0 ?
-                                           Wisteria::Data::DateImportMethod::Time :
+                                           Data::DateImportMethod::Time :
                                        dateParser.CmpNoCase(L"iso-combined") == 0 ?
-                                           Wisteria::Data::DateImportMethod::IsoCombined :
+                                           Data::DateImportMethod::IsoCombined :
                                        dateParser.CmpNoCase(L"strptime-format") == 0 ?
-                                           Wisteria::Data::DateImportMethod::StrptimeFormatString :
+                                           Data::DateImportMethod::StrptimeFormatString :
                                        dateParser.CmpNoCase(L"rfc822") == 0 ?
-                                           Wisteria::Data::DateImportMethod::Rfc822 :
-                                           Wisteria::Data::DateImportMethod::Automatic),
+                                           Data::DateImportMethod::Rfc822 :
+                                           Data::DateImportMethod::Automatic),
                                       dateFormat });
                                 }
                             }
@@ -2187,9 +2182,8 @@ namespace Wisteria
                                 catInfo.push_back(
                                     { catName,
                                       (catParser.CmpNoCase(L"as-integers") == 0 ?
-                                           Wisteria::Data::CategoricalImportMethod::ReadAsIntegers :
-                                           Wisteria::Data::CategoricalImportMethod::
-                                               ReadAsStrings) });
+                                           Data::CategoricalImportMethod::ReadAsIntegers :
+                                           Data::CategoricalImportMethod::ReadAsStrings) });
                                 }
                             }
                         }
@@ -2197,7 +2191,7 @@ namespace Wisteria
                     // create the dataset
                     auto dataset = std::make_shared<Data::Dataset>();
 
-                    Wisteria::Data::ImportInfo importDefines;
+                    Data::ImportInfo importDefines;
                     const auto fillImportDefines = [&importDefines, &datasetNode]()
                     {
                         if (datasetNode->HasProperty(L"skip-rows"))
@@ -2240,9 +2234,9 @@ namespace Wisteria
                         !datasetNode->HasProperty(L"continuous-columns") &&
                         !datasetNode->HasProperty(L"categorical-columns"))
                         {
-                        importDefines = Wisteria::Data::Dataset::ImportInfoFromPreview(
-                            Wisteria::Data::Dataset::ReadColumnInfo(path, importDefines,
-                                                                    std::nullopt, worksheet));
+                        importDefines =
+                            Data::Dataset::ImportInfoFromPreview(Data::Dataset::ReadColumnInfo(
+                                path, importDefines, std::nullopt, worksheet));
                         fillImportDefines();
                         }
                     else
@@ -2303,7 +2297,7 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            auto pcRoadmap = std::make_shared<Wisteria::Graphs::ProConRoadmap>(canvas);
+            auto pcRoadmap = std::make_shared<Graphs::ProConRoadmap>(canvas);
             pcRoadmap->SetData(
                 foundPos->second, variablesNode->GetProperty(L"positive")->AsString(),
                 (variablesNode->HasProperty(L"positive-aggregate") ?
@@ -2396,7 +2390,7 @@ namespace Wisteria
             const auto fyType = ReportEnumConvert::ConvertFiscalYear(
                 graphNode->GetProperty(L"fy-type")->AsString());
 
-            auto ganttChart = std::make_shared<Wisteria::Graphs::GanttChart>(canvas);
+            auto ganttChart = std::make_shared<Graphs::GanttChart>(canvas);
             ganttChart->SetData(
                 foundPos->second,
                 dateInterval.has_value() ? dateInterval.value() : DateInterval::FiscalQuarterly,
@@ -2484,7 +2478,7 @@ namespace Wisteria
                     }
                 }
 
-            auto lrRoadmap = std::make_shared<Wisteria::Graphs::LRRoadmap>(canvas);
+            auto lrRoadmap = std::make_shared<Graphs::LRRoadmap>(canvas);
             lrRoadmap->SetData(
                 foundPos->second,
                 ExpandConstants(variablesNode->GetProperty(L"predictor")->AsString()),
@@ -2584,24 +2578,24 @@ namespace Wisteria
                 graphNode->GetProperty(L"survey-format")->AsString());
             if (!surveyFormat.has_value())
                 {
-                surveyFormat = Wisteria::Graphs::LikertChart::DeduceScale(foundPos->second,
-                                                                          questions, groupVarName);
+                surveyFormat =
+                    Graphs::LikertChart::DeduceScale(foundPos->second, questions, groupVarName);
                 }
 
             if (graphNode->GetProperty(L"simplify")->AsBool())
                 {
-                surveyFormat = Wisteria::Graphs::LikertChart::Simplify(foundPos->second, questions,
-                                                                       surveyFormat.value());
+                surveyFormat = Graphs::LikertChart::Simplify(foundPos->second, questions,
+                                                             surveyFormat.value());
                 }
 
             if (graphNode->GetProperty(L"apply-default-labels")->AsBool())
                 {
-                Wisteria::Graphs::LikertChart::SetLabels(
+                Graphs::LikertChart::SetLabels(
                     foundPos->second, questions,
-                    Wisteria::Graphs::LikertChart::CreateLabels(surveyFormat.value()));
+                    Graphs::LikertChart::CreateLabels(surveyFormat.value()));
                 }
 
-            auto likertChart = std::make_shared<Wisteria::Graphs::LikertChart>(
+            auto likertChart = std::make_shared<Graphs::LikertChart>(
                 canvas, surveyFormat.value(),
                 ConvertColor(graphNode->GetProperty(L"negative-color")),
                 ConvertColor(graphNode->GetProperty(L"positive-color")),
@@ -2674,7 +2668,7 @@ namespace Wisteria
             const auto groupVarName =
                 ExpandConstants(variablesNode->GetProperty(L"group")->AsString());
 
-            auto wcurvePlot = std::make_shared<Wisteria::Graphs::WCurvePlot>(
+            auto wcurvePlot = std::make_shared<Graphs::WCurvePlot>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
@@ -2715,7 +2709,7 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            auto candlestickPlot = std::make_shared<Wisteria::Graphs::CandlestickPlot>(canvas);
+            auto candlestickPlot = std::make_shared<Graphs::CandlestickPlot>(canvas);
             candlestickPlot->SetData(
                 foundPos->second, ExpandConstants(variablesNode->GetProperty(L"date")->AsString()),
                 ExpandConstants(variablesNode->GetProperty(L"open")->AsString()),
@@ -2761,7 +2755,7 @@ namespace Wisteria
             const auto groupVarName =
                 ExpandConstants(variablesNode->GetProperty(L"group")->AsString());
 
-            auto linePlot = std::make_shared<Wisteria::Graphs::LinePlot>(
+            auto linePlot = std::make_shared<Graphs::LinePlot>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
@@ -2782,19 +2776,19 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
-                                                Wisteria::Graphs::LinePlot* linePlot)
+                                                Graphs::LinePlot* linePlot) const
         {
         // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))
             {
-            linePlot->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
-                                          ->AsDouble(Wisteria::Settings::GHOST_OPACITY));
+            linePlot->SetGhostOpacity(
+                graphNode->GetProperty(L"ghost-opacity")->AsDouble(Settings::GHOST_OPACITY));
             }
 
         if (const auto showcaseNode = graphNode->GetProperty(L"showcase-lines");
             showcaseNode->IsOk() && showcaseNode->IsValueArray())
             {
-            linePlot->ShowcaseLines(showcaseNode->AsStrings());
+            linePlot->ShowcaseLines(ExpandConstants(showcaseNode->AsStrings()));
             }
         }
 
@@ -2815,7 +2809,7 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            auto linePlot = std::make_shared<Wisteria::Graphs::MultiSeriesLinePlot>(
+            auto linePlot = std::make_shared<Graphs::MultiSeriesLinePlot>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
@@ -2852,7 +2846,7 @@ namespace Wisteria
             {
             const auto postSeason =
                 ExpandConstants(variablesNode->GetProperty(L"postseason")->AsString());
-            auto wlSparkline = std::make_shared<Wisteria::Graphs::WinLossSparkline>(canvas);
+            auto wlSparkline = std::make_shared<Graphs::WinLossSparkline>(canvas);
             wlSparkline->SetData(
                 foundPos->second,
                 ExpandConstants(variablesNode->GetProperty(L"season")->AsString()),
@@ -2892,7 +2886,7 @@ namespace Wisteria
             const auto groupVarName =
                 ExpandConstants(variablesNode->GetProperty(L"group")->AsString());
 
-            auto heatmap = std::make_shared<Wisteria::Graphs::HeatMap>(
+            auto heatmap = std::make_shared<Graphs::HeatMap>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
             heatmap->SetData(
                 foundPos->second,
@@ -2937,11 +2931,9 @@ namespace Wisteria
                 {
                 const auto sortBy =
                     (byNode->AsString().CmpNoCase(L"length") == 0 ?
-                         std::optional<Wisteria::Graphs::BarChart::BarSortComparison>(
-                             Wisteria::Graphs::BarChart::BarSortComparison::SortByBarLength) :
+                         std::optional(Graphs::BarChart::BarSortComparison::SortByBarLength) :
                      byNode->AsString().CmpNoCase(L"label") == 0 ?
-                         std::optional<Wisteria::Graphs::BarChart::BarSortComparison>(
-                             Wisteria::Graphs::BarChart::BarSortComparison::SortByAxisLabel) :
+                         std::optional(Graphs::BarChart::BarSortComparison::SortByAxisLabel) :
                          std::nullopt);
                 if (!sortBy.has_value())
                     {
@@ -2990,15 +2982,15 @@ namespace Wisteria
         // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))
             {
-            barChart->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
-                                          ->AsDouble(Wisteria::Settings::GHOST_OPACITY));
+            barChart->SetGhostOpacity(
+                graphNode->GetProperty(L"ghost-opacity")->AsDouble(Settings::GHOST_OPACITY));
             }
         if (const auto showcaseNode = graphNode->GetProperty(L"showcase-bars");
             showcaseNode->IsOk() && showcaseNode->IsValueArray())
             {
             const bool hideGhostedLabels =
                 graphNode->GetProperty(L"hide-ghosted-labels")->AsBool(true);
-            barChart->ShowcaseBars(showcaseNode->AsStrings(), hideGhostedLabels);
+            barChart->ShowcaseBars(ExpandConstants(showcaseNode->AsStrings()), hideGhostedLabels);
             }
 
         // decals to add to the bars
@@ -3043,7 +3035,7 @@ namespace Wisteria
                 {
                 if (barGroup->IsOk())
                     {
-                    Wisteria::Graphs::BarChart::BarGroup bGroup;
+                    Graphs::BarChart::BarGroup bGroup;
                     bGroup.m_barColor = (ConvertColor(barGroup->GetProperty(L"color")));
                     if (!bGroup.m_barColor.IsOk() && barChart->GetColorScheme() != nullptr)
                         {
@@ -3200,7 +3192,7 @@ namespace Wisteria
                         }
 
                     barChart->AddBarIcon(barIcon->GetProperty("label")->AsString(),
-                                         Wisteria::GraphItems::Image::LoadFile(path));
+                                         GraphItems::Image::LoadFile(path));
                     }
                 }
             }
@@ -3294,9 +3286,8 @@ namespace Wisteria
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
-        auto sh = std::make_unique<Wisteria::GraphItems::FillableShape>(
-            Wisteria::GraphItems::GraphItemInfo(
-                (shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
+        auto sh = std::make_unique<GraphItems::FillableShape>(
+            GraphItems::GraphItemInfo((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
                 .Anchoring(Anchoring::TopLeftCorner)
                 .Pen(pen)
                 .Brush(brush)
@@ -3450,7 +3441,7 @@ namespace Wisteria
                     std::optional<double>(graphNode->GetProperty(L"max-bin-count")->AsDouble()) :
                     std::nullopt;
 
-            auto histo = std::make_shared<Wisteria::Graphs::Histogram>(
+            auto histo = std::make_shared<Graphs::Histogram>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
 
@@ -3467,10 +3458,9 @@ namespace Wisteria
             histo->SetData(
                 foundPos->second, contVarName,
                 (!groupName.empty() ? std::optional<wxString>(groupName) : std::nullopt),
-                binMethod.value_or(Wisteria::Graphs::Histogram::BinningMethod::BinByIntegerRange),
+                binMethod.value_or(Graphs::Histogram::BinningMethod::BinByIntegerRange),
                 rounding.value_or(RoundingMethod::NoRounding),
-                binIntervalDisplay.value_or(
-                    Wisteria::Graphs::Histogram::IntervalDisplay::Cutpoints),
+                binIntervalDisplay.value_or(Graphs::Histogram::IntervalDisplay::Cutpoints),
                 binLabel.value_or(BinLabelDisplay::BinValue),
                 graphNode->GetProperty(L"show-full-range")->AsBool(true), startBinsValue,
                 std::make_pair(suggestedBinCount, maxBinCount));
@@ -3510,7 +3500,7 @@ namespace Wisteria
             const auto binLabel = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"bar-label-display")->AsString());
 
-            auto barChart = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
+            auto barChart = std::make_shared<Graphs::CategoricalBarChart>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
 
@@ -3565,7 +3555,7 @@ namespace Wisteria
             const auto fromGroupVarName =
                 ExpandConstants(variablesNode->GetProperty(L"from-group")->AsString());
 
-            auto sankey = std::make_shared<Wisteria::Graphs::SankeyDiagram>(
+            auto sankey = std::make_shared<Graphs::SankeyDiagram>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")));
 
             const auto groupLabelDisplay = ReportEnumConvert::ConvertBinLabelDisplay(
@@ -3633,7 +3623,7 @@ namespace Wisteria
             const auto wordColName =
                 ExpandConstants(variablesNode->GetProperty(L"words")->AsString());
 
-            auto wordCloud = std::make_shared<Wisteria::Graphs::WordCloud>(
+            auto wordCloud = std::make_shared<Graphs::WordCloud>(
                 canvas, LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
 
             wordCloud->SetData(
@@ -3667,7 +3657,7 @@ namespace Wisteria
             const auto groupVar1Name =
                 ExpandConstants(variablesNode->GetProperty(L"group-1")->AsString());
 
-            auto boxPlot = std::make_shared<Wisteria::Graphs::BoxPlot>(
+            auto boxPlot = std::make_shared<Graphs::BoxPlot>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
@@ -3714,7 +3704,7 @@ namespace Wisteria
             const auto groupVar2Name =
                 ExpandConstants(variablesNode->GetProperty(L"group-2")->AsString());
 
-            auto pieChart = std::make_shared<Wisteria::Graphs::PieChart>(
+            auto pieChart = std::make_shared<Graphs::PieChart>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
             pieChart->SetData(
@@ -3773,8 +3763,8 @@ namespace Wisteria
 
             if (graphNode->HasProperty(L"ghost-opacity"))
                 {
-                pieChart->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")
-                                              ->AsDouble(Wisteria::Settings::GHOST_OPACITY));
+                pieChart->SetGhostOpacity(
+                    graphNode->GetProperty(L"ghost-opacity")->AsDouble(Settings::GHOST_OPACITY));
                 }
 
             // margin notes
@@ -3812,8 +3802,9 @@ namespace Wisteria
                 {
                 const auto peri = ReportEnumConvert::ConvertPerimeter(
                     graphNode->GetProperty(L"showcased-ring-labels")->AsString());
-                pieChart->ShowcaseOuterPieSlices(
-                    showcaseNode->AsStrings(), peri.has_value() ? peri.value() : Perimeter::Outer);
+                pieChart->ShowcaseOuterPieSlices(ExpandConstants(showcaseNode->AsStrings()),
+                                                 peri.has_value() ? peri.value() :
+                                                                    Perimeter::Outer);
                 }
             else if (showcaseNode->IsOk())
                 {
@@ -4905,7 +4896,7 @@ namespace Wisteria
                                             .ToUTF8());
                                     }
                                 }
-                            currentCell->SetLeftImage(Wisteria::GraphItems::Image::LoadFile(path));
+                            currentCell->SetLeftImage(GraphItems::Image::LoadFile(path));
                             }
                         }
 
@@ -4989,7 +4980,7 @@ namespace Wisteria
                 {
                 Graphs::Table::CellAnnotation cellAnnotation{
                     annotation->GetProperty(L"value")->AsString(),
-                    std::vector<Wisteria::Graphs::Table::CellPosition>{}, Side::Right, std::nullopt,
+                    std::vector<Graphs::Table::CellPosition>{}, Side::Right, std::nullopt,
                     wxColour{}
                 };
                 if (annotation->HasProperty(L"side"))
@@ -5318,7 +5309,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Wisteria::LineStyleScheme>
+    std::shared_ptr<LineStyleScheme>
     ReportBuilder::LoadLineStyleScheme(const wxSimpleJSON::Ptr_t& lineStyleSchemeNode) const
         {
         // use standard string, wxString should not be constructed globally
@@ -5363,12 +5354,10 @@ namespace Wisteria
     std::shared_ptr<Icons::Schemes::IconScheme>
     ReportBuilder::LoadIconScheme(const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
-        static const std::map<std::wstring_view,
-                              std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>>
+        static const std::map<std::wstring_view, std::shared_ptr<Icons::Schemes::IconScheme>>
             iconSchemes = { { L"standard-shapes",
-                              std::make_shared<Wisteria::Icons::Schemes::StandardShapes>() },
-                            { L"semesters",
-                              std::make_shared<Wisteria::Icons::Schemes::Semesters>() } };
+                              std::make_shared<Icons::Schemes::StandardShapes>() },
+                            { L"semesters", std::make_shared<Icons::Schemes::Semesters>() } };
 
         if (!iconSchemeNode->IsOk())
             {
@@ -5395,7 +5384,7 @@ namespace Wisteria
                 {
                 return nullptr;
                 }
-            return std::make_shared<Wisteria::Icons::Schemes::IconScheme>(icons);
+            return std::make_shared<Icons::Schemes::IconScheme>(icons);
             }
         // a pre-defined icon scheme
         if (iconSchemeNode->IsValueString())
@@ -5410,7 +5399,7 @@ namespace Wisteria
             const auto iconValue = ReportEnumConvert::ConvertIcon(iconSchemeNode->AsString());
             if (iconValue.has_value())
                 {
-                return std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                return std::make_shared<Icons::Schemes::IconScheme>(
                     std::vector<Wisteria::Icons::IconShape>{ iconValue.value() });
                 }
             }
@@ -5479,7 +5468,7 @@ namespace Wisteria
         if (bmpNode->IsValueString())
             {
             const auto path = NormalizeFilePath(bmpNode->AsString());
-            return Wisteria::GraphItems::Image::LoadFile(path);
+            return GraphItems::Image::LoadFile(path);
             }
 
         // otherwise, load as all images and apply effects to them
@@ -5488,14 +5477,14 @@ namespace Wisteria
         for (auto& path : paths)
             {
             path = NormalizeFilePath(path);
-            bmps.emplace_back(Wisteria::GraphItems::Image::LoadFile(path));
+            bmps.emplace_back(GraphItems::Image::LoadFile(path));
             }
 
         // single image
         const auto path = bmpNode->GetProperty(L"path")->AsString();
         if (!path.empty())
             {
-            bmps.emplace_back(Wisteria::GraphItems::Image::LoadFile(NormalizeFilePath(path)));
+            bmps.emplace_back(GraphItems::Image::LoadFile(NormalizeFilePath(path)));
             }
 
         if (bmps.empty())
@@ -5510,11 +5499,11 @@ namespace Wisteria
             const auto stitch = bmpNode->GetProperty(L"stitch")->AsString();
             if (stitch.CmpNoCase(L"vertical") == 0)
                 {
-                bmp = Wisteria::GraphItems::Image::StitchVertically(bmps);
+                bmp = GraphItems::Image::StitchVertically(bmps);
                 }
             else
                 {
-                bmp = Wisteria::GraphItems::Image::StitchHorizontally(bmps);
+                bmp = GraphItems::Image::StitchHorizontally(bmps);
                 }
             }
 
@@ -5523,8 +5512,7 @@ namespace Wisteria
             auto color = ConvertColor(bmpNode->GetProperty(L"color-filter"));
             if (color.IsOk())
                 {
-                bmp = Wisteria::GraphItems::Image::CreateColorFilteredImage(bmp.ConvertToImage(),
-                                                                            color);
+                bmp = GraphItems::Image::CreateColorFilteredImage(bmp.ConvertToImage(), color);
                 }
             }
 
@@ -5878,8 +5866,7 @@ namespace Wisteria
                 if (!label->GetFontBackgroundColor().IsOk())
                     {
                     label->SetFontBackgroundColor(
-                        Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
-                            label->GetFontColor()));
+                        Colors::ColorContrast::BlackOrWhiteContrast(label->GetFontColor()));
                     }
                 label->SetPadding(5, 5, 5, 5);
 
@@ -5959,7 +5946,7 @@ namespace Wisteria
                         const auto labelPlacement =
                             ReportEnumConvert::ConvertReferenceLabelPlacement(
                                 refLine->GetProperty(L"reference-label-placement")->AsString());
-                        graph->AddReferenceLine(Wisteria::GraphItems::ReferenceLine(
+                        graph->AddReferenceLine(GraphItems::ReferenceLine(
                             axisType.value(), axisPos.value(),
                             refLine->GetProperty(L"label")->AsString(), pen,
                             labelPlacement.value_or(ReferenceLabelPlacement::Legend)));

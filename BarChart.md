@@ -8,12 +8,12 @@ The `Wisteria::Graphs::BarChart` class is a highly customizable chart, which is 
 The following is an explanation of how these are built and how they can be customized to create more complex charts.
 
 If deriving a new graph type from `BarChart`, you can create the bars by calling `AddBar()`. This can either be done when the data
-is being set, or inside of a derived call to `RecaleSizes()`. Note that if you derive `RecalcSizes()`, be sure to call
+is being set, or inside a derived call to `RecaleSize()`. Note that if you derive `RecalcSizes()`, be sure to call
 `BarChart::RecalcSizes()` after you are done adding the bars. Also note that `ClearBars()` should be called if you are reconstructing
 the bars every time `RecalcSizes()` is called.
 
 The code examples below demonstrate customizing a regular bar chart directly, but if you are deriving a new chart type then
-similar code can be done inside of your class (refer to `GanttChart` and `LikertChart` for examples).
+similar code can be done inside your class (refer to `GanttChart` and `LikertChart` for examples).
 
 Axes & Canvas
 =============================
