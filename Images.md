@@ -57,7 +57,7 @@ If you are designing your own plot and plan to use `Image` objects in it, then t
 image is drawn, these dimensions are adjusted by the image's scaling. If you wish for the image's
 dimensions to stay the same, then keep its scaling at 1, instead of setting it to its parent's scaling.
 
-Generally, these sizes are calculated from the area they being drawn on inside of a derived
+Generally, these sizes are calculated from the area they are being drawn on inside of a derived
 `RecalcSizes()` call. For example, an image may be consumed 1/4th of the plot area. In this case, the width
 may be set to this size and the scaling of the image should just remain the default 1. This way, the parent's
 scaling and DPI don't need to be accounted for because you already have the correct pixel width for the image.

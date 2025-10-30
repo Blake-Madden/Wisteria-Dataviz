@@ -1,7 +1,7 @@
 Setting up the Library
 =============================
 
-There are a few library and related wxWidgts features that can be enabled when your application starts up.
+There are a few library and related wxWidgets features that can be enabled when your application starts up.
 
 Locale Formatting
 =============================

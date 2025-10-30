@@ -19,6 +19,31 @@ annotations, decals, etc. Labels are self-contained text boxes that manage attri
 - Headers
 - Legend attributes
 
+Common Customization Functions
+=============================
+
+Labels are highly flexible, and many of their visual and layout properties can be customized through chainable calls.
+The following table lists the most frequently used methods and what they control.
+
+| Function | Purpose | Example                                                                 |
+|-----------|----------|-------------------------------------------------------------------------|
+| `Font()` | Sets the label’s font | `GetGraphItemInfo{}.Font(wxFontInfo{ 10 }.Bold())`                      |
+| `FontColor()` | Sets the font color | `.FontColor(*wxBLUE)`                                                   |
+| `FontBackgroundColor()` | Sets the label’s background color | `.FontBackgroundColor(*wxWHITE)`                                        |
+| `Pen()` | Draws an outline around the label | `.Pen(*wxBLACK)`                                                        |
+| `Padding(left, top, right, bottom)` | Adds space around text | `.Padding(4, 2, 4, 2)`                                                  |
+| `LabelAlignment()` | Controls text alignment within the label | `.LabelAlignment(TextAlignment::Centered)`                              |
+| `ChildAlignment()` | Aligns the label relative to its parent | `.ChildAlignment(RelativeAlignment::FlushLeft)`                         |
+| `Orient()` | Sets text orientation (horizontal or vertical) | `.Orient(Orientation::Vertical)`                                        |
+| `SplitTextByCharacter()` | Breaks text into stacked characters | `label.SplitTextByCharacter()`                                          |
+| `SplitTextToFitLength(maxLen)` | Wraps text to fit within a line length | `label.SplitTextToFitLength(20)`                                        |
+| `SetLabelStyle(style)` | Applies line decorations (e.g., dotted or arrowed) | `label.SetLabelStyle(LabelStyle::Arrowed)`                              |
+| `SetMinimumUserSize(size)` | Sets minimum bounding box for the label | `label.SetMinimumUserSize(wxSize{ 200, std::nullopt })`                 |
+| `GetHeaderInfo()` | Configures the label’s header line | `label.GetHeaderInfo().Enable(true).Alignment(TextAlignment::Centered)` |
+| `GetLegendIcons()` | Adds icons when used as a legend | `label.GetLegendIcons().emplace_back(LegendIcon(...))`                  |
+
+These functions can be chained together when building or editing labels, usually via the `GraphItemInfo` object returned by `GetGraphItemInfo()`.
+
 They can be displayed horizontally or vertically (via `Label::SetTextOrientation()`), and support multiline text.
 
 A `Label` is edited mostly through its `GetGraphItemInfo()` method. This returns its `GraphItemInfo`, which can edit

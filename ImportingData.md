@@ -1,6 +1,18 @@
 Importing Data
 =============================
 
+Before diving into the details below, here’s a summary of the column types and how *Wisteria* handles them during import.
+
+| Column Type | Import Function | Missing Data Handling | Notes |
+|--------------|-----------------|------------------------|--------|
+| **Continuous** | `ContinuousColumns()` | Imported as `NaN` | Parsed using `wxString::ToCDouble()` (requires `.` as radix) |
+| **Categorical** | `CategoricalColumns()` | Defaults to `0` (customizable) | Can be read as strings or integers; uses lookup table for labels |
+| **Date/Time** | `DateColumns()` | `wxInvalidDateTime` | Auto-detects or uses `DateImportMethod`; errors logged via `wxLogWarning()` |
+| **Other (ID or ignored)** | Omit from `ImportInfo` | — | Columns not classified are ignored during import |
+
+A `Wisteria::Data::Dataset` object is available for importing data, as well as connecting the data to various graph types. ...
+
+
 A `Wisteria::Data::Dataset` object is available for importing data, as well as connecting the data to
 various graph types. When you import data, you can select which columns to use and specify
 which ones are which. For example, you would specify which column would be the Y data, another
