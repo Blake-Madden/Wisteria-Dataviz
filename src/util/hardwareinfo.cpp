@@ -18,10 +18,6 @@
 // for compilers that support precompilation, includes "wx.h".
 #include "hardwareinfo.h"
 #include "wx/wxprec.h"
-#include <mach/mach_init.h>
-#include <mach/message.h>
-#include <mach/task.h>
-#include <mach/task_info.h>
 
 #ifndef WX_PRECOMP
     #include "wx/thread.h"
@@ -32,6 +28,10 @@
     #include <sysinfoapi.h>
     #include <windows.h>
 #elif defined(__APPLE__)
+    #include <mach/mach_init.h>
+    #include <mach/message.h>
+    #include <mach/task.h>
+    #include <mach/task_info.h>
     #include <sys/sysctl.h>
 #elif defined(__UNIX__)
     #include <sys/resource.h>
