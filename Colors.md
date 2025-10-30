@@ -43,7 +43,7 @@ Contrasting
 =============================
 
 Functions are available for tinting (i.e., whitening) and shading (i.e., darkening) colors, as well as intelligent
-methods for changing a color depending on its luminance. For example, the following will returns a dark gray:
+methods for changing a color depending on its luminance. For example, the following will return a dark gray:
 
 ```cpp
 auto newColor = ColorContrast::ShadeOrTint(*wxBLACK);
@@ -86,3 +86,22 @@ auto res = cb.BrewColors(data.begin(), data.end());
 
 // res[0] will be red, res[1] will be blue, and res[2] will be purple
 ```
+
+Color Management Functions
+=============================
+
+All color-related utilities in Wisteria are organized under the `Wisteria::Colors` namespace.
+These classes can be mixed and matched when customizing graphs, labels, or other canvas elements.
+
+| Class | Purpose | Example Use |
+|--------|----------|-------------|
+| `ColorBrewer` | Creates color scales and retrieves named colors | `ColorBrewer::GetColor(Color::CornflowerBlue)` |
+| `ColorContrast` | Adjusts colors for visibility and contrast | `ColorContrast::ShadeOrTint(baseColor)` |
+| `Schemes::ColorScheme` | Defines a reusable set of colors for groups | `auto scheme = std::make_shared<Schemes::Decade1960s>();` |
+
+Color scheme objects can be shared across multiple graphs to maintain a consistent look throughout a report.
+All color objects returned from these functions are fully compatible with `wxColour` and `wxBrush`, making them directly usable
+with `wxGraphicsContext` drawing routines.
+
+For a full list of predefined color names and palettes, refer to the `Wisteria::Colors::Color` and `Wisteria::Colors::Schemes`
+documentation.
