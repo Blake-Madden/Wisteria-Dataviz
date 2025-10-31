@@ -223,9 +223,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         descriptions.Add(openTag + _DT(L"Web Picture") + closeTag +
                          _(L"A replacement for JPEG, PNG, and GIF file formats "
                            "which supports both lossy and lossless compression."));
-        Wisteria::UI::RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
-                                                 _(L"Image formats:"), _(L"Export Image"), choices,
-                                                 descriptions);
+        UI::RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
+                                       _(L"Image formats:"), _(L"Export Image"), choices,
+                                       descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
             {
             return;
@@ -315,13 +315,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         OnDraw(gcdc);
         memDc.SelectObject(wxNullBitmap);
 
-        Wisteria::UI::ImageExportOptions imgOptions;
+        UI::ImageExportOptions imgOptions;
         imgOptions.m_imageSize = GetCanvasRectDIPs().GetSize();
 
         wxString ext{ fn.GetExt() };
-        Wisteria::UI::ImageExportDlg optionsDlg(
-            this, Wisteria::GraphItems::Image::GetImageFileTypeFromExtension(ext), previewImg,
-            imgOptions);
+        UI::ImageExportDlg optionsDlg(this, GraphItems::Image::GetImageFileTypeFromExtension(ext),
+                                      previewImg, imgOptions);
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
         // no options for SVG (since size doesn't matter),
         // so don't bother showing the dialog for that
@@ -337,7 +336,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //--------------------------------------------------
-    bool Canvas::Save(const wxFileName& filePath, const Wisteria::UI::ImageExportOptions& options)
+    bool Canvas::Save(const wxFileName& filePath, const UI::ImageExportOptions& options)
         {
         // immediately recalc everything when we change the canvas size
         CanvasResizeDelayChanger resizeDelay{ *this };
@@ -384,8 +383,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         else
             {
             wxString ext{ filePath.GetExt() };
-            const wxBitmapType imageType =
-                Wisteria::GraphItems::Image::GetImageFileTypeFromExtension(ext);
+            const wxBitmapType imageType = GraphItems::Image::GetImageFileTypeFromExtension(ext);
 
             // new bitmap to be used by memory DC
             wxBitmap exportFile;
@@ -427,8 +425,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                           Settings::GetImageResolutionDPI().GetHeight());
 
             // color mode
-            if (options.m_mode == static_cast<decltype(options.m_mode)>(
-                                      Wisteria::UI::ImageExportOptions::ColorMode::Grayscale))
+            if (options.m_mode ==
+                static_cast<decltype(options.m_mode)>(UI::ImageExportOptions::ColorMode::Grayscale))
                 {
                 img = img.ConvertToGreyscale();
                 }
@@ -548,7 +546,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //----------------------------------------------------------------
     void Canvas::ContrastTitleLabel(GraphItems::Label & title) const
         {
-        const wxColour contrastingColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+        const wxColour contrastingColor{ Colors::ColorContrast::BlackOrWhiteContrast(
             GetBackgroundColor()) };
         if (title.GetFontBackgroundColor().IsOk() &&
             !title.GetFontBackgroundColor().IsTransparent())
@@ -1520,7 +1518,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 dc, GetCanvasRect(dc),
                 Watermark{ GetWatermark(),
                            GetWatermarkColor().IsOpaque() ?
-                               Wisteria::Colors::ColorContrast::ChangeOpacity(
+                               Colors::ColorContrast::ChangeOpacity(
                                    GetWatermarkColor(),
                                    std::min<uint8_t>(50, Settings::GetTranslucencyValue())) :
                                GetWatermarkColor(),
@@ -1532,8 +1530,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);
-            Wisteria::GraphItems::Label infoLabel(
-                Wisteria::GraphItems::GraphItemInfo(m_debugInfo)
+            GraphItems::Label infoLabel(
+                GraphItems::GraphItemInfo(m_debugInfo)
                     .AnchorPoint(bBox.GetBottomRight())
                     .Anchoring(Anchoring::BottomRightCorner)
                     .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
@@ -1616,18 +1614,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
                 // set the font size so that the text will fit diagonally
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetFractionalPointSize(Wisteria::GraphItems::Label::CalcDiagonalFontSize(
+                labelFont.SetFractionalPointSize(GraphItems::Label::CalcDiagonalFontSize(
                     dc, labelFont, drawingRect, angle, watermark.m_label));
                 labelFont.MakeBold();
 
-                Wisteria::GraphItems::Label waterLabel(
-                    Wisteria::GraphItems::GraphItemInfo(watermark.m_label)
-                        .Font(labelFont)
-                        .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                        .Padding(0, 0, 0, 0)
-                        .Pen(wxNullPen)
-                        .DPIScaling(dc.GetContentScaleFactor())
-                        .FontColor(watermark.m_color));
+                GraphItems::Label waterLabel(GraphItems::GraphItemInfo(watermark.m_label)
+                                                 .Font(labelFont)
+                                                 .Anchoring(Anchoring::TopLeftCorner)
+                                                 .Padding(0, 0, 0, 0)
+                                                 .Pen(wxNullPen)
+                                                 .DPIScaling(dc.GetContentScaleFactor())
+                                                 .FontColor(watermark.m_color));
                 const auto boundingBox = waterLabel.GetBoundingBox(dc);
                 const auto widthOfWatermark =
                     boundingBox.GetWidth() *
@@ -1650,14 +1647,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             else
                 {
-                Wisteria::GraphItems::Label waterLabel(
-                    Wisteria::GraphItems::GraphItemInfo(watermark.m_label)
-                        .Anchoring(Wisteria::Anchoring::Center)
+                GraphItems::Label waterLabel(
+                    GraphItems::GraphItemInfo(watermark.m_label)
+                        .Anchoring(Anchoring::Center)
                         .Padding(0, 0, 0, 0)
                         .Pen(wxNullPen)
-                        .LabelAlignment(Wisteria::TextAlignment::Centered)
-                        .LabelPageVerticalAlignment(Wisteria::PageVerticalAlignment::Centered)
-                        .LabelPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered)
+                        .LabelAlignment(TextAlignment::Centered)
+                        .LabelPageVerticalAlignment(PageVerticalAlignment::Centered)
+                        .LabelPageHorizontalAlignment(PageHorizontalAlignment::Centered)
                         .DPIScaling(dc.GetContentScaleFactor())
                         .FontColor(watermark.m_color));
                 waterLabel.GetFont().MakeBold();
@@ -2030,7 +2027,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //------------------------------------------------------
-    double Canvas::CalcMinHeightProportion(Wisteria::GraphItems::GraphItemBase & item)
+    double Canvas::CalcMinHeightProportion(GraphItems::GraphItemBase & item)
         {
         wxGCDC gdc(this);
         CanvasItemScalingChanger sc(item);
