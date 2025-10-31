@@ -83,7 +83,7 @@ namespace Wisteria::GraphItems
             {
             if (img.IsOk())
                 {
-                m_originalImg = m_img = img;
+                m_originalImg = img;
                 m_size = img.GetSize();
                 m_frameSize = img.GetSize();
                 }
@@ -96,7 +96,7 @@ namespace Wisteria::GraphItems
             {
             if (img.IsOk())
                 {
-                m_originalImg = m_img = img;
+                m_originalImg = img;
                 m_size = img.GetSize();
                 m_frameSize = img.GetSize();
                 }
@@ -113,7 +113,7 @@ namespace Wisteria::GraphItems
             const auto img = LoadFile(imgPath);
             if (img.IsOk())
                 {
-                m_originalImg = m_img = img;
+                m_originalImg = img;
                 m_size = img.GetSize();
                 m_frameSize = img.GetSize();
                 }
@@ -124,7 +124,7 @@ namespace Wisteria::GraphItems
         /// @brief Sets the image to a null image.
         void Clear()
             {
-            m_originalImg = m_img = wxNullImage;
+            m_originalImg = wxNullImage;
             m_frameSize = m_size = wxDefaultSize;
             SetOk(false);
             }
@@ -551,7 +551,6 @@ namespace Wisteria::GraphItems
             }
 
         wxImage m_originalImg;
-        mutable wxImage m_img;
         wxSize m_size{ 0, 0 };
         wxSize m_frameSize{ 0, 0 };
         uint8_t m_opacity{ wxALPHA_OPAQUE };

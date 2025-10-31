@@ -989,7 +989,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxRect Image::Draw(wxDC& dc) const
         {
-        if (!IsShown() || !IsOk() || !m_img.IsOk())
+        if (!IsShown() || !IsOk() || !m_originalImg.IsOk())
             {
             return {};
             }
@@ -1007,10 +1007,10 @@ namespace Wisteria::GraphItems
         // the original image to maintain fidelity
         const wxSize scaledSize(GetImageSize().GetWidth() * GetScaling(),
                                 GetImageSize().GetHeight() * GetScaling());
-        m_img = m_originalImg;
-        if (m_img.GetSize() != scaledSize)
+        wxImage img = m_originalImg;
+        if (img.GetSize() != scaledSize)
             {
-            m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
+            img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
 
         // Draw the shadow. This needs to be a polygon outside the image
@@ -1083,7 +1083,7 @@ namespace Wisteria::GraphItems
                 GetBoundingBox(dc).GetHeight() - (GetImageSize().GetHeight() * GetScaling());
             }
 
-        wxBitmap bmp{ m_img };
+        wxBitmap bmp{ img };
         // Original image would be fully opaque (although it may may have
         // translucent/transparent pixels). If a custom opacity is being applied,
         // then apply that, but don't bother otherwise. This improves performance, and
