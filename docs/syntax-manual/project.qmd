@@ -18,7 +18,7 @@ The following properties are available:
 
 ## Paper Sizes
 
-::: details **North American Sizes**
+### **North American Sizes** {-}
 | Identifier | Dimensions |
 |-------------|-------------|
 | `"paper-letter"` | Letter — 8.5 × 11 in |
@@ -31,9 +31,8 @@ The following properties are available:
 | `"paper-note"` | Note — 8.5 × 11 in |
 | `"paper-letter-extra"` | Letter Extra — 9.27 × 12 in |
 | `"paper-legal-extra"` | Legal Extra — 9.27 × 15 in |
-:::
 
-::: details **ISO (A/B) Series**
+###  **ISO (A/B) Series** {-}
 | Identifier | Dimensions |
 |-------------|-------------|
 | `"paper-a6"` | 105 × 148 mm |
@@ -46,9 +45,8 @@ The following properties are available:
 | `"paper-b5"` | 182 × 257 mm |
 | `"paper-b4"` | 250 × 354 mm |
 | `"paper-b6-jis"` | 128 × 182 mm |
-:::
 
-::: details **Envelopes (U.S.)**
+### **Envelopes (U.S.)** {-}
 | Identifier | Dimensions |
 |-------------|-------------|
 | `"paper-env-9"` | #9 Envelope — 3.875 × 8.875 in |
@@ -63,9 +61,8 @@ The following properties are available:
 | `"paper-env-c65"` | C65 Envelope — 114 × 229 mm |
 | `"paper-env-monarch"` | Monarch — 3.875 × 7.5 in |
 | `"paper-env-personal"` | #6¾ — 3.625 × 6.5 in |
-:::
 
-::: details **Japanese & PRC Formats**
+###  **Japanese & PRC Formats** {-}
 | Identifier | Description / Dimensions |
 |-------------|--------------------------|
 | `"paper-japanese-postcard"` | 100 × 148 mm |
@@ -79,19 +76,17 @@ The following properties are available:
 | `"paper-p32kbig"` | PRC 32K (Big) — 97 × 151 mm |
 | `"paper-penv-1"` | PRC Envelope #1 — 102 × 165 mm |
 | `"paper-penv-10"` | PRC Envelope #10 — 324 × 458 mm |
-:::
 
-::: details **Large Format Sheets**
+###  **Large Format Sheets** {-}
 | Identifier | Dimensions |
 |-------------|-------------|
 | `"paper-csheet"` | C Sheet — 17 × 22 in |
 | `"paper-dsheet"` | D Sheet — 22 × 34 in |
 | `"paper-esheet"` | E Sheet — 34 × 44 in |
-:::
 
 ---
 
-### Example
+### Examples {-}
 
 ```json
 {
