@@ -1023,28 +1023,30 @@ namespace Wisteria::GraphItems
             const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
                 {
-                wxPoint shadowPts[7];
-                shadowPts[0] = GetBoundingBox(dc).GetLeftBottom() + wxPoint(scaledShadowOffset, 0);
-                shadowPts[1] = GetBoundingBox(dc).GetLeftBottom() +
-                               wxPoint(scaledShadowOffset, scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox(dc).GetRightBottom() +
-                               wxPoint(scaledShadowOffset, scaledShadowOffset);
-                shadowPts[3] = GetBoundingBox(dc).GetRightTop() +
-                               wxPoint(scaledShadowOffset, scaledShadowOffset);
-                shadowPts[4] = GetBoundingBox(dc).GetRightTop() + wxPoint(0, scaledShadowOffset);
-                shadowPts[5] = GetBoundingBox(dc).GetRightBottom();
-                shadowPts[6] = shadowPts[0]; // close polygon
-                dc.DrawPolygon(std::size(shadowPts), shadowPts);
+                std::array<wxPoint, 7> shadowPts = {
+                    GetBoundingBox(dc).GetLeftBottom() + wxPoint(scaledShadowOffset, 0),
+                    GetBoundingBox(dc).GetLeftBottom() +
+                        wxPoint{ scaledShadowOffset, scaledShadowOffset },
+                    GetBoundingBox(dc).GetRightBottom() +
+                        wxPoint{ scaledShadowOffset, scaledShadowOffset },
+                    GetBoundingBox(dc).GetRightTop() +
+                        wxPoint{ scaledShadowOffset, scaledShadowOffset },
+                    GetBoundingBox(dc).GetRightTop() + wxPoint{ 0, scaledShadowOffset },
+                    GetBoundingBox(dc).GetRightBottom(),
+                    shadowPts[0] // close polygon
+                };
+                dc.DrawPolygon(shadowPts.size(), shadowPts.data());
                 }
             else if (GetShadowType() == ShadowType::RightSideShadow)
                 {
-                wxPoint shadowPts[4];
-                shadowPts[0] = GetBoundingBox(dc).GetRightBottom() + wxPoint(scaledShadowOffset, 0);
-                shadowPts[1] = GetBoundingBox(dc).GetRightTop() +
-                               wxPoint(scaledShadowOffset, scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox(dc).GetRightTop() + wxPoint(0, scaledShadowOffset);
-                shadowPts[3] = GetBoundingBox(dc).GetRightBottom();
-                dc.DrawPolygon(std::size(shadowPts), shadowPts);
+                std::array<wxPoint, 4> shadowPts = {
+                    GetBoundingBox(dc).GetRightBottom() + wxPoint{ scaledShadowOffset, 0 },
+                    GetBoundingBox(dc).GetRightTop() +
+                        wxPoint(scaledShadowOffset, scaledShadowOffset),
+                    GetBoundingBox(dc).GetRightTop() + wxPoint{ 0, scaledShadowOffset },
+                    GetBoundingBox(dc).GetRightBottom()
+                };
+                dc.DrawPolygon(shadowPts.size(), shadowPts.data());
                 }
             }
 
