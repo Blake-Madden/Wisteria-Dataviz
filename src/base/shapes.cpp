@@ -400,29 +400,29 @@ namespace Wisteria::GraphItems
         const double baseScale = std::max(1.0, std::min(width, height));
 
         // perspective taper
-        const double roadW_near = baseScale * 0.40;
-        const double roadW_far = baseScale * 0.12;
+        const double roadWidthNear = baseScale * 0.40;
+        const double roadWidthFar = baseScale * 0.12;
 
         const double shoulderPad = baseScale * 0.035;
 
         // dashed centerline: thin, constant width
-        const double laneW_const = std::max(1.0, (roadW_near + roadW_far) * 0.05);
+        const double laneWidth = std::max(1.0, (roadWidthNear + roadWidthFar) * 0.05);
 
         // ---- left->right spline that climbs upward; sway only in X ------------
         constexpr int nodes = 6;
-        const double stepX = width / (nodes - 1);
+        const double stepX = safe_divide<double>(width, (nodes - 1));
 
         const double baseY0 = rect.GetBottom() - height * 0.12; // near
         const double baseY1 = rect.GetTop() + height * 0.02;    // far
 
-        const double ampMax = std::max(0.0, (width * 0.45) - roadW_near * 0.6);
+        const double ampMax = std::max(0.0, (width * 0.45) - roadWidthNear * 0.6);
 
         // linear interpolation
         const auto lerp = [](double a, double b, double t) noexcept { return a + (b - a) * t; };
 
         const auto anchorAt = [&](int i) -> wxPoint2DDouble
         {
-            const double t = static_cast<double>(i) / (nodes - 1); // 0..1 left->right
+            const double t = safe_divide<double>(i, (nodes - 1)); // 0..1 left->right
             const double baseX = rect.GetLeft() - stepX * 0.25 + i * stepX * 1.05;
             const double baseY = lerp(baseY0, baseY1, t); // climbs upward
             const double amp = ampMax * (1.0 - t * 0.55); // sway fades with distance
@@ -470,7 +470,7 @@ namespace Wisteria::GraphItems
             constexpr int segsPerSpan = 18;
             for (int j = 0; j < segsPerSpan; ++j)
                 {
-                const double u = static_cast<double>(j) / segsPerSpan;
+                const double u = safe_divide<double>(j, segsPerSpan);
                 samples.push_back(catmullPoint(i, u));
                 }
             }
@@ -489,7 +489,7 @@ namespace Wisteria::GraphItems
         {
             for (size_t i = 1; i < samples.size(); ++i)
                 {
-                const double t = static_cast<double>(i) / (samples.size() - 1);
+                const double t = safe_divide<double>(i, (samples.size() - 1));
                 const double w = lerp(wNear, wFar, t);
                 wxGraphicsPen pen =
                     gc->CreatePen(wxGraphicsPenInfo{ col, w }.Cap(wxCAP_ROUND).Join(wxJOIN_ROUND));
@@ -513,23 +513,23 @@ namespace Wisteria::GraphItems
             const wxColour hardShadowCol{ 0, 0, 0, 20 };
 
             // just reuse the existing tapered stroke logic
-            strokeTapered(hardShadowCol, roadW_near + shoulderPad, roadW_far + shoulderPad);
+            strokeTapered(hardShadowCol, roadWidthNear + shoulderPad, roadWidthFar + shoulderPad);
 
             gc->PopState();
             }
 
         // ---- SHOULDERS (tapered) ----------------------------------------------
         const wxColour shoulderCol{ 226, 232, 242 };
-        strokeTapered(shoulderCol, roadW_near + shoulderPad, roadW_far + shoulderPad);
+        strokeTapered(shoulderCol, roadWidthNear + shoulderPad, roadWidthFar + shoulderPad);
 
         // ---- ASPHALT (tapered) -------------------------------------------------
         const wxColour asphalt{ 28, 31, 38 };
-        strokeTapered(asphalt, roadW_near * 1.03, roadW_far * 1.03);
+        strokeTapered(asphalt, roadWidthNear * 1.03, roadWidthFar * 1.03);
 
             // ---- CENTER LINE: thin, dashed, continuous stroke via GC --------------
             {
-            const wxColour laneCol{ 255, 255, 255 };
-            wxGraphicsPen lanePen = gc->CreatePen(wxGraphicsPenInfo{ laneCol, laneW_const }
+            wxGraphicsPen lanePen = gc->CreatePen(wxGraphicsPenInfo{
+                Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow), laneWidth }
                                                       .Style(wxPENSTYLE_SHORT_DASH)
                                                       .Cap(wxCAP_ROUND)
                                                       .Join(wxJOIN_ROUND));
@@ -615,7 +615,7 @@ namespace Wisteria::GraphItems
 
             for (int i = 0; i < count; ++i)
                 {
-                const double aDeg = rotationOffsetDeg + (360.0 / count) * i;
+                const double aDeg = rotationOffsetDeg + safe_divide<double>(360.0, count) * i;
                 const double a = aDeg * (std::numbers::pi / 180.0);
 
                 const double px = centerX + centerRadius * std::cos(a);
@@ -691,7 +691,7 @@ namespace Wisteria::GraphItems
         // Front ring (alternate foregroundColor / warm-foregroundColor), staggered half-step
         drawPetalRing([&](int i) { return (i & 1) ? foregroundColorWarm : foregroundColor; },
                       outlineFrom(foregroundColor), petals, innerWid, innerLen, innerCtr,
-                      (180.0 / petals), rect.GetWidth() > ScaleToScreenAndCanvas(18));
+                      safe_divide(180, petals), rect.GetWidth() > ScaleToScreenAndCanvas(18));
 
             // Center disk (radial gradient)
             {
@@ -714,14 +714,14 @@ namespace Wisteria::GraphItems
             const double golden = std::numbers::pi * (3.0 - std::sqrt(5.0));
             const double dotR = std::max(1.0, ScaleToScreenAndCanvas(0.7));
 
-            wxBrush seedA{ wxColour(120, 90, 70) };
-            wxBrush seedB{ wxColour(170, 135, 110) };
+            wxBrush seedA{ wxColour{ 120, 90, 70 } };
+            wxBrush seedB{ wxColour{ 170, 135, 110 } };
 
             gc->SetPen(wxNullPen);
 
             for (int i = 0; i < nSeeds; ++i)
                 {
-                const double t = (i + 0.5) / nSeeds;
+                const double t = safe_divide<double>(i + 0.5, nSeeds);
                 const double rs = std::sqrt(t) * maxSeedR;
                 const double th = i * golden;
 
@@ -3097,7 +3097,8 @@ namespace Wisteria::GraphItems
             const double xRight = rect.GetRight();
 
             // head top line: (xShaftEnd, yTop) -> (xRight, yMid)
-            const double headSlope = (yMid - yTop) / std::max(1.0, (xRight - xShaftEnd));
+            const double headSlope =
+                safe_divide((yMid - yTop), std::max(1.0, (xRight - xShaftEnd)));
             auto yOnHeadTop = [&](double x) { return yTop + headSlope * (x - xShaftEnd); };
 
             // band thickness and caps
