@@ -1013,45 +1013,43 @@ namespace Wisteria::GraphItems
             img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
 
+        const wxRect boundRect{ GetBoundingBox(dc) };
+
         // Draw the shadow. This needs to be a polygon outside the image
         // in case the image is translucent.
         if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
-            GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
+            boundRect.GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
-            const wxDCPenChanger pc(dc, wxPen(GetShadowColor(), ScaleToScreenAndCanvas(1)));
-            const wxDCBrushChanger bc(dc, wxBrush(GetShadowColor()));
+            const wxDCPenChanger pc{ dc, wxPen(GetShadowColor(), ScaleToScreenAndCanvas(1)) };
+            const wxDCBrushChanger bc{ dc, wxBrush(GetShadowColor()) };
             const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
                 {
-                std::array<wxPoint, 7> shadowPts = {
-                    GetBoundingBox(dc).GetLeftBottom() + wxPoint(scaledShadowOffset, 0),
-                    GetBoundingBox(dc).GetLeftBottom() +
-                        wxPoint{ scaledShadowOffset, scaledShadowOffset },
-                    GetBoundingBox(dc).GetRightBottom() +
-                        wxPoint{ scaledShadowOffset, scaledShadowOffset },
-                    GetBoundingBox(dc).GetRightTop() +
-                        wxPoint{ scaledShadowOffset, scaledShadowOffset },
-                    GetBoundingBox(dc).GetRightTop() + wxPoint{ 0, scaledShadowOffset },
-                    GetBoundingBox(dc).GetRightBottom(),
-                    shadowPts[0] // close polygon
+                const std::array<wxPoint, 7> shadowPts = {
+                    boundRect.GetLeftBottom() + wxPoint{ scaledShadowOffset, 0 },
+                    boundRect.GetLeftBottom() + wxPoint{ scaledShadowOffset, scaledShadowOffset },
+                    boundRect.GetRightBottom() + wxPoint{ scaledShadowOffset, scaledShadowOffset },
+                    boundRect.GetRightTop() + wxPoint{ scaledShadowOffset, scaledShadowOffset },
+                    boundRect.GetRightTop() + wxPoint{ 0, scaledShadowOffset },
+                    boundRect.GetRightBottom(),
+                    boundRect.GetLeftBottom() + wxPoint{ scaledShadowOffset, 0 } // close polygon
                 };
                 dc.DrawPolygon(shadowPts.size(), shadowPts.data());
                 }
             else if (GetShadowType() == ShadowType::RightSideShadow)
                 {
-                std::array<wxPoint, 4> shadowPts = {
-                    GetBoundingBox(dc).GetRightBottom() + wxPoint{ scaledShadowOffset, 0 },
-                    GetBoundingBox(dc).GetRightTop() +
-                        wxPoint(scaledShadowOffset, scaledShadowOffset),
-                    GetBoundingBox(dc).GetRightTop() + wxPoint{ 0, scaledShadowOffset },
-                    GetBoundingBox(dc).GetRightBottom()
+                const std::array<wxPoint, 4> shadowPts = {
+                    boundRect.GetRightBottom() + wxPoint{ scaledShadowOffset, 0 },
+                    boundRect.GetRightTop() + wxPoint(scaledShadowOffset, scaledShadowOffset),
+                    boundRect.GetRightTop() + wxPoint{ 0, scaledShadowOffset },
+                    boundRect.GetRightBottom()
                 };
                 dc.DrawPolygon(shadowPts.size(), shadowPts.data());
                 }
             }
 
         // position the image inside its (possibly) larger box
-        wxPoint imgTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
+        wxPoint imgTopLeftCorner{ boundRect.GetLeftTop() };
         // horizontal page alignment
         if ((GetFrameSize() == GetImageSize()) ||
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned))
@@ -1060,13 +1058,12 @@ namespace Wisteria::GraphItems
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
             imgTopLeftCorner.x += static_cast<int>(
-                std::lround(safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
+                std::lround(safe_divide<double>(boundRect.GetWidth(), 2) -
                             safe_divide<double>(GetImageSize().GetWidth() * GetScaling(), 2)));
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
-            imgTopLeftCorner.x +=
-                GetBoundingBox(dc).GetWidth() - GetImageSize().GetWidth() * GetScaling();
+            imgTopLeftCorner.x += boundRect.GetWidth() - GetImageSize().GetWidth() * GetScaling();
             }
         // vertical page alignment
         if ((GetFrameSize() == GetImageSize()) ||
@@ -1076,13 +1073,13 @@ namespace Wisteria::GraphItems
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
             imgTopLeftCorner.y += static_cast<int>(
-                std::lround(safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
+                std::lround(safe_divide<double>(boundRect.GetHeight(), 2) -
                             safe_divide<double>(GetImageSize().GetHeight() * GetScaling(), 2)));
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
             imgTopLeftCorner.y +=
-                GetBoundingBox(dc).GetHeight() - (GetImageSize().GetHeight() * GetScaling());
+                boundRect.GetHeight() - (GetImageSize().GetHeight() * GetScaling());
             }
 
         wxBitmap bmp{ img };
@@ -1099,22 +1096,23 @@ namespace Wisteria::GraphItems
 
         // draw the outline
         std::array<wxPoint, 5> pts;
-        GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), pts);
+        GraphItems::Polygon::GetRectPoints(boundRect, pts);
         if (GetPen().IsOk())
             {
-            wxPen scaledPen(GetPen());
+            wxPen scaledPen{ GetPen() };
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
-            const wxDCPenChanger pc(
-                dc, IsSelected() ? wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                         2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
-                                   scaledPen);
+            const wxDCPenChanger pc{ dc,
+                                     IsSelected() ?
+                                         wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               2 * scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+                                         scaledPen };
             dc.DrawLines(pts.size(), pts.data());
             }
         // just draw selection outline if regular pen isn't in use
         else if (IsSelected())
             {
-            const wxDCPenChanger pc(
-                dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 2, wxPENSTYLE_DOT));
+            const wxDCPenChanger pc{ dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
+                                               2, wxPENSTYLE_DOT) };
             dc.DrawLines(pts.size(), pts.data());
             }
 
@@ -1122,6 +1120,6 @@ namespace Wisteria::GraphItems
             {
             dc.DestroyClippingRegion();
             }
-        return GetBoundingBox(dc);
+        return boundRect;
         }
     } // namespace Wisteria::GraphItems
