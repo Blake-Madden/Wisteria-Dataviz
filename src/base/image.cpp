@@ -605,8 +605,8 @@ namespace Wisteria::GraphItems
                         {
                         if (!preserveTransparentPixels || row.Alpha() != wxALPHA_TRANSPARENT)
                             {
-                        row.Alpha() = opacity;
-                        }
+                            row.Alpha() = opacity;
+                            }
                         }
                     alphaRow.OffsetY(data, 1);
                     }
@@ -624,7 +624,7 @@ namespace Wisteria::GraphItems
             return wxNullImage;
             }
         wxBitmap background(fillSize, 32);
-        SetOpacity(background, wxALPHA_TRANSPARENT);
+        SetOpacity(background, wxALPHA_TRANSPARENT, false);
         wxMemoryDC memDC(background);
 
         if (direction == Orientation::Horizontal)
@@ -1013,8 +1013,6 @@ namespace Wisteria::GraphItems
             m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
 
-        SetOpacity(m_img, m_opacity, true);
-
         // Draw the shadow. This needs to be a polygon outside the image
         // in case the image is translucent.
         if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
@@ -1085,7 +1083,17 @@ namespace Wisteria::GraphItems
                 GetBoundingBox(dc).GetHeight() - (GetImageSize().GetHeight() * GetScaling());
             }
 
-        dc.DrawBitmap(wxBitmap(m_img), imgTopLeftCorner, true);
+        wxBitmap bmp{ m_img };
+        // Original image would be fully opaque (although it may may have
+        // translucent/transparent pixels). If a custom opacity is being applied,
+        // then apply that, but don't bother otherwise. This improves performance, and
+        // altering the alpha channel also causes some artifacts to appear
+        // (so avoid that).
+        if (m_opacity != wxALPHA_OPAQUE)
+            {
+            SetOpacity(bmp, m_opacity, true);
+            }
+        dc.DrawBitmap(bmp, imgTopLeftCorner, true);
 
         // draw the outline
         std::array<wxPoint, 5> pts;
