@@ -389,8 +389,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
             // new bitmap to be used by memory DC
             wxBitmap exportFile;
-            exportFile.CreateWithDIPSize(wxSize(width, height), GetDPIScaleFactor());
-            Wisteria::GraphItems::Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
+            exportFile.CreateWithDIPSize(wxSize{ width, height }, GetDPIScaleFactor());
+            GraphItems::Image::SetOpacity(exportFile, wxALPHA_OPAQUE, false);
             wxMemoryDC memDc(exportFile);
             memDc.Clear();
 #ifdef __WXMSW__

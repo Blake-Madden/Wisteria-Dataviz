@@ -344,8 +344,10 @@ namespace Wisteria::GraphItems
                                                 uint8_t opacity = 100);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
-            @param opacity The opacity to set the bitmap to.*/
-        static void SetOpacity(wxBitmap& bmp, uint8_t opacity);
+            @param opacity The opacity to set the bitmap to.
+            @param preserveTransparentPixels Set to @c true to not alter pixels that
+                are already transparent in the image.*/
+        static void SetOpacity(wxBitmap& bmp, uint8_t opacity, bool preserveTransparentPixels);
         /** @brief Sets the opacity of an image.
             @param image The image to edit.
             @param opacity The opacity to set the bitmap to.
@@ -358,12 +360,6 @@ namespace Wisteria::GraphItems
             @param colorToPreserve Color which will not have its opacity altered.
                 This is useful for preserving highlights in an image.*/
         static void SetOpacity(wxImage& image, uint8_t opacity, const wxColour& colorToPreserve);
-        /** @brief Sets the opacity of a bitmap.
-            @param bmp The bitmap to edit.
-            @param opacity The opacity to set the bitmap to.
-            @param colorToPreserve Color which will not have its opacity altered.
-                This is useful for preserving highlights in an image.*/
-        static void SetOpacity(wxBitmap& bmp, uint8_t opacity, const wxColour& colorToPreserve);
         /** @brief Set the specified color in an image to transparent.
             @details Any pixel of this color will be set to transparent in the alpha channel.
             @param image The image to edit.

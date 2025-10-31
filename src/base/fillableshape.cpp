@@ -68,7 +68,7 @@ namespace Wisteria::GraphItems
 
             // main image
             {
-            Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+            Image::SetOpacity(bmp, wxALPHA_TRANSPARENT, false);
             wxMemoryDC memDC(bmp);
             wxGCDC gdc(memDC);
             Shape::Draw(wxRect(drawRect.GetSize()), gdc);
@@ -76,7 +76,7 @@ namespace Wisteria::GraphItems
             // ghosted image (brush is translucent, the pen remains the same to show an
             // outline/skeleton of the shape)
             {
-            Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT);
+            Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT, false);
             wxMemoryDC memDC(ghostedBmp);
             wxGCDC gdc(memDC);
 

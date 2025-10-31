@@ -858,7 +858,7 @@ namespace Wisteria::Graphs
                 auto sliceBmp = bmp.GetBitmap(wxSize(bmpSize.first, bmpSize.second));
                 if (GetOuterPie().at(i).IsGhosted())
                     {
-                    GraphItems::Image::SetOpacity(sliceBmp, GetGhostOpacity());
+                    GraphItems::Image::SetOpacity(sliceBmp, GetGhostOpacity(), false);
                     }
                 assert(sliceBmp.IsOk() && L"Unable to create pie slice image!");
                 if (sliceBmp.IsOk())

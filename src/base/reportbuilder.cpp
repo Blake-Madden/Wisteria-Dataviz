@@ -5519,7 +5519,7 @@ namespace Wisteria
         if (bmpNode->GetProperty(L"opacity")->IsValueNumber())
             {
             GraphItems::Image::SetOpacity(
-                bmp, bmpNode->GetProperty(L"opacity")->AsDouble(wxALPHA_OPAQUE));
+                bmp, bmpNode->GetProperty(L"opacity")->AsDouble(wxALPHA_OPAQUE), false);
             }
 
         if (bmpNode->HasProperty(L"effect"))

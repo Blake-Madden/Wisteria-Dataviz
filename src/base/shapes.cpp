@@ -32,7 +32,7 @@ namespace Wisteria::GraphItems
             {
             m_drawingToBitmap = true;
             m_bmp = wxBitmap(m_rect.GetSize(), 32);
-            Image::SetOpacity(m_bmp, wxALPHA_TRANSPARENT);
+            Image::SetOpacity(m_bmp, wxALPHA_TRANSPARENT, false);
             m_memDC.SelectObject(m_bmp);
             m_memDC.SetDeviceOrigin(-m_rect.x, -m_rect.y);
 

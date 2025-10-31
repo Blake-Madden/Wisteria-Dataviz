@@ -81,7 +81,7 @@ namespace Wisteria::GraphItems
         {
         const wxRect BoundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
         wxBitmap bmp{ BoundingBox.GetWidth(), BoundingBox.GetHeight(), 32 };
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT, false);
 
             {
             wxMemoryDC memDc(bmp);

@@ -189,7 +189,7 @@ namespace Wisteria::GraphItems
                     {
                     for (long i = 0; i < pixelCount; ++i)
                         {
-                        if (alphaData[i] != 0)
+                        if (alphaData[i] != wxALPHA_TRANSPARENT)
                             {
                             alphaData[i] = opacity;
                             }
@@ -587,7 +587,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity)
+    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity, bool preserveTransparentPixels)
         {
         // note: don't call HasAlpha as this is disabled (for legacy reasons) on Windows
         // by default, even though its depth is 32. You have to explicitly call UseAlpha,
@@ -603,26 +603,15 @@ namespace Wisteria::GraphItems
                     auto row = alphaRow;
                     for (int x = 0; x < bmp.GetWidth(); ++x, ++row)
                         {
+                        if (!preserveTransparentPixels || row.Alpha() != wxALPHA_TRANSPARENT)
+                            {
                         row.Alpha() = opacity;
+                        }
                         }
                     alphaRow.OffsetY(data, 1);
                     }
                 }
             }
-        }
-
-    //-------------------------------------------
-    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity, const wxColour& colorToPreserve)
-        {
-        if (!bmp.IsOk())
-            {
-            return;
-            }
-        wxImage bkImage = bmp.ConvertToImage();
-        SetOpacity(bkImage, opacity, colorToPreserve);
-
-        bmp = wxBitmap(bkImage);
-        assert(bmp.IsOk());
         }
 
     //-------------------------------------------
