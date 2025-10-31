@@ -5507,6 +5507,16 @@ namespace Wisteria
                 }
             }
 
+        wxSize sz{ 32, 32 };
+        const auto sizeNode = bmpNode->GetProperty(L"size");
+        if (sizeNode->IsOk())
+            {
+            sz.x = sizeNode->GetProperty(L"width")->AsDouble(32);
+            sz.y = sizeNode->GetProperty(L"height")->AsDouble(32);
+
+            wxBitmap::Rescale(bmp, GraphItems::Image::ToBestSize(bmp.GetSize(), sz));
+            }
+
         if (bmpNode->HasProperty(L"color-filter"))
             {
             auto color = ConvertColor(bmpNode->GetProperty(L"color-filter"));
