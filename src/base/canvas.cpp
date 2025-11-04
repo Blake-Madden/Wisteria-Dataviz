@@ -1493,8 +1493,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // draw the movable objects (these sit on top of everything else)
         for (auto& objectPtr : GetFreeFloatingObjects())
             {
-            objectPtr->SetScaling(GetScaling());
-            objectPtr->Draw(dc);
+            if (objectPtr != nullptr)
+                {
+                objectPtr->SetScaling(GetScaling());
+                objectPtr->Draw(dc);
+                }
             }
 
         // show a label on top of the selected items
@@ -1502,7 +1505,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             for (const auto& objectPtr : fixedObjectsRow)
                 {
-                if (objectPtr)
+                if (objectPtr != nullptr)
                     {
                     objectPtr->DrawSelectionLabel(dc, GetScaling(), wxRect{});
                     }
@@ -1583,9 +1586,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             img.SetDPIScaleFactor(dc.FromDIP(1));
             img.SetBestSize(wxSize(ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetWidth(), dc),
                                    ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetHeight(), dc)));
-            // make logo image mildly translucent
-            // (twice as opaque as the system translucency).
-            img.SetOpacity(Settings::GetTranslucencyValue() * 2);
+            // Make logo image mildly translucent.
+            // Clamp translucency to valid 0–255 range (logo is twice as opaque as system
+            // translucency)
+            img.SetOpacity(static_cast<uint8_t>(
+                std::min<int>(Settings::GetTranslucencyValue() * 2, wxALPHA_OPAQUE)));
+
             img.SetAnchoring(Anchoring::BottomRightCorner);
             img.SetAnchorPoint(
                 wxPoint(GetCanvasRect(dc).GetWidth(), GetCanvasRect(dc).GetHeight()));
@@ -2018,7 +2024,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         for (auto shapePos = GetFreeFloatingObjects().rbegin();
              shapePos != GetFreeFloatingObjects().rend(); ++shapePos)
             {
-            if ((*shapePos)->HitTest(pt, dc))
+            if (*shapePos != nullptr && (*shapePos)->HitTest(pt, dc))
                 {
                 return shapePos;
                 }
