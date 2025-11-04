@@ -131,7 +131,7 @@ namespace Wisteria
                     {
                     // create the canvas used for the page
                     auto canvas = new Canvas(parent);
-                    canvas->SetLabel(page->GetProperty(_DT(L"name"))->AsString());
+                    canvas->SetLabel(ExpandConstants(page->GetProperty(_DT(L"name"))->AsString()));
 
                     // page numbering
                     if (page->HasProperty(L"page-numbering"))
