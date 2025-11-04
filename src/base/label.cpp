@@ -419,7 +419,12 @@ namespace Wisteria::GraphItems
             const auto firstLineEnd = GetText().find_first_of(L"\r\n", 0, 2);
             const auto secondLineStart = GetText().find_first_not_of(
                 L"\r\n", ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
-            if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos)
+            if (GetHeaderInfo().IsEnabled() && firstLineEnd == std::wstring::npos)
+                {
+                wxLogWarning(L"Label has header info enabled but no newline separator.");
+                }
+
+            if (GetHeaderInfo().IsEnabled() && secondLineStart != std::wstring::npos)
                 {
                 dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &width, &height);
                 }
@@ -482,6 +487,12 @@ namespace Wisteria::GraphItems
             const auto firstLineEnd = GetText().find_first_of(L"\r\n", 0, 2);
             const auto secondLineStart = GetText().find_first_not_of(
                 L"\r\n", ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
+            if (GetHeaderInfo().IsEnabled() && firstLineEnd == std::wstring::npos)
+                {
+                wxLogWarning(L"Label has header info enabled but no newline separator.");
+
+                }
+
             if (GetHeaderInfo().IsEnabled() && secondLineStart != std::wstring::npos)
                 {
                 dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &height, &width);
@@ -1502,7 +1513,14 @@ namespace Wisteria::GraphItems
                 }
             else
                 {
-                currentLine += L" " + nextToken;
+                if (currentLine.empty())
+                    {
+                    currentLine = nextToken;
+                    }
+                else
+                    {
+                    currentLine += L" " + nextToken;
+                    }
                 }
             }
         // add any trailing line
