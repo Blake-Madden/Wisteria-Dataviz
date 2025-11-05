@@ -2305,7 +2305,7 @@ namespace Wisteria::GraphItems
                             {
                             wxCoord xCoord =
                                 GetTopPoint().x -
-                                (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())) -
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
                                 CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
