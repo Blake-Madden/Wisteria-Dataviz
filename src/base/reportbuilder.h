@@ -488,6 +488,10 @@ namespace Wisteria
                          const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]
         static wxString CalcNow(const wxString& formula);
+
+        [[nodiscard]]
+        wxString CalcAdd(const wxString& formula) const;
+
         [[nodiscard]]
         wxString FormatPageNumber(const wxString& formula) const;
 
@@ -522,7 +526,7 @@ namespace Wisteria
         [[nodiscard]]
         static wxString NumberOrStringRegEx()
             {
-            return L"(`[^`]+`|[[:digit:]]+)";
+            return L"(`[^`]+`|[[:digit:] ]+)";
             }
 
         [[nodiscard]]
