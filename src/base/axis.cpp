@@ -3021,7 +3021,7 @@ namespace Wisteria::GraphItems
                     {
                     wxLogWarning(
                         L"Axis::AddBrackets(FiscalQuarterly): invalid fiscal quarter lengths "
-                        L"(Q1=%d, Q2=%d, Q3=%d, Q4=%d); skipping FY brackets.",
+                        "(Q1=%d, Q2=%d, Q3=%d, Q4=%d); skipping FY brackets.",
                         static_cast<int>(q1Length), static_cast<int>(q2Length),
                         static_cast<int>(q3Length), static_cast<int>(q4Length));
                     return;

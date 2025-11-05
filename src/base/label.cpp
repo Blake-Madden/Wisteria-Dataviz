@@ -490,7 +490,6 @@ namespace Wisteria::GraphItems
             if (GetHeaderInfo().IsEnabled() && firstLineEnd == std::wstring::npos)
                 {
                 wxLogWarning(L"Label has header info enabled but no newline separator.");
-
                 }
 
             if (GetHeaderInfo().IsEnabled() && secondLineStart != std::wstring::npos)
