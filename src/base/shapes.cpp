@@ -867,8 +867,8 @@ namespace Wisteria::GraphItems
             constexpr int segsPerSpan = 18;
             for (int j = 0; j < segsPerSpan; ++j)
                 {
-                const double u = safe_divide<double>(j, segsPerSpan);
-                samples.push_back(catmullPoint(i, u));
+                const double yVal = safe_divide<double>(j, segsPerSpan);
+                samples.push_back(catmullPoint(i, yVal));
                 }
             }
         samples.push_back(points[points.size() - 2]);
@@ -888,7 +888,7 @@ namespace Wisteria::GraphItems
                 {
                 const double t = safe_divide<double>(i, (samples.size() - 1));
                 const double w = lerp(wNear, wFar, t);
-                wxGraphicsPen pen =
+                const wxGraphicsPen pen =
                     gc->CreatePen(wxGraphicsPenInfo{ col, w }.Cap(wxCAP_ROUND).Join(wxJOIN_ROUND));
                 gc->SetPen(pen);
                 wxGraphicsPath seg = gc->CreatePath();
