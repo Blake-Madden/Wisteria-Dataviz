@@ -577,10 +577,10 @@ namespace Wisteria::GraphItems
                 {
                 const auto& lTip = leftPts[steps];
                 const auto& rTip = rightPts[steps];
-                const double midX = (lTip.m_x + rTip.m_x) / 2.0;
-                const double midY = (lTip.m_y + rTip.m_y) / 2.0 - stemHeight * 0.05;
+                const double middleX = (lTip.m_x + rTip.m_x) / 2.0;
+                const double middleY = (lTip.m_y + rTip.m_y) / 2.0 - stemHeight * 0.05;
 
-                stemPath.AddCurveToPoint(midX, midY, midX, midY, rTip.m_x, rTip.m_y);
+                stemPath.AddCurveToPoint(middleX, middleY, middleX, middleY, rTip.m_x, rTip.m_y);
                 }
 
             // right edge: go back down from tip to base
