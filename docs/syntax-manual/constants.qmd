@@ -31,6 +31,8 @@ These functions can be used in a dataset's formulas section, the `"constants"` s
 
 - ``ReportName()``: Returns the report's name.
 - ``PageNumber()``: Returns the current page number.
+- ``Add(`value1`, `value2`)``: Returns the sum of two numbers. \
+  *value1* can be prefixed with text that will be preserved. (*value2* will be added to the number at the end of *value1*).
 - ``Now(`value`)``: Returns the current date and time (or date component).
     - *value*: the part of today's date to return (if omitted, then the full date is returned). \
       The following options are available:

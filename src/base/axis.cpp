@@ -2305,8 +2305,8 @@ namespace Wisteria::GraphItems
                             {
                             wxCoord xCoord =
                                 GetTopPoint().x -
-                                (ScaleToScreenAndCanvas(
-                                    GetSpacingBetweenLabelsAndLine()))-CalcTickMarkOuterWidth();
+                                ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()) -
+                                CalcTickMarkOuterWidth();
                             if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                                 {
                                 axisLabel.SetAnchoring(Anchoring::BottomLeftCorner);
@@ -3017,6 +3017,16 @@ namespace Wisteria::GraphItems
                 const auto q2Length{ (m_fyQ3 - m_fyQ2).GetDays() };
                 const auto q3Length{ (m_fyQ4 - m_fyQ3).GetDays() };
                 const auto q4Length{ (wxDateTime(m_fyQ1).Add(wxDateSpan{ 1 }) - m_fyQ4).GetDays() };
+                if (q1Length <= 0 || q2Length <= 0 || q3Length <= 0 || q4Length <= 0)
+                    {
+                    wxLogWarning(
+                        L"Axis::AddBrackets(FiscalQuarterly): invalid fiscal quarter lengths "
+                        "(Q1=%d, Q2=%d, Q3=%d, Q4=%d); skipping FY brackets.",
+                        static_cast<int>(q1Length), static_cast<int>(q2Length),
+                        static_cast<int>(q3Length), static_cast<int>(q4Length));
+                    return;
+                    }
+
                 int64_t currentStart{ 0 };
                 while (currentStart <= rangeEnd)
                     {
@@ -3046,8 +3056,9 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     void Axis::SetDateRange(const wxDateTime& startDate, const wxDateTime& endDate)
         {
-        assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
-        assert(startDate <= endDate && L"Start date should be before end date!");
+        wxASSERT_MSG(startDate.IsValid() && endDate.IsValid(),
+                     L"Invalid date used for axis range!");
+        wxASSERT_MSG(startDate <= endDate, L"Start date should be before end date!");
         if (!startDate.IsValid() || !endDate.IsValid())
             {
             return;
@@ -3065,11 +3076,15 @@ namespace Wisteria::GraphItems
     void Axis::SetDateRange(const wxDateTime& startDate, const wxDateTime& endDate,
                             const DateInterval displayInterval, const FiscalYear fyType)
         {
-        assert(startDate.IsValid() && endDate.IsValid() && L"Invalid date used for axis range!");
-        assert(startDate <= endDate && L"Start date should be before end date!");
+        wxASSERT_MSG(startDate.IsValid() && endDate.IsValid(),
+                     L"Invalid date used for axis range!");
+        wxASSERT_MSG(startDate <= endDate, L"Start date should be before end date!");
         // can't do much with this range if invalid, so have to ignore it
-        if (!startDate.IsValid() || !endDate.IsValid())
+        if (!startDate.IsValid() || !endDate.IsValid() || startDate > endDate)
             {
+            wxLogWarning(L"Axis::SetDateRange(): invalid date range (%s – %s); ignoring.",
+                         startDate.IsValid() ? startDate.FormatISODate() : wxString{ L"(invalid)" },
+                         endDate.IsValid() ? endDate.FormatISODate() : wxString{ L"(invalid)" });
             return;
             }
 
@@ -4303,7 +4318,7 @@ namespace Wisteria::GraphItems
             {
             for (const auto& label : labels)
                 {
-                if (bracket.GetLabel().GetText().CmpNoCase(label) != 0)
+                if (bracket.GetLabel().GetText().CmpNoCase(label) == 0)
                     {
                     bracket.SetGhostOpacity(GetGhostOpacity());
                     bracket.Ghost(false);

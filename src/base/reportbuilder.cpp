@@ -131,7 +131,7 @@ namespace Wisteria
                     {
                     // create the canvas used for the page
                     auto canvas = new Canvas(parent);
-                    canvas->SetLabel(page->GetProperty(_DT(L"name"))->AsString());
+                    canvas->SetLabel(ExpandConstants(page->GetProperty(_DT(L"name"))->AsString()));
 
                     // page numbering
                     if (page->HasProperty(L"page-numbering"))
@@ -1136,7 +1136,7 @@ namespace Wisteria
         {
         const wxRegEx re(
             FunctionStartRegEx() +
-            LR"((min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname))" +
+            LR"((min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname|add))" +
             OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
@@ -1182,6 +1182,10 @@ namespace Wisteria
             else if (funcName.CmpNoCase(L"now") == 0)
                 {
                 return CalcNow(formula);
+                }
+            else if (funcName.CmpNoCase(L"add") == 0)
+                {
+                return CalcAdd(formula);
                 }
             else if (funcName.CmpNoCase(L"pagenumber") == 0)
                 {
@@ -1625,6 +1629,48 @@ namespace Wisteria
                    wxNumberFormatter::ToString(m_pageNumber, 0,
                                                wxNumberFormatter::Style::Style_WithThousandsSep) :
                    wxString{};
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcAdd(const wxString& formula) const
+        {
+        const wxRegEx re(FunctionStartRegEx() + L"(add)" + OpeningParenthesisRegEx() +
+                         NumberOrStringRegEx() + ParamSeparatorRegEx() + NumberOrStringRegEx() +
+                         ClosingParenthesisRegEx());
+        if (re.Matches(formula))
+            {
+            if (re.GetMatchCount() >= 3)
+                {
+                wxString firstValue = re.GetMatch(formula, 2);
+                if (firstValue.starts_with(L"`") && firstValue.ends_with(L"`"))
+                    {
+                    firstValue = ExpandConstants(firstValue.substr(1, firstValue.length() - 2));
+                    }
+                wxString secondValue = re.GetMatch(formula, 3);
+                if (secondValue.starts_with(L"`") && secondValue.ends_with(L"`"))
+                    {
+                    secondValue = ExpandConstants(secondValue.substr(1, secondValue.length() - 2));
+                    }
+                double secondDouble{ 0 };
+                if (secondValue.ToCDouble(&secondDouble))
+                    {
+                    const auto firstNumber = firstValue.find_first_of(L"0123456789");
+                    if (firstNumber == wxString::npos)
+                        {
+                        return {};
+                        }
+                    const wxString prefix = firstValue.substr(0, firstNumber);
+                    double firstDouble{ 0 };
+                    if (firstValue.substr(firstNumber).ToCDouble(&firstDouble))
+                        {
+                        return prefix + wxNumberFormatter::ToString(
+                                            (firstDouble + secondDouble), 2,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                        }
+                    }
+                }
+            }
+        return {};
         }
 
     //---------------------------------------------------
