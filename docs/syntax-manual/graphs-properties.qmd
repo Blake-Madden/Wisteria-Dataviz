@@ -160,6 +160,7 @@ Properties common to all graphs:
   - `"crescent-bottom"`
   - `"crescent-right"`
   - `"curving-road"`
+  - `"pumpkin"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

@@ -440,6 +440,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawCurvingRoad(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a pumpkin.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawPumpkin(wxRect rect, wxDC& dc) const;
         /// @}
       private:
         enum class Temperature

@@ -244,7 +244,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop },
             { Icons::IconShape::CrescentBottom, &ShapeRenderer::DrawCrescentBottom },
             { Icons::IconShape::CrescentRight, &ShapeRenderer::DrawCrescentRight },
-            { Icons::IconShape::CurvingRoad, &ShapeRenderer::DrawCurvingRoad }
+            { Icons::IconShape::CurvingRoad, &ShapeRenderer::DrawCurvingRoad },
+            { Icons::IconShape::Pumpkin, &ShapeRenderer::DrawPumpkin }
         };
 
         // connect the rendering function to the shape
@@ -372,6 +373,398 @@ namespace Wisteria::GraphItems
             const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y, sunRect.GetWidth(),
                             sunRect.GetHeight());
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawPumpkin(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger pc{ dc, *wxTRANSPARENT_PEN };
+        const wxDCBrushChanger bc{ dc, *wxTRANSPARENT_BRUSH };
+
+        wxRect bodyRect{ rect };
+        if (bodyRect.GetHeight() > bodyRect.GetWidth() * 1.25)
+            {
+            const int targetHeight = static_cast<int>(bodyRect.GetWidth() * 1.25);
+            const int dy = (bodyRect.GetHeight() - targetHeight) / 2;
+            bodyRect.SetHeight(targetHeight);
+            bodyRect.Offset(0, dy);
+            }
+
+        bodyRect.Deflate(static_cast<int>(bodyRect.GetWidth() * 0.06),
+                         static_cast<int>(bodyRect.GetHeight() * 0.08));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for pumpkin!");
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        const auto outlinePenWidth = std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half));
+
+        const double leftX = bodyRect.GetLeft();
+        const double rightX = bodyRect.GetRight();
+        const double topY = bodyRect.GetTop() + bodyRect.GetHeight() * 0.15;
+        const double bottomY = bodyRect.GetTop() + bodyRect.GetHeight() * 0.95;
+        const double midY = (topY + bottomY) / 2.0;
+        const double halfHeightBase = (bottomY - topY) / 2.0;
+        const double bottomBulge = (bottomY - topY) * 0.08;
+        const double cx = (leftX + rightX) / 2.0;
+
+        // gradient: lighter top, very vibrant bottom
+        const wxColour topOrange{ 255, 205, 80 };
+        const wxColour bottomOrange{ 255, 90, 0 };
+        const wxColour lobeEdge{ 220, 110, 0, 200 };
+
+        wxGraphicsPen lobePen = gc->CreatePen(wxPen(lobeEdge, outlinePenWidth));
+
+        struct LobeInfo
+            {
+            double m_centerPercent{ 0.0 };
+            double m_foldPercent{ 0.0 };
+            double m_widthFactor{ 0.0 };
+            double m_heightFactor{ 0.0 };
+            };
+
+        constexpr LobeInfo lobes[]{
+            // left side
+            { 0.16, 0.26, 0.80, 0.85 }, // far left: top/bottom under mid-left
+            { 0.28, 0.36, 0.95, 0.95 }, // mid-left
+            { 0.40, 0.48, 1.05, 1.00 }, // inner-left
+                                        // center
+            { 0.50, 0.50, 1.15, 1.05 }, // center
+                                        // right side (mirrored)
+            { 0.60, 0.52, 1.05, 1.00 }, // inner-right
+            { 0.72, 0.64, 0.95, 0.95 }, // mid-right
+            { 0.84, 0.74, 0.80, 0.85 }  // far right
+        };
+
+        // draw order so right-side lobes are underneath the ones to their left
+        constexpr int drawOrder[]{ 6, 5, 4, 0, 1, 2, 3 };
+
+            //--------------------------------------------------
+            // back caps at the very top (peek of back lobes)
+            //--------------------------------------------------
+            {
+            // slightly lighter than the main body, but fully opaque
+            wxGraphicsBrush backBrush = gc->CreateBrush(wxBrush(wxColour(255, 235, 140)));
+
+            // lighter outline than front lobes
+            const wxGraphicsPen backPen = gc->CreatePen(wxPen(wxColour(235, 170, 90), // softer edge
+                                                              outlinePenWidth));
+
+            gc->SetBrush(backBrush);
+            gc->SetPen(backPen);
+
+            for (const auto& lobe : lobes)
+                {
+                // pull back caps inward toward center so they don't stick out so far
+                const double centerXRaw = leftX + bodyRect.GetWidth() * lobe.m_centerPercent;
+                const double capCenterX = cx + (centerXRaw - cx) * 0.65; // 0.65 = more inside
+
+                const double halfWidth =
+                    (bodyRect.GetWidth() / 7.0) * lobe.m_widthFactor * 0.4;            // narrower
+                const double halfHeight = halfHeightBase * lobe.m_heightFactor * 0.18; // shorter
+
+                // lower the caps so they sit into the pumpkin, not above it
+                const double capMidY = topY + (bottomY - topY) * 0.2;
+
+                wxGraphicsPath cap = gc->CreatePath();
+                cap.MoveToPoint(capCenterX - halfWidth, capMidY);
+                cap.AddCurveToPoint(wxPoint(capCenterX - halfWidth * 0.4, capMidY - halfHeight),
+                                    wxPoint(capCenterX + halfWidth * 0.4, capMidY - halfHeight),
+                                    wxPoint(capCenterX + halfWidth, capMidY));
+                cap.AddCurveToPoint(
+                    wxPoint(capCenterX + halfWidth * 0.4, capMidY + halfHeight * 0.5),
+                    wxPoint(capCenterX - halfWidth * 0.4, capMidY + halfHeight * 0.5),
+                    wxPoint(capCenterX - halfWidth, capMidY));
+                cap.CloseSubpath();
+
+                gc->FillPath(cap);
+                gc->StrokePath(cap);
+                }
+            }
+
+            //--------------------------------------------------
+            // stem – outline only, parametric:
+            // wide base -> 15% neck at 50% width ->
+            // smooth right-leaning taper to 1/4 width
+            //--------------------------------------------------
+            {
+            const wxColour stemOutlineCol{ 90, 150, 90 };
+            const wxPen stemPen{ stemOutlineCol, outlinePenWidth };
+            gc->SetPen(stemPen);
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+
+            // --- geometry parameters ---
+            const double stemBaseWidth = bodyRect.GetWidth() * 0.22; // wide base
+            const double stemHeight = bodyRect.GetHeight() * 0.23;
+
+            const double baseY = topY + (bottomY - topY) * 0.20; // nestled into lobes
+            const double baseCenterX = cx;                       // centered at the pumpkin
+
+            // how far the centerline leans right at the tip
+            const double maxCenterOffset = bodyRect.GetWidth() * 0.16;
+
+            // widthFactor(t): how the width changes from base (t=0) to tip (t=1)
+            // Adjust these constants to reshape the stem
+            constexpr double neckT = 0.15; // where the "neck" happens (0..1 of height)
+            constexpr double baseWidth = math_constants::whole; // width at base
+            constexpr double neckWidth = math_constants::half;  // width at the neck
+            constexpr double tipWidth = 0.40;                   // width at the top
+
+            const auto widthFactor = [&](double t) noexcept
+            {
+                if (t <= neckT)
+                    {
+                    // smoothly transition from 1.0 -> neckWidth
+                    double u = t / neckT;
+                    return baseWidth + (neckWidth - baseWidth) * u;
+                    }
+                else
+                    {
+                    // smoothly transition from neckWidth -> tipWidth
+                    double u = (t - neckT) / (1.0 - neckT);
+                    return neckWidth + (tipWidth - neckWidth) * u;
+                    }
+            };
+
+            // centerline: mostly vertical then leaning right.
+            // t=0: base, t=1: top
+            const auto centerX = [&](const double t) noexcept
+            {
+                // quadratic in t so the bend gets stronger toward the top
+                return baseCenterX + maxCenterOffset * (t * t);
+            };
+            const auto centerY = [&](const double t) noexcept { return baseY - stemHeight * t; };
+
+            // sample points along left and right edges
+            constexpr int steps = 24;
+            std::array<wxPoint2DDouble, steps + 1> leftPts;
+            std::array<wxPoint2DDouble, steps + 1> rightPts;
+
+            for (int i = 0; i <= steps; ++i)
+                {
+                const double t = static_cast<double>(i) / steps;
+
+                const double wFactor = widthFactor(t);
+                const double w = stemBaseWidth * wFactor;
+                const double halfW = w / 2.0;
+
+                const double cxStem = centerX(t);
+                const double cyStem = centerY(t);
+
+                leftPts[i] = wxPoint2DDouble(cxStem - halfW, cyStem);
+                rightPts[i] = wxPoint2DDouble(cxStem + halfW, cyStem);
+                }
+
+            wxGraphicsPath stemPath = gc->CreatePath();
+
+            // start at base left
+            stemPath.MoveToPoint(leftPts[0].m_x, leftPts[0].m_y);
+
+            // left edge: go up from base to tip
+            for (int i = 1; i <= steps; ++i)
+                {
+                stemPath.AddLineToPoint(leftPts[i].m_x, leftPts[i].m_y);
+                }
+
+                // top edge: slight convex join from left tip to right tip
+                {
+                const auto& lTip = leftPts[steps];
+                const auto& rTip = rightPts[steps];
+                const double midX = (lTip.m_x + rTip.m_x) / 2.0;
+                const double midY = (lTip.m_y + rTip.m_y) / 2.0 - stemHeight * 0.05;
+
+                stemPath.AddCurveToPoint(midX, midY, midX, midY, rTip.m_x, rTip.m_y);
+                }
+
+            // right edge: go back down from tip to base
+            for (int i = steps - 1; i >= 0; --i)
+                {
+                stemPath.AddLineToPoint(rightPts[i].m_x, rightPts[i].m_y);
+                }
+
+                // base: gentle bulge across the bottom back to left
+                {
+                const double bulgeY = baseY + stemHeight * 0.03;
+                stemPath.AddCurveToPoint(baseCenterX + stemBaseWidth * 0.10, bulgeY,
+                                         baseCenterX - stemBaseWidth * 0.10, bulgeY, leftPts[0].m_x,
+                                         leftPts[0].m_y);
+                }
+
+            stemPath.CloseSubpath();
+
+            //--------------------------------------------------
+            // Fill the stem with base color
+            //--------------------------------------------------
+            const wxColour stemBaseCol{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#526C45") };
+            const wxColour stemShadowCol{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#1C3D1C") };
+
+            gc->SetBrush(wxBrush(stemBaseCol));
+            gc->FillPath(stemPath);
+
+                //--------------------------------------------------
+                // Right-side shadow down the full length
+                //--------------------------------------------------
+                {
+                // how far in from the right edge the shadow fades (0..1 from right→left)
+                constexpr double innerLerp = math_constants::half; // 0.5 = halfway toward center
+
+                wxGraphicsPath shadowPath = gc->CreatePath();
+
+                // start at base outer-right
+                shadowPath.MoveToPoint(rightPts[0].m_x, rightPts[0].m_y);
+
+                // go up along the outer-right edge
+                for (int i = 1; i <= steps; ++i)
+                    {
+                    shadowPath.AddLineToPoint(rightPts[i].m_x, rightPts[i].m_y);
+                    }
+
+                // track gradient bounds while we build the inner edge
+                double outerMaxX = rightPts[0].m_x;
+                double innerMinX = rightPts[0].m_x;
+
+                // come back down along an inner edge (toward the center)
+                for (int i = steps; i >= 0; --i)
+                    {
+                    const double innerX =
+                        rightPts[i].m_x + (leftPts[i].m_x - rightPts[i].m_x) * innerLerp;
+                    const double innerY =
+                        rightPts[i].m_y + (leftPts[i].m_y - rightPts[i].m_y) * innerLerp;
+
+                    shadowPath.AddLineToPoint(innerX, innerY);
+
+                    outerMaxX = std::max(outerMaxX, rightPts[i].m_x);
+                    innerMinX = std::min(innerMinX, innerX);
+                    }
+
+                shadowPath.CloseSubpath();
+
+                // gradient: outer edge (right) → inner edge (toward center)
+                wxDouble bx, by, bw, bh;
+                shadowPath.GetBox(&bx, &by, &bw, &bh);
+
+                wxGraphicsGradientStops stops;
+                stops.Add(stemShadowCol, 0.0f); // outer edge = dark
+                stops.Add(
+                    wxColour(stemShadowCol.Red(), stemShadowCol.Green(), stemShadowCol.Blue(), 0),
+                    1.0f); // inner edge = transparent
+
+                // use our computed outer/inner x so gradient spans entire strip width
+                const wxGraphicsBrush shadowBrush =
+                    gc->CreateLinearGradientBrush(outerMaxX, by, // start at outer-right
+                                                  innerMinX, by, // end toward center
+                                                  stops);
+
+                gc->SetBrush(shadowBrush);
+                gc->SetPen(*wxTRANSPARENT_PEN);
+                gc->FillPath(shadowPath);
+                }
+
+            //--------------------------------------------------
+            // re-stroke stem outline with base outline color
+            //--------------------------------------------------
+            const wxPen stemOutlinePen{ stemBaseCol.ChangeLightness(80), outlinePenWidth };
+            gc->SetPen(stemOutlinePen);
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            gc->StrokePath(stemPath);
+            }
+
+        //--------------------------------------------------
+        // main lobes with top→bottom orange gradient
+        // (front lobes sink further down now)
+        //--------------------------------------------------
+        gc->SetPen(lobePen);
+
+        for (int idx : drawOrder)
+            {
+            const auto& lobe = lobes[idx];
+
+            const double centerX = leftX + bodyRect.GetWidth() * lobe.m_centerPercent;
+            const double foldX = leftX + bodyRect.GetWidth() * lobe.m_foldPercent;
+
+            const double halfWidth = (bodyRect.GetWidth() / 7.0) * lobe.m_widthFactor;
+            const double halfHeight = halfHeightBase * lobe.m_heightFactor;
+
+            // 1 at center, ~0 at outer lobes
+            const double centerOffset = 1.0 - std::abs(lobe.m_centerPercent - 0.50) * 2.0;
+
+            // sink tops more, especially for central lobes
+            const double sinkAmount = halfHeight * (0.20 + 0.25 * centerOffset);
+
+            // raise the bottoms of central lobes a bit to flatten the base
+            const double flattenAmount = halfHeight * 0.08 * centerOffset;
+
+            const double topYLocal = midY - halfHeight + sinkAmount;
+            const double bottomYLocal = midY + halfHeight - flattenAmount;
+
+            const double leftMidX = centerX - halfWidth;
+            const double rightMidX = centerX + halfWidth;
+
+            wxGraphicsPath path = gc->CreatePath();
+
+            // start at top (folded toward center)
+            path.MoveToPoint(foldX, topYLocal);
+
+            // top -> right side (curved, bowing out)
+            path.AddCurveToPoint(
+                wxPoint(foldX + (rightMidX - foldX) * 0.6, topYLocal - halfHeight * 0.22),
+                wxPoint(rightMidX + halfWidth * 0.20, midY - halfHeight * 0.12),
+                wxPoint(rightMidX, midY));
+
+            // right side -> bottom (curved)
+            path.AddCurveToPoint(
+                wxPoint(rightMidX + halfWidth * 0.18, midY + halfHeight * 0.40),
+                wxPoint(foldX + (rightMidX - foldX) * 0.7, bottomYLocal + bottomBulge * 0.5),
+                wxPoint(foldX, bottomYLocal));
+
+            // bottom -> left side (curved back under neighbor)
+            path.AddCurveToPoint(
+                wxPoint(foldX - (foldX - leftMidX) * 0.7, bottomYLocal + bottomBulge * 0.5),
+                wxPoint(leftMidX - halfWidth * 0.18, midY + halfHeight * 0.40),
+                wxPoint(leftMidX, midY));
+
+            // left side -> top (curved)
+            path.AddCurveToPoint(
+                wxPoint(leftMidX - halfWidth * 0.20, midY - halfHeight * 0.12),
+                wxPoint(foldX - (foldX - leftMidX) * 0.6, topYLocal - halfHeight * 0.22),
+                wxPoint(foldX, topYLocal));
+
+            path.CloseSubpath();
+
+            wxGraphicsBrush brush = gc->CreateLinearGradientBrush(
+                centerX, topYLocal, centerX, bottomYLocal, topOrange, bottomOrange);
+            gc->SetBrush(brush);
+
+            gc->FillPath(path);
+            gc->StrokePath(path);
+            }
+
+            //--------------------------------------------------
+            // center crease
+            //--------------------------------------------------
+            {
+            const double centerXLine = leftX + bodyRect.GetWidth() * 0.50;
+
+            const double creaseTopY =
+                topY + (bottomY - topY) * 0.2; // line starts where front lobes sink to
+            const double creaseBottomY = bottomY - (bottomY - topY) * 0.05;
+
+            wxGraphicsPath crease = gc->CreatePath();
+
+            crease.MoveToPoint(centerXLine, creaseTopY);
+            crease.AddCurveToPoint(
+                wxPoint(centerXLine + bodyRect.GetWidth() * 0.02, midY - halfHeightBase * 0.10),
+                wxPoint(centerXLine - bodyRect.GetWidth() * 0.02, midY + halfHeightBase * 0.20),
+                wxPoint(centerXLine, creaseBottomY));
+
+            gc->SetBrush(wxNullBrush);
+            gc->SetPen(wxPen{ wxColour{ 220, 110, 0, 200 }, outlinePenWidth });
+            gc->StrokePath(crease);
             }
         }
 
