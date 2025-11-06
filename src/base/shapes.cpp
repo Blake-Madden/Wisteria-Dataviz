@@ -414,11 +414,11 @@ namespace Wisteria::GraphItems
         const double cx = (leftX + rightX) / 2.0;
 
         // gradient: lighter top, very vibrant bottom
-        const wxColour topOrange{ 255, 205, 80 };
-        const wxColour bottomOrange{ 255, 90, 0 };
-        const wxColour lobeEdge{ 220, 110, 0, 200 };
+        const wxColour topOrange{ TintIfUsingOpacity(wxColour{ 255, 205, 80 }) };
+        const wxColour bottomOrange{ TintIfUsingOpacity(wxColour{ 255, 90, 0 }) };
+        const wxColour lobeEdge{ TintIfUsingOpacity(wxColour{ 220, 110, 0, 200 }) };
 
-        wxGraphicsPen lobePen = gc->CreatePen(wxPen(lobeEdge, outlinePenWidth));
+        wxGraphicsPen lobePen = gc->CreatePen(wxPen{ lobeEdge, outlinePenWidth });
 
         struct LobeInfo
             {
@@ -449,11 +449,13 @@ namespace Wisteria::GraphItems
             //--------------------------------------------------
             {
             // slightly lighter than the main body, but fully opaque
-            wxGraphicsBrush backBrush = gc->CreateBrush(wxBrush(wxColour(255, 235, 140)));
+            wxGraphicsBrush backBrush =
+                gc->CreateBrush(wxBrush{ TintIfUsingOpacity(wxColour{ 255, 235, 140 }) });
 
             // lighter outline than front lobes
-            const wxGraphicsPen backPen = gc->CreatePen(wxPen(wxColour(235, 170, 90), // softer edge
-                                                              outlinePenWidth));
+            const wxGraphicsPen backPen =
+                gc->CreatePen(wxPen{ TintIfUsingOpacity(wxColour{ 235, 170, 90 }), // softer edge
+                                     outlinePenWidth });
 
             gc->SetBrush(backBrush);
             gc->SetPen(backPen);
@@ -493,7 +495,7 @@ namespace Wisteria::GraphItems
             // smooth right-leaning taper to 1/4 width
             //--------------------------------------------------
             {
-            const wxColour stemOutlineCol{ 90, 150, 90 };
+            const wxColour stemOutlineCol{ TintIfUsingOpacity(wxColour{ 90, 150, 90 }) };
             const wxPen stemPen{ stemOutlineCol, outlinePenWidth };
             gc->SetPen(stemPen);
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
@@ -556,8 +558,8 @@ namespace Wisteria::GraphItems
                 const double cxStem = centerX(t);
                 const double cyStem = centerY(t);
 
-                leftPts[i] = wxPoint2DDouble(cxStem - halfW, cyStem);
-                rightPts[i] = wxPoint2DDouble(cxStem + halfW, cyStem);
+                leftPts[i] = wxPoint2DDouble{ cxStem - halfW, cyStem };
+                rightPts[i] = wxPoint2DDouble{ cxStem + halfW, cyStem };
                 }
 
             wxGraphicsPath stemPath = gc->CreatePath();
@@ -600,8 +602,10 @@ namespace Wisteria::GraphItems
             //--------------------------------------------------
             // Fill the stem with base color
             //--------------------------------------------------
-            const wxColour stemBaseCol{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#526C45") };
-            const wxColour stemShadowCol{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#1C3D1C") };
+            const wxColour stemBaseCol{ TintIfUsingOpacity(
+                wxColour{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#526C45") }) };
+            const wxColour stemShadowCol{ TintIfUsingOpacity(
+                wxColour{ Colors::ColorBrewer::CSS_HEX_TO_LONG(L"#1C3D1C") }) };
 
             gc->SetBrush(wxBrush(stemBaseCol));
             gc->FillPath(stemPath);
@@ -650,9 +654,9 @@ namespace Wisteria::GraphItems
 
                 wxGraphicsGradientStops stops;
                 stops.Add(stemShadowCol, 0.0f); // outer edge = dark
-                stops.Add(
-                    wxColour(stemShadowCol.Red(), stemShadowCol.Green(), stemShadowCol.Blue(), 0),
-                    1.0f); // inner edge = transparent
+                stops.Add(TintIfUsingOpacity(wxColour{ stemShadowCol.Red(), stemShadowCol.Green(),
+                                                       stemShadowCol.Blue() }),
+                          1.0f);
 
                 // use our computed outer/inner x so gradient spans entire strip width
                 const wxGraphicsBrush shadowBrush =
@@ -736,7 +740,7 @@ namespace Wisteria::GraphItems
 
             path.CloseSubpath();
 
-            wxGraphicsBrush brush = gc->CreateLinearGradientBrush(
+            const wxGraphicsBrush brush = gc->CreateLinearGradientBrush(
                 centerX, topYLocal, centerX, bottomYLocal, topOrange, bottomOrange);
             gc->SetBrush(brush);
 
@@ -748,7 +752,7 @@ namespace Wisteria::GraphItems
             // center crease
             //--------------------------------------------------
             {
-            const double centerXLine = leftX + bodyRect.GetWidth() * 0.50;
+            const double centerXLine = leftX + bodyRect.GetWidth() * math_constants::half;
 
             const double creaseTopY =
                 topY + (bottomY - topY) * 0.2; // line starts where front lobes sink to
@@ -763,7 +767,7 @@ namespace Wisteria::GraphItems
                 wxPoint(centerXLine, creaseBottomY));
 
             gc->SetBrush(wxNullBrush);
-            gc->SetPen(wxPen{ wxColour{ 220, 110, 0, 200 }, outlinePenWidth });
+            gc->SetPen(wxPen{ TintIfUsingOpacity(wxColour{ 220, 110, 0, 200 }), outlinePenWidth });
             gc->StrokePath(crease);
             }
         }
