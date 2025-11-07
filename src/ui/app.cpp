@@ -209,7 +209,7 @@ namespace Wisteria::UI
             GetMainFrame()->FromDIP(wxSize{ wxRound(baseSize.GetWidth() * contentScalingFactor),
                                             wxRound(baseSize.GetHeight() * contentScalingFactor) });
         wxBitmap loadedImage{ GetResourceManager().GetSVG(path).GetBitmap(buttonSize) };
-        wxASSERT_MSG(loadedImage.IsOk(), "Failed to load SVG image.");
+        wxASSERT_MSG(loadedImage.IsOk(), L"Failed to load SVG image.");
         loadedImage.SetScaleFactor(contentScalingFactor);
         return loadedImage;
         }
