@@ -444,6 +444,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawPumpkin(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a jack-o'-lantern.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawJackOLantern(wxRect rect, wxDC& dc) const;
         /// @}
       private:
         enum class Temperature
@@ -466,6 +470,9 @@ namespace Wisteria::GraphItems
         void DrawSword(wxRect rect, wxDC& dc, ClippingSection clippingSection) const;
         static void DrawAsterisk(wxRect rect, wxGraphicsContext* gc);
         void DrawTire(wxRect rect, wxGraphicsContext* gc) const;
+
+        static void FillCarvedFeature(wxGraphicsContext* gc, const wxGraphicsPath& path,
+                                      const wxRect2DDouble& bounds);
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
         ///     sets the brush, then runs the rendering lambda again.
         void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const;

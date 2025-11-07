@@ -113,7 +113,8 @@ namespace Wisteria::Icons
         CrescentRight,            /*!< A crescent opening at the right.*/
         Sunflower,                /*!< A sunflower (stigma and petals).*/
         CurvingRoad,              /*!< A curvy road.*/
-        Pumpkin                   /*!< A pumpkin.*/
+        Pumpkin,                  /*!< A pumpkin.*/
+        JackOLantern              /*!< A jack-o'-lantern.*/
         };
 
     /// @brief Item to draw on a legend.
