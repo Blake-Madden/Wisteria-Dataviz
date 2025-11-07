@@ -161,6 +161,7 @@ Properties common to all graphs:
   - `"crescent-right"`
   - `"curving-road"`
   - `"pumpkin"`
+  - `"jack-o-lantern"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

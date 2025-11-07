@@ -245,7 +245,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::CrescentBottom, &ShapeRenderer::DrawCrescentBottom },
             { Icons::IconShape::CrescentRight, &ShapeRenderer::DrawCrescentRight },
             { Icons::IconShape::CurvingRoad, &ShapeRenderer::DrawCurvingRoad },
-            { Icons::IconShape::Pumpkin, &ShapeRenderer::DrawPumpkin }
+            { Icons::IconShape::Pumpkin, &ShapeRenderer::DrawPumpkin },
+            { Icons::IconShape::JackOLantern, &ShapeRenderer::DrawJackOLantern }
         };
 
         // connect the rendering function to the shape
@@ -373,6 +374,147 @@ namespace Wisteria::GraphItems
             const wxRect sunRect = wxRect(rect).Deflate(ScaleToScreenAndCanvas(1));
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y, sunRect.GetWidth(),
                             sunRect.GetHeight());
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::FillCarvedFeature(wxGraphicsContext* gc, const wxGraphicsPath& path,
+                                          const wxRect2DDouble& bounds)
+        {
+        // Dimmer, narrower glow
+        const wxColour centerCol{ 235, 200, 100, 255 }; // muted candlelight
+        const wxColour edgeCol{ 0, 0, 0, 255 };         // solid black edge
+
+        const double cx = bounds.m_x + bounds.m_width * math_constants::half;
+        const double cy = bounds.m_y + bounds.m_height * 0.4;
+        const double radius = std::max(bounds.m_width, bounds.m_height) * 0.30;
+
+        const auto brush =
+            gc->CreateRadialGradientBrush(cx, cy, cx, cy, radius, centerCol, edgeCol);
+
+        gc->SetBrush(brush);
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->FillPath(path);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawJackOLantern(const wxRect rect, wxDC& dc) const
+        {
+        DrawPumpkin(rect, dc);
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        wxASSERT_MSG(gc, L"Failed to get graphics context for jack-o'-lantern!");
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        gc->SetPen(*wxBLACK_PEN);
+
+        const double cx = rect.GetX() + rect.GetWidth() / 2.0;
+        const double w = rect.GetWidth();
+        const double h = rect.GetHeight();
+
+        //--------------------------------------------------
+        // Eyes
+        //--------------------------------------------------
+        const double eyeW = w * 0.14;
+        const double eyeH = h * 0.12;
+        const double eyeOffsetX = w * 0.12;
+        const double eyeTopY = rect.GetY() + (h * 0.45);
+        constexpr double eyeTiltRad = 45.0 * (std::numbers::pi / 180.0);
+
+        const auto drawEye = [&](const bool left)
+        {
+            const double centerX = cx + (left ? -eyeOffsetX : eyeOffsetX);
+            const double centerY = eyeTopY + eyeH / 2.0;
+
+            // Build eye in local space, then transform into world space
+            wxGraphicsPath eye = gc->CreatePath();
+            eye.MoveToPoint(-eyeW / 2.0, 0.0);
+            eye.AddLineToPoint(eyeW / 2.0, 0.0);
+            eye.AddArc(0.0, 0.0, eyeW / 2.0, 0.0, std::numbers::pi, true);
+            eye.CloseSubpath();
+
+            wxGraphicsMatrix m = gc->CreateMatrix();
+            m.Translate(centerX, centerY);
+            m.Rotate(left ? eyeTiltRad : -eyeTiltRad);
+            eye.Transform(m); // in-place, correct
+
+            FillCarvedFeature(
+                gc, eye,
+                wxRect2DDouble(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight()));
+        };
+
+        drawEye(true);
+        drawEye(false);
+
+        //--------------------------------------------------
+        // Nose
+        //--------------------------------------------------
+        const double noseW = w * 0.10;
+        const double noseH = h * 0.10;
+        const double noseY = rect.GetY() + (h * 0.53) + noseH;
+
+        wxGraphicsPath nose = gc->CreatePath();
+        nose.MoveToPoint(cx, noseY - noseH / 2.0);
+        nose.AddLineToPoint(cx - noseW / 2.0, noseY + noseH / 2.0);
+        nose.AddLineToPoint(cx + noseW / 2.0, noseY + noseH / 2.0);
+        nose.CloseSubpath();
+        gc->FillPath(nose);
+
+        //--------------------------------------------------
+        // Mouth
+        //--------------------------------------------------
+        const double mouthTop = rect.GetY() + h * 0.63;
+        const double mouthW = w * 0.55;
+        const double mouthH = h * 0.40;
+
+        wxGraphicsPath mouth = gc->CreatePath();
+        mouth.MoveToPoint(cx - mouthW / 2.0, mouthTop);
+        mouth.AddQuadCurveToPoint(cx, mouthTop + mouthH, cx + mouthW / 2.0, mouthTop);
+        mouth.AddQuadCurveToPoint(cx, mouthTop + mouthH * 0.6, cx - mouthW / 2.0, mouthTop);
+        mouth.CloseSubpath();
+
+        //--------------------------------------------------
+        // Teeth (clip out)
+        //--------------------------------------------------
+        const double toothW = mouthW * 0.08;
+        const double toothH = mouthH * math_constants::quarter;
+
+        // upper teeth
+        const double upperOffset = mouthW * 0.25 * 0.8;
+
+        const wxRect topLeftTooth(static_cast<int>(cx - upperOffset - toothW / 2.0),
+                                  static_cast<int>(mouthTop + mouthH * 0.10),
+                                  static_cast<int>(toothW), static_cast<int>(toothH));
+
+        const wxRect topRightTooth(static_cast<int>(cx + upperOffset - toothW / 2.0),
+                                   static_cast<int>(mouthTop + mouthH * 0.10),
+                                   static_cast<int>(toothW), static_cast<int>(toothH));
+
+        // bottom tooth
+        const wxRect bottomTooth(static_cast<int>(cx - toothW / 2.0),
+                                 static_cast<int>(mouthTop + mouthH * 0.40),
+                                 static_cast<int>(toothW), static_cast<int>(toothH * 1.6));
+
+        double clipX{ 0.0 }, clipY{ 0.0 }, clipW{ 0.0 }, clipH{ 0.0 };
+        gc->GetClipBox(&clipX, &clipY, &clipW, &clipH);
+        const wxRect originalClipRect(static_cast<int>(clipX), static_cast<int>(clipY),
+                                      static_cast<int>(clipW), static_cast<int>(clipH));
+
+        wxRegion mouthClip(rect);
+        mouthClip.Subtract(wxRegion(topLeftTooth));
+        mouthClip.Subtract(wxRegion(topRightTooth));
+        mouthClip.Subtract(wxRegion(bottomTooth));
+
+        gc->Clip(mouthClip);
+        gc->FillPath(mouth);
+        gc->ResetClip();
+        if (!originalClipRect.IsEmpty())
+            {
+            gc->Clip(originalClipRect);
             }
         }
 
