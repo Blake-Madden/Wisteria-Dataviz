@@ -254,6 +254,11 @@ namespace Wisteria::UI
             return m_resManager;
             }
 
+        // @brief Loads a bitmap (with provided size in DIPs) from provided path to be compatible
+        //      with the UI.
+        // @details This will handle DIPs and scale factor (i.e., Retina display) calculations.
+        wxBitmap ReadSvgIcon(const wxString& path, const wxSize baseSize = wxSize{ 32, 32 });
+
         /** @brief Creates a program's splashscreen using a base image and
                 various program information.
             @param bitmap The base image.

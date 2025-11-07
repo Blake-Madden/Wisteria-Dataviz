@@ -201,6 +201,20 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------------------
+    wxBitmap BaseApp::ReadSvgIcon(const wxString& path,
+                                  const wxSize baseSize /*= wxSize{ 32, 32 }*/)
+        {
+        const auto contentScalingFactor{ GetMainFrame()->GetContentScaleFactor() };
+        const wxSize buttonSize =
+            GetMainFrame()->FromDIP(wxSize{ wxRound(baseSize.GetWidth() * contentScalingFactor),
+                                            wxRound(baseSize.GetHeight() * contentScalingFactor) });
+        wxBitmap loadedImage{ GetResourceManager().GetSVG(path).GetBitmap(buttonSize) };
+        wxASSERT_MSG(loadedImage.IsOk(), "Failed to load SVG image.");
+        loadedImage.SetScaleFactor(contentScalingFactor);
+        return loadedImage;
+        }
+
+    //----------------------------------------------------------
     wxBitmap BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
                                          const wxString& appSubName, const wxString& vendorName,
                                          const bool includeCopyright,
