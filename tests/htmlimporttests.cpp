@@ -1876,20 +1876,31 @@ TEST_CASE("Html Url Format", "[html import]")
     SECTION("Domains")
         {
         html_url_format formatHtml(L"http://www.business.yahoo.com");
-        formatHtml({ L"http://www.sales.mycompany.com", 30 }, false);
+        formatHtml({ L"http://www.sales.mycompany.com" }, false);
         CHECK(formatHtml.get_root_domain() == L"yahoo.com");
         CHECK(formatHtml.get_root_full_domain() == L"http://www.business.yahoo.com");
         CHECK(formatHtml.get_full_domain() == L"http://www.sales.mycompany.com");
         CHECK(formatHtml.get_domain() == L"mycompany.com");
         }
-    SECTION("Domains2")
+    SECTION("Domains 2")
         {
         html_url_format formatHtml(L"http://www.business.yahoo.com/index.htm");
-        formatHtml({ L"http://www.sales.mycompany.com/index.htm", 40 }, false);
+        formatHtml({ L"http://www.sales.mycompany.com/index.htm" }, false);
         CHECK(formatHtml.get_root_domain() == L"yahoo.com");
         CHECK(formatHtml.get_root_subdomain() == L"business.yahoo.com");
         CHECK(formatHtml.get_root_full_domain() == L"http://www.business.yahoo.com");
         CHECK(formatHtml.get_full_domain() == L"http://www.sales.mycompany.com");
+        CHECK(formatHtml.get_domain() == L"mycompany.com");
+        CHECK(formatHtml.get_subdomain() == L"sales.mycompany.com");
+        }
+    SECTION("Domains 3")
+        {
+        html_url_format formatHtml(L"http://business.yahoo.com/index.htm");
+        formatHtml({ L"http://sales.mycompany.com/index.htm" }, false);
+        CHECK(formatHtml.get_root_domain() == L"yahoo.com");
+        CHECK(formatHtml.get_root_subdomain() == L"business.yahoo.com");
+        CHECK(formatHtml.get_root_full_domain() == L"http://business.yahoo.com");
+        CHECK(formatHtml.get_full_domain() == L"http://sales.mycompany.com");
         CHECK(formatHtml.get_domain() == L"mycompany.com");
         CHECK(formatHtml.get_subdomain() == L"sales.mycompany.com");
         }

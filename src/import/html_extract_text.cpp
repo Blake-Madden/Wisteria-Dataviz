@@ -3363,6 +3363,7 @@ namespace html_utilities
         {
         full_domain.clear();
         domain.clear();
+        subdomain.clear();
         size_t startIndex = 0;
         if (string_util::strnicmp<wchar_t>(url.c_str(), L"http://", 7) == 0)
             {
@@ -3417,10 +3418,16 @@ namespace html_utilities
         if (dot != startIndex && dot > 2)
             {
             dot = full_domain.rfind(L'.', dot - 2);
+            auto slash = full_domain.rfind(L'/', dot - 2);
             if (dot != std::wstring::npos)
                 {
                 ++dot;
                 subdomain = full_domain.substr(dot, lastSlash - dot);
+                }
+            else if (slash != std::wstring::npos)
+                {
+                ++slash;
+                subdomain = full_domain.substr(slash, lastSlash - slash);
                 }
             }
         }
