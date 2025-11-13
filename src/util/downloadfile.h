@@ -362,6 +362,14 @@ class FileDownload
     /// @returns @c true if download was successful.
     bool Download(const wxString& url, const wxString& localDownloadPath);
 
+    /// @brief Downloads the requested OneDrive file.
+    /// @param url The OneDrive file to download.
+    /// @param localDownloadFolder Folder to download to
+    ///     (file name will be extracted from the OneDrive information).
+    /// @returns @c true if download was successful.
+    /// @note Call GetLastOneDriveFileName() afterwards to get the name of the downloaded file.
+    bool DownloadOneDriveFile(const wxString& url, const wxString& localDownloadFolder);
+
     /// @brief Reads the requested URL.
     /// @details This will be synchronous, so will not return until the
     ///     entire web file has been read.\n
@@ -423,6 +431,13 @@ class FileDownload
     const wxString& GetLastStatusInfo() const noexcept
         {
         return m_lastStatusInfo;
+        }
+
+    /// @returns The file name from the last read OneDrive document.
+    [[nodiscard]]
+    const wxString& GetLastOneDriveFileName() const noexcept
+        {
+        return m_lastOneDriveFileName;
         }
 
     /// @returns The last url (or possible redirect) from a read, download, or response request.
@@ -514,6 +529,7 @@ class FileDownload
     wxString m_lastSuggestedFileName;
     wxString m_lastContentType;
     wxString m_lastStatusInfo;
+    wxString m_lastOneDriveFileName;
     wxString m_server;
     wxFileOffset m_bytesReceived{ 0 };
     wxWebRequest::State m_lastState{ wxWebRequest::State::State_Idle };
