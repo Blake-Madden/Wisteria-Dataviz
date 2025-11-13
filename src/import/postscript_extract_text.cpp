@@ -95,7 +95,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
             else
                 {
                 // skip document definition section
-                if (std::strncmp(ps_buffer, "%BeginDocument", 14) == 0)
+                if (std::strncmp(std::next(ps_buffer, i), "%%BeginDocument", 15) == 0)
                     {
                     const char* end = std::strstr(std::next(ps_buffer, i), "%%EndDocument");
                     if (end == nullptr)
@@ -106,7 +106,9 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         }
                     else
                         {
-                        ps_buffer = std::next(end, 13 /*the length of "%%EndDocument"*/);
+                        // skip past the "%%EndDocument" directive
+                        i = (end - ps_buffer) + 13;
+                        continue;
                         }
                     }
                 // it's a comment--move to the end of the line
@@ -135,7 +137,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 }
             /*() are now closed, so move to the character in front
               of the next () set and see the command*/
-            else
+            else if (i > 0)
                 {
                 char command_char{ L' ' };
                 bool inHyphenJoinMode{ false };
@@ -143,18 +145,19 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 inHyphenJoinMode = (*std::next(ps_buffer, i - 1) == '-');
                 // skip any newlines in the file between the ')'
                 // and the first command of the next text section
-                while (i < (text_length - 1) &&
+                while (i + 1 < text_length &&
                        std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))))
                     {
                     ++i;
                     }
                 long horizontalPosition{ 10 };
-                if (*std::next(ps_buffer, i + 1) == '-' ||
-                    std::iswdigit(static_cast<wchar_t>(*std::next(ps_buffer, i + 1))))
+                if (i + 1 < text_length &&
+                    (*std::next(ps_buffer, i + 1) == '-' ||
+                     std::iswdigit(static_cast<wchar_t>(*std::next(ps_buffer, i + 1)))))
                     {
                     horizontalPosition = std::strtol(std::next(ps_buffer, i + 1), nullptr, 10);
                     }
-                while (i < (text_length - 1) && *std::next(ps_buffer, i + 1) != '(')
+                while (i + 1 < text_length && *std::next(ps_buffer, i + 1) != '(')
                     {
                     ++i;
                     if (*std::next(ps_buffer, i) == '%')
@@ -162,7 +165,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         if (std::strncmp(std::next(ps_buffer, i), "%%BeginDocument", 15) == 0)
                             {
                             const char* end = std::strstr(std::next(ps_buffer, i), "%%EndDocument");
-                            if (!end)
+                            if (end == nullptr)
                                 {
                                 // file is messed up--just return what we got
                                 log_message(
