@@ -327,6 +327,28 @@ void FileDownload::RequestResponse(const wxString& url)
     }
 
 //--------------------------------------------------
+bool FileDownload::ReadOneDriveFile(const wxString& url)
+    {
+    m_lastOneDriveFileName.clear();
+    if (!Read(url))
+        {
+        return false;
+        }
+    const std::string_view oneDrivePage(GetLastRead().data(), GetLastRead().size());
+
+    std::string fileName =
+        lily_of_the_valley::html_extract_text::extract_onedrive_filename(oneDrivePage);
+    std::string fileUrl =
+        lily_of_the_valley::html_extract_text::extract_json_field(oneDrivePage, "FileUrlNoAuth");
+    if (!Read(fileUrl))
+        {
+        return false;
+        }
+    m_lastOneDriveFileName = fileName;
+    return true;
+    }
+
+//--------------------------------------------------
 bool FileDownload::Read(const wxString& url)
     {
     wxASSERT_MSG(m_handler, L"Call SetEventHandler() to connect an event handler!");

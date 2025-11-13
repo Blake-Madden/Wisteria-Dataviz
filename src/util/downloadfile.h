@@ -257,7 +257,7 @@ class QueueDownload
 
         // then read a webpage and copy it into a string
         wxString webPageContent(m_downloadFile.Read("https://www.wxwidgets.org/") ?
-                                &m_downloadFile.GetLastRead()[0] : wxString{});
+                                m_downloadFile.GetLastRead().data() : wxString{});
     @endcode
     @warning A `wxEvtHandler`-derived class can either be connected to a single QueueDownload
         or a single FileDownload object. This is because the class must bind its
@@ -378,6 +378,15 @@ class FileDownload
     /// @returns @c true if read was successful.
     /// @sa GetLastRead().
     bool Read(const wxString& url);
+
+    /// @brief Reads the requested OneDrive file.
+    /// @details This will be synchronous, so will not return until the
+    ///     entire web file has been read.\n
+    ///     Call GetLastRead() afterward to get the web file's content.
+    /// @param url The web file to download.
+    /// @returns @c true if read was successful.
+    /// @sa GetLastRead(), GetLastOneDriveFileName().
+    bool ReadOneDriveFile(const wxString& url);
 
     /** @brief If @c true, will use the filename sent from the server as the filename
             when downloading a file.
