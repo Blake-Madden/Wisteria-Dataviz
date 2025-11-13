@@ -675,6 +675,301 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(std::wstring(L"num") == html_extract_text::read_attribute_as_string(text, L"info", false, false));
         CHECK(std::wstring(L"num value") == html_extract_text::read_attribute_as_string(text, L"info", false, true));
         }
+    SECTION("Decode JSON \\u00XX Escapes")
+    {
+    // Basic OneDrive-style ampersand
+        {
+        std::string_view text = "abc\\u0026def";
+        CHECK(std::string("abc&def") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Multiple escapes in one string
+        {
+        std::string_view text = "A\\u0026B\\u003CC";
+        CHECK(std::string("A&B<C") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Slash encoded
+        {
+        std::string_view text = "path\\u002Fto\\u002Ffile";
+        CHECK(std::string("path/to/file") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Escaped greater-than sign
+        {
+        std::string_view text = "\\u003Ehello";
+        CHECK(std::string(">hello") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Escaped less-than sign
+        {
+        std::string_view text = "\\u003Ctag";
+        CHECK(std::string("<tag") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Mixed escape + normal chars
+        {
+        std::string_view text = "x\\u0026y z";
+        CHECK(std::string("x&y z") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // No escapes
+        {
+        std::string_view text = "NoEscapesHere123";
+        CHECK(std::string("NoEscapesHere123") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Newlines stripped out
+        {
+        std::string_view text = "abc\n\\u0026\rdef";
+        CHECK(std::string("abc&def") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Malformed escape: incomplete
+        {
+        std::string_view text = "Bad\\u00";
+        CHECK(std::string("Bad\\u00") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Malformed escape: invalid hex
+        {
+        std::string_view text = "Bad\\u00XZtest";
+        CHECK(std::string("Bad\\u00XZtest") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Empty input
+        {
+        std::string_view text = "";
+        CHECK(std::string("") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+
+    // Only escapes
+        {
+        std::string_view text = "\\u0026\\u0026";
+        CHECK(std::string("&&") ==
+              html_extract_text::decode_json_escapes(text));
+        }
+    }
+    SECTION("Extract JSON Fields From Embedded HTML")
+        {
+        // Basic HTML with embedded JSON
+        const char* htmlText =
+            "<html><head><script>"
+            "{\n"
+            "  \"FileType\" : \"docx\",\n"
+            "  \"FileUrlNoAuth\"  :  \"https://example.com/download?id=123\",\n"
+            "  \"EmptyField\" : \"\"\n"
+            "}"
+            "</script></head><body>...</body></html>";
+
+        std::string_view html(htmlText);
+
+        CHECK(std::string("docx") ==
+              html_extract_text::extract_json_field(html, "FileType"));
+
+        CHECK(std::string("https://example.com/download?id=123") ==
+              html_extract_text::extract_json_field(html, "FileUrlNoAuth"));
+
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(html, "EmptyField"));
+
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(html, "DoesNotExist"));
+
+        // Whitespace-heavy formatting
+        const char* htmlWS =
+            "{\n\n   \"FileType\"    \n\t  :   \n   \"pdf\"   \n}";
+        const std::string_view htmlWSv(htmlWS);
+
+        CHECK(std::string("pdf") ==
+              html_extract_text::extract_json_field(htmlWSv, "FileType"));
+
+        //
+        // ===== Malformed cases =====
+        //
+
+        // Missing colon
+        const char* malformed1 =
+            "{ \"FileType\"  \"docx\" }";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed1), "FileType"));
+
+        // Missing opening quote for value
+        const char* malformed2 =
+            "{ \"FileType\" :  docx\" }";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed2), "FileType"));
+
+        // Missing closing quote for value
+        const char* malformed3 =
+            "{ \"FileType\" : \"docx }";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed3), "FileType"));
+
+        // Truncated after key
+        const char* malformed4 =
+            "{ \"FileType\" : ";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed4), "FileType"));
+
+        // Value contains no characters before closing quote
+        const char* malformed5 =
+            "{ \"FileType\" : \"\"";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed5), "FileType"));
+
+        // Key exists but value missing entirely
+        const char* malformed6 =
+            "{ \"FileType\" : }";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed6), "FileType"));
+
+        // Prefix looks like a key but is not quoted properly
+        const char* malformed7 =
+            "{ FileType : \"docx\" }"; // missing quotes around key
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(std::string_view(malformed7), "FileType"));
+
+        //
+        // ===== Empty input edge cases =====
+        //
+
+        std::string_view empty1;
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(empty1, "FileType"));
+
+        std::string_view empty2 = "";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(empty2, "FileType"));
+
+        std::string_view empty3 = "{}";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(empty3, "FileType"));
+
+        std::string_view empty4 = "   \n\t   ";
+        CHECK(std::string("") ==
+              html_extract_text::extract_json_field(empty4, "FileType"));
+        }
+    SECTION("Extract OneDrive Filename")
+        {
+        // Case 1: Standard OneDrive field: "FileName"
+            {
+            const char* html =
+                "{ \"FileName\" : \"MyDocument.docx\" }";
+            CHECK(std::string("MyDocument.docx") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 2: Modern field: "DownloadName"
+            {
+            const char* html =
+                "{ \"DownloadName\" : \"Presentation.pptx\" }";
+            CHECK(std::string("Presentation.pptx") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 3: Split fields: FileNameWithoutExtension + FileExtension
+            {
+            const char* html =
+                "{ \"FileNameWithoutExtension\" : \"Notes\", "
+                "  \"FileExtension\" : \"txt\" }";
+            CHECK(std::string("Notes.txt") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 4: Split field with missing extension
+            {
+            const char* html =
+                "{ \"FileNameWithoutExtension\" : \"Archive\" }";
+            CHECK(std::string("Archive") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 5: None of the fields present → return empty
+            {
+            const char* html =
+                "{ \"SomeOtherField\" : \"Value\" }";
+            CHECK(std::string("") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 6: OneDrive-style formatting with spaces/newlines
+            {
+            const char* html =
+                "{\n"
+                "   \"FileName\"   :   \"Report.pdf\"   \n"
+                "}";
+            CHECK(std::string("Report.pdf") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 7: Embedded in HTML script tag
+            {
+            const char* html =
+                "<html><body><script>"
+                "{ \"FileName\" : \"SlideDeck.key\" }"
+                "</script></body></html>";
+            CHECK(std::string("SlideDeck.key") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+
+        // Case 8: Escaped filename (decoded inside extract_json_field)
+            {
+            const char* html =
+                "{ \"FileName\" : \"MyDoc\\u002Epdf\" }"; // \u002E = '.'
+            CHECK(std::string("MyDoc.pdf") ==
+                  html_extract_text::extract_onedrive_filename(std::string_view(html)));
+            }
+        }
+    SECTION("Extract JSON Field With Escaped Unicode Sequences")
+        {
+        // OneDrive-like HTML + JSON metadata block.
+        // Notice the forced newline and the \u0026 escape.
+        const char* htmlText =
+            "<html><head><script>"
+            "{\n"
+            "  \"FileUrlNoAuth\" : \"https://example.com/download?id=12345\n"
+            "\\u0026Translate=false\",\n"
+            "  \"FileType\" : \"docx\"\n"
+            "}"
+            "</script></head></html>";
+
+        std::string_view html(htmlText);
+
+        //
+        // After integrating cleaning logic, extract_json_field()
+        // should return the usable version of the URL:
+        //   - \u0026 → &
+        //   - newline removed
+        //
+
+        CHECK(
+            std::string("https://example.com/download?id=12345&Translate=false")
+            ==
+            html_extract_text::extract_json_field(html, "FileUrlNoAuth"));
+
+        // Another normal field should behave unchanged
+        CHECK(
+            std::string("docx") ==
+            html_extract_text::extract_json_field(html, "FileType"));
+
+        // Missing field should return empty string
+        CHECK(
+            std::string("") ==
+            html_extract_text::extract_json_field(html, "DoesNotExist"));
+        }
+
     SECTION("Read Tag Quotable")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";

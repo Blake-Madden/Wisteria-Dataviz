@@ -810,6 +810,43 @@ namespace lily_of_the_valley
             m_includeNoScriptSections = include;
             }
 
+        /// @brief Decodes JSON-style Unicode escapes from a text buffer.
+        /// @details Converts sequences of the form <tt>\u00XX</tt> into their ASCII
+        ///     equivalents, as commonly emitted by OneDrive in embedded JSON metadata
+        ///     (e.g., <tt>\u0026</tt> → <tt>&</tt>, <tt>\u003C</tt> → <tt>&lt;</tt>).
+        ///     Line breaks (<tt>CR</tt>/<tt>LF</tt>) are also stripped since they are
+        ///     sometimes inserted arbitrarily by OneDrive. Invalid or incomplete escape
+        ///     sequences are left unchanged.
+        /// @param input The text to process, typically a substring extracted from HTML
+        ///     containing escaped JSON values.
+        /// @returns A new string with all recognized <tt>\u00XX</tt> escapes decoded and
+        ///     line breaks removed.
+        [[nodiscard]]
+        static std::string decode_json_escapes(std::string_view input);
+
+        /// @brief Extracts the downloadable filename from OneDrive metadata.
+        /// @details OneDrive embeds several possible JSON fields inside its HTML
+        ///     viewer pages. This function checks all known filename locations,
+        ///     including <tt>"FileName"</tt>, <tt>"DownloadName"</tt>,
+        ///     <tt>"FileNameWithoutExtension"</tt>, and <tt>"FileExtension"</tt>.
+        ///     The first available field is returned. If the filename is split into
+        ///     base name and extension, they are recombined automatically.
+        /// @param html The HTML/JSON content retrieved from a OneDrive public link.
+        /// @returns The downloadable filename (e.g., <tt>"MyDoc.docx"</tt>), or an empty
+        ///     string if no filename information is present.
+        [[nodiscard]]
+        static std::string extract_onedrive_filename(std::string_view html);
+
+        /// @brief Extracts the value of a JSON string field from embedded HTML/JSON content.
+        /// @details Searches for the specified key (e.g., `"FileType"`) within the HTML.
+        ///     This is intended for lightweight extraction from embedded
+        ///     metadata blocks where values contain no escaped quotes.
+        /// @param html The HTML/JSON content to scan.
+        /// @param key The JSON field name whose value should be extracted.
+        /// @returns The extracted string value, or an empty string if the field is not found.
+        [[nodiscard]]
+        static std::string extract_json_field(std::string_view html, std::string_view key);
+
         /// @private
         static const html_utilities::symbol_font_table SYMBOL_FONT_TABLE;
         /// @private

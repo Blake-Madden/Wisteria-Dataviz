@@ -36,6 +36,149 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    std::string html_extract_text::decode_json_escapes(std::string_view input)
+        {
+        std::string output;
+        output.reserve(input.size());
+
+        auto hex_to_int = [](char ch) -> int
+        {
+            if (ch >= '0' && ch <= '9')
+                {
+                return ch - '0';
+                }
+            if (ch >= 'A' && ch <= 'F')
+                {
+                return 10 + (ch - 'A');
+                }
+            if (ch >= 'a' && ch <= 'f')
+                {
+                return 10 + (ch - 'a');
+                }
+            return -1; // invalid hex digit
+        };
+
+        for (size_t index = 0; index < input.size(); ++index)
+            {
+            // look for the pattern: \u00XX
+            const bool has_enough_for_escape = (index + 6 <= input.size());
+
+            if (has_enough_for_escape && input[index] == '\\' && input[index + 1] == 'u' &&
+                input[index + 2] == '0' && input[index + 3] == '0')
+                {
+                const char hiChar = input[index + 4];
+                const char loChar = input[index + 5];
+
+                const int hi = hex_to_int(hiChar);
+                const int lo = hex_to_int(loChar);
+
+                if (hi >= 0 && lo >= 0)
+                    {
+                    const char decoded = static_cast<char>((hi << 4) | lo);
+                    output.push_back(decoded);
+                    // skip the rest of the escape sequence
+                    index += 5;
+                    continue;
+                    }
+                }
+
+            // normalize away line breaks
+            if (input[index] == '\n' || input[index] == '\r')
+                {
+                continue;
+                }
+
+            // normal character — keep it
+            output.push_back(input[index]);
+            }
+
+        return output;
+        }
+
+    //------------------------------------------------------------------
+    std::string html_extract_text::extract_onedrive_filename(std::string_view html)
+        {
+        // most common: FileName → "Document.docx"
+        std::string fileName = extract_json_field(html, "FileName");
+        if (!fileName.empty())
+            {
+            return fileName;
+            }
+
+        // newer viewer sometimes uses: DownloadName → "Document.docx"
+        fileName = extract_json_field(html, "DownloadName");
+        if (!fileName.empty())
+            {
+            return fileName;
+            }
+
+        // split name/extension format:
+        //   "FileNameWithoutExtension":"Document"
+        //   "FileExtension":"docx"
+        const std::string base = extract_json_field(html, "FileNameWithoutExtension");
+        if (!base.empty())
+            {
+            std::string ext = extract_json_field(html, "FileExtension");
+            if (!ext.empty())
+                {
+                return base + "." + ext;
+                }
+            return base; // no extension found, but still a name
+            }
+
+        return {};
+        }
+
+    //------------------------------------------------------------------
+    std::string html_extract_text::extract_json_field(std::string_view html, std::string_view key)
+        {
+        const std::string keyQuoted = "\"" + std::string{ key } + "\"";
+
+        size_t pos = html.find(keyQuoted);
+        if (pos == std::string_view::npos)
+            {
+            return {};
+            }
+
+        pos += keyQuoted.size();
+
+        auto skip_ws_local = [&](size_t& p)
+        {
+            p = html.find_first_not_of(" \t\n\r", p);
+            if (p == std::string_view::npos)
+                {
+                p = html.size();
+                }
+        };
+
+        // skip whitespace until ':'
+        skip_ws_local(pos);
+        if (pos == html.size() || html[pos] != ':')
+            {
+            return {};
+            }
+        ++pos;
+
+        // skip whitespace until first quote
+        skip_ws_local(pos);
+        if (pos == html.size() || html[pos] != '"')
+            {
+            return {};
+            }
+        ++pos;
+
+        // capture value until closing quote
+        const size_t start = pos;
+        pos = html.find('"', pos);
+        if (pos == std::string_view::npos)
+            {
+            return {};
+            }
+
+        return std::string{ decode_json_escapes(html.substr(start, pos - start)) };
+        }
+
+    //------------------------------------------------------------------
     std::wstring html_extract_text::read_attribute_as_string(const wchar_t* text,
                                                              std::wstring_view attribute,
                                                              const bool allowQuotedTags,
