@@ -1012,6 +1012,15 @@ namespace Wisteria::GraphItems
             {
             img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
+        // Original image would be fully opaque (although it may may have
+        // translucent/transparent pixels). If a custom opacity is being applied,
+        // then apply that, but don't bother otherwise. This improves performance, and
+        // altering the alpha channel also causes some artifacts to appear
+        // (so avoid that).
+        if (m_opacity != wxALPHA_OPAQUE)
+            {
+            SetOpacity(img, m_opacity, true);
+            }
 
         const wxRect boundRect{ GetBoundingBox(dc) };
 
@@ -1082,17 +1091,7 @@ namespace Wisteria::GraphItems
                 boundRect.GetHeight() - (GetImageSize().GetHeight() * GetScaling());
             }
 
-        wxBitmap bmp{ img };
-        // Original image would be fully opaque (although it may may have
-        // translucent/transparent pixels). If a custom opacity is being applied,
-        // then apply that, but don't bother otherwise. This improves performance, and
-        // altering the alpha channel also causes some artifacts to appear
-        // (so avoid that).
-        if (m_opacity != wxALPHA_OPAQUE)
-            {
-            SetOpacity(bmp, m_opacity, true);
-            }
-        dc.DrawBitmap(bmp, imgTopLeftCorner, true);
+        dc.DrawBitmap(wxBitmap{ img, 32 }, imgTopLeftCorner);
 
         // draw the outline
         std::array<wxPoint, 5> pts;
