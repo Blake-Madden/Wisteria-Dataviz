@@ -26,8 +26,8 @@ This is an important distinction from other profiling systems.
    @par Citation
     This was inspired by the article:
 
-    Hjelstrom, Greg, and Byon Garrabrant. "Real-Time Hierarchical Profiling." *Game Programming Gems
-3*, Charles River Media, 2002, pp 146-152.
+    Hjelstrom, Greg, and Byon Garrabrant. "Real-Time Hierarchical Profiling."
+    *Game Programming Gems 3*, Charles River Media, 2002, pp 146-152.
    @date 2005-2025
    @copyright Blake Madden
    @author Blake Madden
@@ -143,13 +143,13 @@ This is an important distinction from other profiling systems.
 
 #ifdef ENABLE_PROFILING
     #define PROFILE() \
-        __debug::__profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
+        const __debug::__profiler __debug_profiled_function__(DEBUG_FUNCTION_NAME)
     #define PROFILE_WITH_INFO(info) \
-        __debug::__profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
+        const __debug::__profiler __debug_profiled_function__info__(DEBUG_FUNCTION_NAME, (info))
     #define PROFILE_SECTION_START(section_name) \
-        { __debug::__profiler __debug_profiled_section__(section_name)
+        { const __debug::__profiler __debug_profiled_section__(section_name)
     #define PROFILE_SECTION_WITH_INFO_START(section_name, info) \
-        { __debug::__profiler __debug_profiled_function__info__(section_name, (info))
+        { const __debug::__profiler __debug_profiled_function__info__(section_name, (info))
     #define PROFILE_SECTION_END() }
     #define SET_PROFILER_REPORT_PATH(path) \
                     __debug::__profile_reporter::set_output_path((path))
