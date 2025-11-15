@@ -141,6 +141,32 @@ namespace string_util
     /// @brief Case-insensitive @c std::wstring_view.
     using case_insensitive_wstring_view =
         std::basic_string_view<wchar_t, case_insensitive_character_traits>;
+
+    /// @private
+    inline bool operator==(const case_insensitive_wstring& lhs, const std::wstring& rhs)
+        {
+        return lhs.size() == rhs.size() &&
+               case_insensitive_character_traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
+        }
+
+    /// @private
+    inline bool operator==(const std::wstring& lhs, const case_insensitive_wstring& rhs)
+        {
+        return lhs.size() == rhs.size() &&
+               case_insensitive_character_traits::compare(lhs.data(), rhs.data(), lhs.size()) == 0;
+        }
+
+    /// @private
+    inline bool operator!=(const case_insensitive_wstring& lhs, const std::wstring& rhs)
+        {
+        return !(lhs == rhs);
+        }
+
+    /// @private
+    inline bool operator!=(const std::wstring& lhs, const case_insensitive_wstring& rhs)
+        {
+        return !(lhs == rhs);
+        }
     } // namespace string_util
 
 /** @}*/

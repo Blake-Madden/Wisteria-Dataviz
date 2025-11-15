@@ -3,6 +3,7 @@
 # DO NOT MODIFY MANUALLY!
 
 SET(TEST_SRC_FILES
+    chartraitstests.cpp
     comparedoublestests.cpp
     cppparsetests.cpp
     docparsetests.cpp
