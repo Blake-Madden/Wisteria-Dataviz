@@ -196,7 +196,7 @@ This is an array of specifications which include the following properties:
     - *groupColumn*: The group column.
     - *groupId*: The group ID to count.
   - ``GroupPercent(`groupColumn`, `groupId`)``:
-    Returns the percent (as a string, such as `"75%"`) of the categorical column *groupColumn*
+    Returns the percent (as a rounded digit, such as 61 for 61%) of the categorical column *groupColumn*
     that has the group ID *groupId*.
     - *groupColumn*: The group column.
     - *groupId*: The group ID to count.

@@ -493,7 +493,7 @@ namespace Wisteria
         CalcGroupPercentDecimal(const wxString& formula,
                                 const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]
-        std::optional<wxString>
+        std::optional<double>
         CalcGroupPercent(const wxString& formula,
                          const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]

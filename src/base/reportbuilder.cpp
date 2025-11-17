@@ -1354,7 +1354,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::optional<wxString>
+    std::optional<double>
     ReportBuilder::CalcGroupPercent(const wxString& formula,
                                     const std::shared_ptr<const Data::Dataset>& dataset) const
         {
@@ -1378,12 +1378,7 @@ namespace Wisteria
                 reFunctionRename.ReplaceFirst(&countFormula, L"grouppercentdecimal");
                 if (const auto percDec = CalcGroupPercentDecimal(countFormula, dataset))
                     {
-                    return wxString::Format(
-                        /* TRANSLATORS: Percentage value (%s) and % symbol (%%).
-                           '%%' can be changed and/or moved elsewhere in the string. */
-                        _(L"%s%%"), wxNumberFormatter::ToString(
-                                        percDec.value() * 100, 0,
-                                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                    return wxRound(percDec.value() * 100);
                     }
                 }
             }
