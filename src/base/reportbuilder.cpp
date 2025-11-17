@@ -5271,6 +5271,10 @@ namespace Wisteria
             {
             return Colors::ColorBrewer::GetColor(foundPos->second);
             }
+        if (colorStr == L"transparent")
+            {
+            return wxTransparentColour;
+            }
 
         return { colorStr };
         }
