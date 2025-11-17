@@ -304,10 +304,10 @@ namespace Wisteria::Graphs
             /// @param showRightBorder Whether to show the right border.
             /// @param showBottomBorder Whether to show the bottom border.
             /// @param showLeftBorder Whether to show the left border.
-            TableCell(CellValueType value, wxColour bgColor, const bool showTopBorder = true,
+            TableCell(CellValueType value, const wxColour& bgColor, const bool showTopBorder = true,
                       const bool showRightBorder = true, const bool showBottomBorder = true,
                       const bool showLeftBorder = true)
-                : m_value(std::move(value)), m_bgColor(std::move(bgColor)),
+                : m_value(std::move(value)), m_bgColor(bgColor),
                   m_showTopBorder(showTopBorder), m_showRightBorder(showRightBorder),
                   m_showBottomBorder(showBottomBorder), m_showLeftBorder(showLeftBorder)
                 {
@@ -812,19 +812,16 @@ namespace Wisteria::Graphs
                 {
                 return std::nullopt;
                 }
-            else if (m_currentAggregateColumns.empty())
+            if (m_currentAggregateColumns.empty())
                 {
                 return GetColumnCount() - 1;
                 }
-            else
+            int64_t lastCol = GetColumnCount() - 1;
+            while (m_currentAggregateColumns.contains(lastCol))
                 {
-                int64_t lastCol = GetColumnCount() - 1;
-                while (m_currentAggregateColumns.contains(lastCol))
-                    {
-                    --lastCol;
-                    }
-                return (lastCol >= 0) ? std::optional<size_t>(lastCol) : std::nullopt;
+                --lastCol;
                 }
+            return (lastCol >= 0) ? std::optional<size_t>(lastCol) : std::nullopt;
             }
 
         /// @returns The last row that is not an aggregate row.

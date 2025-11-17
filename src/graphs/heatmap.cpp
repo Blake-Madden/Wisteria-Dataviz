@@ -14,7 +14,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    HeatMap::HeatMap(Wisteria::Canvas * canvas,
+    HeatMap::HeatMap(Canvas * canvas,
                      const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : GroupGraph2D(canvas)
         {

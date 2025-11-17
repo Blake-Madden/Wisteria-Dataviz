@@ -289,7 +289,7 @@ namespace Wisteria::UI
         /// @private
         ListCtrlEx& operator=(const ListCtrlEx&) = delete;
         /// @private
-        ~ListCtrlEx();
+        ~ListCtrlEx() final;
 
         /// @brief Specifies whether double-clicking an item will show it as a pop-up HTML report.
         /// @param enable @c true to enable.

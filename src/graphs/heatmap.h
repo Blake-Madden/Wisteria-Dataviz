@@ -135,7 +135,7 @@ namespace Wisteria::Graphs
                 last colors map to the higher values.\n
                 The default color scale is white (low values) to black (high values),
                 which creates a grayscale spectrum.*/
-        explicit HeatMap(Wisteria::Canvas* canvas,
+        explicit HeatMap(Canvas* canvas,
                          const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr);
         /** @brief Sets the data across the heatmap.
             @param data The data.

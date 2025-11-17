@@ -724,7 +724,7 @@ namespace Wisteria::GraphItems
             @param shape The icon shape to draw.
             @param sz The size of the shape (in DIPs).
             @param img An image to use for the shape if using IconShape::ImageIcon.*/
-        Shape(const GraphItems::GraphItemInfo& itemInfo, Icons::IconShape shape, wxSize sz,
+        Shape(const GraphItemInfo& itemInfo, Icons::IconShape shape, wxSize sz,
               const std::shared_ptr<wxBitmapBundle>& img = nullptr);
         /// @private
         /// @internal Is not copyable because the renderer stores a pointer to one of its
