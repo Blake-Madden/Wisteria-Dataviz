@@ -21,9 +21,10 @@ namespace Wisteria::Graphs
     /** @brief A chart that arranges repeated shapes into a square-like grid.
         @details Unlike other graphs that take a Data::Dataset, a Waffle Chart is built from a
             vector of shape definitions, where each entry includes a GraphItems::ShapeInfo
-            and the number of times it should appear.
-            The chart expands these into a grid, sizes each cell uniformly, and fits the matrix
-            into the drawing area.*/
+            (which contains the number of times it should repeat).
+            The chart expands these into a grid, sizes each cell uniformly, and fits the grid
+            into the drawing area.
+        @image html WaffleChart.png width=90%*/
     class WaffleChart final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(WaffleChart);
@@ -32,12 +33,38 @@ namespace Wisteria::Graphs
       public:
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.
-            @param shapes The list of shapes (and respective repeat count) to draw across
-                the waffle chart.*/
-        explicit WaffleChart(Canvas* canvas,
-                             const std::vector<std::pair<GraphItems::ShapeInfo, size_t>>& shapes);
+            @param shapes The list of shapes (and respective repeat counts) to draw across
+                the waffle chart.
+            @par Example:
+            @code
+            auto plot = std::make_shared<WaffleChart>(
+                subframe->m_canvas,
+                std::vector<GraphItems::ShapeInfo>{
+                    // mostly transparent shapes
+                    { GraphItems::ShapeInfo{}
+                          .Shape(Icons::IconShape::BusinessWoman)
+                          .Brush(*wxTRANSPARENT_BRUSH)
+                          .Pen(Colors::ColorContrast::ChangeOpacity(*wxBLACK, 75))
+                          .Repeat(61) },
+                    { GraphItems::ShapeInfo{}
+                          .Shape(Icons::IconShape::Man)
+                          .Brush(*wxTRANSPARENT_BRUSH)
+                          .Repeat(29) },
+                    // fill with solid colors
+                    { GraphItems::ShapeInfo{}
+                          .Shape(Icons::IconShape::BusinessWoman)
+                          .Brush(Colors::ColorBrewer::GetColor(Colors::Color::BabyPink))
+                          .Pen(Colors::ColorContrast::ChangeOpacity(*wxBLACK, 75))
+                          .Repeat(6) },
+                    { GraphItems::ShapeInfo{}
+                          .Shape(Icons::IconShape::Man)
+                          .Brush(Colors::ColorBrewer::GetColor(Colors::Color::BabyBlue))
+                          .Repeat(4) } });
+            @endcode*/
+        explicit WaffleChart(Canvas* canvas, const std::vector<GraphItems::ShapeInfo>& shapes);
 
       private:
+        void LoadShapeGrid(const std::vector<GraphItems::ShapeInfo>& shapes);
         void RecalcSizes(wxDC& dc) final;
 
         [[deprecated("Waffle charts do not support legends.")]] [[nodiscard]]

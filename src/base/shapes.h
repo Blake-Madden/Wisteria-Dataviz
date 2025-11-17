@@ -664,14 +664,24 @@ namespace Wisteria::GraphItems
             return *this;
             }
 
-        /// @return The shape.
+        /** @brief The number of times to repeat the shape.
+            @details This is only used for special circumstances, such as waffle charts.
+            @param repeatCount The number of times to repeat the shape.
+            @returns A self reference.*/
+        ShapeInfo& Repeat(const size_t repeatCount) noexcept
+            {
+            m_repeatCount = repeatCount;
+            return *this;
+            }
+
+        /// @returns The shape.
         [[nodiscard]]
         Icons::IconShape GetShape() const noexcept
             {
             return m_shape;
             }
 
-        /// @return The shape's size (in DIPs).
+        /// @returns The shape's size (in DIPs).
         [[nodiscard]]
         wxSize GetSizeDIPs() const noexcept
             {
@@ -685,14 +695,14 @@ namespace Wisteria::GraphItems
             return m_brush;
             }
 
-        /// @return The shape's pen.
+        /// @returns The shape's pen.
         [[nodiscard]]
         wxPen GetPen() const noexcept
             {
             return m_pen;
             }
 
-        /// @return The shape's text.
+        /// @returns The shape's text.
         [[nodiscard]]
         wxString GetText() const noexcept
             {
@@ -706,6 +716,13 @@ namespace Wisteria::GraphItems
             return m_fillPercent;
             }
 
+        /// @returns The number of times the shape should be repeated.
+        [[nodiscard]]
+        size_t GetRepeatCount() const noexcept
+            {
+            return m_repeatCount;
+            }
+
       private:
         Icons::IconShape m_shape{ Icons::IconShape::Square };
         wxSize m_sizeDIPs{ 16, 16 };
@@ -713,6 +730,7 @@ namespace Wisteria::GraphItems
         wxPen m_pen;
         wxString m_text;
         double m_fillPercent{ math_constants::full };
+        size_t m_repeatCount{ 1 };
         };
 
     /** @brief Draws a shape onto a canvas.*/

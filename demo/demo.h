@@ -37,6 +37,7 @@
 #include "../src/graphs/sankeydiagram.h"
 #include "../src/graphs/scalechart.h"
 #include "../src/graphs/table.h"
+#include "../src/graphs/waffle_chart.h"
 #include "../src/graphs/wcurveplot.h"
 #include "../src/graphs/win_loss_sparkline.h"
 #include "../src/graphs/wordcloud.h"

@@ -677,6 +677,48 @@ The remaining properties are executed in the following order:
     Can include [constants](#constants-properties).
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Win/Loss Sparkline {#waffle-chart-properties .unnumbered}
+
+Properties for `"waffle-chart"` nodes:
+
+- `"shapes"`: An array of [shape](#shape-properties) definitions.
+
+```json
+{
+    "type": "waffle-chart",
+    "fit-row-to-content": true,
+    "canvas-margins": [ 5, 5, 5, 5 ],
+    "shapes": [
+    {
+        "icon": "business-woman",
+        "repeat": "{{PercentFemale}}",
+        "pen": {
+        "color": "black",
+        "style": "solid"
+        },
+        "brush": {
+        "color": "pink",
+        "style": "solid"
+        }
+    },
+    {
+        "icon": "man",
+        "repeat": "{{PercentMale}}",
+        "pen": {
+        "color": "black",
+        "style": "solid"
+        },
+        "brush": {
+        "color": "babyblue",
+        "style": "solid"
+        }
+    }
+    ]
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Win/Loss Sparkline {#win-loss-sparkline-properties .unnumbered}
 
 Properties for `"win-loss-sparkline"` nodes:

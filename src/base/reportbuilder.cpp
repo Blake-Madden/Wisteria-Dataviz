@@ -17,6 +17,7 @@
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/sankeydiagram.h"
+#include "../graphs/waffle_chart.h"
 #include "../graphs/win_loss_sparkline.h"
 
 namespace Wisteria
@@ -249,6 +250,12 @@ namespace Wisteria
                                                          L"win-loss-sparkline") == 0)
                                                 {
                                                 embeddedGraphs.push_back(WinLossSparkline(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
+                                                         L"waffle-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(WaffleChart(
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
@@ -2876,6 +2883,35 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::WaffleChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                               size_t& currentRow, size_t& currentColumn)
+        {
+        std::vector<GraphItems::ShapeInfo> shapes;
+
+        if (const auto shapesNode = graphNode->GetProperty(L"shapes"); shapesNode->IsOk())
+            {
+            if (shapesNode->IsValueArray())
+                {
+                auto nodes = shapesNode->AsNodes();
+                for (const auto& shpNode : nodes)
+                    {
+                    shapes.push_back(LoadShapeInfo(shpNode));
+                    }
+                }
+            }
+        else
+            {
+            throw std::runtime_error(_(L"No shapes provided for waffle chart.").ToUTF8());
+            }
+
+        auto waffleChart = std::make_shared<Graphs::WaffleChart>(canvas, shapes);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, waffleChart);
+        return waffleChart;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
     ReportBuilder::WinLossSparkline(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
                                     size_t& currentRow, size_t& currentColumn)
         {
@@ -3381,13 +3417,48 @@ namespace Wisteria
 
         auto shapeLabel = LoadLabel(shapeNode->GetProperty(L"label"), GraphItems::Label{});
 
+        double fillPercent{ math_constants::full };
+        const auto fillPercentNode = shapeNode->GetProperty(L"fill-percent");
+        if (fillPercentNode->IsOk())
+            {
+            if (fillPercentNode->IsValueNumber())
+                {
+                fillPercent = fillPercentNode->AsDouble(fillPercent);
+                }
+            else if (fillPercentNode->IsValueString())
+                {
+                if (const auto numberVal = ExpandNumericConstant(fillPercentNode->AsString()))
+                    {
+                    fillPercent = numberVal.value();
+                    }
+                }
+            }
+
+        double repeat{ 1.0 };
+        const auto repeatNode = shapeNode->GetProperty(L"repeat");
+        if (repeatNode->IsOk())
+            {
+            if (repeatNode->IsValueNumber())
+                {
+                repeat = repeatNode->AsDouble(repeat);
+                }
+            else if (repeatNode->IsValueString())
+                {
+                if (const auto numberVal = ExpandNumericConstant(repeatNode->AsString()))
+                    {
+                    repeat = numberVal.value();
+                    }
+                }
+            }
+
         return GraphItems::ShapeInfo{}
             .Shape(loadedShape.value())
             .Size(sz)
             .Pen(pen)
             .Brush(brush)
             .Text((shapeLabel != nullptr ? shapeLabel->GetText() : wxString{}))
-            .FillPercent(shapeNode->GetProperty(L"fill-percent")->AsDouble(1.0));
+            .Repeat(wxRound(repeat))
+            .FillPercent(fillPercent);
         }
 
     //---------------------------------------------------

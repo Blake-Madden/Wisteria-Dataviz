@@ -209,7 +209,8 @@ Properties for `"label"` nodes:
   - `"size"`: The size of the shape, which contains the following properties:
     - `"width"`: The width.
     - `"height"`: The height.
-  - `"fill-percent"`: The percent to fill the shape, which is a number between `0.0` and `1.0`.
+  - `"fill-percent"`: The percent to fill the shape, which is a number between `0.0` and `1.0`. \
+    This can either be a numeric value or a formula reference.
   Note that if multiple shapes are provided, then they will be drawn on top of each other, creating a composite shape.
 - `"top-shape-offset"`: A number specifying how far from the top of the label's box to draw the top shape or image.
   (Default is `0`.)
@@ -318,6 +319,8 @@ Properties for `"shape"` nodes:
 - `"size"`: The size of the shape, which contains the following properties:
   - `"width"`: The width.
   - `"height"`: The height.
+- `"repeat"`: The number of times to repeat the shape (only used by Waffle Charts). \
+  This can either be a numeric value or a formula reference.
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}

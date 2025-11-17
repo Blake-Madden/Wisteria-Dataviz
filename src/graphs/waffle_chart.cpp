@@ -13,8 +13,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    WaffleChart::WaffleChart(Canvas * canvas,
-                             const std::vector<std::pair<GraphItems::ShapeInfo, size_t>>& shapes)
+    WaffleChart::WaffleChart(Canvas * canvas, const std::vector<GraphItems::ShapeInfo>& shapes)
         : Graph2D(canvas)
         {
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
@@ -24,9 +23,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         GetTopXAxis().Show(false);
         GetRightYAxis().Show(false);
 
+        LoadShapeGrid(shapes);
+        }
+
+    //----------------------------------------------------------------
+    void WaffleChart::LoadShapeGrid(const std::vector<GraphItems::ShapeInfo>& shapes)
+        {
         const size_t numberOfShapes =
-            std::accumulate(shapes.begin(), shapes.end(), 0,
-                            [](const auto val, const auto& shp) { return shp.second + val; });
+            std::accumulate(shapes.begin(), shapes.end(), 0, [](const auto val, const auto& shp)
+                            { return shp.GetRepeatCount() + val; });
 
         const auto numOfRows = static_cast<size_t>(std::ceil(std::sqrt(numberOfShapes)));
         m_matrix.resize(numOfRows);
@@ -35,11 +40,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         size_t currentColumn{ 0 };
         const size_t maxCols{ numOfRows };
 
-        for (const auto& [info, count] : shapes)
+        for (const auto& shape : shapes)
             {
-            for (size_t i = 0; i < count; ++i)
+            for (size_t i = 0; i < shape.GetRepeatCount(); ++i)
                 {
-                m_matrix[currentRow].push_back(info);
+                m_matrix[currentRow].push_back(shape);
 
                 ++currentColumn;
                 // if row is full, go to next one

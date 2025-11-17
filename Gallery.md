@@ -45,6 +45,10 @@ Basic
 | :-------------- |
 | ![](docs/images/grouped-sankey.png) |
 
+| Waffle Chart (Wisteria::Graphs::WaffleChart) |
+| :-------------- |
+| ![](docs/images/WaffleChart.png) |
+
 | Word Cloud (Wisteria::Graphs::WordCloud) |
 | :-------------- |
 | ![](docs/images/wordcloud.png) |
