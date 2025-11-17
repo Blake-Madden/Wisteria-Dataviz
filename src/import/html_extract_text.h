@@ -811,15 +811,15 @@ namespace lily_of_the_valley
             }
 
         /// @brief Decodes JSON-style Unicode escapes from a text buffer.
-        /// @details Converts sequences of the form <tt>\u00XX</tt> into their ASCII
+        /// @details Converts sequences of the form <tt>\\u00XX</tt> into their ASCII
         ///     equivalents, as commonly emitted by OneDrive in embedded JSON metadata
-        ///     (e.g., <tt>\u0026</tt> → <tt>&</tt>, <tt>\u003C</tt> → <tt>&lt;</tt>).
+        ///     (e.g., <tt>\\u0026</tt> → <tt>&</tt>, <tt>\\u003C</tt> → <tt>&lt;</tt>).
         ///     Line breaks (<tt>CR</tt>/<tt>LF</tt>) are also stripped since they are
         ///     sometimes inserted arbitrarily by OneDrive. Invalid or incomplete escape
         ///     sequences are left unchanged.
         /// @param input The text to process, typically a substring extracted from HTML
         ///     containing escaped JSON values.
-        /// @returns A new string with all recognized <tt>\u00XX</tt> escapes decoded and
+        /// @returns A new string with all recognized <tt>\\u00XX</tt> escapes decoded and
         ///     line breaks removed.
         [[nodiscard]]
         static std::string decode_json_escapes(std::string_view input);
