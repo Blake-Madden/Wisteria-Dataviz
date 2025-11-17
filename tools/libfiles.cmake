@@ -52,6 +52,7 @@ SET(WISTERIA_SRC
     src/graphs/sankeydiagram.cpp
     src/graphs/scalechart.cpp
     src/graphs/table.cpp
+    src/graphs/waffle_chart.cpp
     src/graphs/wcurveplot.cpp
     src/graphs/win_loss_sparkline.cpp
     src/graphs/wordcloud.cpp
