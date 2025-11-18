@@ -682,6 +682,10 @@ The remaining properties are executed in the following order:
 Properties for `"waffle-chart"` nodes:
 
 - `"shapes"`: An array of [shape](#shape-properties) definitions.
+- `"grid-round"`: An optional definition to ensure the waffle has a minimum number of cells. \
+  Available options are:
+  - "cell-count"
+  - "shape-index"
 
 ```json
 {

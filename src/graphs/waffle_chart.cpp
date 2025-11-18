@@ -13,7 +13,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    WaffleChart::WaffleChart(Canvas * canvas, const std::vector<GraphItems::ShapeInfo>& shapes)
+    WaffleChart::WaffleChart(Canvas * canvas, std::vector<GraphItems::ShapeInfo> shapes,
+                             std::optional<GridRounding> gridRound /*= std::nullopt*/)
         : Graph2D(canvas)
         {
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
@@ -23,15 +24,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
         GetTopXAxis().Show(false);
         GetRightYAxis().Show(false);
 
-        LoadShapeGrid(shapes);
+        LoadShapeGrid(shapes, gridRound);
         }
 
     //----------------------------------------------------------------
-    void WaffleChart::LoadShapeGrid(const std::vector<GraphItems::ShapeInfo>& shapes)
+    void WaffleChart::LoadShapeGrid(std::vector<GraphItems::ShapeInfo> & shapes,
+                                    std::optional<GridRounding> gridRound)
         {
         const size_t numberOfShapes =
             std::accumulate(shapes.begin(), shapes.end(), 0, [](const auto val, const auto& shp)
                             { return shp.GetRepeatCount() + val; });
+        if (gridRound && numberOfShapes < gridRound.value().m_numberOfCells &&
+            gridRound.value().m_shapesIndex < shapes.size())
+            {
+            shapes[gridRound.value().m_shapesIndex].Repeat(
+                shapes[gridRound.value().m_shapesIndex].GetRepeatCount() +
+                (gridRound.value().m_numberOfCells - numberOfShapes));
+            }
 
         const auto numOfRows = static_cast<size_t>(std::ceil(std::sqrt(numberOfShapes)));
         m_matrix.resize(numOfRows);

@@ -2899,7 +2899,24 @@ namespace Wisteria
             throw std::runtime_error(_(L"No shapes provided for waffle chart.").ToUTF8());
             }
 
-        auto waffleChart = std::make_shared<Graphs::WaffleChart>(canvas, shapes);
+        std::optional<Graphs::WaffleChart::GridRounding> gridRound{ std::nullopt };
+        if (graphNode->HasProperty(L"grid-round"))
+            {
+            if (graphNode->GetProperty(L"grid-round")->HasProperty(L"cell-count") &&
+                graphNode->GetProperty(L"grid-round")->HasProperty(L"shape-index"))
+                {
+                gridRound = Graphs::WaffleChart::GridRounding{
+                    static_cast<size_t>(graphNode->GetProperty(L"grid-round")
+                                            ->GetProperty(L"cell-count")
+                                            ->AsDouble(100)),
+                    static_cast<size_t>(graphNode->GetProperty(L"grid-round")
+                                            ->GetProperty(L"shape-index")
+                                            ->AsDouble(100))
+                };
+                }
+            }
+
+        auto waffleChart = std::make_shared<Graphs::WaffleChart>(canvas, shapes, gridRound);
 
         LoadGraph(graphNode, canvas, currentRow, currentColumn, waffleChart);
         return waffleChart;
