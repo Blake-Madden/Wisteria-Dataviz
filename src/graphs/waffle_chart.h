@@ -32,7 +32,7 @@ namespace Wisteria::Graphs
 
       public:
         /// @brief Adds extra cells (using the specified index into the shapes)
-        ///     to ensure that the waffle has a minumum number of cells.
+        ///     to ensure that the waffle has a minimum number of cells.
         struct GridRounding
             {
             size_t m_numberOfCells{ 100 };
@@ -43,7 +43,7 @@ namespace Wisteria::Graphs
             @param canvas The canvas that the plot is plotted on.
             @param shapes The list of shapes (and respective repeat counts) to draw across
                 the waffle chart.
-            @param gridRound Ensures that a minumum number of cells are drawn. If the total
+            @param gridRound Ensures that a minimum number of cells are drawn. If the total
                 number of cells from the shapes' repeat counts is less than this, then extra
                 cells will be added to the specified shape (by index). This is useful for
                 when a cell represents percentages and the cells don't add to 100 because of
