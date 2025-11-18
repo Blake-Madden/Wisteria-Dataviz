@@ -5279,21 +5279,37 @@ namespace Wisteria
     //---------------------------------------------------
     wxColour ReportBuilder::ConvertColor(wxString colorStr) const
         {
+        long opacity{ wxALPHA_OPAQUE };
+        if (const auto colonPos = colorStr.find(L':'); colonPos != wxString::npos)
+            {
+            colorStr.substr(colonPos + 1).ToLong(&opacity);
+            colorStr = colorStr.substr(0, colonPos);
+            }
         // in case the color is a user-defined constant in the file
         colorStr = ExpandConstants(colorStr);
 
+        wxColour retColor;
         // see if it is one of our defined colors
         auto foundPos = m_colorMap.find(std::wstring_view(colorStr.MakeLower().wc_str()));
         if (foundPos != m_colorMap.cend())
             {
-            return Colors::ColorBrewer::GetColor(foundPos->second);
+            retColor = Colors::ColorBrewer::GetColor(foundPos->second);
             }
-        if (colorStr == L"transparent")
+        else if (colorStr == L"transparent")
             {
-            return wxTransparentColour;
+            retColor = wxTransparentColour;
+            }
+        // may be a hex string or RGB string
+        else
+            {
+            retColor = wxColour{ colorStr };
             }
 
-        return { colorStr };
+        if (opacity != wxALPHA_OPAQUE)
+            {
+            retColor = Colors::ColorContrast::ChangeOpacity(retColor, opacity);
+            }
+        return retColor;
         }
 
     //---------------------------------------------------
