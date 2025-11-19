@@ -114,7 +114,9 @@ namespace Wisteria::Icons
         Sunflower,                /*!< A sunflower (stigma and petals).*/
         CurvingRoad,              /*!< A curvy road.*/
         Pumpkin,                  /*!< A pumpkin.*/
-        JackOLantern              /*!< A jack-o'-lantern.*/
+        JackOLantern,             /*!< A jack-o'-lantern.*/
+        NumberRange               /*!< Two numbers with a bar (with dots on both ends)
+                                       between them.*/
         };
 
     /// @brief Item to draw on a legend.
@@ -266,7 +268,7 @@ namespace Wisteria::Icons
             Semesters() : IconScheme({ IconShape::FallLeaf, IconShape::Flower, IconShape::Sun }) {}
             };
         } // namespace Schemes
-    } // namespace Wisteria::Icons
+    }     // namespace Wisteria::Icons
 
 /** @}*/
 

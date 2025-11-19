@@ -246,7 +246,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::CrescentRight, &ShapeRenderer::DrawCrescentRight },
             { Icons::IconShape::CurvingRoad, &ShapeRenderer::DrawCurvingRoad },
             { Icons::IconShape::Pumpkin, &ShapeRenderer::DrawPumpkin },
-            { Icons::IconShape::JackOLantern, &ShapeRenderer::DrawJackOLantern }
+            { Icons::IconShape::JackOLantern, &ShapeRenderer::DrawJackOLantern },
+            { Icons::IconShape::NumberRange, &ShapeRenderer::DrawNumberRange }
         };
 
         // connect the rendering function to the shape
@@ -395,6 +396,188 @@ namespace Wisteria::GraphItems
         gc->SetBrush(brush);
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->FillPath(path);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawNumberRange(wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        //--------------------------------------
+        // Parse "left:right[:bottom]"
+        //--------------------------------------
+        const wxArrayString parts = wxSplit(GetGraphItemInfo().GetText(), ':');
+        if (parts.size() < 2)
+            {
+            return;
+            }
+
+        const wxString& leftText = parts[0];
+        const wxString& rightText = parts[1];
+
+        const bool hasBottomLine = (parts.size() >= 3);
+        wxString bottomText;
+        if (hasBottomLine)
+            {
+            bottomText = parts[2];
+            }
+
+        //--------------------------------------
+        // Split rect into top/bottom halves if needed
+        //--------------------------------------
+        wxRect topLineRect{ rect };
+        wxRect bottomLineRect;
+
+        if (hasBottomLine)
+            {
+            topLineRect.SetHeight(rect.GetHeight() / 2);
+            bottomLineRect = wxRect{ rect.GetX(), rect.GetY() + rect.GetHeight() / 2,
+                                     rect.GetWidth(), rect.GetHeight() / 2 };
+            }
+
+        //--------------------------------------
+        // Helper: Draw the top line (labels + dots + bar)
+        //--------------------------------------
+        auto drawTopLine = [&](const wxRect& r)
+        {
+            //--------------------------------------
+            // Scaled stroke & dots
+            //--------------------------------------
+            const double rawStroke = r.GetHeight() * 0.03;
+            const int penWidth =
+                std::max<int>(1, ScaleToScreenAndCanvas(static_cast<int>(rawStroke)));
+
+            const wxPen pen = GetGraphItemInfo().GetPen().IsOk() ?
+                                  wxPen{ GetGraphItemInfo().GetPen().GetColour(), penWidth,
+                                         GetGraphItemInfo().GetPen().GetStyle() } :
+                                  wxPen{ *wxBLACK, penWidth };
+
+            gc->SetPen(pen);
+            gc->SetBrush(wxBrush{ pen.GetColour() });
+
+            //--------------------------------------
+            // Layout
+            //--------------------------------------
+            const double cy = r.GetY() + r.GetHeight() * 0.50;
+
+            // Dot radius (smaller)
+            const double dotRadius = r.GetHeight() * (0.075 / 3);
+
+            // Left/right label regions
+            const double leftRegionWidth = r.GetWidth() * 0.20;
+            const double rightRegionWidth = r.GetWidth() * 0.20;
+
+            // Padding between labels and dots
+            const double dotPadding = r.GetWidth() * 0.04;
+
+            // Bar endpoints (account for dot radius + padding)
+            const double x1 = r.GetX() + leftRegionWidth + dotRadius + dotPadding;
+            const double x2 = r.GetRight() - rightRegionWidth - dotRadius - dotPadding;
+
+            //--------------------------------------
+            // Draw bar + dots
+            //--------------------------------------
+            gc->StrokeLine(x1, cy, x2, cy);
+            gc->DrawEllipse(x1 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
+            gc->DrawEllipse(x2 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
+
+            //--------------------------------------
+            // Label bounding box geometry
+            //--------------------------------------
+            const int labelWidth = static_cast<int>(leftRegionWidth * 0.85);
+            const int labelHeight = static_cast<int>(r.GetHeight() * 0.70);
+
+                //--------------------------------------
+                // Left label
+                //--------------------------------------
+                {
+                const wxPoint center(static_cast<int>(r.GetX() + leftRegionWidth * 0.5),
+                                     static_cast<int>(cy));
+
+                Label lbl{ GraphItemInfo(leftText)
+                               .Pen(wxNullPen)
+                               .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
+                                              GetGraphItemInfo().GetFontColor() :
+                                              *wxBLACK)
+                               .Font(GetGraphItemInfo().GetFont().MakeBold())
+                               .LabelAlignment(TextAlignment::Centered)
+                               .DPIScaling(GetDPIScaleFactor())
+                               .Anchoring(Anchoring::Center)
+                               .AnchorPoint(center)
+                               .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+
+                const wxRect bb(center.x - labelWidth / 2, center.y - labelHeight / 2, labelWidth,
+                                labelHeight);
+
+                lbl.SetBoundingBox(bb, dc, GetScaling());
+                lbl.Draw(dc);
+                }
+
+                //--------------------------------------
+                // Right label
+                //--------------------------------------
+                {
+                const double regionStart = r.GetRight() - rightRegionWidth;
+
+                const wxPoint center(static_cast<int>(regionStart + rightRegionWidth * 0.5),
+                                     static_cast<int>(cy));
+
+                Label lbl{ GraphItemInfo(rightText)
+                               .Pen(wxNullPen)
+                               .FontColor(GetGraphItemInfo().GetFontColor().IsOk() ?
+                                              GetGraphItemInfo().GetFontColor() :
+                                              *wxBLACK)
+                               .Font(GetGraphItemInfo().GetFont().MakeBold())
+                               .LabelAlignment(TextAlignment::Centered)
+                               .DPIScaling(GetDPIScaleFactor())
+                               .Anchoring(Anchoring::Center)
+                               .AnchorPoint(center)
+                               .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+
+                const wxRect bb(center.x - labelWidth / 2, center.y - labelHeight / 2, labelWidth,
+                                labelHeight);
+
+                lbl.SetBoundingBox(bb, dc, GetScaling());
+                lbl.Draw(dc);
+                }
+        };
+
+        //--------------------------------------
+        // Draw top line
+        //--------------------------------------
+        drawTopLine(topLineRect);
+
+        //--------------------------------------
+        // Draw bottom line (optional)
+        //--------------------------------------
+        if (hasBottomLine)
+            {
+            const double cy = bottomLineRect.GetY() + bottomLineRect.GetHeight() * 0.5;
+
+            const wxPoint anchor(bottomLineRect.GetX() + bottomLineRect.GetWidth() * 0.5, cy);
+
+            Label lbl{ GraphItemInfo(bottomText)
+                           .Pen(wxNullPen)
+                           .LabelAlignment(TextAlignment::Centered)
+                           .DPIScaling(GetDPIScaleFactor())
+                           .Anchoring(Anchoring::Center)
+                           .AnchorPoint(anchor)
+                           .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
+
+            lbl.SetBoundingBox(bottomLineRect, dc, GetScaling());
+            lbl.Draw(dc);
+            }
         }
 
     //---------------------------------------------------

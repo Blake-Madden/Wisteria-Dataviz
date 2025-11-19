@@ -167,7 +167,8 @@ namespace Wisteria
                 { L"sunflower", Icons::IconShape::Sunflower },
                 { L"curving-road", Icons::IconShape::CurvingRoad },
                 { L"pumpkin", Icons::IconShape::Pumpkin },
-                { L"jack-o-lantern", Icons::IconShape::JackOLantern }
+                { L"jack-o-lantern", Icons::IconShape::JackOLantern },
+                { L"number-range", Icons::IconShape::NumberRange }
             };
 
             const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));

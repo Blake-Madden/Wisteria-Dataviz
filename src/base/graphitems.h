@@ -782,6 +782,14 @@ namespace Wisteria
                 return m_textColor;
                 }
 
+            /** @brief Gets the font.
+                @returns The font.*/
+            [[nodiscard]]
+            wxFont GetFont() const
+                {
+                return m_font;
+                }
+
             /// @returns @c true if drawing a top border (with the object's pen).
             /// @note This is only relevant for object which are meant to draw an outline
             ///     (e.g., Labels and Graphs). This only returns the object's flag for this
