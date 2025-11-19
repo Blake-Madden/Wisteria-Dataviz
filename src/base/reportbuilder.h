@@ -478,6 +478,9 @@ namespace Wisteria
         std::optional<double> CalcValidN(const wxString& formula,
                                          const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]
+        std::optional<double> CalcMedian(const wxString& formula,
+                                         const std::shared_ptr<const Data::Dataset>& dataset) const;
+        [[nodiscard]]
         std::optional<double> CalcTotal(const wxString& formula,
                                         const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]]

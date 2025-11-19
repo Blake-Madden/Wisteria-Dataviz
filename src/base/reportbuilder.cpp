@@ -1143,7 +1143,7 @@ namespace Wisteria
         {
         const wxRegEx re(
             FunctionStartRegEx() +
-            LR"((min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname|add))" +
+            LR"((min|max|median|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname|add))" +
             OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
@@ -1151,6 +1151,11 @@ namespace Wisteria
             if (funcName.CmpNoCase(L"min") == 0 || funcName.CmpNoCase(L"max") == 0)
                 {
                 return CalcMinMax(formula, dataset);
+                }
+            else if (funcName.CmpNoCase(L"median") == 0)
+                {
+                const auto calcValue = CalcMedian(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
             else if (funcName.CmpNoCase(L"n") == 0)
                 {
@@ -1388,6 +1393,82 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<double>
+    ReportBuilder::CalcMedian(const wxString& formula,
+                              const std::shared_ptr<const Data::Dataset>& dataset) const
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: invalid dataset when calculating formula."), formula)
+                    .ToUTF8());
+            }
+        const wxRegEx reSimple(FunctionStartRegEx() + L"(median)" + OpeningParenthesisRegEx() +
+                               ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+        const wxRegEx reExtended(FunctionStartRegEx() + L"(median)" + OpeningParenthesisRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+        if (reSimple.Matches(formula))
+            {
+            const auto paramPartsCount = reSimple.GetMatchCount();
+            if (paramPartsCount >= 3)
+                {
+                const wxString columnName =
+                    ConvertColumnOrGroupParameter(reSimple.GetMatch(formula, 2), dataset);
+                if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
+                    {
+                    return dataset->GetContinuousMedian(columnName);
+                    }
+                }
+            // dataset or column name missing
+            else
+                {
+                return std::nullopt;
+                }
+            }
+        else if (reExtended.Matches(formula))
+            {
+            const auto paramPartsCount = reExtended.GetMatchCount();
+            if (paramPartsCount >= 5)
+                {
+                const wxString columnName =
+                    ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 2), dataset);
+                const wxString groupName =
+                    ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 3), dataset);
+                // if the group value is an embedded formula, then calculate it
+                const wxString groupValue =
+                    ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 4), dataset);
+                // get the group column and the numeric code for the value
+                const auto groupColumn = dataset->GetCategoricalColumn(groupName);
+                if (groupColumn == dataset->GetCategoricalColumns().cend())
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: group column not found."), groupName).ToUTF8());
+                    }
+                const auto groupID = groupColumn->GetIDFromLabel(groupValue);
+                if (!groupID)
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"Group ID for '%s' not found."), groupValue).ToUTF8());
+                    }
+                if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
+                    {
+                    return dataset->GetContinuousMedian(columnName, groupName, groupID.value());
+                    }
+                }
+            // dataset or something missing
+            else
+                {
+                return std::nullopt;
+                }
+            }
+        return std::nullopt;
+        }
+
+    //---------------------------------------------------
+    std::optional<double>
     ReportBuilder::CalcValidN(const wxString& formula,
                               const std::shared_ptr<const Data::Dataset>& dataset) const
         {
@@ -1611,6 +1692,11 @@ namespace Wisteria
                     {
                     const auto [minVal, maxVal] = dataset->GetContinuousMinMax(columnName);
                     return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
+                    }
+                else
+                    {
+                    wxLogWarning(L"'%s' column not found in call to MIN or MAX. "
+                                 "A continuous or categorical column was expected.");
                     }
                 }
             // dataset or column name missing

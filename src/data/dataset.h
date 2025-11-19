@@ -1435,6 +1435,22 @@ namespace Wisteria::Data
         GetContinuousMinMax(const std::variant<wxString, size_t>& column,
                             const std::optional<wxString>& groupColumn = std::nullopt,
                             std::optional<GroupIdType> groupId = std::nullopt) const;
+        /** @brief Gets the median from the specified continuous column,
+                (optionally) where the group ID is @c groupId.
+            @param column The name or index of the continuous column.
+            @param groupColumn The (optional) group column to filter with.
+            @param groupId The grouping ID to filter on (if a grouping column is being used).\n
+                If there is no grouping being used, then the full continuous column is reviewed.
+            @returns The median values, or NaN if no valid observations.
+            @note If there are no valid values, then will return NaN.
+            @throws std::runtime_error If provided columns cannot be found or if a grouping
+                column is provided without a group ID, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        double GetContinuousMedian(const std::variant<wxString, size_t>& column,
+                                   const std::optional<wxString>& groupColumn = std::nullopt,
+                                   std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Gets the total from the specified continuous column,
                 (optionally) where the group ID is @c groupId.
             @param column The name or index of the continuous column.

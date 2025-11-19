@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "dataset.h"
+#include "../math/statistics.h"
 #include <wx/numformatter.h>
 
 namespace Wisteria::Data
@@ -817,11 +818,11 @@ namespace Wisteria::Data
             (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
                                        GetCategoricalColumns().cend());
         assert((!groupColumn || groupId) &&
-               L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+               L"Group ID must be provided if using grouping for GetContinuousMinMax()!");
         if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': grouping column not found when calculating valid N."),
+                wxString::Format(_(L"'%s': grouping column not found when calculating min/max."),
                                  groupColumn.value())
                     .ToUTF8());
             }
@@ -829,7 +830,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(
                 wxString::Format(
-                    _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                    _(L"'%s': grouping ID not specified for column when calculating min/max."),
                     groupColumn.value())
                     .ToUTF8());
             }
@@ -854,6 +855,59 @@ namespace Wisteria::Data
                 }
             }
         return std::make_pair(minValue, maxValue);
+        }
+
+    //----------------------------------------------
+    double Dataset::GetContinuousMedian(const std::variant<wxString, size_t>& column,
+                                        const std::optional<wxString>& groupColumn,
+                                        const std::optional<GroupIdType> groupId) const
+        {
+        const auto continuousColumnIterator = GetContinuousColumn(column);
+        if (continuousColumnIterator == GetContinuousColumns().cend())
+            {
+            throw std::runtime_error(_(L"Column not found when calculating median.").ToUTF8());
+            }
+
+        // check grouping parameters
+        const auto groupColumnIterator =
+            (groupColumn.has_value() ? GetCategoricalColumn(groupColumn.value()) :
+                                       GetCategoricalColumns().cend());
+        assert((!groupColumn || groupId) &&
+               L"Group ID must be provided if using grouping for GetContinuousMedian()!");
+        if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': grouping column not found when calculating median."),
+                                 groupColumn.value())
+                    .ToUTF8());
+            }
+        if (groupColumn && !groupId)
+            {
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"'%s': grouping ID not specified for column when calculating median."),
+                    groupColumn.value())
+                    .ToUTF8());
+            }
+
+        // No rows or all NaN? Then return NaN.
+        if (GetContinuousColumnValidN(column, groupColumn, groupId) == 0)
+            {
+            return std::numeric_limits<double>::quiet_NaN();
+            }
+
+        std::vector<double> tempData;
+        tempData.reserve(GetRowCount());
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
+                ((groupColumnIterator == GetCategoricalColumns().cend()) ||
+                 (groupId && groupColumnIterator->GetValue(i) == groupId.value())))
+                {
+                tempData.push_back(continuousColumnIterator->GetValue(i));
+                }
+            }
+        return statistics::median(tempData);
         }
 
     //----------------------------------------------
