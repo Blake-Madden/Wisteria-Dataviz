@@ -1,5 +1,16 @@
 # Releases
 
+## 1.0.5 Release
+
+- New graph type:  Waffle Chart
+- Add new shapes:
+  - curvy road shape
+  - Pumpkin
+  - Jack-o'-lantern
+- Add new formulas to JSON syntax:
+  - `ADD`
+  - `MEDIAN`
+
 ## 1.0.4 Release
 
 - Add support for tied games to Win/Loss Sparkline
