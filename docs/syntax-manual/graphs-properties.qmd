@@ -237,12 +237,6 @@ Also, instead of properties, a single string can be specified indicating color f
 Properties for image import specifications:
 
 - `"path"`: A single file path to import for the image.
-- `"size"`: An array specifying the size to import the image as. \
-  (If this is omitted, the image's default size will be used.) \
-  Available options are:
-  - `"width"`
-  - `"height"` \
-  Note that the aspect ratio of the image's original size will be preserved.
 - `"paths"`: An array of file paths to import for the image.
 - `"stitch"`: A string specifying how to stitch multiple images together.
   (You must use `"paths"` to import multiple images.) \

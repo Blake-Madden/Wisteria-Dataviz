@@ -5677,6 +5677,16 @@ namespace Wisteria
         auto image = std::make_unique<GraphItems::Image>(bmp.ConvertToImage());
         if (image->IsOk())
             {
+            wxSize sz{ 32, 32 };
+            const auto sizeNode = imageNode->GetProperty(L"size");
+            if (sizeNode->IsOk())
+                {
+                sz.x = sizeNode->GetProperty(L"width")->AsDouble(bmp.GetScaledWidth());
+                sz.y = sizeNode->GetProperty(L"height")->AsDouble(bmp.GetScaledHeight());
+
+                image->SetSize(GraphItems::Image::ToBestSize(bmp.GetSize(), sz));
+                }
+
             // center by default, but allow LoadItems (below) to override that
             // if client asked for something else
             image->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
@@ -5740,16 +5750,6 @@ namespace Wisteria
                 {
                 bmp = GraphItems::Image::StitchHorizontally(bmps);
                 }
-            }
-
-        wxSize sz{ 32, 32 };
-        const auto sizeNode = bmpNode->GetProperty(L"size");
-        if (sizeNode->IsOk())
-            {
-            sz.x = sizeNode->GetProperty(L"width")->AsDouble(32);
-            sz.y = sizeNode->GetProperty(L"height")->AsDouble(32);
-
-            wxBitmap::Rescale(bmp, GraphItems::Image::ToBestSize(bmp.GetSize(), sz));
             }
 
         if (bmpNode->HasProperty(L"color-filter"))

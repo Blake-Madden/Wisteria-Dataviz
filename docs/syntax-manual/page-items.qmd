@@ -144,6 +144,12 @@ Properties for `"image"` nodes:
 
 - `"image-import"`: An image import specification.
   (See [image file properties](#image-file-properties).)
+- `"size"`: An array specifying the size to import the image as. \
+  (If this is omitted, the image's default size will be used.) \
+  Available options are:
+  - `"width"`
+  - `"height"` \
+  Note that the aspect ratio of the image's original size will be preserved.
 - `"resize-method"`: How the image's size is adjusted when its bounding box is changed. \
   Available options are:
   - `"downscale-only"`
