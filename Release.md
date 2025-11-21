@@ -4,7 +4,7 @@
 
 - New graph type:  Waffle Chart
 - Add new shapes:
-  - curvy road shape
+  - Curvy road
   - Pumpkin
   - Jack-o'-lantern
 - Add new formulas to JSON syntax:
