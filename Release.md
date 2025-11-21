@@ -1,5 +1,9 @@
 # Releases
 
+## 1.0.6 Release
+
+- Improved image scaling when loaded via JSON file
+
 ## 1.0.5 Release
 
 - New graph type:  Waffle Chart
