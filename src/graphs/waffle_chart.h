@@ -83,8 +83,7 @@ namespace Wisteria::Graphs
         void RecalcSizes(wxDC& dc) final;
 
         [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend(const LegendOptions& options) final;
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         std::vector<std::vector<GraphItems::ShapeInfo>> m_matrix;
         };

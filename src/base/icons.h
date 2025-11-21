@@ -268,7 +268,7 @@ namespace Wisteria::Icons
             Semesters() : IconScheme({ IconShape::FallLeaf, IconShape::Flower, IconShape::Sun }) {}
             };
         } // namespace Schemes
-    }     // namespace Wisteria::Icons
+    } // namespace Wisteria::Icons
 
 /** @}*/
 
