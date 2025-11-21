@@ -75,19 +75,15 @@ namespace Wisteria::Graphs
                           .Repeat(4) } });
             @endcode*/
         explicit WaffleChart(Canvas* canvas, std::vector<GraphItems::ShapeInfo> shapes,
-                             std::optional<GridRounding> gridRound = std::nullopt);
+                             const std::optional<GridRounding>& gridRound = std::nullopt);
 
       private:
         void LoadShapeGrid(std::vector<GraphItems::ShapeInfo>& shapes,
-                           std::optional<GridRounding> gridRound);
+                           const std::optional<GridRounding>& gridRound);
         void RecalcSizes(wxDC& dc) final;
 
-        [[deprecated("Waffle charts do not support legends.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend([[maybe_unused]] const LegendOptions& options) final
-            {
-            return nullptr;
-            }
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
         std::vector<std::vector<GraphItems::ShapeInfo>> m_matrix;
         };

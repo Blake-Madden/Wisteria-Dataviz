@@ -14,7 +14,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
     {
     //----------------------------------------------------------------
     WaffleChart::WaffleChart(Canvas * canvas, std::vector<GraphItems::ShapeInfo> shapes,
-                             std::optional<GridRounding> gridRound /*= std::nullopt*/)
+                             const std::optional<GridRounding>& gridRound /*= std::nullopt*/)
         : Graph2D(canvas)
         {
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
@@ -29,7 +29,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
 
     //----------------------------------------------------------------
     void WaffleChart::LoadShapeGrid(std::vector<GraphItems::ShapeInfo> & shapes,
-                                    std::optional<GridRounding> gridRound)
+                                    const std::optional<GridRounding>& gridRound)
         {
         const size_t numberOfShapes =
             std::accumulate(shapes.begin(), shapes.end(), 0, [](const auto val, const auto& shp)
@@ -125,5 +125,94 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                     }
                 }
             }
+        }
+
+    //-------------------------------------------------------------
+    std::unique_ptr<GraphItems::Label> WaffleChart::CreateLegend(const LegendOptions& options)
+        {
+        // Base legend label container
+        auto legend = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo()
+                .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
+                .DPIScaling(GetDPIScaleFactor())
+                .FontColor(GetLeftYAxis().GetFontColor()));
+
+        // collect unique legend entries by:
+        //   - shape icon
+        //   - brush color
+        struct LegendEntry
+            {
+            Icons::IconShape shape;
+            wxColour fillColor;
+            wxString label;
+            GraphItems::ShapeInfo shapeInfo;
+            };
+
+        std::vector<LegendEntry> entries;
+
+        const auto findMatch = [&](const GraphItems::ShapeInfo& shp)
+        {
+            return std::ranges::find_if(entries,
+                                        [&](const LegendEntry& entry)
+                                        {
+                                            return entry.shape == shp.GetShape() &&
+                                                   entry.fillColor == shp.GetBrush().GetColour();
+                                        });
+        };
+
+        for (const auto& row : m_matrix)
+            {
+            for (const auto& shp : row)
+                {
+                auto it = findMatch(shp);
+                if (it != entries.cend())
+                    {
+                    // duplicate based on (shape & fill color)
+                    // (update label to the newest one)
+                    it->label = shp.GetText();
+                    }
+                else
+                    {
+                    entries.push_back(
+                        { shp.GetShape(), shp.GetBrush().GetColour(), shp.GetText(), shp });
+                    }
+                }
+            }
+
+        // build legend text & icons
+        wxString legendText;
+        size_t count{ 0 };
+
+        for (const auto& entry : entries)
+            {
+            if (count == Settings::GetMaxLegendItemCount())
+                {
+                legendText.append(L"\u2026");
+                break;
+                }
+
+            wxString label = entry.label;
+
+            if (label.length() > Settings::GetMaxLegendTextLength() &&
+                Settings::GetMaxLegendTextLength() >= 1)
+                {
+                label.erase(Settings::GetMaxLegendTextLength() - 1);
+                label.append(L"\u2026");
+                }
+
+            legendText.append(label).append(L"\n");
+
+            // add icon
+            legend->GetLegendIcons().emplace_back(entry.shapeInfo.GetShape(),
+                                                  entry.shapeInfo.GetPen(), entry.fillColor);
+            ++count;
+            }
+
+        legend->SetText(legendText.Trim());
+
+        // placement and sizing adjustments
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
+
+        return legend;
         }
     } // namespace Wisteria::Graphs
