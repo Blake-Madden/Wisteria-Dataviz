@@ -158,7 +158,7 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::AdjustThumbnailsHorizontally()
         {
-        wxWindowUpdateLocker noUpdates(m_horizontalThumbsSizer->GetStaticBox());
+        const wxWindowUpdateLocker noUpdates(m_horizontalThumbsSizer->GetStaticBox());
         int maxHeight{ 0 };
         for (const auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
             {
@@ -174,7 +174,7 @@ namespace Wisteria::UI
                 {
                 const double percentOfMaxHeight{ safe_divide<double>(
                     thumb->GetImage().GetOriginalImage().GetHeight(), maxHeight) };
-                wxSize bestSize = thumb->GetImage().GetBestSize(
+                const wxSize bestSize = thumb->GetImage().GetBestSize(
                     wxSize{ FromDIP(512), static_cast<int>(percentOfMaxHeight * FromDIP(512)) });
                 sizerItem->SetMinSize(bestSize);
                 }
@@ -189,7 +189,7 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::AdjustThumbnailsVertically()
         {
-        wxWindowUpdateLocker noUpdates(m_verticalThumbsSizer->GetStaticBox());
+        const wxWindowUpdateLocker noUpdates(m_verticalThumbsSizer->GetStaticBox());
         int maxWidth{ 0 };
         for (const auto* sizerItem : m_verticalThumbsSizer->GetChildren())
             {
@@ -205,7 +205,7 @@ namespace Wisteria::UI
                 {
                 const double percentOfMaxWidth{ safe_divide<double>(
                     thumb->GetImage().GetOriginalImage().GetWidth(), maxWidth) };
-                wxSize bestSize = thumb->GetImage().GetBestSize(
+                const wxSize bestSize = thumb->GetImage().GetBestSize(
                     wxSize{ static_cast<int>(percentOfMaxWidth * FromDIP(512)), FromDIP(512) });
                 sizerItem->SetMinSize(bestSize);
                 }

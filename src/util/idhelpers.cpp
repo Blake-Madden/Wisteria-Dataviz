@@ -22,12 +22,12 @@ void MenuEnableItem(wxMenu* menu, const wxWindowID id, const bool enable)
          node = node->GetNext())
         {
         wxMenuItem* item = node->GetData();
-        if (item && item->GetId() == id)
+        if ((item != nullptr) && item->GetId() == id)
             {
             item->Enable(enable);
             }
         // go through any items on the submenu too (if there is one)
-        if (item && item->IsSubMenu())
+        if ((item != nullptr) && item->IsSubMenu())
             {
             MenuEnableItem(item->GetSubMenu(), id, enable);
             }

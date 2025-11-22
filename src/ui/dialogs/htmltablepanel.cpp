@@ -47,6 +47,6 @@ HtmlTablePanel::HtmlTablePanel(wxWindow* parent, const wxWindowID id, const wxCo
 //-------------------------------------------------------
 void HtmlTablePanel::OnButtonClick(wxCommandEvent& event)
     {
-    ParentEventBlocker blocker(GetHtmlWindow());
+    const ParentEventBlocker blocker(GetHtmlWindow());
     GetHtmlWindow()->ProcessWindowEvent(event);
     }

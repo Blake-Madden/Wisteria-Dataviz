@@ -43,7 +43,7 @@ namespace Wisteria::UI
         int GetNumberRows() final
             {
             assert(m_wrk && m_excelFile);
-            return m_wrk ? static_cast<int>(m_wrk->size()) : 0;
+            return (m_wrk != nullptr) ? static_cast<int>(m_wrk->size()) : 0;
             }
 
         /// @private
@@ -51,7 +51,7 @@ namespace Wisteria::UI
         int GetNumberCols() final
             {
             assert(m_wrk && m_excelFile);
-            return (m_wrk && m_wrk->size()) ? (*m_wrk)[0].size() : 0;
+            return ((m_wrk != nullptr) && !m_wrk->empty()) ? (*m_wrk)[0].size() : 0;
             }
 
         /// @private
@@ -127,28 +127,26 @@ namespace Wisteria::UI
                 {
                 return true;
                 }
-            else if (m_selectedColumns.contains(cell.GetCol()))
+            if (m_selectedColumns.contains(cell.GetCol()))
                 {
                 return true;
                 }
-            else if (std::ranges::find(m_selectedCells, cell) != m_selectedCells.end())
+            if (std::ranges::find(m_selectedCells, cell) != m_selectedCells.end())
                 {
                 return true;
                 }
-            else
+
+            for (const auto& selBlocks : m_selectedBlocks)
                 {
-                for (const auto& selBlocks : m_selectedBlocks)
+                if (cell.GetRow() >= selBlocks.first.GetRow() &&
+                    cell.GetRow() <= selBlocks.second.GetRow() &&
+                    cell.GetCol() >= selBlocks.first.GetCol() &&
+                    cell.GetCol() <= selBlocks.second.GetCol())
                     {
-                    if (cell.GetRow() >= selBlocks.first.GetRow() &&
-                        cell.GetRow() <= selBlocks.second.GetRow() &&
-                        cell.GetCol() >= selBlocks.first.GetCol() &&
-                        cell.GetCol() <= selBlocks.second.GetCol())
-                        {
-                        return true;
-                        }
+                    return true;
                     }
-                return false;
                 }
+            return false;
             }
 
         /// @returns Whether importing only the selected cells was specified.

@@ -367,7 +367,7 @@ class FileDownload
     /// @param localDownloadFolder Folder to download to
     ///     (file name will be extracted from the OneDrive information).
     /// @returns @c true if download was successful.
-    /// @note Call GetLastOneDriveFileName() afterwards to get the name of the downloaded file.
+    /// @note Call GetLastOneDriveFileName() afterward to get the name of the downloaded file.
     bool DownloadOneDriveFile(const wxString& url, const wxString& localDownloadFolder);
 
     /// @brief Reads the requested URL.

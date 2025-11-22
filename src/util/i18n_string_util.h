@@ -47,7 +47,7 @@ namespace i18n_string_util
     [[nodiscard]]
     constexpr static bool is_numeric_7bit(const wchar_t ch) noexcept
         {
-        return (ch >= L'0' && ch <= L'9') ? true : false;
+        return ch >= L'0' && ch <= L'9';
         }
 
     /** @returns @c true if a character is a letter

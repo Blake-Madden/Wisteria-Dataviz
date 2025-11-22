@@ -8,6 +8,7 @@
 
 #include "functionbrowserdlg.h"
 #include "wx/wupdlock.h"
+#include <utility>
 
 namespace Wisteria::UI
     {
@@ -57,7 +58,7 @@ namespace Wisteria::UI
             {
             m_categoryList->GetFolder(i).SortSubItems();
             }
-        if (m_categoryList->GetFolderCount())
+        if (m_categoryList->GetFolderCount() != 0U)
             {
             m_categoryList->SelectFolder(0);
             }
@@ -69,7 +70,7 @@ namespace Wisteria::UI
     //------------------------------------------------
     void FunctionBrowserCtrl::OnListSelected(wxCommandEvent& event)
         {
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
         if (event.GetId() == ID_CATEGORY_LIST)
             {
             auto pos = m_functionCollection.find(CategoryInfo(event.GetString().ToStdWstring()));
@@ -126,7 +127,7 @@ namespace Wisteria::UI
                 m_functionList->Clear();
                 m_functionList->Append(funcNames);
                 }
-            if (m_functionList->GetCount())
+            if (m_functionList->GetCount() != 0U)
                 {
                 if (pos != m_functionCollection.cend())
                     {
@@ -180,7 +181,7 @@ namespace Wisteria::UI
     //------------------------------------------------
     wxString FunctionBrowserCtrl::FormatFunctionSignature(wxString signature) const
         {
-        lily_of_the_valley::html_encode_text encode;
+        const lily_of_the_valley::html_encode_text encode;
         signature = encode({ signature.wc_str(), signature.length() }, true);
 
         size_t firstParanPos = signature.find(L'(');
@@ -227,8 +228,8 @@ namespace Wisteria::UI
     void FunctionBrowserCtrl::InsertFunction()
         {
         if (m_functionList->GetSelection() == wxNOT_FOUND ||
-            m_functionList->GetSelection() >=
-                static_cast<long>(m_currentFunctionsAndDescriptions.size()))
+            std::cmp_greater_equal(m_functionList->GetSelection(),
+                                   m_currentFunctionsAndDescriptions.size()))
             {
             wxMessageBox(_(L"Please select an item in the function list to insert."),
                          _(L"Invalid Selection"), wxOK | wxICON_INFORMATION);
@@ -236,13 +237,13 @@ namespace Wisteria::UI
             }
         if (m_editWindow != nullptr && m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
             {
-            lily_of_the_valley::html_extract_text filter_html;
+            lily_of_the_valley::html_extract_text filterHtml;
             wxString functionStr =
                 m_currentFunctionsAndDescriptions[m_functionList->GetSelection()].first;
-            functionStr = filter_html(functionStr, functionStr.length(), true, false);
+            functionStr = filterHtml(functionStr, functionStr.length(), true, false);
             wxString paramText;
             const bool hasParams = SplitFunctionAndParams(functionStr, paramText);
-            wxStyledTextCtrl* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
+            auto* styleWindow = dynamic_cast<wxStyledTextCtrl*>(m_editWindow);
             assert(styleWindow);
             if (hasParams)
                 {

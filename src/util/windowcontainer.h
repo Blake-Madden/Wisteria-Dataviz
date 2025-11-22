@@ -26,7 +26,7 @@ class WindowContainer
     void AddWindow(wxWindow* window)
         {
         // don't add any duplicate or null windows
-        if (!window)
+        if (window == nullptr)
             {
             return;
             }
@@ -46,7 +46,7 @@ class WindowContainer
     void InsertWindow(const int position, wxWindow* window)
         {
         // don't add any duplicate or null windows
-        if (!window)
+        if (window == nullptr)
             {
             return;
             }
@@ -77,7 +77,7 @@ class WindowContainer
         {
         for (auto pos = m_windows.cbegin(); pos != m_windows.cend(); ++pos)
             {
-            if (*pos && (*pos)->GetId() == id)
+            if ((*pos != nullptr) && (*pos)->GetId() == id)
                 {
                 m_windows.erase(pos);
                 return true;
@@ -94,7 +94,8 @@ class WindowContainer
         {
         for (auto pos = m_windows.cbegin(); pos != m_windows.cend(); ++pos)
             {
-            if (*pos && (*pos)->GetId() == id && (*pos)->GetName().CmpNoCase(label) == 0)
+            if ((*pos != nullptr) && (*pos)->GetId() == id &&
+                (*pos)->GetName().CmpNoCase(label) == 0)
                 {
                 m_windows.erase(pos);
                 return true;
@@ -121,7 +122,7 @@ class WindowContainer
         {
         for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
             {
-            if (*pos && (*pos)->GetId() == id)
+            if ((*pos != nullptr) && (*pos)->GetId() == id)
                 {
                 return *pos;
                 }
@@ -139,7 +140,7 @@ class WindowContainer
         assert(classInfo);
         for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
             {
-            if (*pos && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
+            if ((*pos != nullptr) && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
                 {
                 return *pos;
                 }
@@ -155,7 +156,8 @@ class WindowContainer
         {
         for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
             {
-            if (*pos && ((*pos)->GetId() == id) && (*pos)->GetName().CmpNoCase(label) == 0)
+            if ((*pos != nullptr) && ((*pos)->GetId() == id) &&
+                (*pos)->GetName().CmpNoCase(label) == 0)
                 {
                 return *pos;
                 }
@@ -169,10 +171,10 @@ class WindowContainer
     wxWindow* FindWindowByType(const wxClassInfo* classInfo)
         {
         assert(classInfo);
-        for (auto win : m_windows)
+        for (auto* win : m_windows)
             {
             assert(win && "NULL window in window container!");
-            if (win && win->IsKindOf(classInfo))
+            if ((win != nullptr) && win->IsKindOf(classInfo))
                 {
                 return win;
                 }
@@ -189,7 +191,7 @@ class WindowContainer
         for (auto win = m_windows.crbegin(); win != m_windows.crend(); ++win)
             {
             assert(*win && "NULL window in window container!");
-            if (*win && (*win)->IsKindOf(classInfo))
+            if ((*win != nullptr) && (*win)->IsKindOf(classInfo))
                 {
                 return *win;
                 }
@@ -204,7 +206,7 @@ class WindowContainer
         {
         for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
             {
-            if (*pos && (*pos)->GetId() == id)
+            if ((*pos != nullptr) && (*pos)->GetId() == id)
                 {
                 return (pos - m_windows.begin());
                 }
@@ -222,7 +224,7 @@ class WindowContainer
         assert(classInfo);
         for (auto pos = m_windows.begin(); pos != m_windows.end(); ++pos)
             {
-            if (*pos && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
+            if ((*pos != nullptr) && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
                 {
                 return (pos - m_windows.begin());
                 }

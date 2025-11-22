@@ -369,7 +369,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         }
     m_printWindow->Show(false);
     m_printWindow->SetBackgroundColour(Colors::ColorBrewer::GetColor(Colors::Color::White));
-    m_printWindow->SetFormattedText(GetUnthemedFormattedText().length() ?
+    m_printWindow->SetFormattedText(!GetUnthemedFormattedText().empty() ?
                                         GetUnthemedFormattedTextRtf(false) :
                                         GetFormattedTextRtf(false));
 #endif
@@ -513,23 +513,23 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     g_object_unref(settings);
 #else
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
-    const double PaperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
-    const double PaperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
+    const double paperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
+    const double paperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
 
     wxClientDC dc(this);
-    wxFont fixedFont(12, wxFontFamily::wxFONTFAMILY_MODERN, wxFontStyle::wxFONTSTYLE_NORMAL,
-                     wxFontWeight::wxFONTWEIGHT_NORMAL, false, L"Courier New");
+    const wxFont fixedFont(12, wxFontFamily::wxFONTFAMILY_MODERN, wxFontStyle::wxFONTSTYLE_NORMAL,
+                           wxFontWeight::wxFONTWEIGHT_NORMAL, false, L"Courier New");
     dc.SetFont(fixedFont);
     wxCoord textWidth{ 0 }, textHeight{ 0 };
     dc.GetTextExtent(L" ", &textWidth, &textHeight);
     const size_t spacesCount = (m_printData->GetOrientation() == wxPORTRAIT) ?
-                                   safe_divide<size_t>((PaperWidthInInches - .5f) * 72, textWidth) :
-                                   safe_divide<size_t>((PaperHeightInInches - .5f) * 72, textWidth);
+                                   safe_divide<size_t>((paperWidthInInches - .5f) * 72, textWidth) :
+                                   safe_divide<size_t>((paperHeightInInches - .5f) * 72, textWidth);
 
     // format the header
-    wxString expandedLeftHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
-    wxString expandedCenterHeader = ExpandUnixPrintString(GetCenterPrinterHeader());
-    wxString expandedRightHeader = ExpandUnixPrintString(GetRightPrinterHeader());
+    const wxString expandedLeftHeader = ExpandUnixPrintString(GetLeftPrinterHeader());
+    const wxString expandedCenterHeader = ExpandUnixPrintString(GetCenterPrinterHeader());
+    const wxString expandedRightHeader = ExpandUnixPrintString(GetRightPrinterHeader());
 
     wxString fullHeader = expandedLeftHeader;
     if (spacesCount >= (expandedLeftHeader.length() + expandedCenterHeader.length() +
@@ -550,9 +550,9 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         }
 
     // format the footer
-    wxString expandedLeftFooter = ExpandUnixPrintString(GetLeftPrinterFooter());
-    wxString expandedCenterFooter = ExpandUnixPrintString(GetCenterPrinterFooter());
-    wxString expandedRightFooter = ExpandUnixPrintString(GetRightPrinterFooter());
+    const wxString expandedLeftFooter = ExpandUnixPrintString(GetLeftPrinterFooter());
+    const wxString expandedCenterFooter = ExpandUnixPrintString(GetCenterPrinterFooter());
+    const wxString expandedRightFooter = ExpandUnixPrintString(GetRightPrinterFooter());
 
     wxString fullFooter = expandedLeftFooter;
     if (spacesCount >= (expandedLeftFooter.length() + expandedCenterFooter.length() +
@@ -733,7 +733,7 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    wxBusyCursor wait;
+    const wxBusyCursor wait;
     wxFileName filePath = dialog.GetPath();
     // in case the extension is missing then use the selected filter
     if (filePath.GetExt().empty())
@@ -770,15 +770,13 @@ bool FormattedTextCtrl::Save(const wxFileName& path)
         return SaveAsRtf(path);
         }
 #ifdef __WXGTK__
-    else if (path.GetExt().CmpNoCase(L"PANGO") == 0)
+    if (path.GetExt().CmpNoCase(L"PANGO") == 0)
         {
         return GtkSaveAsPango(path);
         }
 #endif
-    else
-        {
-        return SaveAsHtml(path);
-        }
+
+    return SaveAsHtml(path);
     }
 
 #ifdef __WXGTK__
@@ -802,9 +800,9 @@ bool FormattedTextCtrl::GtkSaveAsPango(const wxFileName& path)
 //------------------------------------------------------
 bool FormattedTextCtrl::SaveAsHtml(const wxFileName& path)
     {
-    wxString htmlBody = GetUnthemedFormattedTextHtml();
+    const wxString htmlBody = GetUnthemedFormattedTextHtml();
 
-    wxString htmlText = L"<!DOCTYPE html>\n<html>" + htmlBody + L"\n</html>";
+    const wxString htmlText = L"<!DOCTYPE html>\n<html>" + htmlBody + L"\n</html>";
 
     wxFileName(path.GetFullPath()).SetPermissions(wxS_DEFAULT);
     wxFile file(path.GetFullPath(), wxFile::write);
@@ -824,8 +822,8 @@ bool FormattedTextCtrl::SaveAsRtf(const wxFileName& path)
     wxFile file(path.GetFullPath(), wxFile::write);
     // export unthemed text (if available)
     const bool retVal =
-        file.Write((GetUnthemedFormattedText().length() ? GetUnthemedFormattedTextRtf() :
-                                                          GetFormattedTextRtf()));
+        file.Write((!GetUnthemedFormattedText().empty()) ? GetUnthemedFormattedTextRtf() :
+                                                           GetFormattedTextRtf());
     if (!retVal)
         {
         wxMessageBox(wxString::Format(_(L"Failed to save document (%s)."), path.GetFullPath()),
@@ -874,17 +872,17 @@ void FormattedTextCtrl::OnSelectAll([[maybe_unused]] wxCommandEvent& event) { Se
 //------------------------------------------------------
 void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event)
     {
-    wxString FormattedText;
+    wxString formattedText;
 #if defined(__WXMSW__) || defined(__WXOSX__)
-    FormattedText =
-        GetUnthemedFormattedText().length() ? GetUnthemedFormattedTextRtf() : GetFormattedTextRtf();
+    formattedText =
+        !GetUnthemedFormattedText().empty() ? GetUnthemedFormattedTextRtf() : GetFormattedTextRtf();
     if (wxTheClipboard->Open())
         {
-        if (FormattedText.length())
+        if (!formattedText.empty())
             {
             wxTheClipboard->Clear();
-            wxDataObjectComposite* obj = new wxDataObjectComposite();
-            obj->Add(new wxRtfDataObject(FormattedText), true);
+            auto* obj = new wxDataObjectComposite();
+            obj->Add(new wxRtfDataObject(formattedText), true);
             obj->Add(new wxTextDataObject(GetValue()));
             wxTheClipboard->SetData(obj);
             }
@@ -956,33 +954,34 @@ wxString FormattedTextCtrl::GetUnthemedFormattedTextHtml(
     [[maybe_unused]] const wxString& CssStylePrefix /*= wxString{}*/)
     {
 #if defined(__WXMSW__) || defined(__WXOSX__)
-    wxString rtfText = GetUnthemedFormattedText().length() ? GetUnthemedFormattedTextRtf(false) :
-                                                             GetFormattedTextRtf(false);
+    wxString const rtfText = !GetUnthemedFormattedText().empty() ?
+                                 GetUnthemedFormattedTextRtf(false) :
+                                 GetFormattedTextRtf(false);
     wxASSERT_MSG(rtfText.IsAscii(), L"RTF content must be 7-bit ASCII!");
 
-    lily_of_the_valley::rtf_extract_text filter_rtf(
+    lily_of_the_valley::rtf_extract_text filterRtf(
         lily_of_the_valley::rtf_extract_text::rtf_extraction_type::rtf_to_html);
-    filter_rtf.set_style_prefix(CssStylePrefix.wc_str());
+    filterRtf.set_style_prefix(CssStylePrefix.wc_str());
     // Should be 7-bit ASCII, but if not then at least convert to something usable and parse that.
     // Using mb_str() uses the system locale, which isn't deterministic and can completely fail
     // if this isn't valid 7-bit ASCII.
     const wxScopedCharBuffer buf = rtfText.utf8_str();
-    const wchar_t* htmlBody = filter_rtf(buf.data(), buf.length());
+    const wchar_t* htmlBody = filterRtf(buf.data(), buf.length());
     if (htmlBody == nullptr)
         {
         return {};
         }
     // RTF is always 7-bit ASCII, including the font name that we read from it
-    wxString fontString(filter_rtf.get_font().c_str());
+    const wxString fontString(filterRtf.get_font().c_str());
     wxString text = wxString::Format(
         L"\n<head>"
         "\n<meta http-equiv='content-type' content='text/html; charset=UTF-8' />"
         "\n<title>%s</title>"
         "\n<style type='text/css'>\n<!--\n%s\n-->\n</style>\n</head>"
         "\n<body>\n<p style='font-family: %s; font-size: %dpt; color: rgb(%u, %u, %u)'>",
-        GetTitleName(), filter_rtf.get_style_section().c_str(), fontString,
-        filter_rtf.get_font_size(), filter_rtf.get_font_color().red,
-        filter_rtf.get_font_color().green, filter_rtf.get_font_color().blue);
+        GetTitleName(), filterRtf.get_style_section().c_str(), fontString,
+        filterRtf.get_font_size(), filterRtf.get_font_color().red, filterRtf.get_font_color().green,
+        filterRtf.get_font_color().blue);
 
     // step over any leading line breaks
     while (std::wcsncmp(htmlBody, L"<br />", 6) == 0)
@@ -1084,7 +1083,7 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
                 text.find_first_of(L" \n\r\t\\", highlightTag + HIGHLIGHT_TAG.length());
             if (nextSpace != wxNOT_FOUND)
                 {
-                wxString highlightNumber =
+                const wxString highlightNumber =
                     text.substr(highlightTag + HIGHLIGHT_TAG.length(),
                                 (nextSpace - (highlightTag + HIGHLIGHT_TAG.length())));
                 correctedText.Append(highlightNumber + BACKGROUND_COLOR_TAG + highlightNumber +

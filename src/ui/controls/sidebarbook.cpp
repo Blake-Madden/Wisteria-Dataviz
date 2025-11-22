@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "sidebarbook.h"
+#include <utility>
 #include <wx/wupdlock.h>
 
 using namespace Wisteria::UI;
@@ -79,7 +80,7 @@ bool SideBarBook::AddPage(wxWindow* page, const wxString& text, const wxWindowID
 
     // if the inserted page is before the selected one, we must update the
     // index of the selected page
-    if (position <= static_cast<size_t>(m_selection))
+    if (std::cmp_less_equal(position, m_selection))
         {
         // one extra page added
         ++m_selection;
@@ -166,9 +167,8 @@ void SideBarBook::OnListSelected([[maybe_unused]] wxCommandEvent& event)
         return;
         }
     // if previous and new items are the same then don't change anything
-    if (oldSel != wxNOT_FOUND && oldSel < static_cast<int>(GetPageCount()) &&
-        (static_cast<size_t>(oldSel) == selNew.value() ||
-         m_pages[oldSel] == m_pages[selNew.value()]))
+    if (oldSel != wxNOT_FOUND && std::cmp_less(oldSel, GetPageCount()) &&
+        (std::cmp_equal(oldSel, selNew.value()) || m_pages[oldSel] == m_pages[selNew.value()]))
         {
         return;
         }
@@ -178,7 +178,7 @@ void SideBarBook::OnListSelected([[maybe_unused]] wxCommandEvent& event)
 //---------------------------------------------------
 bool SideBarBook::DeletePage(const size_t nPage)
     {
-    wxWindow* page = DoRemovePage(nPage);
+    const wxWindow* page = DoRemovePage(nPage);
     if (page == nullptr)
         {
         return false;
@@ -195,16 +195,16 @@ int SideBarBook::DoSetSelection(size_t nPage, int flags)
     {
     wxCHECK_MSG(nPage < GetPageCount(), wxNOT_FOUND, L"invalid page index in DoSetSelection()");
 
-    wxWindowUpdateLocker noUpdates(this);
+    const wxWindowUpdateLocker noUpdates(this);
 
     const int oldSel = GetSelection();
 
-    if (nPage != static_cast<size_t>(oldSel))
+    if (std::cmp_not_equal(nPage, oldSel))
         {
         wxBookCtrlEvent* event = CreatePageChangingEvent();
         bool allowed = false;
 
-        if (flags & SetSelection_SendEvent)
+        if ((flags & SetSelection_SendEvent) != 0)
             {
             event->SetSelection(static_cast<int>(nPage));
             event->SetOldSelection(oldSel);
@@ -213,7 +213,7 @@ int SideBarBook::DoSetSelection(size_t nPage, int flags)
             allowed = !GetEventHandler()->ProcessEvent(*event) || event->IsAllowed();
             }
 
-        if (!(flags & SetSelection_SendEvent) || allowed)
+        if (((flags & SetSelection_SendEvent) == 0) || allowed)
             {
             if (oldSel != wxNOT_FOUND)
                 {
@@ -227,7 +227,7 @@ int SideBarBook::DoSetSelection(size_t nPage, int flags)
             // change selection now to ignore the selection change event
             UpdateSelectedPage(nPage);
 
-            if (flags & SetSelection_SendEvent)
+            if ((flags & SetSelection_SendEvent) != 0)
                 {
                 // program allows the page change
                 MakeChangedEvent(*event);
@@ -279,7 +279,7 @@ wxSize SideBarBook::DoGetBestSize() const
             }
         }
 
-    if (m_fitToCurrentPage && GetCurrentPage())
+    if (m_fitToCurrentPage && (GetCurrentPage() != nullptr))
         {
         bestSize = GetCurrentPage()->GetBestSize();
         }
@@ -321,7 +321,7 @@ wxSize SideBarBook::CalcSizeFromPage(const wxSize& sizePage) const
 //---------------------------------------------------
 wxSize SideBarBook::GetControllerSize() const
     {
-    if (!GetSideBar() || !GetSideBar()->IsShown())
+    if ((GetSideBar() == nullptr) || !GetSideBar()->IsShown())
         {
         return { 0, 0 };
         }
@@ -390,13 +390,13 @@ void SideBarBook::OnSize(wxSizeEvent& event)
 //---------------------------------------------------
 void SideBarBook::DoSize()
     {
-    if (!GetSideBar())
+    if (GetSideBar() == nullptr)
         {
         // we're not fully created yet or OnSize() should be hidden by derived class
         return;
         }
 
-    if (GetSizer())
+    if (GetSizer() != nullptr)
         {
         Layout();
         }

@@ -33,7 +33,7 @@ void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
 //--------------------------------------------------
 wxString QueueDownload::GetLocalPath(const int ID) const
     {
-    std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
+    const std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     auto downloadInfo = m_downloads.find(ID);
     return (downloadInfo != m_downloads.cend()) ? downloadInfo->second : wxString{};
     }
@@ -41,7 +41,7 @@ wxString QueueDownload::GetLocalPath(const int ID) const
 //--------------------------------------------------
 void QueueDownload::Remove(const int ID)
     {
-    std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
+    const std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     auto downloadInfo = m_downloads.find(ID);
     if (downloadInfo != m_downloads.cend())
         {
@@ -120,7 +120,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
                 Remove(evt.GetId());
                 break;
                 }
-            else if (IsPeerVerifyDisabled())
+            if (IsPeerVerifyDisabled())
                 {
                 wxLogStatus(L"Credentials were requested, but will not be used because "
                             "SSL certificate verification is disabled.");
@@ -128,7 +128,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
                 break;
                 }
 
-            wxWebCredentials cred;
+            const wxWebCredentials cred;
             wxCredentialEntryDialog dialog(
                 wxTheApp->GetTopWindow(),
                 wxString::Format(_(L"Please enter credentials for accessing\n%s"),
@@ -165,9 +165,9 @@ bool FileDownload::DownloadOneDriveFile(const wxString& url, const wxString& loc
         }
     const std::string_view oneDrivePage(GetLastRead().data(), GetLastRead().size());
 
-    std::string fileName =
+    const std::string fileName =
         lily_of_the_valley::html_extract_text::extract_onedrive_filename(oneDrivePage);
-    std::string fileUrl =
+    const std::string fileUrl =
         lily_of_the_valley::html_extract_text::extract_json_field(oneDrivePage, "FileUrlNoAuth");
     if (!Download(fileUrl, localDownloadFolder + wxFileName::GetPathSeparator() + fileName))
         {
@@ -336,9 +336,9 @@ bool FileDownload::ReadOneDriveFile(const wxString& url)
         }
     const std::string_view oneDrivePage(GetLastRead().data(), GetLastRead().size());
 
-    std::string fileName =
+    const std::string fileName =
         lily_of_the_valley::html_extract_text::extract_onedrive_filename(oneDrivePage);
-    std::string fileUrl =
+    const std::string fileUrl =
         lily_of_the_valley::html_extract_text::extract_json_field(oneDrivePage, "FileUrlNoAuth");
     if (!Read(fileUrl))
         {
@@ -410,12 +410,10 @@ bool FileDownload::Read(const wxString& url)
 
         return (m_lastState == wxWebRequest::State_Completed);
         }
-    else
-        {
-        m_lastStatus = 204;
-        m_lastStatusText = _(L"Unable to send request");
-        return false;
-        }
+
+    m_lastStatus = 204;
+    m_lastStatusText = _(L"Unable to send request");
+    return false;
     }
 
 //--------------------------------------------------
@@ -453,7 +451,7 @@ void FileDownload::LoadResponseInfo(const wxWebRequestEvent& evt)
         hExtract.include_no_script_sections(true);
         const wchar_t* const filteredMsg =
             hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
-        if (filteredMsg != nullptr && hExtract.get_filtered_text_length())
+        if (filteredMsg != nullptr && (hExtract.get_filtered_text_length() != 0U))
             {
             m_lastStatusInfo.assign(filteredMsg, hExtract.get_filtered_text_length());
             m_lastStatusInfo.Trim(true).Trim(false);
@@ -499,7 +497,7 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
             if (m_useSuggestedFileName && !m_lastSuggestedFileName.empty())
                 {
                 wxFileName fn{ m_downloadPath };
-                wxString originalExt{ fn.GetExt() };
+                const wxString originalExt{ fn.GetExt() };
                 fn.SetFullName(m_lastSuggestedFileName);
                 if (!fn.HasExt())
                     {
@@ -542,7 +540,7 @@ void FileDownload::ProcessRequest(const wxWebRequestEvent& evt)
             m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
             if (m_buffer.size() > 1)
                 {
-                evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
+                evt.GetResponse().GetStream()->ReadAll(m_buffer.data(), m_buffer.size() - 1);
                 }
             }
         m_statusHasBeenProcessed = true;

@@ -42,7 +42,7 @@ namespace Wisteria
             }
         const char* startOfCurrentSequence = text;
         const char* invalidSequence = text;
-        while (invalidSequence)
+        while (invalidSequence != nullptr)
             {
             invalidSequence = utf8::find_invalid(invalidSequence, text + length);
             // note that find_invalid returns the item at the end of the string
@@ -133,14 +133,12 @@ namespace Wisteria
                             convertUnicodeText.get_filtered_text_length(), dest);
                 return true; // already null terminated, so we're done, return from here.
                 }
-            else
-                {
-                wxLogError(L"Internal buffer not large enough for Unicode conversion.");
-                return false;
-                }
+
+            wxLogError(L"Internal buffer not large enough for Unicode conversion.");
+            return false;
             }
         // if UTF-8 (or simply 7-bit ANSI)
-        else if (utf8::is_valid(text, text + length))
+        if (utf8::is_valid(text, text + length))
             {
             if (length >= 3 && utf8::starts_with_bom(text, text + length))
                 {
@@ -221,7 +219,7 @@ namespace Wisteria
                         }
                     // quneiform-suppress-begin
                     // or fall back to the system default
-                    else if (wxConvCurrent != nullptr)
+                    if (wxConvCurrent != nullptr)
                         {
                         conversionResult = wxConvCurrent->ToWChar(dest, destLength, text, length);
                         // if the conversion with current locale failed,
@@ -246,10 +244,8 @@ namespace Wisteria
             *dest = 0;
             return true;
             }
-        else
-            {
-            return false;
-            }
+
+        return false;
         }
 
     //------------------------------------------------
@@ -296,7 +292,7 @@ namespace Wisteria
                     {
                     return false;
                     }
-                wxFileName fn(filePath);
+                const wxFileName fn(filePath);
                 wxFileDialog dialog(nullptr, _(L"Select File"), fn.GetPath(), fn.GetName(),
                                     wxFileSelectorDefaultWildcardStr,
                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);

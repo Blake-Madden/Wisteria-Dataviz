@@ -35,8 +35,7 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        GetDirFilterDialog(wxWindow* parent, const wxString& fullFileFilter,
-                           wxWindowID id = wxID_ANY,
+        GetDirFilterDialog(wxWindow* parent, wxString fullFileFilter, wxWindowID id = wxID_ANY,
                            const wxString& caption = _(L"Select Directory"),
                            const wxPoint& pos = wxDefaultPosition,
                            const wxSize& size = wxDefaultSize,

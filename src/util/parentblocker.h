@@ -9,12 +9,9 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __PARENT_BLOCKER_H__
-#define __PARENT_BLOCKER_H__
+#ifndef WISTERIA_PARENT_BLOCKER_H
+#define WISTERIA_PARENT_BLOCKER_H
 
-#include <string>
-#include <wx/string.h>
-#include <wx/utils.h>
 #include <wx/window.h>
 
 /** @brief Temporarily prevents a window from propagating its event to its parent.
@@ -26,9 +23,10 @@ class ParentEventBlocker
   public:
     /** @brief Constructor/
         @param window The window whose event propagation should be blocked temporarily.*/
-    explicit ParentEventBlocker(wxWindow* window) : m_window(window)
+    explicit ParentEventBlocker(wxWindow* window)
+        : m_window(window), m_style(window->GetExtraStyle())
         {
-        m_style = m_window->GetExtraStyle();
+
         m_window->SetExtraStyle(m_style | wxWS_EX_BLOCK_EVENTS);
         }
 
@@ -47,4 +45,4 @@ class ParentEventBlocker
 
     /** @}*/
 
-#endif //__PARENT_BLOCKER_H__
+#endif // WISTERIA_PARENT_BLOCKER_H

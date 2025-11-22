@@ -215,11 +215,9 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
             m_open = true;
             return true;
             }
-        else
-            {
-            Reset();
-            throw MemoryMappedFileEmptyException();
-            }
+
+        Reset();
+        throw MemoryMappedFileEmptyException();
         }
     // now get a map of the file
     m_data = mmap(nullptr, m_mapSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE),
@@ -233,11 +231,9 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
             m_open = true;
             return true;
             }
-        else
-            {
-            Reset();
-            throw MemoryMappedFileException();
-            }
+
+        Reset();
+        throw MemoryMappedFileException();
         }
 #endif
     m_open = true;

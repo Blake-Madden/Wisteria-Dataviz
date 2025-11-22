@@ -76,7 +76,7 @@ namespace Wisteria::UI
         ///     a list's row), but the user may want to go into pseudo edit mode to select
         ///     portions of the text.
         void SetValue([[maybe_unused]] int row, [[maybe_unused]] int col,
-                      [[maybe_unused]] const wxString&) final
+                      [[maybe_unused]] const wxString& str) final
             {
             // no-op
             }

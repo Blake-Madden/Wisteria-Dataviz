@@ -14,7 +14,7 @@ using namespace Wisteria::UI;
 //------------------------------------------------------
 void ImageExportDlg::OnOptionsChanged([[maybe_unused]] wxCommandEvent& event)
     {
-    if (!m_previewThumbnail || !m_originalBitmap.IsOk())
+    if ((m_previewThumbnail == nullptr) || !m_originalBitmap.IsOk())
         {
         return;
         }
@@ -35,7 +35,7 @@ void ImageExportDlg::OnOptionsChanged([[maybe_unused]] wxCommandEvent& event)
 //------------------------------------------------------
 void ImageExportDlg::OnSizeChanged(const wxSpinEvent& event)
     {
-    std::pair<double, double> imgSize(m_options.m_imageSize.x, m_options.m_imageSize.y);
+    const std::pair<double, double> imgSize(m_options.m_imageSize.x, m_options.m_imageSize.y);
     TransferDataFromWindow();
 
     if (event.GetId() == ControlIDs::IMAGE_WIDTH_ID)
@@ -179,7 +179,7 @@ void ImageExportDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     {
     TransferDataFromWindow();
 
-    if (m_tiffCompressionCombo)
+    if (m_tiffCompressionCombo != nullptr)
         {
         switch (m_tiffCompressionCombo->GetSelection())
             {

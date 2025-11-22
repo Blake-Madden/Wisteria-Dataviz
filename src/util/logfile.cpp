@@ -17,6 +17,7 @@
 LogFile::LogFile(bool clearPreviousLog)
     : // will be a unique file name on a per-day basis
       m_logFilePath(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
                     wxTheApp->GetAppName() + wxGetUserName() + wxDateTime::Now().FormatISODate() +
                     L".log")
     {
@@ -131,7 +132,8 @@ void LogFile::DoLogRecord(const wxLogLevel level, const wxString& msg, const wxL
     m_buffer += wxString::Format(
         _DT(L"%s%s\t%s\t%s\t%s: line %d\n"), prefix, msg,
         wxDateTime(static_cast<wxLongLong>(info.timestampMS)).FormatISOCombined(' '),
-        (info.func ? wxString(info.func) : wxString(_DT(L"N/A"))),
-        (info.filename ? wxFileName(info.filename).GetFullName() : wxString(_DT(L"N/A"))),
+        ((info.func != nullptr) ? wxString(info.func) : wxString(_DT(L"N/A"))),
+        ((info.filename != nullptr) ? wxFileName(info.filename).GetFullName() :
+                                      wxString(_DT(L"N/A"))),
         info.line);
     }

@@ -20,13 +20,13 @@ bool HtmlTablePrintout::OnPrintPage(int page)
             GetScreenToPageScaling(scaleX, scaleY);
 
             // set a suitable scaling factor
-            const double scaleXReciprocal = safe_divide<double>(1.0f, scaleX);
-            const double scaleYReciprocal = safe_divide<double>(1.0f, scaleY);
+            const auto scaleXReciprocal = safe_divide<double>(1.0, scaleX);
+            const auto scaleYReciprocal = safe_divide<double>(1.0, scaleY);
             dc->SetUserScale(scaleX, scaleY);
 
             // get the size of the DC's drawing area in pixels
-            int drawingWidth, drawingHeight;
-            int dcWidth, dcHeight;
+            int drawingWidth{ 0 }, drawingHeight{ 0 };
+            int dcWidth{ 0 }, dcHeight{ 0 };
             dc->GetSize(&drawingWidth, &drawingHeight);
             dc->GetSize(&dcWidth, &dcHeight);
             drawingWidth *= scaleXReciprocal;
@@ -44,14 +44,14 @@ bool HtmlTablePrintout::OnPrintPage(int page)
             wxCoord textWidth{ 0 }, textHeight{ 0 };
             wxCoord bodyStart = marginY;
             dc->GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
-            if (GetLeftPrinterHeader().length() || GetCenterPrinterHeader().length() ||
-                GetRightPrinterHeader().length())
+            if (!GetLeftPrinterHeader().empty() || !GetCenterPrinterHeader().empty() ||
+                !GetRightPrinterHeader().empty())
                 {
                 topMargin += textHeight;
                 bodyStart += textHeight + marginY;
                 }
-            if (GetLeftPrinterFooter().length() || GetCenterPrinterFooter().length() ||
-                GetRightPrinterFooter().length())
+            if (!GetLeftPrinterFooter().empty() || !GetCenterPrinterFooter().empty() ||
+                !GetRightPrinterFooter().empty())
                 {
                 bottomMargin += textHeight;
                 }
@@ -82,16 +82,16 @@ bool HtmlTablePrintout::OnPrintPage(int page)
             {
                 // draw the headers
                 drawDC.SetDeviceOrigin(0, 0);
-                if (GetLeftPrinterHeader().length() || GetCenterPrinterHeader().length() ||
-                    GetRightPrinterHeader().length())
+                if (!GetLeftPrinterHeader().empty() || !GetCenterPrinterHeader().empty() ||
+                    !GetRightPrinterHeader().empty())
                     {
-                    if (GetLeftPrinterHeader().length())
+                    if (!GetLeftPrinterHeader().empty())
                         {
                         drawDC.DrawText(ExpandPrintString(GetLeftPrinterHeader()),
                                         static_cast<wxCoord>(marginX),
                                         static_cast<wxCoord>(marginY / 2));
                         }
-                    if (GetCenterPrinterHeader().length())
+                    if (!GetCenterPrinterHeader().empty())
                         {
                         drawDC.GetTextExtent(ExpandPrintString(GetCenterPrinterHeader()),
                                              &textWidth, &textHeight);
@@ -101,7 +101,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
                                                  safe_divide<double>(textWidth, 2)),
                             static_cast<wxCoord>(marginY / 2));
                         }
-                    if (GetRightPrinterHeader().length())
+                    if (!GetRightPrinterHeader().empty())
                         {
                         drawDC.GetTextExtent(ExpandPrintString(GetRightPrinterHeader()), &textWidth,
                                              &textHeight);
@@ -112,19 +112,19 @@ bool HtmlTablePrintout::OnPrintPage(int page)
                         }
                     }
                 // draw the footers
-                if (GetLeftPrinterFooter().length() || GetCenterPrinterFooter().length() ||
-                    GetRightPrinterFooter().length())
+                if (!GetLeftPrinterFooter().empty() || !GetCenterPrinterFooter().empty() ||
+                    !GetRightPrinterFooter().empty())
                     {
                     drawDC.GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
                     // move down past the print header area, drawing (tables) area,
                     // and half the bottom margin (to center the footer vertically)
                     const wxCoord yPos = topMargin + drawingHeight + (marginY / 2);
-                    if (GetLeftPrinterFooter().length())
+                    if (!GetLeftPrinterFooter().empty())
                         {
                         drawDC.DrawText(ExpandPrintString(GetLeftPrinterFooter()),
                                         static_cast<wxCoord>(marginX), yPos);
                         }
-                    if (GetCenterPrinterFooter().length())
+                    if (!GetCenterPrinterFooter().empty())
                         {
                         drawDC.GetTextExtent(ExpandPrintString(GetCenterPrinterFooter()),
                                              &textWidth, &textHeight);
@@ -133,7 +133,7 @@ bool HtmlTablePrintout::OnPrintPage(int page)
                                                              safe_divide<double>(textWidth, 2)),
                                         yPos);
                         }
-                    if (GetRightPrinterFooter().length())
+                    if (!GetRightPrinterFooter().empty())
                         {
                         drawDC.GetTextExtent(ExpandPrintString(GetRightPrinterFooter()), &textWidth,
                                              &textHeight);
@@ -163,15 +163,10 @@ bool HtmlTablePrintout::OnPrintPage(int page)
 
             return true;
             }
-        else
-            {
-            return false;
-            }
-        }
-    else
-        {
         return false;
         }
+
+    return false;
     }
 
 //--------------------------------------------
@@ -188,28 +183,28 @@ void HtmlTablePrintout::OnPreparePrinting()
         GetPageToScreenScaling(scaleDownX, scaleDownY);
 
         // Get the size of the DC's drawing area in pixels
-        wxCoord dcWidth, dcHeight;
+        wxCoord dcWidth{ 0 }, dcHeight{ 0 };
         dc->GetSize(&dcWidth, &dcHeight);
-        dc->SetUserScale(safe_divide<double>(1.0f, scaleDownX),
-                         safe_divide<double>(1.0f, scaleDownY));
+        dc->SetUserScale(safe_divide<double>(1.0, scaleDownX),
+                         safe_divide<double>(1.0, scaleDownY));
 
         const wxCoord drawingWidth =
             (dcWidth * scaleDownX) - (GetMarginPadding() * 2) /*side margins*/;
 
         // Measure a standard line of text
-        wxCoord textWidth, textHeight;
+        wxCoord textWidth{ 0 }, textHeight{ 0 };
         dc->GetTextExtent(L"AQ", &textWidth, &textHeight);
 
         // Remove the margins from the drawing area size
         wxCoord heightMargin = GetMarginPadding() * 2;
         // Remove space for the headers and footers (if being used)
-        if (GetLeftPrinterHeader().length() || GetCenterPrinterHeader().length() ||
-            GetRightPrinterHeader().length())
+        if (!GetLeftPrinterHeader().empty() || !GetCenterPrinterHeader().empty() ||
+            !GetRightPrinterHeader().empty())
             {
             heightMargin += textHeight + GetMarginPadding();
             }
-        if (GetLeftPrinterFooter().length() || GetCenterPrinterFooter().length() ||
-            GetRightPrinterFooter().length())
+        if (!GetLeftPrinterFooter().empty() || !GetCenterPrinterFooter().empty() ||
+            !GetRightPrinterFooter().empty())
             {
             heightMargin += textHeight + GetMarginPadding();
             }
@@ -224,8 +219,8 @@ void HtmlTablePrintout::OnPreparePrinting()
         wxMemoryDC memDc(m_printCanvas);
         memDc.Clear();
         wxGCDC gcdc(memDc);
-        gcdc.SetUserScale(safe_divide<double>(1.0f, scaleDownX),
-                          safe_divide<double>(1.0f, scaleDownY));
+        gcdc.SetUserScale(safe_divide<double>(1.0, scaleDownX),
+                          safe_divide<double>(1.0, scaleDownY));
         wxHtmlDCRenderer htmlRenderer;
         htmlRenderer.SetDC(&gcdc);
         htmlRenderer.SetSize(drawingWidth, drawingHeight);
@@ -242,9 +237,9 @@ void HtmlTablePrintout::OnPreparePrinting()
                 htmlRenderer.GetTotalHeight() + wxSizerFlags::GetDefaultBorder();
             if (currentPageHeight + currentTableHeight > drawingHeight)
                 {
-                m_pageStarts.push_back(std::make_pair(
+                m_pageStarts.emplace_back(
                     currentPageFirstTable,
-                    std::max(static_cast<int>(tablesIter - m_htmlTables.cbegin()), 1) - 1));
+                    std::max(static_cast<int>(tablesIter - m_htmlTables.cbegin()), 1) - 1);
                 currentPageFirstTable = static_cast<int>(tablesIter - m_htmlTables.cbegin());
                 currentPageHeight = currentTableHeight;
                 }
@@ -254,8 +249,8 @@ void HtmlTablePrintout::OnPreparePrinting()
                 }
             }
         // add the last page
-        m_pageStarts.push_back(
-            std::make_pair(currentPageFirstTable,
-                           std::max(static_cast<int>(tablesIter - m_htmlTables.cbegin()), 1) - 1));
+        m_pageStarts.emplace_back(
+            currentPageFirstTable,
+            std::max(static_cast<int>(tablesIter - m_htmlTables.cbegin()), 1) - 1);
         }
     }

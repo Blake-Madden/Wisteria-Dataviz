@@ -179,7 +179,7 @@ namespace Wisteria::UI
         void EnableVerboseLogging(const bool enable)
             {
             m_isLogVerbose = enable;
-            if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON && m_editButtonBar != nullptr)
+            if (((m_buttonStyle & LD_LOG_VERBOSE_BUTTON) != 0) && m_editButtonBar != nullptr)
                 {
                 m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_isLogVerbose);
                 }

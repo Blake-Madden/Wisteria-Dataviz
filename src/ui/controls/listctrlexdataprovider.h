@@ -44,7 +44,8 @@ namespace Wisteria::UI
 
             /// @private
             ListCell(const ListCell& that)
-                : m_attributes(that.m_attributes ? new wxItemAttr(*that.m_attributes) : nullptr),
+                : m_attributes((that.m_attributes != nullptr) ? new wxItemAttr(*that.m_attributes) :
+                                                                nullptr),
                   m_format(that.m_format)
                 {
                 }
@@ -58,7 +59,8 @@ namespace Wisteria::UI
                     }
 
                 wxDELETE(m_attributes);
-                m_attributes = that.m_attributes ? new wxItemAttr(*that.m_attributes) : nullptr;
+                m_attributes =
+                    (that.m_attributes != nullptr) ? new wxItemAttr(*that.m_attributes) : nullptr;
                 m_format = that.m_format;
                 return *this;
                 }
@@ -400,10 +402,8 @@ namespace Wisteria::UI
                 m_labelsMap.insert(std::make_pair(++m_currentLabelId, iterator));
                 return m_currentLabelId;
                 }
-            else
-                {
-                return iterator->second;
-                }
+
+            return iterator->second;
             }
 
         /// @returns The labels map.
@@ -423,10 +423,7 @@ namespace Wisteria::UI
                 {
                 return pos->second->first;
                 }
-            else
-                {
-                return m_emptyCell;
-                }
+            return m_emptyCell;
             }
 
       private:
@@ -498,25 +495,23 @@ namespace Wisteria::UI
                            result < 0 :
                            result > 0;
                 }
-            else
+
+            // go through all the columns
+            for (const auto& col : m_columnsToCompare)
                 {
-                // go through all the columns
-                for (const auto& col : m_columnsToCompare)
+                const int result = Compare(row1[col.first], row2[col.first]);
+                // if the cells are equal, then we need to compare the next
+                // column as a tiebreaker
+                if (result == 0)
                     {
-                    const int result = Compare(row1[col.first], row2[col.first]);
-                    // if the cells are equal, then we need to compare the next
-                    // column as a tiebreaker
-                    if (result == 0)
-                        {
-                        continue;
-                        }
-                    // otherwise, we have our result, so return it
-                    return (col.second == Wisteria::SortDirection::SortAscending) ? result < 0 :
-                                                                                    result > 0;
+                    continue;
                     }
-                // all the columns are the same, so it's neither less than nor greater than
-                return false;
+                // otherwise, we have our result, so return it
+                return (col.second == Wisteria::SortDirection::SortAscending) ? result < 0 :
+                                                                                result > 0;
                 }
+            // all the columns are the same, so it's neither less than nor greater than
+            return false;
             }
         };
 
@@ -546,27 +541,21 @@ namespace Wisteria::UI
                 return (Compare(row1[m_columnsToCompare[0].first],
                                 row2[m_columnsToCompare[0].first]) < 0);
                 }
-            else
+            // go through all the columns, except the last
+            for (const auto& col : m_columnsToCompare)
                 {
-                // go through all the columns, except the last
-                for (const auto& col : m_columnsToCompare)
+                const int result = Compare(row1[col.first], row2[col.first]);
+                // if the cells are equal, then we need to compare the next column as a
+                // tiebreaker
+                if (result == 0)
                     {
-                    const int result = Compare(row1[col.first], row2[col.first]);
-                    // if the cells are equal, then we need to compare the next column as a
-                    // tiebreaker
-                    if (result == 0)
-                        {
-                        continue;
-                        }
-                    // otherwise, we have our result, so return it
-                    else
-                        {
-                        return result < 0;
-                        }
+                    continue;
                     }
-                // all the columns are the same
-                return false;
+                // otherwise, we have our result, so return it
+                return result < 0;
                 }
+            // all the columns are the same
+            return false;
             }
         };
 
@@ -596,27 +585,25 @@ namespace Wisteria::UI
                 return (Compare(row1[m_columnsToCompare[0].first],
                                 row2[m_columnsToCompare[0].first]) > 0);
                 }
-            else
+
+            // go through all the columns
+            for (const auto& col : m_columnsToCompare)
                 {
-                // go through all the columns
-                for (const auto& col : m_columnsToCompare)
+                const int result = Compare(row1[col.first], row2[col.first]);
+                // if the cells are equal, then we need to compare the next
+                // column as a tiebreaker
+                if (result == 0)
                     {
-                    const int result = Compare(row1[col.first], row2[col.first]);
-                    // if the cells are equal, then we need to compare the next
-                    // column as a tiebreaker
-                    if (result == 0)
-                        {
-                        continue;
-                        }
-                    // otherwise, we have our result, so return it
-                    else
-                        {
-                        return result > 0;
-                        }
+                    continue;
                     }
-                // all the columns are the same
-                return false;
+                // otherwise, we have our result, so return it
+                else
+                    {
+                    return result > 0;
+                    }
                 }
+            // all the columns are the same
+            return false;
             }
         };
 
@@ -645,36 +632,31 @@ namespace Wisteria::UI
                     {
                     return row1[m_columnsToCompare[0].first] < row2[m_columnsToCompare[0].first];
                     }
+
+                return row1[m_columnsToCompare[0].first] > row2[m_columnsToCompare[0].first];
+                }
+            // go through all the columns
+            for (const auto& col : m_columnsToCompare)
+                {
+                const int result = row1[col.first].Compare(row2[col.first]);
+                // if the cells are equal, then we need to compare the next
+                // column as a tiebreaker
+                if (result == 0)
+                    {
+                    continue;
+                    }
+                // otherwise, we have our result, so return it
+                if (col.second == Wisteria::SortDirection::SortAscending)
+                    {
+                    return result < 0;
+                    }
                 else
                     {
-                    return row1[m_columnsToCompare[0].first] > row2[m_columnsToCompare[0].first];
+                    return result > 0;
                     }
                 }
-            else
-                {
-                // go through all the columns
-                for (const auto& col : m_columnsToCompare)
-                    {
-                    const int result = row1[col.first].Compare(row2[col.first]);
-                    // if the cells are equal, then we need to compare the next
-                    // column as a tiebreaker
-                    if (result == 0)
-                        {
-                        continue;
-                        }
-                    // otherwise, we have our result, so return it
-                    if (col.second == Wisteria::SortDirection::SortAscending)
-                        {
-                        return result < 0;
-                        }
-                    else
-                        {
-                        return result > 0;
-                        }
-                    }
-                // all the columns are the same
-                return false;
-                }
+            // all the columns are the same
+            return false;
             }
 
       private:
@@ -808,14 +790,12 @@ namespace Wisteria::UI
                 {
                 return cell.m_strVal;
                 }
-            else
-                {
-                assert(m_formatNumber);
-                return (m_formatNumber != nullptr) ?
-                           m_formatNumber->GetFormattedValue(cell.m_strVal.c_str(),
-                                                             cell.GetNumberFormatType()) :
-                           cell.m_strVal;
-                }
+
+            wxASSERT(m_formatNumber);
+            return (m_formatNumber != nullptr) ?
+                       m_formatNumber->GetFormattedValue(cell.m_strVal.c_str(),
+                                                         cell.GetNumberFormatType()) :
+                       cell.m_strVal;
             }
 
         /** @brief Sets the cell's text.
@@ -1229,20 +1209,18 @@ namespace Wisteria::UI
                     {
                     return GetLabel(cell.m_labelCode) + percentageLabel;
                     }
-                else
+
+                if (std::isnan(cell.m_numericValue))
                     {
-                    if (std::isnan(cell.m_numericValue))
-                        {
-                        return {};
-                        }
-                    return wxNumberFormatter::ToString(
-                               cell.m_numericValue, cell.GetNumberFormatType().m_precision,
-                               cell.GetNumberFormatType().m_displayThousandsSeparator ?
-                                   wxNumberFormatter::Style::Style_WithThousandsSep |
-                                       wxNumberFormatter::Style::Style_NoTrailingZeroes :
-                                   wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                           percentageLabel;
+                    return {};
                     }
+                return wxNumberFormatter::ToString(
+                           cell.m_numericValue, cell.GetNumberFormatType().m_precision,
+                           cell.GetNumberFormatType().m_displayThousandsSeparator ?
+                               wxNumberFormatter::Style::Style_WithThousandsSep |
+                                   wxNumberFormatter::Style::Style_NoTrailingZeroes :
+                               wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                       percentageLabel;
                 }
             else
                 {

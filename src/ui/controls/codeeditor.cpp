@@ -14,7 +14,6 @@
 #include <wx/wupdlock.h>
 
 using namespace Wisteria::UI;
-using namespace Wisteria::Colors;
 
 wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 
@@ -89,8 +88,8 @@ wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)
 //-------------------------------------------------------------
 void CodeEditor::SetThemeColor(const wxColour& background)
     {
-    const wxColour foreground = ColorContrast::BlackOrWhiteContrast(background);
-    ColorContrast contrast(background);
+    const wxColour foreground = Colors::ColorContrast::BlackOrWhiteContrast(background);
+    const Colors::ColorContrast contrast(background);
 
     StyleSetBackground(wxSTC_STYLE_DEFAULT, background);
     StyleSetForeground(wxSTC_STYLE_DEFAULT, foreground);
@@ -225,7 +224,7 @@ bool CodeEditor::Open()
         }
     const wxString filePath = dialogOpen.GetPath();
 
-    wxWindowUpdateLocker noUpdates(this);
+    const wxWindowUpdateLocker noUpdates(this);
     ClearAll();
     LoadFile(filePath);
     SetSelection(0, 0);
@@ -284,17 +283,17 @@ void CodeEditor::OnFind(const wxFindDialogEvent& event)
     {
     const int flags = event.GetFlags();
     int searchFlags = 0;
-    if (flags & wxFR_MATCHCASE)
+    if ((flags & wxFR_MATCHCASE) != 0)
         {
         searchFlags = searchFlags | wxSTC_FIND_MATCHCASE;
         }
-    if (flags & wxFR_WHOLEWORD)
+    if ((flags & wxFR_WHOLEWORD) != 0)
         {
         searchFlags = searchFlags | wxSTC_FIND_WHOLEWORD;
         }
 
     long foundPos{ wxSTC_INVALID_POSITION };
-    if (flags & wxFR_DOWN)
+    if ((flags & wxFR_DOWN) != 0)
         {
         foundPos = FindNext(event.GetFindString(), searchFlags);
         }
@@ -331,7 +330,7 @@ long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
                           const bool wrapAround /*= true*/)
     {
     SearchAnchor();
-    long selStart, selEnd;
+    long selStart = 0, selEnd = 0;
     GetSelection(&selStart, &selEnd);
     SetSelection(selEnd, selEnd);
     SearchAnchor();
@@ -344,7 +343,7 @@ long CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
         return foundPos;
         }
     // not found going forward, so start from beginning and try from there
-    else if (wrapAround)
+    if (wrapAround)
         {
         foundPos = FindText(0, GetLength(), textToFind, searchFlags);
         if (foundPos != wxSTC_INVALID_POSITION)
@@ -382,7 +381,7 @@ void CodeEditor::AddLibrary(const wxString& library, const NameList& functions)
         {
         const wxString funcName = StripExtraInfo(func);
         const wxString returnTypeStr = GetReturnType(func);
-        if (returnTypeStr.length())
+        if (!returnTypeStr.empty())
             {
             m_libraryFunctionsWithReturnTypes.insert(
                 std::make_pair(library + L"." + StripExtraInfo(func), returnTypeStr));
@@ -439,10 +438,8 @@ wxString CodeEditor::StripExtraInfo(const wxString& function)
         {
         return function.substr(0, extraInfoStart);
         }
-    else
-        {
-        return function;
-        }
+
+    return function;
     }
 
 //-------------------------------------------------------------
@@ -453,10 +450,8 @@ wxString CodeEditor::StripReturnType(const wxString& function)
         {
         return function.substr(0, retSepStart);
         }
-    else
-        {
-        return function;
-        }
+
+    return function;
     }
 
 //-------------------------------------------------------------
@@ -470,10 +465,8 @@ wxString CodeEditor::GetReturnType(const wxString& function)
         returnType.Trim(false);
         return returnType;
         }
-    else
-        {
-        return wxString{};
-        }
+
+    return wxString{};
     }
 
 //-------------------------------------------------------------
@@ -566,15 +559,10 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                         } while (foundPos < GetLength() && GetCharAt(foundPos) == L' ');
                     return GetTextRange(foundPos, WordEndPosition(foundPos, true));
                     }
-                else
-                    {
-                    continue;
-                    }
+
+                continue;
                 }
-            else
-                {
-                break;
-                }
+            break;
             }
         return wxString{};
     };
@@ -633,7 +621,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
             if (objectName == L"()")
                 {
                 // step over function...
-                int libNameEnd = WordStartPosition(objectNameStart - 1, false);
+                const int libNameEnd = WordStartPosition(objectNameStart - 1, false);
                 // ...then step back to name of library
                 objectNameStart = WordStartPosition(libNameEnd - 1, false);
                 const wxString libraryNameAndFuncSig = GetTextRange(objectNameStart, wordStart - 3);
@@ -723,7 +711,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
         const int wordStart = WordStartPosition(GetCurrentPos(), true);
         const wxString lastWord = GetTextRange(wordStart, GetCurrentPos());
 
-        if (lastWord.length())
+        if (!lastWord.empty())
             {
             // see if we are inside a library; if so show its list of functions
             if (wordStart > 2 && GetCharAt(wordStart - 1) == GetLibraryAccessor())
@@ -815,7 +803,7 @@ void CodeEditor::OnCharAdded(wxStyledTextEvent& event)
                     {
                     SetSelection(wordStart, wordStart + lastWord.length());
                     // tooltip the parameters (if applicable)
-                    if (params.length())
+                    if (!params.empty())
                         {
                         foundKeyword += L"(";
                         ReplaceSelection(foundKeyword);

@@ -106,7 +106,7 @@ namespace Wisteria::UI
                     {
                     m_thumbnail->LoadImage(selectedFile);
 
-                    wxFileName fn(selectedFile);
+                    const wxFileName fn(selectedFile);
                     wxDateTime accessedDt, modifiedDt, createdDt;
                     fn.GetTimes(&accessedDt, &modifiedDt, &createdDt);
                     const wxString fileInfo = wxString::Format(
@@ -197,7 +197,7 @@ namespace Wisteria::UI
             [this]([[maybe_unused]] wxCommandEvent&)
             {
                 SetCursor(*wxHOURGLASS_CURSOR);
-                wxWindowUpdateLocker lock(m_listCtrl);
+                const wxWindowUpdateLocker lock(m_listCtrl);
                 if (m_listCtrl->GetItemCount() > 0)
                     {
                     for (auto i = m_listCtrl->GetItemCount() - 1; i >= 0; --i)

@@ -53,7 +53,7 @@ GridExportDlg::GridExportDlg(
                 {
                 child->Enable();
                 }
-            auto rangeWindow =
+            auto* rangeWindow =
                 FindWindowById(ControlIDs::ID_ROWS_FROM_SPIN, m_rangeBoxSizer->GetStaticBox());
             if (rangeWindow)
                 {
