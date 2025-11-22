@@ -62,8 +62,7 @@ class ResourceManager
             return m_resourceFile;
             }
 
-                        return m_resourceFile + _DT(L"#zip:") + subFile;
-
+        return m_resourceFile + _DT(L"#zip:") + subFile;
         }
 
     /// @returns A bitmap from the provided path.
