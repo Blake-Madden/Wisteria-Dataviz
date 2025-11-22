@@ -303,7 +303,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 };
             }
 
-        wxFileName fn(filePath);
+        const wxFileName fn(filePath);
 
         // new bitmap to be used by preview image
         // (scale down size if on HiDPI)
@@ -339,7 +339,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     bool Canvas::Save(const wxFileName& filePath, const UI::ImageExportOptions& options)
         {
         // immediately recalc everything when we change the canvas size
-        CanvasResizeDelayChanger resizeDelay{ *this };
+        const CanvasResizeDelayChanger resizeDelay{ *this };
         DelayResizing(false);
 
         // create the folder to the filepath, if necessary
@@ -359,20 +359,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             height = options.m_imageSize.GetHeight();
             }
 
-        wxWindowUpdateLocker wl(this);
-        FitToSaveOptionsChanger fpc(this, wxSize(width, height));
+        const wxWindowUpdateLocker wl(this);
+        const FitToSaveOptionsChanger fpc(this, wxSize(width, height));
 
         if (filePath.GetExt().CmpNoCase(L"svg") == 0)
             {
-            wxSize CanvasMinSize = GetCanvasRectDIPs().GetSize();
-            CanvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), CanvasMinSize.GetWidth()));
-            CanvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), CanvasMinSize.GetHeight()));
+            wxSize canvasMinSize = GetCanvasRectDIPs().GetSize();
+            canvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), canvasMinSize.GetWidth()));
+            canvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), canvasMinSize.GetHeight()));
 
-            wxSVGFileDC svg(filePath.GetFullPath(), CanvasMinSize.GetWidth(),
-                            CanvasMinSize.GetHeight(), 72.0, GetLabel());
+            wxSVGFileDC svg(filePath.GetFullPath(), canvasMinSize.GetWidth(),
+                            canvasMinSize.GetHeight(), 72.0, GetLabel());
             svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler());
             // rescale everything to the SVG DC's scaling
-            wxEventBlocker blocker(this); // prevent resize event
+            const wxEventBlocker blocker(this); // prevent resize event
             CalcAllSizes(svg);
             OnDraw(svg);
             // readjust the measurements to the canvas's DC
@@ -380,96 +380,92 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             CalcAllSizes(gdc);
             return true;
             }
+
+        wxString ext{ filePath.GetExt() };
+        const wxBitmapType imageType = GraphItems::Image::GetImageFileTypeFromExtension(ext);
+
+        // new bitmap to be used by memory DC
+        wxBitmap exportFile;
+        exportFile.CreateWithDIPSize(wxSize{ width, height }, GetDPIScaleFactor());
+        GraphItems::Image::SetOpacity(exportFile, wxALPHA_OPAQUE, false);
+        wxMemoryDC memDc(exportFile);
+        memDc.Clear();
+#ifdef __WXMSW__
+        wxGraphicsContext* context{ nullptr };
+        auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+        if (renderer)
+            {
+            context = renderer->CreateContext(memDc);
+            }
+
+        if (context)
+            {
+            wxGCDC gcdc(context);
+            OnDraw(gcdc);
+            }
         else
             {
-            wxString ext{ filePath.GetExt() };
-            const wxBitmapType imageType = GraphItems::Image::GetImageFileTypeFromExtension(ext);
-
-            // new bitmap to be used by memory DC
-            wxBitmap exportFile;
-            exportFile.CreateWithDIPSize(wxSize{ width, height }, GetDPIScaleFactor());
-            GraphItems::Image::SetOpacity(exportFile, wxALPHA_OPAQUE, false);
-            wxMemoryDC memDc(exportFile);
-            memDc.Clear();
-#ifdef __WXMSW__
-            wxGraphicsContext* context{ nullptr };
-            auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-            if (renderer)
-                {
-                context = renderer->CreateContext(memDc);
-                }
-
-            if (context)
-                {
-                wxGCDC gcdc(context);
-                OnDraw(gcdc);
-                }
-            else
-                {
-                wxGCDC gcdc(memDc);
-                OnDraw(gcdc);
-                }
-#else
             wxGCDC gcdc(memDc);
             OnDraw(gcdc);
-#endif
-            // unlock the image from the DC
-            memDc.SelectObject(wxNullBitmap);
-
-            // save image with contents of the DC to a file
-            wxImage img(exportFile.ConvertToImage());
-
-            img.SetOption(wxIMAGE_OPTION_RESOLUTIONUNIT, wxIMAGE_RESOLUTION_INCHES);
-            img.SetOption(wxIMAGE_OPTION_RESOLUTIONX, Settings::GetImageResolutionDPI().GetWidth());
-            img.SetOption(wxIMAGE_OPTION_RESOLUTIONY,
-                          Settings::GetImageResolutionDPI().GetHeight());
-
-            // color mode
-            if (options.m_mode ==
-                static_cast<decltype(options.m_mode)>(UI::ImageExportOptions::ColorMode::Grayscale))
-                {
-                img = img.ConvertToGreyscale();
-                }
-
-            // image specific options
-            if (imageType == wxBITMAP_TYPE_TIF)
-                {
-                img.SetOption(wxIMAGE_OPTION_COMPRESSION,
-                              static_cast<int>(options.m_tiffCompression));
-                }
-            else if (imageType == wxBITMAP_TYPE_JPEG)
-                {
-                img.SetOption(wxIMAGE_OPTION_QUALITY, 100);
-                }
-            else if (imageType == wxBITMAP_TYPE_PNG)
-                {
-                img.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_LEVEL, 9);
-                if (!GetLabel().empty())
-                    {
-                    img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, GetLabel());
-                    }
-                } // max compression
-            else if (imageType == wxBITMAP_TYPE_GIF)
-                {
-                // "dumb" image down to 256 colors
-                wxQuantize::Quantize(img, img, 256);
-                img.ConvertAlphaToMask();
-                // use the comment field too
-                if (!GetLabel().empty())
-                    {
-                    img.SetOption(wxIMAGE_OPTION_GIF_COMMENT, GetLabel());
-                    }
-                }
-
-            if (!img.SaveFile(filePath.GetFullPath(), imageType))
-                {
-                wxMessageBox(
-                    wxString::Format(_(L"Failed to save image\n(%s)."), filePath.GetFullPath()),
-                    _(L"Save Error"), wxOK | wxICON_EXCLAMATION);
-                return false;
-                }
-            return true;
             }
+#else
+        wxGCDC gcdc(memDc);
+        OnDraw(gcdc);
+#endif
+        // unlock the image from the DC
+        memDc.SelectObject(wxNullBitmap);
+
+        // save image with contents of the DC to a file
+        wxImage img(exportFile.ConvertToImage());
+
+        img.SetOption(wxIMAGE_OPTION_RESOLUTIONUNIT, wxIMAGE_RESOLUTION_INCHES);
+        img.SetOption(wxIMAGE_OPTION_RESOLUTIONX, Settings::GetImageResolutionDPI().GetWidth());
+        img.SetOption(wxIMAGE_OPTION_RESOLUTIONY, Settings::GetImageResolutionDPI().GetHeight());
+
+        // color mode
+        if (options.m_mode ==
+            static_cast<decltype(options.m_mode)>(UI::ImageExportOptions::ColorMode::Grayscale))
+            {
+            img = img.ConvertToGreyscale();
+            }
+
+        // image specific options
+        if (imageType == wxBITMAP_TYPE_TIF)
+            {
+            img.SetOption(wxIMAGE_OPTION_COMPRESSION, static_cast<int>(options.m_tiffCompression));
+            }
+        else if (imageType == wxBITMAP_TYPE_JPEG)
+            {
+            img.SetOption(wxIMAGE_OPTION_QUALITY, 100);
+            }
+        else if (imageType == wxBITMAP_TYPE_PNG)
+            {
+            img.SetOption(wxIMAGE_OPTION_PNG_COMPRESSION_LEVEL, 9);
+            if (!GetLabel().empty())
+                {
+                img.SetOption(wxIMAGE_OPTION_PNG_DESCRIPTION, GetLabel());
+                }
+            } // max compression
+        else if (imageType == wxBITMAP_TYPE_GIF)
+            {
+            // "dumb" image down to 256 colors
+            wxQuantize::Quantize(img, img, 256);
+            img.ConvertAlphaToMask();
+            // use the comment field too
+            if (!GetLabel().empty())
+                {
+                img.SetOption(wxIMAGE_OPTION_GIF_COMMENT, GetLabel());
+                }
+            }
+
+        if (!img.SaveFile(filePath.GetFullPath(), imageType))
+            {
+            wxMessageBox(
+                wxString::Format(_(L"Failed to save image\n(%s)."), filePath.GetFullPath()),
+                _(L"Save Error"), wxOK | wxICON_EXCLAMATION);
+            return false;
+            }
+        return true;
         }
 
     //------------------------------------------
@@ -738,10 +734,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         /* The rendering area must have a minimum size of 700x500;
            otherwise, it will be crunched up and look bad.*/
-        wxSize CanvasMinSize = GetCanvasRectDIPs().GetSize();
-        CanvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), CanvasMinSize.GetWidth()));
-        CanvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), CanvasMinSize.GetHeight()));
-        m_rectDIPs.SetSize(CanvasMinSize);
+        wxSize canvasMinSize = GetCanvasRectDIPs().GetSize();
+        canvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), canvasMinSize.GetWidth()));
+        canvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), canvasMinSize.GetHeight()));
+        m_rectDIPs.SetSize(canvasMinSize);
 
         const wxCoord titleSpacingWidth = ScaleToScreenAndCanvas(2, dc);
 
@@ -1298,11 +1294,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         const auto tallyColumnsPercent = [this, &row]()
         {
             return std::accumulate(
-                GetFixedObjects().at(row).cbegin(), GetFixedObjects().at(row).cend(), 0.0f,
+                GetFixedObjects().at(row).cbegin(), GetFixedObjects().at(row).cend(), 0.0,
                 [](const auto initVal, const auto& item) noexcept
                 { return initVal + (item == nullptr ? 0 : item->GetCanvasWidthProportion()); });
         };
-        double totalPercent = tallyColumnsPercent();
+        const double totalPercent = tallyColumnsPercent();
         // if more than 100%, then we need to trim the other items in the row
         if (!compare_doubles(totalPercent, 1.0))
             {
@@ -1445,10 +1441,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             // If background color is bad, then just fill the canvas with white.
             // Otherwise, fill with color
-            wxDCBrushChanger bc(dc,
-                                !GetBackgroundColor().IsOk() ?
-                                    wxBrush{ Colors::ColorBrewer::GetColor(Colors::Color::White) } :
-                                    wxBrush(GetBackgroundColor()));
+            const wxDCBrushChanger bc(
+                dc, !GetBackgroundColor().IsOk() ?
+                        wxBrush{ Colors::ColorBrewer::GetColor(Colors::Color::White) } :
+                        wxBrush(GetBackgroundColor()));
             dc.DrawRectangle(GetCanvasRect(dc));
             }
 
@@ -1516,7 +1512,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
             // draw label
             {
-            wxDCFontChanger fc{ dc, m_watermarkFont };
+            const wxDCFontChanger fc{ dc, m_watermarkFont };
             DrawWatermarkLabel(
                 dc, GetCanvasRect(dc),
                 Watermark{ GetWatermark(),
@@ -1533,7 +1529,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);
-            GraphItems::Label infoLabel(
+            const GraphItems::Label infoLabel(
                 GraphItems::GraphItemInfo(m_debugInfo)
                     .AnchorPoint(bBox.GetBottomRight())
                     .Anchoring(Anchoring::BottomRightCorner)
@@ -1734,12 +1730,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 event.Skip();
                 return; // we have our selection, so bail before hit testing everything else
                 }
-            else
-                {
-                assert(currentlyDraggedShape == nullptr &&
-                       L"Item being dragged should be null upon left mouse down!");
-                currentlyDraggedShape = nullptr;
-                }
+
+            wxASSERT_MSG(currentlyDraggedShape == nullptr,
+                         L"Item being dragged should be null upon left mouse down!");
+            currentlyDraggedShape = nullptr;
+
             // ...or the fixed items connected to the canvas's grid
             for (auto& fixedObjectsRow : GetFixedObjects())
                 {
@@ -1887,10 +1882,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // get out of full screen mode
         else if (event.GetKeyCode() == WXK_ESCAPE)
             {
-            auto parent = GetParent();
-            while (parent && parent->IsKindOf(CLASSINFO(wxFrame)))
+            auto* parent = GetParent();
+            while (parent != nullptr && parent->IsKindOf(CLASSINFO(wxFrame)))
                 {
-                auto parentFrame = dynamic_cast<wxFrame*>(parent);
+                auto* parentFrame = dynamic_cast<wxFrame*>(parent);
                 if (parentFrame != nullptr)
                     {
                     parentFrame->ShowFullScreen(false);
@@ -1904,7 +1899,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                  event.GetKeyCode() == WXK_NUMPAD_LEFT || event.GetKeyCode() == WXK_LEFT ||
                  event.GetKeyCode() == WXK_NUMPAD_RIGHT || event.GetKeyCode() == WXK_RIGHT)
             {
-            wxGCDC gdc(this);
+            const wxGCDC gdc(this);
             bool movingFloatingObjects{ false };
             for (auto& floatingObj : GetFreeFloatingObjects())
                 {
@@ -2036,7 +2031,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     double Canvas::CalcMinHeightProportion(GraphItems::GraphItemBase & item)
         {
         wxGCDC gdc(this);
-        CanvasItemScalingChanger sc(item);
+        const CanvasItemScalingChanger sc(item);
         item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
         item.RecalcSizes(gdc);
         const auto bBox = item.GetBoundingBox(gdc);

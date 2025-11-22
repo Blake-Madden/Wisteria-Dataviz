@@ -26,7 +26,7 @@ namespace Wisteria::GraphItems
         {
         if (IsSelected() && IsShowingLabelWhenSelected() && !GetText().empty())
             {
-            const wxRect ItemBoundingBox(GetBoundingBox(dc));
+            const wxRect itemBoundingBox(GetBoundingBox(dc));
             GraphItems::Label selectionLabel(
                 GraphItemInfo(GetGraphItemInfo())
                     .Scaling(scaling)
@@ -36,8 +36,8 @@ namespace Wisteria::GraphItems
                     .FontBackgroundColor(Colors::ColorBrewer::GetColor(Colors::Color::White))
                     .Anchoring(Anchoring::Center)
                     .AnchorPoint(
-                        ItemBoundingBox.GetTopLeft() +
-                        wxPoint(ItemBoundingBox.GetWidth() / 2, ItemBoundingBox.GetHeight() / 2)));
+                        itemBoundingBox.GetTopLeft() +
+                        wxPoint(itemBoundingBox.GetWidth() / 2, itemBoundingBox.GetHeight() / 2)));
             selectionLabel.GetFont().MakeSmaller();
             const wxRect selectionLabelBox = selectionLabel.GetBoundingBox(dc);
             // if going out of the bottom of the bounding box then move it up to fit
@@ -79,13 +79,13 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxBitmap GraphItemBase::ToBitmap(wxDC& dc) const
         {
-        const wxRect BoundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
-        wxBitmap bmp{ BoundingBox.GetWidth(), BoundingBox.GetHeight(), 32 };
+        const wxRect boundingBox = GetBoundingBox(dc).Inflate(ScaleToScreenAndCanvas(3));
+        wxBitmap bmp{ boundingBox.GetWidth(), boundingBox.GetHeight(), 32 };
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT, false);
 
             {
             wxMemoryDC memDc(bmp);
-            memDc.SetLogicalOrigin(BoundingBox.GetPosition().x, BoundingBox.GetPosition().y);
+            memDc.SetLogicalOrigin(boundingBox.GetPosition().x, boundingBox.GetPosition().y);
             Draw(memDc);
             }
 

@@ -131,7 +131,7 @@ namespace Wisteria
                 if (page->IsOk())
                     {
                     // create the canvas used for the page
-                    auto canvas = new Canvas(parent);
+                    auto* canvas = new Canvas(parent);
                     canvas->SetLabel(ExpandConstants(page->GetProperty(_DT(L"name"))->AsString()));
 
                     // page numbering
@@ -1010,7 +1010,7 @@ namespace Wisteria
 
                 return columns;
                 }
-            else if (paramPartsCount >= 3)
+            if (paramPartsCount >= 3)
                 {
                 const wxString columnPattern =
                     ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset);

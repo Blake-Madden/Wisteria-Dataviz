@@ -69,7 +69,7 @@ namespace Wisteria::GraphItems
             // main image
             {
             Image::SetOpacity(bmp, wxALPHA_TRANSPARENT, false);
-            wxMemoryDC memDC(bmp);
+            const wxMemoryDC memDC(bmp);
             wxGCDC gdc(memDC);
             Shape::Draw(wxRect(drawRect.GetSize()), gdc);
             }
@@ -77,7 +77,7 @@ namespace Wisteria::GraphItems
             // outline/skeleton of the shape)
             {
             Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT, false);
-            wxMemoryDC memDC(ghostedBmp);
+            const wxMemoryDC memDC(ghostedBmp);
             wxGCDC gdc(memDC);
 
             auto shapeInfo{ GraphItemBase::GetGraphItemInfo() };

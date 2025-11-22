@@ -67,7 +67,7 @@ namespace Wisteria::Colors
             fractBetween = normalizedValue - static_cast<double>(idx1);
             }
 
-        wxColour brewedColor(
+        const wxColour brewedColor(
             (m_colorSpectrum[idx2].Red() - m_colorSpectrum[idx1].Red()) * fractBetween +
                 m_colorSpectrum[idx1].Red(),
             (m_colorSpectrum[idx2].Green() - m_colorSpectrum[idx1].Green()) * fractBetween +

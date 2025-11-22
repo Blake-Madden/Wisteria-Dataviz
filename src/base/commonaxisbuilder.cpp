@@ -204,7 +204,7 @@ namespace Wisteria
                     rangesMinMax = minMaxVals;
                     }
                 }
-            for (auto& graph : graphs)
+            for (const auto& graph : graphs)
                 {
                 graph->GetLeftYAxis().SetRange(rangesMinMax.value().first,
                                                rangesMinMax.value().second,

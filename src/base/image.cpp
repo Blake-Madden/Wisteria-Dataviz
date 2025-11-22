@@ -198,6 +198,7 @@ namespace Wisteria::GraphItems
                 }
             else
                 {
+                // NOLINTBEGIN(cppcoreguidelines-no-malloc,hicpp-no-malloc)
                 // must use malloc (not new) when setting alpha channel
                 auto* alphaData = static_cast<unsigned char*>(malloc(pixelCount));
                 if (alphaData != nullptr)
@@ -205,6 +206,7 @@ namespace Wisteria::GraphItems
                     std::memset(alphaData, opacity, pixelCount);
                     image.SetAlpha(alphaData);
                     }
+                // NOLINTEND(cppcoreguidelines-no-malloc,hicpp-no-malloc)
                 }
             }
         }
