@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "archivedlg.h"
+#include <utility>
 #include <wx/artprov.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>
@@ -14,11 +15,11 @@
 namespace Wisteria::UI
     {
     ArchiveDlg::ArchiveDlg(
-        wxWindow* parent, const wxString& fullFileFilter, wxWindowID id /*= wxID_ANY*/,
+        wxWindow* parent, wxString fullFileFilter, wxWindowID id /*= wxID_ANY*/,
         const wxString& caption /*= _(L"Select Archive File")*/,
         const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
         long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
-        : m_fullFileFilter(fullFileFilter)
+        : m_fullFileFilter(std::move(fullFileFilter))
         {
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
                                         wxWS_EX_CONTEXTHELP);
@@ -73,23 +74,23 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void ArchiveDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        wxBoxSizer* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* fileBrowseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(fileBrowseBoxSizer, wxSizerFlags{}.Expand().Border());
 
-        wxTextCtrl* filePathEdit =
+        auto* filePathEdit =
             new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                            wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
         filePathEdit->AutoCompleteFileNames();
         fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
 
-        wxBitmapButton* fileBrowseButton =
+        auto* fileBrowseButton =
             new wxBitmapButton(this, ID_FILE_BROWSE_BUTTON,
                                wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
         fileBrowseBoxSizer->Add(fileBrowseButton, wxSizerFlags{}.CenterVertical());
 
-        wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(fileTypeSizer, wxSizerFlags{}.Expand());
         fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:")),
                            wxSizerFlags{}.CenterVertical().Border(wxLEFT));
@@ -98,7 +99,7 @@ namespace Wisteria::UI
         while (tkz.HasMoreTokens())
             {
             wxString currentFilter = tkz.GetNextToken();
-            if (currentFilter.length() && currentFilter[0] != L'*')
+            if (!currentFilter.empty() && currentFilter[0] != L'*')
                 {
                 choiceStrings.Add(currentFilter);
                 }

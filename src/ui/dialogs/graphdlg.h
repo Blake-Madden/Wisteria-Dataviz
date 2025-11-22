@@ -32,8 +32,8 @@ namespace Wisteria::UI
             @param caption the title of this dialog.
             @note This dialog takes ownership of the graph and will delete it upon destruction.
                 Therefore, the graph should be created on the heap (with @c new).*/
-        GraphDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
-                 const wxString& caption = _(L"View Graph"))
+        explicit GraphDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
+                          const wxString& caption = _(L"View Graph"))
             {
             Create(parent, id, caption, wxDefaultPosition, wxDefaultSize,
                    wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);

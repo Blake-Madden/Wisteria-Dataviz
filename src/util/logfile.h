@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LOGFILLE_H__
-#define __LOGFILLE_H__
+#ifndef WISTERIA_LOGFILLE_H
+#define WISTERIA_LOGFILLE_H
 
 #include <wx/log.h>
 #include <wx/string.h>
@@ -121,4 +121,4 @@ class LogFile final : public wxLog
 
     /** @}*/
 
-#endif //__LOGFILLE_H__
+#endif // WISTERIA_LOGFILLE_H

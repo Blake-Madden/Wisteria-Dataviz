@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __ID_HELPERS_H__
-#define __ID_HELPERS_H__
+#ifndef WISTERIA_ID_HELPERS_H
+#define WISTERIA_ID_HELPERS_H
 
 #include <wx/wx.h>
 
@@ -35,9 +35,8 @@ class IdRangeLock
   public:
     /** @brief Constructor.
         @param idCount The number of IDs to use in the range.*/
-    explicit IdRangeLock(const size_t idCount)
+    explicit IdRangeLock(const size_t idCount) : m_rangeBegin(m_firstId = m_startingId)
         {
-        m_rangeBegin = m_firstId = m_startingId;
         wxWindowID i = m_rangeBegin;
         for (/*already defined*/; static_cast<size_t>(i) < m_rangeBegin + idCount; ++i)
             {
@@ -118,4 +117,4 @@ class IdRange
 
     /** @}*/
 
-#endif //__ID_HELPERS_H__
+#endif // WISTERIA_ID_HELPERS_H

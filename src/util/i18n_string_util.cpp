@@ -100,12 +100,8 @@ namespace i18n_string_util
                     std::as_const(text), [](const auto chr) { return chr == L' '; });
                 // Has a suffix like ".com" but is lengthy and has no slash in it?
                 // Probably not really an URL then (might be a sentence missing a period).
-                if (firstSlash == std::wstring_view::npos && text.length() > 64 &&
-                    numberOfSpaces > 5)
-                    {
-                    return false;
-                    }
-                return true;
+                return !(firstSlash == std::wstring_view::npos && text.length() > 64 &&
+                         numberOfSpaces > 5);
                 }
             }
 
@@ -271,12 +267,8 @@ namespace i18n_string_util
             string_util::strnicmp(text.substr(text.length() - (FILE_ADDRESS_MIN_LENGTH - 1)),
                                   std::wstring_view{ L"html" }) == 0)
             {
-            if (text.length() >= 6 &&
-                (text[text.length() - 6] == L'*' || text[text.length() - 6] == L' '))
-                {
-                return false;
-                }
-            return true;
+            return !(text.length() >= 6 &&
+                     (text[text.length() - 6] == L'*' || text[text.length() - 6] == L' '));
             }
         // 2-letter extensions
         if (text.length() >= BASIC_FILE_EXT_MIN_LENGTH &&
@@ -302,12 +294,8 @@ namespace i18n_string_util
                                                         std::wstring_view{ L".tar." }) == 0)
             {
             // see if it is really a typo (missing space after a sentence).
-            if (static_cast<bool>(std::iswupper(text[text.length() - 4])) &&
-                !static_cast<bool>(std::iswupper(text[text.length() - 3])))
-                {
-                return false;
-                }
-            return true;
+            return !(static_cast<bool>(std::iswupper(text[text.length() - 4])) &&
+                     !static_cast<bool>(std::iswupper(text[text.length() - 3])));
             }
         // C header/source files, which only have a letter in the extension,
         // but are common in documentation

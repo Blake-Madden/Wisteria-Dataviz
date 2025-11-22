@@ -8,6 +8,7 @@
 
 #include "radioboxdlg.h"
 #include "../../base/colorbrewer.h"
+#include <utility>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -17,7 +18,7 @@ namespace Wisteria::UI
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        auto banner = new wxBannerWindow(this, wxTOP);
+        auto* banner = new wxBannerWindow(this, wxTOP);
         banner->SetText(m_bannerLabel, m_bannerDescription);
         banner->SetGradient(banner->GetBackgroundColour(),
                             Colors::ColorContrast::ShadeOrTint(banner->GetBackgroundColour()));
@@ -35,7 +36,7 @@ namespace Wisteria::UI
             m_descriptionLabel =
                 new wxHtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize{ -1, FromDIP(125) },
                                  wxHW_SCROLLBAR_AUTO | wxBORDER_THEME | wxHW_NO_SELECTION);
-            if (m_selected < static_cast<int>(m_descriptions.GetCount()))
+            if (std::cmp_less(m_selected, m_descriptions.GetCount()))
                 {
                 m_descriptionLabel->SetPage(
                     wxString::Format(L"<html><body bgcolor=%s text=%s link=%s>",
@@ -65,7 +66,8 @@ namespace Wisteria::UI
     void RadioBoxDlg::OnRadioBoxChange([[maybe_unused]] wxCommandEvent& event)
         {
         TransferDataFromWindow();
-        if (m_descriptionLabel && (m_selected < static_cast<int>(m_descriptions.GetCount())))
+        if ((m_descriptionLabel != nullptr) &&
+            (std::cmp_less(m_selected, m_descriptions.GetCount())))
             {
             m_descriptionLabel->SetPage(
                 wxString::Format(

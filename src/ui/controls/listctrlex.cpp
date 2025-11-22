@@ -12,6 +12,7 @@
 #include "../dialogs/listctrlitemviewdlg.h"
 #include "../dialogs/listctrlsortdlg.h"
 #include "../dialogs/radioboxdlg.h"
+#include <utility>
 
 wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
 
@@ -26,8 +27,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         const wxSize& size /*= wxDefaultSize*/, long style /*= 0*/,
         const wxValidator& validator /*= wxDefaultValidator*/,
         const wxString& name /*= L"ListEditTextCtrl"*/)
-        : wxTextCtrl(parent, id, value, pos, size, style, validator, name), m_owner(owner),
-          m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
+        : wxTextCtrl(parent, id, value, pos, size, style, validator, name), m_owner(owner)
         {
         Bind(wxEVT_TEXT_ENTER, &ListEditTextCtrl::OnEnter, this);
         Bind(wxEVT_KILL_FOCUS, &ListEditTextCtrl::OnKillFocus, this);
@@ -151,7 +151,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
            this happens, the window of the focus event will be null, so ignore this event
            in that case.*/
         const wxWindow* focusedWindow = event.GetWindow();
-        if (!focusedWindow || (focusedWindow && focusedWindow->GetParent() == this))
+        if ((focusedWindow == nullptr) ||
+            ((focusedWindow != nullptr) && focusedWindow->GetParent() == this))
             {
             return;
             }
@@ -226,7 +227,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         double Min /* = 1.0*/, double Max /*= 100.0*/, double initial /*= 1.0*/,
         const wxString& name /*= L"ListEditSpinCtrlDouble"*/)
         : wxSpinCtrlDouble(parent, id, value, pos, size, style, Min, Max, initial, 1.0, name),
-          m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
+          m_owner(owner)
         {
         SetDigits(1);
         Bind(wxEVT_KILL_FOCUS, &ListEditSpinCtrlDouble::OnEndEditKillFocus, this);
@@ -380,7 +381,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         int flags = wxLIST_HITTEST_ONITEM;
         long selectedRow = HitTest(pt, flags);
 
-        if (GetWindowStyle() & wxLC_EDIT_LABELS)
+        if ((GetWindowStyle() & wxLC_EDIT_LABELS) != 0)
             {
             if (selectedRow == wxNOT_FOUND && IsItemAddingEnabled())
                 {
@@ -405,7 +406,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 }
             EditItem(selectedRow, selectedColumn);
             }
-        else if (m_enableItemViewable && (GetWindowStyle() & wxLC_REPORT))
+        else if (m_enableItemViewable && ((GetWindowStyle() & wxLC_REPORT) != 0))
             {
             ViewItem(selectedRow);
             }
@@ -437,7 +438,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::ViewItem(const long selectedRow)
         {
-        if ((GetWindowStyle() & wxLC_REPORT))
+        if ((GetWindowStyle() & wxLC_REPORT) != 0)
             {
             if (selectedRow == wxNOT_FOUND)
                 {
@@ -446,7 +447,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 return;
                 }
             ListCtrlItemViewDlg dlg;
-            FilePathResolverBase fileResolve;
+            const FilePathResolverBase fileResolve;
             for (long i = 0; i < GetColumnCount(); ++i)
                 {
                 dlg.AddValue(GetColumnName(i), GetItemTextFormatted(selectedRow, i));
@@ -476,16 +477,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             return m_virtualData->Find(textToFind, startIndex);
             }
-        else
-            {
-            return FindItem((startIndex == 0) ? -1 : startIndex, textToFind);
-            }
+
+        return FindItem((startIndex == 0) ? -1 : startIndex, textToFind);
         }
 
     //------------------------------------------------------
     void ListCtrlEx::RemoveAll(const wxString& valueToRemove)
         {
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         long index = 0;
@@ -508,7 +507,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DeleteSelectedItems()
         {
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
 
         long item = wxNOT_FOUND;
         const long firstSelected = GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -576,10 +575,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             std::vector<std::pair<size_t, Wisteria::SortDirection>> columns;
             for (size_t i = 0; i < columnsInfo.size(); ++i)
                 {
-                long index = FindColumn(columnsInfo[i].first);
+                const long index = FindColumn(columnsInfo[i].first);
                 if (index != wxNOT_FOUND)
                     {
-                    columns.push_back(std::make_pair(index, columnsInfo[i].second));
+                    columns.emplace_back(index, columnsInfo[i].second);
                     }
                 }
             SortColumns(columns);
@@ -591,7 +590,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         {
         // If the listctrl is editable and the user is doing a CTRL+V on the list then paste in
         // text from the clipboard as a new item
-        if ((GetWindowStyle() & wxLC_EDIT_LABELS) && event.ControlDown() &&
+        if (((GetWindowStyle() & wxLC_EDIT_LABELS) != 0) && event.ControlDown() &&
             event.GetKeyCode() == L'V')
             {
             Paste();
@@ -612,7 +611,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                   event.GetKeyCode() == WXK_NUMPAD7 || event.GetKeyCode() == WXK_NUMPAD8 ||
                   event.GetKeyCode() == WXK_NUMPAD9))
             {
-            int columnToCopy{ event.GetKeyCode() - WXK_NUMPAD1 };
+            const int columnToCopy{ event.GetKeyCode() - WXK_NUMPAD1 };
             wxString selectedFormattedText;
             FormatToHtml(selectedFormattedText, false, ExportRowSelection::ExportSelected, 0, -1,
                          columnToCopy, columnToCopy, false, true);
@@ -624,7 +623,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 // an empty cell should clear the clipboard
                 wxTheClipboard->Clear();
-                wxDataObjectComposite* obj = new wxDataObjectComposite();
+                auto* obj = new wxDataObjectComposite();
                 obj->Add(new wxHTMLDataObject(selectedFormattedText), true);
                 obj->Add(new wxTextDataObject(selectedText));
                 wxTheClipboard->SetData(obj);
@@ -639,7 +638,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                  (event.GetKeyCode() == WXK_DELETE || event.GetKeyCode() == WXK_NUMPAD_DELETE ||
                   event.GetKeyCode() == WXK_BACK))
             {
-            if (m_deletePrompt.length())
+            if (!m_deletePrompt.empty())
                 {
                 if (wxMessageBox(m_deletePrompt, _(L"Delete Item"), wxYES_NO | wxICON_WARNING) ==
                     wxNO)
@@ -649,12 +648,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 }
             DeleteSelectedItems();
             }
-        else if ((GetWindowStyle() & wxLC_EDIT_LABELS) && event.GetKeyCode() == WXK_F2)
+        else if (((GetWindowStyle() & wxLC_EDIT_LABELS) != 0) && event.GetKeyCode() == WXK_F2)
             {
             EditItem(GetFocusedItem(), 0);
             }
         else if ((event.GetKeyCode() == WXK_RETURN || event.GetKeyCode() == WXK_NUMPAD_ENTER) &&
-                 m_enableItemViewable && (GetWindowStyle() & wxLC_REPORT))
+                 m_enableItemViewable && ((GetWindowStyle() & wxLC_REPORT) != 0))
             {
             ViewItem(GetFocusedItem());
             }
@@ -684,8 +683,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         {
       public:
         ListCtrlExPrintout(const ListCtrlEx* list, const wxString& title)
-            : wxPrintout(title), m_list(list), m_lastRow(list ? list->GetItemCount() - 1 : -1),
-              m_lastColumn(list ? list->GetColumnCount() - 1 : -1)
+            : wxPrintout(title), m_list(list),
+              m_lastRow((list != nullptr) ? list->GetItemCount() - 1 : -1),
+              m_lastColumn((list != nullptr) ? list->GetColumnCount() - 1 : -1)
             {
             }
 
@@ -718,7 +718,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         bool HasPage(int pageNum) final
             {
-            return (pageNum >= 1 && pageNum <= static_cast<int>(m_pageStarts.size()));
+            return (pageNum >= 1 && std::cmp_less_equal(pageNum, m_pageStarts.size()));
             }
 
         void GetPageInfo(int* minPage, int* maxPage, int* selPageFrom, int* selPageTo) final
@@ -743,13 +743,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     GetScreenToPageScaling(scaleX, scaleY);
 
                     // set a suitable scaling factor
-                    const double scaleXReciprocal = safe_divide<double>(1.0f, scaleX);
-                    const double scaleYReciprocal = safe_divide<double>(1.0f, scaleY);
+                    const auto scaleXReciprocal = safe_divide<double>(1.0, scaleX);
+                    const auto scaleYReciprocal = safe_divide<double>(1.0, scaleY);
                     dc->SetUserScale(scaleX, scaleY);
 
                     // get the size of the DC's drawing area in pixels
-                    int drawingWidth, drawingHeight;
-                    int dcWidth, dcHeight;
+                    int drawingWidth{ 0 }, drawingHeight{ 0 };
+                    int dcWidth{ 0 }, dcHeight{ 0 };
                     dc->GetSize(&dcWidth, &dcHeight);
                     dc->GetSize(&drawingWidth, &drawingHeight);
                     drawingWidth *= scaleXReciprocal;
@@ -767,16 +767,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     wxCoord textWidth{ 0 }, textHeight{ 0 };
                     wxCoord bodyStart = marginY;
                     dc->GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
-                    if (m_list->GetLeftPrinterHeader().length() ||
-                        m_list->GetCenterPrinterHeader().length() ||
-                        m_list->GetRightPrinterHeader().length())
+                    if (!m_list->GetLeftPrinterHeader().empty() ||
+                        !m_list->GetCenterPrinterHeader().empty() ||
+                        !m_list->GetRightPrinterHeader().empty())
                         {
                         topMargin += textHeight;
                         bodyStart += textHeight + marginY;
                         }
-                    if (m_list->GetLeftPrinterFooter().length() ||
-                        m_list->GetCenterPrinterFooter().length() ||
-                        m_list->GetRightPrinterFooter().length())
+                    if (!m_list->GetLeftPrinterFooter().empty() ||
+                        !m_list->GetCenterPrinterFooter().empty() ||
+                        !m_list->GetRightPrinterFooter().empty())
                         {
                         bottomMargin += textHeight;
                         }
@@ -842,7 +842,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                     // fill cell background color
                                     if (rowAttributes.GetBackgroundColour().IsOk())
                                         {
-                                        wxDCBrushChanger cellBCH(
+                                        const wxDCBrushChanger cellBCH(
                                             drawDC, rowAttributes.GetBackgroundColour());
                                         drawDC.DrawRectangle(currentX, currentY, GetTableWidth(),
                                                              GetLineHeight());
@@ -908,20 +908,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                         // draw cell icon (if there is one)
                                         if (m_list->GetImageList(wxIMAGE_LIST_SMALL))
                                             {
-                                            wxListItem Item;
-                                            Item.SetMask(wxLIST_MASK_IMAGE);
-                                            Item.SetColumn(j);
-                                            Item.SetId(i);
-                                            if (m_list->GetItem(Item))
+                                            wxListItem item;
+                                            item.SetMask(wxLIST_MASK_IMAGE);
+                                            item.SetColumn(j);
+                                            item.SetId(i);
+                                            if (m_list->GetItem(item))
                                                 {
-                                                if (Item.GetImage() >= 0 &&
-                                                    Item.GetImage() <
+                                                if (item.GetImage() >= 0 &&
+                                                    item.GetImage() <
                                                         m_list->GetImageList(wxIMAGE_LIST_SMALL)
                                                             ->GetImageCount())
                                                     {
                                                     const auto bmp =
                                                         m_list->GetImageList(wxIMAGE_LIST_SMALL)
-                                                            ->GetBitmap(Item.GetImage());
+                                                            ->GetBitmap(item.GetImage());
                                                     if (bmp.IsOk())
                                                         {
                                                         drawDC.DrawBitmap(
@@ -963,7 +963,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                                                     Colors::Color::Black);
                                             }
 
-                                        wxDCTextColourChanger cellTextCCH(drawDC, cellTextColor);
+                                        const wxDCTextColourChanger cellTextCCH(drawDC,
+                                                                                cellTextColor);
 
                                         if (GetColumnsInfo()[j].m_multiline)
                                             {
@@ -1003,17 +1004,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     {
                         // draw the headers
                         drawDC.SetDeviceOrigin(0, 0);
-                        if (m_list->GetLeftPrinterHeader().length() ||
-                            m_list->GetCenterPrinterHeader().length() ||
-                            m_list->GetRightPrinterHeader().length())
+                        if (!m_list->GetLeftPrinterHeader().empty() ||
+                            !m_list->GetCenterPrinterHeader().empty() ||
+                            !m_list->GetRightPrinterHeader().empty())
                             {
-                            if (m_list->GetLeftPrinterHeader().length())
+                            if (!m_list->GetLeftPrinterHeader().empty())
                                 {
                                 drawDC.DrawText(ExpandPrintString(m_list->GetLeftPrinterHeader()),
                                                 static_cast<wxCoord>(marginX),
                                                 static_cast<wxCoord>(marginY / 2));
                                 }
-                            if (m_list->GetCenterPrinterHeader().length())
+                            if (!m_list->GetCenterPrinterHeader().empty())
                                 {
                                 drawDC.GetTextExtent(
                                     ExpandPrintString(m_list->GetCenterPrinterHeader()), &textWidth,
@@ -1024,7 +1025,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                                          safe_divide<double>(textWidth, 2)),
                                     static_cast<wxCoord>(marginY / 2));
                                 }
-                            if (m_list->GetRightPrinterHeader().length())
+                            if (!m_list->GetRightPrinterHeader().empty())
                                 {
                                 drawDC.GetTextExtent(
                                     ExpandPrintString(m_list->GetRightPrinterHeader()), &textWidth,
@@ -1036,21 +1037,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                 }
                             }
                         // draw the footers
-                        if (m_list->GetLeftPrinterFooter().length() ||
-                            m_list->GetCenterPrinterFooter().length() ||
-                            m_list->GetRightPrinterFooter().length())
+                        if (!m_list->GetLeftPrinterFooter().empty() ||
+                            !m_list->GetCenterPrinterFooter().empty() ||
+                            !m_list->GetRightPrinterFooter().empty())
                             {
                             drawDC.GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
                             // move down past the print header area,
                             // drawing (tables) area, and half the bottom margin
                             // (to center the footer vertically)
                             const wxCoord yPos = topMargin + drawingHeight + (marginY / 2);
-                            if (m_list->GetLeftPrinterFooter().length())
+                            if (!m_list->GetLeftPrinterFooter().empty())
                                 {
                                 drawDC.DrawText(ExpandPrintString(m_list->GetLeftPrinterFooter()),
-                                                static_cast<wxCoord>(marginX), yPos);
+                                                marginX, yPos);
                                 }
-                            if (m_list->GetCenterPrinterFooter().length())
+                            if (!m_list->GetCenterPrinterFooter().empty())
                                 {
                                 drawDC.GetTextExtent(
                                     ExpandPrintString(m_list->GetCenterPrinterFooter()), &textWidth,
@@ -1061,7 +1062,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                                          safe_divide<double>(textWidth, 2)),
                                     yPos);
                                 }
-                            if (m_list->GetRightPrinterFooter().length())
+                            if (!m_list->GetRightPrinterFooter().empty())
                                 {
                                 drawDC.GetTextExtent(
                                     ExpandPrintString(m_list->GetRightPrinterFooter()), &textWidth,
@@ -1076,7 +1077,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
                     // need to use wxGCDC for any color transparency
                     if (!m_printCanvas.IsOk() ||
-                        m_printCanvas.GetSize() != wxSize(dcWidth, dcHeight))
+                        m_printCanvas.GetSize() != wxSize{ dcWidth, dcHeight })
                         {
                         m_printCanvas.Create(dcWidth, dcHeight);
                         }
@@ -1086,19 +1087,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
                     drawTables(gcdc);
                     drawHeadersAndFooters(gcdc);
-                    Wisteria::Canvas::DrawWatermarkLabel(
-                        gcdc, wxRect(wxSize(drawingWidth, drawingHeight)), m_list->GetWatermark(),
-                        1.0);
+                    Canvas::DrawWatermarkLabel(gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
+                                               m_list->GetWatermark(), 1.0);
                     // copy renderings back into printer DC
                     dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
                     memDc.SelectObject(wxNullBitmap);
 
                     return true;
                     }
-                else
-                    {
-                    return false;
-                    }
+
+                return false;
                 }
             return false;
             }
@@ -1130,28 +1128,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 // get the size of the DC's drawing area in pixels
                 wxCoord dcWidth{ 0 }, dcHeight{ 0 };
                 dc->GetSize(&dcWidth, &dcHeight);
-                dc->SetUserScale(safe_divide<double>(1.0f, scaleDownX),
-                                 safe_divide<double>(1.0f, scaleDownY));
+                dc->SetUserScale(safe_divide<double>(1.0, scaleDownX),
+                                 safe_divide<double>(1.0, scaleDownY));
 
                 const wxCoord drawingWidth = static_cast<wxCoord>(dcWidth * scaleDownX) -
                                              (2 * GetMarginPadding()) /*side margins*/;
 
                 // measure a standard line of text
-                wxCoord textWidth, textHeight;
+                wxCoord textWidth{ 0 }, textHeight{ 0 };
                 dc->GetTextExtent(L"A", &textWidth, &textHeight);
 
                 // remove the margins from the drawing area size
                 wxCoord heightMargin = GetMarginPadding() * 2;
                 // remove space for the headers and footers (if being used)
-                if (m_list->GetLeftPrinterHeader().length() ||
-                    m_list->GetCenterPrinterHeader().length() ||
-                    m_list->GetRightPrinterHeader().length())
+                if (!m_list->GetLeftPrinterHeader().empty() ||
+                    !m_list->GetCenterPrinterHeader().empty() ||
+                    !m_list->GetRightPrinterHeader().empty())
                     {
                     heightMargin += textHeight + GetMarginPadding();
                     }
-                if (m_list->GetLeftPrinterFooter().length() ||
-                    m_list->GetCenterPrinterFooter().length() ||
-                    m_list->GetRightPrinterFooter().length())
+                if (!m_list->GetLeftPrinterFooter().empty() ||
+                    !m_list->GetCenterPrinterFooter().empty() ||
+                    !m_list->GetRightPrinterFooter().empty())
                     {
                     heightMargin += textHeight + GetMarginPadding();
                     }
@@ -1184,8 +1182,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         }
 
                     // if an image list, then add padding for any possible images in the cells
-                    if (m_list->GetImageList(wxIMAGE_LIST_SMALL) &&
-                        m_list->GetImageList(wxIMAGE_LIST_SMALL)->GetImageCount())
+                    if ((m_list->GetImageList(wxIMAGE_LIST_SMALL) != nullptr) &&
+                        (m_list->GetImageList(wxIMAGE_LIST_SMALL)->GetImageCount() != 0))
                         {
                         longestCellText +=
                             m_list->GetImageList(wxIMAGE_LIST_SMALL)->GetSize().GetWidth() +
@@ -1245,7 +1243,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         {
                         // make the widest column a little more narrow, remeasure,
                         // and check things again
-                        longestColumn->m_width *= .75f;
+                        longestColumn->m_width *= .75;
                         longestColumn->m_multiline = true;
 
                         // remeasure the height of the longest string from the table
@@ -1305,7 +1303,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                             break;
                             }
                         }
-                    m_pageStarts.push_back(PrintPageInfo(rowStarts, currentPageRows));
+                    m_pageStarts.emplace_back(rowStarts, currentPageRows);
                     }
                 }
             }
@@ -1437,7 +1435,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         /// This falls back to a 1:1 ratio upon failure.
         void GetScreenToPageScaling(double& scaleX, double& scaleY) const
             {
-            int ppiPrinterX, ppiPrinterY, ppiScreenX, ppiScreenY;
+            int ppiPrinterX{ 0 }, ppiPrinterY{ 0 }, ppiScreenX{ 0 }, ppiScreenY{ 0 };
             GetPPIPrinter(&ppiPrinterX, &ppiPrinterY);
             GetPPIScreen(&ppiScreenX, &ppiScreenY);
 
@@ -1455,7 +1453,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         void GetPageToScreenScaling(double& scaleX, double& scaleY) const
             {
-            int ppiPrinterX, ppiPrinterY, ppiScreenX, ppiScreenY;
+            int ppiPrinterX{ 0 }, ppiPrinterY{ 0 }, ppiScreenX{ 0 }, ppiScreenY{ 0 };
             GetPPIPrinter(&ppiPrinterX, &ppiPrinterY);
             GetPPIScreen(&ppiScreenX, &ppiScreenY);
 
@@ -1526,13 +1524,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                              wxCommandEvent &
                              event)
         {
-        ListCtrlExPrintout* printOut = new ListCtrlExPrintout(this, GetLabel());
+        auto* printOut = new ListCtrlExPrintout(this, GetLabel());
 #if defined(__WXMSW__) || defined(__WXOSX__)
         wxPrinterDC* dc = nullptr;
 #else
         wxPostScriptDC* dc = nullptr;
 #endif
-        if (m_printData)
+        if (m_printData != nullptr)
             {
 #if defined(__WXMSW__) || defined(__WXOSX__)
             dc = new wxPrinterDC(*m_printData);
@@ -1552,7 +1550,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         printOut->SetDC(dc);
 
         wxPrinter printer;
-        if (m_printData)
+        if (m_printData != nullptr)
             {
             printer.GetPrintDialogData().SetPrintData(*m_printData);
             }
@@ -1563,14 +1561,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         if (!printer.Print(this, printOut, true))
             {
             // just show a message if a real error occurred. They may have just cancelled.
-            if (printer.GetLastError() == wxPRINTER_ERROR)
+            if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
                 {
                 wxMessageBox(_(L"An error occurred while printing.\n"
                                "Your default printer may not be set correctly."),
                              _(L"Print"), wxOK | wxICON_WARNING);
                 }
             }
-        if (m_printData)
+        if (m_printData != nullptr)
             {
             *m_printData = printer.GetPrintDialogData().GetPrintData();
             }
@@ -1689,10 +1687,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         FormatToText(selectedText, ExportRowSelection::ExportSelected, 0, -1, 0, 0, false);
         if (wxTheClipboard->Open())
             {
-            if (selectedText.length())
+            if (!selectedText.empty())
                 {
                 wxTheClipboard->Clear();
-                wxDataObjectComposite* obj = new wxDataObjectComposite();
+                auto* obj = new wxDataObjectComposite();
                 obj->Add(new wxHTMLDataObject(selectedFormattedText), true);
                 obj->Add(new wxTextDataObject(selectedText));
                 wxTheClipboard->SetData(obj);
@@ -1742,10 +1740,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                      0, -1, 0, wxGetMouseState().ShiftDown() ? 0 : -1, includeColumnHeaders);
         if (wxTheClipboard->Open())
             {
-            if (selectedText.length())
+            if (!selectedText.empty())
                 {
                 wxTheClipboard->Clear();
-                wxDataObjectComposite* obj = new wxDataObjectComposite();
+                auto* obj = new wxDataObjectComposite();
                 obj->Add(new wxHTMLDataObject(selectedFormattedText), true);
                 obj->Add(new wxTextDataObject(selectedText));
                 wxTheClipboard->SetData(obj);
@@ -1759,7 +1757,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                    wxContextMenuEvent &
                                    event)
         {
-        if (m_menu)
+        if (m_menu != nullptr)
             {
             PopupMenu(m_menu);
             }
@@ -1768,7 +1766,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DeselectAll()
         {
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         for (long i = 0; i < GetItemCount(); ++i)
@@ -1792,7 +1790,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::SelectAll()
         {
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         for (long i = 0; i < GetItemCount(); ++i)
@@ -1807,7 +1805,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     void ListCtrlEx::DistributeColumns(const long maxColumnWidth /*= 300*/)
         {
         PROFILE();
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
         for (long i = 0; i < GetColumnCount(); ++i)
             {
             const long estimatedWidth = EstimateColumnWidth(i);
@@ -1838,24 +1836,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             bool matchWholeWord = false;
             bool searchBackwards = false;
             const int flags = event.GetFlags();
-            if (flags & wxFR_MATCHCASE)
+            if ((flags & wxFR_MATCHCASE) != 0)
                 {
                 matchCase = true;
                 }
 
-            if (flags & wxFR_WHOLEWORD)
+            if ((flags & wxFR_WHOLEWORD) != 0)
                 {
                 matchWholeWord = true;
                 }
 
-            if (flags & wxFR_DOWN)
-                {
-                searchBackwards = false;
-                }
-            else
-                {
-                searchBackwards = true;
-                }
+            searchBackwards = ((flags & wxFR_DOWN) == 0);
 
             int compVal = -1;
             long i = 0;
@@ -1866,7 +1857,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     {
                     if (matchWholeWord)
                         {
-                        compVal = (matchCase == true) ?
+                        compVal = matchCase ?
                                       GetItemTextFormatted(i, j).Cmp(event.GetFindString()) :
                                       GetItemTextFormatted(i, j).CmpNoCase(event.GetFindString());
                         if (compVal != 0)
@@ -1877,7 +1868,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     else
                         {
                         const bool matchResult =
-                            (matchCase == true) ?
+                            matchCase ?
                                 (std::wcsstr(GetItemTextFormatted(i, j).wc_str(),
                                              event.GetFindString()) != nullptr) :
                                 (string_util::stristr<wchar_t>(GetItemTextFormatted(i, j),
@@ -1895,7 +1886,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     }
                 }
             // if not found and searching down, then start from the beginning and try again
-            if ((compVal == -1) && (flags & wxFR_DOWN) && (currentlyFocusedItem > 0))
+            if ((compVal == -1) && ((flags & wxFR_DOWN) != 0) && (currentlyFocusedItem > 0))
                 {
                 for (i = 0; i < currentlyFocusedItem; ++i)
                     {
@@ -1904,7 +1895,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         if (matchWholeWord)
                             {
                             compVal =
-                                (matchCase == true) ?
+                                matchCase ?
                                     GetItemTextFormatted(i, j).Cmp(event.GetFindString()) :
                                     GetItemTextFormatted(i, j).CmpNoCase(event.GetFindString());
                             if (compVal != 0)
@@ -1915,7 +1906,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         else
                             {
                             const bool matchResult =
-                                (matchCase == true) ?
+                                matchCase ?
                                     (std::wcsstr(GetItemTextFormatted(i, j).wc_str(),
                                                  event.GetFindString()) != nullptr) :
                                     (string_util::stristr<wchar_t>(GetItemTextFormatted(i, j),
@@ -1946,7 +1937,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         if (matchWholeWord)
                             {
                             compVal =
-                                (matchCase == true) ?
+                                matchCase ?
                                     GetItemTextFormatted(i, j).Cmp(event.GetFindString()) :
                                     GetItemTextFormatted(i, j).CmpNoCase(event.GetFindString());
                             if (compVal != 0)
@@ -1957,7 +1948,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         else
                             {
                             const bool matchResult =
-                                (matchCase == true) ?
+                                matchCase ?
                                     (std::wcsstr(GetItemTextFormatted(i, j).wc_str(),
                                                  event.GetFindString()) != nullptr) :
                                     (string_util::stristr<wchar_t>(GetItemTextFormatted(i, j),
@@ -2052,7 +2043,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         SetCursor(*wxHOURGLASS_CURSOR);
         // freeze the window and also (temporarily) block
         // its events to optimize the sorting process
-        wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates(this);
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         if (IsVirtual() && m_virtualData != nullptr)
@@ -2128,7 +2119,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             SetCursor(*wxHOURGLASS_CURSOR);
             // freeze the window and also (temporarily) block
             // its events to optimize the sorting process
-            wxWindowUpdateLocker noUpdates(this);
+            const wxWindowUpdateLocker noUpdates(this);
             const long style = GetExtraStyle();
             SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
 
@@ -2178,15 +2169,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     void ListCtrlEx::CacheImageList(const int whichList)
         {
         m_encodedImages.clear();
-        if (!GetImageList(whichList))
+        if (GetImageList(whichList) == nullptr)
             {
             return;
             }
         for (auto i = 0; i < GetImageList(whichList)->GetImageCount(); ++i)
             {
-            wxImage img(GetImageList(whichList)->GetBitmap(i).ConvertToImage());
+            const wxImage img(GetImageList(whichList)->GetBitmap(i).ConvertToImage());
             const auto tempFilePath = wxFileName::CreateTempFileName(L"RSI");
-            if (tempFilePath.length() &&
+            if (!tempFilePath.empty() &&
                 img.SaveFile(tempFilePath, wxBitmapType::wxBITMAP_TYPE_PNG))
                 {
                     // map and unmap
@@ -2207,12 +2198,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     wxString ListCtrlEx::GetItemTextNonVirtual(long item, long column) const
         {
-        wxListItem Item;
-        Item.SetMask(wxLIST_MASK_TEXT);
-        Item.SetColumn(column);
-        Item.SetId(item);
-        GetItem(Item);
-        return Item.GetText();
+        wxListItem currItem;
+        currItem.SetMask(wxLIST_MASK_TEXT);
+        currItem.SetColumn(column);
+        currItem.SetId(item);
+        GetItem(currItem);
+        return currItem.GetText();
         }
 
     //------------------------------------------------------
@@ -2412,7 +2403,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         hiAttr.SetBackgroundColour(GetItemBackgroundColour(hi));
 
                         wxListItem lvitemlo, lvitemhi;
-                        long i;
+                        long i{ 0 };
                         for (i = 0; i < GetColumnCount(); ++i)
                             {
                             rowText[i] = GetItemTextEx(lo, i);
@@ -2486,14 +2477,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             return nullptr;
             }
-        else if (GetAlternateRowColour().IsOk())
+        if (GetAlternateRowColour().IsOk())
             {
             return wxListCtrl::OnGetItemAttr(item);
             }
-        else
-            {
-            return const_cast<wxItemAttr*>(m_virtualData->GetRowAttributes(item));
-            }
+        return const_cast<wxItemAttr*>(m_virtualData->GetRowAttributes(item));
         }
 
     //------------------------------------------------------
@@ -2526,38 +2514,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     wxString ListCtrlEx::GetItemTextFormatted(const long item, const long column) const
         {
-        if (GetWindowStyle() & wxLC_REPORT)
+        if ((GetWindowStyle() & wxLC_REPORT) != 0)
             {
             if (IsVirtual() && m_virtualData != nullptr)
                 {
-                const wxString retVal = m_virtualData->GetItemTextFormatted(item, column);
+                wxString retVal = m_virtualData->GetItemTextFormatted(item, column);
                 if (GetColumnFilePathTruncationMode(column) ==
                     ColumnInfo::ColumnFilePathTruncationMode::TruncatePaths)
                     {
                     return GetShortenedFilePath(retVal);
                     }
-                else if (GetColumnFilePathTruncationMode(column) ==
-                         ColumnInfo::ColumnFilePathTruncationMode::OnlyShowFileNames)
+                if (GetColumnFilePathTruncationMode(column) ==
+                    ColumnInfo::ColumnFilePathTruncationMode::OnlyShowFileNames)
                     {
-                    wxFileName fn(retVal);
+                    const wxFileName fn(retVal);
                     // sometimes URLs look like directories and won't have a filename
                     return fn.GetFullName().empty() ? retVal : fn.GetFullName();
                     }
-                else
-                    {
-                    return retVal;
-                    }
+                return retVal;
                 }
-            else
-                {
-                return GetItemTextNonVirtual(item, column);
-                }
+            return GetItemTextNonVirtual(item, column);
             }
         // not report view, so this call makes no sense--return blank
-        else
-            {
-            return wxString{};
-            }
+        return {};
         }
 
     //------------------------------------------------------
@@ -2644,7 +2623,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             return;
             }
 
-        wxBusyCursor wait;
+        const wxBusyCursor wait;
         if (!Save(filePath, exportOptionsDlg.GetExportOptions()))
             {
             wxMessageBox(_(L"Unable to save list."), _(L"Export Error"), wxOK | wxICON_EXCLAMATION);
@@ -2721,12 +2700,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         // format column headers
         if (includeColumnHeader)
             {
-            wxListItem Item;
-            Item.SetMask(wxLIST_MASK_TEXT);
+            wxListItem item;
+            item.SetMask(wxLIST_MASK_TEXT);
             for (long i = firstColumn; i <= lastColumn; ++i)
                 {
-                GetColumn(i, Item);
-                outputText += Item.GetText();
+                GetColumn(i, item);
+                outputText += item.GetText();
                 if (i < lastColumn)
                     {
                     outputText += L"\t";
@@ -2818,8 +2797,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             }
 
         wxFont listFont = GetFont();
-        ListCtrlExPrintout printOut(this, (tableCaption.length() ? tableCaption : GetLabel()));
-        if (!m_printData)
+        ListCtrlExPrintout printOut(this, !tableCaption.empty() ? tableCaption : GetLabel());
+        if (m_printData == nullptr)
             {
             usePrinterSettings = false;
             }
@@ -2834,7 +2813,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             printOut.SetLastRow(lastRow);
             printOut.SetFirstColumn(firstColumn);
             printOut.SetLastColumn(lastColumn);
-            printOut.IncludeTableCaption(tableCaption.length());
+            printOut.IncludeTableCaption(!tableCaption.empty());
             printOut.SetUp(dc);
             printOut.OnPreparePrinting();
             listFont = dc.GetFont();
@@ -2887,15 +2866,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         wxString columnHeader;
         if (includeColumnHeader)
             {
-            wxListItem Item;
-            Item.SetMask(wxLIST_MASK_TEXT);
+            wxListItem item;
+            item.SetMask(wxLIST_MASK_TEXT);
             // format column headers
             columnHeader += L"\n    <thead><tr style='background:#337BC4; color:white;'>";
             for (long i = firstColumn; i <= lastColumn; ++i)
                 {
-                GetColumn(i, Item);
-                wxString itemText = Item.GetText();
-                if (encode.needs_to_be_encoded({ itemText.wc_str(), itemText.length() }))
+                GetColumn(i, item);
+                wxString itemText = item.GetText();
+                if (lily_of_the_valley::html_encode_text::needs_to_be_encoded(
+                        { itemText.wc_str(), itemText.length() }))
                     {
                     itemText = encode({ itemText.wc_str(), itemText.length() }, true).c_str();
                     }
@@ -2943,7 +2923,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                     rowStyle += L"font-style:italic;";
                     }
                 }
-            if (rowStyle.length())
+            if (!rowStyle.empty())
                 {
                 rowStyle = L" style='" + rowStyle + L"'>";
                 }
@@ -2956,24 +2936,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             for (long j = firstColumn; j <= lastColumn; ++j)
                 {
                 itemText = GetItemTextFormatted(i, j);
-                if (encode.needs_to_be_encoded({ itemText.wc_str(), itemText.length() }))
+                if (lily_of_the_valley::html_encode_text::needs_to_be_encoded(
+                        { itemText.wc_str(), itemText.length() }))
                     {
                     itemText = encode({ itemText.wc_str(), itemText.length() }, true).c_str();
                     }
 
                 // see if there is an icon in front of the text (if there is an image list)
-                if (m_encodedImages.size())
+                if (!m_encodedImages.empty())
                     {
-                    wxListItem Item;
-                    Item.SetMask(wxLIST_MASK_IMAGE);
-                    Item.SetColumn(j);
-                    Item.SetId(i);
-                    if (GetItem(Item))
+                    wxListItem item;
+                    item.SetMask(wxLIST_MASK_IMAGE);
+                    item.SetColumn(j);
+                    item.SetId(i);
+                    if (GetItem(item))
                         {
-                        if (Item.GetImage() >= 0 &&
-                            static_cast<size_t>(Item.GetImage()) < m_encodedImages.size())
+                        if (item.GetImage() >= 0 &&
+                            static_cast<size_t>(item.GetImage()) < m_encodedImages.size())
                             {
-                            itemText.Prepend(m_encodedImages[Item.GetImage()] + L"&nbsp;");
+                            itemText.Prepend(m_encodedImages[item.GetImage()] + L"&nbsp;");
                             }
                         }
                     }
@@ -3013,7 +2994,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             outputText += L"</tr>";
         };
 
-        if (tableCaption.length())
+        if (!tableCaption.empty())
             {
             outputText += wxString::Format(L"\n<div class='caption'>%s</div>", tableCaption);
             }
@@ -3141,7 +3122,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             }
         if (firstColumn > lastColumn)
             {
-            return wxString{};
+            return {};
             }
         // range check rows
         if (lastRow < 0 || lastRow >= GetItemCount())
@@ -3182,14 +3163,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         wxString columnHeader;
         if (includeColumnHeader)
             {
-            wxListItem Item;
-            Item.SetMask(wxLIST_MASK_TEXT);
+            wxListItem item;
+            item.SetMask(wxLIST_MASK_TEXT);
             // format column headers
             columnHeader += L"\\hline ";
             for (long i = firstColumn; i <= lastColumn; ++i)
                 {
-                GetColumn(i, Item);
-                wxString itemText = Item.GetText();
+                GetColumn(i, item);
+                const wxString itemText = item.GetText();
                 /// @todo Needs LaTeX encoder
                 // if (encode.needs_to_be_encoded({ itemText.wc_str(), itemText.length() }))
                 //     { itemText = encode({ itemText.wc_str(), itemText.length() }, true).c_str();
@@ -3225,7 +3206,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 
         // format the data
         outputText += tableStart;
-        if (tableCaption.length())
+        if (!tableCaption.empty())
             {
             outputText += wxString::Format(L"\n\\caption{%s} \\label{tab:long} \\\\", tableCaption);
             }
@@ -3339,20 +3320,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             SetItemBeenEditedByUser(true);
             return newRowIndex;
             }
-        else
-            {
-            const auto newRowIndex = InsertItem(GetItemCount(), value);
-            EnsureVisible(newRowIndex);
-            SetItemBeenEditedByUser(true);
-            return newRowIndex;
-            }
+
+        const auto newRowIndex = InsertItem(GetItemCount(), value);
+        EnsureVisible(newRowIndex);
+        SetItemBeenEditedByUser(true);
+        return newRowIndex;
         }
 
     //------------------------------------------------------
     void ListCtrlEx::EditItem(const long selectedRow, const long selectedColumn)
         {
         if (selectedRow == wxNOT_FOUND || selectedRow >= GetItemCount() ||
-            selectedColumn >= GetColumnCount() || !(GetWindowStyle() & wxLC_EDIT_LABELS))
+            selectedColumn >= GetColumnCount() || ((GetWindowStyle() & wxLC_EDIT_LABELS) == 0))
             {
             return;
             }
@@ -3375,11 +3354,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             return;
             }
-        else if (GetColumnEditMode(selectedColumn).m_editMode ==
-                 ColumnInfo::ColumnEditMode::TextEdit)
+        if (GetColumnEditMode(selectedColumn).m_editMode == ColumnInfo::ColumnEditMode::TextEdit)
             {
             // populate and show the edit control
-            if (!m_editTextCtrl)
+            if (m_editTextCtrl == nullptr)
                 {
                 m_editTextCtrl = new ListEditTextCtrl(
                     this, this, wxID_ANY, currentItemText, wxPoint(itemRect.x, itemRect.y),
@@ -3410,7 +3388,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 initialValue = GetColumnEditMode(selectedColumn).m_numericMinValue;
                 }
-            if (!m_editSpinCtrl)
+            if (m_editSpinCtrl == nullptr)
                 {
                 m_editSpinCtrl = new ListEditSpinCtrl(
                     this, this, wxID_ANY, wxString{}, wxPoint(itemRect.x, itemRect.y),
@@ -3443,7 +3421,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 initialValue = GetColumnEditMode(selectedColumn).m_numericMinValue;
                 }
-            if (!m_editSpinCtrlDouble)
+            if (m_editSpinCtrlDouble == nullptr)
                 {
                 m_editSpinCtrlDouble = new ListEditSpinCtrlDouble(
                     this, this, wxID_ANY, wxString{}, wxPoint(itemRect.x, itemRect.y),
@@ -3471,7 +3449,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                  GetColumnEditMode(selectedColumn).m_editMode ==
                      ColumnInfo::ColumnEditMode::ComboBoxEditReadOnly)
             {
-            if (m_editComboBox)
+            if (m_editComboBox != nullptr)
                 {
                 wxDELETE(m_editComboBox);
                 }

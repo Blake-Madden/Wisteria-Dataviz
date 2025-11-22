@@ -15,6 +15,7 @@
 #include "../../base/graphitems.h"
 #include "../controls/listctrlex.h"
 #include "dialogwithhelp.h"
+#include <utility>
 #include <wx/string.h>
 #include <wx/wx.h>
 
@@ -32,11 +33,11 @@ namespace Wisteria::UI
             @param pos The dialog's position.
             @param size The dialog's size.
             @param style The dialog's style.*/
-        ListCtrlSortDlg(wxWindow* parent, const wxArrayString& columnChoices,
-                        wxWindowID id = wxID_ANY, const wxString& caption = _(L"Sort Columns"),
+        ListCtrlSortDlg(wxWindow* parent, wxArrayString columnChoices, wxWindowID id = wxID_ANY,
+                        const wxString& caption = _(L"Sort Columns"),
                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                         long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
-            : m_columnChoices(columnChoices)
+            : m_columnChoices(std::move(columnChoices))
             {
             Create(parent, id, caption, pos, size, style);
             }

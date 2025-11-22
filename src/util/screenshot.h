@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __SCREENSHOT_HELPER_H__
-#define __SCREENSHOT_HELPER_H__
+#ifndef SCREENSHOT_HELPER_H
+#define SCREENSHOT_HELPER_H
 
 #include <wx/propgrid/propgrid.h>
 #include <wx/wx.h>
@@ -160,12 +160,12 @@ class Screenshot
 
     static wxPen GetScreenshotHighlightPen(const int width)
         {
-        return wxPen(wxColour{ 255, 0, 0 }, width, wxPenStyle::wxPENSTYLE_DOT);
+        return { wxColour{ 255, 0, 0 }, width, wxPenStyle::wxPENSTYLE_DOT };
         }
 
-    static wxPen GetOutlinePen(const int width) { return wxPen(wxColour{ 241, 241, 241 }, width); }
+    static wxPen GetOutlinePen(const int width) { return { wxColour{ 241, 241, 241 }, width }; }
     };
 
     /** @}*/
 
-#endif //__SCREENSHOT_HELPER_H__
+#endif // SCREENSHOT_HELPER_H

@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __RESOURCE_MANAGER_H__
-#define __RESOURCE_MANAGER_H__
+#ifndef WISTERIA_RESOURCE_MANAGER_H
+#define WISTERIA_RESOURCE_MANAGER_H
 
 #include "../math/mathematics.h"
 #include "../util/donttranslate.h"
@@ -61,10 +61,9 @@ class ResourceManager
             {
             return m_resourceFile;
             }
-        else
-            {
-            return m_resourceFile + _DT(L"#zip:") + subFile;
-            }
+
+                        return m_resourceFile + _DT(L"#zip:") + subFile;
+
         }
 
     /// @returns A bitmap from the provided path.
@@ -98,7 +97,7 @@ class ResourceManager
     static wxBitmapBundle CreateColorIcon(const wxColour& color);
 
   private:
-    wxBitmap ExtractBitmap(const wxString& bmpPath, const wxBitmapType bitmapType) const;
+    wxBitmap ExtractBitmap(const wxString& bmpPath, wxBitmapType bitmapType) const;
     wxString m_resourceFile;
     std::map<wxString, wxBitmap> m_imageMap;
     std::map<wxString, wxBitmapBundle> m_bmpBundleMap;
@@ -108,4 +107,4 @@ class ResourceManager
 
     /** @}*/
 
-#endif //__RESOURCE_MANAGER_H__
+#endif // WISTERIA_RESOURCE_MANAGER_H

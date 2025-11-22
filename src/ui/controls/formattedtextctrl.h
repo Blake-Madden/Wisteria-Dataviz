@@ -254,9 +254,9 @@ namespace Wisteria::UI
         wxRect GetPageRect() const
             {
             // if landscape, then "turn the page on its side" by flipping the page size
-            return wxRect(wxPoint{ 0, 0 }, (m_printData->GetOrientation() == wxLANDSCAPE) ?
-                                               wxSize{ m_paperSize.y, m_paperSize.x } :
-                                               m_paperSize);
+            return { wxPoint{ 0, 0 }, (m_printData->GetOrientation() == wxLANDSCAPE) ?
+                                          wxSize{ m_paperSize.y, m_paperSize.x } :
+                                          m_paperSize };
             }
 
         /// @returns The width of the printing area.
@@ -279,14 +279,14 @@ namespace Wisteria::UI
             wxRect printRect(m_rectMargin.GetLeft(), m_rectMargin.GetTop(),
                              paperWidth - m_rectMargin.GetRight(),
                              paperHeight - m_rectMargin.GetBottom());
-            if (GetLeftPrinterHeader().length() || GetCenterPrinterHeader().length() ||
-                GetRightPrinterHeader().length())
+            if (!GetLeftPrinterHeader().empty() || !GetCenterPrinterHeader().empty() ||
+                !GetRightPrinterHeader().empty())
                 {
                 printRect.height -= TWIPS_PER_INCH / 2;
                 printRect.y += TWIPS_PER_INCH / 2;
                 }
-            if (GetLeftPrinterFooter().length() || GetCenterPrinterFooter().length() ||
-                GetRightPrinterFooter().length())
+            if (!GetLeftPrinterFooter().empty() || !GetCenterPrinterFooter().empty() ||
+                !GetRightPrinterFooter().empty())
                 {
                 printRect.height -= TWIPS_PER_INCH / 2;
                 }
@@ -376,10 +376,7 @@ namespace Wisteria::UI
         /// @brief Sets the watermark for the text window when printed.
         /// @param watermark The watermark information.
         /// @todo Not supported on macOS yet.
-        void SetWatermark(const Wisteria::Canvas::Watermark& watermark) noexcept
-            {
-            m_waterMark = watermark;
-            }
+        void SetWatermark(const Wisteria::Canvas::Watermark& watermark) { m_waterMark = watermark; }
 
         /// @returns The watermark drawn across the printouts.
         [[nodiscard]]
@@ -441,7 +438,7 @@ namespace Wisteria::UI
         /// then it can't be used for printing).
         void CopyPrintSettings(FormattedTextCtrl* that) const
             {
-            if (!that)
+            if (that == nullptr)
                 {
                 return;
                 }
