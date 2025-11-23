@@ -9,15 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "demo.h"
-
-using namespace Wisteria;
-using namespace Wisteria::Colors;
-using namespace Wisteria::Graphs;
-using namespace Wisteria::GraphItems;
-using namespace Wisteria::Data;
-using namespace Wisteria::Icons;
-using namespace Wisteria::Icons::Schemes;
-using namespace Wisteria::UI;
+#include <array>
 
 wxIMPLEMENT_APP(MyApp);
 
@@ -62,7 +54,7 @@ MyFrame::MyFrame()
     SetSize(FromDIP(wxSize(750, 500)));
 
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");
+    const wxSize iconSize = Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg");
 
     SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
@@ -98,16 +90,20 @@ MyFrame::MyFrame()
     InitToolBar(wxFrameBase::GetToolBar());
 
     // Accelerators
-    wxAcceleratorEntry entries[7]{ 0 };
-    entries[0].Set(wxACCEL_CTRL, L'N', wxID_NEW);
-    entries[1].Set(wxACCEL_CTRL, L'X', wxID_EXIT);
-    entries[2].Set(wxACCEL_CTRL, L'A', wxID_ABOUT);
-    entries[3].Set(wxACCEL_CTRL, L'S', wxID_SAVE);
-    entries[4].Set(wxACCEL_CTRL, L'P', wxID_PRINT);
-    entries[5].Set(wxACCEL_CTRL, L'C', wxID_COPY);
-    entries[6].Set(wxACCEL_CTRL, L'O', wxID_OPEN);
-    wxAcceleratorTable accel(std::size(entries), entries);
-    wxWindowBase::SetAcceleratorTable(accel);
+#include <array>
+
+    // Array of accelerator entries
+    const std::array<wxAcceleratorEntry, 7> entries = {
+        wxAcceleratorEntry(wxACCEL_CTRL, L'N', wxID_NEW),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'X', wxID_EXIT),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'A', wxID_ABOUT),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'S', wxID_SAVE),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'P', wxID_PRINT),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'C', wxID_COPY),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'O', wxID_OPEN),
+    };
+
+    wxWindowBase::SetAcceleratorTable(wxAcceleratorTable{ entries.size(), entries.data() });
 
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BOXPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HISTOGRAM);
@@ -240,7 +236,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog recodingFileDlg(this, _(L"Select Recoding Data"), wxString{}, wxString{},
-                                 Dataset::GetDataFileFilter(),
+                                 Wisteria::Data::Dataset::GetDataFileFilter(),
                                  wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
     if (recodingFileDlg.ShowModal() != wxID_OK)
@@ -250,7 +246,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     wxString recodingWorksheetName;
     if (wxFileName{ recodingFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
-        ExcelReader xlReader{ recodingFileDlg.GetPath() };
+        Wisteria::Data::ExcelReader xlReader{ recodingFileDlg.GetPath() };
         if (xlReader.GetWorksheetNames().size() == 1)
             {
             recodingWorksheetName = xlReader.GetWorksheetNames()[0];
@@ -272,21 +268,24 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             }
         }
 
-    VariableSelectDlg recodingVarDlg(
+    Wisteria::UI::VariableSelectDlg recodingVarDlg(
         this,
-        Dataset::ReadColumnInfo(recodingFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                recodingWorksheetName),
-        { VariableSelectDlg::VariableListInfo()
+        Wisteria::Data::Dataset::ReadColumnInfo(recodingFileDlg.GetPath(),
+                                                Wisteria::Data::ImportInfo{}, std::nullopt,
+                                                recodingWorksheetName),
+        { Wisteria::UI::VariableSelectDlg::VariableListInfo()
               .Label(_(L"Matching Regular Expressions"))
               .SingleSelection(true),
-          VariableSelectDlg::VariableListInfo().Label(_(L"Replacements")).SingleSelection(true) });
+          Wisteria::UI::VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Replacements"))
+              .SingleSelection(true) });
     if (recodingVarDlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
     wxFileDialog classifierFileDlg(this, _(L"Select Classifier Data"), wxString{}, wxString{},
-                                   Dataset::GetDataFileFilter(),
+                                   Wisteria::Data::Dataset::GetDataFileFilter(),
                                    wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
 
     if (classifierFileDlg.ShowModal() != wxID_OK)
@@ -296,7 +295,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     wxString classifierWorksheetName;
     if (wxFileName{ classifierFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
-        ExcelReader xlReader{ classifierFileDlg.GetPath() };
+        const Wisteria::Data::ExcelReader xlReader{ classifierFileDlg.GetPath() };
         if (xlReader.GetWorksheetNames().size() == 1)
             {
             classifierWorksheetName = xlReader.GetWorksheetNames()[0];
@@ -318,17 +317,22 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             }
         }
 
-    VariableSelectDlg classifierVarDlg(
+    Wisteria::UI::VariableSelectDlg classifierVarDlg(
         this,
-        Dataset::ReadColumnInfo(classifierFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                classifierWorksheetName),
-        { VariableSelectDlg::VariableListInfo().Label(_(L"Categories")).SingleSelection(true),
-          VariableSelectDlg::VariableListInfo()
+        Wisteria::Data::Dataset::ReadColumnInfo(classifierFileDlg.GetPath(),
+                                                Wisteria::Data::ImportInfo{}, std::nullopt,
+                                                classifierWorksheetName),
+        { Wisteria::UI::VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Categories"))
+              .SingleSelection(true),
+          Wisteria::UI::VariableSelectDlg::VariableListInfo()
               .Label(_(L"Subcategories"))
               .SingleSelection(true)
               .Required(false),
-          VariableSelectDlg::VariableListInfo().Label(_(L"Patterns")).SingleSelection(true),
-          VariableSelectDlg::VariableListInfo()
+          Wisteria::UI::VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Patterns"))
+              .SingleSelection(true),
+          Wisteria::UI::VariableSelectDlg::VariableListInfo()
               .Label(_(L"Negation Patterns"))
               .SingleSelection(true)
               .Required(false) });
@@ -338,7 +342,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
         }
 
     wxFileDialog surveyFileDlg(this, _(L"Select Survey Data"), wxString{}, wxString{},
-                               Dataset::GetDataFileFilter(),
+                               Wisteria::Data::Dataset::GetDataFileFilter(),
                                wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
     if (surveyFileDlg.ShowModal() != wxID_OK)
         {
@@ -347,7 +351,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     wxString surveyWorksheetName;
     if (wxFileName{ surveyFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
-        ExcelReader xlReader{ surveyFileDlg.GetPath() };
+        const Wisteria::Data::ExcelReader xlReader{ surveyFileDlg.GetPath() };
         if (xlReader.GetWorksheetNames().size() == 1)
             {
             surveyWorksheetName = xlReader.GetWorksheetNames()[0];
@@ -369,39 +373,45 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
             }
         }
 
-    VariableSelectDlg surveyVarDlg(
+    Wisteria::UI::VariableSelectDlg surveyVarDlg(
         this,
-        Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                surveyWorksheetName),
-        { VariableSelectDlg::VariableListInfo().Label(_(L"Comments")).SingleSelection(true) });
+        Wisteria::Data::Dataset::ReadColumnInfo(surveyFileDlg.GetPath(),
+                                                Wisteria::Data::ImportInfo{}, std::nullopt,
+                                                surveyWorksheetName),
+        { Wisteria::UI::VariableSelectDlg::VariableListInfo()
+              .Label(_(L"Comments"))
+              .SingleSelection(true) });
     if (surveyVarDlg.ShowModal() != wxID_OK)
         {
         return;
         }
 
-    auto recodingData = std::make_shared<Data::Dataset>();
-    auto classifierData = std::make_shared<Data::Dataset>();
-    auto surveyData = std::make_shared<Data::Dataset>();
+    auto recodingData = std::make_shared<Wisteria::Data::Dataset>();
+    auto classifierData = std::make_shared<Wisteria::Data::Dataset>();
+    auto surveyData = std::make_shared<Wisteria::Data::Dataset>();
     try
         {
-        recodingData->Import(recodingFileDlg.GetPath(),
-                             Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
-                                 recodingFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                 recodingWorksheetName)),
-                             recodingWorksheetName);
+        recodingData->Import(
+            recodingFileDlg.GetPath(),
+            Wisteria::Data::Dataset::ImportInfoFromPreview(Wisteria::Data::Dataset::ReadColumnInfo(
+                recodingFileDlg.GetPath(), Wisteria::Data::ImportInfo{}, std::nullopt,
+                recodingWorksheetName)),
+            recodingWorksheetName);
 
-        classifierData->Import(classifierFileDlg.GetPath(),
-                               Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(
-                                   classifierFileDlg.GetPath(), Data::ImportInfo{}, std::nullopt,
-                                   classifierWorksheetName)),
-                               classifierWorksheetName);
+        classifierData->Import(
+            classifierFileDlg.GetPath(),
+            Wisteria::Data::Dataset::ImportInfoFromPreview(Wisteria::Data::Dataset::ReadColumnInfo(
+                classifierFileDlg.GetPath(), Wisteria::Data::ImportInfo{}, std::nullopt,
+                classifierWorksheetName)),
+            classifierWorksheetName);
 
         surveyData->Import(surveyFileDlg.GetPath(),
-                           Dataset::ImportInfoFromPreview(
-                               Dataset::ReadColumnInfo(surveyFileDlg.GetPath(), Data::ImportInfo{},
-                                                       std::nullopt, surveyWorksheetName))
-                               .MDCodes(ImportInfo::GetCommonMDCodes())
-                               .ReplacementStrings(Data::ImportInfo::DatasetToRegExMap(
+                           Wisteria::Data::Dataset::ImportInfoFromPreview(
+                               Wisteria::Data::Dataset::ReadColumnInfo(
+                                   surveyFileDlg.GetPath(), Wisteria::Data::ImportInfo{},
+                                   std::nullopt, surveyWorksheetName))
+                               .MDCodes(Wisteria::Data::ImportInfo::GetCommonMDCodes())
+                               .ReplacementStrings(Wisteria::Data::ImportInfo::DatasetToRegExMap(
                                    recodingData, recodingVarDlg.GetSelectedVariables(0)[0],
                                    recodingVarDlg.GetSelectedVariables(1)[0])),
                            surveyWorksheetName);
@@ -460,7 +470,7 @@ void MyFrame::OnOpenProject([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    ReportBuilder rb;
+    Wisteria::ReportBuilder rb;
     auto report = rb.LoadConfigurationFile(fileDlg.GetPath(), this);
 
     for (auto& page : report)
@@ -487,16 +497,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Box Plot"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto mpgData = std::make_shared<Data::Dataset>();
+        auto mpgData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             mpgData->ImportCSV(
                 appDir + L"/datasets/mpg.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"hwy" })
                     .CategoricalColumns(
-                        { { L"class", CategoricalImportMethod::ReadAsStrings },
-                          { L"manufacturer", CategoricalImportMethod::ReadAsStrings } }));
+                        { { L"class", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"manufacturer",
+                            Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -504,7 +515,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(subframe->m_canvas);
 
         plot->SetData(mpgData, L"hwy",
                       // leave this as std::nullopt to not create grouped boxes
@@ -522,15 +533,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"scale chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto testScoresData = std::make_shared<Data::Dataset>();
+        auto testScoresData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             testScoresData->ImportCSV(
                 appDir + L"/datasets/Student Scores.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"test_score" })
                     .IdColumn(L"Week")
-                    .CategoricalColumns({ { L"NAME", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"NAME", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -539,102 +551,138 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<ScaleChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::ScaleChart>(subframe->m_canvas);
         plot->AddScale(
-            std::vector<BarChart::BarBlock>{
-                BarChart::BarBlock{
+            std::vector<Wisteria::Graphs::BarChart::BarBlock>{
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(59)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _(L"F (fail)") }
-                                                     .LabelFitting(LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::PastelRed, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ _(L"F (fail)") }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Corn, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::EvergreenFog, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::FernGreen, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(10)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) } },
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Emerald, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) } },
             std::nullopt, L"Grades");
         plot->AddScale(
-            std::vector<BarChart::BarBlock>{
-                BarChart::BarBlock{
+            std::vector<Wisteria::Graphs::BarChart::BarBlock>{
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(59)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::PastelRed, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ _(L"F (fail)") }
-                                                     .LabelFitting(LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::PastelRed, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ _(L"F (fail)") }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D-" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Corn, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"D-" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(4)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Corn, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"D" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Corn, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"D+" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Corn, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"D+" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C-" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::EvergreenFog, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"C-" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(4)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::EvergreenFog, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"C" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::EvergreenFog, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"C+" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::EvergreenFog, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"C+" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B-" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::FernGreen, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"B-" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(4)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::FernGreen, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"B" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::FernGreen, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"B+" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::FernGreen, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"B+" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A-" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Emerald, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"A-" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(4)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
-                BarChart::BarBlock{
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Emerald, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"A" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
+                Wisteria::Graphs::BarChart::BarBlock{
                     Wisteria::Graphs::BarChart::BarBlockInfo(3)
-                        .Brush(ColorBrewer::GetColor(Colors::Color::Emerald, 150))
-                        .Decal(GraphItems::Label(GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
-                            LabelFit::DisplayAsIs))) },
+                        .Brush(Wisteria::Colors::ColorBrewer::GetColor(
+                            Wisteria::Colors::Color::Emerald, 150))
+                        .Decal(Wisteria::GraphItems::Label(
+                            Wisteria::GraphItems::GraphItemInfo{ L"A+" }.LabelFitting(
+                                Wisteria::LabelFit::DisplayAsIs))) },
             },
             std::nullopt, L"Grades");
         plot->SetMainScaleValues({ 10, 20, 30, 40, 50, 60, 70, 80, 90 }, 0);
@@ -643,8 +691,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
-        auto legend{ plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-            LegendCanvasPlacementHint::RightOfGraph)) };
+        auto legend{ plot->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::RightOfGraph)) };
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
         // after changing legend's text, recalculate how much of the
@@ -656,12 +705,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Heatmap"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto testScoresData = std::make_shared<Data::Dataset>();
+        auto testScoresData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(
-                appDir + L"/datasets/Student Scores.csv",
-                ImportInfo().ContinuousColumns({ L"test_score" }).IdColumn(L"Week"));
+            testScoresData->ImportCSV(appDir + L"/datasets/Student Scores.csv",
+                                      Wisteria::Data::ImportInfo()
+                                          .ContinuousColumns({ L"test_score" })
+                                          .IdColumn(L"Week"));
             }
         catch (const std::exception& err)
             {
@@ -670,13 +720,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<HeatMap>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(subframe->m_canvas);
 
         // add a title to the plot
         plot->GetTitle()
             .GetGraphItemInfo()
             .Text(_(L"Test Scores"))
-            .ChildAlignment(RelativeAlignment::FlushLeft)
+            .ChildAlignment(Wisteria::RelativeAlignment::FlushLeft)
             .Pen(wxNullPen)
             .Padding(4, 0, 0, 4)
             .Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).MakeLarger());
@@ -685,8 +735,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-            LegendCanvasPlacementHint::RightOfGraph)) };
+        auto legend{ plot->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::RightOfGraph)) };
         legend->SetLine(0, _(L"Range of Scores"));
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
@@ -699,15 +750,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Heatmap (Grouped)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto testScoresData = std::make_shared<Data::Dataset>();
+        auto testScoresData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             testScoresData->ImportCSV(
                 appDir + L"/datasets/Student Scores.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"test_score" })
                     .IdColumn(L"Week")
-                    .CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"Name", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -716,12 +768,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<HeatMap>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(subframe->m_canvas);
         // add a title to the plot
         plot->GetTitle()
             .GetGraphItemInfo()
             .Text(_(L"Test Scores"))
-            .ChildAlignment(RelativeAlignment::FlushLeft)
+            .ChildAlignment(Wisteria::RelativeAlignment::FlushLeft)
             .Pen(wxNullPen)
             .Padding(4, 0, 0, 4)
             .Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).MakeLarger());
@@ -733,8 +785,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-            LegendCanvasPlacementHint::RightOfGraph)) };
+        auto legend{ plot->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::RightOfGraph)) };
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
         }
     // Histogram
@@ -742,14 +795,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Histogram"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto mtcarsData = std::make_shared<Data::Dataset>();
+        auto mtcarsData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             mtcarsData->ImportCSV(
                 appDir + L"/datasets/mtcars.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"mpg" })
-                    .CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
+                    .CategoricalColumns(
+                        { { L"Gear", Wisteria::Data::CategoricalImportMethod::ReadAsIntegers } }));
             }
         catch (const std::exception& err)
             {
@@ -758,21 +812,21 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<Histogram>(
-            subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
+        auto plot = std::make_shared<Wisteria::Graphs::Histogram>(
+            subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                                    Wisteria::Colors::Schemes::Decade1980s()));
 
         plot->SetData(mtcarsData, L"mpg",
                       // grouping variable, we won't use one here
                       std::nullopt,
                       // make the ranges neat integers
-                      Histogram::BinningMethod::BinByIntegerRange,
+                      Wisteria::Graphs::Histogram::BinningMethod::BinByIntegerRange,
                       // don't round the data
-                      RoundingMethod::NoRounding,
+                      Wisteria::RoundingMethod::NoRounding,
                       // show labels at the edges of the bars, showing the ranges
-                      Histogram::IntervalDisplay::Cutpoints,
+                      Wisteria::Graphs::Histogram::IntervalDisplay::Cutpoints,
                       // show the counts and percentages above the bars
-                      BinLabelDisplay::BinValueAndPercentage,
+                      Wisteria::BinLabelDisplay::BinValueAndPercentage,
                       // not used with range binning
                       true,
                       // don't request a specify bin start
@@ -786,8 +840,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             subframe->m_canvas->SetFixedObject(
                 0, 1,
-                plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-                    LegendCanvasPlacementHint::RightOfGraph)));
+                plot->CreateLegend(
+                    Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                        Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
             }
         }
     // Histogram (discrete categories from a grouping variable get their own bars)
@@ -795,11 +850,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Histogram (Discrete Category Counts)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto mpgData = std::make_shared<Data::Dataset>();
+        auto mpgData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                               ImportInfo().ContinuousColumns({ L"cyl" }));
+                               Wisteria::Data::ImportInfo().ContinuousColumns({ L"cyl" }));
             }
         catch (const std::exception& err)
             {
@@ -808,20 +863,21 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<Histogram>(
-            subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
+        auto plot = std::make_shared<Wisteria::Graphs::Histogram>(
+            subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                                    Wisteria::Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"cyl", std::nullopt,
                       // don't create range-based bins;
                       // instead, create one for each unique value.
-                      Histogram::BinningMethod::BinUniqueValues,
+                      Wisteria::Graphs::Histogram::BinningMethod::BinUniqueValues,
                       // If the data is floating point, you can tell it
                       // to be rounded here when categorizing it into discrete bins.
                       // In this case, the data is already discrete, so no rounding needed.
-                      RoundingMethod::NoRounding,
+                      Wisteria::RoundingMethod::NoRounding,
                       // since we aren't using ranges, show labels under the middle of the bins.
-                      Histogram::IntervalDisplay::Midpoints, BinLabelDisplay::BinValue,
+                      Wisteria::Graphs::Histogram::IntervalDisplay::Midpoints,
+                      Wisteria::BinLabelDisplay::BinValue,
                       // pass in false to remove the empty '7' bin
                       true);
 
@@ -832,19 +888,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Line Plot"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto linePlotData = std::make_shared<Data::Dataset>();
+        auto linePlotData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             linePlotData->ImportCSV(
                 appDir + L"/datasets/Spelling Grades.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .
                 // first the Y column
                 ContinuousColumns({ L"AVG_GRADE" })
                     .
                 // group and X
-                CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings },
-                                     { L"WEEK_NAME", CategoricalImportMethod::ReadAsStrings } }));
+                CategoricalColumns(
+                    { { L"Gender", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"WEEK_NAME", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -852,10 +909,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto linePlot = std::make_shared<LinePlot>(
+        auto linePlot = std::make_shared<Wisteria::Graphs::LinePlot>(
             subframe->m_canvas,
             // use a different color scheme
-            std::make_shared<Colors::Schemes::Decade1960s>(),
+            std::make_shared<Wisteria::Colors::Schemes::Decade1960s>(),
             // or create your own scheme
             // std::make_shared<Colors::Schemes::ColorScheme>
             //     (Colors::Schemes::ColorScheme{
@@ -864,7 +921,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
             // turn off markers by using a shape scheme filled with blank icons
             // (having just one icon in this scheme will get recycled for each line)
-            std::make_shared<IconScheme>(IconScheme{ IconShape::Blank }));
+            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                Wisteria::Icons::Schemes::IconScheme{ Wisteria::Icons::IconShape::Blank }));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -886,8 +944,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            linePlot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-                LegendCanvasPlacementHint::RightOfGraph)));
+            linePlot->CreateLegend(
+                Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                    Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
 
         /* A note about dataset design. If you have a dataset built like this:
 
@@ -917,16 +976,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Line Plot (Customized)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto linePlotData = std::make_shared<Data::Dataset>();
+        auto linePlotData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             linePlotData->ImportCSV(
                 appDir + L"/datasets/Spelling Grades.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .
                 // first the Y column, then the X
                 ContinuousColumns({ L"AVG_GRADE", L"WeeK" })
-                    .CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"Gender", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -934,14 +994,18 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto linePlot = std::make_shared<LinePlot>(
+        auto linePlot = std::make_shared<Wisteria::Graphs::LinePlot>(
             subframe->m_canvas,
             // create your own color scheme
-            std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::ColorScheme{
-                ColorBrewer::GetColor(Colors::Color::Auburn),
-                ColorBrewer::GetColor(Colors::Color::GrannySmithApple) }),
+            std::make_shared<Wisteria::Colors::Schemes::ColorScheme>(
+                Wisteria::Colors::Schemes::ColorScheme{
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Auburn),
+                    Wisteria::Colors::ColorBrewer::GetColor(
+                        Wisteria::Colors::Color::GrannySmithApple) }),
             // use custom markers
-            std::make_shared<IconScheme>(IconScheme{ IconShape::Diamond, IconShape::Hexagon }));
+            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                Wisteria::Icons::Schemes::IconScheme{ Wisteria::Icons::IconShape::Diamond,
+                                                      Wisteria::Icons::IconShape::Hexagon }));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -957,11 +1021,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             if (line.GetText().CmpNoCase(L"Male") == 0)
                 {
-                line.GetPen().SetColour(ColorBrewer::GetColor(Colors::Color::CelestialBlue));
+                line.GetPen().SetColour(Wisteria::Colors::ColorBrewer::GetColor(
+                    Wisteria::Colors::Color::CelestialBlue));
                 }
             else
                 {
-                line.GetPen().SetColour(ColorBrewer::GetColor(Colors::Color::PinkSherbet));
+                line.GetPen().SetColour(
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::PinkSherbet));
                 }
             }
 
@@ -972,11 +1038,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                                         { return (y < 60.0) ? *wxRED : wxColour(); });
 
         // add a note
-        auto note = std::make_shared<Label>(
-            GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???"))
+        auto note = std::make_shared<Wisteria::GraphItems::Label>(
+            Wisteria::GraphItems::GraphItemInfo(
+                _(L"What happened this week?\nAre we sure this is correct???"))
                 .Pen(*wxLIGHT_GREY)
-                .FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite))
-                .Anchoring(Anchoring::TopRightCorner)
+                .FontBackgroundColor(
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AntiqueWhite))
+                .Anchoring(Wisteria::Anchoring::TopRightCorner)
                 .Padding(4, 4, 4, 4));
         linePlot->AddAnnotation(note,
                                 // top corner of note
@@ -998,23 +1066,24 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         for (int i = 1; i < 6; ++i)
             {
             linePlot->GetBottomXAxis().SetCustomLabel(
-                i, Label(wxString::Format(
+                i, Wisteria::GraphItems::Label(wxString::Format(
                        /* TRANSLATORS: Week # of the school year */
                        _(L"Week %i"), i)));
             }
 
         // add a red background for failing grades
         // (note that this will appear on the legend and the plot)
-        linePlot->AddReferenceArea(
-            ReferenceArea(AxisType::LeftYAxis, 0, 59, _(L"Failing"), *wxRED));
+        linePlot->AddReferenceArea(Wisteria::GraphItems::ReferenceArea(
+            Wisteria::AxisType::LeftYAxis, 0, 59, _(L"Failing"), *wxRED));
 
         // add the line plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // add a legend to the side and center it vertically
-        auto legend = linePlot->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
-            LegendCanvasPlacementHint::RightOfGraph));
-        legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+        auto legend = linePlot->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::RightOfGraph));
+        legend->SetPageVerticalAlignment(Wisteria::PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, std::move(legend));
 
         // to add another right-aligned legend under the graph, uncomment the following:
@@ -1027,8 +1096,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a watermark to the bottom right corner
         subframe->m_canvas->SetWatermarkLogo(
-            wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg",
-                                        Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
+            wxBitmapBundle::FromSVGFile(
+                appDir + L"/res/wisteria.svg",
+                Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
             wxSize(32, 32));
         }
     // Gantt Chart
@@ -1037,14 +1107,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Gantt Chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
 
-        auto companyAcquisitionData = std::make_shared<Data::Dataset>();
+        auto companyAcquisitionData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             const auto datasetPath{ appDir + L"/datasets/economics/company_acquisition.csv" };
             companyAcquisitionData->ImportCSV(
                 datasetPath,
                 // preview the data and deduce how to import it
-                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
+                Wisteria::Data::Dataset::ImportInfoFromPreview(
+                    Wisteria::Data::Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /*companyAcquisitionData->ImportCSV(datasetPath,
                 ImportInfo().
@@ -1066,13 +1137,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto ganttChart =
-            std::make_shared<GanttChart>(subframe->m_canvas,
-                                         // use a different color scheme where the colors
-                                         // stand out more from each other
-                                         std::make_shared<Colors::Schemes::Decade1920s>());
-        ganttChart->SetData(companyAcquisitionData, DateInterval::FiscalQuarterly,
-                            FiscalYear::USBusiness, L"Task", L"Start", "End",
+        auto ganttChart = std::make_shared<Wisteria::Graphs::GanttChart>(
+            subframe->m_canvas,
+            // use a different color scheme where the colors
+            // stand out more from each other
+            std::make_shared<Wisteria::Colors::Schemes::Decade1920s>());
+        ganttChart->SetData(companyAcquisitionData, Wisteria::DateInterval::FiscalQuarterly,
+                            Wisteria::FiscalYear::USBusiness, L"Task", L"Start", "End",
                             // these columns are optional
                             L"Resource", L"Description", L"Completion", L"Resource");
 
@@ -1081,19 +1152,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             ganttChart->GetScalingAxis().FindDatePosition(wxDateTime(25, wxDateTime::Dec, 2022));
         if (releaseDate)
             {
-            ganttChart->AddReferenceLine(
-                ReferenceLine(AxisType::BottomXAxis, releaseDate.value(), _(L"Release"),
-                              ColorBrewer::GetColor(Colors::Color::TractorRed)));
+            ganttChart->AddReferenceLine(Wisteria::GraphItems::ReferenceLine(
+                Wisteria::AxisType::BottomXAxis, releaseDate.value(), _(L"Release"),
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::TractorRed)));
             }
 
         auto updateReleaseDate =
             ganttChart->GetScalingAxis().FindDatePosition(wxDateTime(15, wxDateTime::Mar, 2023));
         if (updateReleaseDate)
             {
-            ganttChart->AddReferenceLine(ReferenceLine(
-                AxisType::BottomXAxis, updateReleaseDate.value(), _(L"Hotfix Release"),
-                ColorBrewer::GetColor(Colors::Color::TractorRed,
-                                      Wisteria::Settings::GetTranslucencyValue())));
+            ganttChart->AddReferenceLine(Wisteria::GraphItems::ReferenceLine(
+                Wisteria::AxisType::BottomXAxis, updateReleaseDate.value(), _(L"Hotfix Release"),
+                Wisteria::Colors::ColorBrewer::GetColor(
+                    Wisteria::Colors::Color::TractorRed,
+                    Wisteria::Settings::GetTranslucencyValue())));
             }
 
         ganttChart->SetCanvasMargins(5, 5, 5, 5);
@@ -1101,22 +1173,23 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a legend, showing who is assigned to which tasks
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            ganttChart->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
-                LegendCanvasPlacementHint::RightOfGraph)));
+            ganttChart->CreateLegend(
+                Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+                    Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
         {
         subframe->SetTitle(_(L"Candlestick Plot"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto silverFuturesData = std::make_shared<Data::Dataset>();
+        auto silverFuturesData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             const auto datasetPath{ appDir + L"/datasets/economics/silver_futures.csv" };
-            silverFuturesData->ImportCSV(
-                datasetPath,
-                // preview the data and deduce how to import it
-                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
+            silverFuturesData->ImportCSV(datasetPath,
+                                         // preview the data and deduce how to import it
+                                         Wisteria::Data::Dataset::ImportInfoFromPreview(
+                                             Wisteria::Data::Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /* silverFuturesData->ImportCSV(datasetPath,
                 ImportInfo().
@@ -1130,7 +1203,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto candlestickPlot = std::make_shared<CandlestickPlot>(subframe->m_canvas);
+        auto candlestickPlot =
+            std::make_shared<Wisteria::Graphs::CandlestickPlot>(subframe->m_canvas);
         // Plot's left axis will start at zero by default so that the scale
         // isn't misleading; you can, however, turn that off like this
         // to better see the daily activity.
@@ -1156,33 +1230,45 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Bar Chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto plot = std::make_shared<BarChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
 
         // make it a horizontal barchart
-        plot->SetBarOrientation(Orientation::Horizontal);
+        plot->SetBarOrientation(Wisteria::Orientation::Horizontal);
 
-        auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
+        auto barColor =
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue);
 
-        plot->AddBar(
-            BarChart::Bar(1, { BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor)) },
-                          L"", Label(_(L"Bugs")), BoxEffect::Solid));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            1,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(92).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Bugs")), Wisteria::BoxEffect::Solid));
 
-        plot->AddBar(
-            BarChart::Bar(2, { BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor)) },
-                          L"", Label(_(L"Pending feature requests")), BoxEffect::Solid));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            2,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(32).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Pending feature requests")),
+            Wisteria::BoxEffect::Solid));
 
-        plot->AddBar(
-            BarChart::Bar(3, { BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor)) },
-                          L"", Label(_(L"Unfinished help topics")), BoxEffect::Solid));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            3,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(12).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Unfinished help topics")),
+            Wisteria::BoxEffect::Solid));
 
-        plot->AddBar(
-            BarChart::Bar(4, { BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor)) },
-                          L"", Label(_(L"Missing unit tests")), BoxEffect::Solid));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            4,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(107).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Missing unit tests")),
+            Wisteria::BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
         // only show the labels on the axis
-        plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+        plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
 
         plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(L"ISSUES");
 
@@ -1194,43 +1280,55 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Bar Chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto plot = std::make_shared<BarChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
 
         // make it a horizontal barchart
-        plot->SetBarOrientation(Orientation::Horizontal);
+        plot->SetBarOrientation(Wisteria::Orientation::Horizontal);
 
-        auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
+        auto barColor =
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue);
 
-        plot->AddBar(
-            BarChart::Bar(1,
-                          { // this bar will have two sections to it, where a red section
-                            // refers to the more critical bugs
-                            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-                            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor)) },
-                          L"", Label(_(L"Bugs")), BoxEffect::Glassy,
-                          // we will make the width of the bar twice as wide as the others
-                          // to show how important it is
-                          wxALPHA_OPAQUE, 2));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            1,
+            { // this bar will have two sections to it, where a red section
+              // refers to the more critical bugs
+              Wisteria::Graphs::BarChart::BarBlock(
+                  Wisteria::Graphs::BarChart::BarBlockInfo(22).Brush(*wxRED)),
+              Wisteria::Graphs::BarChart::BarBlock(
+                  Wisteria::Graphs::BarChart::BarBlockInfo(72).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Bugs")), Wisteria::BoxEffect::Glassy,
+            // we will make the width of the bar twice as wide as the others
+            // to show how important it is
+            wxALPHA_OPAQUE, 2));
 
         // Note that because the first bar has an unusual width, this will offset
         // the positions of the following bars. Therefore, we need to place them
         // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
-        plot->AddBar(
-            BarChart::Bar(2.5, { BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor)) },
-                          L"", Label(_(L"Pending feature requests")), BoxEffect::Glassy,
-                          // this bar will be translucent
-                          75, 1));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            2.5,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(32).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Pending feature requests")),
+            Wisteria::BoxEffect::Glassy,
+            // this bar will be translucent
+            75, 1));
 
-        plot->AddBar(BarChart::Bar(
-            3.5, { BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor)) }, L"",
-            Label(_(L"Unfinished help topics")), BoxEffect::Glassy, wxALPHA_OPAQUE, 1));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            3.5,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(12).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Unfinished help topics")),
+            Wisteria::BoxEffect::Glassy, wxALPHA_OPAQUE, 1));
 
-        plot->AddBar(BarChart::Bar(
-            4.5, { BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor)) }, L"",
-            Label(_(L"Missing unit tests")), BoxEffect::Glassy, wxALPHA_OPAQUE, 1));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            4.5,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(107).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Missing unit tests")), Wisteria::BoxEffect::Glassy,
+            wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
-        plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+        plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
         // force the custom labels set at points like 2.5 to be shown
         const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
         plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1, 0.5, 1);
@@ -1239,14 +1337,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             .GetTitle()
             .GetGraphItemInfo()
             .Text(L"ISSUES")
-            .Orient(Orientation::Horizontal)
+            .Orient(Wisteria::Orientation::Horizontal)
             .Padding(5, 10, 0, 0)
-            .LabelAlignment(TextAlignment::Centered);
+            .LabelAlignment(Wisteria::TextAlignment::Centered);
         plot->GetBarAxis().GetTitle().SplitTextByCharacter();
 
         // align the axis labels over to the left
         plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
-            AxisLabelAlignment::AlignWithBoundary);
+            Wisteria::AxisLabelAlignment::AlignWithBoundary);
 
         plot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1258,13 +1356,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Bar Chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto plot = std::make_shared<BarChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
 
         // make it a horizontal barchart
-        plot->SetBarOrientation(Orientation::Vertical);
+        plot->SetBarOrientation(Wisteria::Orientation::Vertical);
 
         // Photo by ThisisEngineering RAEng on Unsplash
-        auto bgImage = GraphItems::Image::LoadFile(
+        auto bgImage = Wisteria::GraphItems::Image::LoadFile(
             appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg");
         plot->SetImageScheme(std::make_shared<Wisteria::Images::Schemes::ImageScheme>(
             std::vector<wxBitmapBundle>{ wxBitmapBundle(bgImage) }));
@@ -1275,30 +1373,42 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // plot->SetPlotBackgroundImage(bgImage);
         // plot->SetPlotBackgroundImageFit(ImageFit::CropAndCenter);
 
-        auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
+        auto barColor =
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue);
 
-        plot->AddBar(
-            BarChart::Bar(1,
-                          { // this bar will have two sections to it, where a red section
-                            // refers to the more critical bugs
-                            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-                            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor)) },
-                          L"", Label(_(L"Bugs")), BoxEffect::CommonImage));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            1,
+            { // this bar will have two sections to it, where a red section
+              // refers to the more critical bugs
+              Wisteria::Graphs::BarChart::BarBlock(
+                  Wisteria::Graphs::BarChart::BarBlockInfo(22).Brush(*wxRED)),
+              Wisteria::Graphs::BarChart::BarBlock(
+                  Wisteria::Graphs::BarChart::BarBlockInfo(72).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Bugs")), Wisteria::BoxEffect::CommonImage));
 
-        plot->AddBar(
-            BarChart::Bar(2, { BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor)) },
-                          L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            2,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(32).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Pending feature requests")),
+            Wisteria::BoxEffect::CommonImage));
 
-        plot->AddBar(
-            BarChart::Bar(3, { BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor)) },
-                          L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            3,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(12).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Unfinished help topics")),
+            Wisteria::BoxEffect::CommonImage));
 
-        plot->AddBar(
-            BarChart::Bar(4, { BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor)) },
-                          L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage));
+        plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+            4,
+            { Wisteria::Graphs::BarChart::BarBlock(
+                Wisteria::Graphs::BarChart::BarBlockInfo(107).Brush(barColor)) },
+            L"", Wisteria::GraphItems::Label(_(L"Missing unit tests")),
+            Wisteria::BoxEffect::CommonImage));
 
         // only show the labels on the axis
-        plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+        plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
         // force the custom labels set at points like 2.5 to be shown
         const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
         plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1);
@@ -1307,7 +1417,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // align the axis labels over to the left
         plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
-            AxisLabelAlignment::AlignWithBoundary);
+            Wisteria::AxisLabelAlignment::AlignWithBoundary);
 
         plot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1318,13 +1428,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Bar Chart (Categorical Data)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto mpgData = std::make_shared<Data::Dataset>();
+        auto mpgData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                               ImportInfo().CategoricalColumns(
-                                   { { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
-                                     { L"model", CategoricalImportMethod::ReadAsStrings } }));
+            mpgData->ImportCSV(
+                appDir + L"/datasets/mpg.csv",
+                Wisteria::Data::ImportInfo().CategoricalColumns(
+                    { { L"manufacturer", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"model", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1333,9 +1444,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<CategoricalBarChart>(
-            subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
+        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
+            subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                                    Wisteria::Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"manufacturer");
 
@@ -1347,13 +1458,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Bar Chart (Categorical Data, Grouped)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto mpgData = std::make_shared<Data::Dataset>();
+        auto mpgData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
-                               ImportInfo().CategoricalColumns(
-                                   { { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
-                                     { L"class", CategoricalImportMethod::ReadAsStrings } }));
+            mpgData->ImportCSV(
+                appDir + L"/datasets/mpg.csv",
+                Wisteria::Data::ImportInfo().CategoricalColumns(
+                    { { L"manufacturer", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"class", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1362,33 +1474,33 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<CategoricalBarChart>(
-            subframe->m_canvas,
-            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
+        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
+            subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                                    Wisteria::Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"manufacturer", std::nullopt, L"class");
         plot->SetBarOpacity(220);
-        plot->SetBarEffect(BoxEffect::Glassy);
+        plot->SetBarEffect(Wisteria::BoxEffect::Glassy);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            plot->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-                LegendCanvasPlacementHint::RightOfGraph)));
+            plot->CreateLegend(Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Bar Chart using a stipple icon
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
         {
         subframe->SetTitle(_(L"Bar Chart (Stipple Icon)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto mpgData = std::make_shared<Data::Dataset>();
+        auto mpgData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(
-                appDir + L"/datasets/mpg.csv",
-                ImportInfo().CategoricalColumns(
-                    { { L"manufacturer", CategoricalImportMethod::ReadAsStrings } }));
+            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
+                               Wisteria::Data::ImportInfo().CategoricalColumns(
+                                   { { L"manufacturer",
+                                       Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1397,12 +1509,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(subframe->m_canvas);
 
         plot->SetData(mpgData, L"manufacturer");
 
-        plot->SetBarEffect(BoxEffect::StippleShape);
-        plot->SetStippleShape(Icons::IconShape::Car);
+        plot->SetBarEffect(Wisteria::BoxEffect::StippleShape);
+        plot->SetStippleShape(Wisteria::Icons::IconShape::Car);
 
         // do this to use an image instead of a built-in vector icon:
         /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir +
@@ -1418,15 +1530,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Pie Chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto pieData = std::make_shared<Data::Dataset>();
+        auto pieData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                               ImportInfo()
-                                   .ContinuousColumns({ L"Enrollment" })
-                                   .CategoricalColumns(
-                                       { { L"Course", CategoricalImportMethod::ReadAsStrings },
-                                         { L"COLLEGE", CategoricalImportMethod::ReadAsStrings } }));
+            pieData->ImportCSV(
+                appDir + L"/datasets/institutional_research/fall_enrollment.csv",
+                Wisteria::Data::ImportInfo()
+                    .ContinuousColumns({ L"Enrollment" })
+                    .CategoricalColumns(
+                        { { L"Course", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"COLLEGE",
+                            Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1434,11 +1548,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto plot = std::make_shared<PieChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::ranges::find(plot->GetOuterPie(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(plot->GetOuterPie(),
+                                            Wisteria::Graphs::PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1454,15 +1569,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Donut Chart"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto pieData = std::make_shared<Data::Dataset>();
+        auto pieData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                               ImportInfo()
-                                   .ContinuousColumns({ L"Enrollment" })
-                                   .CategoricalColumns(
-                                       { { L"Course", CategoricalImportMethod::ReadAsStrings },
-                                         { L"COLLEGE", CategoricalImportMethod::ReadAsStrings } }));
+            pieData->ImportCSV(
+                appDir + L"/datasets/institutional_research/fall_enrollment.csv",
+                Wisteria::Data::ImportInfo()
+                    .ContinuousColumns({ L"Enrollment" })
+                    .CategoricalColumns(
+                        { { L"Course", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"COLLEGE",
+                            Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1470,11 +1587,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto plot = std::make_shared<PieChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::ranges::find(plot->GetOuterPie(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(plot->GetOuterPie(),
+                                            Wisteria::Graphs::PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1494,15 +1612,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Pie Chart (with Subgroup)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto pieData = std::make_shared<Data::Dataset>();
+        auto pieData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                               ImportInfo()
-                                   .ContinuousColumns({ L"Enrollment" })
-                                   .CategoricalColumns(
-                                       { { L"Course", CategoricalImportMethod::ReadAsStrings },
-                                         { L"COLLEGE", CategoricalImportMethod::ReadAsStrings } }));
+            pieData->ImportCSV(
+                appDir + L"/datasets/institutional_research/fall_enrollment.csv",
+                Wisteria::Data::ImportInfo()
+                    .ContinuousColumns({ L"Enrollment" })
+                    .CategoricalColumns(
+                        { { L"Course", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"COLLEGE",
+                            Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1510,11 +1630,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto plot = std::make_shared<PieChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::ranges::find(plot->GetOuterPie(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::ranges::find(plot->GetOuterPie(),
+                                            Wisteria::Graphs::PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             {
             foundSlice->SetDescription(_(L"Includes both literary and composition courses"));
@@ -1531,24 +1652,26 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // which will also show headers for their parent groups)
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            plot->CreateLegend(LegendOptions()
-                                   .RingPerimeter(Perimeter::Inner)
-                                   .PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
+            plot->CreateLegend(
+                Wisteria::Graphs::LegendOptions()
+                    .RingPerimeter(Wisteria::Perimeter::Inner)
+                    .PlacementHint(Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Donut Chart (with Subgroup)
     else if (event.GetId() == MyApp::ID_NEW_DONUTCHART_GROUPED)
         {
         subframe->SetTitle(_(L"Donut Chart (with Subgroup)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto pieData = std::make_shared<Data::Dataset>();
+        auto pieData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             pieData->ImportCSV(
                 appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Enrollment" })
-                    .CategoricalColumns({ { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
-                                          { L"Course", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"COLLEGE", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"Course", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1556,7 +1679,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto plot = std::make_shared<PieChart>(subframe->m_canvas);
+        auto plot = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // hide all outer labels for the main (i.e., outer) ring
@@ -1573,7 +1696,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                                       }
                               });
         // place the label around the pie, not off to the side
-        plot->SetLabelPlacement(LabelPlacement::NextToParent);
+        plot->SetLabelPlacement(Wisteria::LabelPlacement::NextToParent);
 
         // apply the slice's colors to its respective outside label
         plot->UseColorLabels(true);
@@ -1587,9 +1710,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // which will also show headers for their parent groups)
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            plot->CreateLegend(LegendOptions()
-                                   .RingPerimeter(Perimeter::Inner)
-                                   .PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
+            plot->CreateLegend(
+                Wisteria::Graphs::LegendOptions()
+                    .RingPerimeter(Wisteria::Perimeter::Inner)
+                    .PlacementHint(Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Sankey Diagram
     else if (event.GetId() == MyApp::ID_NEW_SANKEY_DIAGRAM)
@@ -1597,16 +1721,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Sankey Diagram"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto sankeyData = std::make_shared<Data::Dataset>();
+        auto sankeyData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             sankeyData->ImportCSV(
                 appDir + L"/datasets/historical/titanic.csv",
-                ImportInfo().CategoricalColumns(
-                    { { L"Sex", CategoricalImportMethod::ReadAsStrings },
-                      { L"Embarked", CategoricalImportMethod::ReadAsStrings },
-                      { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
-                      { L"Survived", CategoricalImportMethod::ReadAsIntegers } }));
+                Wisteria::Data::ImportInfo().CategoricalColumns(
+                    { { L"Sex", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"Embarked", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"Pclass", Wisteria::Data::CategoricalImportMethod::ReadAsIntegers },
+                      { L"Survived", Wisteria::Data::CategoricalImportMethod::ReadAsIntegers } }));
             }
         catch (const std::exception& err)
             {
@@ -1615,7 +1739,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
+        auto sankey = std::make_shared<Wisteria::Graphs::SankeyDiagram>(subframe->m_canvas);
         sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt, std::nullopt, std::nullopt);
         sankey->SetCanvasMargins(5, 5, 5, 5);
 
@@ -1627,12 +1751,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Grouped Sankey Diagram"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto sankeyData = std::make_shared<Data::Dataset>();
+        auto sankeyData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             sankeyData->ImportCSV(
                 appDir + L"/datasets/institutional_research/hs_graduate_matriculation.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Graduated", L"Enrolled" })
                     .CategoricalColumns({ { L"County" },
                                           { _DT(L"High School", DTExplanation::Syntax,
@@ -1646,13 +1770,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
+        auto sankey = std::make_shared<Wisteria::Graphs::SankeyDiagram>(subframe->m_canvas);
         sankey->SetData(
             sankeyData,
             _DT(L"High School", DTExplanation::Syntax, L"Name of variable from dataset"),
             L"University", L"Graduated", L"Enrolled", L"County");
-        sankey->SetGroupLabelDisplay(BinLabelDisplay::BinNameAndValue);
-        sankey->SetColumnHeaderDisplay(GraphColumnHeader::AsHeader);
+        sankey->SetGroupLabelDisplay(Wisteria::BinLabelDisplay::BinNameAndValue);
+        sankey->SetColumnHeaderDisplay(Wisteria::GraphColumnHeader::AsHeader);
         sankey->SetColumnHeaders({ _(L"Of @COUNT@ High School Graduates"),
                                    _(L"@COUNT@ Enrolled at Miskatonic University") });
         sankey->SetCanvasMargins(5, 5, 5, 5);
@@ -1665,14 +1789,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Word Cloud"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto friendsData = std::make_shared<Data::Dataset>();
+        auto friendsData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             friendsData->ImportCSV(
                 appDir + L"/datasets/social/friends descriptions.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Frequency" })
-                    .CategoricalColumns({ { L"Word", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"Word", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1681,7 +1806,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto wordCloud = std::make_shared<WordCloud>(subframe->m_canvas);
+        auto wordCloud = std::make_shared<Wisteria::Graphs::WordCloud>(subframe->m_canvas);
         // remove the low-frequency words, and also the extreme high frequency
         // ones to remove the main characters
         wordCloud->SetData(friendsData, L"Word", L"Frequency", 2, 100, 25);
@@ -1707,14 +1832,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Linear Regression Roadmap"));
         subframe->m_canvas->SetFixedObjectsGridSize(2, 1);
 
-        auto roadmapData = std::make_shared<Data::Dataset>();
+        auto roadmapData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             roadmapData->ImportCSV(
                 appDir + L"/datasets/institutional_research/first-year_osprey.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"coefficient" })
-                    .CategoricalColumns({ { L"factor", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"factor", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1723,7 +1849,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto roadmap = std::make_shared<LRRoadmap>(subframe->m_canvas);
+        auto roadmap = std::make_shared<Wisteria::Graphs::LRRoadmap>(subframe->m_canvas);
         roadmap->SetData(roadmapData, L"factor", L"coefficient", std::nullopt, std::nullopt,
                          std::nullopt, // TRANSLATORS: Grade Point Average
                          _(L"GPA"));
@@ -1737,13 +1863,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         roadmap->GetTitle().GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
         roadmap->GetTitle().SetPadding(5, 5, 5, 5);
         roadmap->GetTitle().SetFontColor(*wxWHITE);
-        roadmap->GetTitle().SetFontBackgroundColor(ColorBrewer::GetColor(Colors::Color::NavyBlue));
+        roadmap->GetTitle().SetFontBackgroundColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::NavyBlue));
 
         subframe->m_canvas->SetFixedObject(0, 0, roadmap);
 
         // add the legend at the bottom (beneath the explanatory caption)
-        auto legend = roadmap->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-            LegendCanvasPlacementHint::AboveOrBeneathGraph));
+        auto legend = roadmap->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph));
         subframe->m_canvas->SetFixedObject(1, 0, std::move(legend));
 
         subframe->m_canvas->CalcRowDimensions();
@@ -1754,15 +1882,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Pros & Cons Roadmap"));
         subframe->m_canvas->SetFixedObjectsGridSize(3, 1);
 
-        auto swData = std::make_shared<Data::Dataset>();
+        auto swData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
-            swData->ImportCSV(appDir + L"/datasets/economics/erp_migration_survey.csv",
-                              ImportInfo().CategoricalColumns(
-                                  { { L"Strength", CategoricalImportMethod::ReadAsStrings },
-                                    { L"Weakness", CategoricalImportMethod::ReadAsStrings },
-                                    { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
-                                    { L"Threat", CategoricalImportMethod::ReadAsStrings } }));
+            swData->ImportCSV(
+                appDir + L"/datasets/economics/erp_migration_survey.csv",
+                Wisteria::Data::ImportInfo().CategoricalColumns(
+                    { { L"Strength", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"Weakness", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"Opportunity", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                      { L"Threat", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1772,58 +1901,60 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         // strengths and weaknesses
-        auto SWroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
-        SWroadmap->SetData(swData, L"Strength", std::nullopt, L"Weakness", std::nullopt, 2);
-        SWroadmap->SetCanvasMargins(5, 5, 0, 5);
-        SWroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Strengths & Weaknesses"));
-        SWroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+        auto swRoadmap = std::make_shared<Wisteria::Graphs::ProConRoadmap>(subframe->m_canvas);
+        swRoadmap->SetData(swData, L"Strength", std::nullopt, L"Weakness", std::nullopt, 2);
+        swRoadmap->SetCanvasMargins(5, 5, 0, 5);
+        swRoadmap->GetLeftYAxis().GetTitle().SetText(_(L"Strengths & Weaknesses"));
+        swRoadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
         // don't include the counts on the labels
-        SWroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+        swRoadmap->SetMarkerLabelDisplay(Wisteria::Graphs::Roadmap::MarkerLabelDisplay::Name);
         // use road signs and a white road line
-        SWroadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
-        SWroadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
+        swRoadmap->SetRoadStopTheme(Wisteria::Graphs::Roadmap::RoadStopTheme::RoadSigns);
+        swRoadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
         // opportunities and threats
-        auto OTroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
-        OTroadmap->SetData(swData, L"Opportunity", std::nullopt, L"Threat", std::nullopt,
+        auto otRoadmap = std::make_shared<Wisteria::Graphs::ProConRoadmap>(subframe->m_canvas);
+        otRoadmap->SetData(swData, L"Opportunity", std::nullopt, L"Threat", std::nullopt,
                            // ignore items that are only mentioned once
                            2);
-        OTroadmap->SetCanvasMargins(0, 5, 5, 5);
-        OTroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
-        OTroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+        otRoadmap->SetCanvasMargins(0, 5, 5, 5);
+        otRoadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
+        otRoadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
         // add the default caption explaining how to read the graph
-        OTroadmap->AddDefaultCaption();
+        otRoadmap->AddDefaultCaption();
         // don't include the counts on the labels
-        OTroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+        otRoadmap->SetMarkerLabelDisplay(Wisteria::Graphs::Roadmap::MarkerLabelDisplay::Name);
         // use road signs and a white road line
-        OTroadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
-        OTroadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
+        otRoadmap->SetRoadStopTheme(Wisteria::Graphs::Roadmap::RoadStopTheme::RoadSigns);
+        otRoadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
         // add the legend at the bottom (beneath the explanatory caption)
-        OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
-        OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
-        auto legend = OTroadmap->CreateLegend(LegendOptions().IncludeHeader(true).PlacementHint(
-            LegendCanvasPlacementHint::AboveOrBeneathGraph));
+        otRoadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
+        otRoadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
+        auto legend = otRoadmap->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph));
 
         // add a title with a green banner background and white font
-        Label topTitle(
-            GraphItemInfo(
+        Wisteria::GraphItems::Label topTitle(
+            Wisteria::GraphItems::GraphItemInfo(
                 _(L"ERP Migration SWOT Analysis\n"
                   "Employee Survey Results Regarding Proposed Migration to new ERP Software"))
                 .Padding(5, 5, 5, 5)
-                .ChildAlignment(RelativeAlignment::FlushLeft)
+                .ChildAlignment(Wisteria::RelativeAlignment::FlushLeft)
                 .FontColor(*wxWHITE)
-                .FontBackgroundColor(ColorBrewer::GetColor(Colors::Color::HunterGreen)));
+                .FontBackgroundColor(
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::HunterGreen)));
         topTitle.GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
         subframe->m_canvas->GetTopTitles().push_back(topTitle);
 
         // set a common scale for the road stop sizes between the two roadmaps
-        SWroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(), OTroadmap->GetMagnitude()));
-        OTroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(), OTroadmap->GetMagnitude()));
+        swRoadmap->SetMagnitude(std::max(swRoadmap->GetMagnitude(), otRoadmap->GetMagnitude()));
+        otRoadmap->SetMagnitude(std::max(swRoadmap->GetMagnitude(), otRoadmap->GetMagnitude()));
 
         // add everything to the canvas
-        subframe->m_canvas->SetFixedObject(0, 0, SWroadmap);
-        subframe->m_canvas->SetFixedObject(1, 0, OTroadmap);
+        subframe->m_canvas->SetFixedObject(0, 0, swRoadmap);
+        subframe->m_canvas->SetFixedObject(1, 0, otRoadmap);
         subframe->m_canvas->SetFixedObject(2, 0, std::move(legend));
         subframe->m_canvas->GetRowInfo(2).LockProportion(true);
 
@@ -1840,14 +1971,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"W-Curve Plot"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto wcurveData = std::make_shared<Data::Dataset>();
+        auto wcurveData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             wcurveData->ImportCSV(
                 appDir + L"/datasets/institutional_research/sense_of_belonging.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Year", L"Belong" })
-                    .CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"Name", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -1855,16 +1987,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto WCurve = std::make_shared<WCurvePlot>(subframe->m_canvas,
-                                                   std::make_shared<Colors::Schemes::EarthTones>());
+        auto wCurve = std::make_shared<Wisteria::Graphs::WCurvePlot>(
+            subframe->m_canvas, std::make_shared<Wisteria::Colors::Schemes::EarthTones>());
         // add padding around the plot
-        WCurve->SetCanvasMargins(5, 5, 5, 5);
+        wCurve->SetCanvasMargins(5, 5, 5, 5);
 
         // set the data and use the grouping column from the dataset to create separate lines
-        WCurve->SetData(wcurveData, L"Belong", L"Year", L"Name");
-        WCurve->GetTopXAxis().GetTitle().SetText(
+        wCurve->SetData(wcurveData, L"Belong", L"Year", L"Name");
+        wCurve->GetTopXAxis().GetTitle().SetText(
             _(L"THE TRANSITION OF FOUR STUDENTS USING THE W-CURVE"));
-        WCurve->GetTopXAxis().GetTitle().SetBottomPadding(5);
+        wCurve->GetTopXAxis().GetTitle().SetBottomPadding(5);
 
         // Uncomment this to add a story-telling note at the bottom corner:
 
@@ -1878,15 +2010,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         storyNote->GetFont().MakeSmaller();
         storyNote->SplitTextToFitLength(25);
 
-        WCurve->AddAnnotation(storyNote,
-            wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));*/
+        wCurve->AddAnnotation(storyNote,
+            wxPoint(1, wCurve->GetLeftYAxis().GetRange().first));*/
 
         // add the line plot and its legend to the canvas
-        subframe->m_canvas->SetFixedObject(0, 0, WCurve);
+        subframe->m_canvas->SetFixedObject(0, 0, wCurve);
         subframe->m_canvas->SetFixedObject(
             0, 1,
-            WCurve->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
-                LegendCanvasPlacementHint::RightOfGraph)));
+            wCurve->CreateLegend(
+                Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+                    Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Likert (3-Point)
     else if (event.GetId() == MyApp::ID_NEW_LIKERT_3POINT)
@@ -1895,14 +2028,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
         // import the dataset (this is available in the "datasets" folder)
-        auto surveyData = std::make_shared<Data::Dataset>();
+        auto surveyData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             const auto datasetPath{ appDir + L"/datasets/Graph Library Survey.csv" };
-            surveyData->ImportCSV(
-                datasetPath,
-                // preview the data and deduce how to import it
-                Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
+            surveyData->ImportCSV(datasetPath,
+                                  // preview the data and deduce how to import it
+                                  Wisteria::Data::Dataset::ImportInfoFromPreview(
+                                      Wisteria::Data::Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /* surveyData->ImportCSV(datasetPath,
                 Data::ImportInfo().
@@ -1935,9 +2068,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // it to 1-3. To do this, we will collapse all the positive levels
         // into one, and all negative levels into another level.
         auto categoricalNames{ surveyData->GetCategoricalColumnNames() };
-        Dataset::RemoveColumnNamesFromList(categoricalNames, { L"Gender" });
-        const auto responsesScale = LikertChart::Simplify(
-            surveyData, categoricalNames, LikertChart::LikertSurveyQuestionFormat::SevenPoint);
+        Wisteria::Data::Dataset::RemoveColumnNamesFromList(categoricalNames, { L"Gender" });
+        const auto responsesScale = Wisteria::Graphs::LikertChart::Simplify(
+            surveyData, categoricalNames,
+            Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat::SevenPoint);
 
         /* Simplify() will use stock labels for the responses.
            To change these, do the following:
@@ -1951,7 +2085,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         LikertChart::SetLabels(surveyData, codes);*/
 
-        auto likertChart = std::make_shared<LikertChart>(
+        auto likertChart = std::make_shared<Wisteria::Graphs::LikertChart>(
             subframe->m_canvas,
             // Simplify() will return LikertChart::LikertSurveyQuestionFormat::ThreePoint
             responsesScale);
@@ -1974,12 +2108,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
 
         // import the dataset (this is available in the "datasets" folder)
-        auto surveyData = std::make_shared<Data::Dataset>();
+        auto surveyData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             const auto datasetPath = appDir + L"/datasets/Graph Library Survey.csv";
-            surveyData->ImportCSV(
-                datasetPath, Dataset::ImportInfoFromPreview(Dataset::ReadColumnInfo(datasetPath)));
+            surveyData->ImportCSV(datasetPath,
+                                  Wisteria::Data::Dataset::ImportInfoFromPreview(
+                                      Wisteria::Data::Dataset::ReadColumnInfo(datasetPath)));
             }
         catch (const std::exception& err)
             {
@@ -1989,27 +2124,29 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto categoricalNames{ surveyData->GetCategoricalColumnNames() };
-        Dataset::RemoveColumnNamesFromList(categoricalNames, { L"Gender" });
+        Wisteria::Data::Dataset::RemoveColumnNamesFromList(categoricalNames, { L"Gender" });
 
         // Because the responses in the dataset were coded 1-7, we will need to
         // add meaningful labels to the dataset. The following will add stock
         // labels to represent the responses.
-        LikertChart::SetLabels(
+        Wisteria::Graphs::LikertChart::SetLabels(
             surveyData, categoricalNames,
-            LikertChart::CreateLabels(LikertChart::LikertSurveyQuestionFormat::SevenPoint));
+            Wisteria::Graphs::LikertChart::CreateLabels(
+                Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat::SevenPoint));
 
-        auto likertChart = std::make_shared<LikertChart>(
-            subframe->m_canvas, LikertChart::LikertSurveyQuestionFormat::SevenPoint);
+        auto likertChart = std::make_shared<Wisteria::Graphs::LikertChart>(
+            subframe->m_canvas,
+            Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat::SevenPoint);
         likertChart->SetData(surveyData, categoricalNames);
 
         // add brackets around some of the questions to group them
-        likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
+        likertChart->AddQuestionsBracket(Wisteria::Graphs::LikertChart::QuestionsBracket{
             _DT(L"Customization is important to me", DTExplanation::Syntax,
                 L"Name of variable from dataset"),
             _DT(L"Extensibility is important to me", DTExplanation::Syntax,
                 L"Name of variable from dataset"),
             _(L"Advanced Features") });
-        likertChart->AddQuestionsBracket(LikertChart::QuestionsBracket{
+        likertChart->AddQuestionsBracket(Wisteria::Graphs::LikertChart::QuestionsBracket{
             _DT(LR"(Standard, "out-of-the-box" graph support is important to me)",
                 DTExplanation::Syntax, L"Name of variable from dataset"),
             _DT(L"Data importing features are important to me", DTExplanation::Syntax,
@@ -2019,9 +2156,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         likertChart->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
-        subframe->m_canvas->SetFixedObject(0, 1,
-                                           likertChart->CreateLegend(LegendOptions().PlacementHint(
-                                               LegendCanvasPlacementHint::RightOfGraph)));
+        subframe->m_canvas->SetFixedObject(
+            0, 1,
+            likertChart->CreateLegend(Wisteria::Graphs::LegendOptions().PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::RightOfGraph)));
 
         // when printing, make it landscape and stretch it to fill the entire page
         subframe->m_canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
@@ -2032,15 +2170,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Multiple Plots"));
         subframe->m_canvas->SetFixedObjectsGridSize(2, 2);
-        auto pieData = std::make_shared<Data::Dataset>();
+        auto pieData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             pieData->ImportCSV(
                 appDir + L"/datasets/institutional_research/fall_enrollment.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Enrollment" })
-                    .CategoricalColumns({ { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
-                                          { L"Course", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"COLLEGE", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"Course", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -2048,7 +2187,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                          wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
-        auto donutChart = std::make_shared<PieChart>(subframe->m_canvas);
+        auto donutChart = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
         donutChart->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // apply the slice's colors to its respective outside label
@@ -2061,15 +2200,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, donutChart);
 
         // add a pie chart on the side, that will fill up the whole right side
-        auto groupedPieChart = std::make_shared<PieChart>(subframe->m_canvas);
+        auto groupedPieChart = std::make_shared<Wisteria::Graphs::PieChart>(subframe->m_canvas);
         groupedPieChart->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
-        groupedPieChart->SetOuterPieMidPointLabelDisplay(BinLabelDisplay::BinName);
+        groupedPieChart->SetOuterPieMidPointLabelDisplay(Wisteria::BinLabelDisplay::BinName);
 
         // bring attention to the smallest slices within each group
         groupedPieChart->ShowcaseSmallestInnerPieSlices(true, true);
 
-        groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
+        groupedPieChart->SetLabelPlacement(Wisteria::LabelPlacement::NextToParent);
 
         // apply the slice's colors to its respective outside label
         groupedPieChart->UseColorLabels(true);
@@ -2080,10 +2219,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a large note to the canvas
         // (into the second row, beneath the donut chart)
-        auto note = std::make_shared<Label>(
-            GraphItemInfo(_(L"NOTE\n"
-                            "Should we consider dropping VB.NET from the catalog?\n"
-                            "Enrollment has been really low the last few years."))
+        auto note = std::make_shared<Wisteria::GraphItems::Label>(
+            Wisteria::GraphItems::GraphItemInfo(
+                _(L"NOTE\n"
+                  "Should we consider dropping VB.NET from the catalog?\n"
+                  "Enrollment has been really low the last few years."))
                 .Padding(4, 4, 4, 4)
                 .Scaling(2)
                 .DPIScaling(subframe->m_canvas->GetDPIScaleFactor())
@@ -2111,14 +2251,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Multiple Plots (Common Axis)"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 3);
-        auto spellingData = std::make_shared<Data::Dataset>();
+        auto spellingData = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             spellingData->ImportCSV(
                 appDir + L"/datasets/Spelling Grades.csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Week", L"AVG_GRADE" })
-                    .CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
+                    .CategoricalColumns(
+                        { { L"Gender", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -2127,14 +2268,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
         // create your own color scheme
-        const auto colors = std::make_shared<Colors::Schemes::ColorScheme>(
-            Colors::Schemes::ColorScheme{ ColorBrewer::GetColor(Colors::Color::GrannySmithApple),
-                                          ColorBrewer::GetColor(Colors::Color::Auburn) });
+        const auto colors = std::make_shared<Wisteria::Colors::Schemes::ColorScheme>(
+            Wisteria::Colors::Schemes::ColorScheme{
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::GrannySmithApple),
+                Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Auburn) });
 
-        auto linePlot = std::make_shared<LinePlot>(
+        auto linePlot = std::make_shared<Wisteria::Graphs::LinePlot>(
             subframe->m_canvas, colors,
             // use custom markers
-            std::make_shared<IconScheme>(IconScheme{ IconShape::Diamond, IconShape::Hexagon }));
+            std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                Wisteria::Icons::Schemes::IconScheme{ Wisteria::Icons::IconShape::Diamond,
+                                                      Wisteria::Icons::IconShape::Hexagon }));
 
         // set the data and use the grouping column from the dataset to create separate lines
         linePlot->SetData(spellingData, L"AVG_GRADE", L"WeeK", L"Gender");
@@ -2143,15 +2287,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         for (int i = 1; i < 6; ++i)
             {
             linePlot->GetBottomXAxis().SetCustomLabel(i,
-                                                      Label(wxString::Format(
+                                                      Wisteria::GraphItems::Label(wxString::Format(
                                                           // TRANSLATORS: Week # of the school year
                                                           _(L"Week %i"), i)));
             }
 
         // instead of adding the legend to the canvas, overlay it on top of the line plot
-        auto lineLegend = linePlot->CreateLegend(LegendOptions().IncludeHeader(false).PlacementHint(
-            LegendCanvasPlacementHint::EmbeddedOnGraph));
-        lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
+        auto lineLegend = linePlot->CreateLegend(
+            Wisteria::Graphs::LegendOptions().IncludeHeader(false).PlacementHint(
+                Wisteria::LegendCanvasPlacementHint::EmbeddedOnGraph));
+        lineLegend->SetAnchoring(Wisteria::Anchoring::BottomRightCorner);
         linePlot->AddAnnotation(std::move(lineLegend),
                                 wxPoint(linePlot->GetBottomXAxis().GetRange().second,
                                         linePlot->GetLeftYAxis().GetRange().first));
@@ -2160,31 +2305,33 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // create a box plot with the same data
-        auto boxPlot = std::make_shared<BoxPlot>(
-            subframe->m_canvas, std::make_shared<Brushes::Schemes::BrushScheme>(*colors));
+        auto boxPlot = std::make_shared<Wisteria::Graphs::BoxPlot>(
+            subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(*colors));
 
         boxPlot->SetData(spellingData, L"AVG_GRADE", std::nullopt);
 
         // customize the box appearance
-        boxPlot->SetBoxCorners(BoxCorners::Rounded);
+        boxPlot->SetBoxCorners(Wisteria::BoxCorners::Rounded);
         boxPlot->GetLeftYAxis().GetAxisLinePen() = wxNullPen;
 
         // add the box plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 1, boxPlot);
 
-        subframe->m_canvas->SetFixedObject(0, 2,
-                                           // construct a common axis connected to the line and box
-                                           // plots, and add it to the right of them on the canvas
-                                           CommonAxisBuilder::BuildYAxis(subframe->m_canvas,
-                                                                         { linePlot, boxPlot },
-                                                                         AxisType::RightYAxis));
+        subframe->m_canvas->SetFixedObject(
+            0, 2,
+            // construct a common axis connected to the line and box
+            // plots, and add it to the right of them on the canvas
+            Wisteria::CommonAxisBuilder::BuildYAxis(subframe->m_canvas, { linePlot, boxPlot },
+                                                    Wisteria::AxisType::RightYAxis));
 
         // add a centered title and subtitle on the canvas
         // (above the plots)
         subframe->m_canvas->GetTopTitles().emplace_back(_(L"Average Grades"));
         subframe->m_canvas->GetTopTitles().emplace_back(
-            GraphItemInfo(_(L"Average grades taken from last 5 weeks' spelling tests."))
-                .FontColor(ColorBrewer::GetColor(Color::DarkGray))
+            Wisteria::GraphItems::GraphItemInfo(
+                _(L"Average grades taken from last 5 weeks' spelling tests."))
+                .FontColor(
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::DarkGray))
                 .Pen(wxNullPen)
                 .Font(subframe->m_canvas->GetTopTitles().back().GetFont().MakeSmaller()));
         }
@@ -2194,12 +2341,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Table"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
 
-        auto juniorSeniorMajors = std::make_shared<Data::Dataset>();
+        auto juniorSeniorMajors = std::make_shared<Wisteria::Data::Dataset>();
         try
             {
             juniorSeniorMajors->ImportCSV(
                 appDir + L"/datasets/institutional_research/junior_&_senior_majors(pop_20).csv",
-                ImportInfo()
+                Wisteria::Data::ImportInfo()
                     .ContinuousColumns({ L"Female", L"Male" })
                     .CategoricalColumns({ { L"Division" }, { L"Department" } }));
             }
@@ -2210,20 +2357,21 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto tableGraph = std::make_shared<Table>(subframe->m_canvas);
+        auto tableGraph = std::make_shared<Wisteria::Graphs::Table>(subframe->m_canvas);
         tableGraph->SetData(juniorSeniorMajors, { L"Division", L"Department", L"Female", L"Male" });
         // group the schools together in the first row
         tableGraph->GroupColumn(0);
 
         // add ratio aggregate column and group row totals
-        tableGraph->InsertAggregateColumn(Table::AggregateInfo(AggregateType::Ratio), _(L"Ratio"),
-                                          std::nullopt);
+        tableGraph->InsertAggregateColumn(
+            Wisteria::Graphs::Table::AggregateInfo(Wisteria::AggregateType::Ratio), _(L"Ratio"),
+            std::nullopt);
         tableGraph->InsertRowTotals();
 
         // make the headers and row groups bold (and center the headers)
         tableGraph->BoldRow(0);
         tableGraph->BoldColumn(0);
-        tableGraph->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
+        tableGraph->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
 
         const auto& ratioOutliers =
             // Find outlier in the female-to-male ratios for the majors.
@@ -2235,7 +2383,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             tableGraph->AddCellAnnotation(
                 { _(L"Majors with the most lopsided female-to-male ratios"), ratioOutliers,
-                  Side::Right, std::nullopt, wxColour() });
+                  Wisteria::Side::Right, std::nullopt, wxColour() });
             }
 
         // if you also want to place annotations on the left of the table,
@@ -2244,11 +2392,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a title
         subframe->m_canvas->GetTopTitles().emplace_back(
-            GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)"))
+            Wisteria::GraphItems::GraphItemInfo(
+                _(L"Top 20 Majors for Juniors & Seniors (AY2021-22)"))
                 .Padding(5, 5, 5, 5)
                 .Pen(wxNullPen)
-                .ChildAlignment(RelativeAlignment::FlushLeft)
-                .FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen)));
+                .ChildAlignment(Wisteria::RelativeAlignment::FlushLeft)
+                .FontBackgroundColor(
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::MossGreen)));
 
         tableGraph->GetCaption().SetText(_(L"Source: Office of Institutional Research"));
         tableGraph->GetCaption().SetPadding(5, 5, 5, 5);
@@ -2292,11 +2442,11 @@ void MyFrame::OnPrintWindow(wxCommandEvent& event)
 void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     {
     // get all the open canvases
-    std::vector<Canvas*> canvases;
+    std::vector<Wisteria::Canvas*> canvases;
     const auto& windows = GetChildren();
     for (const auto& window : windows)
         {
-        auto pChild = dynamic_cast<MyChild*>(window);
+        auto* pChild = dynamic_cast<MyChild*>(window);
         if (pChild == nullptr)
             {
             continue;
@@ -2309,7 +2459,7 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
         }
 
     // add them to a report printer (using the first canvas's print settings)
-    auto printOut = std::make_unique<ReportPrintout>(canvases, canvases[0]->GetLabel());
+    auto printOut = std::make_unique<Wisteria::ReportPrintout>(canvases, canvases[0]->GetLabel());
 #if defined(__WXMSW__) || defined(__WXOSX__)
     wxPrinterDC dc = wxPrinterDC(canvases[0]->GetPrinterSettings());
 #else
@@ -2347,7 +2497,7 @@ void MyFrame::OnCopyWindow(wxCommandEvent& event)
 
 void MyFrame::OnCloseAll([[maybe_unused]] wxCommandEvent& event)
     {
-    for (auto child : GetChildren())
+    for (auto* child : GetChildren())
         {
         if (child->IsKindOf(wxCLASSINFO(wxMDIChildFrame)))
             {
@@ -2498,12 +2648,12 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
 MyChild::MyChild(wxMDIParentFrame* parent) : wxMDIChildFrame(parent, wxID_ANY, L"")
     {
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");
+    const wxSize iconSize = Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg");
 
     SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
     // create our menu bar and associate it with the frame
-    wxFrameBase::SetMenuBar(MyFrame::CreateMainMenubar());
+    wxMDIChildFrame::SetMenuBar(MyFrame::CreateMainMenubar());
 
     // this should work for MDI frames as well as for normal ones, provided
     // they can be resized at all
