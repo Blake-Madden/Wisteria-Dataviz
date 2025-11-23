@@ -889,14 +889,14 @@ void FormattedTextCtrl::OnCopyAll([[maybe_unused]] wxCommandEvent& event)
         wxTheClipboard->Close();
         }
 #elif defined(__WXGTK__)
-    FormattedText = GetUnthemedFormattedTextHtml();
+    formattedText = GetUnthemedFormattedTextHtml();
     if (wxTheClipboard->Open())
         {
-        if (FormattedText.length())
+        if (formattedText.length())
             {
             wxTheClipboard->Clear();
             wxDataObjectComposite* obj = new wxDataObjectComposite();
-            obj->Add(new wxHTMLDataObject(FormattedText), true);
+            obj->Add(new wxHTMLDataObject(formattedText), true);
             obj->Add(new wxTextDataObject(GetValue()));
             wxTheClipboard->SetData(obj);
             }
