@@ -1913,25 +1913,27 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         swRoadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
         // opportunities and threats
-        auto otRoadmap = std::make_shared<Wisteria::Graphs::ProConRoadmap>(subframe->m_canvas);
-        otRoadmap->SetData(swData, L"Opportunity", std::nullopt, L"Threat", std::nullopt,
-                           // ignore items that are only mentioned once
-                           2);
-        otRoadmap->SetCanvasMargins(0, 5, 5, 5);
-        otRoadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
-        otRoadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+        auto optThreatRoadmap =
+            std::make_shared<Wisteria::Graphs::ProConRoadmap>(subframe->m_canvas);
+        optThreatRoadmap->SetData(swData, L"Opportunity", std::nullopt, L"Threat", std::nullopt,
+                                  // ignore items that are only mentioned once
+                                  2);
+        optThreatRoadmap->SetCanvasMargins(0, 5, 5, 5);
+        optThreatRoadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
+        optThreatRoadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
         // add the default caption explaining how to read the graph
-        otRoadmap->AddDefaultCaption();
+        optThreatRoadmap->AddDefaultCaption();
         // don't include the counts on the labels
-        otRoadmap->SetMarkerLabelDisplay(Wisteria::Graphs::Roadmap::MarkerLabelDisplay::Name);
+        optThreatRoadmap->SetMarkerLabelDisplay(
+            Wisteria::Graphs::Roadmap::MarkerLabelDisplay::Name);
         // use road signs and a white road line
-        otRoadmap->SetRoadStopTheme(Wisteria::Graphs::Roadmap::RoadStopTheme::RoadSigns);
-        otRoadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
+        optThreatRoadmap->SetRoadStopTheme(Wisteria::Graphs::Roadmap::RoadStopTheme::RoadSigns);
+        optThreatRoadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
         // add the legend at the bottom (beneath the explanatory caption)
-        otRoadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
-        otRoadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
-        auto legend = otRoadmap->CreateLegend(
+        optThreatRoadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
+        optThreatRoadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
+        auto legend = optThreatRoadmap->CreateLegend(
             Wisteria::Graphs::LegendOptions().IncludeHeader(true).PlacementHint(
                 Wisteria::LegendCanvasPlacementHint::AboveOrBeneathGraph));
 
@@ -1949,12 +1951,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->GetTopTitles().push_back(topTitle);
 
         // set a common scale for the road stop sizes between the two roadmaps
-        swRoadmap->SetMagnitude(std::max(swRoadmap->GetMagnitude(), otRoadmap->GetMagnitude()));
-        otRoadmap->SetMagnitude(std::max(swRoadmap->GetMagnitude(), otRoadmap->GetMagnitude()));
+        swRoadmap->SetMagnitude(
+            std::max(swRoadmap->GetMagnitude(), optThreatRoadmap->GetMagnitude()));
+        optThreatRoadmap->SetMagnitude(
+            std::max(swRoadmap->GetMagnitude(), optThreatRoadmap->GetMagnitude()));
 
         // add everything to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, swRoadmap);
-        subframe->m_canvas->SetFixedObject(1, 0, otRoadmap);
+        subframe->m_canvas->SetFixedObject(1, 0, optThreatRoadmap);
         subframe->m_canvas->SetFixedObject(2, 0, std::move(legend));
         subframe->m_canvas->GetRowInfo(2).LockProportion(true);
 

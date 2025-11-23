@@ -58,7 +58,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 return {};
                 }
             if (m_valueFormat == TableCellFormat::Percent ||
-                     m_valueFormat == TableCellFormat::PercentChange)
+                m_valueFormat == TableCellFormat::PercentChange)
                 {
                 return wxString::Format(
                     /* TRANSLATORS: Percentage value and percentage symbol (%%).
