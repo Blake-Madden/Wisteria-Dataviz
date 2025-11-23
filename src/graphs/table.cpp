@@ -47,7 +47,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
     //----------------------------------------------------------------
     wxString Table::TableCell::GetDisplayValue() const
         {
-        if (const auto strVal{ std::get_if<wxString>(&m_value) }; strVal != nullptr)
+        if (const auto* strVal{ std::get_if<wxString>(&m_value) }; strVal != nullptr)
             {
             return *strVal;
             }
@@ -55,9 +55,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             {
             if (std::isnan(*dVal))
                 {
-                return wxString{};
+                return {};
                 }
-            else if (m_valueFormat == TableCellFormat::Percent ||
+            if (m_valueFormat == TableCellFormat::Percent ||
                      m_valueFormat == TableCellFormat::PercentChange)
                 {
                 return wxString::Format(
@@ -67,7 +67,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                     wxNumberFormatter::ToString((*dVal) * 100, m_precision,
                                                 wxNumberFormatter::Style::Style_WithThousandsSep));
                 }
-            else if (m_valueFormat == TableCellFormat::Accounting)
+            if (m_valueFormat == TableCellFormat::Accounting)
                 {
                 if (GetSuppressionThreshold().has_value() &&
                     *dVal < GetSuppressionThreshold().value())
@@ -95,7 +95,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             {
             if (std::isnan(doubleVal->first) || std::isnan(doubleVal->second))
                 {
-                return wxString{};
+                return {};
                 }
             if (doubleVal->first > doubleVal->second)
                 {
@@ -114,7 +114,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
             }
-        else if (const auto doubleVal2{ std::get_if<wxDateTime>(&m_value) }; doubleVal2 != nullptr)
+        else if (const auto* doubleVal2{ std::get_if<wxDateTime>(&m_value) }; doubleVal2 != nullptr)
             {
             if (!doubleVal2->IsValid())
                 {
@@ -124,7 +124,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             }
         else
             {
-            return wxString{};
+            return {};
             }
         }
 
@@ -185,10 +185,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                         {
                         return parentCell;
                         }
-                    else
-                        {
-                        return std::nullopt;
-                        }
+                    return std::nullopt;
                     }
                 --parentRow;
                 }
@@ -215,10 +212,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                         {
                         return parentCell;
                         }
-                    else
-                        {
-                        return std::nullopt;
-                        }
+                    return std::nullopt;
                     }
                 --parentColumn;
                 }
@@ -410,17 +404,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 {
                 if (indices[idx] != idx)
                     {
-                    auto current_idx = idx;
+                    auto currentIdx = idx;
                     while (true)
                         {
-                        const auto target_idx = indices[current_idx];
-                        indices[current_idx] = current_idx;
-                        if (indices[target_idx] == target_idx)
+                        const auto targetIdx = indices[currentIdx];
+                        indices[currentIdx] = currentIdx;
+                        if (indices[targetIdx] == targetIdx)
                             {
                             break;
                             }
-                        std::swap(m_table[current_idx], m_table[target_idx]);
-                        current_idx = target_idx;
+                        std::swap(m_table[currentIdx], m_table[targetIdx]);
+                        currentIdx = targetIdx;
                         }
                     }
                 }
@@ -726,7 +720,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                  ++rowCounter)
                 {
                 rowValues.clear();
-                std::pair<size_t, wxString> numOfSuppressedValues{ 0, wxString{} };
                 // tally values from the whole row, unless a custom range was defined
                 for (size_t i = (aggInfo.m_cell1.has_value() ? aggInfo.m_cell1.value() : 0);
                      i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value() + 1 : columnIndex);
@@ -790,7 +783,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         }
 
     //----------------------------------------------------------------
-    void Table::AddCellAnnotation(const CellAnnotation& cellNote)
+    void Table::AddCellAnnotation(CellAnnotation cellNote)
         {
         if (cellNote.m_cells.empty())
             {
@@ -812,32 +805,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 GetCell(cell.m_row, cell.m_column).SetBackgroundColor(cellNote.m_bgColor);
                 }
             }
-        m_cellAnnotations.push_back(cellNote);
-        }
-
-    //----------------------------------------------------------------
-    void Table::AddCellAnnotation(CellAnnotation && cellNote)
-        {
-        if (cellNote.m_cells.empty())
-            {
-            return;
-            }
-        // turn off customized full-width specification if adding annotations
-        if (GetMinWidthProportion().has_value() &&
-            compare_doubles(GetMinWidthProportion().value(), math_constants::full))
-            {
-            SetMinWidthProportion(std::nullopt);
-            }
-
-        for (const auto& cell : cellNote.m_cells)
-            {
-            GetCell(cell.m_row, cell.m_column).Highlight(true);
-            if (cellNote.m_bgColor.IsOk())
-                {
-                GetCell(cell.m_row, cell.m_column).SetBackgroundColor(cellNote.m_bgColor);
-                }
-            }
-        m_cellAnnotations.push_back(cellNote);
+        m_cellAnnotations.push_back(std::move(cellNote));
         }
 
     //----------------------------------------------------------------
@@ -919,7 +887,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 }
             for (size_t i = 0; i < currentRow.size() - 1; /*in loop*/)
                 {
-                size_t startingCounter = i;
+                size_t startingCounter = i; // NOLINT(misc-const-correctness)
                 while (i < currentRow.size() - 1 && currentRow[i].IsText() &&
                        currentRow[i + 1].IsText() &&
                        currentRow[i].GetDisplayValue().CmpNoCase(
@@ -1299,7 +1267,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
 
         // inflates a rect representing the drawing area if
         // padding was added to the original drawing area
-        const auto AddPaddingToRect = [&, this](const wxRect& rect)
+        const auto addPaddingToRect = [&, this](const wxRect& rect)
         {
             wxRect adjustedRect = rect;
             if (!GetMinWidthProportion().has_value() && !GetMinHeightProportion().has_value())
@@ -1326,10 +1294,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
         // if the needed area for the table proper is less than the available drawing area,
         // then remove that extra space and recompute the layout
         fullGraphArea.SetHeight(
-            std::min(AddPaddingToRect(drawArea).GetHeight() + graphDecorationHeight,
+            std::min(addPaddingToRect(drawArea).GetHeight() + graphDecorationHeight,
                      fullGraphArea.GetHeight()));
         fullGraphArea.SetWidth(
-            std::min(AddPaddingToRect(drawArea).GetWidth() + graphDecorationWidth,
+            std::min(addPaddingToRect(drawArea).GetWidth() + graphDecorationWidth,
                      fullGraphArea.GetWidth()));
         SetBoundingBox(fullGraphArea, dc, GetScaling());
         Graph2D::RecalcSizes(dc);
@@ -1980,7 +1948,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             {
             for (size_t j = 0; j < colCount; ++j)
                 {
-                if (auto& cell = m_table[i][j]; cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                if (const auto& cell = m_table[i][j];
+                    cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
                     {
                     return CellPosition{ i, j };
                     }
@@ -2016,7 +1985,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             {
             for (size_t i = 0; i < m_table.size(); ++i)
                 {
-                if (auto& cell = m_table[i][0]; cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                if (const auto& cell = m_table[i][0];
+                    cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
                     {
                     return i;
                     }

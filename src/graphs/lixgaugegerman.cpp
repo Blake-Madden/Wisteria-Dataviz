@@ -98,10 +98,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                                           70.0;
                 return std::make_pair(minYAxis, maxYAxis);
                 }
-            else
-                {
-                return std::make_pair(20.0, 70.0);
-                }
+
+            return std::make_pair(20.0, 70.0);
         };
 
         const auto [minYAxis, maxYAxis] = getMinMaxForRange();

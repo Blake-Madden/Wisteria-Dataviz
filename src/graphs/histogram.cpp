@@ -116,11 +116,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             {
             return customLabel.GetText();
             }
-        else
-            {
-            return wxNumberFormatter::ToString(value, precision,
-                                               Settings::GetDefaultNumberFormat());
-            }
+
+        return wxNumberFormatter::ToString(value, precision, Settings::GetDefaultNumberFormat());
         }
 
     //----------------------------------------------------------------
@@ -211,12 +208,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         if (GetBinsStart() && !std::isnan(GetBinsStart().value()) && IsShowingFullRangeOfValues() &&
             !groups.get_data().contains(BinBlock{ GetBinsStart().value(), 0, 0, wxEmptyString }))
             {
-            Bar theBar(GetBinsStart().value(),
-                       { BarBlock(BarBlockInfo()
-                                      .Brush(GetBrushScheme()->GetBrush(0))
-                                      .Color(GetColorScheme() ? GetColorScheme()->GetColor(0) :
-                                                                wxTransparentColour)) },
-                       wxString{}, GraphItems::Label(wxString{}), GetBarEffect(), GetBarOpacity());
+            const Bar theBar(
+                GetBinsStart().value(),
+                { BarBlock(BarBlockInfo()
+                               .Brush(GetBrushScheme()->GetBrush(0))
+                               .Color(GetColorScheme() ? GetColorScheme()->GetColor(0) :
+                                                         wxTransparentColour)) },
+                wxString{}, GraphItems::Label(wxString{}), GetBarEffect(), GetBarOpacity());
             AddBar(theBar);
             }
         // add the bars (block-by-block)
@@ -458,10 +456,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         }
                     break;
                     }
-                else if (compare_doubles_greater(currentVal,
-                                                 (minVal + (static_cast<double>(j) * binSize))) &&
-                         compare_doubles_less_or_equal(
-                             currentVal, (minVal + (static_cast<double>(j) * binSize) + binSize)))
+                if (compare_doubles_greater(currentVal,
+                                            (minVal + (static_cast<double>(j) * binSize))) &&
+                    compare_doubles_less_or_equal(
+                        currentVal, (minVal + (static_cast<double>(j) * binSize) + binSize)))
                     {
                     auto foundGroup = std::ranges::find(
                         bins[j],
@@ -524,10 +522,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 {
                 break;
                 }
-            else
-                {
-                bins.erase(bins.end() - 1);
-                }
+
+            bins.erase(bins.end() - 1);
             }
 
         // add the bars
@@ -685,10 +681,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 {
                 continue;
                 }
-            else
-                {
-                firstBinWithValuesFound = true;
-                }
+
+            firstBinWithValuesFound = true;
 
             AddBar(theBar);
             }
@@ -709,23 +703,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
             return 1;
             }
         // Sturges
-        else if (m_validN < 200)
+        if (m_validN < 200)
             {
             return static_cast<size_t>(std::ceil(std::log2(m_validN)) + 1);
             }
         // Scott
-        else
-            {
-            std::vector<double> validData;
-            validData.reserve(GetDataset()->GetRowCount());
-            std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
-                                 [](auto x) { return std::isfinite(x); });
-            const auto minVal = *std::ranges::min_element(std::as_const(validData));
-            const auto maxVal = *std::ranges::max_element(std::as_const(validData));
-            const auto sd = statistics::standard_deviation(validData, true);
-            return static_cast<size_t>(
-                safe_divide(maxVal - minVal, 3.5 * safe_divide(sd, std::cbrt(m_validN))));
-            }
+        std::vector<double> validData;
+        validData.reserve(GetDataset()->GetRowCount());
+        std::ranges::copy_if(m_continuousColumn->GetValues(), std::back_inserter(validData),
+                             [](auto x) { return std::isfinite(x); });
+        const auto minVal = *std::ranges::min_element(std::as_const(validData));
+        const auto maxVal = *std::ranges::max_element(std::as_const(validData));
+        const auto sd = statistics::standard_deviation(validData, true);
+        return static_cast<size_t>(
+            safe_divide(maxVal - minVal, 3.5 * safe_divide(sd, std::cbrt(m_validN))));
         }
 
     //----------------------------------------------------------------

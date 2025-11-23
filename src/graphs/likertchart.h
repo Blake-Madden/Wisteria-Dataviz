@@ -1200,40 +1200,40 @@ namespace Wisteria::Graphs
                                const Data::ColumnWithStringTable& responses);
 
         /// @brief Add a three-point (e.g., agree, disagree, or neutral) Likert response.
-        /// @param response The question and its breakdowns of the responses.
+        /// @param question The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
-        void AddSurveyQuestion(const LikertThreePointSurveyQuestion& response);
+        void AddSurveyQuestion(const LikertThreePointSurveyQuestion& question);
         /// @brief Add a three-point (e.g., agree, disagree, or neutral)
         ///     Likert question with categorical responses.
-        /// @param response The question and its categorized breakdowns of the responses.
+        /// @param question The question and its categorized breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
-        void AddSurveyQuestion(const LikertCategorizedThreePointSurveyQuestion& response);
+        void AddSurveyQuestion(const LikertCategorizedThreePointSurveyQuestion& question);
 
         /// @brief Add a five-point (e.g., agree, disagree, or neutral) Likert response.
-        /// @param response The question and its breakdowns of the responses.
+        /// @param question The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
-        void AddSurveyQuestion(const LikertFivePointSurveyQuestion& response);
+        void AddSurveyQuestion(const LikertFivePointSurveyQuestion& question);
         /// @brief Add a five-point (e.g., agree, disagree, or neutral)
         ///     Likert question with categorical responses.
-        /// @param response The question and its categorized breakdowns of the responses.
+        /// @param question The question and its categorized breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
-        void AddSurveyQuestion(const LikertCategorizedFivePointSurveyQuestion& response);
+        void AddSurveyQuestion(const LikertCategorizedFivePointSurveyQuestion& question);
 
         /// @brief Add a seven-point (e.g., agree, disagree, or neutral) Likert response.
-        /// @param response The question and its breakdowns of the responses.
+        /// @param question The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
-        void AddSurveyQuestion(const LikertSevenPointSurveyQuestion& response);
+        void AddSurveyQuestion(const LikertSevenPointSurveyQuestion& question);
         /// @brief Add a seven-point (e.g., agree, disagree, or neutral)
         ///     Likert response with categorical responses.
-        /// @param response The question and its breakdowns of the responses.
+        /// @param question The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
-        void AddSurveyQuestion(const LikertCategorizedSevenPointSurveyQuestion& response);
+        void AddSurveyQuestion(const LikertCategorizedSevenPointSurveyQuestion& question);
         void AddSurveyQuestionBar(const LikertThreePointSurveyQuestion& question);
         void AddSurveyQuestionBar(const LikertCategorizedThreePointSurveyQuestion& question);
         void AddSurveyQuestionBar(const LikertFivePointSurveyQuestion& question);

@@ -102,7 +102,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
 
     //-------------------------------------------
     bool LinePlot::IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
-                                         const Data::GroupIdType group) const noexcept
+                                         const Data::GroupIdType group) const
         {
         assert(data && L"Null dataset passed to IsDataSingleDirection()");
         // this only makes sense with numeric data
@@ -121,10 +121,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                         {
                         return false;
                         }
-                    else
-                        {
-                        currentX = GetXValue(i);
-                        }
+                    currentX = GetXValue(i);
                     }
                 }
             }

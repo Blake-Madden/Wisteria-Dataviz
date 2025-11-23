@@ -759,10 +759,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 const auto found = groupPos->second.get_data().find(code);
                 return (found != groupPos->second.get_data().cend()) ? found->second : 0;
                 }
-            else
-                {
-                return 0;
-                }
+
+            return 0;
         };
 
         const auto findNACount = [&fMap](const Data::GroupIdType group) -> size_t
@@ -778,10 +776,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                     }
                 return naCount;
                 }
-            else
-                {
-                return 0;
-                }
+
+            return 0;
         };
 
         [[maybe_unused]]
@@ -1112,7 +1108,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                            .Tag(GetQuestionBlockLabel())),
               // response count
               BarBlock(
-                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                       .SelectionLabel(GraphItems::Label(
                           GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
                       .Brush(wxTransparentColor)
@@ -1295,7 +1291,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                            .Tag(GetQuestionBlockLabel())),
               // overall response count
               BarBlock(
-                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                       .Brush(wxTransparentColor)
                       .SelectionLabel(GraphItems::Label(
                           GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -1347,7 +1343,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                           .Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
                   BarBlock(
-                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                           .Brush(wxTransparentColor)
                           .SelectionLabel(GraphItems::Label(
                               GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -1518,7 +1514,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                            .Tag(GetQuestionBlockLabel())),
               // response count
               BarBlock(
-                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                       .Brush(wxTransparentColor)
                       .SelectionLabel(GraphItems::Label(
                           GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -1722,7 +1718,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                            .Tag(GetQuestionBlockLabel())),
               // overall response count
               BarBlock(
-                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                       .Brush(wxTransparentColor)
                       .SelectionLabel(GraphItems::Label(
                           GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -1772,7 +1768,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                .Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
                   BarBlock(
-                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                           .Brush(wxTransparentColor)
                           .SelectionLabel(GraphItems::Label(
                               GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -1969,7 +1965,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                            .Tag(GetQuestionBlockLabel())),
               // response count
               BarBlock(
-                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                       .Brush(wxTransparentColor)
                       .SelectionLabel(GraphItems::Label(
                           GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -2218,7 +2214,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                            .Tag(GetQuestionBlockLabel())),
               // overall response count
               BarBlock(
-                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                  BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                       .Brush(wxTransparentColor)
                       .SelectionLabel(GraphItems::Label(
                           GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))
@@ -2270,7 +2266,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                           .Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
                   BarBlock(
-                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f)
+                      BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0)
                           .Brush(wxTransparentColor)
                           .SelectionLabel(GraphItems::Label(
                               GraphItems::GraphItemInfo().Pen(wxColour{ 0, 0, 0, 0 })))

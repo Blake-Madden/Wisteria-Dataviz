@@ -340,12 +340,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
         Graph2D::RecalcSizes(dc);
 
         constexpr wxCoord LABEL_PADDING{ 4 };
-        const wxCoord PADDING_BETWEEN_LABELS{ static_cast<wxCoord>(ScaleToScreenAndCanvas(10)) };
+        const wxCoord paddingBetweenLabels{ static_cast<wxCoord>(ScaleToScreenAndCanvas(10)) };
 
         // size the boxes to fit in the area available
         wxRect drawArea = GetPlotAreaBoundingBox();
         double seasonHeaderLabelHeight{ 0 };
-        wxFont seasonHeaderLabelFont{ GetBottomXAxis().GetFont() };
+        const wxFont seasonHeaderLabelFont{ GetBottomXAxis().GetFont() };
 
         // find the width of the longest season label
         GraphItems::Label measuringLabel(GraphItems::GraphItemInfo()
@@ -402,11 +402,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), pctRecordLabelWidth);
         const wxCoord allLabelsWidth{ seasonLabelWidth + overallRecordLabelWidth +
                                       homeRecordLabelWidth + roadRecordLabelWidth +
-                                      pctRecordLabelWidth + (PADDING_BETWEEN_LABELS * 4) };
+                                      pctRecordLabelWidth + (paddingBetweenLabels * 4) };
 
         drawArea.SetWidth(drawArea.GetWidth() - allLabelsWidth);
         // Free some space for the season labels above each column (even if one column).
-        GraphItems::Label headerLabelTemplate(
+        const GraphItems::Label headerLabelTemplate(
             GraphItems::GraphItemInfo(_(L"home"))
                 .Scaling(GetScaling())
                 .Pen(wxNullPen)
@@ -417,7 +417,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
         // leave space for the headers and for even spacing between each row
         drawArea.SetHeight(drawArea.GetHeight() - seasonHeaderLabelHeight -
-                           ((m_matrix.size() - 1) * PADDING_BETWEEN_LABELS));
+                           ((m_matrix.size() - 1) * paddingBetweenLabels));
         drawArea.Offset(wxPoint(allLabelsWidth, seasonHeaderLabelHeight));
 
         const double maxWidth{ safe_divide<double>(
@@ -446,7 +446,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 .Padding(0, 0, 0, LABEL_PADDING)
                 .AnchorPoint(drawArea.GetTopLeft()));
         homeHeader->Offset(-(homeRecordLabelWidth + roadRecordLabelWidth + pctRecordLabelWidth +
-                             (PADDING_BETWEEN_LABELS * 2)),
+                             (paddingBetweenLabels * 2)),
                            -seasonHeaderLabelHeight);
         homeHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(homeHeader));
@@ -462,7 +462,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 .Font(seasonHeaderLabelFont)
                 .Padding(0, 0, 0, LABEL_PADDING)
                 .AnchorPoint(drawArea.GetTopLeft()));
-        roadHeader->Offset(-(roadRecordLabelWidth + pctRecordLabelWidth + PADDING_BETWEEN_LABELS),
+        roadHeader->Offset(-(roadRecordLabelWidth + pctRecordLabelWidth + paddingBetweenLabels),
                            -seasonHeaderLabelHeight);
         roadHeader->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         labels.push_back(std::move(roadHeader));
@@ -491,7 +491,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 const auto& game = row.second[gameCounter];
                 const auto xOffset{ (boxWidth * currentColumn) };
                 const auto yOffset{ (currentRow * boxHeight) +
-                                    (currentRow * PADDING_BETWEEN_LABELS) };
+                                    (currentRow * paddingBetweenLabels) };
                 const std::array<wxPoint, 4> pts = {
                     wxPoint(drawArea.GetTopLeft().x + xOffset, drawArea.GetTopLeft().y + yOffset),
                     wxPoint(drawArea.GetTopLeft().x + xOffset,
@@ -652,7 +652,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 const wxPoint labelAnchorPoint{ drawArea.GetTopLeft().x - allLabelsWidth,
                                                 drawArea.GetTopLeft().y +
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
-                                                    (currentRow * PADDING_BETWEEN_LABELS) };
+                                                    (currentRow * paddingBetweenLabels) };
                 auto seasonRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo(row.first.m_seasonLabel)
                         .Anchoring(Anchoring::TopLeftCorner)
@@ -673,9 +673,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 {
                 const wxPoint labelAnchorPoint{
                     drawArea.GetTopLeft().x - overallRecordLabelWidth - homeRecordLabelWidth -
-                        roadRecordLabelWidth - pctRecordLabelWidth - (PADDING_BETWEEN_LABELS * 3),
+                        roadRecordLabelWidth - pctRecordLabelWidth - (paddingBetweenLabels * 3),
                     drawArea.GetTopLeft().y + static_cast<wxCoord>(currentRow * boxHeight) +
-                        (currentRow * PADDING_BETWEEN_LABELS)
+                        (currentRow * paddingBetweenLabels)
                 };
                 auto overallRecordRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo(row.first.m_overallRecordLabel)
@@ -697,10 +697,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 {
                 const wxPoint labelAnchorPoint{ drawArea.GetTopLeft().x - homeRecordLabelWidth -
                                                     roadRecordLabelWidth - pctRecordLabelWidth -
-                                                    (PADDING_BETWEEN_LABELS * 2),
+                                                    (paddingBetweenLabels * 2),
                                                 drawArea.GetTopLeft().y +
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
-                                                    (currentRow * PADDING_BETWEEN_LABELS) };
+                                                    (currentRow * paddingBetweenLabels) };
                 auto homeRecordRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo(row.first.m_homeRecordLabel)
                         .Anchoring(Anchoring::TopLeftCorner)
@@ -720,10 +720,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 // road record
                 {
                 const wxPoint labelAnchorPoint{ drawArea.GetTopLeft().x - roadRecordLabelWidth -
-                                                    pctRecordLabelWidth - PADDING_BETWEEN_LABELS,
+                                                    pctRecordLabelWidth - paddingBetweenLabels,
                                                 drawArea.GetTopLeft().y +
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
-                                                    (currentRow * PADDING_BETWEEN_LABELS) };
+                                                    (currentRow * paddingBetweenLabels) };
                 auto roadRecordRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo(row.first.m_roadRecordLabel)
                         .Anchoring(Anchoring::TopLeftCorner)
@@ -745,7 +745,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                 const wxPoint labelAnchorPoint{ drawArea.GetTopLeft().x - pctRecordLabelWidth,
                                                 drawArea.GetTopLeft().y +
                                                     static_cast<wxCoord>(currentRow * boxHeight) +
-                                                    (currentRow * PADDING_BETWEEN_LABELS) };
+                                                    (currentRow * paddingBetweenLabels) };
                 auto pctRecordRowLabel = std::make_unique<GraphItems::Label>(
                     GraphItems::GraphItemInfo(row.first.m_pctLabel)
                         .Anchoring(Anchoring::TopLeftCorner)

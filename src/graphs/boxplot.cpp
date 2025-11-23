@@ -532,7 +532,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                         {
                         const wxCoord scaledShadowOffset =
                             ScaleToScreenAndCanvas(GetShadowOffset());
-                        std::array<wxPoint, 7> shadowPts = {
+                        const std::array<wxPoint, 7> shadowPts = {
                             box.m_boxRect.GetLeftBottom() + wxPoint(scaledShadowOffset, 0),
                             box.m_boxRect.GetLeftBottom() +
                                 wxPoint(scaledShadowOffset, scaledShadowOffset),
@@ -568,7 +568,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                             .BaseColor(boxColor)
                             .Brush(brush),
                         boxPoints);
-                    constexpr uint8_t boxLightenFactor = 160;
+                    constexpr uint8_t BOX_LIGHTEN_FACTOR = 160;
                     if (box.GetBoxEffect() == BoxEffect::FadeFromLeftToRight)
                         {
                         boxPoly->GetBrush() = wxNullBrush;
@@ -580,7 +580,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                 GetBrushScheme()
                                     ->GetBrush(box.GetSchemeIndex())
                                     .GetColour()
-                                    .ChangeLightness(boxLightenFactor),
+                                    .ChangeLightness(BOX_LIGHTEN_FACTOR),
                                 box.GetOpacity()),
                             FillDirection::East));
                         }
@@ -595,7 +595,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
                                 GetBrushScheme()
                                     ->GetBrush(box.GetSchemeIndex())
                                     .GetColour()
-                                    .ChangeLightness(boxLightenFactor),
+                                    .ChangeLightness(BOX_LIGHTEN_FACTOR),
                                 box.GetOpacity()),
                             FillDirection::West));
                         }
@@ -636,7 +636,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
             // draw the middle point line
             GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
                                    box.m_middleCoordinate);
-            std::array<wxPoint, 2> boxLinePts = {
+            const std::array<wxPoint, 2> boxLinePts = {
                 wxPoint(box.m_boxRect.GetX(), box.m_middleCoordinate.y),
                 wxPoint(box.m_boxRect.GetX() + box.m_boxRect.GetWidth(), box.m_middleCoordinate.y)
             };
@@ -738,12 +738,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         // draw the connection points
         if (GetBoxCount() >= 2)
             {
-            wxPen connectionPen{ Colors::ColorContrast::ShadeOrTintIfClose(
+            const wxPen connectionPen{ Colors::ColorContrast::ShadeOrTintIfClose(
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BondiBlue),
                 GetPlotOrCanvasColor()) };
             for (size_t i = 0; i < GetBoxCount() - 1; ++i)
                 {
-                std::array<wxPoint, 2> connectionPts = {
+                const std::array<wxPoint, 2> connectionPts = {
                     wxPoint{ m_boxes[i].m_middleCoordinate.x, m_boxes[i].m_middleCoordinate.y },
                     wxPoint{ m_boxes[i + 1].m_middleCoordinate.x,
                              m_boxes[i + 1].m_middleCoordinate.y }

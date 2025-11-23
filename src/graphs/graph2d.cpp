@@ -1306,7 +1306,7 @@ namespace Wisteria::Graphs
                         }
                     }
                 const auto bBox = GetBoundingBox(dc);
-                GraphItems::Label infoLabel(
+                const GraphItems::Label infoLabel(
                     GraphItems::GraphItemInfo(
                         wxString::Format(
                             _DT(L"Scaling: %s\n"

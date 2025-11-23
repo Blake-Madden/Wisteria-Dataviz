@@ -94,20 +94,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
                 const auto [minVal, maxVal] = std::minmax_element(
                     m_scoresColumn->GetValues().cbegin(), m_scoresColumn->GetValues().cend());
                 // for the lines up top
-                constexpr auto axisOffset{ 10 };
+                constexpr auto AXIS_OFFSET{ 10 };
                 const auto minYAxis =
                     !m_scoresColumn->GetValues().empty() ?
-                        std::min(20.0, previous_interval(*minVal, 2)) - axisOffset :
+                        std::min(20.0, previous_interval(*minVal, 2)) - AXIS_OFFSET :
                         10.0;
                 const auto maxYAxis = !m_scoresColumn->GetValues().empty() ?
-                                          std::max(60.0, next_interval(*maxVal, 2)) + axisOffset :
+                                          std::max(60.0, next_interval(*maxVal, 2)) + AXIS_OFFSET :
                                           70.0;
                 return std::make_pair(minYAxis, maxYAxis);
                 }
-            else
-                {
-                return std::make_pair(10.0, 70.0);
-                }
+
+            return std::make_pair(10.0, 70.0);
         };
 
         const auto [minYAxis, maxYAxis] = getMinMaxForRange();

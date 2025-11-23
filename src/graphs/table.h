@@ -1480,7 +1480,7 @@ namespace Wisteria::Graphs
         ///     the note, and where to place it relative to the table.
         /// @note If the table's minimum width is set to fill the entire width, then
         ///     this will be turned off and the table will autofit width-wise.
-        void AddCellAnnotation(const CellAnnotation& cellNote);
+        void AddCellAnnotation(CellAnnotation cellNote);
 
         /** @brief Searches for the first cell whose content matches the provided text.
             @param textToFind The text to search for.
@@ -1520,9 +1520,6 @@ namespace Wisteria::Graphs
                 shown after it, but no respective footnote entry will appear in the caption.
             @warning Adding a footnote will overwrite the existing caption.*/
         void AddFootnote(const wxString& cellValue, const wxString& footnote);
-
-        /// @private
-        void AddCellAnnotation(CellAnnotation&& cellNote);
 
       private:
         [[deprecated("Tables do not support legends.")]] [[nodiscard]]

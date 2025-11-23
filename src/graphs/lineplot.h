@@ -566,7 +566,7 @@ namespace Wisteria::Graphs
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]]
         bool IsDataSingleDirection(const std::shared_ptr<const Data::Dataset>& data,
-                                   Data::GroupIdType group) const noexcept;
+                                   Data::GroupIdType group) const;
 
         /// @returns Whether X was loaded from a continuous column.
         [[nodiscard]]
