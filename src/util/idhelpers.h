@@ -35,7 +35,7 @@ class IdRangeLock
   public:
     /** @brief Constructor.
         @param idCount The number of IDs to use in the range.*/
-    explicit IdRangeLock(const size_t idCount) : m_rangeBegin(m_firstId = m_startingId)
+    explicit IdRangeLock(const size_t idCount) : m_firstId(m_startingId), m_rangeBegin(m_startingId)
         {
         wxWindowID i = m_rangeBegin;
         for (/*already defined*/; static_cast<size_t>(i) < m_rangeBegin + idCount; ++i)
