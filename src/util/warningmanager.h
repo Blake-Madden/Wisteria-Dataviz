@@ -14,7 +14,7 @@
 
 #include <algorithm>
 #include <vector>
-#include <wx/wx.h>
+#include <wx/string.h>
 
 /// @brief An enhanced warning message that can store user response information.
 struct WarningMessage
@@ -215,8 +215,8 @@ class WarningManager
     [[nodiscard]]
     static std::vector<WarningMessage>::iterator GetWarning(const wxString& messageId)
         {
-        std::vector<WarningMessage>::iterator warningPos = std::lower_bound(
-            m_warningManager.begin(), m_warningManager.end(), WarningMessage(messageId));
+        auto warningPos = std::lower_bound(m_warningManager.begin(), m_warningManager.end(),
+                                           WarningMessage(messageId));
         return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId) ?
                    warningPos :
                    m_warningManager.end();
@@ -227,8 +227,8 @@ class WarningManager
     [[nodiscard]]
     static bool HasWarning(const wxString& messageId)
         {
-        std::vector<WarningMessage>::iterator warningPos = std::lower_bound(
-            m_warningManager.begin(), m_warningManager.end(), WarningMessage(messageId));
+        auto warningPos = std::lower_bound(m_warningManager.begin(), m_warningManager.end(),
+                                           WarningMessage(messageId));
         return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId);
         }
 

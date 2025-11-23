@@ -13,10 +13,10 @@ namespace Wisteria::UI
     //------------------------------------------------
     void ListCtrlSortDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
         mainSizer->SetMinSize(FromDIP(wxSize(500, 300)));
 
-        wxBoxSizer* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(optionsSizer, wxSizerFlags{ 1 }.Expand().Border());
 
         // construct this first so that we can measure the row height
@@ -41,13 +41,13 @@ namespace Wisteria::UI
         m_columnList->SetVirtualDataSize(m_columnChoices.Count(), 2);
         m_columnList->DistributeColumns();
 
-        wxBoxSizer* labelsSizer = new wxBoxSizer(wxVERTICAL);
+        auto* labelsSizer = new wxBoxSizer(wxVERTICAL);
         // align the "sort by" label next to the first row
         wxRect rect;
         m_columnList->GetItemRect(0, rect);
         labelsSizer->AddSpacer(rect.GetHeight() + 3);
-        wxStaticText* label = new wxStaticText(this, wxID_STATIC, _(L"Sort by:"), wxDefaultPosition,
-                                               wxDefaultSize, 0);
+        auto* label = new wxStaticText(this, wxID_STATIC, _(L"Sort by:"), wxDefaultPosition,
+                                       wxDefaultSize, 0);
         labelsSizer->Add(label, 0);
         if (m_columnChoices.size() > 1)
             {
@@ -59,7 +59,7 @@ namespace Wisteria::UI
 
         optionsSizer->Add(m_columnList, wxSizerFlags{ 1 }.Expand());
 
-        wxStaticText* infoText = new wxStaticText(
+        auto* infoText = new wxStaticText(
             this, wxID_ANY, _(L"Double click a field to add or edit a sort criterion."));
         infoText->Wrap(GetSize().GetWidth());
         mainSizer->Add(infoText, wxSizerFlags{}.Expand().Border());
@@ -78,7 +78,7 @@ namespace Wisteria::UI
         m_columnList->SetVirtualDataSize(m_columnChoices.Count(), 2);
         // if no sort columns, then just use the first column in ascending order, it looks
         // odd not having any sort criteria when this dialog is shown.
-        if (sortColumns.empty() && m_columnChoices.size() > 0)
+        if (sortColumns.empty() && !m_columnChoices.empty())
             {
             m_columnList->SetItemText(0, 0, m_columnChoices[0]);
             m_columnList->SetItemText(0, 1, GetAscendingLabel());
@@ -119,7 +119,7 @@ namespace Wisteria::UI
                     (m_data->GetItemText(i, 1).CmpNoCase(GetAscendingLabel()) == 0) ?
                         Wisteria::SortDirection::SortAscending :
                         Wisteria::SortDirection::SortDescending;
-                columns.push_back(std::make_pair(columnName, direction));
+                columns.emplace_back(columnName, direction);
                 }
             }
         return columns;

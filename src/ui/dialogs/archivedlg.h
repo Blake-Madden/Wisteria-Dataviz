@@ -33,7 +33,7 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        ArchiveDlg(wxWindow* parent, const wxString& fullFileFilter, wxWindowID id = wxID_ANY,
+        ArchiveDlg(wxWindow* parent, wxString fullFileFilter, wxWindowID id = wxID_ANY,
                    const wxString& caption = _(L"Select Archive File"),
                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                    long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);

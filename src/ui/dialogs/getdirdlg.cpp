@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "getdirdlg.h"
+#include <utility>
 #include <wx/artprov.h>
 #include <wx/dirdlg.h>
 #include <wx/tokenzr.h>
@@ -16,11 +17,11 @@ namespace Wisteria::UI
     {
     //-------------------------------------------------------------
     GetDirFilterDialog::GetDirFilterDialog(
-        wxWindow* parent, const wxString& fullFileFilter, const wxWindowID id /*= wxID_ANY*/,
+        wxWindow* parent, wxString fullFileFilter, const wxWindowID id /*= wxID_ANY*/,
         const wxString& caption /*= _(L"Select Directory")*/,
         const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
         const long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER*/)
-        : m_fullFileFilter(fullFileFilter)
+        : m_fullFileFilter(std::move(fullFileFilter))
         {
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS |
                                         wxWS_EX_CONTEXTHELP);
@@ -102,7 +103,7 @@ namespace Wisteria::UI
         while (tkz.HasMoreTokens())
             {
             wxString currentFilter = tkz.GetNextToken();
-            if (currentFilter.length() && currentFilter[0] != L'*')
+            if (!currentFilter.empty() && currentFilter[0] != L'*')
                 {
                 choiceStrings.Add(currentFilter);
                 }

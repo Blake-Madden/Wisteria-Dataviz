@@ -33,10 +33,10 @@ namespace Wisteria::UI
     //------------------------------------------------
     void ListCtrlItemViewDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
         SetSizer(mainSizer);
 
-        auto columnsNameAttr{ new wxGridCellAttr };
+        auto* columnsNameAttr{ new wxGridCellAttr };
         columnsNameAttr->SetFont(wxFont{}.Bold());
         columnsNameAttr->SetReadOnly(true);
 
@@ -53,18 +53,18 @@ namespace Wisteria::UI
         mainSizer->Add(m_grid, wxSizerFlags{ 1 }.Expand().Border());
 
         mainSizer->Add(new wxStaticLine(this), wxSizerFlags{}.Expand().Border(wxRIGHT | wxLEFT));
-        wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
         if constexpr (wxCHECK_VERSION(3, 3, 0))
             {
-            wxButton* button = new wxButton(this, wxID_COPY);
+            auto* button = new wxButton(this, wxID_COPY);
             button->SetBitmap(
                 wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
             buttonSizer->Add(button, wxSizerFlags{}.Border(wxRIGHT));
             }
 
             {
-            wxButton* button = new wxButton(this, wxID_CLOSE);
+            auto* button = new wxButton(this, wxID_CLOSE);
             button->SetBitmap(
                 wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
             button->SetDefault();

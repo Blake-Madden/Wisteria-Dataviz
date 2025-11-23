@@ -179,7 +179,7 @@ class XmlFormat
                                const size_t tabCount = 0)
         {
         wxString textBuffer;
-        lily_of_the_valley::html_encode_text enc;
+        const lily_of_the_valley::html_encode_text enc;
         textBuffer.append(tabCount, L'\t')
             .append(L"<")
             .append(elementName)

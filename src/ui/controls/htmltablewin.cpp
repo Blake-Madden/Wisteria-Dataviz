@@ -52,7 +52,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(HtmlTableWindow, wxHtmlWindow)
 //------------------------------------------------------
 void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     {
-    HtmlTablePrintout* printOut = new HtmlTablePrintout(GetLabel());
+    auto* printOut = new HtmlTablePrintout(GetLabel());
     printOut->SetDPIScaleFactor(GetDPIScaleFactor());
     printOut->SetLeftPrinterHeader(GetLeftPrinterHeader());
     printOut->SetCenterPrinterHeader(GetCenterPrinterHeader());
@@ -62,12 +62,12 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     printOut->SetRightPrinterFooter(GetRightPrinterFooter());
     printOut->SetWatermark(GetWatermark());
 
-    wxString htmlText = *(GetParser()->GetSource());
+    const wxString htmlText = *(GetParser()->GetSource());
     const wchar_t* htmlEnd = htmlText.wc_str() + htmlText.length();
     const wchar_t* tableStart = lily_of_the_valley::html_extract_text::find_element(
         htmlText.wc_str(), htmlEnd, _DT(L"table"), false);
     const wchar_t* tableEnd = nullptr;
-    while (tableStart)
+    while (tableStart != nullptr)
         {
         tableEnd = lily_of_the_valley::html_extract_text::find_closing_element(tableStart, htmlEnd,
                                                                                _DT(L"table"));
@@ -75,17 +75,16 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
             {
             break;
             }
-        else
+
+        tableEnd = lily_of_the_valley::html_extract_text::find_close_tag(tableEnd);
+        if (tableEnd == nullptr)
             {
-            tableEnd = lily_of_the_valley::html_extract_text::find_close_tag(tableEnd);
-            if (tableEnd == nullptr)
-                {
-                break;
-                }
-            // skip '>'
-            ++tableEnd;
-            printOut->AddTable(wxString(tableStart, tableEnd - tableStart));
+            break;
             }
+        // skip '>'
+        ++tableEnd;
+        printOut->AddTable(wxString(tableStart, tableEnd - tableStart));
+
         tableStart = lily_of_the_valley::html_extract_text::find_element(tableEnd, htmlEnd,
                                                                          _DT(L"table"), false);
         }
@@ -95,7 +94,7 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
 #else
     wxPostScriptDC* dc = nullptr;
 #endif
-    if (m_printData)
+    if (m_printData != nullptr)
         {
 #if defined(__WXMSW__) || defined(__WXOSX__)
         dc = new wxPrinterDC(*m_printData);
@@ -115,7 +114,7 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     printOut->SetDC(dc);
 
     wxPrinter printer;
-    if (m_printData)
+    if (m_printData != nullptr)
         {
         printer.GetPrintDialogData().SetPrintData(*m_printData);
         }
@@ -126,14 +125,14 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
     if (!printer.Print(this, printOut, true))
         {
         // just show a message if a real error occurred. They may have just cancelled.
-        if (printer.GetLastError() == wxPRINTER_ERROR)
+        if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
             {
             wxMessageBox(_(L"An error occurred while printing.\n"
                            "Your default printer may not be set correctly."),
                          _(L"Print"), wxOK | wxICON_WARNING);
             }
         }
-    if (m_printData)
+    if (m_printData != nullptr)
         {
         *m_printData = printer.GetPrintDialogData().GetPrintData();
         }
