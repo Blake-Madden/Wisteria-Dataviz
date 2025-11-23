@@ -8,6 +8,7 @@
 
 #include "screenshot.h"
 #include "../math/mathematics.h"
+#include <array>
 #include <wx/listctrl.h>
 #include <wx/ribbon/buttonbar.h>
 
