@@ -2996,7 +2996,7 @@ namespace Wisteria::GraphItems
 
                 const int browPenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.25));
 
-                const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
+                const double faceCenterX = faceRect.GetX() + faceRect.GetWidth() * 0.5;
                 const double midY = faceRect.GetY() + faceRect.GetHeight() * 0.50;
 
                 const double eyeSpacing = faceRect.GetWidth() * 0.20;
@@ -3004,8 +3004,8 @@ namespace Wisteria::GraphItems
                 const double eyeH = faceRect.GetHeight() * 0.07;
                 const double pupilR = (std::min)(eyeW, eyeH) * 0.30;
 
-                const double leftEyeX = cx - eyeSpacing;
-                const double rightEyeX = cx + eyeSpacing;
+                const double leftEyeX = faceCenterX - eyeSpacing;
+                const double rightEyeX = faceCenterX + eyeSpacing;
                 const double eyeTopY = midY - (eyeH * 1.0);
 
                 // eyes
@@ -3046,9 +3046,6 @@ namespace Wisteria::GraphItems
 
                     // nose (two-line profile, pointing right)
                     {
-                    const wxColour faintBlack = Colors::ColorContrast::ChangeOpacity(
-                        Colors::ColorBrewer::GetColor(Colors::Color::Black), 60);
-
                     gc->SetPen(
                         wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.25)) });
                     const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
@@ -3059,7 +3056,6 @@ namespace Wisteria::GraphItems
                     const double noseTopY = noseBottomY - faceRect.GetHeight() * 0.11;
 
                     const double xOut = cx + faceRect.GetWidth() * 0.015;
-                    const double xIn = cx + faceRect.GetWidth() * 0.035;
 
                     gc->StrokeLine(cx, noseTopY, xOut, noseBottomY); // downward diagonal
                     }
@@ -3150,10 +3146,10 @@ namespace Wisteria::GraphItems
             const double tbThickness = billRect.GetHeight() * 0.085;
             const double lrThickness = billRect.GetHeight() * 0.035;
 
-            const double x = innerBillRect.GetX();
-            const double y = innerBillRect.GetY();
-            const double w = innerBillRect.GetWidth();
-            const double h = innerBillRect.GetHeight();
+            const double innerBillX = innerBillRect.GetX();
+            const double innerBillY = innerBillRect.GetY();
+            const double innerBillWidth = innerBillRect.GetWidth();
+            const double innerBillHeight = innerBillRect.GetHeight();
 
             gc->SetBrush(wxColour{ 0, 0, 0, 0 });
 
@@ -3161,20 +3157,28 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
                                   static_cast<int>(tbThickness) }
                            .Cap(wxCAP_BUTT));
-            gc->StrokeLine(x, y + tbThickness * 0.5, x + w, y + tbThickness * 0.5);
-            gc->StrokeLine(x, y + h - tbThickness * 0.5, x + w, y + h - tbThickness * 0.5);
+            gc->StrokeLine(innerBillX, innerBillY + tbThickness * 0.5, innerBillX + innerBillWidth,
+                           innerBillY + tbThickness * 0.5);
+            gc->StrokeLine(innerBillX, innerBillY + innerBillHeight - tbThickness * 0.5,
+                           innerBillX + innerBillWidth,
+                           innerBillY + innerBillHeight - tbThickness * 0.5);
             // left and right side of inner frame
             gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
                                   static_cast<int>(lrThickness) }
                            .Cap(wxCAP_BUTT));
-            gc->StrokeLine(x + lrThickness * 0.5, y, x + lrThickness * 0.5, y + h);
-            gc->StrokeLine(x + w - lrThickness * 0.5, y, x + w - lrThickness * 0.5, y + h);
+            gc->StrokeLine(innerBillX + lrThickness * 0.5, innerBillY,
+                           innerBillX + lrThickness * 0.5, innerBillY + innerBillHeight);
+            gc->StrokeLine(innerBillX + innerBillWidth - lrThickness * 0.5, innerBillY,
+                           innerBillX + innerBillWidth - lrThickness * 0.5,
+                           innerBillY + innerBillHeight);
             gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
                                   static_cast<int>(lrThickness) }
                            .Cap(wxCAP_BUTT)
                            .Style(wxPenStyle::wxPENSTYLE_SHORT_DASH));
-            gc->StrokeLine(x + lrThickness, y, x + lrThickness, y + h);
-            gc->StrokeLine(x + w - lrThickness, y, x + w - lrThickness, y + h);
+            gc->StrokeLine(innerBillX + lrThickness, innerBillY, innerBillX + lrThickness,
+                           innerBillY + innerBillHeight);
+            gc->StrokeLine(innerBillX + innerBillWidth - lrThickness, innerBillY,
+                           innerBillX + innerBillWidth - lrThickness, innerBillY + innerBillHeight);
 
             // Corner ornament
             const double cs = ScaleToScreenAndCanvas(4.0);
@@ -3224,13 +3228,13 @@ namespace Wisteria::GraphItems
             };
 
             // top-Left
-            drawCorner(x, y, false, false);
+            drawCorner(innerBillX, innerBillY, false, false);
             // top-Right
-            drawCorner(x + w, y, true, false);
+            drawCorner(innerBillX + innerBillWidth, innerBillY, true, false);
             // bottom-Left
-            drawCorner(x, y + h, false, true);
+            drawCorner(innerBillX, innerBillY + innerBillHeight, false, true);
             // bottom-Right
-            drawCorner(x + w, y + h, true, true);
+            drawCorner(innerBillX + innerBillWidth, innerBillY + innerBillHeight, true, true);
 
             // security strip
             //---------------
