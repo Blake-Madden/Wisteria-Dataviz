@@ -1,5 +1,9 @@
 # Releases
 
+## 1.0.7 Release
+
+- Compatibility change: `IconShape::Dollar` has been renamed to `IconShape::HundredDollarBill`
+
 ## 1.0.6 Release
 
 - Improved image scaling when loaded via JSON file

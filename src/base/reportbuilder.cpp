@@ -5614,6 +5614,11 @@ namespace Wisteria
                     {
                     icons.push_back(iconValue.value());
                     }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: unknown icon for icon scheme."), icon).ToUTF8());
+                    }
                 }
             if (icons.empty())
                 {
@@ -5636,6 +5641,12 @@ namespace Wisteria
                 {
                 return std::make_shared<Icons::Schemes::IconScheme>(
                     std::vector<Wisteria::Icons::IconShape>{ iconValue.value() });
+                }
+            else
+                {
+                throw std::runtime_error(wxString::Format(_(L"%s: unknown icon for icon scheme."),
+                                                          iconSchemeNode->AsString())
+                                             .ToUTF8());
                 }
             }
 
@@ -6042,6 +6053,13 @@ namespace Wisteria
                     {
                     graph->SetStippleShape(iconValue.value());
                     }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: unknown icon for graph stipple shape."),
+                                         stippleShapeNode->AsString())
+                            .ToUTF8());
+                    }
                 }
             else
                 {
@@ -6050,6 +6068,13 @@ namespace Wisteria
                 if (iconValue.has_value())
                     {
                     graph->SetStippleShape(iconValue.value());
+                    }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: unknown icon for graph stipple shape."),
+                                         stippleShapeNode->GetProperty(L"icon")->AsString())
+                            .ToUTF8());
                     }
                 if (const auto stippleShapeColor =
                         ConvertColor(stippleShapeNode->GetProperty(L"color"));

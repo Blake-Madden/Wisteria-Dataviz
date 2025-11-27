@@ -157,7 +157,7 @@ namespace Wisteria
                 { L"house", Icons::IconShape::House },
                 { L"barn", Icons::IconShape::Barn },
                 { L"farm", Icons::IconShape::Farm },
-                { L"dollar", Icons::IconShape::Dollar },
+                { L"hundred-dollar-bill", Icons::IconShape::HundredDollarBill },
                 { L"monitor", Icons::IconShape::Monitor },
                 { L"sword", Icons::IconShape::Sword },
                 { L"immaculate-heart-with-sword", Icons::IconShape::ImmaculateHeartWithSword },

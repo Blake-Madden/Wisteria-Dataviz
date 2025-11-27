@@ -102,7 +102,7 @@ namespace Wisteria::Icons
         House,                    /*!< A house.*/
         Barn,                     /*!< A barn.*/
         Farm,                     /*!< A barn and grain silo.*/
-        Dollar,                   /*!< A US dollar bill.*/
+        HundredDollarBill,        /*!< A US $100 dollar bill.*/
         Monitor,                  /*!< A computer monitor.*/
         Sword,                    /*!< A sword.*/
         ImmaculateHeartWithSword, /*!< An Immaculate Heart (with sword piercing it).*/

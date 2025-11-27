@@ -412,10 +412,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawFarm(wxRect rect, wxDC& dc) const;
-        /// @brief Draws a dollar bill.
+        /// @brief Draws a $100 dollar bill.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawDollar(wxRect rect, wxDC& dc) const;
+        void DrawHundredDollarBill(wxRect rect, wxDC& dc) const;
         /// @brief Draws a computer monitor.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.

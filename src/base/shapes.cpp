@@ -238,7 +238,7 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::House, &ShapeRenderer::DrawHouse },
             { Icons::IconShape::Barn, &ShapeRenderer::DrawBarn },
             { Icons::IconShape::Farm, &ShapeRenderer::DrawFarm },
-            { Icons::IconShape::Dollar, &ShapeRenderer::DrawDollar },
+            { Icons::IconShape::HundredDollarBill, &ShapeRenderer::DrawHundredDollarBill },
             { Icons::IconShape::Monitor, &ShapeRenderer::DrawMonitor },
             { Icons::IconShape::Sword, &ShapeRenderer::DrawSword },
             { Icons::IconShape::CrescentTop, &ShapeRenderer::DrawCrescentTop },
@@ -2750,7 +2750,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawDollar(const wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawHundredDollarBill(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
@@ -2765,7 +2765,6 @@ namespace Wisteria::GraphItems
         assert(gc && L"Failed to get graphics context for dollar icon!");
         if (gc != nullptr)
             {
-            gc->SetBrush(wxColour{ ApplyColorOpacity(L"#D8D4B4") });
             gc->SetPen(
                 wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
                        static_cast<int>(ScaleToScreenAndCanvas(math_constants::quarter)) });
@@ -2774,125 +2773,721 @@ namespace Wisteria::GraphItems
             wxRect2DDouble billRect{ drawRect };
             billRect.SetHeight(billRect.GetHeight() * math_constants::half);
             billRect.Offset(0, drawRect.GetHeight() * math_constants::quarter);
+
+            // fill entire bill with muted blue-gray base
+            const wxColour blueGray = ApplyColorOpacity(wxColour{ L"#BCC5D3" });
+            gc->SetBrush(blueGray);
+            gc->SetPen(wxPen{ wxColour(0, 0, 0, 0) });
             gc->DrawRectangle(billRect);
+
+            // metallic gold "flare" band
+            const double glowStart =
+                billRect.GetX() + (billRect.GetWidth() * math_constants::tenth);
+            const double glowCenter = billRect.GetX() + (billRect.GetWidth() * 0.50);
+            const double glowEnd = billRect.GetX() + (billRect.GetWidth() * 0.50);
+            const wxColour goldTone = ApplyColorOpacity(wxColour{ L"#E5C07B" });
+
+                // left half of flare
+                // transparent -> gold
+                {
+                const wxGraphicsBrush leftFlare = gc->CreateLinearGradientBrush(
+                    glowStart, billRect.GetY(), glowCenter, billRect.GetY(),
+                    wxColour{ blueGray.Red(), blueGray.Green(), blueGray.Blue(), 0 }, goldTone);
+
+                gc->SetBrush(leftFlare);
+                gc->DrawRectangle(glowStart, billRect.GetY(), glowCenter - glowStart,
+                                  billRect.GetHeight());
+                }
+
+                // right half of flare:
+                // gold -> transparent
+                {
+                const wxGraphicsBrush rightFlare = gc->CreateLinearGradientBrush(
+                    glowCenter, billRect.GetY(), glowEnd + (billRect.GetWidth() * 0.20),
+                    billRect.GetY(), goldTone,
+                    wxColour(blueGray.Red(), blueGray.Green(), blueGray.Blue(), 0));
+
+                gc->SetBrush(rightFlare);
+                gc->DrawRectangle(glowCenter, billRect.GetY(), (billRect.GetWidth() * 0.30),
+                                  billRect.GetHeight());
+                }
 
             // portrait
             //---------
             wxRect2DDouble innerBillRect{ billRect };
-            innerBillRect.Deflate(ScaleToScreenAndCanvas(2));
+            innerBillRect.Deflate(ScaleToScreenAndCanvas(1));
 
-            gc->SetPen(wxColour{ 0, 0, 0, 0 });
-            gc->SetBrush(wxColour{ ApplyColorOpacity(L"#3E3E3C") });
             wxRect2DDouble portraitRect{ innerBillRect };
             portraitRect.SetWidth(portraitRect.GetWidth() * math_constants::third);
-            portraitRect.Offset(billRect.GetWidth() * math_constants::quarter, 0);
-            auto clipBox = gc->GetClipBox();
+            portraitRect.Offset(billRect.GetWidth() * math_constants::fifth, 0);
+            const auto clipBox = gc->GetClipBox();
             const auto originalClipRect(clipBox);
             gc->Clip(portraitRect.GetX(), portraitRect.GetY(), portraitRect.GetWidth(),
                      portraitRect.GetHeight());
-            // body
-            gc->DrawEllipse(portraitRect.GetX() +
-                                (portraitRect.GetWidth() * math_constants::quarter),
-                            portraitRect.GetY() + portraitRect.GetHeight() * 0.6,
-                            portraitRect.GetWidth() * 0.6, portraitRect.GetHeight());
 
-            // face
-            gc->SetPen((GetGraphItemInfo().GetBrush().GetColour().GetAlpha() < wxALPHA_OPAQUE) ?
-                           Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) :
-                           wxColour{ L"#3E3E3C" });
-            gc->SetBrush(wxColour{ L"#ADADAD" });
             const wxRect2DDouble faceRect{ portraitRect.GetX() +
                                                (portraitRect.GetWidth() * math_constants::third),
                                            portraitRect.GetY() + portraitRect.GetHeight() * 0.275,
                                            portraitRect.GetWidth() * math_constants::half,
                                            portraitRect.GetHeight() * math_constants::half };
+
+            const auto fillHairShaded = [&](const wxGraphicsPath& hp, const wxRect2DDouble& hr)
+            {
+                const wxColour baseHair = Colors::ColorBrewer::GetColor(Colors::Color::SlateGray);
+                gc->SetBrush(baseHair);
+                gc->SetPen(wxPen(wxColour(0, 0, 0, 0), 1));
+                gc->FillPath(hp);
+
+                const wxColour highlight =
+                    Colors::ColorBrewer::GetColor(Colors::Color::SmokyBlack, 150);
+
+                // angled gradient: top-right to bottom-left
+                const wxGraphicsBrush grad = gc->CreateLinearGradientBrush(
+                    hr.GetX() + hr.GetWidth(), hr.GetY(), hr.GetX(), hr.GetY() + hr.GetHeight(),
+                    highlight, wxColour{ 0, 0, 0, 0 });
+
+                gc->SetBrush(grad);
+                gc->FillPath(hp);
+            };
+
+                // hair ribbon on right side
+                {
+                wxRect2DDouble ribbon{ faceRect };
+
+                ribbon.SetWidth(ribbon.GetWidth() * 0.80);
+                ribbon.SetHeight(ribbon.GetHeight() * 1.40);
+
+                ribbon.Offset(faceRect.GetWidth() * 0.4,
+                              -ribbon.GetHeight() * math_constants::tenth);
+
+                wxGraphicsPath hairPath = gc->CreatePath();
+
+                double topX = ribbon.GetX() + ribbon.GetWidth() * 0.20;
+                double topY = ribbon.GetY() + ribbon.GetHeight() * 0.05;
+
+                const double yBase = topY;
+
+                const auto sy = [&](double y)
+                { return yBase + (y - yBase) * math_constants::three_quarters; };
+
+                double mid1X = ribbon.GetX() + ribbon.GetWidth() * 1.15;
+                double mid1Y = sy(ribbon.GetY() + ribbon.GetHeight() * 0.35);
+
+                double mid2X = ribbon.GetX() + ribbon.GetWidth() * 0.90;
+                double mid2Y = sy(ribbon.GetY() + ribbon.GetHeight() * 0.60);
+
+                double brX = ribbon.GetX() + ribbon.GetWidth() * 1.05;
+                double brY = sy(ribbon.GetY() + ribbon.GetHeight());
+
+                double blX = ribbon.GetX() + ribbon.GetWidth() * 0.25;
+                double blY = sy(ribbon.GetY() + ribbon.GetHeight());
+
+                double bcX = ribbon.GetX() + ribbon.GetWidth() * 0.65;
+                double bcY = sy(ribbon.GetY() + ribbon.GetHeight() * 1.20);
+
+                hairPath.MoveToPoint(topX, topY);
+
+                hairPath.AddQuadCurveToPoint(mid1X, mid1Y, mid2X, mid2Y);
+
+                hairPath.AddQuadCurveToPoint(ribbon.GetX() + ribbon.GetWidth() * 1.15,
+                                             sy(ribbon.GetY() + ribbon.GetHeight() * 0.80), brX,
+                                             brY);
+
+                hairPath.AddQuadCurveToPoint(bcX, bcY, blX, blY);
+
+                hairPath.AddQuadCurveToPoint(
+                    ribbon.GetX() - ribbon.GetWidth() * math_constants::tenth,
+                    sy(ribbon.GetY() + ribbon.GetHeight() * 0.40), topX, topY);
+
+                hairPath.CloseSubpath();
+
+                fillHairShaded(hairPath, ribbon);
+                }
+
+                // body
+                {
+                const wxColour bodyPen = Colors::ColorBrewer::GetColor(Colors::Color::Black);
+                const wxColour bodyBrush =
+                    Colors::ColorBrewer::GetColor(Colors::Color::ClassicFrenchGray);
+
+                gc->SetPen(wxPenInfo{
+                    bodyPen, std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half)) });
+                gc->SetBrush(bodyBrush);
+
+                // meeting point on left jaw
+                const double meetX = faceRect.GetX() + faceRect.GetWidth() * math_constants::fifth;
+                const double meetY = faceRect.GetY() + faceRect.GetHeight() * 0.90;
+
+                // bottom of body
+                const double bottomY = portraitRect.GetBottom();
+
+                // left bottom anchor
+                const double leftBottomX = portraitRect.GetX() + portraitRect.GetWidth() * 0.05;
+
+                // shoulder bump control point
+                const double ctrlX = leftBottomX + portraitRect.GetWidth() * math_constants::tenth;
+                const double ctrlY = meetY + (bottomY - meetY) * math_constants::tenth;
+
+                // under-chin
+                const double rightMeetX = faceRect.GetX() + faceRect.GetWidth() * 0.80;
+
+                wxGraphicsPath body = gc->CreatePath();
+
+                // left side (shoulder)
+                body.MoveToPoint(meetX, meetY);
+                body.AddQuadCurveToPoint(ctrlX, ctrlY, leftBottomX, bottomY);
+
+                // right side (upwards)
+                body.AddLineToPoint(portraitRect.GetRight() +
+                                        portraitRect.GetWidth() * math_constants::tenth,
+                                    bottomY);
+                body.AddQuadCurveToPoint(rightMeetX - (portraitRect.GetWidth() * 0.05),
+                                         meetY + (bottomY - meetY) * math_constants::fifth,
+                                         rightMeetX, meetY);
+
+                // close across the chin back to left meet
+                body.CloseSubpath();
+
+                gc->FillPath(body);
+                }
+
+                // white overcoat stripe
+                {
+                const wxColour stripeColor{ Colors::ColorBrewer::GetColor(Colors::Color::Cream) };
+                gc->SetPen(wxPenInfo{
+                    stripeColor, std::max<int>(1, ScaleToScreenAndCanvas(math_constants::half)) });
+                gc->SetBrush(stripeColor);
+
+                // collar area
+                const double startX = faceRect.GetX() + faceRect.GetWidth() * 0.4;
+                const double startY = faceRect.GetY() + faceRect.GetHeight() * 0.9;
+
+                // bottom of shirt
+                const double endX =
+                    portraitRect.GetX() + portraitRect.GetWidth() * math_constants::three_quarters;
+                const double endY = portraitRect.GetBottom();
+
+                const double stripeW = portraitRect.GetWidth() * math_constants::tenth;
+
+                wxGraphicsPath stripe = gc->CreatePath();
+
+                stripe.MoveToPoint(startX - stripeW * math_constants::half, startY);
+                stripe.AddLineToPoint(startX + stripeW * math_constants::half, startY);
+                stripe.AddQuadCurveToPoint((startX + endX) * math_constants::half + stripeW * 0.4,
+                                           startY + (endY - startY) * math_constants::fifth,
+                                           endX + stripeW * math_constants::half, endY);
+                stripe.AddLineToPoint(endX - stripeW * math_constants::half, endY);
+                stripe.CloseSubpath();
+
+                gc->FillPath(stripe);
+                }
+
+            // face
+            gc->SetPen((GetGraphItemInfo().GetBrush().GetColour().GetAlpha() < wxALPHA_OPAQUE) ?
+                           Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) :
+                           wxColour{ L"#3E3E3C" });
+            gc->SetBrush(Colors::ColorContrast::Tint(blueGray));
             gc->DrawEllipse(faceRect);
 
-            // hair
-            gc->SetPen(
-                wxPenInfo{ (GetGraphItemInfo().GetBrush().GetColour().GetAlpha() < wxALPHA_OPAQUE) ?
-                               Colors::ColorContrast::ShadeOrTint(wxColour{ L"#ADADAD" }) :
-                               wxColour{ L"#3E3E3C" },
-                           static_cast<int>(billRect.GetHeight() * 0.13) });
-            wxRect2DDouble hairRect{ faceRect };
-            hairRect.Deflate(ScaleToScreenAndCanvas(0.8));
-            hairRect.Offset(-ScaleToScreenAndCanvas(math_constants::half),
-                            -ScaleToScreenAndCanvas(math_constants::half));
+                // face features
+                {
+                const wxColour faintBlack = Colors::ColorContrast::ChangeOpacity(
+                    Colors::ColorBrewer::GetColor(Colors::Color::Black), 60);
 
-            wxGraphicsPath hairPath = gc->CreatePath();
+                const int browPenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.25));
 
-            hairPath.MoveToPoint({ GetXPosFromLeft(hairRect, math_constants::whole),
-                                   GetYPosFromTop(hairRect, 0.0) });
-            hairPath.AddQuadCurveToPoint(GetXPosFromLeft(faceRect, 0), GetYPosFromTop(faceRect, 0),
-                                         GetXPosFromLeft(faceRect, 0.0),
-                                         GetYPosFromTop(faceRect, math_constants::half));
-            gc->StrokePath(hairPath);
+                const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
+                const double midY = faceRect.GetY() + faceRect.GetHeight() * 0.50;
+
+                const double eyeSpacing = faceRect.GetWidth() * 0.20;
+                const double eyeW = faceRect.GetWidth() * 0.18;
+                const double eyeH = faceRect.GetHeight() * 0.07;
+                const double pupilR = (std::min)(eyeW, eyeH) * 0.30;
+
+                const double leftEyeX = cx - eyeSpacing;
+                const double rightEyeX = cx + eyeSpacing;
+                const double eyeTopY = midY - (eyeH * 1.0);
+
+                // eyes
+                gc->SetPen(wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.2)) });
+                gc->SetBrush(wxNullBrush);
+
+                auto drawEye = [&](double ex)
+                {
+                    // looking slightly right
+                    const double pupilOffsetX = eyeW * 0.15;
+                    gc->DrawEllipse(ex - eyeW * 0.5, eyeTopY, eyeW, eyeH);
+
+                    gc->SetBrush(faintBlack);
+                    gc->SetPen(wxNullPen);
+
+                    gc->DrawEllipse(ex - pupilR + pupilOffsetX, eyeTopY + (eyeH * 0.5) - pupilR,
+                                    pupilR * 2.0, pupilR * 2.0);
+
+                    gc->SetPen(
+                        wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.2)) });
+                    gc->SetBrush(wxNullBrush);
+                };
+
+                drawEye(leftEyeX);
+                drawEye(rightEyeX);
+
+                // eyebrows
+                gc->SetPen(wxPenInfo{ faintBlack, browPenWidth });
+
+                const double browY = eyeTopY - (faceRect.GetHeight() * 0.06);
+                const double browW = eyeW * 0.85;
+
+                auto drawBrow = [&](double ex)
+                { gc->StrokeLine(ex - browW * 0.5, browY, ex + browW * 0.5, browY); };
+
+                drawBrow(leftEyeX);
+                drawBrow(rightEyeX);
+
+                    // nose (two-line profile, pointing right)
+                    {
+                    const wxColour faintBlack = Colors::ColorContrast::ChangeOpacity(
+                        Colors::ColorBrewer::GetColor(Colors::Color::Black), 60);
+
+                    gc->SetPen(
+                        wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.25)) });
+                    const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
+
+                    const double noseBottomY =
+                        faceRect.GetY() + faceRect.GetHeight() * 0.50 + faceRect.GetHeight() * 0.12;
+
+                    const double noseTopY = noseBottomY - faceRect.GetHeight() * 0.11;
+
+                    const double xOut = cx + faceRect.GetWidth() * 0.015;
+                    const double xIn = cx + faceRect.GetWidth() * 0.035;
+
+                    gc->StrokeLine(cx, noseTopY, xOut, noseBottomY); // downward diagonal
+                    }
+
+                    // mouth
+                    {
+                    const wxColour faintBlack = Colors::ColorContrast::ChangeOpacity(
+                        Colors::ColorBrewer::GetColor(Colors::Color::Black), 60);
+
+                    gc->SetPen(
+                        wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.25)) });
+
+                    const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
+                    const double mouthY = faceRect.GetY() + faceRect.GetHeight() * 0.72;
+
+                    const double mouthW = faceRect.GetWidth() * 0.22;
+                    const double mouthH = faceRect.GetHeight() * 0.07;
+
+                    wxGraphicsPath mouth = gc->CreatePath();
+
+                    mouth.MoveToPoint(cx - mouthW * 0.5, mouthY - mouthH * 0.25);
+                    mouth.AddQuadCurveToPoint(cx + mouthW * 0.20, mouthY + mouthH,
+                                              cx + mouthW * 0.5, mouthY);
+
+                    gc->StrokePath(mouth);
+                    }
+                }
+
+                // hair on top of head
+                {
+                const double xLeft = faceRect.GetX() + faceRect.GetWidth() * 0.10;
+                const double xRight = faceRect.GetRight() - faceRect.GetWidth() * 0.10;
+                const double yBase = faceRect.GetY() + (faceRect.GetHeight() * 0.15);
+                const double xCtrl = (xLeft + xRight) * 0.5;
+
+                const double yCtrl = yBase - (faceRect.GetHeight() * 0.42);
+
+                wxGraphicsPath arc = gc->CreatePath();
+                arc.MoveToPoint(xLeft, yBase);
+                arc.AddQuadCurveToPoint(xCtrl, yCtrl, xRight, yBase);
+                arc.CloseSubpath();
+
+                fillHairShaded(arc, faceRect);
+                }
+
+                // left ribbon of hair
+                {
+                wxRect2DDouble ribbon{ faceRect };
+
+                ribbon.SetWidth(ribbon.GetWidth() * 0.55);
+                ribbon.SetHeight(ribbon.GetHeight() * 1.20);
+
+                ribbon.Offset(-ribbon.GetWidth() * 0.35, -ribbon.GetHeight() * 0.07);
+
+                wxGraphicsPath hairPath = gc->CreatePath();
+
+                const double topX = ribbon.GetX() + ribbon.GetWidth() * 0.90;
+                const double topY = ribbon.GetY() + ribbon.GetHeight() * 0.05;
+
+                const auto sy = [&](double y) { return topY + (y - topY) * 0.82; };
+
+                hairPath.MoveToPoint(topX, topY);
+
+                // first curve outward
+                hairPath.AddQuadCurveToPoint(ribbon.GetX() - ribbon.GetWidth() * 0.30,
+                                             sy(ribbon.GetY() + ribbon.GetHeight() * 0.40),
+                                             ribbon.GetX() + ribbon.GetWidth() * 0.20,
+                                             sy(ribbon.GetY() + ribbon.GetHeight() * 0.75));
+
+                // stronger second wave
+                hairPath.AddQuadCurveToPoint(ribbon.GetX() - ribbon.GetWidth() * 0.40,
+                                             sy(ribbon.GetY() + ribbon.GetHeight()),
+                                             ribbon.GetX() + ribbon.GetWidth() * 0.35,
+                                             sy(ribbon.GetY() + ribbon.GetHeight() * 1.15));
+
+                hairPath.CloseSubpath();
+
+                fillHairShaded(hairPath, ribbon);
+                }
 
             gc->ResetClip();
             gc->Clip(originalClipRect);
 
-            // border frame
-            gc->SetPen(wxPenInfo{ ApplyColorOpacity(wxColour{ L"#525B54" }),
-                                  static_cast<int>(billRect.GetHeight() * math_constants::tenth) }
-                           .Cap(wxPenCap::wxCAP_BUTT));
+            // inner frame
+            //------------
+            const wxColour frameColor = wxColour{ L"#525B54" };
+
+            const double tbThickness = billRect.GetHeight() * 0.085;
+            const double lrThickness = billRect.GetHeight() * 0.035;
+
+            const double x = innerBillRect.GetX();
+            const double y = innerBillRect.GetY();
+            const double w = innerBillRect.GetWidth();
+            const double h = innerBillRect.GetHeight();
+
             gc->SetBrush(wxColour{ 0, 0, 0, 0 });
-            gc->DrawRectangle(innerBillRect);
 
-            // left seal
-            gc->SetPen(
-                wxPenInfo{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
-                           static_cast<int>(billRect.GetHeight() * 0.05) });
-            gc->SetBrush(ApplyColorOpacity(wxColour{ L"#525B54" }));
-            gc->DrawEllipse(GetXPosFromLeft(innerBillRect, math_constants::tenth),
-                            GetYPosFromTop(innerBillRect, math_constants::third),
-                            innerBillRect.GetHeight() * math_constants::third,
-                            innerBillRect.GetHeight() * math_constants::third);
+            // top and bottom side of inner frame
+            gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
+                                  static_cast<int>(tbThickness) }
+                           .Cap(wxCAP_BUTT));
+            gc->StrokeLine(x, y + tbThickness * 0.5, x + w, y + tbThickness * 0.5);
+            gc->StrokeLine(x, y + h - tbThickness * 0.5, x + w, y + h - tbThickness * 0.5);
+            // left and right side of inner frame
+            gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
+                                  static_cast<int>(lrThickness) }
+                           .Cap(wxCAP_BUTT));
+            gc->StrokeLine(x + lrThickness * 0.5, y, x + lrThickness * 0.5, y + h);
+            gc->StrokeLine(x + w - lrThickness * 0.5, y, x + w - lrThickness * 0.5, y + h);
+            gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
+                                  static_cast<int>(lrThickness) }
+                           .Cap(wxCAP_BUTT)
+                           .Style(wxPenStyle::wxPENSTYLE_SHORT_DASH));
+            gc->StrokeLine(x + lrThickness, y, x + lrThickness, y + h);
+            gc->StrokeLine(x + w - lrThickness, y, x + w - lrThickness, y + h);
 
-            // right seal
-            wxRect2DDouble rightSealRect{
-                GetXPosFromLeft(innerBillRect, 0.9 - safe_divide<double>(innerBillRect.GetHeight() *
-                                                                             math_constants::third,
-                                                                         innerBillRect.GetWidth())),
-                GetYPosFromTop(innerBillRect, math_constants::third),
-                innerBillRect.GetHeight() * math_constants::third,
-                innerBillRect.GetHeight() * math_constants::third
+            // Corner ornament
+            const double cs = ScaleToScreenAndCanvas(4.0);
+            gc->SetPen(wxPen{ wxColour(0, 0, 0, 0) });
+            gc->SetBrush(Colors::ColorContrast::ChangeOpacity(frameColor, 175));
+
+            auto drawCorner = [&](double cx, double cy, bool flipX, bool flipY)
+            {
+                wxGraphicsPath p = gc->CreatePath();
+
+                // corner size horizontally
+                const double w = cs;
+                // half-height vertically
+                const double h = cs * 0.5;
+
+                // xpos direction
+                const double dx = flipX ? -1.0 : 1.0;
+                // ypos direction
+                const double dy = flipY ? -1.0 : 1.0;
+
+                // Base anchor (corner)
+                const double x0 = cx;
+                const double y0 = cy;
+
+                // Horizontal extent
+                const double x1 = cx + dx * w;
+                const double y1 = cy;
+
+                // Vertical extent (half height)
+                const double x2 = cx;
+                const double y2 = cy + dy * h;
+
+                // Midpoint for curve control (concave inward)
+                const double ctrlX = cx + dx * (w * 0.5);
+                const double ctrlY = cy + dy * (h * 0.5);
+
+                // Build shape
+                p.MoveToPoint(x0, y0);
+                p.AddLineToPoint(x1, y1);
+
+                // Concave inward curve from (x1,y1) → (x2,y2)
+                p.AddQuadCurveToPoint(ctrlX, ctrlY, x2, y2);
+
+                p.CloseSubpath();
+
+                gc->FillPath(p);
             };
 
-            gc->SetPen(wxPenInfo{ ApplyColorOpacity(wxColour{ L"#689E80" }),
-                                  static_cast<int>(billRect.GetHeight() * 0.05) });
-            gc->SetBrush(wxColour{ 0, 0, 0, 0 });
-            gc->DrawEllipse(rightSealRect);
-
-            rightSealRect.Inflate(innerBillRect.GetHeight() * math_constants::fifth);
-            auto fontSize =
-                Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
-            gc->SetFont(wxFontInfo{ fontSize }, wxColour{ L"#525B54" });
-            gc->DrawText(L"100", rightSealRect.GetX(),
-                         innerBillRect.GetY() +
-                             (innerBillRect.GetHeight() - rightSealRect.GetHeight()));
+            // top-Left
+            drawCorner(x, y, false, false);
+            // top-Right
+            drawCorner(x + w, y, true, false);
+            // bottom-Left
+            drawCorner(x, y + h, false, true);
+            // bottom-Right
+            drawCorner(x + w, y + h, true, true);
 
             // security strip
+            //---------------
             wxRect2DDouble securityStripRect{ billRect };
             securityStripRect.SetWidth(securityStripRect.GetWidth() * 0.05);
             securityStripRect.MoveLeftTo(portraitRect.GetRight());
             gc->SetPen(wxColour{ 0, 0, 0, 0 });
-            const auto stripBrush = gc->CreateLinearGradientBrush(
+            gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 0.0),
-                GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(billRect, 2.0),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Blue, 150)),
-                ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Gray, 150)));
-            gc->SetBrush(stripBrush);
+                GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 1.0),
+                Colors::ColorBrewer::GetColor(Colors::Color::Blue, 125),
+                Colors::ColorBrewer::GetColor(Colors::Color::Gray, 125)));
+            gc->DrawRectangle(securityStripRect);
+            gc->SetBrush(gc->CreateLinearGradientBrush(
+                GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 0.0),
+                GetXPosFromLeft(securityStripRect, 0.0), GetYPosFromTop(securityStripRect, 1.0),
+                Colors::ColorBrewer::GetColor(Colors::Color::Gray, 50),
+                Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 50)));
             gc->DrawRectangle(securityStripRect);
 
             // orange 100 in the bottom corner
-            rightSealRect.MoveLeftTo(billRect.GetRight() - rightSealRect.GetWidth());
-            rightSealRect.SetTop(GetYPosFromTop(billRect, 0.7));
-            rightSealRect.SetBottom(billRect.GetBottom());
-            fontSize = Label::CalcFontSizeToFitBoundingBox(dc, dc.GetFont(), rightSealRect, L"100");
-            gc->SetFont(wxFontInfo{ fontSize }.Bold(),
-                        ApplyColorOpacity(
-                            Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200)));
-            gc->DrawText(L"100", rightSealRect.GetX(), rightSealRect.GetY());
+            wxRect2DDouble monetaryAmountRect{ billRect };
+            monetaryAmountRect.SetWidth(billRect.GetWidth() * math_constants::fifth);
+            monetaryAmountRect.SetHeight(billRect.GetHeight() * math_constants::quarter);
+            monetaryAmountRect.MoveRightTo(billRect.GetRight() - (billRect.GetWidth() * 0.05));
+            monetaryAmountRect.MoveBottomTo(billRect.GetBottom() -
+                                            (billRect.GetHeight() * math_constants::tenth));
+
+            Label amountLabel{ GraphItemInfo(L"100")
+                                   .Pen(wxNullPen)
+                                   .FontColor(ApplyColorOpacity(Colors::ColorBrewer::GetColor(
+                                       Colors::Color::OutrageousOrange, 200)))
+                                   .FontBackgroundColor(blueGray)
+                                   .LabelAlignment(TextAlignment::Centered)
+                                   .DPIScaling(GetDPIScaleFactor()) };
+            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
+            amountLabel.SetBoxCorners(BoxCorners::Rounded);
+            amountLabel.SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned);
+            amountLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            amountLabel.GetFont().SetWeight(wxFONTWEIGHT_HEAVY);
+            amountLabel.Draw(dc);
+
+            // dark green 100 in upper corner
+            monetaryAmountRect.MoveTopTo(billRect.GetTop() +
+                                         (billRect.GetHeight() * math_constants::tenth));
+            monetaryAmountRect.Deflate(monetaryAmountRect.GetWidth() * math_constants::tenth);
+            amountLabel.SetFontColor(frameColor);
+            amountLabel.GetFont().SetWeight(wxFONTWEIGHT_THIN);
+            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
+            amountLabel.Draw(dc);
+
+            // top left corner
+            monetaryAmountRect.MoveLeftTo(billRect.GetLeft() + (billRect.GetHeight() * 0.15));
+            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
+            amountLabel.Draw(dc);
+
+            // bottom left corner
+            monetaryAmountRect.MoveBottomTo(billRect.GetBottom() -
+                                            (billRect.GetHeight() * math_constants::tenth));
+            amountLabel.SetBoundingBox(monetaryAmountRect.ToRect(), dc, GetScaling());
+            amountLabel.Draw(dc);
+
+                // Seals
+                //------
+
+                // left seal
+                {
+                const double sealDiameter = innerBillRect.GetHeight() * math_constants::third;
+                const double sealX = GetXPosFromLeft(innerBillRect, math_constants::tenth);
+                const double sealY = GetYPosFromTop(innerBillRect, math_constants::third);
+
+                const double outerRingThickness = sealDiameter * 0.10;
+                const double innerGap = sealDiameter * 0.04;
+
+                    // outer ring
+                    {
+                    gc->SetPen(wxPenInfo{ ApplyColorOpacity(wxColour{ 0, 0, 0 }),
+                                          static_cast<int>(outerRingThickness) }
+                                   .Cap(wxCAP_BUTT));
+                    gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+
+                    gc->DrawEllipse(sealX, sealY, sealDiameter, sealDiameter);
+                    }
+
+                // inner shield area
+                const wxRect2DDouble shieldRect{ sealX + outerRingThickness + innerGap,
+                                                 sealY + outerRingThickness + innerGap,
+                                                 sealDiameter - 2 * (outerRingThickness + innerGap),
+                                                 sealDiameter -
+                                                     2 * (outerRingThickness + innerGap) };
+
+                const double lineWidth =
+                    std::max(1.0, ScaleToScreenAndCanvas(math_constants::quarter));
+
+                gc->SetPen(wxPenInfo{ wxColour{ L"#4A4A4A" }, static_cast<int>(lineWidth) });
+                gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+
+                constexpr int lineCount{ 4 };
+                const double spacing = shieldRect.GetWidth() / (lineCount + 1);
+
+                const double insetTop = shieldRect.GetHeight() * math_constants::tenth;
+                const double insetBottom = shieldRect.GetHeight() * math_constants::tenth;
+                const double bottomExtra = shieldRect.GetHeight() * math_constants::quarter;
+
+                for (int i = 1; i <= lineCount; ++i)
+                    {
+                    const bool isOuterLine = (i == 1 || i == lineCount);
+
+                    const double topY = shieldRect.GetY() + insetTop;
+
+                    // outer lines end higher (taper bottom)
+                    const double bottomY =
+                        shieldRect.GetY() + shieldRect.GetHeight() -
+                        (isOuterLine ? (insetBottom + bottomExtra) : insetBottom);
+
+                    const double xPos = shieldRect.GetX() + (spacing * i);
+
+                    gc->StrokeLine(xPos, topY, xPos, bottomY);
+                    }
+                }
+
+                // right seal
+                {
+                wxRect2DDouble rightSealRect{
+                    GetXPosFromLeft(
+                        innerBillRect,
+                        0.9 - safe_divide<double>(innerBillRect.GetHeight() * math_constants::third,
+                                                  innerBillRect.GetWidth())),
+                    GetYPosFromTop(innerBillRect, math_constants::third),
+                    innerBillRect.GetHeight() * math_constants::third,
+                    innerBillRect.GetHeight() * math_constants::third
+                };
+
+                gc->SetPen(wxPenInfo{ ApplyColorOpacity(wxColour{ L"#689E80" }),
+                                      static_cast<int>(billRect.GetHeight() * 0.05) });
+                gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+                gc->DrawEllipse(rightSealRect);
+
+                // balance scales icon inside of seal
+                const double outerThickness = billRect.GetHeight() * 0.05;
+                wxRect2DDouble scaleRect = rightSealRect;
+                scaleRect.Deflate(outerThickness * 1.1);
+
+                const double cx = scaleRect.GetX() + scaleRect.GetWidth() / 2.0;
+                const double cy = scaleRect.GetY() + scaleRect.GetHeight() / 2.0;
+
+                const double poleHeight = scaleRect.GetHeight() * 0.55;
+                const double barWidth = scaleRect.GetWidth() * 0.60;
+
+                // how far cups hang
+                const double armDrop = scaleRect.GetHeight() * 0.22;
+                const double cupWidth = scaleRect.GetWidth() * 0.22;
+                const double cupHeight = scaleRect.GetHeight() * 0.08;
+
+                wxColour scaleColor = Colors::ColorContrast::ShadeOrTint(
+                    ApplyColorOpacity(wxColour{ L"#689E80" }), -20);
+
+                const wxPen scalePen{ scaleColor, static_cast<int>(
+                                                      std::max(1.0, ScaleToScreenAndCanvas(0.5))) };
+
+                gc->SetPen(scalePen);
+                gc->SetBrush(wxColour{ 0, 0, 0, 0 });
+
+                // vertical pole (center post)
+                gc->StrokeLine(cx, cy - poleHeight * 0.5, cx, cy + poleHeight * 0.5);
+
+                // crossbar (top beam)
+                gc->StrokeLine(cx - barWidth * 0.5, cy - poleHeight * 0.5, cx + barWidth * 0.5,
+                               cy - poleHeight * 0.5);
+
+                // suspension lines for the cups
+
+                // left drop
+                gc->StrokeLine(cx - barWidth * 0.5, cy - poleHeight * 0.5, cx - barWidth * 0.5,
+                               cy - poleHeight * 0.5 + armDrop);
+
+                // right drop
+                gc->StrokeLine(cx + barWidth * 0.5, cy - poleHeight * 0.5, cx + barWidth * 0.5,
+                               cy - poleHeight * 0.5 + armDrop);
+
+                // scale pans (simple small ellipses)
+
+                // left cup
+                gc->DrawEllipse(cx - barWidth * 0.5 - cupWidth * 0.5,
+                                cy - poleHeight * 0.5 + armDrop, cupWidth, cupHeight);
+
+                // right cup
+                gc->DrawEllipse(cx + barWidth * 0.5 - cupWidth * 0.5,
+                                cy - poleHeight * 0.5 + armDrop, cupWidth, cupHeight);
+                }
+
+                // inkwell
+                {
+                wxRect2DDouble inkwellRect{ billRect };
+                inkwellRect.SetWidth(billRect.GetWidth() * 0.14);
+                inkwellRect.SetHeight(billRect.GetHeight() * 0.22);
+                inkwellRect.MoveLeftTo(billRect.GetLeft() + billRect.GetWidth() * 0.59);
+                inkwellRect.MoveTopTo(billRect.GetTop() + billRect.GetHeight() * 0.55);
+
+                const double leftX = inkwellRect.GetX();
+                const double topY = inkwellRect.GetY();
+                const double width = inkwellRect.GetWidth();
+                const double height = inkwellRect.GetHeight();
+
+                // top (lid), neck (narrow part), and body proportions
+                const double lidHeight = height * 0.12;
+                const double neckHeight = height * 0.20;
+                const double bodyTopY = topY + lidHeight + neckHeight;
+                const double bottomY = topY + height;
+
+                const double lidLeftX = leftX + width * 0.30;
+                const double lidRightX = leftX + width * 0.70;
+
+                const double neckLeftX = leftX + width * 0.32;
+                const double neckRightX = leftX + width * 0.68;
+
+                const double bodyLeftX = leftX + width * 0.25;
+                const double bodyRightX = leftX + width * 0.75;
+
+                // gradient from copper-orange to yellow-orange
+                wxGraphicsBrush gradient = gc->CreateLinearGradientBrush(
+                    leftX, topY, leftX, bottomY,
+                    Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200),
+                    Colors::ColorBrewer::GetColor(Colors::Color::OrangeYellow, 200));
+
+                gc->SetBrush(gradient);
+                gc->SetPen(
+                    wxPenInfo{ Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200),
+                               std::max<int>(1, ScaleToScreenAndCanvas(math_constants::quarter)) });
+
+                wxGraphicsPath inkwellPath = gc->CreatePath();
+
+                // lid
+                inkwellPath.MoveToPoint(lidLeftX, topY);
+                inkwellPath.AddLineToPoint(lidRightX, topY);
+                inkwellPath.AddLineToPoint(lidRightX, topY + lidHeight);
+
+                // right neck side
+                inkwellPath.AddQuadCurveToPoint(leftX + width * 0.78,
+                                                topY + lidHeight + neckHeight * 0.50, neckRightX,
+                                                bodyTopY);
+                // right side
+                inkwellPath.AddLineToPoint(bodyRightX, bottomY);
+                // bottom
+                inkwellPath.AddLineToPoint(bodyLeftX, bottomY);
+                // left bdy
+                inkwellPath.AddLineToPoint(neckLeftX, bodyTopY);
+                // left neck side
+                inkwellPath.AddQuadCurveToPoint(leftX + width * 0.22,
+                                                topY + lidHeight + neckHeight * 0.50, lidLeftX,
+                                                topY + lidHeight);
+                // back at lid
+                inkwellPath.AddLineToPoint(lidLeftX, topY);
+                inkwellPath.CloseSubpath();
+
+                gc->FillPath(inkwellPath);
+                }
             }
         }
 
