@@ -3062,9 +3062,6 @@ namespace Wisteria::GraphItems
 
                     // mouth
                     {
-                    const wxColour faintBlack = Colors::ColorContrast::ChangeOpacity(
-                        Colors::ColorBrewer::GetColor(Colors::Color::Black), 60);
-
                     gc->SetPen(
                         wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.25)) });
 
