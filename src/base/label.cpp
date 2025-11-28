@@ -1124,26 +1124,26 @@ namespace Wisteria::GraphItems
                 if (shpInfo.GetFillPercent() < 1.0)
                     {
                     const FillableShape shp{ GraphItemInfo{ shpInfo.GetText() }
-                                           .AnchorPoint(leftCorner)
-                                           .Anchoring(Anchoring::TopLeftCorner)
-                                           .Scaling(GetScaling())
-                                           .DPIScaling(GetDPIScaleFactor())
-                                           .Pen(shpInfo.GetPen())
-                                           .Brush(shpInfo.GetBrush()),
-                                       shpInfo.GetShape(), shpInfo.GetSizeDIPs(),
-                                       shpInfo.GetFillPercent() };
+                                                 .AnchorPoint(leftCorner)
+                                                 .Anchoring(Anchoring::TopLeftCorner)
+                                                 .Scaling(GetScaling())
+                                                 .DPIScaling(GetDPIScaleFactor())
+                                                 .Pen(shpInfo.GetPen())
+                                                 .Brush(shpInfo.GetBrush()),
+                                             shpInfo.GetShape(), shpInfo.GetSizeDIPs(),
+                                             shpInfo.GetFillPercent() };
                     shp.Draw(dc);
                     }
                 else
                     {
                     const Shape shp{ GraphItemInfo{ shpInfo.GetText() }
-                                   .AnchorPoint(leftCorner)
-                                   .Anchoring(Anchoring::TopLeftCorner)
-                                   .Scaling(GetScaling())
-                                   .DPIScaling(GetDPIScaleFactor())
-                                   .Pen(shpInfo.GetPen())
-                                   .Brush(shpInfo.GetBrush()),
-                               shpInfo.GetShape(), shpInfo.GetSizeDIPs() };
+                                         .AnchorPoint(leftCorner)
+                                         .Anchoring(Anchoring::TopLeftCorner)
+                                         .Scaling(GetScaling())
+                                         .DPIScaling(GetDPIScaleFactor())
+                                         .Pen(shpInfo.GetPen())
+                                         .Brush(shpInfo.GetBrush()),
+                                     shpInfo.GetShape(), shpInfo.GetSizeDIPs() };
                     shp.Draw(dc);
                     }
                 }
