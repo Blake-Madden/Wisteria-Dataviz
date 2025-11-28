@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "reportbuilder.h"
+#include "../data/pivot.h"
+#include "../data/subset.h"
 #include "../graphs/candlestickplot.h"
 #include "../graphs/categoricalbarchart.h"
 #include "../graphs/heatmap.h"
@@ -18,7 +20,9 @@
 #include "../graphs/proconroadmap.h"
 #include "../graphs/sankeydiagram.h"
 #include "../graphs/waffle_chart.h"
+#include "../graphs/wcurveplot.h"
 #include "../graphs/win_loss_sparkline.h"
+#include "../graphs/wordcloud.h"
 
 namespace Wisteria
     {

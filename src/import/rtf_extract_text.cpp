@@ -534,10 +534,8 @@ namespace lily_of_the_valley
                     const int idx = std::atoi(textColor + 3);
                     // color table is one-base indexed
                     if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
-                        {)
                         {
                         m_text_color = m_color_table[static_cast<size_t>(idx) - 1];
-                        }
                         }
                     }
                 }
@@ -971,13 +969,11 @@ namespace lily_of_the_valley
                 // which is not in the table. Hence, color 1 is actually the
                 // first color in the table.
                 if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
-                    {)
-                        {
-                        const std::wstring colorCmd = L"<span class=\"" + m_style_prefix + L"bc" +
-                                                      std::to_wstring(idx) + L"\">";
-                        ecPrintString(colorCmd.c_str(), colorCmd.length());
-                        m_command_stacks.add_command();
-                        }
+                    {
+                    const std::wstring colorCmd =
+                        L"<span class=\"" + m_style_prefix + L"bc" + std::to_wstring(idx) + L"\">";
+                    ecPrintString(colorCmd.c_str(), colorCmd.length());
+                    m_command_stacks.add_command();
                     }
                 }
             break;
