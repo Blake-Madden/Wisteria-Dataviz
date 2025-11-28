@@ -1123,7 +1123,7 @@ namespace Wisteria::GraphItems
 
                 if (shpInfo.GetFillPercent() < 1.0)
                     {
-                    FillableShape shp{ GraphItemInfo{ shpInfo.GetText() }
+                    const FillableShape shp{ GraphItemInfo{ shpInfo.GetText() }
                                            .AnchorPoint(leftCorner)
                                            .Anchoring(Anchoring::TopLeftCorner)
                                            .Scaling(GetScaling())
@@ -1136,7 +1136,7 @@ namespace Wisteria::GraphItems
                     }
                 else
                     {
-                    Shape shp{ GraphItemInfo{ shpInfo.GetText() }
+                    const Shape shp{ GraphItemInfo{ shpInfo.GetText() }
                                    .AnchorPoint(leftCorner)
                                    .Anchoring(Anchoring::TopLeftCorner)
                                    .Scaling(GetScaling())

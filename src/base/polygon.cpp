@@ -368,7 +368,7 @@ namespace Wisteria::GraphItems
                 }
             else if (GetShape() == PolygonShape::CurvyRectangle && m_scaledPoints.size() == 10)
                 {
-                GraphicsContextFallback gcf{ &dc, boundingBox };
+                const GraphicsContextFallback gcf{ &dc, boundingBox };
                 auto* gc = gcf.GetGraphicsContext();
                 assert(gc && L"Failed to get graphics context for curvy rectangle!");
                 // If drawing commands can't be used, then switch to drawing as

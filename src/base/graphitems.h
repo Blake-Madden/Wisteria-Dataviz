@@ -962,7 +962,7 @@ namespace Wisteria
             /** @returns The DPI scaling of the element.
                 @sa SetScaling().*/
             [[nodiscard]]
-            double GetDPIScaleFactor() const noexcept;
+            double GetDPIScaleFactor() const;
 
             /// @returns @c true if the object is not reset to specific coordinates on the canvas
             ///     and has to have its position adjusted as the canvas gets rescaled.

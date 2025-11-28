@@ -13,7 +13,7 @@
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
-    double GraphItemBase::GetDPIScaleFactor() const noexcept
+    double GraphItemBase::GetDPIScaleFactor() const
         {
         assert(m_itemInfo.m_dpiScaleFactor.has_value() &&
                L"Graph item should have a proper DPI scaling.");

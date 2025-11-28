@@ -1048,10 +1048,7 @@ namespace Wisteria
                             }
                         return columns;
                         }
-                    else
-                        {
-                        return std::nullopt;
-                        }
+                    return std::nullopt;
                     }
                 else if (funcName.CmpNoCase(L"everythingexcept") == 0)
                     {
@@ -1087,10 +1084,7 @@ namespace Wisteria
                             }
                         return columns;
                         }
-                    else
-                        {
-                        return std::nullopt;
-                        }
+                    return std::nullopt;
                     }
                 else
                     {
@@ -1152,58 +1146,58 @@ namespace Wisteria
                 {
                 return CalcMinMax(formula, dataset);
                 }
-            else if (funcName.CmpNoCase(L"median") == 0)
+            if (funcName.CmpNoCase(L"median") == 0)
                 {
                 const auto calcValue = CalcMedian(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"n") == 0)
+            if (funcName.CmpNoCase(L"n") == 0)
                 {
                 const auto calcValue = CalcValidN(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"total") == 0)
+            if (funcName.CmpNoCase(L"total") == 0)
                 {
                 const auto calcValue = CalcTotal(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"grandtotal") == 0)
+            if (funcName.CmpNoCase(L"grandtotal") == 0)
                 {
                 const auto calcValue = CalcGrandTotal(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"groupcount") == 0)
+            if (funcName.CmpNoCase(L"groupcount") == 0)
                 {
                 const auto calcValue = CalcGroupCount(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"grouppercentdecimal") == 0)
+            if (funcName.CmpNoCase(L"grouppercentdecimal") == 0)
                 {
                 const auto calcValue = CalcGroupPercentDecimal(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"grouppercent") == 0)
+            if (funcName.CmpNoCase(L"grouppercent") == 0)
                 {
                 const auto calcValue = CalcGroupPercent(formula, dataset);
                 return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
                 }
-            else if (funcName.CmpNoCase(L"continuouscolumn") == 0)
+            if (funcName.CmpNoCase(L"continuouscolumn") == 0)
                 {
                 return ExpandColumnSelection(formula, dataset);
                 }
-            else if (funcName.CmpNoCase(L"now") == 0)
+            if (funcName.CmpNoCase(L"now") == 0)
                 {
                 return CalcNow(formula);
                 }
-            else if (funcName.CmpNoCase(L"add") == 0)
+            if (funcName.CmpNoCase(L"add") == 0)
                 {
                 return CalcAdd(formula);
                 }
-            else if (funcName.CmpNoCase(L"pagenumber") == 0)
+            if (funcName.CmpNoCase(L"pagenumber") == 0)
                 {
                 return FormatPageNumber(formula);
                 }
-            else if (funcName.CmpNoCase(L"reportname") == 0)
+            if (funcName.CmpNoCase(L"reportname") == 0)
                 {
                 return m_name;
                 }
@@ -1317,10 +1311,7 @@ namespace Wisteria
                 return dataset->GetCategoricalColumnValidN(groupName, groupName, groupID.value());
                 }
             // dataset or something missing
-            else
-                {
-                return std::nullopt;
-                }
+            return std::nullopt;
             }
         return std::nullopt;
         }

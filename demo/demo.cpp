@@ -89,9 +89,6 @@ MyFrame::MyFrame()
     wxFrame::CreateToolBar(wxNO_BORDER | wxTB_FLAT | wxTB_HORIZONTAL);
     InitToolBar(wxFrameBase::GetToolBar());
 
-    // Accelerators
-#include <array>
-
     // Array of accelerator entries
     const std::array<wxAcceleratorEntry, 7> entries = {
         wxAcceleratorEntry(wxACCEL_CTRL, L'N', wxID_NEW),
@@ -246,7 +243,7 @@ void MyFrame::OnTextClassifier([[maybe_unused]] wxCommandEvent& event)
     wxString recodingWorksheetName;
     if (wxFileName{ recodingFileDlg.GetPath() }.GetExt().CmpNoCase(L"xlsx") == 0)
         {
-        Wisteria::Data::ExcelReader xlReader{ recodingFileDlg.GetPath() };
+        const Wisteria::Data::ExcelReader xlReader{ recodingFileDlg.GetPath() };
         if (xlReader.GetWorksheetNames().size() == 1)
             {
             recodingWorksheetName = xlReader.GetWorksheetNames()[0];
@@ -1514,7 +1511,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(mpgData, L"manufacturer");
 
         plot->SetBarEffect(Wisteria::BoxEffect::StippleShape);
-        plot->SetStippleShape(Wisteria::Icons::IconShape::Car);
+        plot->SetStippleShape(Wisteria::Icons::IconShape::HundredDollarBill);
 
         // do this to use an image instead of a built-in vector icon:
         /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir +
