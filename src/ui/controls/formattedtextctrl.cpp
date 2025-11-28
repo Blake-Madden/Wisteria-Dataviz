@@ -577,7 +577,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
                                         static_cast<int>(m_printData->GetOrientation()), fullHeader,
                                         fullFooter);
     #else
-        #warning "Text Control printing will not be available."
+        #pragma message("Text Control printing will not be available.")
     #endif
 #endif
     }
