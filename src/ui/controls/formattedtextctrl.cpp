@@ -514,7 +514,8 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
 #else
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
     const double paperWidthInInches = safe_divide<double>(paperSize.GetWidth(), 10) * 0.0393700787;
-    const double paperHeightInInches = safe_divide<double>(paperSize.GetHeight(), 10) * 0.0393700787;
+    const double paperHeightInInches =
+        safe_divide<double>(paperSize.GetHeight(), 10) * 0.0393700787;
 
     wxClientDC dc(this);
     const wxFont fixedFont(12, wxFontFamily::wxFONTFAMILY_MODERN, wxFontStyle::wxFONTSTYLE_NORMAL,

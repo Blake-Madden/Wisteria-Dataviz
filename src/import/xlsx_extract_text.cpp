@@ -123,7 +123,8 @@ namespace lily_of_the_valley
                 // read in the string
                 if (endStringTag - stringTag > 0)
                     {
-                    if ((m_html_extract(stringTag, endStringTag - stringTag, true, true) != nullptr) &&
+                    if ((m_html_extract(stringTag, endStringTag - stringTag, true, true) !=
+                         nullptr) &&
                         (m_html_extract.get_filtered_text_length() != 0U))
                         {
                         currentString.append(m_html_extract.get_filtered_text(),
@@ -198,7 +199,7 @@ namespace lily_of_the_valley
             if (html_extract_text::read_attribute_as_string(worksheet_text, L"r", false, false) ==
                 cell_name)
                 {
-                std::pair<const wchar_t*, size_t> const typeTag =
+                const std::pair<const wchar_t*, size_t> typeTag =
                     html_extract_text::read_attribute(worksheet_text, L"t", false, false);
                 if (typeTag.second == 1 && *typeTag.first == L's')
                     {

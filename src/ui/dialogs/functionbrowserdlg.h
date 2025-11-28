@@ -155,11 +155,12 @@ namespace Wisteria::UI
 
         struct CategoryInfo
             {
-            explicit CategoryInfo(std::wstring  name) : m_name(std::move(name)) {}
+            explicit CategoryInfo(std::wstring name) : m_name(std::move(name)) {}
 
-            CategoryInfo(std::wstring  name, NameList  functions,
-                         const wxWindowID parentId, const int iconIndex)
-                : m_name(std::move(name)), m_functions(std::move(functions)), m_parentId(parentId), m_iconIndex(iconIndex)
+            CategoryInfo(std::wstring name, NameList functions, const wxWindowID parentId,
+                         const int iconIndex)
+                : m_name(std::move(name)), m_functions(std::move(functions)), m_parentId(parentId),
+                  m_iconIndex(iconIndex)
                 {
                 }
 
