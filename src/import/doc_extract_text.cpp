@@ -393,12 +393,12 @@ namespace lily_of_the_valley
                     case 0x0D:
                         // regular line feed
                         currentState.m_hyperlink_begin_char_detected = false;
-                        paragraphBuffer += 0x000A;
+                        paragraphBuffer += static_cast<wchar_t>(0x000A);
                         break;
                     case 0x0B:
                         // hard return (Shift+Enter)
                         currentState.m_hyperlink_begin_char_detected = false;
-                        paragraphBuffer += 0x000A;
+                        paragraphBuffer += static_cast<wchar_t>(0x000A);
                         break;
                     case 0x0C:
                         currentState.m_hyperlink_begin_char_detected = false;
@@ -425,85 +425,85 @@ namespace lily_of_the_valley
                         break;
                     // MS 1252 surrogates need to be converted to Unicode values
                     case 0x80:
-                        paragraphBuffer += 0x20AC;
+                        paragraphBuffer += static_cast<wchar_t>(0x20AC);
                         break;
                     case 0x82:
-                        paragraphBuffer += 0x201A;
+                        paragraphBuffer += static_cast<wchar_t>(0x201A);
                         break;
                     case 0x83:
-                        paragraphBuffer += 0x0192;
+                        paragraphBuffer += static_cast<wchar_t>(0x0192);
                         break;
                     case 0x84:
-                        paragraphBuffer += 0x00A4;
+                        paragraphBuffer += static_cast<wchar_t>(0x00A4);
                         break;
                     case 0x85:
-                        paragraphBuffer += 0x2026;
+                        paragraphBuffer += static_cast<wchar_t>(0x2026);
                         break;
                     case 0x86:
-                        paragraphBuffer += 0x2020;
+                        paragraphBuffer += static_cast<wchar_t>(0x2020);
                         break;
                     case 0x87:
-                        paragraphBuffer += 0x2021;
+                        paragraphBuffer += static_cast<wchar_t>(0x2021);
                         break;
                     case 0x88:
-                        paragraphBuffer += 0x02C6;
+                        paragraphBuffer += static_cast<wchar_t>(0x02C6);
                         break;
                     case 0x89:
-                        paragraphBuffer += 0x2030;
+                        paragraphBuffer += static_cast<wchar_t>(0x2030);
                         break;
                     case 0x8A:
-                        paragraphBuffer += 0x0160;
+                        paragraphBuffer += static_cast<wchar_t>(0x0160);
                         break;
                     case 0x8B:
-                        paragraphBuffer += 0x2039;
+                        paragraphBuffer += static_cast<wchar_t>(0x2039);
                         break;
                     case 0x8C:
-                        paragraphBuffer += 0x0152;
+                        paragraphBuffer += static_cast<wchar_t>(0x0152);
                         break;
                     case 0x8E:
-                        paragraphBuffer += 0x017D;
+                        paragraphBuffer += static_cast<wchar_t>(0x017D);
                         break;
                     case 0x91:
-                        paragraphBuffer += 0x2018;
+                        paragraphBuffer += static_cast<wchar_t>(0x2018);
                         break;
                     case 0x92:
-                        paragraphBuffer += 0x2019;
+                        paragraphBuffer += static_cast<wchar_t>(0x2019);
                         break;
                     case 0x93:
-                        paragraphBuffer += 0x201C;
+                        paragraphBuffer += static_cast<wchar_t>(0x201C);
                         break;
                     case 0x94:
-                        paragraphBuffer += 0x201D;
+                        paragraphBuffer += static_cast<wchar_t>(0x201D);
                         break;
                     case 0x95:
-                        paragraphBuffer += 0x2022;
+                        paragraphBuffer += static_cast<wchar_t>(0x2022);
                         break;
                     case 0x96:
-                        paragraphBuffer += 0x2013;
+                        paragraphBuffer += static_cast<wchar_t>(0x2013);
                         break;
                     case 0x97:
-                        paragraphBuffer += 0x2014;
+                        paragraphBuffer += static_cast<wchar_t>(0x2014);
                         break;
                     case 0x98:
-                        paragraphBuffer += 0x02DC;
+                        paragraphBuffer += static_cast<wchar_t>(0x02DC);
                         break;
                     case 0x99:
-                        paragraphBuffer += 0x2122;
+                        paragraphBuffer += static_cast<wchar_t>(0x2122);
                         break;
                     case 0x9A:
-                        paragraphBuffer += 0x0161;
+                        paragraphBuffer += static_cast<wchar_t>(0x0161);
                         break;
                     case 0x9B:
-                        paragraphBuffer += 0x203A;
+                        paragraphBuffer += static_cast<wchar_t>(0x203A);
                         break;
                     case 0x9C:
-                        paragraphBuffer += 0x0153;
+                        paragraphBuffer += static_cast<wchar_t>(0x0153);
                         break;
                     case 0x9E:
-                        paragraphBuffer += 0x017E;
+                        paragraphBuffer += static_cast<wchar_t>(0x017E);
                         break;
                     case 0x9F:
-                        paragraphBuffer += 0x0178;
+                        paragraphBuffer += static_cast<wchar_t>(0x0178);
                         break;
                     default:
                         currentState.m_hyperlink_begin_char_detected = false;
@@ -617,7 +617,7 @@ namespace lily_of_the_valley
                 log_message(L"DOC parser: invalid property section size. File may be corrupt.");
                 continue;
                 }
-            const size_t sectionSize = static_cast<size_t>(read_int(propBuffer.data(), 0));
+            const auto sectionSize = static_cast<size_t>(read_int(propBuffer.data(), 0));
             if (sectionSize > propBuffer.size())
                 {
                 propBuffer.resize(sectionSize);
@@ -629,7 +629,7 @@ namespace lily_of_the_valley
                 log_message(L"DOC parser: invalid property count. File may be corrupt.");
                 continue;
                 }
-            const size_t propertyCount = static_cast<size_t>(read_int(propBuffer.data(), 4));
+            const auto propertyCount = static_cast<size_t>(read_int(propBuffer.data(), 4));
             std::vector<std::pair<int32_t, int32_t>> properties;
             size_t pos = 8;
             for (size_t i = 0; i < propertyCount; ++i, pos += 8)
@@ -722,23 +722,23 @@ namespace lily_of_the_valley
                 // so copy it in as a wchar_t* buffer so that it stops on the null terminator.
                 if (property.second == static_cast<int32_t>(property_format_id::pid_title))
                     {
-                    m_title.assign(propertyValue.c_str());
+                    m_title.assign(propertyValue);
                     }
                 else if (property.second == static_cast<int32_t>(property_format_id::pid_subject))
                     {
-                    m_subject.assign(propertyValue.c_str());
+                    m_subject.assign(propertyValue);
                     }
                 else if (property.second == static_cast<int32_t>(property_format_id::pid_author))
                     {
-                    m_author.assign(propertyValue.c_str());
+                    m_author.assign(propertyValue);
                     }
                 else if (property.second == static_cast<int32_t>(property_format_id::pid_keywords))
                     {
-                    m_keywords.assign(propertyValue.c_str());
+                    m_keywords.assign(propertyValue);
                     }
                 else if (property.second == static_cast<int32_t>(property_format_id::pid_comments))
                     {
-                    m_comments.assign(propertyValue.c_str());
+                    m_comments.assign(propertyValue);
                     }
                 }
             }
@@ -860,10 +860,10 @@ namespace lily_of_the_valley
             }
 
         // should be 512 normally
-        m_sector_size = static_cast<decltype(m_sector_size)>(1ull << read_short(cfbBuf.data(), 30));
+        m_sector_size = static_cast<decltype(m_sector_size)>(1ULL << read_short(cfbBuf.data(), 30));
         // should be 64 normally
         m_short_sector_size =
-            static_cast<decltype(m_short_sector_size)>(1ull << read_short(cfbBuf.data(), 32));
+            static_cast<decltype(m_short_sector_size)>(1ULL << read_short(cfbBuf.data(), 32));
 
         if (m_file_length == 0 || m_sector_size == 0)
             {
@@ -893,7 +893,8 @@ namespace lily_of_the_valley
 
         // get XBAT info (if there are any [only medium and large files have these])
         const auto numOfXBATs = read_uint(cfbBuf.data(), 72);
-        const auto XBATstart = read_uint(cfbBuf.data(), 68);
+        const auto XBATstart =
+            read_uint(cfbBuf.data(), 68); // NOLINT(readability-identifier-naming)
         if (numOfXBATs * m_sector_size > m_file_length)
             {
             log_message(L"DOC parser: unable to read eXtended Block Allocation Table entry.");
@@ -1217,8 +1218,8 @@ namespace lily_of_the_valley
             }
 
         // returns the offset of a CFB object based on the sector
-        const auto get_offset = [this](const file_system_entry* cfbObjEntry,
-                                       const size_t sectorIndex) noexcept -> size_t
+        const auto getOffset = [this](const file_system_entry* cfbObjEntry,
+                                      const size_t sectorIndex) noexcept -> size_t
         {
             if (cfbObjEntry == nullptr)
                 {
@@ -1230,16 +1231,13 @@ namespace lily_of_the_valley
                        // step over initial sector
                        (cfbObjEntry->m_sectors[sectorIndex] * m_sector_size);
                 }
-            else
-                {
-                const size_t sbatSectorNumber = safe_divide<size_t>(
-                    cfbObjEntry->m_sectors[sectorIndex], get_sbats_per_sector());
-                return BAT_SECTOR_SIZE +
-                       (m_root_storage->m_sectors[sbatSectorNumber] * m_sector_size) +
-                       (safe_modulus<size_t>(cfbObjEntry->m_sectors[sectorIndex],
-                                             get_sbats_per_sector()) *
-                        m_short_sector_size);
-                }
+
+            const auto sbatSectorNumber =
+                safe_divide<size_t>(cfbObjEntry->m_sectors[sectorIndex], get_sbats_per_sector());
+            return BAT_SECTOR_SIZE + (m_root_storage->m_sectors[sbatSectorNumber] * m_sector_size) +
+                   (safe_modulus<size_t>(cfbObjEntry->m_sectors[sectorIndex],
+                                         get_sbats_per_sector()) *
+                    m_short_sector_size);
         };
 
         // if buffer size goes beyond the end of the stream, then "shrink" the buffer size
@@ -1265,7 +1263,7 @@ namespace lily_of_the_valley
         // then factor that in when adjusting the offset to the parent parser
         const size_t extraBytesOffset = safe_modulus(cfbObj->m_internal_offset, sectorSize);
         // get into position (adjusting if necessary)
-        if (const auto offset = get_offset(cfbObj, sectorCount) + extraBytesOffset;
+        if (const auto offset = getOffset(cfbObj, sectorCount) + extraBytesOffset;
             cfbObj->m_stream_offset != offset)
             {
             cfbObj->m_stream_offset = offset;
@@ -1288,7 +1286,7 @@ namespace lily_of_the_valley
         for (size_t i{ 0 }; i < sectorsToRead; ++i)
             {
             ++sectorCount;
-            if (const size_t offset = get_offset(cfbObj, sectorCount);
+            if (const size_t offset = getOffset(cfbObj, sectorCount);
                 offset != cfbObj->m_stream_offset)
                 {
                 cfbObj->m_stream_offset = offset;
@@ -1312,7 +1310,7 @@ namespace lily_of_the_valley
             bytesToRead > 0)
             {
             ++sectorCount;
-            cfbObj->m_stream_offset = get_offset(cfbObj, sectorCount);
+            cfbObj->m_stream_offset = getOffset(cfbObj, sectorCount);
             cfbObj->seek(static_cast<long>(cfbObj->m_stream_offset),
                          cfb_iostream::cfb_stream_seek_type::seek_beg);
             const auto readBytes = cfbObj->read(static_cast<char*>(buffer) + readSize, bytesToRead);
