@@ -276,7 +276,7 @@ namespace Wisteria::GraphItems
                     }
 
                 // right vertex
-                wxPoint p2 = polygon[i % N];
+                const wxPoint p2 = polygon[i % N];
 
                 // ray is outside our interests
                 if (pt.y < std::min(p1.y, p2.y) || pt.y > std::max(p1.y, p2.y))
@@ -363,10 +363,7 @@ namespace Wisteria::GraphItems
                 return false;
                 }
             // ODD
-            else
-                {
-                return true;
-                }
+            return true;
             }
 
         /** @brief Determines if a rectangle is inside a polygon.

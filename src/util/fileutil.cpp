@@ -38,7 +38,7 @@ wxString FilePathResolverBase::ResolvePath(
         m_fileType = FilePathType::HTTP;
         return m_path;
         }
-    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"https:"), 6) == 0)
+    if (string_util::strnicmp(m_path.wc_str(), _DT(L"https:"), 6) == 0)
         {
         m_path.Replace(L"\\", L"/");
         m_path.Replace(L" ", L"%20");
@@ -46,26 +46,26 @@ wxString FilePathResolverBase::ResolvePath(
         m_fileType = FilePathType::HTTPS;
         return m_path;
         }
-    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"ftp:"), 4) == 0)
+    if (string_util::strnicmp(m_path.wc_str(), _DT(L"ftp:"), 4) == 0)
         {
         m_path.Replace(L"\\", L"/");
         m_fileType = FilePathType::FTP;
         return m_path;
         }
-    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"ftps:"), 5) == 0)
+    if (string_util::strnicmp(m_path.wc_str(), _DT(L"ftps:"), 5) == 0)
         {
         m_path.Replace(L"\\", L"/");
         m_fileType = FilePathType::FTPS;
         return m_path;
         }
-    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"gopher:"), 7) == 0)
+    if (string_util::strnicmp(m_path.wc_str(), _DT(L"gopher:"), 7) == 0)
         {
         m_path.Replace(L"\\", L"/");
         m_fileType = FilePathType::Gopher;
         return m_path;
         }
     // not a protocol, but just in case the protocol was forgotten
-    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"www."), 4) == 0)
+    if (string_util::strnicmp(m_path.wc_str(), _DT(L"www."), 4) == 0)
         {
         m_path.Replace(L"\\", L"/");
         m_path.Replace(L" ", L"%20");
@@ -75,7 +75,7 @@ wxString FilePathResolverBase::ResolvePath(
         return m_path;
         }
     // else, if a file path using the file protocol then strip off the protocol
-    else if (string_util::strnicmp(m_path.wc_str(), _DT(L"file:"), 5) == 0)
+    if (string_util::strnicmp(m_path.wc_str(), _DT(L"file:"), 5) == 0)
         {
         if (string_util::strnicmp(m_path.wc_str(), L"file://localhost/", 17) == 0)
             {
@@ -91,18 +91,18 @@ wxString FilePathResolverBase::ResolvePath(
         }
     // Otherwise, see if the file (full filepath) exists locally or on a network
     // (e.g., a UNC path).
-    else if (HasLocalOrNetworkPrefix(GetResolvedPath()))
+    if (HasLocalOrNetworkPrefix(GetResolvedPath()))
         {
         FilePathType specificLocalType = FilePathType::LocalOrNetwork;
 
         // if not found, see if it might be file inside an archive or a cell in a spreadsheet.
         // a heuristic check to see if it at least is a real file path will then will use the
         // special file type that we determine here.
-        wxRegEx RE(L"[.](xlsx|zip)#", wxRE_ICASE);
-        if (RE.Matches(GetResolvedPath()))
+        const wxRegEx excelRegEx(L"[.](xlsx|zip)#", wxRE_ICASE);
+        if (excelRegEx.Matches(GetResolvedPath()))
             {
             size_t start(0), len(0);
-            if (RE.GetMatch(&start, &len, 0))
+            if (excelRegEx.GetMatch(&start, &len, 0))
                 {
                 auto extMatch = GetResolvedPath().substr(start, len);
                 if (extMatch.CmpNoCase(_DT(L".xlsx#")) == 0)
@@ -198,7 +198,7 @@ wxString FilePathResolverBase::ResolvePath(
                 }
             }
         // ...or in the CWD
-        wxLogNull logNo;
+        const wxLogNull logNo;
         if (const auto absPath{ wxFileName{ m_path }.GetAbsolutePath() }; wxFile::Exists(absPath))
             {
             m_path = absPath;
@@ -245,7 +245,7 @@ wxString ParseTitleFromFileName(wxString filename)
         {
         filename = filename.substr(0, filename.length() - 1);
         }
-    FilePathResolverBase resolvePath(filename);
+    const FilePathResolverBase resolvePath(filename);
     filename = resolvePath.GetResolvedPath();
     // paths to worksheet/cell inside Excel file should keep the spreadsheet file extension
     if (resolvePath.IsExcelCell())
@@ -266,8 +266,8 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
         }
 
     // get the file name from the path (which may be in a foreign OS file path format)
-    FilePathResolverBase pathResolve(fileToFind);
-    wxFileName filePath(pathResolve.GetResolvedPath());
+    const FilePathResolverBase pathResolve(fileToFind);
+    const wxFileName filePath(pathResolve.GetResolvedPath());
 
     // just see if the file is in the current directory
     if (wxFileName::FileExists(currentDir + wxFileName::GetPathSeparator() +
@@ -281,7 +281,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
         wxArrayString originalDirSystem = filePath.GetDirs();
 
         // piece together the new directory with the old path until we come up with a found file
-        while (originalDirSystem.GetCount())
+        while (originalDirSystem.GetCount() != 0U)
             {
             const wxString currentNewPath = currentDir + wxFileName::GetPathSeparator() +
                                             JoinDirs(originalDirSystem) + filePath.GetFullName();
@@ -311,7 +311,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
         wxArrayString originalDirSystem = wxFileName(currentDir).GetDirs();
 
         // piece together the new directory with the old path until we come up with a found file
-        while (originalDirSystem.GetCount())
+        while (originalDirSystem.GetCount() != 0U)
             {
             const wxString currentNewPath =
 #ifdef __WXMSW__
@@ -329,32 +329,30 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
             }
         }
     // couldn't be found
-    return wxString{};
+    return {};
     }
 
 //------------------------------------------------
 bool RenameFileShortenName(const wxString& srcPath, const wxString& destPath)
     {
-    constexpr int maxFileNameLength{ 255 };
-    wxFileName src{ srcPath };
-    wxFileName dest{ destPath };
+    constexpr int MAX_FILE_NAME_LENGTH{ 255 };
+    const wxFileName src{ srcPath };
+    const wxFileName dest{ destPath };
     // if destination is too long, but the original name isn't...
-    if (dest.GetFullName().length() > maxFileNameLength &&
-        src.GetFullName().length() < maxFileNameLength)
+    if (dest.GetFullName().length() > MAX_FILE_NAME_LENGTH &&
+        src.GetFullName().length() < MAX_FILE_NAME_LENGTH)
         {
         // truncate to the max length (with the src file name appended)
         wxString shortenedName{ dest.GetFullName() };
-        shortenedName.erase(maxFileNameLength - src.GetFullName().length());
+        shortenedName.erase(MAX_FILE_NAME_LENGTH - src.GetFullName().length());
         shortenedName += src.GetFullName();
         const wxString newDestPath = dest.GetPath(wxPATH_GET_SEPARATOR) + shortenedName;
         wxLogMessage(L"'%s' name was too long to rename to. Will attempt to rename to '%s'",
                      dest.GetFullName(), newDestPath);
         return wxRenameFile(srcPath, newDestPath);
         }
-    else
-        {
-        return wxRenameFile(srcPath, destPath);
-        }
+
+    return wxRenameFile(srcPath, destPath);
     }
 
 //------------------------------------------------
@@ -365,87 +363,77 @@ wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /
         {
         return filePath;
         }
-    else
+
+    const FilePathResolverBase resolver(filePath);
+    if (resolver.IsLocalOrNetworkFile())
         {
-        FilePathResolverBase resolver(filePath);
-        if (resolver.IsLocalOrNetworkFile())
+        const wxFileName fn(filePath);
+        wxArrayString astrTemp = fn.GetDirs();
+        const wxString volumePath =
+            fn.GetVolume() + wxFileName::GetVolumeSeparator() + wxFileName::GetPathSeparator();
+
+        /* let's replace each part with ellipsis, until the length is OK
+           (but never substitute drive and file name)*/
+        for (size_t i = 0; i < astrTemp.GetCount(); ++i)
             {
-            wxFileName fn(filePath);
-            wxArrayString astrTemp = fn.GetDirs();
-            wxString volumePath =
-                fn.GetVolume() + wxFileName::GetVolumeSeparator() + wxFileName::GetPathSeparator();
-
-            /* let's replace each part with ellipsis, until the length is OK
-               (but never substitute drive and file name)*/
-            for (size_t i = 0; i < astrTemp.GetCount(); ++i)
+            // if the lengths for the directories can hold more than just ellipses
+            // then try to include their names
+            if ((volumePath.length() + JoinDirs(astrTemp).length() + fn.GetFullName().length()) <=
+                maxLength)
                 {
-                // if the lengths for the directories can hold more than just ellipses
-                // then try to include their names
-                if ((volumePath.length() + JoinDirs(astrTemp).length() +
-                     fn.GetFullName().length()) <= maxLength)
-                    {
-                    break;
-                    }
-                else
-                    {
-                    astrTemp[i] = wxString(1, static_cast<wchar_t>(8230));
-                    }
+                break;
                 }
-            return volumePath + JoinDirs(astrTemp) + fn.GetFullName();
+
+            astrTemp[i] = wxString(1, static_cast<wchar_t>(8230));
             }
-        else if (resolver.IsHTTPFile() || resolver.IsHTTPSFile())
-            {
-            size_t slash = filePath.find(L'/');
-            if (slash == wxString::npos || slash == filePath.length() - 1)
-                {
-                return filePath;
-                }
-            if (filePath[slash + 1] == L'/') // skip the "http://"
-                {
-                slash = filePath.find(L'/', slash + 2);
-                }
-            if (slash == wxString::npos || slash == filePath.length() - 1)
-                {
-                return filePath;
-                }
-            const size_t lastSlash = filePath.find_last_of(L'/');
-            if (lastSlash == wxString::npos || lastSlash <= slash ||
-                lastSlash == filePath.length() - 1)
-                {
-                return filePath;
-                }
-            wxString domain = filePath.substr(0, slash);
-            wxString fileName = filePath.substr(lastSlash + 1);
-            wxString foldersString = filePath.substr(slash + 1, (lastSlash - slash) - 1);
-
-            wxArrayString folders;
-            wxStringTokenizer tkz(foldersString, L'/');
-            while (tkz.HasMoreTokens())
-                {
-                folders.Add(tkz.GetNextToken());
-                }
-            for (size_t i = 0; i < folders.GetCount(); ++i)
-                {
-                // if the lengths for the directories can hold more than just ellipses
-                // then try to include their names
-                if ((domain.length() + JoinWebDirs(folders).length() + fileName.length()) <=
-                    maxLength)
-                    {
-                    break;
-                    }
-                else
-                    {
-                    folders[i] = wxString(1, static_cast<wchar_t>(8230));
-                    }
-                }
-
-            return domain + L'/' + JoinWebDirs(folders) + fileName;
-            }
-        else
+        return volumePath + JoinDirs(astrTemp) + fn.GetFullName();
+        }
+    if (resolver.IsHTTPFile() || resolver.IsHTTPSFile())
+        {
+        size_t slash = filePath.find(L'/');
+        if (slash == wxString::npos || slash == filePath.length() - 1)
             {
             return filePath;
             }
+        if (filePath[slash + 1] == L'/') // skip the "http://"
+            {
+            slash = filePath.find(L'/', slash + 2);
+            }
+        if (slash == wxString::npos || slash == filePath.length() - 1)
+            {
+            return filePath;
+            }
+        const size_t lastSlash = filePath.find_last_of(L'/');
+        if (lastSlash == wxString::npos || lastSlash <= slash || lastSlash == filePath.length() - 1)
+            {
+            return filePath;
+            }
+        const wxString domain = filePath.substr(0, slash);
+        const wxString fileName = filePath.substr(lastSlash + 1);
+        const wxString foldersString = filePath.substr(slash + 1, (lastSlash - slash) - 1);
+
+        wxArrayString folders;
+        wxStringTokenizer tkz(foldersString, L'/');
+        while (tkz.HasMoreTokens())
+            {
+            folders.Add(tkz.GetNextToken());
+            }
+        for (size_t i = 0; i < folders.GetCount(); ++i)
+            {
+            // if the lengths for the directories can hold more than just ellipses
+            // then try to include their names
+            if ((domain.length() + JoinWebDirs(folders).length() + fileName.length()) <= maxLength)
+                {
+                break;
+                }
+
+            folders[i] = wxString(1, static_cast<wchar_t>(8230));
+            }
+
+        return domain + L'/' + JoinWebDirs(folders) + fileName;
         }
+
+    return filePath;
     }
 
 //------------------------------------------------
@@ -597,7 +585,7 @@ wxArrayString FilterFiles(const wxArrayString& files, const wxString& fileExtens
     wxStringTokenizer tkz(fileExtensions, L"*.;");
     while (tkz.HasMoreTokens())
         {
-        wxString nextFileExt = tkz.GetNextToken();
+        const wxString nextFileExt = tkz.GetNextToken();
         if (!nextFileExt.empty())
             {
             validExtensions.insert(nextFileExt);
@@ -628,7 +616,7 @@ bool RemoveEmptyDirsRecursively(const wxString& rootDirectory)
         {
         return false;
         }
-    else if (numberOfDirs == 0)
+    if (numberOfDirs == 0)
         {
         return wxFileName::Rmdir(rdir);
         }
@@ -650,7 +638,7 @@ bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrF
     {
     newPath.Clear();
 
-    wxFileName fileOrFolderToCombineName = fileOrFolderToCombine;
+    const wxFileName fileOrFolderToCombineName = fileOrFolderToCombine;
     wxFileName directoryToCombineWithName = directoryToCombineWith;
 
     /* If we have volumes (e.g., Windows's drive letters) then see if they are the same.
@@ -658,8 +646,9 @@ bool PathCombine(const wxString& directoryToCombineWith, const wxString& fileOrF
        and append it to the destination folder.*/
     if (fileOrFolderToCombineName.HasVolume() && directoryToCombineWithName.HasVolume())
         {
-        wxString fullVolumeName = directoryToCombineWithName.GetVolume() +
-                                  wxFileName::GetVolumeSeparator() + wxFileName::GetPathSeparator();
+        const wxString fullVolumeName = directoryToCombineWithName.GetVolume() +
+                                        wxFileName::GetVolumeSeparator() +
+                                        wxFileName::GetPathSeparator();
         if (fileOrFolderToCombineName.GetVolume().CmpNoCase(
                 directoryToCombineWithName.GetVolume()) != 0)
             {
@@ -728,7 +717,7 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
     // see how much we need to trim off of file paths to get the relative paths
     wxFileName newFolder = fromDir;
     long rootFolderPathLength = 0;
-    if (newFolder.GetDirCount())
+    if (newFolder.GetDirCount() != 0U)
         {
         rootFolderPathLength = static_cast<long>(newFolder.GetPath().length());
         rootFolderPathLength -=
@@ -740,12 +729,12 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
         return false;
         }
 
-    wxDir dir;
+    const wxDir dir;
     wxArrayString filesToMove;
     if (wxDir::GetAllFiles(fromDir, &filesToMove) == 0)
         {
         newFolder = fromDir;
-        if (newFolder.GetDirCount() &&
+        if ((newFolder.GetDirCount() != 0U) &&
             PathCombine(toDir, newFolder.GetDirs()[newFolder.GetDirCount() - 1], newFileName))
             {
             wxFileName::Mkdir(newFileName, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
@@ -807,7 +796,7 @@ wxString CreateNewFileName(const wxString& filePath)
         if (!wxFileName::FileExists(newFilePath))
             {
             // create the file as we will use it later
-            wxFile file(newFilePath, wxFile::write);
+            const wxFile file(newFilePath, wxFile::write);
             if (!file.IsOpened())
                 {
                 continue;
@@ -816,7 +805,7 @@ wxString CreateNewFileName(const wxString& filePath)
             }
         }
 
-    return wxString{};
+    return {};
     }
 
 //---------------------------------------------------
@@ -824,7 +813,7 @@ wxString GetExtensionOrDomain(const wxString& url)
     {
     if (url.empty())
         {
-        return wxString{};
+        return {};
         }
 
     const size_t lastSlash = url.rfind(L'/');
@@ -844,7 +833,7 @@ wxString GetExtensionOrDomain(const wxString& url)
             }
         // sometimes, the "webpage" name is simply "js" or something like that,
         // so treat it as such if it has a query being passed to it
-        else if (fn.GetName().CmpNoCase(L"js") == 0 || fn.GetName().CmpNoCase(L"css") == 0)
+        if (fn.GetName().CmpNoCase(L"js") == 0 || fn.GetName().CmpNoCase(L"css") == 0)
             {
             return fn.GetName();
             }
@@ -853,7 +842,7 @@ wxString GetExtensionOrDomain(const wxString& url)
         {
         if (lastSlash == url.length() - 1)
             {
-            return wxString{};
+            return {};
             }
         const wxFileName fn(url.substr(startPos));
         if (fn.HasExt())
@@ -862,7 +851,7 @@ wxString GetExtensionOrDomain(const wxString& url)
             }
         }
 
-    return wxString{};
+    return {};
     }
 
 //---------------------------------------------------
@@ -888,16 +877,13 @@ std::pair<wxString, size_t> GetCommonFolder(const wxString& path1, const wxStrin
         return std::make_pair(wxString{}, wxString::npos);
         }
     // step back to the last character that was the same
-    else
-        {
-        --i;
-        }
+    --i;
 
     const auto getFolderStartPos = [](const auto& path, const size_t startRPos)
     {
-        size_t lastForwardSlash = path.rfind(L'/', startRPos);
-        size_t lastBackSlash = path.rfind(L'\\', startRPos);
-        size_t lastSlash =
+        const size_t lastForwardSlash = path.rfind(L'/', startRPos);
+        const size_t lastBackSlash = path.rfind(L'\\', startRPos);
+        const size_t lastSlash =
             ((lastForwardSlash != wxString::npos) ? lastForwardSlash : lastBackSlash);
         return ((lastSlash != wxString::npos) ? lastSlash : 0);
     };
@@ -921,24 +907,20 @@ std::pair<wxString, size_t> GetCommonFolder(const wxString& path1, const wxStrin
     // between the two paths, but we want to ignore that. Step back to the
     // previous separator (which will be the end of the previous folder)
     // and then step back again to the start of the folder.
-    else
+
+    size_t path1Start = getFolderStartPos(path1, i);
+    i = path1Start;
+    // no matching chars?
+    if (i == 0)
         {
-        size_t path1Start = getFolderStartPos(path1, i);
-        i = path1Start;
-        // no matching chars?
-        if (i == 0)
-            {
-            return std::make_pair(wxString{}, wxString::npos);
-            }
-        // step back to the last character that was the same
-        else
-            {
-            --i;
-            }
-        path1Start = getFolderStartPos(path1, i);
-        const bool hasOffset = (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
-        return std::make_pair(
-            path1.substr(path1Start + (hasOffset ? 1 : 0), (i - path1Start) + (hasOffset ? 0 : 1)),
-            path1Start + (hasOffset ? 1 : 0));
+        return std::make_pair(wxString{}, wxString::npos);
         }
+    // step back to the last character that was the same
+    --i;
+
+    path1Start = getFolderStartPos(path1, i);
+    const bool hasOffset = (path1[path1Start] == L'/' || path1[path1Start] == L'\\');
+    return std::make_pair(
+        path1.substr(path1Start + (hasOffset ? 1 : 0), (i - path1Start) + (hasOffset ? 0 : 1)),
+        path1Start + (hasOffset ? 1 : 0));
     }

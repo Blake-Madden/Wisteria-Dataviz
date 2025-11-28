@@ -358,7 +358,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for sun icon!");
         if (gc != nullptr)
@@ -386,8 +386,8 @@ namespace Wisteria::GraphItems
         const wxColour centerCol{ 235, 200, 100, 255 }; // muted candlelight
         const wxColour edgeCol{ 0, 0, 0, 255 };         // solid black edge
 
-        const double cx = bounds.m_x + bounds.m_width * math_constants::half;
-        const double cy = bounds.m_y + bounds.m_height * 0.4;
+        const double cx = bounds.m_x + (bounds.m_width * math_constants::half);
+        const double cy = bounds.m_y + (bounds.m_height * 0.4);
         const double radius = std::max(bounds.m_width, bounds.m_height) * 0.30;
 
         const auto brush =
@@ -407,7 +407,7 @@ namespace Wisteria::GraphItems
 
         rect.Deflate(ScaleToScreenAndCanvas(2));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         if (gc == nullptr)
             {
@@ -442,7 +442,7 @@ namespace Wisteria::GraphItems
         if (hasBottomLine)
             {
             topLineRect.SetHeight(rect.GetHeight() / 2);
-            bottomLineRect = wxRect{ rect.GetX(), rect.GetY() + rect.GetHeight() / 2,
+            bottomLineRect = wxRect{ rect.GetX(), rect.GetY() + (rect.GetHeight() / 2),
                                      rect.GetWidth(), rect.GetHeight() / 2 };
             }
 
@@ -469,7 +469,7 @@ namespace Wisteria::GraphItems
             //--------------------------------------
             // Layout
             //--------------------------------------
-            const double cy = r.GetY() + r.GetHeight() * 0.50;
+            const double cy = r.GetY() + (r.GetHeight() * 0.50);
 
             // Dot radius (smaller)
             const double dotRadius = r.GetHeight() * (0.075 / 3);
@@ -502,7 +502,7 @@ namespace Wisteria::GraphItems
                 // Left label
                 //--------------------------------------
                 {
-                const wxPoint center(static_cast<int>(r.GetX() + leftRegionWidth * 0.5),
+                const wxPoint center(static_cast<int>(r.GetX() + (leftRegionWidth * 0.5)),
                                      static_cast<int>(cy));
 
                 Label lbl{ GraphItemInfo(leftText)
@@ -517,8 +517,8 @@ namespace Wisteria::GraphItems
                                .AnchorPoint(center)
                                .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
 
-                const wxRect bb(center.x - labelWidth / 2, center.y - labelHeight / 2, labelWidth,
-                                labelHeight);
+                const wxRect bb(center.x - (labelWidth / 2), center.y - (labelHeight / 2),
+                                labelWidth, labelHeight);
 
                 lbl.SetBoundingBox(bb, dc, GetScaling());
                 lbl.Draw(dc);
@@ -530,7 +530,7 @@ namespace Wisteria::GraphItems
                 {
                 const double regionStart = r.GetRight() - rightRegionWidth;
 
-                const wxPoint center(static_cast<int>(regionStart + rightRegionWidth * 0.5),
+                const wxPoint center(static_cast<int>(regionStart + (rightRegionWidth * 0.5)),
                                      static_cast<int>(cy));
 
                 Label lbl{ GraphItemInfo(rightText)
@@ -545,8 +545,8 @@ namespace Wisteria::GraphItems
                                .AnchorPoint(center)
                                .LabelPageVerticalAlignment(PageVerticalAlignment::Centered) };
 
-                const wxRect bb(center.x - labelWidth / 2, center.y - labelHeight / 2, labelWidth,
-                                labelHeight);
+                const wxRect bb(center.x - (labelWidth / 2), center.y - (labelHeight / 2),
+                                labelWidth, labelHeight);
 
                 lbl.SetBoundingBox(bb, dc, GetScaling());
                 lbl.Draw(dc);
@@ -563,9 +563,9 @@ namespace Wisteria::GraphItems
         //--------------------------------------
         if (hasBottomLine)
             {
-            const double cy = bottomLineRect.GetY() + bottomLineRect.GetHeight() * 0.5;
+            const double cy = bottomLineRect.GetY() + (bottomLineRect.GetHeight() * 0.5);
 
-            const wxPoint anchor(bottomLineRect.GetX() + bottomLineRect.GetWidth() * 0.5, cy);
+            const wxPoint anchor(bottomLineRect.GetX() + (bottomLineRect.GetWidth() * 0.5), cy);
 
             Label lbl{ GraphItemInfo(bottomText)
                            .Pen(wxNullPen)
@@ -585,7 +585,7 @@ namespace Wisteria::GraphItems
         {
         DrawPumpkin(rect, dc);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        const GraphicsContextFallback gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for jack-o'-lantern!");
         if (gc == nullptr)
@@ -595,7 +595,7 @@ namespace Wisteria::GraphItems
 
         gc->SetPen(*wxBLACK_PEN);
 
-        const double cx = rect.GetX() + rect.GetWidth() / 2.0;
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
         const double w = rect.GetWidth();
         const double h = rect.GetHeight();
 
@@ -606,12 +606,12 @@ namespace Wisteria::GraphItems
         const double eyeH = h * 0.12;
         const double eyeOffsetX = w * 0.12;
         const double eyeTopY = rect.GetY() + (h * 0.45);
-        constexpr double eyeTiltRad = 45.0 * (std::numbers::pi / 180.0);
+        constexpr double EYE_TILT_RAD = 45.0 * (std::numbers::pi / 180.0);
 
         const auto drawEye = [&](const bool left)
         {
             const double centerX = cx + (left ? -eyeOffsetX : eyeOffsetX);
-            const double centerY = eyeTopY + eyeH / 2.0;
+            const double centerY = eyeTopY + (eyeH / 2.0);
 
             // Build eye in local space, then transform into world space
             wxGraphicsPath eye = gc->CreatePath();
@@ -622,7 +622,7 @@ namespace Wisteria::GraphItems
 
             wxGraphicsMatrix m = gc->CreateMatrix();
             m.Translate(centerX, centerY);
-            m.Rotate(left ? eyeTiltRad : -eyeTiltRad);
+            m.Rotate(left ? EYE_TILT_RAD : -EYE_TILT_RAD);
             eye.Transform(m); // in-place, correct
 
             FillCarvedFeature(
@@ -641,23 +641,23 @@ namespace Wisteria::GraphItems
         const double noseY = rect.GetY() + (h * 0.53) + noseH;
 
         wxGraphicsPath nose = gc->CreatePath();
-        nose.MoveToPoint(cx, noseY - noseH / 2.0);
-        nose.AddLineToPoint(cx - noseW / 2.0, noseY + noseH / 2.0);
-        nose.AddLineToPoint(cx + noseW / 2.0, noseY + noseH / 2.0);
+        nose.MoveToPoint(cx, noseY - (noseH / 2.0));
+        nose.AddLineToPoint(cx - (noseW / 2.0), noseY + (noseH / 2.0));
+        nose.AddLineToPoint(cx + (noseW / 2.0), noseY + (noseH / 2.0));
         nose.CloseSubpath();
         gc->FillPath(nose);
 
         //--------------------------------------------------
         // Mouth
         //--------------------------------------------------
-        const double mouthTop = rect.GetY() + h * 0.63;
+        const double mouthTop = rect.GetY() + (h * 0.63);
         const double mouthW = w * 0.55;
         const double mouthH = h * 0.40;
 
         wxGraphicsPath mouth = gc->CreatePath();
-        mouth.MoveToPoint(cx - mouthW / 2.0, mouthTop);
-        mouth.AddQuadCurveToPoint(cx, mouthTop + mouthH, cx + mouthW / 2.0, mouthTop);
-        mouth.AddQuadCurveToPoint(cx, mouthTop + mouthH * 0.6, cx - mouthW / 2.0, mouthTop);
+        mouth.MoveToPoint(cx - (mouthW / 2.0), mouthTop);
+        mouth.AddQuadCurveToPoint(cx, mouthTop + mouthH, cx + (mouthW / 2.0), mouthTop);
+        mouth.AddQuadCurveToPoint(cx, mouthTop + (mouthH * 0.6), cx - (mouthW / 2.0), mouthTop);
         mouth.CloseSubpath();
 
         //--------------------------------------------------
@@ -669,17 +669,17 @@ namespace Wisteria::GraphItems
         // upper teeth
         const double upperOffset = mouthW * 0.25 * 0.8;
 
-        const wxRect topLeftTooth(static_cast<int>(cx - upperOffset - toothW / 2.0),
-                                  static_cast<int>(mouthTop + mouthH * 0.10),
+        const wxRect topLeftTooth(static_cast<int>(cx - upperOffset - (toothW / 2.0)),
+                                  static_cast<int>(mouthTop + (mouthH * 0.10)),
                                   static_cast<int>(toothW), static_cast<int>(toothH));
 
-        const wxRect topRightTooth(static_cast<int>(cx + upperOffset - toothW / 2.0),
-                                   static_cast<int>(mouthTop + mouthH * 0.10),
+        const wxRect topRightTooth(static_cast<int>(cx + upperOffset - (toothW / 2.0)),
+                                   static_cast<int>(mouthTop + (mouthH * 0.10)),
                                    static_cast<int>(toothW), static_cast<int>(toothH));
 
         // bottom tooth
-        const wxRect bottomTooth(static_cast<int>(cx - toothW / 2.0),
-                                 static_cast<int>(mouthTop + mouthH * 0.40),
+        const wxRect bottomTooth(static_cast<int>(cx - (toothW / 2.0)),
+                                 static_cast<int>(mouthTop + (mouthH * 0.40)),
                                  static_cast<int>(toothW), static_cast<int>(toothH * 1.6));
 
         double clipX{ 0.0 }, clipY{ 0.0 }, clipW{ 0.0 }, clipH{ 0.0 };
@@ -719,7 +719,7 @@ namespace Wisteria::GraphItems
         bodyRect.Deflate(static_cast<int>(bodyRect.GetWidth() * 0.06),
                          static_cast<int>(bodyRect.GetHeight() * 0.08));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for pumpkin!");
         if (gc == nullptr)
@@ -731,8 +731,8 @@ namespace Wisteria::GraphItems
 
         const double leftX = bodyRect.GetLeft();
         const double rightX = bodyRect.GetRight();
-        const double topY = bodyRect.GetTop() + bodyRect.GetHeight() * 0.15;
-        const double bottomY = bodyRect.GetTop() + bodyRect.GetHeight() * 0.95;
+        const double topY = bodyRect.GetTop() + (bodyRect.GetHeight() * 0.15);
+        const double bottomY = bodyRect.GetTop() + (bodyRect.GetHeight() * 0.95);
         const double midY = (topY + bottomY) / 2.0;
         const double halfHeightBase = (bottomY - topY) / 2.0;
         const double bottomBulge = (bottomY - topY) * 0.08;
@@ -743,7 +743,7 @@ namespace Wisteria::GraphItems
         const wxColour bottomOrange{ TintIfUsingOpacity(wxColour{ 255, 90, 0 }) };
         const wxColour lobeEdge{ TintIfUsingOpacity(wxColour{ 220, 110, 0, 200 }) };
 
-        wxGraphicsPen lobePen = gc->CreatePen(wxPen{ lobeEdge, outlinePenWidth });
+        const wxGraphicsPen lobePen = gc->CreatePen(wxPen{ lobeEdge, outlinePenWidth });
 
         struct LobeInfo
             {
@@ -753,28 +753,25 @@ namespace Wisteria::GraphItems
             double m_heightFactor{ 0.0 };
             };
 
-        constexpr LobeInfo lobes[]{
-            // left side
-            { 0.16, 0.26, 0.80, 0.85 }, // far left: top/bottom under mid-left
-            { 0.28, 0.36, 0.95, 0.95 }, // mid-left
-            { 0.40, 0.48, 1.05, 1.00 }, // inner-left
-                                        // center
-            { 0.50, 0.50, 1.15, 1.05 }, // center
-                                        // right side (mirrored)
-            { 0.60, 0.52, 1.05, 1.00 }, // inner-right
-            { 0.72, 0.64, 0.95, 0.95 }, // mid-right
-            { 0.84, 0.74, 0.80, 0.85 }  // far right
-        };
+        constexpr std::array<LobeInfo, 7> LOBES {{
+            { 0.16, 0.26, 0.80, 0.85 },
+            { 0.28, 0.36, 0.95, 0.95 },
+            { 0.40, 0.48, 1.05, 1.00 },
+            { 0.50, 0.50, 1.15, 1.05 },
+            { 0.60, 0.52, 1.05, 1.00 },
+            { 0.72, 0.64, 0.95, 0.95 },
+            { 0.84, 0.74, 0.80, 0.85 }
+        }};
 
         // draw order so right-side lobes are underneath the ones to their left
-        constexpr int drawOrder[]{ 6, 5, 4, 0, 1, 2, 3 };
+        constexpr std::array DRAW_ORDER{ 6, 5, 4, 0, 1, 2, 3 };
 
             //--------------------------------------------------
             // back caps at the very top (peek of back lobes)
             //--------------------------------------------------
             {
             // slightly lighter than the main body, but fully opaque
-            wxGraphicsBrush backBrush =
+            const wxGraphicsBrush backBrush =
                 gc->CreateBrush(wxBrush{ TintIfUsingOpacity(wxColour{ 255, 235, 140 }) });
 
             // lighter outline than front lobes
@@ -785,27 +782,27 @@ namespace Wisteria::GraphItems
             gc->SetBrush(backBrush);
             gc->SetPen(backPen);
 
-            for (const auto& lobe : lobes)
+            for (const auto& lobe : LOBES)
                 {
                 // pull back caps inward toward center so they don't stick out so far
-                const double centerXRaw = leftX + bodyRect.GetWidth() * lobe.m_centerPercent;
-                const double capCenterX = cx + (centerXRaw - cx) * 0.65; // 0.65 = more inside
+                const double centerXRaw = leftX + (bodyRect.GetWidth() * lobe.m_centerPercent);
+                const double capCenterX = cx + ((centerXRaw - cx) * 0.65); // 0.65 = more inside
 
                 const double halfWidth =
                     (bodyRect.GetWidth() / 7.0) * lobe.m_widthFactor * 0.4;            // narrower
                 const double halfHeight = halfHeightBase * lobe.m_heightFactor * 0.18; // shorter
 
                 // lower the caps so they sit into the pumpkin, not above it
-                const double capMidY = topY + (bottomY - topY) * 0.2;
+                const double capMidY = topY + ((bottomY - topY) * 0.2);
 
                 wxGraphicsPath cap = gc->CreatePath();
                 cap.MoveToPoint(capCenterX - halfWidth, capMidY);
-                cap.AddCurveToPoint(wxPoint(capCenterX - halfWidth * 0.4, capMidY - halfHeight),
-                                    wxPoint(capCenterX + halfWidth * 0.4, capMidY - halfHeight),
+                cap.AddCurveToPoint(wxPoint(capCenterX - (halfWidth * 0.4), capMidY - halfHeight),
+                                    wxPoint(capCenterX + (halfWidth * 0.4), capMidY - halfHeight),
                                     wxPoint(capCenterX + halfWidth, capMidY));
                 cap.AddCurveToPoint(
-                    wxPoint(capCenterX + halfWidth * 0.4, capMidY + halfHeight * 0.5),
-                    wxPoint(capCenterX - halfWidth * 0.4, capMidY + halfHeight * 0.5),
+                    wxPoint(capCenterX + (halfWidth * 0.4), capMidY + (halfHeight * 0.5)),
+                    wxPoint(capCenterX - (halfWidth * 0.4), capMidY + (halfHeight * 0.5)),
                     wxPoint(capCenterX - halfWidth, capMidY));
                 cap.CloseSubpath();
 
@@ -829,33 +826,31 @@ namespace Wisteria::GraphItems
             const double stemBaseWidth = bodyRect.GetWidth() * 0.22; // wide base
             const double stemHeight = bodyRect.GetHeight() * 0.23;
 
-            const double baseY = topY + (bottomY - topY) * 0.20; // nestled into lobes
-            const double baseCenterX = cx;                       // centered at the pumpkin
+            const double baseY = topY + ((bottomY - topY) * 0.20); // nestled into lobes
+            const double baseCenterX = cx;                         // centered at the pumpkin
 
             // how far the centerline leans right at the tip
             const double maxCenterOffset = bodyRect.GetWidth() * 0.16;
 
             // widthFactor(t): how the width changes from base (t=0) to tip (t=1)
             // Adjust these constants to reshape the stem
-            constexpr double neckT = 0.15; // where the "neck" happens (0..1 of height)
-            constexpr double baseWidth = math_constants::whole; // width at base
-            constexpr double neckWidth = math_constants::half;  // width at the neck
-            constexpr double tipWidth = 0.40;                   // width at the top
+            constexpr double NECK_T = 0.15; // where the "neck" happens (0..1 of height)
+            constexpr double BASE_WIDTH = math_constants::whole; // width at base
+            constexpr double NECK_WIDTH = math_constants::half;  // width at the neck
+            constexpr double TIP_WIDTH = 0.40;                   // width at the top
 
             const auto widthFactor = [&](double t) noexcept
             {
-                if (t <= neckT)
+                if (t <= NECK_T)
                     {
                     // smoothly transition from 1.0 -> neckWidth
-                    double u = t / neckT;
-                    return baseWidth + (neckWidth - baseWidth) * u;
+                    const double u = t / NECK_T;
+                    return BASE_WIDTH + ((NECK_WIDTH - BASE_WIDTH) * u);
                     }
-                else
-                    {
-                    // smoothly transition from neckWidth -> tipWidth
-                    double u = (t - neckT) / (1.0 - neckT);
-                    return neckWidth + (tipWidth - neckWidth) * u;
-                    }
+
+                // smoothly transition from neckWidth -> tipWidth
+                const double u = (t - NECK_T) / (1.0 - NECK_T);
+                return NECK_WIDTH + ((TIP_WIDTH - NECK_WIDTH) * u);
             };
 
             // centerline: mostly vertical then leaning right.
@@ -863,18 +858,18 @@ namespace Wisteria::GraphItems
             const auto centerX = [&](const double t) noexcept
             {
                 // quadratic in t so the bend gets stronger toward the top
-                return baseCenterX + maxCenterOffset * (t * t);
+                return baseCenterX + (maxCenterOffset * (t * t));
             };
-            const auto centerY = [&](const double t) noexcept { return baseY - stemHeight * t; };
+            const auto centerY = [&](const double t) noexcept { return baseY - (stemHeight * t); };
 
             // sample points along left and right edges
-            constexpr int steps = 24;
-            std::array<wxPoint2DDouble, steps + 1> leftPts;
-            std::array<wxPoint2DDouble, steps + 1> rightPts;
+            constexpr int STEPS = 24;
+            std::array<wxPoint2DDouble, STEPS + 1> leftPts;
+            std::array<wxPoint2DDouble, STEPS + 1> rightPts;
 
-            for (int i = 0; i <= steps; ++i)
+            for (int i = 0; i <= STEPS; ++i)
                 {
-                const double t = static_cast<double>(i) / steps;
+                const double t = static_cast<double>(i) / STEPS;
 
                 const double wFactor = widthFactor(t);
                 const double w = stemBaseWidth * wFactor;
@@ -893,32 +888,32 @@ namespace Wisteria::GraphItems
             stemPath.MoveToPoint(leftPts[0].m_x, leftPts[0].m_y);
 
             // left edge: go up from base to tip
-            for (int i = 1; i <= steps; ++i)
+            for (int i = 1; i <= STEPS; ++i)
                 {
                 stemPath.AddLineToPoint(leftPts[i].m_x, leftPts[i].m_y);
                 }
 
                 // top edge: slight convex join from left tip to right tip
                 {
-                const auto& lTip = leftPts[steps];
-                const auto& rTip = rightPts[steps];
+                const auto& lTip = leftPts[STEPS];
+                const auto& rTip = rightPts[STEPS];
                 const double middleX = (lTip.m_x + rTip.m_x) / 2.0;
-                const double middleY = (lTip.m_y + rTip.m_y) / 2.0 - stemHeight * 0.05;
+                const double middleY = ((lTip.m_y + rTip.m_y) / 2.0) - (stemHeight * 0.05);
 
                 stemPath.AddCurveToPoint(middleX, middleY, middleX, middleY, rTip.m_x, rTip.m_y);
                 }
 
             // right edge: go back down from tip to base
-            for (int i = steps - 1; i >= 0; --i)
+            for (int i = STEPS - 1; i >= 0; --i)
                 {
                 stemPath.AddLineToPoint(rightPts[i].m_x, rightPts[i].m_y);
                 }
 
                 // base: gentle bulge across the bottom back to left
                 {
-                const double bulgeY = baseY + stemHeight * 0.03;
-                stemPath.AddCurveToPoint(baseCenterX + stemBaseWidth * 0.10, bulgeY,
-                                         baseCenterX - stemBaseWidth * 0.10, bulgeY, leftPts[0].m_x,
+                const double bulgeY = baseY + (stemHeight * 0.03);
+                stemPath.AddCurveToPoint(baseCenterX + (stemBaseWidth * 0.10), bulgeY,
+                                         baseCenterX - (stemBaseWidth * 0.10), bulgeY, leftPts[0].m_x,
                                          leftPts[0].m_y);
                 }
 
@@ -940,7 +935,7 @@ namespace Wisteria::GraphItems
                 //--------------------------------------------------
                 {
                 // how far in from the right edge the shadow fades (0..1 from right→left)
-                constexpr double innerLerp = math_constants::half; // 0.5 = halfway toward center
+                constexpr double INNER_LERP = math_constants::half; // 0.5 = halfway toward center
 
                 wxGraphicsPath shadowPath = gc->CreatePath();
 
@@ -948,7 +943,7 @@ namespace Wisteria::GraphItems
                 shadowPath.MoveToPoint(rightPts[0].m_x, rightPts[0].m_y);
 
                 // go up along the outer-right edge
-                for (int i = 1; i <= steps; ++i)
+                for (int i = 1; i <= STEPS; ++i)
                     {
                     shadowPath.AddLineToPoint(rightPts[i].m_x, rightPts[i].m_y);
                     }
@@ -958,12 +953,12 @@ namespace Wisteria::GraphItems
                 double innerMinX = rightPts[0].m_x;
 
                 // come back down along an inner edge (toward the center)
-                for (int i = steps; i >= 0; --i)
+                for (int i = STEPS; i >= 0; --i)
                     {
                     const double innerX =
-                        rightPts[i].m_x + (leftPts[i].m_x - rightPts[i].m_x) * innerLerp;
+                        rightPts[i].m_x + ((leftPts[i].m_x - rightPts[i].m_x) * INNER_LERP);
                     const double innerY =
-                        rightPts[i].m_y + (leftPts[i].m_y - rightPts[i].m_y) * innerLerp;
+                        rightPts[i].m_y + ((leftPts[i].m_y - rightPts[i].m_y) * INNER_LERP);
 
                     shadowPath.AddLineToPoint(innerX, innerY);
 
@@ -974,14 +969,14 @@ namespace Wisteria::GraphItems
                 shadowPath.CloseSubpath();
 
                 // gradient: outer edge (right) → inner edge (toward center)
-                wxDouble bx, by, bw, bh;
+                wxDouble bx{ 0.0 }, by{ 0.0 }, bw{ 0.0 }, bh{ 0.0 };
                 shadowPath.GetBox(&bx, &by, &bw, &bh);
 
                 wxGraphicsGradientStops stops;
-                stops.Add(stemShadowCol, 0.0f); // outer edge = dark
+                stops.Add(stemShadowCol, 0.0); // outer edge = dark
                 stops.Add(TintIfUsingOpacity(wxColour{ stemShadowCol.Red(), stemShadowCol.Green(),
                                                        stemShadowCol.Blue() }),
-                          1.0f);
+                          1.0);
 
                 // use our computed outer/inner x so gradient spans entire strip width
                 const wxGraphicsBrush shadowBrush =
@@ -1009,18 +1004,18 @@ namespace Wisteria::GraphItems
         //--------------------------------------------------
         gc->SetPen(lobePen);
 
-        for (int idx : drawOrder)
+        for (int const idx : DRAW_ORDER)
             {
-            const auto& lobe = lobes[idx];
+            const auto& lobe = LOBES[idx];
 
-            const double centerX = leftX + bodyRect.GetWidth() * lobe.m_centerPercent;
-            const double foldX = leftX + bodyRect.GetWidth() * lobe.m_foldPercent;
+            const double centerX = leftX + (bodyRect.GetWidth() * lobe.m_centerPercent);
+            const double foldX = leftX + (bodyRect.GetWidth() * lobe.m_foldPercent);
 
             const double halfWidth = (bodyRect.GetWidth() / 7.0) * lobe.m_widthFactor;
             const double halfHeight = halfHeightBase * lobe.m_heightFactor;
 
             // 1 at center, ~0 at outer lobes
-            const double centerOffset = 1.0 - std::abs(lobe.m_centerPercent - 0.50) * 2.0;
+            const double centerOffset = 1.0 - (std::abs(lobe.m_centerPercent - 0.50) * 2.0);
 
             // sink tops more, especially for central lobes
             const double sinkAmount = halfHeight * (0.20 + 0.25 * centerOffset);
@@ -1041,26 +1036,26 @@ namespace Wisteria::GraphItems
 
             // top -> right side (curved, bowing out)
             path.AddCurveToPoint(
-                wxPoint(foldX + (rightMidX - foldX) * 0.6, topYLocal - halfHeight * 0.22),
-                wxPoint(rightMidX + halfWidth * 0.20, midY - halfHeight * 0.12),
+                wxPoint(foldX + ((rightMidX - foldX) * 0.6), topYLocal - (halfHeight * 0.22)),
+                wxPoint(rightMidX + (halfWidth * 0.20), midY - (halfHeight * 0.12)),
                 wxPoint(rightMidX, midY));
 
             // right side -> bottom (curved)
             path.AddCurveToPoint(
-                wxPoint(rightMidX + halfWidth * 0.18, midY + halfHeight * 0.40),
-                wxPoint(foldX + (rightMidX - foldX) * 0.7, bottomYLocal + bottomBulge * 0.5),
+                wxPoint(rightMidX + (halfWidth * 0.18), midY + (halfHeight * 0.40)),
+                wxPoint(foldX + ((rightMidX - foldX) * 0.7), bottomYLocal + (bottomBulge * 0.5)),
                 wxPoint(foldX, bottomYLocal));
 
             // bottom -> left side (curved back under neighbor)
             path.AddCurveToPoint(
-                wxPoint(foldX - (foldX - leftMidX) * 0.7, bottomYLocal + bottomBulge * 0.5),
-                wxPoint(leftMidX - halfWidth * 0.18, midY + halfHeight * 0.40),
+                wxPoint(foldX - ((foldX - leftMidX) * 0.7), bottomYLocal + (bottomBulge * 0.5)),
+                wxPoint(leftMidX - (halfWidth * 0.18), midY + (halfHeight * 0.40)),
                 wxPoint(leftMidX, midY));
 
             // left side -> top (curved)
             path.AddCurveToPoint(
-                wxPoint(leftMidX - halfWidth * 0.20, midY - halfHeight * 0.12),
-                wxPoint(foldX - (foldX - leftMidX) * 0.6, topYLocal - halfHeight * 0.22),
+                wxPoint(leftMidX - (halfWidth * 0.20), midY - (halfHeight * 0.12)),
+                wxPoint(foldX - ((foldX - leftMidX) * 0.6), topYLocal - (halfHeight * 0.22)),
                 wxPoint(foldX, topYLocal));
 
             path.CloseSubpath();
@@ -1077,18 +1072,18 @@ namespace Wisteria::GraphItems
             // center crease
             //--------------------------------------------------
             {
-            const double centerXLine = leftX + bodyRect.GetWidth() * math_constants::half;
+            const double centerXLine = leftX + (bodyRect.GetWidth() * math_constants::half);
 
             const double creaseTopY =
-                topY + (bottomY - topY) * 0.2; // line starts where front lobes sink to
-            const double creaseBottomY = bottomY - (bottomY - topY) * 0.05;
+                topY + ((bottomY - topY) * 0.2); // line starts where front lobes sink to
+            const double creaseBottomY = bottomY - ((bottomY - topY) * 0.05);
 
             wxGraphicsPath crease = gc->CreatePath();
 
             crease.MoveToPoint(centerXLine, creaseTopY);
             crease.AddCurveToPoint(
-                wxPoint(centerXLine + bodyRect.GetWidth() * 0.02, midY - halfHeightBase * 0.10),
-                wxPoint(centerXLine - bodyRect.GetWidth() * 0.02, midY + halfHeightBase * 0.20),
+                wxPoint(centerXLine + (bodyRect.GetWidth() * 0.02), midY - (halfHeightBase * 0.10)),
+                wxPoint(centerXLine - (bodyRect.GetWidth() * 0.02), midY + (halfHeightBase * 0.20)),
                 wxPoint(centerXLine, creaseBottomY));
 
             gc->SetBrush(wxNullBrush);
@@ -1103,7 +1098,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger penGuard{ dc, wxNullPen };
         const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
 
-        GraphicsContextFallback gcWrap{ &dc, rect };
+        GraphicsContextFallback const gcWrap{ &dc, rect };
         wxGraphicsContext* gc = gcWrap.GetGraphicsContext();
         if (gc == nullptr)
             {
@@ -1131,35 +1126,35 @@ namespace Wisteria::GraphItems
         const double laneWidth = std::max(1.0, (roadWidthNear + roadWidthFar) * 0.05);
 
         // ---- left->right spline that climbs upward; sway only in X ------------
-        constexpr int nodes = 6;
-        const double stepX = safe_divide<double>(width, (nodes - 1));
+        constexpr int NODES = 6;
+        const auto stepX = safe_divide<double>(width, (NODES - 1));
 
-        const double baseY0 = rect.GetBottom() - height * 0.12; // near
-        const double baseY1 = rect.GetTop() + height * 0.02;    // far
+        const double baseY0 = rect.GetBottom() - (height * 0.12); // near
+        const double baseY1 = rect.GetTop() + (height * 0.02);    // far
 
-        const double ampMax = std::max(0.0, (width * 0.45) - roadWidthNear * 0.6);
+        const double ampMax = std::max(0.0, (width * 0.45) - (roadWidthNear * 0.6));
 
         // linear interpolation
-        const auto lerp = [](double a, double b, double t) noexcept { return a + (b - a) * t; };
+        const auto lerp = [](double a, double b, double t) noexcept { return a + ((b - a) * t); };
 
         const auto anchorAt = [&](int i) -> wxPoint2DDouble
         {
-            const double t = safe_divide<double>(i, (nodes - 1)); // 0..1 left->right
-            const double baseX = rect.GetLeft() - stepX * 0.25 + i * stepX * 1.05;
+            const auto t = safe_divide<double>(i, (NODES - 1)); // 0..1 left->right
+            const double baseX = rect.GetLeft() - (stepX * 0.25) + (i * stepX * 1.05);
             const double baseY = lerp(baseY0, baseY1, t); // climbs upward
             const double amp = ampMax * (1.0 - t * 0.55); // sway fades with distance
             const double dir = (i % 2 == 0) ? -1.0 : 1.0;
-            return { baseX + dir * amp, baseY };
+            return { baseX + (dir * amp), baseY };
         };
 
         std::vector<wxPoint2DDouble> points;
-        points.reserve(nodes + 2);
+        points.reserve(NODES + 2);
         points.push_back(anchorAt(0));
-        for (int i = 0; i < nodes; ++i)
+        for (int i = 0; i < NODES; ++i)
             {
             points.push_back(anchorAt(i));
             }
-        points.push_back(anchorAt(nodes - 1));
+        points.push_back(anchorAt(NODES - 1));
 
         // sample Catmull–Rom into a polyline
         const auto catmullPoint = [&](int i, double u) -> wxPoint2DDouble
@@ -1176,23 +1171,23 @@ namespace Wisteria::GraphItems
             const double m2x = (p3.m_x - p1.m_x) * (t / 2.0);
             const double m2y = (p3.m_y - p1.m_y) * (t / 2.0);
 
-            const double h00 = (2 * u3 - 3 * u2 + 1);
-            const double h10 = (u3 - 2 * u2 + u);
-            const double h01 = (-2 * u3 + 3 * u2);
+            const double h00 = ((2 * u3) - (3 * u2) + 1);
+            const double h10 = (u3 - (2 * u2) + u);
+            const double h01 = ((-2 * u3) + (3 * u2));
             const double h11 = (u3 - u2);
 
-            return { h00 * p1.m_x + h10 * m1x + h01 * p2.m_x + h11 * m2x,
-                     h00 * p1.m_y + h10 * m1y + h01 * p2.m_y + h11 * m2y };
+            return { (h00 * p1.m_x) + (h10 * m1x) + (h01 * p2.m_x) + (h11 * m2x),
+                     (h00 * p1.m_y) + (h10 * m1y) + (h01 * p2.m_y) + (h11 * m2y) };
         };
 
         std::vector<wxPoint2DDouble> samples;
-        samples.reserve((nodes - 1) * 18 + 1);
+        samples.reserve(((NODES - 1) * 18) + 1);
         for (int i = 1; i < static_cast<int>(points.size()) - 2; ++i)
             {
-            constexpr int segsPerSpan = 18;
-            for (int j = 0; j < segsPerSpan; ++j)
+            constexpr int SEGS_PER_SPAN = 18;
+            for (int j = 0; j < SEGS_PER_SPAN; ++j)
                 {
-                const double yVal = safe_divide<double>(j, segsPerSpan);
+                const auto yVal = safe_divide<double>(j, SEGS_PER_SPAN);
                 samples.push_back(catmullPoint(i, yVal));
                 }
             }
@@ -1211,7 +1206,7 @@ namespace Wisteria::GraphItems
         {
             for (size_t i = 1; i < samples.size(); ++i)
                 {
-                const double t = safe_divide<double>(i, (samples.size() - 1));
+                const auto t = safe_divide<double>(i, (samples.size() - 1));
                 const double w = lerp(wNear, wFar, t);
                 const wxGraphicsPen pen =
                     gc->CreatePen(wxGraphicsPenInfo{ col, w }.Cap(wxCAP_ROUND).Join(wxJOIN_ROUND));
@@ -1250,7 +1245,7 @@ namespace Wisteria::GraphItems
 
             // ---- CENTER LINE: thin, dashed, continuous stroke via GC --------------
             {
-            wxGraphicsPen lanePen = gc->CreatePen(wxGraphicsPenInfo{
+            wxGraphicsPen const lanePen = gc->CreatePen(wxGraphicsPenInfo{
                 Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow), laneWidth }
                                                       .Style(wxPENSTYLE_SHORT_DASH)
                                                       .Cap(wxCAP_ROUND)
@@ -1269,7 +1264,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger penGuard{ dc, wxNullPen };
         const wxDCBrushChanger brushGuard{ dc, wxNullBrush };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         wxGraphicsContext* gc = gcf.GetGraphicsContext();
         if (gc == nullptr)
             {
@@ -1281,8 +1276,8 @@ namespace Wisteria::GraphItems
             std::floor(std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.03));
         drawRect.Deflate(pad, pad);
 
-        const double centerX = drawRect.GetX() + drawRect.GetWidth() * 0.5;
-        const double centerY = drawRect.GetY() + drawRect.GetHeight() * 0.5;
+        const double centerX = drawRect.GetX() + (drawRect.GetWidth() * 0.5);
+        const double centerY = drawRect.GetY() + (drawRect.GetHeight() * 0.5);
         const double radius = std::min(drawRect.GetWidth(), drawRect.GetHeight()) * 0.5;
 
         const wxColour foregroundColorWarm{ Colors::ColorContrast::Tint(foregroundColor, 0.48) };
@@ -1294,16 +1289,16 @@ namespace Wisteria::GraphItems
         const double overlap = std::min(radius * 0.15, ScaleToScreenAndCanvas(4.0));
 
         // Petal geometry
-        constexpr int petals = 10;             // fuller look
+        constexpr int PETALS = 10;             // fuller look
         const double innerLen = radius * 0.70; // ellipse height (radial)
         const double innerWid = radius * 0.22; // ellipse width  (tangential)
         const double innerCtr = coreR + (innerLen * 0.5) - overlap;
 
         // Back ring: slightly longer/slimmer, but clamp tip == front tip
-        double outerLen = innerLen * 1.08;
-        double outerWid = innerWid * 0.92;
-        const double innerTip = innerCtr + innerLen * 0.5;
-        const double outerCtr = innerTip - outerLen * 0.5; // makes outer tip == inner tip
+        double const outerLen = innerLen * 1.08;
+        double const outerWid = innerWid * 0.92;
+        const double innerTip = innerCtr + (innerLen * 0.5);
+        const double outerCtr = innerTip - (outerLen * 0.5); // makes outer tip == inner tip
 
         // Helpers
         const auto clampU8 = [](int val)
@@ -1337,17 +1332,17 @@ namespace Wisteria::GraphItems
 
             for (int i = 0; i < count; ++i)
                 {
-                const double aDeg = rotationOffsetDeg + safe_divide<double>(360.0, count) * i;
+                const double aDeg = rotationOffsetDeg + (safe_divide<double>(360.0, count) * i);
                 const double a = aDeg * (std::numbers::pi / 180.0);
 
-                const double px = centerX + centerRadius * std::cos(a);
-                const double py = centerY + centerRadius * std::sin(a);
+                const double px = centerX + (centerRadius * std::cos(a));
+                const double py = centerY + (centerRadius * std::sin(a));
 
                 // Per-petal sandbox
                 gc->PushState();
                 gc->Translate(px, py);
                 // Long axis outward (radial)
-                gc->Rotate(a + std::numbers::pi / 2.0);
+                gc->Rotate(a + (std::numbers::pi / 2.0));
 
                 const wxColour petalColor = colorAtIndex(i);
 
@@ -1389,14 +1384,14 @@ namespace Wisteria::GraphItems
 
                         wxGraphicsPath path = gc->CreatePath();
                         path.MoveToPoint(x0, y0);
-                        path.AddCurveToPoint(x0 + bulge, y0 - h * 0.25, x1 + bulge * 0.5,
-                                             y1 + h * 0.10, x1, y1);
+                        path.AddCurveToPoint(x0 + bulge, y0 - (h * 0.25), x1 + (bulge * 0.5),
+                                             y1 + (h * 0.10), x1, y1);
                         gc->StrokePath(path);
                     };
 
                     // Left and right creases — thin, separated, slightly different curves
-                    crease(-w * 0.17 + jitterLeft, -w * 0.06 + jitterLeft, -w * 0.10);
-                    crease(w * 0.17 + jitterRight, w * 0.06 + jitterRight, w * 0.10);
+                    crease((-w * 0.17) + jitterLeft, (-w * 0.06) + jitterLeft, -w * 0.10);
+                    crease((w * 0.17) + jitterRight, (w * 0.06) + jitterRight, w * 0.10);
                     }
 
                 gc->PopState();
@@ -1406,14 +1401,14 @@ namespace Wisteria::GraphItems
         };
 
         // Back ring first (backgroundColor), tips clamped to match front tips
-        drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor), petals,
+        drawPetalRing([&](int) { return backgroundColor; }, outlineFrom(backgroundColor), PETALS,
                       outerWid, outerLen, outerCtr, 0.0,
                       rect.GetWidth() > ScaleToScreenAndCanvas(18));
 
         // Front ring (alternate foregroundColor / warm-foregroundColor), staggered half-step
         drawPetalRing([&](int i) { return (i & 1) ? foregroundColorWarm : foregroundColor; },
-                      outlineFrom(foregroundColor), petals, innerWid, innerLen, innerCtr,
-                      safe_divide(180, petals), rect.GetWidth() > ScaleToScreenAndCanvas(18));
+                      outlineFrom(foregroundColor), PETALS, innerWid, innerLen, innerCtr,
+                      safe_divide(180, PETALS), rect.GetWidth() > ScaleToScreenAndCanvas(18));
 
             // Center disk (radial gradient)
             {
@@ -1436,21 +1431,21 @@ namespace Wisteria::GraphItems
             const double golden = std::numbers::pi * (3.0 - std::sqrt(5.0));
             const double dotR = std::max(1.0, ScaleToScreenAndCanvas(0.7));
 
-            wxBrush seedA{ wxColour{ 120, 90, 70 } };
-            wxBrush seedB{ wxColour{ 170, 135, 110 } };
+            wxBrush const seedA{ wxColour{ 120, 90, 70 } };
+            wxBrush const seedB{ wxColour{ 170, 135, 110 } };
 
             gc->SetPen(wxNullPen);
 
             for (int i = 0; i < nSeeds; ++i)
                 {
-                const double t = safe_divide<double>(i + 0.5, nSeeds);
+                const auto t = safe_divide<double>(i + 0.5, nSeeds);
                 const double rs = std::sqrt(t) * maxSeedR;
                 const double th = i * golden;
 
-                const double px = centerX + rs * std::cos(th);
-                const double py = centerY + rs * std::sin(th);
+                const double px = centerX + (rs * std::cos(th));
+                const double py = centerY + (rs * std::sin(th));
 
-                gc->SetBrush((i & 1) ? seedA : seedB);
+                gc->SetBrush(((i & 1) != 0) ? seedA : seedB);
                 gc->DrawEllipse(px - dotR, py - dotR, dotR * 2.0, dotR * 2.0);
                 }
             }
@@ -1488,14 +1483,14 @@ namespace Wisteria::GraphItems
         dc.DrawLine(wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2), drawRect.GetTop()),
                     wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2), drawRect.GetBottom()));
         dc.DrawLine(
-            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) - drawRect.GetWidth() / 4,
+            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) - (drawRect.GetWidth() / 4),
                     drawRect.GetTop()),
-            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) + drawRect.GetWidth() / 4,
+            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) + (drawRect.GetWidth() / 4),
                     drawRect.GetTop()));
         dc.DrawLine(
-            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) - drawRect.GetWidth() / 4,
+            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) - (drawRect.GetWidth() / 4),
                     drawRect.GetBottom()),
-            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) + drawRect.GetWidth() / 4,
+            wxPoint(drawRect.GetLeft() + (drawRect.GetWidth() / 2) + (drawRect.GetWidth() / 4),
                     drawRect.GetBottom()));
         drawRect.y += (drawRect.GetHeight() / 2) - (drawRect.GetHeight() / 4); // center
         drawRect.SetHeight(drawRect.GetHeight() / 2);
@@ -1635,7 +1630,7 @@ namespace Wisteria::GraphItems
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for apple!");
         if (gc != nullptr)
@@ -1719,7 +1714,7 @@ namespace Wisteria::GraphItems
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for crescent!");
         if (gc != nullptr)
@@ -1761,7 +1756,7 @@ namespace Wisteria::GraphItems
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for crescent!");
         if (gc != nullptr)
@@ -1803,7 +1798,7 @@ namespace Wisteria::GraphItems
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for crescent!");
         if (gc != nullptr)
@@ -1846,7 +1841,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for house!");
         if (gc != nullptr)
@@ -1909,7 +1904,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for factory!");
         if (gc != nullptr)
@@ -1998,7 +1993,7 @@ namespace Wisteria::GraphItems
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for building!");
         if (gc != nullptr)
@@ -2066,7 +2061,7 @@ namespace Wisteria::GraphItems
 
             windowRect.SetX(oldWindowX);
             windowRect.Offset(0, windowRect.GetHeight() +
-                                     mainBuildingRect.GetWidth() * math_constants::tenth);
+                                     (mainBuildingRect.GetWidth() * math_constants::tenth));
             drawWindow(windowRect);
 
             windowRect.Offset(newWindowX - windowRect.GetX(), 0);
@@ -2094,7 +2089,7 @@ namespace Wisteria::GraphItems
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for barn!");
         if (gc != nullptr)
@@ -2256,7 +2251,7 @@ namespace Wisteria::GraphItems
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(2));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for farm!");
         if (gc != nullptr)
@@ -2344,7 +2339,7 @@ namespace Wisteria::GraphItems
                              ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                              0);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for heart!");
         if (gc != nullptr)
@@ -2458,7 +2453,7 @@ namespace Wisteria::GraphItems
         wxRect drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for flame!");
         if (gc != nullptr)
@@ -2541,7 +2536,7 @@ namespace Wisteria::GraphItems
 
         const auto centerPt = rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for sword icon!");
         if (gc != nullptr)
@@ -2678,7 +2673,7 @@ namespace Wisteria::GraphItems
         wxRect2DDouble drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for monitor icon!");
         if (gc != nullptr)
@@ -2760,7 +2755,7 @@ namespace Wisteria::GraphItems
         wxRect2DDouble drawRect{ rect };
         drawRect.Deflate(ScaleToScreenAndCanvas(1));
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for dollar icon!");
         if (gc != nullptr)
@@ -2827,7 +2822,7 @@ namespace Wisteria::GraphItems
 
             const wxRect2DDouble faceRect{ portraitRect.GetX() +
                                                (portraitRect.GetWidth() * math_constants::third),
-                                           portraitRect.GetY() + portraitRect.GetHeight() * 0.275,
+                                           portraitRect.GetY() + (portraitRect.GetHeight() * 0.275),
                                            portraitRect.GetWidth() * math_constants::half,
                                            portraitRect.GetHeight() * math_constants::half };
 
@@ -2862,42 +2857,42 @@ namespace Wisteria::GraphItems
 
                 wxGraphicsPath hairPath = gc->CreatePath();
 
-                double topX = ribbon.GetX() + ribbon.GetWidth() * 0.20;
-                double topY = ribbon.GetY() + ribbon.GetHeight() * 0.05;
+                double const topX = ribbon.GetX() + (ribbon.GetWidth() * 0.20);
+                double const topY = ribbon.GetY() + (ribbon.GetHeight() * 0.05);
 
                 const double yBase = topY;
 
                 const auto sy = [&](double y)
-                { return yBase + (y - yBase) * math_constants::three_quarters; };
+                { return yBase + ((y - yBase) * math_constants::three_quarters); };
 
-                double mid1X = ribbon.GetX() + ribbon.GetWidth() * 1.15;
-                double mid1Y = sy(ribbon.GetY() + ribbon.GetHeight() * 0.35);
+                double const mid1X = ribbon.GetX() + (ribbon.GetWidth() * 1.15);
+                double const mid1Y = sy(ribbon.GetY() + (ribbon.GetHeight() * 0.35));
 
-                double mid2X = ribbon.GetX() + ribbon.GetWidth() * 0.90;
-                double mid2Y = sy(ribbon.GetY() + ribbon.GetHeight() * 0.60);
+                double const mid2X = ribbon.GetX() + (ribbon.GetWidth() * 0.90);
+                double const mid2Y = sy(ribbon.GetY() + (ribbon.GetHeight() * 0.60));
 
-                double brX = ribbon.GetX() + ribbon.GetWidth() * 1.05;
-                double brY = sy(ribbon.GetY() + ribbon.GetHeight());
+                double const brX = ribbon.GetX() + (ribbon.GetWidth() * 1.05);
+                double const brY = sy(ribbon.GetY() + ribbon.GetHeight());
 
-                double blX = ribbon.GetX() + ribbon.GetWidth() * 0.25;
-                double blY = sy(ribbon.GetY() + ribbon.GetHeight());
+                double const blX = ribbon.GetX() + (ribbon.GetWidth() * 0.25);
+                double const blY = sy(ribbon.GetY() + ribbon.GetHeight());
 
-                double bcX = ribbon.GetX() + ribbon.GetWidth() * 0.65;
-                double bcY = sy(ribbon.GetY() + ribbon.GetHeight() * 1.20);
+                double const bcX = ribbon.GetX() + (ribbon.GetWidth() * 0.65);
+                double const bcY = sy(ribbon.GetY() + (ribbon.GetHeight() * 1.20));
 
                 hairPath.MoveToPoint(topX, topY);
 
                 hairPath.AddQuadCurveToPoint(mid1X, mid1Y, mid2X, mid2Y);
 
-                hairPath.AddQuadCurveToPoint(ribbon.GetX() + ribbon.GetWidth() * 1.15,
-                                             sy(ribbon.GetY() + ribbon.GetHeight() * 0.80), brX,
+                hairPath.AddQuadCurveToPoint(ribbon.GetX() + (ribbon.GetWidth() * 1.15),
+                                             sy(ribbon.GetY() + (ribbon.GetHeight() * 0.80)), brX,
                                              brY);
 
                 hairPath.AddQuadCurveToPoint(bcX, bcY, blX, blY);
 
                 hairPath.AddQuadCurveToPoint(
-                    ribbon.GetX() - ribbon.GetWidth() * math_constants::tenth,
-                    sy(ribbon.GetY() + ribbon.GetHeight() * 0.40), topX, topY);
+                    ribbon.GetX() - (ribbon.GetWidth() * math_constants::tenth),
+                    sy(ribbon.GetY() + (ribbon.GetHeight() * 0.40)), topX, topY);
 
                 hairPath.CloseSubpath();
 
@@ -2915,21 +2910,21 @@ namespace Wisteria::GraphItems
                 gc->SetBrush(bodyBrush);
 
                 // meeting point on left jaw
-                const double meetX = faceRect.GetX() + faceRect.GetWidth() * math_constants::fifth;
-                const double meetY = faceRect.GetY() + faceRect.GetHeight() * 0.90;
+                const double meetX = faceRect.GetX() + (faceRect.GetWidth() * math_constants::fifth);
+                const double meetY = faceRect.GetY() + (faceRect.GetHeight() * 0.90);
 
                 // bottom of body
                 const double bottomY = portraitRect.GetBottom();
 
                 // left bottom anchor
-                const double leftBottomX = portraitRect.GetX() + portraitRect.GetWidth() * 0.05;
+                const double leftBottomX = portraitRect.GetX() + (portraitRect.GetWidth() * 0.05);
 
                 // shoulder bump control point
-                const double ctrlX = leftBottomX + portraitRect.GetWidth() * math_constants::tenth;
-                const double ctrlY = meetY + (bottomY - meetY) * math_constants::tenth;
+                const double ctrlX = leftBottomX + (portraitRect.GetWidth() * math_constants::tenth);
+                const double ctrlY = meetY + ((bottomY - meetY) * math_constants::tenth);
 
                 // under-chin
-                const double rightMeetX = faceRect.GetX() + faceRect.GetWidth() * 0.80;
+                const double rightMeetX = faceRect.GetX() + (faceRect.GetWidth() * 0.80);
 
                 wxGraphicsPath body = gc->CreatePath();
 
@@ -2939,10 +2934,10 @@ namespace Wisteria::GraphItems
 
                 // right side (upwards)
                 body.AddLineToPoint(portraitRect.GetRight() +
-                                        portraitRect.GetWidth() * math_constants::tenth,
+                                        (portraitRect.GetWidth() * math_constants::tenth),
                                     bottomY);
                 body.AddQuadCurveToPoint(rightMeetX - (portraitRect.GetWidth() * 0.05),
-                                         meetY + (bottomY - meetY) * math_constants::fifth,
+                                         meetY + ((bottomY - meetY) * math_constants::fifth),
                                          rightMeetX, meetY);
 
                 // close across the chin back to left meet
@@ -2959,24 +2954,24 @@ namespace Wisteria::GraphItems
                 gc->SetBrush(stripeColor);
 
                 // collar area
-                const double startX = faceRect.GetX() + faceRect.GetWidth() * 0.4;
-                const double startY = faceRect.GetY() + faceRect.GetHeight() * 0.9;
+                const double startX = faceRect.GetX() + (faceRect.GetWidth() * 0.4);
+                const double startY = faceRect.GetY() + (faceRect.GetHeight() * 0.9);
 
                 // bottom of shirt
                 const double endX =
-                    portraitRect.GetX() + portraitRect.GetWidth() * math_constants::three_quarters;
+                    portraitRect.GetX() + (portraitRect.GetWidth() * math_constants::three_quarters);
                 const double endY = portraitRect.GetBottom();
 
                 const double stripeW = portraitRect.GetWidth() * math_constants::tenth;
 
                 wxGraphicsPath stripe = gc->CreatePath();
 
-                stripe.MoveToPoint(startX - stripeW * math_constants::half, startY);
-                stripe.AddLineToPoint(startX + stripeW * math_constants::half, startY);
-                stripe.AddQuadCurveToPoint((startX + endX) * math_constants::half + stripeW * 0.4,
-                                           startY + (endY - startY) * math_constants::fifth,
-                                           endX + stripeW * math_constants::half, endY);
-                stripe.AddLineToPoint(endX - stripeW * math_constants::half, endY);
+                stripe.MoveToPoint(startX - (stripeW * math_constants::half), startY);
+                stripe.AddLineToPoint(startX + (stripeW * math_constants::half), startY);
+                stripe.AddQuadCurveToPoint(((startX + endX) * math_constants::half) + (stripeW * 0.4),
+                                           startY + ((endY - startY) * math_constants::fifth),
+                                           endX + (stripeW * math_constants::half), endY);
+                stripe.AddLineToPoint(endX - (stripeW * math_constants::half), endY);
                 stripe.CloseSubpath();
 
                 gc->FillPath(stripe);
@@ -2996,8 +2991,8 @@ namespace Wisteria::GraphItems
 
                 const int browPenWidth = std::max<int>(1, ScaleToScreenAndCanvas(0.25));
 
-                const double faceCenterX = faceRect.GetX() + faceRect.GetWidth() * 0.5;
-                const double midY = faceRect.GetY() + faceRect.GetHeight() * 0.50;
+                const double faceCenterX = faceRect.GetX() + (faceRect.GetWidth() * 0.5);
+                const double midY = faceRect.GetY() + (faceRect.GetHeight() * 0.50);
 
                 const double eyeSpacing = faceRect.GetWidth() * 0.20;
                 const double eyeW = faceRect.GetWidth() * 0.18;
@@ -3016,7 +3011,7 @@ namespace Wisteria::GraphItems
                 {
                     // looking slightly right
                     const double pupilOffsetX = eyeW * 0.15;
-                    gc->DrawEllipse(ex - eyeW * 0.5, eyeTopY, eyeW, eyeH);
+                    gc->DrawEllipse(ex - (eyeW * 0.5), eyeTopY, eyeW, eyeH);
 
                     gc->SetBrush(faintBlack);
                     gc->SetPen(wxNullPen);
@@ -3038,8 +3033,8 @@ namespace Wisteria::GraphItems
                 const double browY = eyeTopY - (faceRect.GetHeight() * 0.06);
                 const double browW = eyeW * 0.85;
 
-                auto drawBrow = [&](double ex)
-                { gc->StrokeLine(ex - browW * 0.5, browY, ex + browW * 0.5, browY); };
+                auto drawBrow = [&](const double ex)
+                { gc->StrokeLine(ex - (browW * 0.5), browY, ex + (browW * 0.5), browY); };
 
                 drawBrow(leftEyeX);
                 drawBrow(rightEyeX);
@@ -3048,14 +3043,14 @@ namespace Wisteria::GraphItems
                     {
                     gc->SetPen(
                         wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.25)) });
-                    const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
+                    const double cx = faceRect.GetX() + (faceRect.GetWidth() * 0.5);
 
                     const double noseBottomY =
-                        faceRect.GetY() + faceRect.GetHeight() * 0.50 + faceRect.GetHeight() * 0.12;
+                        faceRect.GetY() + (faceRect.GetHeight() * 0.50) + (faceRect.GetHeight() * 0.12);
 
-                    const double noseTopY = noseBottomY - faceRect.GetHeight() * 0.11;
+                    const double noseTopY = noseBottomY - (faceRect.GetHeight() * 0.11);
 
-                    const double xOut = cx + faceRect.GetWidth() * 0.015;
+                    const double xOut = cx + (faceRect.GetWidth() * 0.015);
 
                     gc->StrokeLine(cx, noseTopY, xOut, noseBottomY); // downward diagonal
                     }
@@ -3065,17 +3060,17 @@ namespace Wisteria::GraphItems
                     gc->SetPen(
                         wxPenInfo{ faintBlack, std::max<int>(1, ScaleToScreenAndCanvas(0.25)) });
 
-                    const double cx = faceRect.GetX() + faceRect.GetWidth() * 0.5;
-                    const double mouthY = faceRect.GetY() + faceRect.GetHeight() * 0.72;
+                    const double cx = faceRect.GetX() + (faceRect.GetWidth() * 0.5);
+                    const double mouthY = faceRect.GetY() + (faceRect.GetHeight() * 0.72);
 
                     const double mouthW = faceRect.GetWidth() * 0.22;
                     const double mouthH = faceRect.GetHeight() * 0.07;
 
                     wxGraphicsPath mouth = gc->CreatePath();
 
-                    mouth.MoveToPoint(cx - mouthW * 0.5, mouthY - mouthH * 0.25);
-                    mouth.AddQuadCurveToPoint(cx + mouthW * 0.20, mouthY + mouthH,
-                                              cx + mouthW * 0.5, mouthY);
+                    mouth.MoveToPoint(cx - (mouthW * 0.5), mouthY - (mouthH * 0.25));
+                    mouth.AddQuadCurveToPoint(cx + (mouthW * 0.20), mouthY + mouthH,
+                                              cx + (mouthW * 0.5), mouthY);
 
                     gc->StrokePath(mouth);
                     }
@@ -3083,8 +3078,8 @@ namespace Wisteria::GraphItems
 
                 // hair on top of head
                 {
-                const double xLeft = faceRect.GetX() + faceRect.GetWidth() * 0.10;
-                const double xRight = faceRect.GetRight() - faceRect.GetWidth() * 0.10;
+                const double xLeft = faceRect.GetX() + (faceRect.GetWidth() * 0.10);
+                const double xRight = faceRect.GetRight() - (faceRect.GetWidth() * 0.10);
                 const double yBase = faceRect.GetY() + (faceRect.GetHeight() * 0.15);
                 const double xCtrl = (xLeft + xRight) * 0.5;
 
@@ -3109,24 +3104,24 @@ namespace Wisteria::GraphItems
 
                 wxGraphicsPath hairPath = gc->CreatePath();
 
-                const double topX = ribbon.GetX() + ribbon.GetWidth() * 0.90;
-                const double topY = ribbon.GetY() + ribbon.GetHeight() * 0.05;
+                const double topX = ribbon.GetX() + (ribbon.GetWidth() * 0.90);
+                const double topY = ribbon.GetY() + (ribbon.GetHeight() * 0.05);
 
-                const auto sy = [&](double y) { return topY + (y - topY) * 0.82; };
+                const auto sy = [&](double y) { return topY + ((y - topY) * 0.82); };
 
                 hairPath.MoveToPoint(topX, topY);
 
                 // first curve outward
-                hairPath.AddQuadCurveToPoint(ribbon.GetX() - ribbon.GetWidth() * 0.30,
-                                             sy(ribbon.GetY() + ribbon.GetHeight() * 0.40),
-                                             ribbon.GetX() + ribbon.GetWidth() * 0.20,
-                                             sy(ribbon.GetY() + ribbon.GetHeight() * 0.75));
+                hairPath.AddQuadCurveToPoint(ribbon.GetX() - (ribbon.GetWidth() * 0.30),
+                                             sy(ribbon.GetY() + (ribbon.GetHeight() * 0.40)),
+                                             ribbon.GetX() + (ribbon.GetWidth() * 0.20),
+                                             sy(ribbon.GetY() + (ribbon.GetHeight() * 0.75)));
 
                 // stronger second wave
-                hairPath.AddQuadCurveToPoint(ribbon.GetX() - ribbon.GetWidth() * 0.40,
+                hairPath.AddQuadCurveToPoint(ribbon.GetX() - (ribbon.GetWidth() * 0.40),
                                              sy(ribbon.GetY() + ribbon.GetHeight()),
-                                             ribbon.GetX() + ribbon.GetWidth() * 0.35,
-                                             sy(ribbon.GetY() + ribbon.GetHeight() * 1.15));
+                                             ribbon.GetX() + (ribbon.GetWidth() * 0.35),
+                                             sy(ribbon.GetY() + (ribbon.GetHeight() * 1.15)));
 
                 hairPath.CloseSubpath();
 
@@ -3154,19 +3149,19 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
                                   static_cast<int>(tbThickness) }
                            .Cap(wxCAP_BUTT));
-            gc->StrokeLine(innerBillX, innerBillY + tbThickness * 0.5, innerBillX + innerBillWidth,
-                           innerBillY + tbThickness * 0.5);
-            gc->StrokeLine(innerBillX, innerBillY + innerBillHeight - tbThickness * 0.5,
+            gc->StrokeLine(innerBillX, innerBillY + (tbThickness * 0.5), innerBillX + innerBillWidth,
+                           innerBillY + (tbThickness * 0.5));
+            gc->StrokeLine(innerBillX, innerBillY + innerBillHeight - (tbThickness * 0.5),
                            innerBillX + innerBillWidth,
-                           innerBillY + innerBillHeight - tbThickness * 0.5);
+                           innerBillY + innerBillHeight - (tbThickness * 0.5));
             // left and right side of inner frame
             gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
                                   static_cast<int>(lrThickness) }
                            .Cap(wxCAP_BUTT));
-            gc->StrokeLine(innerBillX + lrThickness * 0.5, innerBillY,
-                           innerBillX + lrThickness * 0.5, innerBillY + innerBillHeight);
-            gc->StrokeLine(innerBillX + innerBillWidth - lrThickness * 0.5, innerBillY,
-                           innerBillX + innerBillWidth - lrThickness * 0.5,
+            gc->StrokeLine(innerBillX + (lrThickness * 0.5), innerBillY,
+                           innerBillX + (lrThickness * 0.5), innerBillY + innerBillHeight);
+            gc->StrokeLine(innerBillX + innerBillWidth - (lrThickness * 0.5), innerBillY,
+                           innerBillX + innerBillWidth - (lrThickness * 0.5),
                            innerBillY + innerBillHeight);
             gc->SetPen(wxPenInfo{ Colors::ColorContrast::ChangeOpacity(frameColor, 125),
                                   static_cast<int>(lrThickness) }
@@ -3182,7 +3177,7 @@ namespace Wisteria::GraphItems
             gc->SetPen(wxPen{ wxColour(0, 0, 0, 0) });
             gc->SetBrush(Colors::ColorContrast::ChangeOpacity(frameColor, 175));
 
-            auto drawCorner = [&](double cx, double cy, bool flipX, bool flipY)
+            auto drawCorner = [&](const double cx, const double cy, const bool flipX, const bool flipY)
             {
                 wxGraphicsPath p = gc->CreatePath();
 
@@ -3201,16 +3196,16 @@ namespace Wisteria::GraphItems
                 const double y0 = cy;
 
                 // Horizontal extent
-                const double x1 = cx + dx * w;
+                const double x1 = cx + (dx * w);
                 const double y1 = cy;
 
                 // Vertical extent (half height)
                 const double x2 = cx;
-                const double y2 = cy + dy * h;
+                const double y2 = cy + (dy * h);
 
                 // Midpoint for curve control (concave inward)
-                const double ctrlX = cx + dx * (w * 0.5);
-                const double ctrlY = cy + dy * (h * 0.5);
+                const double ctrlX = cx + (dx * (w * 0.5));
+                const double ctrlY = cy + (dy * (h * 0.5));
 
                 // Build shape
                 p.MoveToPoint(x0, y0);
@@ -3319,9 +3314,9 @@ namespace Wisteria::GraphItems
                 // inner shield area
                 const wxRect2DDouble shieldRect{ sealX + outerRingThickness + innerGap,
                                                  sealY + outerRingThickness + innerGap,
-                                                 sealDiameter - 2 * (outerRingThickness + innerGap),
+                                                 sealDiameter - (2 * (outerRingThickness + innerGap)),
                                                  sealDiameter -
-                                                     2 * (outerRingThickness + innerGap) };
+                                                     (2 * (outerRingThickness + innerGap)) };
 
                 const double lineWidth =
                     std::max(1.0, ScaleToScreenAndCanvas(math_constants::quarter));
@@ -3329,16 +3324,16 @@ namespace Wisteria::GraphItems
                 gc->SetPen(wxPenInfo{ wxColour{ L"#4A4A4A" }, static_cast<int>(lineWidth) });
                 gc->SetBrush(wxColour{ 0, 0, 0, 0 });
 
-                constexpr int lineCount{ 4 };
-                const double spacing = shieldRect.GetWidth() / (lineCount + 1);
+                constexpr int LINE_COUNT{ 4 };
+                const double spacing = shieldRect.GetWidth() / (LINE_COUNT + 1);
 
                 const double insetTop = shieldRect.GetHeight() * math_constants::tenth;
                 const double insetBottom = shieldRect.GetHeight() * math_constants::tenth;
                 const double bottomExtra = shieldRect.GetHeight() * math_constants::quarter;
 
-                for (int i = 1; i <= lineCount; ++i)
+                for (int i = 1; i <= LINE_COUNT; ++i)
                     {
-                    const bool isOuterLine = (i == 1 || i == lineCount);
+                    const bool isOuterLine = (i == 1 || i == LINE_COUNT);
 
                     const double topY = shieldRect.GetY() + insetTop;
 
@@ -3355,7 +3350,7 @@ namespace Wisteria::GraphItems
 
                 // right seal
                 {
-                wxRect2DDouble rightSealRect{
+                wxRect2DDouble const rightSealRect{
                     GetXPosFromLeft(
                         innerBillRect,
                         0.9 - safe_divide<double>(innerBillRect.GetHeight() * math_constants::third,
@@ -3375,8 +3370,8 @@ namespace Wisteria::GraphItems
                 wxRect2DDouble scaleRect = rightSealRect;
                 scaleRect.Deflate(outerThickness * 1.1);
 
-                const double cx = scaleRect.GetX() + scaleRect.GetWidth() / 2.0;
-                const double cy = scaleRect.GetY() + scaleRect.GetHeight() / 2.0;
+                const double cx = scaleRect.GetX() + (scaleRect.GetWidth() / 2.0);
+                const double cy = scaleRect.GetY() + (scaleRect.GetHeight() / 2.0);
 
                 const double poleHeight = scaleRect.GetHeight() * 0.55;
                 const double barWidth = scaleRect.GetWidth() * 0.60;
@@ -3386,7 +3381,7 @@ namespace Wisteria::GraphItems
                 const double cupWidth = scaleRect.GetWidth() * 0.22;
                 const double cupHeight = scaleRect.GetHeight() * 0.08;
 
-                wxColour scaleColor = Colors::ColorContrast::ShadeOrTint(
+                wxColour const scaleColor = Colors::ColorContrast::ShadeOrTint(
                     ApplyColorOpacity(wxColour{ L"#689E80" }), -20);
 
                 const wxPen scalePen{ scaleColor, static_cast<int>(
@@ -3396,31 +3391,31 @@ namespace Wisteria::GraphItems
                 gc->SetBrush(wxColour{ 0, 0, 0, 0 });
 
                 // vertical pole (center post)
-                gc->StrokeLine(cx, cy - poleHeight * 0.5, cx, cy + poleHeight * 0.5);
+                gc->StrokeLine(cx, cy - (poleHeight * 0.5), cx, cy + (poleHeight * 0.5));
 
                 // crossbar (top beam)
-                gc->StrokeLine(cx - barWidth * 0.5, cy - poleHeight * 0.5, cx + barWidth * 0.5,
-                               cy - poleHeight * 0.5);
+                gc->StrokeLine(cx - (barWidth * 0.5), cy - (poleHeight * 0.5), cx + (barWidth * 0.5),
+                               cy - (poleHeight * 0.5));
 
                 // suspension lines for the cups
 
                 // left drop
-                gc->StrokeLine(cx - barWidth * 0.5, cy - poleHeight * 0.5, cx - barWidth * 0.5,
-                               cy - poleHeight * 0.5 + armDrop);
+                gc->StrokeLine(cx - (barWidth * 0.5), cy - (poleHeight * 0.5), cx - (barWidth * 0.5),
+                               cy - (poleHeight * 0.5) + armDrop);
 
                 // right drop
-                gc->StrokeLine(cx + barWidth * 0.5, cy - poleHeight * 0.5, cx + barWidth * 0.5,
-                               cy - poleHeight * 0.5 + armDrop);
+                gc->StrokeLine(cx + (barWidth * 0.5), cy - (poleHeight * 0.5), cx + (barWidth * 0.5),
+                               cy - (poleHeight * 0.5) + armDrop);
 
                 // scale pans (simple small ellipses)
 
                 // left cup
-                gc->DrawEllipse(cx - barWidth * 0.5 - cupWidth * 0.5,
-                                cy - poleHeight * 0.5 + armDrop, cupWidth, cupHeight);
+                gc->DrawEllipse(cx - (barWidth * 0.5) - (cupWidth * 0.5),
+                                cy - (poleHeight * 0.5) + armDrop, cupWidth, cupHeight);
 
                 // right cup
-                gc->DrawEllipse(cx + barWidth * 0.5 - cupWidth * 0.5,
-                                cy - poleHeight * 0.5 + armDrop, cupWidth, cupHeight);
+                gc->DrawEllipse(cx + (barWidth * 0.5) - (cupWidth * 0.5),
+                                cy - (poleHeight * 0.5) + armDrop, cupWidth, cupHeight);
                 }
 
                 // inkwell
@@ -3428,8 +3423,8 @@ namespace Wisteria::GraphItems
                 wxRect2DDouble inkwellRect{ billRect };
                 inkwellRect.SetWidth(billRect.GetWidth() * 0.14);
                 inkwellRect.SetHeight(billRect.GetHeight() * 0.22);
-                inkwellRect.MoveLeftTo(billRect.GetLeft() + billRect.GetWidth() * 0.59);
-                inkwellRect.MoveTopTo(billRect.GetTop() + billRect.GetHeight() * 0.55);
+                inkwellRect.MoveLeftTo(billRect.GetLeft() + (billRect.GetWidth() * 0.59));
+                inkwellRect.MoveTopTo(billRect.GetTop() + (billRect.GetHeight() * 0.55));
 
                 const double leftX = inkwellRect.GetX();
                 const double topY = inkwellRect.GetY();
@@ -3442,17 +3437,17 @@ namespace Wisteria::GraphItems
                 const double bodyTopY = topY + lidHeight + neckHeight;
                 const double bottomY = topY + height;
 
-                const double lidLeftX = leftX + width * 0.30;
-                const double lidRightX = leftX + width * 0.70;
+                const double lidLeftX = leftX + (width * 0.30);
+                const double lidRightX = leftX + (width * 0.70);
 
-                const double neckLeftX = leftX + width * 0.32;
-                const double neckRightX = leftX + width * 0.68;
+                const double neckLeftX = leftX + (width * 0.32);
+                const double neckRightX = leftX + (width * 0.68);
 
-                const double bodyLeftX = leftX + width * 0.25;
-                const double bodyRightX = leftX + width * 0.75;
+                const double bodyLeftX = leftX + (width * 0.25);
+                const double bodyRightX = leftX + (width * 0.75);
 
                 // gradient from copper-orange to yellow-orange
-                wxGraphicsBrush gradient = gc->CreateLinearGradientBrush(
+                wxGraphicsBrush const gradient = gc->CreateLinearGradientBrush(
                     leftX, topY, leftX, bottomY,
                     Colors::ColorBrewer::GetColor(Colors::Color::OutrageousOrange, 200),
                     Colors::ColorBrewer::GetColor(Colors::Color::OrangeYellow, 200));
@@ -3470,8 +3465,8 @@ namespace Wisteria::GraphItems
                 inkwellPath.AddLineToPoint(lidRightX, topY + lidHeight);
 
                 // right neck side
-                inkwellPath.AddQuadCurveToPoint(leftX + width * 0.78,
-                                                topY + lidHeight + neckHeight * 0.50, neckRightX,
+                inkwellPath.AddQuadCurveToPoint(leftX + (width * 0.78),
+                                                topY + lidHeight + (neckHeight * 0.50), neckRightX,
                                                 bodyTopY);
                 // right side
                 inkwellPath.AddLineToPoint(bodyRightX, bottomY);
@@ -3480,8 +3475,8 @@ namespace Wisteria::GraphItems
                 // left bdy
                 inkwellPath.AddLineToPoint(neckLeftX, bodyTopY);
                 // left neck side
-                inkwellPath.AddQuadCurveToPoint(leftX + width * 0.22,
-                                                topY + lidHeight + neckHeight * 0.50, lidLeftX,
+                inkwellPath.AddQuadCurveToPoint(leftX + (width * 0.22),
+                                                topY + lidHeight + (neckHeight * 0.50), lidLeftX,
                                                 topY + lidHeight);
                 // back at lid
                 inkwellPath.AddLineToPoint(lidLeftX, topY);
@@ -4122,7 +4117,7 @@ namespace Wisteria::GraphItems
 
         const wxRect dcRect{ rect };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for geo marker!");
         if (gc != nullptr)
@@ -4364,7 +4359,7 @@ namespace Wisteria::GraphItems
         const wxColour innerOutlineColor = Colors::ColorContrast::Tint(baseColor, 0.55);
         const wxColour fillColor = Colors::ColorContrast::Tint(baseColor, 0.15);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         wxGraphicsContext* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for right arrow!");
         if (gc == nullptr)
@@ -4373,17 +4368,17 @@ namespace Wisteria::GraphItems
             }
 
         // Geometry
-        constexpr double shaftRatio = math_constants::half;
+        constexpr double SHAFT_RATIO = math_constants::half;
         const int left = rect.GetLeft();
         const int top = rect.GetTop();
         const int right = rect.GetRight();
         const int bottom = rect.GetBottom();
-        const int midY = rect.GetTop() + rect.GetHeight() / 2;
-        const int shaftEndX = left + static_cast<int>(rect.GetWidth() * shaftRatio);
+        const int midY = rect.GetTop() + (rect.GetHeight() / 2);
+        const int shaftEndX = left + static_cast<int>(rect.GetWidth() * SHAFT_RATIO);
 
         const int shaftHeight = rect.GetHeight() / 3;
-        const int shaftTop = midY - shaftHeight / 2;
-        const int shaftBottom = midY + shaftHeight / 2;
+        const int shaftTop = midY - (shaftHeight / 2);
+        const int shaftBottom = midY + (shaftHeight / 2);
 
         // Arrow path
         wxGraphicsPath arrowPath = gc->CreatePath();
@@ -4407,9 +4402,9 @@ namespace Wisteria::GraphItems
             const auto h = static_cast<double>(rect.GetHeight());
 
             // arrow geometry we've already used
-            constexpr double sheenShaftRatio = math_constants::half;
-            const double xShaftEnd = rect.GetLeft() + rect.GetWidth() * sheenShaftRatio;
-            const double yMid = rect.GetTop() + rect.GetHeight() * 0.5;
+            constexpr double SHEEN_SHAFT_RATIO = math_constants::half;
+            const double xShaftEnd = rect.GetLeft() + (rect.GetWidth() * SHEEN_SHAFT_RATIO);
+            const double yMid = rect.GetTop() + (rect.GetHeight() * 0.5);
             const double yTop = rect.GetTop();
             const double xLeft = rect.GetLeft();
             const double xRight = rect.GetRight();
@@ -4417,17 +4412,17 @@ namespace Wisteria::GraphItems
             // head top line: (xShaftEnd, yTop) -> (xRight, yMid)
             const double headSlope =
                 safe_divide((yMid - yTop), std::max(1.0, (xRight - xShaftEnd)));
-            auto yOnHeadTop = [&](double x) { return yTop + headSlope * (x - xShaftEnd); };
+            auto yOnHeadTop = [&](double x) { return yTop + (headSlope * (x - xShaftEnd)); };
 
             // band thickness and caps
             const double bandThickness = std::max(h * 0.22, 2.0);
             const double capRadius = bandThickness * 0.45;
 
             // left: start just inside shaft, a touch above its mid
-            const double xL = xLeft + w * 0.04;
-            const double yMidL = (yTop + yMid) * 0.5 + h * 0.03; // comfortable height on the body
-            const double y1L = yMidL - bandThickness * 0.5;
-            const double y2L = yMidL + bandThickness * 0.5;
+            const double xL = xLeft + (w * 0.04);
+            const double yMidL = ((yTop + yMid) * 0.5) + (h * 0.03); // comfortable height on the body
+            const double y1L = yMidL - (bandThickness * 0.5);
+            const double y2L = yMidL + (bandThickness * 0.5);
 
             // junction: force-contact with head top (epsilon tucked in)
             const double epsPx = std::max(1.0, ScaleToScreenAndCanvas(1.0));
@@ -4435,7 +4430,7 @@ namespace Wisteria::GraphItems
             const double yJ = yTop + epsPx;      // exactly on head top at junction
 
             // right end: almost at tip; upper edge glued to head-top line
-            const double xR = xRight - w * 0.005;
+            const double xR = xRight - (w * 0.005);
             const double y1R = yOnHeadTop(xR) + epsPx;
             const double y2R = y1R + bandThickness;
 
@@ -4443,20 +4438,20 @@ namespace Wisteria::GraphItems
 
             // Upper edge: left S-curve -> EXACTLY the junction -> along head-top to near tip
             sheen.MoveToPoint(xL, y1L);
-            sheen.AddCurveToPoint(xL + w * 0.30, y1L - h * 0.14,        // lift early (pronounced)
-                                  xShaftEnd - w * 0.02, y1L + h * 0.08, // approach from body side
+            sheen.AddCurveToPoint(xL + (w * 0.30), y1L - (h * 0.14),        // lift early (pronounced)
+                                  xShaftEnd - (w * 0.02), y1L + (h * 0.08), // approach from body side
                                   xJ, yJ); // land right on the head's top corner
             sheen.AddLineToPoint(xR, y1R); // ride the head-top edge to the right
 
             // Rounded right cap down to lower edge
-            sheen.AddQuadCurveToPoint(xR + capRadius * 0.70, (y1R + y2R) * 0.5, xR, y2R);
+            sheen.AddQuadCurveToPoint(xR + (capRadius * 0.70), (y1R + y2R) * 0.5, xR, y2R);
 
             // Lower edge: counter-wave back to left (keeps thickness even)
-            sheen.AddCurveToPoint(xShaftEnd - w * 0.06, y2L - h * 0.10, xL + w * 0.28,
-                                  y2L + h * 0.05, xL, y2L);
+            sheen.AddCurveToPoint(xShaftEnd - (w * 0.06), y2L - (h * 0.10), xL + (w * 0.28),
+                                  y2L + (h * 0.05), xL, y2L);
 
             // Rounded left cap back to start
-            sheen.AddQuadCurveToPoint(xL - capRadius * 0.70, (y1L + y2L) * 0.5, xL, y1L);
+            sheen.AddQuadCurveToPoint(xL - (capRadius * 0.70), (y1L + y2L) * 0.5, xL, y1L);
 
             sheen.CloseSubpath();
 
@@ -4516,7 +4511,7 @@ namespace Wisteria::GraphItems
             dcRect.Offset(wxPoint(0, adjustTop));
             }
 
-        GraphicsContextFallback gcf{ &dc, dcRect };
+        GraphicsContextFallback const gcf{ &dc, dcRect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for car icon!");
         if (gc != nullptr)
@@ -4565,7 +4560,7 @@ namespace Wisteria::GraphItems
             std::array<wxPoint2DDouble, 4> windshieldSection = {
                 carTopRect.GetTopRight(),
                 wxPoint(carTopRect.GetRight() +
-                            (bodyRect.GetWidth() - carTopRect.GetWidth()) * math_constants::third,
+                            ((bodyRect.GetWidth() - carTopRect.GetWidth()) * math_constants::third),
                         carTopRect.GetBottom()),
                 wxPoint(carTopRect.GetBottomRight().x - (carTopRect.GetWidth() / 4),
                         carTopRect.GetBottomRight().y),
@@ -4666,12 +4661,12 @@ namespace Wisteria::GraphItems
             tireRect.SetWidth(dcRect.GetWidth() * .25);
             tireRect.SetHeight(tireRect.GetWidth());
             tireRect.SetTop(dcRect.GetTop() + (dcRect.GetHeight() - tireRect.GetHeight()));
-            tireRect.SetLeft(dcRect.GetLeft() + dcRect.GetWidth() * math_constants::tenth);
+            tireRect.SetLeft(dcRect.GetLeft() + (dcRect.GetWidth() * math_constants::tenth));
 
             DrawTire(tireRect, gc);
 
             tireRect.SetLeft((dcRect.GetRight() - tireRect.GetWidth()) -
-                             dcRect.GetWidth() * math_constants::tenth);
+                             (dcRect.GetWidth() * math_constants::tenth));
             DrawTire(tireRect, gc);
             }
         }
@@ -4683,7 +4678,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for tire icon!");
         DrawTire(rect, gc);
@@ -4866,7 +4861,7 @@ namespace Wisteria::GraphItems
         const DCPenChangerIfDifferent pc3(
             dc, wxPenInfo(ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
                           ScaleToScreenAndCanvas(2)));
-        dc.DrawLine(centerPt, wxPoint(centerPt.x + armsRect.GetWidth() * math_constants::quarter,
+        dc.DrawLine(centerPt, wxPoint(centerPt.x + (armsRect.GetWidth() * math_constants::quarter),
                                       armsRect.GetBottom() -
                                           (armsRect.GetHeight() * math_constants::quarter)));
         dc.DrawLine(centerPt, wxPoint(centerPt.x, armsRect.GetBottom()));
@@ -4886,7 +4881,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for asterisk icon!");
 
@@ -5087,8 +5082,8 @@ namespace Wisteria::GraphItems
                 // indent every 10th line
                 else
                     {
-                    dc.DrawLine(wxPoint{ static_cast<int>(textLeft.x + textRect.GetWidth() *
-                                                                           math_constants::fifth),
+                    dc.DrawLine(wxPoint{ static_cast<int>(textLeft.x + (textRect.GetWidth() *
+                                                                           math_constants::fifth)),
                                          textLeft.y },
                                 textRight);
                     }
@@ -5204,7 +5199,7 @@ namespace Wisteria::GraphItems
         const wxDCBrushChanger brushReset{ dc,
                                            Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         wxGraphicsContext* gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
         if (gc == nullptr)
@@ -5305,7 +5300,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for leaf icon!");
         if (gc != nullptr)
@@ -5406,7 +5401,7 @@ namespace Wisteria::GraphItems
         const wxDCPenChanger pc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         const wxDCBrushChanger bc{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for water color effect!");
         if (gc != nullptr)
@@ -5561,7 +5556,7 @@ namespace Wisteria::GraphItems
 
         wxRect drawRect(rect);
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for curly braces!");
         if (gc != nullptr && (side == Side::Left || side == Side::Right))
@@ -5689,7 +5684,7 @@ namespace Wisteria::GraphItems
             dcRect.Offset(wxPoint(adjustLeft, 0));
             }
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for male outline!");
         if (gc != nullptr)
@@ -5872,7 +5867,7 @@ namespace Wisteria::GraphItems
             drawRect.Offset(wxPoint(adjustLeft, 0));
             }
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for female outline!");
         if (gc != nullptr)
@@ -6037,7 +6032,7 @@ namespace Wisteria::GraphItems
             drawRect.Offset(wxPoint(adjustLeft, 0));
             }
 
-        GraphicsContextFallback gcf{ &dc, rect };
+        GraphicsContextFallback const gcf{ &dc, rect };
         auto* gc = gcf.GetGraphicsContext();
         assert(gc && L"Failed to get graphics context for female outline!");
         if (gc != nullptr)
@@ -6118,8 +6113,8 @@ namespace Wisteria::GraphItems
             outlinePath.AddQuadCurveToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half - HIP_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT +
-                                             (SKIRT_BOTTOM - (SHOULDER_HEIGHT + THORAX_HEIGHT)) *
-                                                 math_constants::quarter),
+                                             ((SKIRT_BOTTOM - (SHOULDER_HEIGHT + THORAX_HEIGHT)) *
+                                                 math_constants::quarter)),
                 GetXPosFromLeft(bodyRect, math_constants::half - SKIRT_WIDTH),
                 GetYPosFromTop(bodyRect, SKIRT_BOTTOM));
             // dress bottom to leg
@@ -6150,8 +6145,8 @@ namespace Wisteria::GraphItems
             outlinePath.AddQuadCurveToPoint(
                 GetXPosFromLeft(bodyRect, math_constants::half + HIP_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT +
-                                             (SKIRT_BOTTOM - (SHOULDER_HEIGHT + THORAX_HEIGHT)) *
-                                                 math_constants::quarter),
+                                             ((SKIRT_BOTTOM - (SHOULDER_HEIGHT + THORAX_HEIGHT)) *
+                                                 math_constants::quarter)),
                 GetXPosFromLeft(bodyRect, math_constants::half + WAIST_WIDTH),
                 GetYPosFromTop(bodyRect, SHOULDER_HEIGHT + THORAX_HEIGHT));
             // waist to right armpit

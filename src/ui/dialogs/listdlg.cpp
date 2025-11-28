@@ -8,6 +8,7 @@
 
 #include "listdlg.h"
 #include "../../import/text_matrix.h"
+#include <utility>
 #include <wx/ribbon/art.h>
 #include <wx/valgen.h>
 
@@ -16,7 +17,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnFind(wxFindDialogEvent& event)
         {
-        if (m_list)
+        if (m_list != nullptr)
             {
             m_list->ProcessWindowEvent(event);
             m_list->SetFocus();
@@ -26,7 +27,7 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnSort(wxRibbonButtonBarEvent& event)
         {
-        if (m_list)
+        if (m_list != nullptr)
             {
             m_list->OnMultiColumnSort(event);
             }
@@ -39,7 +40,7 @@ namespace Wisteria::UI
             {
             wxFAIL_MSG(L"Save not supported for checklist control");
             }
-        else if (m_list)
+        else if (m_list != nullptr)
             {
             m_list->OnSave(event);
             }
@@ -52,7 +53,7 @@ namespace Wisteria::UI
             {
             wxFAIL_MSG(L"Print not supported for checklist control");
             }
-        else if (m_list)
+        else if (m_list != nullptr)
             {
             m_list->OnPrint(event);
             }
@@ -61,14 +62,14 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::OnSelectAll([[maybe_unused]] wxRibbonButtonBarEvent& event)
         {
-        if (m_useCheckBoxes && m_checkList)
+        if (m_useCheckBoxes && (m_checkList != nullptr))
             {
             for (size_t i = 0; i < m_checkList->GetCount(); ++i)
                 {
                 m_checkList->Check(i);
                 }
             }
-        else if (m_list)
+        else if (m_list != nullptr)
             {
             m_list->SelectAll();
             }
@@ -101,7 +102,7 @@ namespace Wisteria::UI
                 wxTheClipboard->Close();
                 }
             }
-        else if (m_list)
+        else if (m_list != nullptr)
             {
             m_list->Copy(true, false);
             }
@@ -111,12 +112,11 @@ namespace Wisteria::UI
     ListDlg::ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
                      const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
                      const long buttonStyle /*= LD_NO_BUTTONS*/, const wxWindowID id /*= wxID_ANY*/,
-                     const wxString& caption /*= wxString{}*/,
-                     const wxString& label /*= wxString{}*/,
+                     const wxString& caption /*= wxString{}*/, wxString label /*= wxString{}*/,
                      const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      const long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
-        : m_useCheckBoxes(useCheckBoxes), m_buttonStyle(buttonStyle), m_label(label),
+        : m_useCheckBoxes(useCheckBoxes), m_buttonStyle(buttonStyle), m_label(std::move(label)),
           m_hoverColor(hoverColor), m_values(values), m_realTimeTimer(this)
         {
         GetData()->SetValues(values);
@@ -137,11 +137,10 @@ namespace Wisteria::UI
     ListDlg::ListDlg(wxWindow* parent, const wxColour& bkColor, const wxColour& hoverColor,
                      const wxColour& foreColor, const long buttonStyle /*= LD_NO_BUTTONS*/,
                      wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= wxString{}*/,
-                     const wxString& label /*= wxString{}*/,
-                     const wxPoint& pos /*= wxDefaultPosition*/,
+                     wxString label /*= wxString{}*/, const wxPoint& pos /*= wxDefaultPosition*/,
                      const wxSize& size /*= wxSize(600, 250)*/,
                      const long style /*= wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER*/)
-        : m_useCheckBoxes(false), m_buttonStyle(buttonStyle), m_label(label),
+        : m_useCheckBoxes(false), m_buttonStyle(buttonStyle), m_label(std::move(label)),
           m_hoverColor(hoverColor), m_realTimeTimer(this)
         {
         wxNonOwnedWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
@@ -197,7 +196,7 @@ namespace Wisteria::UI
                 m_isLogVerbose = !m_isLogVerbose;
                 if (m_logFile != nullptr)
                     {
-                    m_logFile->SetVerbose(m_isLogVerbose);
+                    LogFile::SetVerbose(m_isLogVerbose);
                     }
             },
             XRCID("ID_VERBOSE_LOG"));
@@ -209,11 +208,11 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void ListDlg::CreateControls()
         {
-        wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
         mainSizer->SetMinSize(FromDIP(wxSize{ 800, 600 }));
 
         // the top label
-        if (m_label.length())
+        if (!m_label.empty())
             {
             auto* labelSizer = new wxBoxSizer(wxHORIZONTAL);
             labelSizer->Add(new wxStaticText(this, wxID_STATIC, m_label), 0, wxALIGN_CENTER | wxALL,
@@ -222,7 +221,7 @@ namespace Wisteria::UI
             mainSizer->Add(labelSizer, wxSizerFlags{}.Border());
             }
 
-        if ((m_buttonStyle & LD_FIND_BUTTON))
+        if ((m_buttonStyle & LD_FIND_BUTTON) != 0)
             {
             auto* searchSizer = new wxBoxSizer(wxHORIZONTAL);
             searchSizer->AddStretchSpacer(1);
@@ -231,15 +230,16 @@ namespace Wisteria::UI
             searchSizer->Add(searcher, 0);
             mainSizer->Add(searchSizer, wxSizerFlags{}.Expand());
             }
-        if ((m_buttonStyle & LD_COPY_BUTTON) || (m_buttonStyle & LD_SELECT_ALL_BUTTON) ||
-            (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_SAVE_BUTTON) ||
-            (m_buttonStyle & LD_PRINT_BUTTON))
+        if (((m_buttonStyle & LD_COPY_BUTTON) != 0) ||
+            ((m_buttonStyle & LD_SELECT_ALL_BUTTON) != 0) ||
+            ((m_buttonStyle & LD_SORT_BUTTON) != 0) || ((m_buttonStyle & LD_SAVE_BUTTON) != 0) ||
+            ((m_buttonStyle & LD_PRINT_BUTTON) != 0))
             {
             m_ribbon = new wxRibbonBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxRIBBON_BAR_FLOW_HORIZONTAL);
             wxRibbonPage* homePage{ nullptr };
             // export
-            if ((m_buttonStyle & LD_SAVE_BUTTON) || (m_buttonStyle & LD_PRINT_BUTTON))
+            if (((m_buttonStyle & LD_SAVE_BUTTON) != 0) || ((m_buttonStyle & LD_PRINT_BUTTON) != 0))
                 {
                 if (homePage == nullptr) // NOLINT
                     {
@@ -249,7 +249,7 @@ namespace Wisteria::UI
                                                      wxDefaultPosition, wxDefaultSize,
                                                      wxRIBBON_PANEL_NO_AUTO_MINIMISE);
                 auto* buttonBar = new wxRibbonButtonBar(exportPage);
-                if (m_buttonStyle & LD_SAVE_BUTTON)
+                if ((m_buttonStyle & LD_SAVE_BUTTON) != 0)
                     {
                     buttonBar->AddButton(wxID_SAVE, _(L"Save"),
                                          wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON,
@@ -257,7 +257,7 @@ namespace Wisteria::UI
                                              .ConvertToImage(),
                                          _(L"Save the list."));
                     }
-                if (m_buttonStyle & LD_PRINT_BUTTON)
+                if ((m_buttonStyle & LD_PRINT_BUTTON) != 0)
                     {
                     buttonBar->AddButton(
                         wxID_PRINT, _(L"Print"),
@@ -267,9 +267,12 @@ namespace Wisteria::UI
                     }
                 }
             // edit
-            if ((m_buttonStyle & LD_COPY_BUTTON) || (m_buttonStyle & LD_SELECT_ALL_BUTTON) ||
-                (m_buttonStyle & LD_SORT_BUTTON) || (m_buttonStyle & LD_CLEAR_BUTTON) ||
-                (m_buttonStyle & LD_REFRESH_BUTTON) || (m_buttonStyle & LD_LOG_VERBOSE_BUTTON))
+            if (((m_buttonStyle & LD_COPY_BUTTON) != 0) ||
+                ((m_buttonStyle & LD_SELECT_ALL_BUTTON) != 0) ||
+                ((m_buttonStyle & LD_SORT_BUTTON) != 0) ||
+                ((m_buttonStyle & LD_CLEAR_BUTTON) != 0) ||
+                ((m_buttonStyle & LD_REFRESH_BUTTON) != 0) ||
+                ((m_buttonStyle & LD_LOG_VERBOSE_BUTTON) != 0))
                 {
                 if (homePage == nullptr)
                     {
@@ -279,7 +282,7 @@ namespace Wisteria::UI
                                                    wxNullBitmap, wxDefaultPosition, wxDefaultSize,
                                                    wxRIBBON_PANEL_NO_AUTO_MINIMISE);
                 m_editButtonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
-                if (m_buttonStyle & LD_COPY_BUTTON)
+                if ((m_buttonStyle & LD_COPY_BUTTON) != 0)
                     {
                     m_editButtonBar->AddButton(
                         wxID_COPY, _(L"Copy Selection"),
@@ -287,7 +290,7 @@ namespace Wisteria::UI
                             .ConvertToImage(),
                         _(L"Copy the selected items."));
                     }
-                if (m_buttonStyle & LD_SELECT_ALL_BUTTON)
+                if ((m_buttonStyle & LD_SELECT_ALL_BUTTON) != 0)
                     {
                     m_editButtonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
                                                wxArtProvider::GetBitmap(L"ID_SELECT_ALL",
@@ -296,7 +299,7 @@ namespace Wisteria::UI
                                                    .ConvertToImage(),
                                                _(L"Select the entire list."));
                     }
-                if (m_buttonStyle & LD_SORT_BUTTON)
+                if ((m_buttonStyle & LD_SORT_BUTTON) != 0)
                     {
                     m_editButtonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
                                                wxArtProvider::GetBitmap(L"ID_LIST_SORT",
@@ -305,7 +308,7 @@ namespace Wisteria::UI
                                                    .ConvertToImage(),
                                                _(L"Sort the list."));
                     }
-                if (m_buttonStyle & LD_CLEAR_BUTTON)
+                if ((m_buttonStyle & LD_CLEAR_BUTTON) != 0)
                     {
                     m_editButtonBar->AddButton(
                         XRCID("ID_CLEAR"), _(L"Clear"),
@@ -313,7 +316,7 @@ namespace Wisteria::UI
                             .ConvertToImage(),
                         _(L"Clear the log report."));
                     }
-                if (m_buttonStyle & LD_REFRESH_BUTTON)
+                if ((m_buttonStyle & LD_REFRESH_BUTTON) != 0)
                     {
                     m_editButtonBar->AddButton(XRCID("ID_REFRESH"), _(L"Refresh"),
                                                wxArtProvider::GetBitmap(L"ID_REFRESH", wxART_BUTTON,
@@ -328,7 +331,7 @@ namespace Wisteria::UI
                         _(L"Refresh the log report automatically."));
                     m_editButtonBar->ToggleButton(XRCID("ID_REALTIME_UPDATE"), m_autoRefresh);
                     }
-                if (m_buttonStyle & LD_LOG_VERBOSE_BUTTON)
+                if ((m_buttonStyle & LD_LOG_VERBOSE_BUTTON) != 0)
                     {
                     m_editButtonBar->AddToggleButton(
                         XRCID("ID_VERBOSE_LOG"), _(L"Verbose"),
@@ -358,11 +361,11 @@ namespace Wisteria::UI
         else
             {
             long flags{ wxLC_VIRTUAL | wxLC_REPORT | wxLC_ALIGN_LEFT };
-            if (!(m_buttonStyle & LD_COLUMN_HEADERS))
+            if ((m_buttonStyle & LD_COLUMN_HEADERS) == 0)
                 {
                 flags |= wxLC_NO_HEADER;
                 }
-            if (m_buttonStyle & LD_SINGLE_SELECTION)
+            if ((m_buttonStyle & LD_SINGLE_SELECTION) != 0)
                 {
                 flags |= wxLC_SINGLE_SEL;
                 }
@@ -379,28 +382,28 @@ namespace Wisteria::UI
             }
 
         wxSizer* OkCancelSizer = nullptr;
-        if (m_buttonStyle & LD_OK_CANCEL_BUTTONS)
+        if ((m_buttonStyle & LD_OK_CANCEL_BUTTONS) != 0)
             {
             OkCancelSizer = CreateButtonSizer(wxOK | wxCANCEL);
             mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_OK);
             SetEscapeId(wxID_CANCEL);
             }
-        else if (m_buttonStyle & LD_YES_NO_BUTTONS)
+        else if ((m_buttonStyle & LD_YES_NO_BUTTONS) != 0)
             {
             OkCancelSizer = CreateButtonSizer(wxYES_NO);
             mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_YES);
             SetEscapeId(wxID_NO);
             }
-        else if (m_buttonStyle & LD_CLOSE_BUTTON)
+        else if ((m_buttonStyle & LD_CLOSE_BUTTON) != 0)
             {
             OkCancelSizer = CreateButtonSizer(wxCLOSE);
             mainSizer->Add(OkCancelSizer, wxSizerFlags{}.Expand().Border());
             SetAffirmativeId(wxID_CLOSE);
             }
 
-        if ((m_buttonStyle & LD_DONT_SHOW_AGAIN) && OkCancelSizer)
+        if (((m_buttonStyle & LD_DONT_SHOW_AGAIN) != 0) && (OkCancelSizer != nullptr))
             {
             m_checkBox =
                 new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"), wxDefaultPosition,
@@ -422,10 +425,10 @@ namespace Wisteria::UI
             }
 
         // toggle the verbose button to match what the logger is doing
-        m_isLogVerbose = m_logFile->GetVerbose();
+        m_isLogVerbose = LogFile::GetVerbose();
         if (m_editButtonBar != nullptr)
             {
-            m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), m_logFile->GetVerbose());
+            m_editButtonBar->ToggleButton(XRCID("ID_VERBOSE_LOG"), LogFile::GetVerbose());
             }
 
         RestartRealtimeUpdate();
@@ -441,7 +444,7 @@ namespace Wisteria::UI
             {
             const long style = GetListCtrl()->GetExtraStyle();
             GetListCtrl()->SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
-            wxWindowUpdateLocker wl{ GetListCtrl() };
+            const wxWindowUpdateLocker wl{ GetListCtrl() };
 
             if (GetListCtrl()->GetColumnCount() < 4)
                 {

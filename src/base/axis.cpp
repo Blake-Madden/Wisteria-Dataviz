@@ -1879,7 +1879,7 @@ namespace Wisteria::GraphItems
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3,
                                             connectionYDoubleSided -
-                                                bracket.GetTickmarkLength() * GetScaling());
+                                                (bracket.GetTickmarkLength() * GetScaling()));
                                 bracket.DrawConnectionLine(
                                     dc, ScaleToScreenAndCanvas(1),
                                     wxPoint(position3, connectionYDoubleSided -
@@ -2739,7 +2739,7 @@ namespace Wisteria::GraphItems
                                     GetBrackets().front().GetLabel().GetScaling() :
                                     0.0,
                                 1, wxNumberFormatter::Style::Style_NoTrailingZeroes)))
-                        .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth() / 2,
+                        .AnchorPoint(wxPoint(bBox.GetBottomLeft().x + (bBox.GetWidth() / 2),
                                              bBox.GetBottomRight().y))
                         .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Red))
                         .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
@@ -3776,7 +3776,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Axis::SetAxisLabelOrientation(const AxisLabelOrientation& orient) noexcept
+    void Axis::SetAxisLabelOrientation(const AxisLabelOrientation& orient)
         {
         m_labelOrientation = orient;
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));

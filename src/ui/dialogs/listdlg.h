@@ -79,7 +79,7 @@ namespace Wisteria::UI
         ListDlg(wxWindow* parent, const wxArrayString& values, const bool useCheckBoxes,
                 const wxColour& bkColor, const wxColour& hoverColor, const wxColour& foreColor,
                 const long buttonStyle = LD_NO_BUTTONS, wxWindowID id = wxID_ANY,
-                const wxString& caption = wxString{}, const wxString& label = wxString{},
+                const wxString& caption = wxString{}, wxString  label = wxString{},
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize{ 600, 250 },
                 long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         /** @brief Constructor that won't show the checkbox.
@@ -97,7 +97,7 @@ namespace Wisteria::UI
         ListDlg(wxWindow* parent, const wxColour& bkColor, const wxColour& hoverColor,
                 const wxColour& foreColor, const long buttonStyle = LD_NO_BUTTONS,
                 wxWindowID id = wxID_ANY, const wxString& caption = wxString{},
-                const wxString& label = wxString{}, const wxPoint& pos = wxDefaultPosition,
+                wxString  label = wxString{}, const wxPoint& pos = wxDefaultPosition,
                 const wxSize& size = wxSize(600, 250),
                 long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         /// @private

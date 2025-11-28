@@ -12,21 +12,21 @@
 bool Wisteria::ReportPrintout::OnPrintPage(const int page)
     {
     wxDC* dc = GetDC();
-    auto canvas = GetCanvasFromPageNumber(page);
+    auto* canvas = GetCanvasFromPageNumber(page);
     assert(dc && L"Invalid printing DC!");
     assert(canvas && L"Invalid page when printing report!");
     if (dc != nullptr && canvas != nullptr)
         {
-        wxWindowUpdateLocker wl(canvas);
+        const wxWindowUpdateLocker wl(canvas);
         // immediately recalc everything when we change the canvas size
-        CanvasResizeDelayChanger resizeDelay{ *canvas };
+        const CanvasResizeDelayChanger resizeDelay{ *canvas };
         canvas->DelayResizing(false);
-        PrintFitToPageChanger fpc(canvas, this);
+        const PrintFitToPageChanger fpc(canvas, this);
 
         dc->SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
         // get the size of the canvas
-        wxGCDC gdc;
+        const wxGCDC gdc;
         wxCoord maxX = canvas->GetCanvasRect(gdc).GetWidth(),
                 maxY = canvas->GetCanvasRect(gdc).GetHeight();
 
@@ -63,8 +63,8 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         // calculate a suitable scaling factor
         const auto scaleX = safe_divide<float>(dcWidth, maxX);
         const auto scaleY = safe_divide<float>(dcHeight, maxY);
-        const auto scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
-        const auto scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
+        const auto scaleXReciprocal = safe_divide<float>(1.0, scaleX);
+        const auto scaleYReciprocal = safe_divide<float>(1.0, scaleY);
 
         // calculate the position on the DC for centering the graphic
         const auto posX =
@@ -195,10 +195,8 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
 
         return true;
         }
-    else
-        {
-        return false;
-        }
+
+    return false;
     }
 
 //------------------------------------------------------

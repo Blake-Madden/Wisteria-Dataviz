@@ -13,9 +13,6 @@
 #define GET_DIR_DLG_H
 
 #include "dialogwithhelp.h"
-#include <wx/combobox.h>
-#include <wx/filename.h>
-#include <wx/statline.h>
 #include <wx/string.h>
 #include <wx/wx.h>
 

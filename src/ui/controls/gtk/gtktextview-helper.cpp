@@ -37,7 +37,7 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     {
     wxString text{ L"<span" };
     wxString styleParams{ L" style=\"" };
-    // indicators as to whether a tag is set or not
+    // indicators whether a tag is set or not
     gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
              strikeThroughSet;
     // values to write to
@@ -104,7 +104,7 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         styleParams += L" text-decoration: ";
         for (const auto& decor : textDecorations)
             { styleParams += decor + L","; }
-        // replace final , with a ;
+        // replace final , with a ';'
         if (styleParams.length())
             { styleParams[styleParams.length() - 1] = L';'; }
         }
@@ -125,7 +125,7 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
                             [[maybe_unused]] std::vector<wxString>& fontTable)
     {
     wxString text{ L" " };
-    // indicators as to whether a tag is set or not
+    // indicators whether a tag is set or not
     gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
         strikeThroughSet;
     // values to write to

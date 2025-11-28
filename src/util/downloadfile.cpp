@@ -246,12 +246,10 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
 
         return m_downloadSuccessful;
         }
-    else
-        {
-        m_lastStatus = 204;
-        m_lastStatusText = _(L"Unable to send request");
-        return false;
-        }
+
+    m_lastStatus = 204;
+    m_lastStatusText = _(L"Unable to send request");
+    return false;
     }
 
 //--------------------------------------------------

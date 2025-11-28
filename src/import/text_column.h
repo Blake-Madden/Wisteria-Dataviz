@@ -39,7 +39,7 @@ namespace lily_of_the_valley
                 return nullptr;
                 }
             int32_t quoteStack{ 0 };
-            while (text[0] && !is_eol(text[0]) &&
+            while ((text[0] != 0) && !is_eol(text[0]) &&
                    // allow delims if inside set of double quotes
                    (!is_delimiter(text[0]) || (quoteStack % 2 != 0)))
                 {
@@ -236,7 +236,7 @@ namespace lily_of_the_valley
                 {
                 return nullptr;
                 }
-            while (text[0] && !is_eol(text[0]))
+            while ((text[0] != 0) && !is_eol(text[0]))
                 {
                 ++text;
                 }

@@ -653,7 +653,7 @@ namespace Wisteria::GraphItems
         /** @brief Specifies the text on the shape to render.
             @param text The text to draw.
             @returns A self reference.*/
-        ShapeInfo& Text(const wxString& text) noexcept
+        ShapeInfo& Text(const wxString& text)
             {
             m_text = text;
             return *this;
@@ -708,7 +708,7 @@ namespace Wisteria::GraphItems
 
         /// @returns The shape's text.
         [[nodiscard]]
-        wxString GetText() const noexcept
+        wxString GetText() const
             {
             return m_text;
             }

@@ -468,7 +468,7 @@ namespace Wisteria::GraphItems
             }
         const auto dx = static_cast<float>(pt2.x - pt1.x);
         const auto dy = static_cast<float>(pt2.y - pt1.y);
-        const auto length = std::sqrt(dx * dx + dy * dy);
+        const auto length = std::sqrt((dx * dx) + (dy * dy));
 
         // ux,uy is a unit vector parallel to the line.
         const auto ux = safe_divide(dx, length);
@@ -482,10 +482,10 @@ namespace Wisteria::GraphItems
 
         const std::array<wxPoint, 3> arrowHead{
             { pt2,
-              wxPoint(std::round(pt2.x - arrowHeadSize.GetHeight() * ux + halfWidth * vx),
-                      std::round(pt2.y - arrowHeadSize.GetHeight() * uy + halfWidth * vy)),
-              wxPoint(std::round(pt2.x - arrowHeadSize.GetHeight() * ux - halfWidth * vx),
-                      std::round(pt2.y - arrowHeadSize.GetHeight() * uy - halfWidth * vy)) }
+              wxPoint(std::round(pt2.x - (arrowHeadSize.GetHeight() * ux) + (halfWidth * vx)),
+                      std::round(pt2.y - (arrowHeadSize.GetHeight() * uy) + (halfWidth * vy))),
+              wxPoint(std::round(pt2.x - (arrowHeadSize.GetHeight() * ux) - (halfWidth * vx)),
+                      std::round(pt2.y - (arrowHeadSize.GetHeight() * uy) - (halfWidth * vy))) }
         };
 
         // The end of the line should be going underneath the head by just one pixel,

@@ -92,7 +92,7 @@ namespace Wisteria::Data
             wxString out;
             out.reserve(str.length());
 
-            for (wchar_t chr : str)
+            for (const wchar_t chr : str)
                 {
                 if (chr >= 0x20)
                     {

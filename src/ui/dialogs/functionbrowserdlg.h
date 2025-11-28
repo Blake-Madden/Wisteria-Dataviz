@@ -12,7 +12,6 @@
 #ifndef FUNCTION_BROWSER_DLG_H
 #define FUNCTION_BROWSER_DLG_H
 
-#include "../../import/html_encode.h"
 #include "../../import/html_extract_text.h"
 #include "../../util/string_util.h"
 #include "../controls/sidebar.h"
@@ -22,8 +21,6 @@
 #include <vector>
 #include <wx/html/htmlwin.h>
 #include <wx/listbox.h>
-#include <wx/stc/stc.h>
-#include <wx/tokenzr.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -158,11 +155,11 @@ namespace Wisteria::UI
 
         struct CategoryInfo
             {
-            explicit CategoryInfo(const std::wstring& name) : m_name(name) {}
+            explicit CategoryInfo(std::wstring  name) : m_name(std::move(name)) {}
 
-            CategoryInfo(const std::wstring& name, const NameList& functions,
+            CategoryInfo(std::wstring  name, NameList  functions,
                          const wxWindowID parentId, const int iconIndex)
-                : m_name(name), m_functions(functions), m_parentId(parentId), m_iconIndex(iconIndex)
+                : m_name(std::move(name)), m_functions(std::move(functions)), m_parentId(parentId), m_iconIndex(iconIndex)
                 {
                 }
 

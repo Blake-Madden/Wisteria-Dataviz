@@ -37,7 +37,7 @@ namespace lily_of_the_valley
     class odt_odp_extract_text final : public html_extract_text
         {
       public:
-        odt_odp_extract_text() noexcept : m_preserve_text_table_layout(false) {}
+        odt_odp_extract_text() noexcept = default;
 
         /** @brief Specifies how to import tables.
             @param preserve Set to @c true to not import text cells as separate paragraphs,

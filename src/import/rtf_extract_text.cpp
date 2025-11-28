@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "rtf_extract_text.h"
+#include <utility>
 
 namespace lily_of_the_valley
     {
@@ -307,23 +308,23 @@ namespace lily_of_the_valley
                 ++infoSection;
                 const char* const infoSectionEnd =
                     string_util::find_unescaped_matching_close_tag(infoSection, '{', '}');
-                if (infoSectionEnd)
+                if (infoSectionEnd != nullptr)
                     {
                     try
                         {
                         rtf_extract_text parseRtfMetaData;
                         // title
                         const char* titleSection = std::strstr(infoSection, "{\\title");
-                        if (titleSection && titleSection + 7 < infoSectionEnd)
+                        if ((titleSection != nullptr) && titleSection + 7 < infoSectionEnd)
                             {
                             titleSection += 7;
                             const char* const titleSectionEnd =
                                 string_util::find_unescaped_char(titleSection, '}');
-                            if (titleSectionEnd && titleSectionEnd < infoSectionEnd)
+                            if ((titleSectionEnd != nullptr) && titleSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue =
+                                const auto* metaValue =
                                     parseRtfMetaData(titleSection, titleSectionEnd - titleSection);
-                                if (metaValue)
+                                if (metaValue != nullptr)
                                     {
                                     m_title.assign(metaValue);
                                     string_util::replace_all(m_title, L"\\", 1, L"");
@@ -333,16 +334,17 @@ namespace lily_of_the_valley
                             }
                         // subject
                         const char* subjectSection = std::strstr(infoSection, "{\\subject");
-                        if (subjectSection && subjectSection + 9 < infoSectionEnd)
+                        if ((subjectSection != nullptr) && subjectSection + 9 < infoSectionEnd)
                             {
                             subjectSection += 9;
                             const char* const subjectSectionEnd =
                                 string_util::find_unescaped_char(subjectSection, '}');
-                            if (subjectSectionEnd && subjectSectionEnd < infoSectionEnd)
+                            if ((subjectSectionEnd != nullptr) &&
+                                subjectSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(
+                                const auto* metaValue = parseRtfMetaData(
                                     subjectSection, subjectSectionEnd - subjectSection);
-                                if (metaValue)
+                                if (metaValue != nullptr)
                                     {
                                     m_subject.assign(metaValue);
                                     string_util::replace_all(m_subject, L"\\", 1, L"");
@@ -352,16 +354,16 @@ namespace lily_of_the_valley
                             }
                         // author
                         const char* authorSection = std::strstr(infoSection, "{\\author");
-                        if (authorSection && authorSection + 8 < infoSectionEnd)
+                        if ((authorSection != nullptr) && authorSection + 8 < infoSectionEnd)
                             {
                             authorSection += 8;
                             const char* const authorSectionEnd =
                                 string_util::find_unescaped_char(authorSection, '}');
-                            if (authorSectionEnd && authorSectionEnd < infoSectionEnd)
+                            if ((authorSectionEnd != nullptr) && authorSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(authorSection,
-                                                                  authorSectionEnd - authorSection);
-                                if (metaValue)
+                                const auto* metaValue = parseRtfMetaData(
+                                    authorSection, authorSectionEnd - authorSection);
+                                if (metaValue != nullptr)
                                     {
                                     m_author.assign(metaValue);
                                     string_util::replace_all(m_author, L"\\", 1, L"");
@@ -371,16 +373,17 @@ namespace lily_of_the_valley
                             }
                         // keywords
                         const char* keywordsSection = std::strstr(infoSection, "{\\keywords");
-                        if (keywordsSection && keywordsSection + 10 < infoSectionEnd)
+                        if ((keywordsSection != nullptr) && keywordsSection + 10 < infoSectionEnd)
                             {
                             keywordsSection += 10;
                             const char* const keywordsSectionEnd =
                                 string_util::find_unescaped_char(keywordsSection, '}');
-                            if (keywordsSectionEnd && keywordsSectionEnd < infoSectionEnd)
+                            if ((keywordsSectionEnd != nullptr) &&
+                                keywordsSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(
+                                const auto* metaValue = parseRtfMetaData(
                                     keywordsSection, keywordsSectionEnd - keywordsSection);
-                                if (metaValue)
+                                if (metaValue != nullptr)
                                     {
                                     m_keywords.assign(metaValue);
                                     string_util::replace_all(m_keywords, L"\\", 1, L"");
@@ -390,16 +393,17 @@ namespace lily_of_the_valley
                             }
                         // comments
                         const char* commentsSection = std::strstr(infoSection, "{\\doccomm");
-                        if (commentsSection && commentsSection + 9 < infoSectionEnd)
+                        if ((commentsSection != nullptr) && commentsSection + 9 < infoSectionEnd)
                             {
                             commentsSection += 9;
                             const char* const commentsSectionEnd =
                                 string_util::find_unescaped_char(commentsSection, '}');
-                            if (commentsSectionEnd && commentsSectionEnd < infoSectionEnd)
+                            if ((commentsSectionEnd != nullptr) &&
+                                commentsSectionEnd < infoSectionEnd)
                                 {
-                                auto metaValue = parseRtfMetaData(
+                                const auto* metaValue = parseRtfMetaData(
                                     commentsSection, commentsSectionEnd - commentsSection);
-                                if (metaValue)
+                                if (metaValue != nullptr)
                                     {
                                     m_comments.assign(metaValue);
                                     string_util::replace_all(m_comments, L"\\", 1, L"");
@@ -425,18 +429,18 @@ namespace lily_of_the_valley
                 ++fontTable;
                 const char* fontTableEnd =
                     string_util::find_unescaped_matching_close_tag(fontTable, '{', '}');
-                if (fontTableEnd)
+                if (fontTableEnd != nullptr)
                     {
                     const char* currentChar = std::strchr(fontTable, '{');
-                    while (currentChar && currentChar < fontTableEnd)
+                    while ((currentChar != nullptr) && currentChar < fontTableEnd)
                         {
                         // see where this current font ends
                         const char* endOfFont = std::strchr(currentChar, ';');
-                        if (!endOfFont || endOfFont >= fontTableEnd)
+                        if ((endOfFont == nullptr) || endOfFont >= fontTableEnd)
                             {
                             break;
                             }
-                        std::string fontText(currentChar, endOfFont - currentChar);
+                        const std::string fontText(currentChar, endOfFont - currentChar);
                         // the face name is at the end after the charset, so substring that out
                         size_t lastSection = fontText.rfind('\\');
                         if (lastSection == std::string::npos)
@@ -463,29 +467,29 @@ namespace lily_of_the_valley
                 ++colorTable;
                 const char* colorTableEnd =
                     string_util::find_unescaped_matching_close_tag(colorTable, '{', '}');
-                if (colorTableEnd)
+                if (colorTableEnd != nullptr)
                     {
                     rtf_color color;
                     const char* currentChar = std::strchr(colorTable, ';');
-                    while (currentChar && currentChar < colorTableEnd)
+                    while ((currentChar != nullptr) && currentChar < colorTableEnd)
                         {
                         // red component
                         currentChar = std::strstr(currentChar, "red");
-                        if (!currentChar || currentChar >= colorTableEnd)
+                        if ((currentChar == nullptr) || currentChar >= colorTableEnd)
                             {
                             break;
                             }
                         color.red = std::atoi(currentChar + 3);
                         // green component
                         currentChar = std::strstr(currentChar, "green");
-                        if (!currentChar || currentChar >= colorTableEnd)
+                        if ((currentChar == nullptr) || currentChar >= colorTableEnd)
                             {
                             break;
                             }
                         color.green = std::atoi(currentChar + 5);
                         // blue component
                         currentChar = std::strstr(currentChar, "blue");
-                        if (!currentChar || currentChar >= colorTableEnd)
+                        if ((currentChar == nullptr) || currentChar >= colorTableEnd)
                             {
                             break;
                             }
@@ -525,13 +529,15 @@ namespace lily_of_the_valley
                 {
                 const char* nextSpace = std::strchr(textColor, L' ');
                 textColor = std::strstr(textColor, "\\cf");
-                if (textColor && nextSpace && (textColor < nextSpace))
+                if ((textColor != nullptr) && (nextSpace != nullptr) && (textColor < nextSpace))
                     {
                     const int idx = std::atoi(textColor + 3);
                     // color table is one-base indexed
-                    if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
+                    if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
+                        {)
                         {
                         m_text_color = m_color_table[static_cast<size_t>(idx) - 1];
+                        }
                         }
                     }
                 }
@@ -640,7 +646,7 @@ namespace lily_of_the_valley
     //------------------------------------------------
     void rtf_extract_text::ecPopRtfState()
         {
-        if (!m_psave)
+        if (m_psave == nullptr)
             {
             throw rtfparse_stack_underflow();
             }
@@ -751,7 +757,7 @@ namespace lily_of_the_valley
             else
                 {
                 const char* nextKeyword = m_rtf_text;
-                while (++nextKeyword)
+                while (++nextKeyword != nullptr)
                     {
                     // eat up the whitespace
                     if (nextKeyword[0] == 0 || !std::iswspace(static_cast<wchar_t>(nextKeyword[0])))
@@ -964,12 +970,14 @@ namespace lily_of_the_valley
                 // Zero index is just a reset to the control's default color,
                 // which is not in the table. Hence, color 1 is actually the
                 // first color in the table.
-                if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
-                    {
-                    const std::wstring colorCmd =
-                        L"<span class=\"" + m_style_prefix + L"bc" + std::to_wstring(idx) + L"\">";
-                    ecPrintString(colorCmd.c_str(), colorCmd.length());
-                    m_command_stacks.add_command();
+                if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
+                    {)
+                        {
+                        const std::wstring colorCmd = L"<span class=\"" + m_style_prefix + L"bc" +
+                                                      std::to_wstring(idx) + L"\">";
+                        ecPrintString(colorCmd.c_str(), colorCmd.length());
+                        m_command_stacks.add_command();
+                        }
                     }
                 }
             break;
@@ -1072,7 +1080,7 @@ namespace lily_of_the_valley
             return;
             }
         // set the documents font to the current font (for RTF->HTML conversion)
-        else if (fParam && std::strcmp(szKeyword, "fs") == 0)
+        if (fParam && std::strcmp(szKeyword, "fs") == 0)
             {
             m_font_size = param / 2 /*RTF font size is in half points*/;
             }
@@ -1117,7 +1125,7 @@ namespace lily_of_the_valley
             }
 
         // search for szKeyword in rgsymRtf
-        std::set<rtf_symbol>::const_iterator symbolIter = m_keyword_command_table->find(szKeyword);
+        auto symbolIter = m_keyword_command_table->find(szKeyword);
         if (m_keyword_command_table->is_not_found(symbolIter)) // control word not found
             {
             if (m_fSkipDestIfUnk) // if this is a new destination
@@ -1157,7 +1165,7 @@ namespace lily_of_the_valley
             m_rtf_text = string_util::find_unescaped_matching_close_tag(m_rtf_text, '{', '}');
             // caller will increment m_rtf_text, so step back 1 so that it won't consume this '}'
             // and result in a grouping stack mismatch
-            if (m_rtf_text && m_rtf_text > rtfStart)
+            if ((m_rtf_text != nullptr) && m_rtf_text > rtfStart)
                 {
                 --m_rtf_text;
                 }

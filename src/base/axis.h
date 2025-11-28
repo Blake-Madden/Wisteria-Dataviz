@@ -1228,7 +1228,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the orientation of the axis's labels.
             @param orient The orientation.*/
-        void SetAxisLabelOrientation(const AxisLabelOrientation& orient) noexcept;
+        void SetAxisLabelOrientation(const AxisLabelOrientation& orient);
 
         /// @returns The orientation of the axis's labels.
         [[nodiscard]]

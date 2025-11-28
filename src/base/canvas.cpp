@@ -11,6 +11,7 @@
 #include "colorbrewer.h"
 #include "reportprintout.h"
 #include <memory>
+#include <utility>
 #include <wx/xrc/xmlres.h>
 
 wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
@@ -791,13 +792,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             auto& currentRow = *fixedObjectsRowPos;
             const auto currentRowIndex =
                 std::distance(GetFixedObjects().begin(), fixedObjectsRowPos);
-            assert(currentRowIndex < static_cast<ptrdiff_t>(m_rowsInfo.size()) &&
+            assert(std::cmp_less(currentRowIndex, m_rowsInfo.size()) &&
                    L"Canvas row out of range!");
 
             const size_t rowHeightGridArea =
                 fixedObjectRect.GetHeight() * GetRowInfo(currentRowIndex).GetHeightProportion();
             const size_t rowHeightFullCanvas =
-                GetCanvasRect(dc).GetHeight() * GetRowInfo(currentRowIndex).GetHeightProportion() +
+                (GetCanvasRect(dc).GetHeight() *
+                 GetRowInfo(currentRowIndex).GetHeightProportion()) +
                 (!currentRow.empty() && currentRow.at(0) ?
                      ScaleToScreenAndCanvas(currentRow.at(0)->GetTopCanvasMargin(), dc) +
                          ScaleToScreenAndCanvas(currentRow.at(0)->GetBottomCanvasMargin(), dc) :
@@ -820,8 +822,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     safe_divide<double>(rowHeightDiff, currentRowIndex);
                 // previous rows (and their objects) pushed up and made smaller to make room for
                 // current row which is being made taller
-                for (size_t previousRowIndex = 0;
-                     previousRowIndex < static_cast<size_t>(currentRowIndex); ++previousRowIndex)
+                for (size_t previousRowIndex = 0; std::cmp_less(previousRowIndex, currentRowIndex);
+                     ++previousRowIndex)
                     {
                     auto& previousRow = GetFixedObjects().at(previousRowIndex);
                     for (auto& previousRowObject : previousRow)
@@ -1629,15 +1631,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                                  .FontColor(watermark.m_color));
                 const auto boundingBox = waterLabel.GetBoundingBox(dc);
                 const auto widthOfWatermark =
-                    boundingBox.GetWidth() *
-                        std::abs(std::cos(geometry::degrees_to_radians(angle))) -
-                    boundingBox.GetHeight() *
-                        std::abs(std::sin(geometry::degrees_to_radians(angle)));
+                    (boundingBox.GetWidth() *
+                     std::abs(std::cos(geometry::degrees_to_radians(angle)))) -
+                    (boundingBox.GetHeight() *
+                     std::abs(std::sin(geometry::degrees_to_radians(angle))));
                 const auto heightOfWatermark =
-                    boundingBox.GetWidth() *
-                        std::abs(std::sin(geometry::degrees_to_radians(angle))) +
-                    boundingBox.GetHeight() *
-                        std::abs(std::cos(geometry::degrees_to_radians(angle)));
+                    (boundingBox.GetWidth() *
+                     std::abs(std::sin(geometry::degrees_to_radians(angle)))) +
+                    (boundingBox.GetHeight() *
+                     std::abs(std::cos(geometry::degrees_to_radians(angle))));
 
                 waterLabel.SetAnchorPoint(
                     { (drawingRect.GetWidth() / 2) - static_cast<wxCoord>(widthOfWatermark / 2),

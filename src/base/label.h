@@ -237,7 +237,7 @@ namespace Wisteria::GraphItems
         /** @returns The number of pixels between lines.
             @warning This will need to be scaled when being drawn or measured.*/
         [[nodiscard]]
-        double GetLineSpacing() const noexcept
+        double GetLineSpacing() const
             {
             return (m_tiltAngle.has_value() && m_tiltAngle.value() != 0 &&
                     safe_modulus<int>(m_tiltAngle.value(), 90) != 0) ?

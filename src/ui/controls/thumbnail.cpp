@@ -77,7 +77,7 @@ namespace Wisteria::UI
         {
         if (!filenames.empty() && wxFileName::FileExists(filenames[0]))
             {
-            if (wxImage img(filenames[0]); m_pOwner && img.IsOk())
+            if (const wxImage img(filenames[0]); (m_pOwner != nullptr) && img.IsOk())
                 {
                 m_pOwner->SetBitmap(img);
                 }
@@ -213,7 +213,7 @@ namespace Wisteria::UI
             if (m_clickMode == ClickMode::BrowseForImageFile)
                 {
                 const wxString label = _(L"Click to browse\nfor image...");
-                wxCoord textWidth, textHeight;
+                wxCoord textWidth{ 0 }, textHeight{ 0 };
                 dc.GetMultiLineTextExtent(label, &textWidth, &textHeight);
                 dc.DrawText(label, safe_divide(GetSize().GetWidth(), 2) - safe_divide(textWidth, 2),
                             safe_divide(GetSize().GetHeight(), 2) - safe_divide(textHeight, 2));
@@ -221,7 +221,7 @@ namespace Wisteria::UI
             else
                 {
                 const wxString label = _(L"No preview\navailable");
-                wxCoord textWidth, textHeight;
+                wxCoord textWidth{ 0 }, textHeight{ 0 };
                 dc.GetMultiLineTextExtent(label, &textWidth, &textHeight);
                 dc.DrawText(label, safe_divide(GetSize().GetWidth(), 2) - safe_divide(textWidth, 2),
                             safe_divide(GetSize().GetHeight(), 2) - safe_divide(textHeight, 2));
@@ -273,7 +273,7 @@ namespace Wisteria::UI
             memDC.SetTextForeground(Colors::ColorBrewer::GetColor(Colors::Color::Blue));
             memDC.SetPen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
             memDC.SetBrush(wxBrush(wxColour(L"#FFFFDD")));
-            wxCoord width, height;
+            wxCoord width{ 0 }, height{ 0 };
             const wxString label(_(L"Click to close"));
             memDC.GetTextExtent(label, &width, &height);
             memDC.DrawRoundedRectangle(canvasBmp.GetWidth() - (width + 14),
