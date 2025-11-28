@@ -867,6 +867,7 @@ namespace Wisteria
                     {
                     std::vector<GraphItems::ShapeInfo> shapes;
                     auto shapeNodes = topShapeNode->AsNodes();
+                    shapes.reserve(shapeNodes.size());
                     for (const auto& shpNode : shapeNodes)
                         {
                         shapes.push_back(LoadShapeInfo(shpNode));
