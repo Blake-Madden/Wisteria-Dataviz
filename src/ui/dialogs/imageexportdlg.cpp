@@ -8,6 +8,7 @@
 
 #include "imageexportdlg.h"
 #include "../../base/canvas.h"
+#include "wx/valgen.h"
 
 using namespace Wisteria::UI;
 
