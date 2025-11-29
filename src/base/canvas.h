@@ -356,7 +356,7 @@ namespace Wisteria
             // switch the object to (temporarily) use its original scaling from the client
             // (not the current window's scaling) so that we measure it correctly against
             // a 1.0 scaled canvas
-            CanvasItemScalingChanger sc(item);
+            const CanvasItemScalingChanger sc(item);
             // also, reset any previous min size information for a call to the object's
             // SetBoundingBox(), as we will be resizing this item from scratch
             item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
@@ -482,7 +482,7 @@ namespace Wisteria
                 will be more or less than 100%. You must adjust all other rows
                 accordingly.*/
         [[nodiscard]]
-        CanvasRowInfo& GetRowInfo(const size_t row) noexcept
+        CanvasRowInfo& GetRowInfo(const size_t row)
             {
             assert(row < m_rowsInfo.size() && L"Invalid row in call to GetRowInfo()!");
             return m_rowsInfo.at(row);
