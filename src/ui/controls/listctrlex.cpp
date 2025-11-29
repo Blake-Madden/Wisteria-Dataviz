@@ -3343,7 +3343,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
 #ifdef __WXMSW__
         const int textWidth = ListView_GetStringWidth(GetHWND(), currentItemText.wc_str());
 #else
-        wxClientDC dc(this);
+        wxClientDC const dc(this);
         wxCoord textWidth{ 0 }, textHeight{ 0 };
         dc.GetTextExtent(currentItemText, &textWidth, &textHeight);
 #endif

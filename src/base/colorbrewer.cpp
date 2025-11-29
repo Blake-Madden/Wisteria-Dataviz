@@ -68,11 +68,11 @@ namespace Wisteria::Colors
             }
 
         const wxColour brewedColor(
-            (m_colorSpectrum[idx2].Red() - m_colorSpectrum[idx1].Red()) * fractBetween +
+            ((m_colorSpectrum[idx2].Red() - m_colorSpectrum[idx1].Red()) * fractBetween) +
                 m_colorSpectrum[idx1].Red(),
-            (m_colorSpectrum[idx2].Green() - m_colorSpectrum[idx1].Green()) * fractBetween +
+            ((m_colorSpectrum[idx2].Green() - m_colorSpectrum[idx1].Green()) * fractBetween) +
                 m_colorSpectrum[idx1].Green(),
-            (m_colorSpectrum[idx2].Blue() - m_colorSpectrum[idx1].Blue()) * fractBetween +
+            ((m_colorSpectrum[idx2].Blue() - m_colorSpectrum[idx1].Blue()) * fractBetween) +
                 m_colorSpectrum[idx1].Blue());
 
         return brewedColor;

@@ -64,16 +64,9 @@ This is an important distinction from other profiling systems.
 #define DEBUG_PROFILE_H
 
 #include <algorithm>
-#include <cassert>
 #include <chrono>
-#include <cmath>
-#include <ctime>
 #include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <locale>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 

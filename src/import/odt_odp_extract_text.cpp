@@ -28,7 +28,7 @@ namespace lily_of_the_valley
         const wchar_t* const textEnd = html_text + text_length;
 
         const wchar_t* const officeMetaStart = find_element(html_text, textEnd, OFFICE_META, true);
-        if (!officeMetaStart)
+        if (officeMetaStart == nullptr)
             {
             return;
             }
@@ -36,36 +36,36 @@ namespace lily_of_the_valley
         html_extract_text parseHtml;
 
         m_title = read_element_as_string(officeMetaStart, textEnd, TITLE);
-        auto metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
-        if (metaVal)
+        const auto* metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
+        if (metaVal != nullptr)
             {
             m_title.assign(metaVal);
             }
 
         m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT);
         metaVal = parseHtml(m_subject.c_str(), m_subject.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_subject.assign(metaVal);
             }
 
         m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION);
         metaVal = parseHtml(m_description.c_str(), m_description.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_description.assign(metaVal);
             }
 
         m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS);
         metaVal = parseHtml(m_keywords.c_str(), m_keywords.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_keywords.assign(metaVal);
             }
 
         m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR);
         metaVal = parseHtml(m_author.c_str(), m_author.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_author.assign(metaVal);
             }
@@ -113,7 +113,7 @@ namespace lily_of_the_valley
 
         int textSectionDepth = 0;
         bool insideOfListItemOrTableCell = false;
-        while (start && (start < endSentinel))
+        while ((start != nullptr) && (start < endSentinel))
             {
             bool textSectionFound = true;
             // if it's a comment then look for matching comment ending sequence
@@ -121,7 +121,7 @@ namespace lily_of_the_valley
                 start[2] == L'-' && start[3] == L'-')
                 {
                 end = std::wcsstr(start, L"-->");
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
@@ -131,36 +131,32 @@ namespace lily_of_the_valley
             else if (compare_element_case_sensitive(start + 1, OFFICE_ANNOTATION, false))
                 {
                 end = find_closing_element(start, endSentinel, OFFICE_ANNOTATION);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
                 end = find_close_tag(end + 1);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
-                else
-                    {
-                    ++end;
-                    }
+
+                ++end;
                 }
             else if (compare_element_case_sensitive(start + 1, OFFICE_ANNOTATION_OOO, false))
                 {
                 end = find_closing_element(start, endSentinel, OFFICE_ANNOTATION_OOO);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
                 end = find_close_tag(end + 1);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
-                else
-                    {
-                    ++end;
-                    }
+
+                ++end;
                 }
             else if (compare_element_case_sensitive(start + 1, TEXT_S, true))
                 {
@@ -172,16 +168,14 @@ namespace lily_of_the_valley
                     spacesCount = 10;
                     }
                 // if no space count specified, then default to one space
-                fill_with_character(static_cast<size_t>(std::max(spacesCount, 1l)), L' ');
+                fill_with_character(static_cast<size_t>(std::max(spacesCount, 1L)), L' ');
                 end = find_close_tag(start + 1);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
-                else
-                    {
-                    ++end;
-                    }
+
+                ++end;
                 }
             else
                 {
@@ -269,18 +263,18 @@ namespace lily_of_the_valley
                     }
                 else
                     {
-                    textSectionFound = (textSectionDepth > 0) ? true : false;
+                    textSectionFound = textSectionDepth > 0;
                     }
                 /* find the matching >, but watch out for an errant < also in case
                    the previous < wasn't terminated properly*/
                 end = string_util::strcspn_pointer<wchar_t>(start + 1, L"<>", 2);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
                 /* if the < tag that we started from is not terminated then feed that in as
                    text instead of treating it like a valid HTML tag.  Not common, but it happens.*/
-                else if (end[0] == L'<')
+                if (end[0] == L'<')
                     {
                     /* copy over the text from the unterminated < to the currently found
                        < (that we will start from in the next loop*/
@@ -290,14 +284,12 @@ namespace lily_of_the_valley
                     continue;
                     }
                 // more normal behavior, where tag is properly terminated
-                else
-                    {
-                    ++end;
-                    }
+
+                ++end;
                 }
             // find the next starting tag
             start = std::wcschr(end, L'<');
-            if (!start)
+            if (start == nullptr)
                 {
                 break;
                 }
@@ -322,22 +314,22 @@ namespace lily_of_the_valley
 
         const wchar_t* const officeStyleStart =
             find_element(text, textEnd, L"office:automatic-styles", true);
-        if (!officeStyleStart)
+        if (officeStyleStart == nullptr)
             {
             return;
             }
         const wchar_t* const officeStyleEnd =
             find_closing_element(officeStyleStart, textEnd, L"office:automatic-styles");
-        if (officeStyleEnd)
+        if (officeStyleEnd != nullptr)
             {
             // go through all the styles in the office styles section
             const wchar_t* currentStyleStart =
                 find_element(officeStyleStart, textEnd, L"style:style", true);
-            while (currentStyleStart)
+            while (currentStyleStart != nullptr)
                 {
                 const wchar_t* currentStyleEnd =
                     find_closing_element(currentStyleStart, textEnd, L"style:style");
-                if (currentStyleEnd && (currentStyleStart < currentStyleEnd))
+                if ((currentStyleEnd != nullptr) && (currentStyleStart < currentStyleEnd))
                     {
                     // read in the name of the current style
                     const std::wstring styleName =
@@ -349,7 +341,7 @@ namespace lily_of_the_valley
                         }
                     const wchar_t* paragraphProperties = find_element(
                         currentStyleStart, currentStyleEnd, L"style:paragraph-properties", true);
-                    if (!paragraphProperties || paragraphProperties > currentStyleEnd)
+                    if ((paragraphProperties == nullptr) || paragraphProperties > currentStyleEnd)
                         {
                         currentStyleStart = currentStyleEnd + STYLE_STYLE_END.length();
                         continue;

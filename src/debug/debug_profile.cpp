@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "debug_profile.h"
+#include <fstream>
+#include <iostream>
 
 #ifdef ENABLE_PROFILING
 
@@ -15,7 +17,6 @@ namespace __debug
     std::filesystem::path __profile_reporter::m_outputPath = "profile.csv";
     std::set<__profile_info> __profile_reporter::m_profiles;
     std::vector<__profiler*> __profile_reporter::m_profilers;
-    static __profile_reporter __profile_reporter__;
 
     void __profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time,
                                            const char* extra_info)
@@ -28,7 +29,7 @@ namespace __debug
         if (duration_time > m_highest_duration_time)
             {
             m_highest_duration_time = duration_time;
-            if (extra_info)
+            if (extra_info != nullptr)
                 {
                 m_extra_info.assign(extra_info);
                 }
@@ -54,33 +55,33 @@ namespace __debug
         m_endtime = std::chrono::high_resolution_clock::now();
         const auto totalTime = (m_endtime - m_starttime) - m_total_pause_duration;
 
-        const auto [iterator, inserted] = __profile_reporter__.m_profiles.emplace(
+        const auto [iterator, inserted] = __debug::__profile_reporter::m_profiles.emplace(
             m_block_name.c_str(), totalTime, m_extra_info.c_str());
         // if it was already in the table, then add the current duration time to it
         if (!inserted)
             {
-            auto node = __profile_reporter__.m_profiles.extract(iterator);
+            auto node = __debug::__profile_reporter::m_profiles.extract(iterator);
             node.value().add_duration_time(totalTime, m_extra_info.c_str());
-            __profile_reporter__.m_profiles.insert(std::move(node));
+            __debug::__profile_reporter::m_profiles.insert(std::move(node));
             }
         pop_profiler();
         }
 
     void __profiler::push_profiler(__profiler* profiler)
         {
-        if (__profile_reporter__.m_profilers.size())
+        if (!__debug::__profile_reporter::m_profilers.empty())
             {
-            (*(__profile_reporter__.m_profilers.back())).pause();
+            ((__debug::__profile_reporter::m_profilers.back()))->pause();
             }
-        __profile_reporter__.m_profilers.push_back(profiler);
+        __debug::__profile_reporter::m_profilers.push_back(profiler);
         }
 
     void __profiler::pop_profiler()
         {
-        __profile_reporter__.m_profilers.pop_back();
-        if (__profile_reporter__.m_profilers.size())
+        __debug::__profile_reporter::m_profilers.pop_back();
+        if (!__debug::__profile_reporter::m_profilers.empty())
             {
-            (*(__profile_reporter__.m_profilers.back())).unpause();
+            ((__debug::__profile_reporter::m_profilers.back()))->unpause();
             }
         }
 
@@ -92,7 +93,7 @@ namespace __debug
             output.open(m_outputPath, std::ios::out | std::ios::trunc | std::ios::binary);
             }
 
-        if (m_profiles.size())
+        if (!m_profiles.empty())
             {
             std::chrono::nanoseconds totalTime{ 0 };
             for (const auto& pos : m_profiles)
@@ -100,9 +101,9 @@ namespace __debug
                 totalTime += pos.m_total_duration_time;
                 }
             // write a header
-            std::string header = "Name\tTimes calls\tTotal time (in milliseconds)\t"
-                                 "Total time (%)\tLowest call time\tHighest call time\t"
-                                 "Average call time\tExtra Info (from highest call time)\n";
+            const std::string header = "Name\tTimes calls\tTotal time (in milliseconds)\t"
+                                       "Total time (%)\tLowest call time\tHighest call time\t"
+                                       "Average call time\tExtra Info (from highest call time)\n";
             if (output.is_open())
                 {
                 output << header.c_str();

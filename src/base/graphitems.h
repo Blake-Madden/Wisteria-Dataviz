@@ -158,14 +158,15 @@ namespace Wisteria
 
             /** @brief Constructor.
                 @param col The color to paint with.*/
-            explicit GradientFill(wxColour col) : m_color1(std::move(col)) {}
+            explicit GradientFill(const wxColour& col) : m_color1(col) {}
 
             /** @brief Constructor, which will paint with a gradient.
                 @param col1 The first color of the gradient.
                 @param col2 The second color of the gradient.
                 @param dir The direction of the gradient.*/
-            GradientFill(wxColour col1, wxColour col2, const FillDirection dir) noexcept
-                : m_color1(std::move(col1)), m_color2(std::move(col2)), m_direction(dir)
+            GradientFill(const wxColour& col1, const wxColour& col2,
+                         const FillDirection dir) noexcept
+                : m_color1(col1), m_color2(col2), m_direction(dir)
                 {
                 }
 

@@ -484,7 +484,7 @@ void SideBarBook::DoInvalidateBestSize()
     // explicitly if we have sidebar as it will already invalidate the best
     // size of its parent when its own size is invalidated and its parent is
     // this control
-    if (GetSideBar())
+    if (GetSideBar() != nullptr)
         {
         GetSideBar()->InvalidateBestSize();
         }

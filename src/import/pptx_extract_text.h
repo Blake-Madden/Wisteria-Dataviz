@@ -70,26 +70,26 @@ namespace lily_of_the_valley
             const wchar_t* nextBreak = nullptr;
             bool isBulletedParagraph = true;
 
-            while (start && (start < endSentinel))
+            while ((start != nullptr) && (start < endSentinel))
                 {
                 const bool isBulletedPreviousParagraph = isBulletedParagraph;
                 isBulletedParagraph = true;
                 paragraphEnd = find_closing_element(start, endSentinel, L"a:p");
-                if (!paragraphEnd)
+                if (paragraphEnd == nullptr)
                     {
                     break;
                     }
                 paragraphProperties = find_element(start, paragraphEnd, L"a:pPr", true);
-                if (paragraphProperties)
+                if (paragraphProperties != nullptr)
                     {
                     paragraphPropertiesEnd =
                         find_closing_element(paragraphProperties, paragraphEnd, L"a:pPr");
-                    if (paragraphPropertiesEnd)
+                    if (paragraphPropertiesEnd != nullptr)
                         {
                         // see if the paragraphs in here are bullet points or real lines of text.
                         const wchar_t* bulletNoneTag = find_element(
                             paragraphProperties, paragraphPropertiesEnd, L"a:buNone", true);
-                        if (bulletNoneTag)
+                        if (bulletNoneTag != nullptr)
                             {
                             isBulletedParagraph = false;
                             }
@@ -118,31 +118,31 @@ namespace lily_of_the_valley
                     // go to the next row
                     nextBreak = find_element(start, paragraphEnd, L"a:br", true);
                     start = find_element(start, paragraphEnd, L"a:r", false);
-                    if (!start || start > endSentinel)
+                    if ((start == nullptr) || start > endSentinel)
                         {
                         // if no more runs in this paragraph,
                         // just see if there are any trailing breaks
-                        if (nextBreak)
+                        if (nextBreak != nullptr)
                             {
                             add_character(L'\n');
                             }
                         break;
                         }
                     rowEnd = find_closing_element(++start, paragraphEnd, L"a:r");
-                    if (!rowEnd || rowEnd > endSentinel)
+                    if ((rowEnd == nullptr) || rowEnd > endSentinel)
                         {
                         break;
                         }
                     // See if there is a break before this row.
                     // If so, then add some newlines to the output first.
-                    if (nextBreak && nextBreak < start)
+                    if ((nextBreak != nullptr) && nextBreak < start)
                         {
                         add_character(L'\n');
                         }
                     // Read the text section inside it. If no valid text section, then
                     // just add a space (which an empty run implies) and skip to the next run.
                     start = find_element(start, rowEnd, L"a:t", false);
-                    if (!start || start > endSentinel)
+                    if ((start == nullptr) || start > endSentinel)
                         {
                         if (get_filtered_text_length() > 0 &&
                             !std::iswspace(get_filtered_text()[get_filtered_text_length() - 1]))
@@ -153,13 +153,13 @@ namespace lily_of_the_valley
                         continue;
                         }
                     start = std::wcschr(start, L'>');
-                    if (!start || start > endSentinel)
+                    if ((start == nullptr) || start > endSentinel)
                         {
                         start = rowEnd;
                         continue;
                         }
                     textEnd = find_closing_element(++start, rowEnd, L"a:t");
-                    if (!textEnd || textEnd > endSentinel)
+                    if ((textEnd == nullptr) || textEnd > endSentinel)
                         {
                         start = rowEnd;
                         continue;
@@ -212,7 +212,7 @@ namespace lily_of_the_valley
 
             const wchar_t* const officeMetaStart =
                 find_element(html_text, textEnd, OFFICE_META, true);
-            if (!officeMetaStart)
+            if (officeMetaStart == nullptr)
                 {
                 return;
                 }

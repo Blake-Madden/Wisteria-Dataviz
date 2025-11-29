@@ -103,9 +103,9 @@ namespace Wisteria::Data
             }
 
         // prep target string table
-        constexpr GroupIdType mdCode{ 0 };
+        constexpr GroupIdType MD_CODE{ 0 };
         targetVar->GetStringTable().clear();
-        targetVar->GetStringTable().insert(std::make_pair(mdCode, wxString{}));
+        targetVar->GetStringTable().insert(std::make_pair(MD_CODE, wxString{}));
         std::map<wxString, GroupIdType, wxStringLessNoCase> idMap;
         for (const auto& reg : replacementMap)
             {
@@ -153,7 +153,7 @@ namespace Wisteria::Data
                 }
             if (!foundMatch)
                 {
-                targetVar->SetValue(i, mdCode);
+                targetVar->SetValue(i, MD_CODE);
                 }
             }
         }

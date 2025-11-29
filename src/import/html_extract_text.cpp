@@ -8,6 +8,7 @@
 
 #include "html_extract_text.h"
 #include <algorithm>
+#include <utility>
 
 using namespace string_util;
 using namespace lily_of_the_valley;
@@ -25,7 +26,7 @@ namespace lily_of_the_valley
             {
             const wchar_t* elementEnd = find_closing_element(elementStart, html_end, element);
             elementStart = find_close_tag(elementStart);
-            if (elementStart && elementEnd)
+            if ((elementStart != nullptr) && (elementEnd != nullptr))
                 {
                 ++elementStart;
                 return string_util::trim_view(
@@ -41,7 +42,7 @@ namespace lily_of_the_valley
         std::string output;
         output.reserve(input.size());
 
-        auto hex_to_int = [](char ch) -> int
+        auto hexToInt = [](char ch) -> int
         {
             if (ch >= '0' && ch <= '9')
                 {
@@ -61,16 +62,16 @@ namespace lily_of_the_valley
         for (size_t index = 0; index < input.size(); ++index)
             {
             // look for the pattern: \u00XX
-            const bool has_enough_for_escape = (index + 6 <= input.size());
+            const bool hasEnoughForEscape = (index + 6 <= input.size());
 
-            if (has_enough_for_escape && input[index] == '\\' && input[index + 1] == 'u' &&
+            if (hasEnoughForEscape && input[index] == '\\' && input[index + 1] == 'u' &&
                 input[index + 2] == '0' && input[index + 3] == '0')
                 {
                 const char hiChar = input[index + 4];
                 const char loChar = input[index + 5];
 
-                const int hi = hex_to_int(hiChar);
-                const int lo = hex_to_int(loChar);
+                const int hi = hexToInt(hiChar);
+                const int lo = hexToInt(loChar);
 
                 if (hi >= 0 && lo >= 0)
                     {
@@ -115,10 +116,10 @@ namespace lily_of_the_valley
         // split name/extension format:
         //   "FileNameWithoutExtension":"Document"
         //   "FileExtension":"docx"
-        const std::string base = extract_json_field(html, "FileNameWithoutExtension");
+        std::string base = extract_json_field(html, "FileNameWithoutExtension");
         if (!base.empty())
             {
-            std::string ext = extract_json_field(html, "FileExtension");
+            const std::string ext = extract_json_field(html, "FileExtension");
             if (!ext.empty())
                 {
                 return base + "." + ext;
@@ -142,7 +143,7 @@ namespace lily_of_the_valley
 
         pos += keyQuoted.size();
 
-        auto skip_ws_local = [&](size_t& p)
+        auto skipWsLocal = [&](size_t& p)
         {
             p = html.find_first_not_of(" \t\n\r", p);
             if (p == std::string_view::npos)
@@ -152,7 +153,7 @@ namespace lily_of_the_valley
         };
 
         // skip whitespace until ':'
-        skip_ws_local(pos);
+        skipWsLocal(pos);
         if (pos == html.size() || html[pos] != ':')
             {
             return {};
@@ -160,7 +161,7 @@ namespace lily_of_the_valley
         ++pos;
 
         // skip whitespace until first quote
-        skip_ws_local(pos);
+        skipWsLocal(pos);
         if (pos == html.size() || html[pos] != '"')
             {
             return {};
@@ -193,10 +194,8 @@ namespace lily_of_the_valley
             {
             return std::wstring{};
             }
-        else
-            {
-            return { rt.first, rt.second };
-            }
+
+        return { rt.first, rt.second };
         }
 
     //------------------------------------------------------------------
@@ -242,7 +241,7 @@ namespace lily_of_the_valley
             if (bookMarkPtr != nullptr && bookMarkSize > 0)
                 {
                 std::wstring bookmark(bookMarkPtr, bookMarkSize);
-                const auto tagClose = find_close_tag(htmlText.data());
+                const auto* const tagClose = find_close_tag(htmlText.data());
                 if (tagClose == nullptr)
                     {
                     htmlText = std::wstring_view{};
@@ -251,7 +250,7 @@ namespace lily_of_the_valley
                 htmlText.remove_prefix(std::distance(htmlText.data(), tagClose));
                 return bookmark;
                 }
-            const auto tagClose = find_close_tag(htmlText.data());
+            const auto* const tagClose = find_close_tag(htmlText.data());
             if (tagClose == nullptr)
                 {
                 htmlText = std::wstring_view{};
@@ -275,19 +274,19 @@ namespace lily_of_the_valley
     const wchar_t* html_extract_text::strchr_not_quoted(const wchar_t* string,
                                                         const wchar_t ch) noexcept
         {
-        if (!string)
+        if (string == nullptr)
             {
             return nullptr;
             }
         bool is_inside_of_quotes = false;
         bool is_inside_of_single_quotes = false;
-        while (string)
+        while (string != nullptr)
             {
             if (string[0] == 0)
                 {
                 return nullptr;
                 }
-            else if (string[0] == 0x22) // double quote
+            if (string[0] == 0x22) // double quote
                 {
                 is_inside_of_quotes = !is_inside_of_quotes;
                 // whether this double quote ends a quote pair or starts a new one, turn this flag
@@ -371,171 +370,167 @@ namespace lily_of_the_valley
                             currentStartPosition = 0;
                             continue;
                             }
+
+                        // copy over the proceeding text
+                        if (index > 0)
+                            {
+                            add_characters({ text, index });
+                            }
+                        // in case this is an unencoded ampersand then treat it as such
+                        if (std::iswspace(text[index + 1]))
+                            {
+                            add_character(L'&');
+                            add_character(L' ');
+                            }
+                        // convert an encoded number to character
+                        else if (text[index + 1] == L'#')
+                            {
+                            const wchar_t value =
+                                string_util::is_either(text[index + 2], L'x', L'X') ?
+                                    // if it is hex encoded (e.g., '&#xFF')
+                                    static_cast<wchar_t>(
+                                        std::wcstol((text + index + 3), nullptr, 16)) :
+                                    // else it is a plain numeric value (e.g., '&#79')
+                                    static_cast<wchar_t>(
+                                        std::wcstol((text + index + 2), nullptr, 10));
+                            if (value != 173) // soft hyphens should just be stripped out
+                                {
+                                // ligatures
+                                if (value >= 0xFB00 && value <= 0xFB06)
+                                    {
+                                    switch (value)
+                                        {
+                                    case 0xFB00:
+                                        add_characters({ L"ff", 2 });
+                                        break;
+                                    case 0xFB01:
+                                        add_characters({ L"fi", 2 });
+                                        break;
+                                    case 0xFB02:
+                                        add_characters({ L"fl", 2 });
+                                        break;
+                                    case 0xFB03:
+                                        add_characters({ L"ffi", 3 });
+                                        break;
+                                    case 0xFB04:
+                                        add_characters({ L"ffl", 3 });
+                                        break;
+                                    case 0xFB05:
+                                        add_characters({ L"ft", 2 });
+                                        break;
+                                    case 0xFB06:
+                                        add_characters({ L"st", 2 });
+                                        break;
+                                        };
+                                    }
+                                else if (value != 0)
+                                    {
+                                    add_character(value);
+                                    }
+                                // in case conversion failed to come up with a number
+                                // (incorrect encoding in the HTML maybe)
+                                else
+                                    {
+                                    log_message(L"Invalid numeric HTML entity: " +
+                                                std::wstring(text + index,
+                                                             (semicolon + 1) - (text + index)));
+                                    add_characters(
+                                        { text + index,
+                                          static_cast<size_t>((semicolon + 1) - (text + index)) });
+                                    }
+                                }
+                            }
+                        // look up named entities, such as "amp" or "nbsp"
                         else
                             {
-                            // copy over the proceeding text
-                            if (index > 0)
+                            const wchar_t value = HTML_TABLE_LOOKUP.find(
+                                { text + index + 1,
+                                  static_cast<size_t>(semicolon - (text + index + 1)) });
+                            if (value != 173) // soft hyphens should just be stripped out
                                 {
-                                add_characters({ text, index });
-                                }
-                            // in case this is an unencoded ampersand then treat it as such
-                            if (std::iswspace(text[index + 1]))
-                                {
-                                add_character(L'&');
-                                add_character(L' ');
-                                }
-                            // convert an encoded number to character
-                            else if (text[index + 1] == L'#')
-                                {
-                                const wchar_t value =
-                                    string_util::is_either(text[index + 2], L'x', L'X') ?
-                                        // if it is hex encoded (e.g., '&#xFF')
-                                        static_cast<wchar_t>(
-                                            std::wcstol((text + index + 3), nullptr, 16)) :
-                                        // else it is a plain numeric value (e.g., '&#79')
-                                        static_cast<wchar_t>(
-                                            std::wcstol((text + index + 2), nullptr, 10));
-                                if (value != 173) // soft hyphens should just be stripped out
+                                // Missing semicolon and not a valid entity?
+                                // Must be an unencoded ampersand with a letter right next to
+                                // it, so just copy that over.
+                                if (value == L'?' && semicolon[0] != L';')
                                     {
-                                    // ligatures
-                                    if (value >= 0xFB00 && value <= 0xFB06)
+                                    log_message(
+                                        L"Unencoded ampersand or unknown HTML entity: " +
+                                        std::wstring(text + index, semicolon - (text + index)));
+                                    add_characters(
+                                        { text + index,
+                                          static_cast<size_t>(semicolon - (text + index) + 1) });
+                                    }
+                                else
+                                    {
+                                    // Check for something like "&amp;le;", which should really
+                                    // be "&le;". Workaround around it and log a warning.
+                                    bool leadingAmpersandEncodedCorrectly = true;
+                                    if (semicolon[0] == L';' && value == L'&')
                                         {
-                                        switch (value)
+                                        const wchar_t* nextTerminator = semicolon + 1;
+                                        while (!std::iswspace(*nextTerminator) &&
+                                               *nextTerminator != L';' &&
+                                               nextTerminator < (text + textSize))
                                             {
-                                        case 0xFB00:
-                                            add_characters({ L"ff", 2 });
-                                            break;
-                                        case 0xFB01:
-                                            add_characters({ L"fi", 2 });
-                                            break;
-                                        case 0xFB02:
-                                            add_characters({ L"fl", 2 });
-                                            break;
-                                        case 0xFB03:
-                                            add_characters({ L"ffi", 3 });
-                                            break;
-                                        case 0xFB04:
-                                            add_characters({ L"ffl", 3 });
-                                            break;
-                                        case 0xFB05:
-                                            add_characters({ L"ft", 2 });
-                                            break;
-                                        case 0xFB06:
-                                            add_characters({ L"st", 2 });
-                                            break;
-                                            };
+                                            ++nextTerminator;
+                                            }
+                                        if (nextTerminator < (text + textSize) &&
+                                            *nextTerminator == L';')
+                                            {
+                                            const wchar_t badlyEncodedEntity =
+                                                HTML_TABLE_LOOKUP.find(
+                                                    { semicolon + 1,
+                                                      static_cast<size_t>(nextTerminator -
+                                                                          (semicolon + 1)) });
+                                            if (badlyEncodedEntity != L'?')
+                                                {
+                                                log_message(
+                                                    L"Ampersand incorrectly encoded in HTML "
+                                                    L"entity: " +
+                                                    std::wstring(text + index,
+                                                                 (nextTerminator - (text + index)) +
+                                                                     1));
+                                                leadingAmpersandEncodedCorrectly = false;
+                                                semicolon = nextTerminator;
+                                                add_character(badlyEncodedEntity);
+                                                }
+                                            }
                                         }
-                                    else if (value != 0)
+                                    // appears to be a correctly-formed entity
+                                    if (leadingAmpersandEncodedCorrectly)
                                         {
                                         add_character(value);
-                                        }
-                                    // in case conversion failed to come up with a number
-                                    // (incorrect encoding in the HTML maybe)
-                                    else
-                                        {
-                                        log_message(L"Invalid numeric HTML entity: " +
-                                                    std::wstring(text + index,
-                                                                 (semicolon + 1) - (text + index)));
-                                        add_characters(
-                                            { text + index, static_cast<size_t>((semicolon + 1) -
-                                                                                (text + index)) });
-                                        }
-                                    }
-                                }
-                            // look up named entities, such as "amp" or "nbsp"
-                            else
-                                {
-                                const wchar_t value = HTML_TABLE_LOOKUP.find(
-                                    { text + index + 1,
-                                      static_cast<size_t>(semicolon - (text + index + 1)) });
-                                if (value != 173) // soft hyphens should just be stripped out
-                                    {
-                                    // Missing semicolon and not a valid entity?
-                                    // Must be an unencoded ampersand with a letter right next to
-                                    // it, so just copy that over.
-                                    if (value == L'?' && semicolon[0] != L';')
-                                        {
-                                        log_message(
-                                            L"Unencoded ampersand or unknown HTML entity: " +
-                                            std::wstring(text + index, semicolon - (text + index)));
-                                        add_characters({ text + index,
-                                                         static_cast<size_t>(semicolon -
-                                                                             (text + index) + 1) });
-                                        }
-                                    else
-                                        {
-                                        // Check for something like "&amp;le;", which should really
-                                        // be "&le;". Workaround around it and log a warning.
-                                        bool leadingAmpersandEncodedCorrectly = true;
-                                        if (semicolon[0] == L';' && value == L'&')
+                                        if (value == L'?')
                                             {
-                                            const wchar_t* nextTerminator = semicolon + 1;
-                                            while (!std::iswspace(*nextTerminator) &&
-                                                   *nextTerminator != L';' &&
-                                                   nextTerminator < (text + textSize))
-                                                {
-                                                ++nextTerminator;
-                                                }
-                                            if (nextTerminator < (text + textSize) &&
-                                                *nextTerminator == L';')
-                                                {
-                                                const wchar_t badlyEncodedEntity =
-                                                    HTML_TABLE_LOOKUP.find(
-                                                        { semicolon + 1,
-                                                          static_cast<size_t>(nextTerminator -
-                                                                              (semicolon + 1)) });
-                                                if (badlyEncodedEntity != L'?')
-                                                    {
-                                                    log_message(
-                                                        L"Ampersand incorrectly encoded in HTML "
-                                                        L"entity: " +
-                                                        std::wstring(
-                                                            text + index,
-                                                            (nextTerminator - (text + index)) + 1));
-                                                    leadingAmpersandEncodedCorrectly = false;
-                                                    semicolon = nextTerminator;
-                                                    add_character(badlyEncodedEntity);
-                                                    }
-                                                }
+                                            log_message(L"Unknown HTML entity: " +
+                                                        std::wstring(text + index,
+                                                                     semicolon - (text + index)));
                                             }
-                                        // appears to be a correctly-formed entity
-                                        if (leadingAmpersandEncodedCorrectly)
+                                        // Entity not correctly terminated by a semicolon.
+                                        // Here we will copy over the converted entity and
+                                        // trailing character (a space or newline).
+                                        if (semicolon[0] != L';')
                                             {
-                                            add_character(value);
-                                            if (value == L'?')
-                                                {
-                                                log_message(
-                                                    L"Unknown HTML entity: " +
-                                                    std::wstring(text + index,
-                                                                 semicolon - (text + index)));
-                                                }
-                                            // Entity not correctly terminated by a semicolon.
-                                            // Here we will copy over the converted entity and
-                                            // trailing character (a space or newline).
-                                            if (semicolon[0] != L';')
-                                                {
-                                                log_message(
-                                                    L"Missing semicolon on HTML entity: " +
-                                                    std::wstring(text + index,
-                                                                 semicolon - (text + index)));
-                                                add_character(semicolon[0]);
-                                                }
+                                            log_message(L"Missing semicolon on HTML entity: " +
+                                                        std::wstring(text + index,
+                                                                     semicolon - (text + index)));
+                                            add_character(semicolon[0]);
                                             }
                                         }
                                     }
                                 }
-                            // update indices into the raw HTML text
-                            if (static_cast<size_t>((semicolon + 1) - (text)) > textSize)
-                                {
-                                textSize = 0;
-                                }
-                            else
-                                {
-                                textSize -= (semicolon + 1) - (text);
-                                }
-                            text = semicolon + 1;
-                            currentStartPosition = 0;
                             }
+                        // update indices into the raw HTML text
+                        if (std::cmp_greater((semicolon + 1) - (text), textSize))
+                            {
+                            textSize = 0;
+                            }
+                        else
+                            {
+                            textSize -= (semicolon + 1) - (text);
+                            }
+                        text = semicolon + 1;
+                        currentStartPosition = 0;
                         }
                     // JS template placeholders ${}
                     else if (text[index] == L'$')
@@ -569,26 +564,24 @@ namespace lily_of_the_valley
                             currentStartPosition = 0;
                             continue;
                             }
+
+                        // copy over the proceeding text (before the placeholder)
+                        if (index > 0)
+                            {
+                            add_characters({ text, index });
+                            }
+                        // step over the placeholder
+                        if (std::cmp_greater((closingBrace + 1) - (text), textSize))
+                            {
+                            textSize = 0;
+                            }
                         else
                             {
-                            // copy over the proceeding text (before the placeholder)
-                            if (index > 0)
-                                {
-                                add_characters({ text, index });
-                                }
-                            // step over the placeholder
-                            if (static_cast<size_t>((closingBrace + 1) - (text)) > textSize)
-                                {
-                                textSize = 0;
-                                }
-                            else
-                                {
-                                textSize -= (closingBrace + 1) - (text);
-                                }
-                            text = closingBrace + 1;
-                            currentStartPosition = 0;
-                            continue;
+                            textSize -= (closingBrace + 1) - (text);
                             }
+                        text = closingBrace + 1;
+                        currentStartPosition = 0;
+                        continue;
                         }
                     else
                         {
@@ -716,7 +709,7 @@ namespace lily_of_the_valley
         const char* const end = pageContent + length;
         const char* start = string_util::strnistr(pageContent, "<meta", (end - pageContent));
         // No Meta section?
-        if (!start)
+        if (start == nullptr)
             {
             // See if this XML and parse it that way. Otherwise, there is no charset.
             if (std::strncmp(pageContent, "<?xml", 5) == 0)
@@ -738,12 +731,12 @@ namespace lily_of_the_valley
             {
             const char* nextAngleSymbol = string_util::strnchr(start, '>', (end - start));
             const char* contentType = string_util::strnistr(start, "content-type", (end - start));
-            if (!contentType || !nextAngleSymbol)
+            if ((contentType == nullptr) || (nextAngleSymbol == nullptr))
                 {
                 return charset;
                 }
             const char* contentStart = string_util::strnistr(start, " content=", (end - start));
-            if (!contentStart)
+            if (contentStart == nullptr)
                 {
                 return charset;
                 }
@@ -756,7 +749,7 @@ namespace lily_of_the_valley
                 }
             // otherwise, skip to the next meta tag
             start = string_util::strnistr(nextAngleSymbol, "<meta", (end - nextAngleSymbol));
-            if (!start)
+            if (start == nullptr)
                 {
                 return charset;
                 }
@@ -770,16 +763,16 @@ namespace lily_of_the_valley
         const char* nextAngle = string_util::strnchr(start, '>', (end - start));
         const char* nextClosedAngle = string_util::strnistr(start, "/>", (end - start));
         // no close angle?  This HTML is messed up, so just return the default charset
-        if (!nextAngle && !nextClosedAngle)
+        if ((nextAngle == nullptr) && (nextClosedAngle == nullptr))
             {
             return charset;
             }
         // see which closing angle is the closest one
-        if (nextAngle && nextClosedAngle)
+        if ((nextAngle != nullptr) && (nextClosedAngle != nullptr))
             {
             nextAngle = std::min(nextAngle, nextClosedAngle);
             }
-        else if (!nextAngle && nextClosedAngle)
+        else if ((nextAngle == nullptr) && (nextClosedAngle != nullptr))
             {
             nextAngle = nextClosedAngle;
             }
@@ -788,7 +781,7 @@ namespace lily_of_the_valley
         bool charsetFound = false;
         const char* const contentSection = start;
         start = string_util::strnistr(contentSection, "charset=", (end - contentSection));
-        if (start && start < nextAngle)
+        if ((start != nullptr) && start < nextAngle)
             {
             start += 8;
             charsetFound = true;
@@ -796,13 +789,13 @@ namespace lily_of_the_valley
         else
             {
             start = string_util::strnchr<char>(contentSection, L';', (end - contentSection));
-            if (start && start < nextAngle)
+            if ((start != nullptr) && start < nextAngle)
                 {
                 ++start;
                 charsetFound = true;
                 }
             }
-        if (start && charsetFound)
+        if ((start != nullptr) && charsetFound)
             {
             // chop off any quotes and trailing whitespace
             while (start < nextAngle)
@@ -832,10 +825,8 @@ namespace lily_of_the_valley
             charset.assign(start, charsetEnd - start);
             return charset;
             }
-        else
-            {
-            return charset;
-            }
+
+        return charset;
         }
 
     //------------------------------------------------------------------
@@ -844,15 +835,15 @@ namespace lily_of_the_valley
                                                          const wchar_t* strSearch,
                                                          const size_t strSearchSize) noexcept
         {
-        if (!string || !strSearch || stringSize == 0 || strSearchSize == 0)
+        if ((string == nullptr) || (strSearch == nullptr) || stringSize == 0 || strSearchSize == 0)
             {
             return nullptr;
             }
 
-        bool is_inside_of_quotes = false;
-        bool is_inside_of_single_quotes = false;
+        bool isInsideOfQuotes = false;
+        bool isInsideOfSingleQuotes = false;
         const wchar_t* const endSentinel = string + stringSize;
-        while (string && (string + strSearchSize <= endSentinel))
+        while ((string != nullptr) && (string + strSearchSize <= endSentinel))
             {
             // compare the characters one at a time
             size_t i = 0;
@@ -862,20 +853,20 @@ namespace lily_of_the_valley
                     {
                     return nullptr;
                     }
-                else if (string[i] == 0x22) // double quote
+                if (string[i] == 0x22) // double quote
                     {
-                    is_inside_of_quotes = !is_inside_of_quotes;
+                    isInsideOfQuotes = !isInsideOfQuotes;
                     // whether this double quote ends a quote pair or starts a new one, turn this
                     // flag off. This means that a double quote can close a single quote.
-                    is_inside_of_single_quotes = false;
+                    isInsideOfSingleQuotes = false;
                     }
                 // if a single quote already started a quote pair (and this is closing it) or
                 // we are not inside a double quote then count single quotes
-                else if ((!is_inside_of_quotes || is_inside_of_single_quotes) &&
+                else if ((!isInsideOfQuotes || isInsideOfSingleQuotes) &&
                          string[0] == 0x27) // single quote
                     {
-                    is_inside_of_quotes = !is_inside_of_quotes;
-                    is_inside_of_single_quotes = true;
+                    isInsideOfQuotes = !isInsideOfQuotes;
+                    isInsideOfSingleQuotes = true;
                     }
                 if (std::towlower(strSearch[i]) != std::towlower(string[i]))
                     {
@@ -886,14 +877,12 @@ namespace lily_of_the_valley
             if (i == strSearchSize)
                 {
                 // make sure we aren't inside quotes--if so, we need to skip it.
-                if (!is_inside_of_quotes)
+                if (!isInsideOfQuotes)
                     {
                     return string;
                     }
-                else
-                    {
-                    string += strSearchSize;
-                    }
+
+                string += strSearchSize;
                 }
             else
                 {
@@ -914,31 +903,31 @@ namespace lily_of_the_valley
             }
         const wchar_t* foundTag = find_tag(text, tag, allowQuotedTags);
         const wchar_t* elementEnd = find_close_tag(text);
-        if (foundTag && elementEnd && foundTag < elementEnd)
+        if ((foundTag != nullptr) && (elementEnd != nullptr) && foundTag < elementEnd)
             {
             foundTag += tag.length();
             // step over spaces between attribute name and its assignment operator
-            while (foundTag && foundTag < elementEnd && *foundTag == L' ')
+            while ((foundTag != nullptr) && foundTag < elementEnd && *foundTag == L' ')
                 {
                 std::advance(foundTag, 1);
                 }
             // step over assignment operator
-            if (foundTag && foundTag < elementEnd && is_either(*foundTag, L':', L'='))
+            if ((foundTag != nullptr) && foundTag < elementEnd && is_either(*foundTag, L':', L'='))
                 {
                 std::advance(foundTag, 1);
                 }
             // step over any more spaces after assignment operator
-            while (foundTag && foundTag < elementEnd && *foundTag == L' ')
+            while ((foundTag != nullptr) && foundTag < elementEnd && *foundTag == L' ')
                 {
                 std::advance(foundTag, 1);
                 }
             // step over any opening quotes
-            if (foundTag && foundTag < elementEnd && is_either(*foundTag, L'\'', L'"'))
+            if ((foundTag != nullptr) && foundTag < elementEnd && is_either(*foundTag, L'\'', L'"'))
                 {
                 std::advance(foundTag, 1);
                 }
             // step over spaces after quote
-            while (foundTag && foundTag < elementEnd && *foundTag == L' ')
+            while ((foundTag != nullptr) && foundTag < elementEnd && *foundTag == L' ')
                 {
                 std::advance(foundTag, 1);
                 }
@@ -955,7 +944,7 @@ namespace lily_of_the_valley
                                      // not allowing spaces and the tag is not inside quotes
                                      // (like a style section)
                                      string_util::strcspn_pointer(foundTag, L" \"'>", 4);
-            if (end && (end <= elementEnd))
+            if ((end != nullptr) && (end <= elementEnd))
                 {
                 // If at the end of the element, trim off any trailing spaces or a terminating '/'.
                 // Note that we don't search for '/' above because it can be inside a valid tag
@@ -980,15 +969,11 @@ namespace lily_of_the_valley
                     }
                 return std::make_pair(foundTag, (end - foundTag));
                 }
-            else
-                {
-                return std::make_pair(nullptr, 0);
-                }
-            }
-        else
-            {
+
             return std::make_pair(nullptr, 0);
             }
+
+        return std::make_pair(nullptr, 0);
         }
 
     //------------------------------------------------------------------
@@ -1011,7 +996,7 @@ namespace lily_of_the_valley
                 allowQuotedTags ?
                     string_util::strnistr<wchar_t>(foundTag, tag.data(), (elementEnd - foundTag)) :
                     stristr_not_quoted(foundTag, (elementEnd - foundTag), tag.data(), tag.length());
-            if (!foundTag || (foundTag > elementEnd))
+            if ((foundTag == nullptr) || (foundTag > elementEnd))
                 {
                 return nullptr;
                 }
@@ -1102,13 +1087,11 @@ namespace lily_of_the_valley
                 {
                 return is_either(get_filtered_buffer()[lastNotHSpace], L'\n', L'\r');
                 }
-            else
-                {
-                return true;
-                }
+
+            return true;
         };
 
-        while (start && (start < endSentinel))
+        while ((start != nullptr) && (start < endSentinel))
             {
             const size_t remainingTextLength = (endSentinel - start);
             currentElement.assign(get_element_name(start + 1, false));
@@ -1188,7 +1171,7 @@ namespace lily_of_the_valley
                 end = std::wcsstr(start, HTML_COMMENT_END.c_str());
                 // if a comment isn't properly terminated, then it's best to just assume
                 // the rest of the file is a huge comment and throw it out.
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
@@ -1199,15 +1182,15 @@ namespace lily_of_the_valley
                 {
                 end = string_util::stristr<wchar_t>(start, HTML_SCRIPT_END.c_str());
                 // no closing </script>, so step over this <script> and jump to next '<'
-                if (!end)
+                if (end == nullptr)
                     {
-                    auto closeTag = find_close_tag(start);
-                    if (!closeTag)
+                    const auto* closeTag = find_close_tag(start);
+                    if (closeTag == nullptr)
                         {
                         break;
                         }
                     end = std::wcschr(closeTag, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1223,15 +1206,15 @@ namespace lily_of_the_valley
                 {
                 end = string_util::stristr<wchar_t>(start, HTML_NOSCRIPT_END.c_str());
                 // no closing </noscript>, so step over this <noscript> and jump to next '<'
-                if (!end)
+                if (end == nullptr)
                     {
-                    auto closeTag = find_close_tag(start);
-                    if (!closeTag)
+                    const auto* closeTag = find_close_tag(start);
+                    if (closeTag == nullptr)
                         {
                         break;
                         }
                     end = std::wcschr(closeTag, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1246,15 +1229,15 @@ namespace lily_of_the_valley
                 {
                 end = string_util::stristr<wchar_t>(start, ANNOTATION_END.c_str());
                 // no closing </annotation>, so step over this <annotation> and jump to next '<'
-                if (!end)
+                if (end == nullptr)
                     {
-                    auto closeTag = find_close_tag(start);
-                    if (!closeTag)
+                    const auto* closeTag = find_close_tag(start);
+                    if (closeTag == nullptr)
                         {
                         break;
                         }
                     end = std::wcschr(closeTag, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1269,15 +1252,15 @@ namespace lily_of_the_valley
                 end = string_util::stristr<wchar_t>(start, ANNOTATION_XML_END.c_str());
                 // no closing </annotation-xml>, so step over this <annotation-xml> and
                 // jump to the next '<'
-                if (!end)
+                if (end == nullptr)
                     {
-                    auto closeTag = find_close_tag(start);
-                    if (!closeTag)
+                    const auto* closeTag = find_close_tag(start);
+                    if (closeTag == nullptr)
                         {
                         break;
                         }
                     end = std::wcschr(closeTag, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1292,15 +1275,15 @@ namespace lily_of_the_valley
                 {
                 end = string_util::stristr<wchar_t>(start, HTML_STYLE_END.c_str());
                 // no closing </style>, so step over this <style> and jump to next '<'
-                if (!end)
+                if (end == nullptr)
                     {
-                    auto closeTag = find_close_tag(start);
-                    if (!closeTag)
+                    const auto* closeTag = find_close_tag(start);
+                    if (closeTag == nullptr)
                         {
                         break;
                         }
                     end = std::wcschr(closeTag, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1315,8 +1298,8 @@ namespace lily_of_the_valley
                 {
                 const std::wstring metaName =
                     html_extract_text::read_attribute_as_string(start, L"name", false, false);
-                auto closeTag = find_close_tag(start);
-                if (!closeTag)
+                const auto* closeTag = find_close_tag(start);
+                if (closeTag == nullptr)
                     {
                     break;
                     }
@@ -1325,7 +1308,8 @@ namespace lily_of_the_valley
                     m_author =
                         html_extract_text::read_attribute_as_string(start, L"content", false, true);
                     html_extract_text valueParser;
-                    auto author = valueParser(m_author.c_str(), m_author.length(), true, false);
+                    const auto* author =
+                        valueParser(m_author.c_str(), m_author.length(), true, false);
                     if (author != nullptr)
                         {
                         m_author.assign(author);
@@ -1338,9 +1322,9 @@ namespace lily_of_the_valley
                     m_description =
                         html_extract_text::read_attribute_as_string(start, L"content", false, true);
                     html_extract_text valueParser;
-                    auto description =
+                    const auto* description =
                         valueParser(m_description.c_str(), m_description.length(), true, false);
-                    if (description)
+                    if (description != nullptr)
                         {
                         m_description.assign(description);
                         string_util::trim(m_description);
@@ -1352,9 +1336,9 @@ namespace lily_of_the_valley
                     m_keywords =
                         html_extract_text::read_attribute_as_string(start, L"content", false, true);
                     html_extract_text valueParser;
-                    auto keywords =
+                    const auto* keywords =
                         valueParser(m_keywords.c_str(), m_keywords.length(), true, false);
-                    if (keywords)
+                    if (keywords != nullptr)
                         {
                         m_keywords.assign(keywords);
                         string_util::trim(m_keywords);
@@ -1363,7 +1347,7 @@ namespace lily_of_the_valley
                     }
                 // move to next element
                 end = std::wcschr(closeTag, L'<');
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
@@ -1371,18 +1355,18 @@ namespace lily_of_the_valley
             // if it's a title, then look for matching title ending sequence
             else if (currentElement == L"title")
                 {
-                auto titleStart = find_close_tag(start);
-                if (!titleStart)
+                const auto* titleStart = find_close_tag(start);
+                if (titleStart == nullptr)
                     {
                     break;
                     }
                 ++titleStart; // step over '>'
                 end = string_util::stristr<wchar_t>(start, HTML_TITLE_END.c_str());
                 // <title> not closed with </title>, so step over <title> and move to next '<'
-                if (!end)
+                if (end == nullptr)
                     {
                     end = std::wcschr(titleStart, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1391,7 +1375,7 @@ namespace lily_of_the_valley
                     {
                     // convert any embedded entities in the title
                     html_extract_text titleParser;
-                    auto title = titleParser(titleStart, end - titleStart, true, false);
+                    const auto* title = titleParser(titleStart, end - titleStart, true, false);
                     if (title != nullptr)
                         {
                         m_title.assign(title);
@@ -1404,18 +1388,18 @@ namespace lily_of_the_valley
             // if it's a subject (not standard HTML, but Library of Congress uses this)
             else if (currentElement == L"subject")
                 {
-                auto subjectStart = find_close_tag(start);
-                if (!subjectStart)
+                const auto* subjectStart = find_close_tag(start);
+                if (subjectStart == nullptr)
                     {
                     break;
                     }
                 ++subjectStart; // step over '>'
                 end = string_util::stristr<wchar_t>(start, HTML_SUBJECT_END.c_str());
                 // <subject> not closed with </subject>, so step over <subject> and move to next '<'
-                if (!end)
+                if (end == nullptr)
                     {
                     end = std::wcschr(subjectStart, L'<');
-                    if (!end)
+                    if (end == nullptr)
                         {
                         break;
                         }
@@ -1424,7 +1408,8 @@ namespace lily_of_the_valley
                     {
                     // convert any embedded entities in the subject
                     html_extract_text subjectParser;
-                    auto subject = subjectParser(subjectStart, end - subjectStart, true, false);
+                    const auto* subject =
+                        subjectParser(subjectStart, end - subjectStart, true, false);
                     if (subject != nullptr)
                         {
                         m_subject.assign(subject);
@@ -1443,7 +1428,7 @@ namespace lily_of_the_valley
                       is_either<wchar_t>(start[5], L'p', L'P') && start[6] == L';'))
                 {
                 end = std::wcschr(start + 1, L'<');
-                if (!end)
+                if (end == nullptr)
                     {
                     parse_raw_text(start, endSentinel - start);
                     break;
@@ -1460,7 +1445,7 @@ namespace lily_of_the_valley
                 {
                 start += 9;
                 end = std::wcsstr(start, L"]]>");
-                if (!end || end > endSentinel)
+                if ((end == nullptr) || end > endSentinel)
                     {
                     ++m_is_in_preformatted_text_block_stack; // preserve newline formatting
                     parse_raw_text(start, endSentinel - start);
@@ -1621,7 +1606,8 @@ namespace lily_of_the_valley
                                 }
                             else if (attrib.find(L"hidden") != std::wstring::npos)
                                 {
-                                auto spanEnd = find_closing_element(start, endSentinel, L"span");
+                                const auto* spanEnd =
+                                    find_closing_element(start, endSentinel, L"span");
                                 if (spanEnd != nullptr)
                                     {
                                     start = spanEnd;
@@ -1631,7 +1617,7 @@ namespace lily_of_the_valley
                         }
                     }
                 end = find_close_tag(start + 1);
-                if (!end)
+                if (end == nullptr)
                     {
                     // no close tag? read to the next open tag then and read this section in below
                     if ((end = std::wcschr(start + 1, L'<')) == nullptr)
@@ -1651,14 +1637,12 @@ namespace lily_of_the_valley
                     continue;
                     }
                 // more normal behavior, where tag is properly terminated
-                else
-                    {
-                    ++end;
-                    }
+
+                ++end;
                 }
             // find the next starting tag
             start = std::wcschr(end, L'<');
-            if (!start || start >= endSentinel)
+            if ((start == nullptr) || start >= endSentinel)
                 {
                 break;
                 }
@@ -1722,7 +1706,7 @@ namespace lily_of_the_valley
             }
 
         // get any text lingering after the last >
-        if (end && end < endSentinel && include_outer_text)
+        if ((end != nullptr) && end < endSentinel && include_outer_text)
             {
             parse_raw_text(end, endSentinel - end);
             }
@@ -1734,7 +1718,7 @@ namespace lily_of_the_valley
     bool html_extract_text::compare_element(const wchar_t* text, std::wstring_view element,
                                             const bool accept_self_terminating_elements)
         {
-        if (!text || element.empty())
+        if ((text == nullptr) || element.empty())
             {
             return false;
             }
@@ -1762,16 +1746,16 @@ namespace lily_of_the_valley
             // are on a '/'. Otherwise, if not a space after it then fail. If it is a space,
             // then we need to scan beyond that to make sure it isn't self terminated after the
             // space.
-            else if (accept_self_terminating_elements)
+            if (accept_self_terminating_elements)
                 {
                 return (*text == L'/' || std::iswspace(*text));
                 }
             // if we aren't allowing "/>" and we are on a space, then just make sure
             // it isn't self terminated.
-            else if (std::iswspace(*text))
+            if (std::iswspace(*text))
                 {
                 const wchar_t* closeTag = find_close_tag(text);
-                if (!closeTag)
+                if (closeTag == nullptr)
                     {
                     return false;
                     }
@@ -1782,22 +1766,18 @@ namespace lily_of_the_valley
                     }
                 return (*closeTag != L'/');
                 }
-            else
-                {
-                return false;
-                }
-            }
-        else
-            {
+
             return false;
             }
+
+        return false;
         }
 
     //------------------------------------------------------------------
     bool html_extract_text::compare_element_case_sensitive(
         const wchar_t* text, std::wstring_view element, const bool accept_self_terminating_elements)
         {
-        if (!text || element.empty())
+        if ((text == nullptr) || element.empty())
             {
             return false;
             }
@@ -1824,16 +1804,16 @@ namespace lily_of_the_valley
             // are on a '/'. Otherwise, if not a space after it then fail. If it is a space,
             // then we need to scan beyond that to make sure it isn't self terminated
             // after the space.
-            else if (accept_self_terminating_elements)
+            if (accept_self_terminating_elements)
                 {
                 return (*text == L'/' || std::iswspace(*text));
                 }
             // if we aren't allowing "/>" and we are on a space, then just make sure
             // it isn't self terminated.
-            else if (std::iswspace(*text))
+            if (std::iswspace(*text))
                 {
                 const wchar_t* closeTag = find_close_tag(text);
-                if (!closeTag)
+                if (closeTag == nullptr)
                     {
                     return false;
                     }
@@ -1844,15 +1824,11 @@ namespace lily_of_the_valley
                     }
                 return (*closeTag != L'/');
                 }
-            else
-                {
-                return false;
-                }
-            }
-        else
-            {
+
             return false;
             }
+
+        return false;
         }
 
     //------------------------------------------------------------------
@@ -1944,13 +1920,13 @@ namespace lily_of_the_valley
             return nullptr;
             }
         // if we are at the beginning of an open statement, skip the opening <
-        else if (*text == L'<')
+        if (*text == L'<')
             {
             std::advance(text, 1);
             }
 
-        bool is_inside_of_double_quotes{ false };
-        bool is_inside_of_single_quotes{ false };
+        bool isInsideOfDoubleQuotes{ false };
+        bool isInsideOfSingleQuotes{ false };
         const wchar_t* startPos{ text };
         const wchar_t* lastQuotePos{ nullptr };
 
@@ -1962,24 +1938,24 @@ namespace lily_of_the_valley
                 }
             // flip the state of double or single quote if not inside
             // the other type of quotes
-            else if (!is_inside_of_single_quotes && *text == L'\"')
+            if (!isInsideOfSingleQuotes && *text == L'\"')
                 {
-                is_inside_of_double_quotes = !is_inside_of_double_quotes;
+                isInsideOfDoubleQuotes = !isInsideOfDoubleQuotes;
                 lastQuotePos = text;
                 }
-            else if (!is_inside_of_double_quotes && *text == L'\'')
+            else if (!isInsideOfDoubleQuotes && *text == L'\'')
                 {
-                is_inside_of_single_quotes = !is_inside_of_single_quotes;
+                isInsideOfSingleQuotes = !isInsideOfSingleQuotes;
                 lastQuotePos = text;
                 }
             else if (*text == L'>')
                 {
                 // not inside any quoted attributes, so this is the closing >
-                if (!is_inside_of_double_quotes && !is_inside_of_single_quotes)
+                if (!isInsideOfDoubleQuotes && !isInsideOfSingleQuotes)
                     {
                     return text;
                     }
-                else if (lastQuotePos != nullptr)
+                if (lastQuotePos != nullptr)
                     {
                     const wchar_t* lookBack{ lastQuotePos };
                     // if the quote we are inside doesn't have a = in front of it,
@@ -1994,7 +1970,7 @@ namespace lily_of_the_valley
                             foundEqual = true;
                             break;
                             }
-                        else if (!std::iswspace(*lookBack))
+                        if (!std::iswspace(*lookBack))
                             {
                             break;
                             }
@@ -2021,22 +1997,19 @@ namespace lily_of_the_valley
             return nullptr;
             }
 
-        while (sectionStart && sectionStart + elementTag.length() < sectionEnd)
+        while ((sectionStart != nullptr) && sectionStart + elementTag.length() < sectionEnd)
             {
             sectionStart = std::wcschr(sectionStart, L'<');
             if (sectionStart == nullptr || sectionStart + elementTag.length() > sectionEnd)
                 {
                 return nullptr;
                 }
-            else if (compare_element(sectionStart + 1, elementTag,
-                                     accept_self_terminating_elements))
+            if (compare_element(sectionStart + 1, elementTag, accept_self_terminating_elements))
                 {
                 return sectionStart;
                 }
-            else
-                {
-                sectionStart += 1 /* skip the '<' and search for the next one*/;
-                }
+
+            sectionStart += 1 /* skip the '<' and search for the next one*/;
             }
         return nullptr;
         }
@@ -2075,7 +2048,7 @@ namespace lily_of_the_valley
         long stackSize = 1;
 
         start = std::wcschr(sectionStart, L'<');
-        while (start && start + elementTag.length() + 1 < sectionEnd)
+        while ((start != nullptr) && start + elementTag.length() + 1 < sectionEnd)
             {
             // if a closing element if found, then decrease the stack
             if (start[1] == L'/' && compare_element(start + 2, elementTag, true))
@@ -2117,18 +2090,18 @@ namespace html_utilities
 
         const wchar_t* const endSentinel = html_text + text_length;
         const wchar_t *currentPos = html_text, *lastEnd = html_text;
-        while (currentPos && (currentPos < endSentinel))
+        while ((currentPos != nullptr) && (currentPos < endSentinel))
             {
             currentPos = html_extract_text::find_element(currentPos, endSentinel, L"a", true);
             // no more anchors, so just copy over the rest of the text and quit.
-            if (!currentPos || currentPos >= endSentinel)
+            if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 add_characters({ lastEnd, static_cast<size_t>(endSentinel - lastEnd) });
                 break;
                 }
             // if this is actually a bookmark, then we need to start over
             // (looking for the next <a>).
-            if (html_extract_text::find_tag(currentPos, L"name", false))
+            if (html_extract_text::find_tag(currentPos, L"name", false) != nullptr)
                 {
                 currentPos += 2;
                 continue;
@@ -2137,7 +2110,7 @@ namespace html_utilities
             // then move over to the end of this element.
             add_characters({ lastEnd, static_cast<size_t>(currentPos - lastEnd) });
             currentPos = html_extract_text::find_close_tag(currentPos);
-            if (!currentPos || currentPos >= endSentinel)
+            if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 break;
                 }
@@ -2146,7 +2119,7 @@ namespace html_utilities
             // <a>. Note that nested <a> would be very incorrect HTML, so we will safely assume that
             // there aren't any.
             currentPos = html_extract_text::find_closing_element(currentPos, endSentinel, L"a");
-            if (!currentPos || currentPos >= endSentinel)
+            if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 break;
                 }
@@ -2154,7 +2127,7 @@ namespace html_utilities
             // ...finally, find the close of this </a>, move to that, and start over again looking
             // for the next <a>
             currentPos = html_extract_text::find_close_tag(currentPos);
-            if (!currentPos || currentPos >= endSentinel)
+            if ((currentPos == nullptr) || currentPos >= endSentinel)
                 {
                 break;
                 }
@@ -2168,169 +2141,167 @@ namespace html_utilities
         {
         // Greek alphabet
         // cppcheck-suppress useInitializationList
-        m_symbol_table = {
-            std::make_pair(static_cast<wchar_t>(L'A'),
-                           static_cast<wchar_t>(913)), // uppercase Alpha
-            std::make_pair(static_cast<wchar_t>(L'B'), static_cast<wchar_t>(914)), // uppercase Beta
-            std::make_pair(static_cast<wchar_t>(L'G'),
-                           static_cast<wchar_t>(915)), // uppercase Gamma
-            std::make_pair(static_cast<wchar_t>(L'D'),
-                           static_cast<wchar_t>(916)), // uppercase Delta
-            std::make_pair(static_cast<wchar_t>(L'E'),
-                           static_cast<wchar_t>(917)), // uppercase Epsilon
-            std::make_pair(static_cast<wchar_t>(L'Z'), static_cast<wchar_t>(918)), // uppercase Zeta
-            std::make_pair(static_cast<wchar_t>(L'H'), static_cast<wchar_t>(919)), // uppercase Eta
-            std::make_pair(static_cast<wchar_t>(L'Q'),
-                           static_cast<wchar_t>(920)), // uppercase Theta
-            std::make_pair(static_cast<wchar_t>(L'I'), static_cast<wchar_t>(921)), // uppercase Iota
-            std::make_pair(static_cast<wchar_t>(L'K'),
-                           static_cast<wchar_t>(922)), // uppercase Kappa
-            std::make_pair(static_cast<wchar_t>(L'L'),
-                           static_cast<wchar_t>(923)), // uppercase Lambda
-            std::make_pair(static_cast<wchar_t>(L'M'), static_cast<wchar_t>(924)), // uppercase Mu
-            std::make_pair(static_cast<wchar_t>(L'N'), static_cast<wchar_t>(925)), // uppercase Nu
-            std::make_pair(static_cast<wchar_t>(L'X'), static_cast<wchar_t>(926)), // uppercase Xi
-            std::make_pair(static_cast<wchar_t>(L'O'),
-                           static_cast<wchar_t>(927)), // uppercase Omicron
-            std::make_pair(static_cast<wchar_t>(L'P'), static_cast<wchar_t>(928)), // uppercase Pi
-            std::make_pair(static_cast<wchar_t>(L'R'), static_cast<wchar_t>(929)), // uppercase Rho
-            std::make_pair(static_cast<wchar_t>(L'S'),
-                           static_cast<wchar_t>(931)), // uppercase Sigma
-            std::make_pair(static_cast<wchar_t>(L'T'), static_cast<wchar_t>(932)), // uppercase Tau
-            std::make_pair(static_cast<wchar_t>(L'U'),
-                           static_cast<wchar_t>(933)), // uppercase Upsilon
-            std::make_pair(static_cast<wchar_t>(L'F'), static_cast<wchar_t>(934)), // uppercase Phi
-            std::make_pair(static_cast<wchar_t>(L'C'), static_cast<wchar_t>(935)), // uppercase Chi
-            std::make_pair(static_cast<wchar_t>(L'Y'), static_cast<wchar_t>(936)), // uppercase Psi
-            std::make_pair(static_cast<wchar_t>(L'W'),
-                           static_cast<wchar_t>(937)), // uppercase Omega
-            std::make_pair(static_cast<wchar_t>(L'a'),
-                           static_cast<wchar_t>(945)), // lowercase alpha
-            std::make_pair(static_cast<wchar_t>(L'b'), static_cast<wchar_t>(946)), // lowercase beta
-            std::make_pair(static_cast<wchar_t>(L'g'),
-                           static_cast<wchar_t>(947)), // lowercase gamma
-            std::make_pair(static_cast<wchar_t>(L'd'),
-                           static_cast<wchar_t>(948)), // lowercase delta
-            std::make_pair(static_cast<wchar_t>(L'e'),
-                           static_cast<wchar_t>(949)), // lowercase epsilon
-            std::make_pair(static_cast<wchar_t>(L'z'), static_cast<wchar_t>(950)), // lowercase zeta
-            std::make_pair(static_cast<wchar_t>(L'h'), static_cast<wchar_t>(951)), // lowercase eta
-            std::make_pair(static_cast<wchar_t>(L'q'),
-                           static_cast<wchar_t>(952)), // lowercase theta
-            std::make_pair(static_cast<wchar_t>(L'i'), static_cast<wchar_t>(953)), // lowercase iota
-            std::make_pair(static_cast<wchar_t>(L'k'),
-                           static_cast<wchar_t>(954)), // lowercase kappa
-            std::make_pair(static_cast<wchar_t>(L'l'),
-                           static_cast<wchar_t>(955)), // lowercase lambda
-            std::make_pair(static_cast<wchar_t>(L'm'), static_cast<wchar_t>(956)), // lowercase mu
-            std::make_pair(static_cast<wchar_t>(L'n'), static_cast<wchar_t>(957)), // lowercase nu
-            std::make_pair(static_cast<wchar_t>(L'x'), static_cast<wchar_t>(958)), // lowercase xi
-            std::make_pair(static_cast<wchar_t>(L'o'),
-                           static_cast<wchar_t>(959)), // lowercase omicron
-            std::make_pair(static_cast<wchar_t>(L'p'), static_cast<wchar_t>(960)), // lowercase pi
-            std::make_pair(static_cast<wchar_t>(L'r'), static_cast<wchar_t>(961)), // lowercase rho
-            std::make_pair(static_cast<wchar_t>(L'V'),
-                           static_cast<wchar_t>(962)), // uppercase sigmaf
-            std::make_pair(static_cast<wchar_t>(L's'),
-                           static_cast<wchar_t>(963)), // lowercase sigma
-            std::make_pair(static_cast<wchar_t>(L't'), static_cast<wchar_t>(964)), // lowercase tau
-            std::make_pair(static_cast<wchar_t>(L'u'),
-                           static_cast<wchar_t>(965)), // lowercase upsilon
-            std::make_pair(static_cast<wchar_t>(L'f'), static_cast<wchar_t>(966)), // lowercase phi
-            std::make_pair(static_cast<wchar_t>(L'c'), static_cast<wchar_t>(967)), // lowercase chi
-            std::make_pair(static_cast<wchar_t>(L'y'), static_cast<wchar_t>(968)), // lowercase psi
-            std::make_pair(static_cast<wchar_t>(L'w'),
-                           static_cast<wchar_t>(969)), // lowercase omega
-            std::make_pair(static_cast<wchar_t>(L'J'),
-                           static_cast<wchar_t>(977)), // uppercase thetasym
-            std::make_pair(static_cast<wchar_t>(161),
-                           static_cast<wchar_t>(978)), // lowercase Upsilon1
-            std::make_pair(static_cast<wchar_t>(L'j'), static_cast<wchar_t>(981)), // lowercase phi1
-            std::make_pair(static_cast<wchar_t>(L'v'),
-                           static_cast<wchar_t>(982)), // lowercase omega1
-            // arrows
-            std::make_pair(static_cast<wchar_t>(171), static_cast<wchar_t>(8596)),
-            std::make_pair(static_cast<wchar_t>(172), static_cast<wchar_t>(8592)),
-            std::make_pair(static_cast<wchar_t>(173), static_cast<wchar_t>(8593)),
-            std::make_pair(static_cast<wchar_t>(174), static_cast<wchar_t>(8594)),
-            std::make_pair(static_cast<wchar_t>(175), static_cast<wchar_t>(8595)),
-            std::make_pair(static_cast<wchar_t>(191), static_cast<wchar_t>(8629)),
-            std::make_pair(static_cast<wchar_t>(219), static_cast<wchar_t>(8660)),
-            std::make_pair(static_cast<wchar_t>(220), static_cast<wchar_t>(8656)),
-            std::make_pair(static_cast<wchar_t>(221), static_cast<wchar_t>(8657)),
-            std::make_pair(static_cast<wchar_t>(222), static_cast<wchar_t>(8658)),
-            std::make_pair(static_cast<wchar_t>(223), static_cast<wchar_t>(8659)),
-            // math
-            std::make_pair(static_cast<wchar_t>(34), static_cast<wchar_t>(8704)),
-            std::make_pair(static_cast<wchar_t>(36), static_cast<wchar_t>(8707)),
-            std::make_pair(static_cast<wchar_t>(39), static_cast<wchar_t>(8717)),
-            std::make_pair(static_cast<wchar_t>(42), static_cast<wchar_t>(8727)),
-            std::make_pair(static_cast<wchar_t>(45), static_cast<wchar_t>(8722)),
-            std::make_pair(static_cast<wchar_t>(64), static_cast<wchar_t>(8773)),
-            std::make_pair(static_cast<wchar_t>(92), static_cast<wchar_t>(8756)),
-            std::make_pair(static_cast<wchar_t>(94), static_cast<wchar_t>(8869)),
-            std::make_pair(static_cast<wchar_t>(126), static_cast<wchar_t>(8764)),
-            std::make_pair(static_cast<wchar_t>(163), static_cast<wchar_t>(8804)),
-            std::make_pair(static_cast<wchar_t>(165), static_cast<wchar_t>(8734)),
-            std::make_pair(static_cast<wchar_t>(179), static_cast<wchar_t>(8805)),
-            std::make_pair(static_cast<wchar_t>(181), static_cast<wchar_t>(8733)),
-            std::make_pair(static_cast<wchar_t>(182), static_cast<wchar_t>(8706)),
-            std::make_pair(static_cast<wchar_t>(183), static_cast<wchar_t>(8729)),
-            std::make_pair(static_cast<wchar_t>(185), static_cast<wchar_t>(8800)),
-            std::make_pair(static_cast<wchar_t>(186), static_cast<wchar_t>(8801)),
-            std::make_pair(static_cast<wchar_t>(187), static_cast<wchar_t>(8776)),
-            std::make_pair(static_cast<wchar_t>(196), static_cast<wchar_t>(8855)),
-            std::make_pair(static_cast<wchar_t>(197), static_cast<wchar_t>(8853)),
-            std::make_pair(static_cast<wchar_t>(198), static_cast<wchar_t>(8709)),
-            std::make_pair(static_cast<wchar_t>(199), static_cast<wchar_t>(8745)),
-            std::make_pair(static_cast<wchar_t>(200), static_cast<wchar_t>(8746)),
-            std::make_pair(static_cast<wchar_t>(201), static_cast<wchar_t>(8835)),
-            std::make_pair(static_cast<wchar_t>(202), static_cast<wchar_t>(8839)),
-            std::make_pair(static_cast<wchar_t>(203), static_cast<wchar_t>(8836)),
-            std::make_pair(static_cast<wchar_t>(204), static_cast<wchar_t>(8834)),
-            std::make_pair(static_cast<wchar_t>(205), static_cast<wchar_t>(8838)),
-            std::make_pair(static_cast<wchar_t>(206), static_cast<wchar_t>(8712)),
-            std::make_pair(static_cast<wchar_t>(207), static_cast<wchar_t>(8713)),
-            std::make_pair(static_cast<wchar_t>(208), static_cast<wchar_t>(8736)),
-            std::make_pair(static_cast<wchar_t>(209), static_cast<wchar_t>(8711)),
-            std::make_pair(static_cast<wchar_t>(213), static_cast<wchar_t>(8719)),
-            std::make_pair(static_cast<wchar_t>(214), static_cast<wchar_t>(8730)),
-            std::make_pair(static_cast<wchar_t>(215), static_cast<wchar_t>(8901)),
-            std::make_pair(static_cast<wchar_t>(217), static_cast<wchar_t>(8743)),
-            std::make_pair(static_cast<wchar_t>(218), static_cast<wchar_t>(8744)),
-            std::make_pair(static_cast<wchar_t>(229), static_cast<wchar_t>(8721)),
-            std::make_pair(static_cast<wchar_t>(242), static_cast<wchar_t>(8747)),
-            std::make_pair(static_cast<wchar_t>(224), static_cast<wchar_t>(9674)),
-            std::make_pair(static_cast<wchar_t>(189), static_cast<wchar_t>(9168)),
-            std::make_pair(static_cast<wchar_t>(190), static_cast<wchar_t>(9135)),
-            std::make_pair(static_cast<wchar_t>(225), static_cast<wchar_t>(9001)),
-            std::make_pair(static_cast<wchar_t>(230), static_cast<wchar_t>(9115)),
-            std::make_pair(static_cast<wchar_t>(231), static_cast<wchar_t>(9116)),
-            std::make_pair(static_cast<wchar_t>(232), static_cast<wchar_t>(9117)),
-            std::make_pair(static_cast<wchar_t>(233), static_cast<wchar_t>(9121)),
-            std::make_pair(static_cast<wchar_t>(234), static_cast<wchar_t>(9122)),
-            std::make_pair(static_cast<wchar_t>(235), static_cast<wchar_t>(9123)),
-            std::make_pair(static_cast<wchar_t>(236), static_cast<wchar_t>(9127)),
-            std::make_pair(static_cast<wchar_t>(237), static_cast<wchar_t>(9128)),
-            std::make_pair(static_cast<wchar_t>(238), static_cast<wchar_t>(9129)),
-            std::make_pair(static_cast<wchar_t>(239), static_cast<wchar_t>(9130)),
-            std::make_pair(static_cast<wchar_t>(241), static_cast<wchar_t>(9002)),
-            std::make_pair(static_cast<wchar_t>(243), static_cast<wchar_t>(8992)),
-            std::make_pair(static_cast<wchar_t>(244), static_cast<wchar_t>(9134)),
-            std::make_pair(static_cast<wchar_t>(245), static_cast<wchar_t>(8993)),
-            std::make_pair(static_cast<wchar_t>(246), static_cast<wchar_t>(9118)),
-            std::make_pair(static_cast<wchar_t>(247), static_cast<wchar_t>(9119)),
-            std::make_pair(static_cast<wchar_t>(248), static_cast<wchar_t>(9120)),
-            std::make_pair(static_cast<wchar_t>(249), static_cast<wchar_t>(9124)),
-            std::make_pair(static_cast<wchar_t>(250), static_cast<wchar_t>(9125)),
-            std::make_pair(static_cast<wchar_t>(251), static_cast<wchar_t>(9126)),
-            std::make_pair(static_cast<wchar_t>(252), static_cast<wchar_t>(9131)),
-            std::make_pair(static_cast<wchar_t>(253), static_cast<wchar_t>(9132)),
-            std::make_pair(static_cast<wchar_t>(254), static_cast<wchar_t>(9133)),
-            std::make_pair(static_cast<wchar_t>(180), static_cast<wchar_t>(215)),
-            std::make_pair(static_cast<wchar_t>(184), static_cast<wchar_t>(247)),
-            std::make_pair(static_cast<wchar_t>(216), static_cast<wchar_t>(172))
-        };
+        m_symbol_table = { std::make_pair(L'A',
+                                          static_cast<wchar_t>(913)),       // uppercase Alpha
+                           std::make_pair(L'B', static_cast<wchar_t>(914)), // uppercase Beta
+                           std::make_pair(L'G',
+                                          static_cast<wchar_t>(915)), // uppercase Gamma
+                           std::make_pair(L'D',
+                                          static_cast<wchar_t>(916)), // uppercase Delta
+                           std::make_pair(L'E',
+                                          static_cast<wchar_t>(917)),       // uppercase Epsilon
+                           std::make_pair(L'Z', static_cast<wchar_t>(918)), // uppercase Zeta
+                           std::make_pair(L'H', static_cast<wchar_t>(919)), // uppercase Eta
+                           std::make_pair(L'Q',
+                                          static_cast<wchar_t>(920)),       // uppercase Theta
+                           std::make_pair(L'I', static_cast<wchar_t>(921)), // uppercase Iota
+                           std::make_pair(L'K',
+                                          static_cast<wchar_t>(922)), // uppercase Kappa
+                           std::make_pair(L'L',
+                                          static_cast<wchar_t>(923)),       // uppercase Lambda
+                           std::make_pair(L'M', static_cast<wchar_t>(924)), // uppercase Mu
+                           std::make_pair(L'N', static_cast<wchar_t>(925)), // uppercase Nu
+                           std::make_pair(L'X', static_cast<wchar_t>(926)), // uppercase Xi
+                           std::make_pair(L'O',
+                                          static_cast<wchar_t>(927)),       // uppercase Omicron
+                           std::make_pair(L'P', static_cast<wchar_t>(928)), // uppercase Pi
+                           std::make_pair(L'R', static_cast<wchar_t>(929)), // uppercase Rho
+                           std::make_pair(L'S',
+                                          static_cast<wchar_t>(931)),       // uppercase Sigma
+                           std::make_pair(L'T', static_cast<wchar_t>(932)), // uppercase Tau
+                           std::make_pair(L'U',
+                                          static_cast<wchar_t>(933)),       // uppercase Upsilon
+                           std::make_pair(L'F', static_cast<wchar_t>(934)), // uppercase Phi
+                           std::make_pair(L'C', static_cast<wchar_t>(935)), // uppercase Chi
+                           std::make_pair(L'Y', static_cast<wchar_t>(936)), // uppercase Psi
+                           std::make_pair(L'W',
+                                          static_cast<wchar_t>(937)), // uppercase Omega
+                           std::make_pair(L'a',
+                                          static_cast<wchar_t>(945)),       // lowercase alpha
+                           std::make_pair(L'b', static_cast<wchar_t>(946)), // lowercase beta
+                           std::make_pair(L'g',
+                                          static_cast<wchar_t>(947)), // lowercase gamma
+                           std::make_pair(L'd',
+                                          static_cast<wchar_t>(948)), // lowercase delta
+                           std::make_pair(L'e',
+                                          static_cast<wchar_t>(949)),       // lowercase epsilon
+                           std::make_pair(L'z', static_cast<wchar_t>(950)), // lowercase zeta
+                           std::make_pair(L'h', static_cast<wchar_t>(951)), // lowercase eta
+                           std::make_pair(L'q',
+                                          static_cast<wchar_t>(952)),       // lowercase theta
+                           std::make_pair(L'i', static_cast<wchar_t>(953)), // lowercase iota
+                           std::make_pair(L'k',
+                                          static_cast<wchar_t>(954)), // lowercase kappa
+                           std::make_pair(L'l',
+                                          static_cast<wchar_t>(955)),       // lowercase lambda
+                           std::make_pair(L'm', static_cast<wchar_t>(956)), // lowercase mu
+                           std::make_pair(L'n', static_cast<wchar_t>(957)), // lowercase nu
+                           std::make_pair(L'x', static_cast<wchar_t>(958)), // lowercase xi
+                           std::make_pair(L'o',
+                                          static_cast<wchar_t>(959)),       // lowercase omicron
+                           std::make_pair(L'p', static_cast<wchar_t>(960)), // lowercase pi
+                           std::make_pair(L'r', static_cast<wchar_t>(961)), // lowercase rho
+                           std::make_pair(L'V',
+                                          static_cast<wchar_t>(962)), // uppercase sigmaf
+                           std::make_pair(L's',
+                                          static_cast<wchar_t>(963)),       // lowercase sigma
+                           std::make_pair(L't', static_cast<wchar_t>(964)), // lowercase tau
+                           std::make_pair(L'u',
+                                          static_cast<wchar_t>(965)),       // lowercase upsilon
+                           std::make_pair(L'f', static_cast<wchar_t>(966)), // lowercase phi
+                           std::make_pair(L'c', static_cast<wchar_t>(967)), // lowercase chi
+                           std::make_pair(L'y', static_cast<wchar_t>(968)), // lowercase psi
+                           std::make_pair(L'w',
+                                          static_cast<wchar_t>(969)), // lowercase omega
+                           std::make_pair(L'J',
+                                          static_cast<wchar_t>(977)), // uppercase thetasym
+                           std::make_pair(static_cast<wchar_t>(161),
+                                          static_cast<wchar_t>(978)),       // lowercase Upsilon1
+                           std::make_pair(L'j', static_cast<wchar_t>(981)), // lowercase phi1
+                           std::make_pair(L'v',
+                                          static_cast<wchar_t>(982)), // lowercase omega1
+                           // arrows
+                           std::make_pair(static_cast<wchar_t>(171), static_cast<wchar_t>(8596)),
+                           std::make_pair(static_cast<wchar_t>(172), static_cast<wchar_t>(8592)),
+                           std::make_pair(static_cast<wchar_t>(173), static_cast<wchar_t>(8593)),
+                           std::make_pair(static_cast<wchar_t>(174), static_cast<wchar_t>(8594)),
+                           std::make_pair(static_cast<wchar_t>(175), static_cast<wchar_t>(8595)),
+                           std::make_pair(static_cast<wchar_t>(191), static_cast<wchar_t>(8629)),
+                           std::make_pair(static_cast<wchar_t>(219), static_cast<wchar_t>(8660)),
+                           std::make_pair(static_cast<wchar_t>(220), static_cast<wchar_t>(8656)),
+                           std::make_pair(static_cast<wchar_t>(221), static_cast<wchar_t>(8657)),
+                           std::make_pair(static_cast<wchar_t>(222), static_cast<wchar_t>(8658)),
+                           std::make_pair(static_cast<wchar_t>(223), static_cast<wchar_t>(8659)),
+                           // math
+                           std::make_pair(static_cast<wchar_t>(34), static_cast<wchar_t>(8704)),
+                           std::make_pair(static_cast<wchar_t>(36), static_cast<wchar_t>(8707)),
+                           std::make_pair(static_cast<wchar_t>(39), static_cast<wchar_t>(8717)),
+                           std::make_pair(static_cast<wchar_t>(42), static_cast<wchar_t>(8727)),
+                           std::make_pair(static_cast<wchar_t>(45), static_cast<wchar_t>(8722)),
+                           std::make_pair(static_cast<wchar_t>(64), static_cast<wchar_t>(8773)),
+                           std::make_pair(static_cast<wchar_t>(92), static_cast<wchar_t>(8756)),
+                           std::make_pair(static_cast<wchar_t>(94), static_cast<wchar_t>(8869)),
+                           std::make_pair(static_cast<wchar_t>(126), static_cast<wchar_t>(8764)),
+                           std::make_pair(static_cast<wchar_t>(163), static_cast<wchar_t>(8804)),
+                           std::make_pair(static_cast<wchar_t>(165), static_cast<wchar_t>(8734)),
+                           std::make_pair(static_cast<wchar_t>(179), static_cast<wchar_t>(8805)),
+                           std::make_pair(static_cast<wchar_t>(181), static_cast<wchar_t>(8733)),
+                           std::make_pair(static_cast<wchar_t>(182), static_cast<wchar_t>(8706)),
+                           std::make_pair(static_cast<wchar_t>(183), static_cast<wchar_t>(8729)),
+                           std::make_pair(static_cast<wchar_t>(185), static_cast<wchar_t>(8800)),
+                           std::make_pair(static_cast<wchar_t>(186), static_cast<wchar_t>(8801)),
+                           std::make_pair(static_cast<wchar_t>(187), static_cast<wchar_t>(8776)),
+                           std::make_pair(static_cast<wchar_t>(196), static_cast<wchar_t>(8855)),
+                           std::make_pair(static_cast<wchar_t>(197), static_cast<wchar_t>(8853)),
+                           std::make_pair(static_cast<wchar_t>(198), static_cast<wchar_t>(8709)),
+                           std::make_pair(static_cast<wchar_t>(199), static_cast<wchar_t>(8745)),
+                           std::make_pair(static_cast<wchar_t>(200), static_cast<wchar_t>(8746)),
+                           std::make_pair(static_cast<wchar_t>(201), static_cast<wchar_t>(8835)),
+                           std::make_pair(static_cast<wchar_t>(202), static_cast<wchar_t>(8839)),
+                           std::make_pair(static_cast<wchar_t>(203), static_cast<wchar_t>(8836)),
+                           std::make_pair(static_cast<wchar_t>(204), static_cast<wchar_t>(8834)),
+                           std::make_pair(static_cast<wchar_t>(205), static_cast<wchar_t>(8838)),
+                           std::make_pair(static_cast<wchar_t>(206), static_cast<wchar_t>(8712)),
+                           std::make_pair(static_cast<wchar_t>(207), static_cast<wchar_t>(8713)),
+                           std::make_pair(static_cast<wchar_t>(208), static_cast<wchar_t>(8736)),
+                           std::make_pair(static_cast<wchar_t>(209), static_cast<wchar_t>(8711)),
+                           std::make_pair(static_cast<wchar_t>(213), static_cast<wchar_t>(8719)),
+                           std::make_pair(static_cast<wchar_t>(214), static_cast<wchar_t>(8730)),
+                           std::make_pair(static_cast<wchar_t>(215), static_cast<wchar_t>(8901)),
+                           std::make_pair(static_cast<wchar_t>(217), static_cast<wchar_t>(8743)),
+                           std::make_pair(static_cast<wchar_t>(218), static_cast<wchar_t>(8744)),
+                           std::make_pair(static_cast<wchar_t>(229), static_cast<wchar_t>(8721)),
+                           std::make_pair(static_cast<wchar_t>(242), static_cast<wchar_t>(8747)),
+                           std::make_pair(static_cast<wchar_t>(224), static_cast<wchar_t>(9674)),
+                           std::make_pair(static_cast<wchar_t>(189), static_cast<wchar_t>(9168)),
+                           std::make_pair(static_cast<wchar_t>(190), static_cast<wchar_t>(9135)),
+                           std::make_pair(static_cast<wchar_t>(225), static_cast<wchar_t>(9001)),
+                           std::make_pair(static_cast<wchar_t>(230), static_cast<wchar_t>(9115)),
+                           std::make_pair(static_cast<wchar_t>(231), static_cast<wchar_t>(9116)),
+                           std::make_pair(static_cast<wchar_t>(232), static_cast<wchar_t>(9117)),
+                           std::make_pair(static_cast<wchar_t>(233), static_cast<wchar_t>(9121)),
+                           std::make_pair(static_cast<wchar_t>(234), static_cast<wchar_t>(9122)),
+                           std::make_pair(static_cast<wchar_t>(235), static_cast<wchar_t>(9123)),
+                           std::make_pair(static_cast<wchar_t>(236), static_cast<wchar_t>(9127)),
+                           std::make_pair(static_cast<wchar_t>(237), static_cast<wchar_t>(9128)),
+                           std::make_pair(static_cast<wchar_t>(238), static_cast<wchar_t>(9129)),
+                           std::make_pair(static_cast<wchar_t>(239), static_cast<wchar_t>(9130)),
+                           std::make_pair(static_cast<wchar_t>(241), static_cast<wchar_t>(9002)),
+                           std::make_pair(static_cast<wchar_t>(243), static_cast<wchar_t>(8992)),
+                           std::make_pair(static_cast<wchar_t>(244), static_cast<wchar_t>(9134)),
+                           std::make_pair(static_cast<wchar_t>(245), static_cast<wchar_t>(8993)),
+                           std::make_pair(static_cast<wchar_t>(246), static_cast<wchar_t>(9118)),
+                           std::make_pair(static_cast<wchar_t>(247), static_cast<wchar_t>(9119)),
+                           std::make_pair(static_cast<wchar_t>(248), static_cast<wchar_t>(9120)),
+                           std::make_pair(static_cast<wchar_t>(249), static_cast<wchar_t>(9124)),
+                           std::make_pair(static_cast<wchar_t>(250), static_cast<wchar_t>(9125)),
+                           std::make_pair(static_cast<wchar_t>(251), static_cast<wchar_t>(9126)),
+                           std::make_pair(static_cast<wchar_t>(252), static_cast<wchar_t>(9131)),
+                           std::make_pair(static_cast<wchar_t>(253), static_cast<wchar_t>(9132)),
+                           std::make_pair(static_cast<wchar_t>(254), static_cast<wchar_t>(9133)),
+                           std::make_pair(static_cast<wchar_t>(180), static_cast<wchar_t>(215)),
+                           std::make_pair(static_cast<wchar_t>(184), static_cast<wchar_t>(247)),
+                           std::make_pair(static_cast<wchar_t>(216), static_cast<wchar_t>(172)) };
         }
 
     //------------------------------------------------------------------
@@ -2349,12 +2320,12 @@ namespace html_utilities
         {
         // cppcheck-suppress useInitializationList
         m_table = { std::make_pair(std::wstring_view(L"apos"),
-                                   static_cast<wchar_t>(L'\'')), // not standard, but common
-                    std::make_pair(std::wstring_view(L"gt"), static_cast<wchar_t>(L'>')),
-                    std::make_pair(std::wstring_view(L"lt"), static_cast<wchar_t>(L'<')),
-                    std::make_pair(std::wstring_view(L"amp"), static_cast<wchar_t>(L'&')),
-                    std::make_pair(std::wstring_view(L"quot"), static_cast<wchar_t>(L'"')),
-                    std::make_pair(std::wstring_view(L"nbsp"), static_cast<wchar_t>(L' ')),
+                                   L'\''), // not standard, but common
+                    std::make_pair(std::wstring_view(L"gt"), L'>'),
+                    std::make_pair(std::wstring_view(L"lt"), L'<'),
+                    std::make_pair(std::wstring_view(L"amp"), L'&'),
+                    std::make_pair(std::wstring_view(L"quot"), L'"'),
+                    std::make_pair(std::wstring_view(L"nbsp"), L' '),
                     std::make_pair(std::wstring_view(L"iexcl"), static_cast<wchar_t>(161)),
                     std::make_pair(std::wstring_view(L"cent"), static_cast<wchar_t>(162)),
                     std::make_pair(std::wstring_view(L"pound"), static_cast<wchar_t>(163)),
@@ -2637,19 +2608,20 @@ namespace html_utilities
 
         while (!htmlText.empty())
             {
-            size_t startOfScriptSection =
+            const size_t startOfScriptSection =
                 htmlText.find(javascript_hyperlink_parse::HTML_SCRIPT_WITH_ANGLE);
             if (startOfScriptSection == std::wstring_view::npos)
                 {
                 break;
                 }
-            size_t endOfScriptSection = htmlText.find(javascript_hyperlink_parse::HTML_SCRIPT_END);
+            const size_t endOfScriptSection =
+                htmlText.find(javascript_hyperlink_parse::HTML_SCRIPT_END);
             if (endOfScriptSection == std::wstring_view::npos)
                 {
                 break;
                 }
 
-            std::wstring_view scriptBlock =
+            const std::wstring_view scriptBlock =
                 htmlText.substr(startOfScriptSection, endOfScriptSection - startOfScriptSection);
 
             if (std::match_results<const wchar_t*> matches;
@@ -2660,7 +2632,7 @@ namespace html_utilities
                 // if being pieced together with more values, just grab the initial key/value
                 // assignment in the string and ignore the rest
                 std::wstring cookieValue{ matches[2] };
-                if (size_t semiCPos = cookieValue.rfind(L';'); semiCPos != std::wstring::npos)
+                if (const size_t semiCPos = cookieValue.rfind(L';'); semiCPos != std::wstring::npos)
                     {
                     cookieValue.erase(semiCPos);
                     }
@@ -2691,7 +2663,7 @@ namespace html_utilities
         {
         // if the end is null (should not happen) or if the current position
         // is null or at the terminator then we are done
-        if (!m_js_text_end || !m_js_text_start || m_js_text_start[0] == 0)
+        if ((m_js_text_end == nullptr) || (m_js_text_start == nullptr) || m_js_text_start[0] == 0)
             {
             m_current_hyperlink_length = 0;
             m_js_text_start = nullptr;
@@ -2729,19 +2701,15 @@ namespace html_utilities
                         }
                     return m_js_text_start;
                     }
-                else
-                    {
-                    m_current_hyperlink_length = 0;
-                    m_js_text_start = nullptr;
-                    return nullptr;
-                    }
-                }
-            else
-                {
+
                 m_current_hyperlink_length = 0;
                 m_js_text_start = nullptr;
                 return nullptr;
                 }
+
+            m_current_hyperlink_length = 0;
+            m_js_text_start = nullptr;
+            return nullptr;
             }
         }
 
@@ -2753,16 +2721,16 @@ namespace html_utilities
         // reset
         m_current_hyperlink_length = 0;
 
-        if (!m_html_text || m_html_text[0] == 0)
+        if ((m_html_text == nullptr) || m_html_text[0] == 0)
             {
             return nullptr;
             }
 
-        while (m_html_text)
+        while (m_html_text != nullptr)
             {
             m_html_text =
                 html_extract_text::find_element(m_html_text, m_html_text_end, HTML_IMAGE, true);
-            if (m_html_text)
+            if (m_html_text != nullptr)
                 {
                 const auto [imageSrc, imageLength] =
                     html_extract_text::read_attribute(m_html_text, L"src", false, true);
@@ -2775,16 +2743,12 @@ namespace html_utilities
                     return m_html_text;
                     }
                 // no src in this anchor, so go to next one
-                else
-                    {
-                    m_html_text += HTML_IMAGE.length() + 1;
-                    continue;
-                    }
+
+                m_html_text += HTML_IMAGE.length() + 1;
+                continue;
                 }
-            else
-                {
-                return m_html_text = nullptr;
-                }
+
+            return m_html_text = nullptr;
             }
         return m_html_text = nullptr;
         }
@@ -2801,17 +2765,17 @@ namespace html_utilities
         // see if there is a base url that should be used as an alternative that the client should
         // use instead
         const auto* headStart = string_util::stristr<wchar_t>(m_html_text, L"<head");
-        if (!headStart)
+        if (headStart == nullptr)
             {
             return;
             }
         const auto* base = string_util::stristr<wchar_t>(headStart, L"<base");
-        if (!base)
+        if (base == nullptr)
             {
             return;
             }
         base = string_util::stristr<wchar_t>(base, L"href=");
-        if (!base)
+        if (base == nullptr)
             {
             return;
             }
@@ -2840,7 +2804,7 @@ namespace html_utilities
             }
 
         // if src is malformed, then go to next one
-        if (!endQuote)
+        if (endQuote == nullptr)
             {
             return;
             }
@@ -2875,7 +2839,7 @@ namespace html_utilities
         m_current_link_is_javascript = false;
         m_inside_of_script_section = false;
 
-        if (!m_html_text || m_html_text[0] == 0)
+        if ((m_html_text == nullptr) || m_html_text[0] == 0)
             {
             return nullptr;
             }
@@ -2883,7 +2847,7 @@ namespace html_utilities
         for (;;)
             {
             m_html_text = std::wcschr(m_html_text, L'<');
-            if (m_html_text && m_html_text + 1 < m_html_text_end)
+            if ((m_html_text != nullptr) && m_html_text + 1 < m_html_text_end)
                 {
                 // don't bother with termination element
                 if (m_html_text[1] == L'/')
@@ -2901,8 +2865,8 @@ namespace html_utilities
                     const wchar_t* endAngle = html_extract_text::find_close_tag(m_html_text);
                     const auto* endOfScriptSection = string_util::stristr<wchar_t>(
                         m_html_text, javascript_hyperlink_parse::HTML_SCRIPT_END.data());
-                    if (endAngle && (endAngle < m_html_text_end) && endOfScriptSection &&
-                        (endOfScriptSection < m_html_text_end))
+                    if ((endAngle != nullptr) && (endAngle < m_html_text_end) &&
+                        (endOfScriptSection != nullptr) && (endOfScriptSection < m_html_text_end))
                         {
                         m_javascript_hyperlink_parse.set(endAngle, endOfScriptSection - endAngle);
                         }
@@ -2929,7 +2893,7 @@ namespace html_utilities
                         }
                     // if we are currently in a SCRIPT section (that didn't have a link in it),
                     // then start parsing that section instead
-                    else if (m_inside_of_script_section)
+                    if (m_inside_of_script_section)
                         {
                         if (const wchar_t* currentLink = m_javascript_hyperlink_parse();
                             currentLink != nullptr)
@@ -2940,40 +2904,34 @@ namespace html_utilities
                                 m_javascript_hyperlink_parse.get_current_hyperlink_length();
                             return currentLink;
                             }
-                        else
-                            {
-                            m_inside_of_script_section = false;
-                            continue;
-                            }
-                        }
-                    // no src in this anchor, so go to next one
-                    else
-                        {
+
+                        m_inside_of_script_section = false;
                         continue;
                         }
+                    // no src in this anchor, so go to next one
+
+                    continue;
                     }
                 // ...or it is an anchor link
-                else if (html_extract_text::compare_element(m_html_text + 1, L"a", false) ||
-                         html_extract_text::compare_element(m_html_text + 1, L"link", false) ||
-                         html_extract_text::compare_element(m_html_text + 1, L"area", false))
+                if (html_extract_text::compare_element(m_html_text + 1, L"a", false) ||
+                    html_extract_text::compare_element(m_html_text + 1, L"link", false) ||
+                    html_extract_text::compare_element(m_html_text + 1, L"area", false))
                     {
                     ++m_html_text; // skip the <
                     const auto [attribText, attribLength] =
                         html_extract_text::read_attribute(m_html_text, L"href", false, true);
-                    if (attribText && attribLength > 0)
+                    if ((attribText != nullptr) && attribLength > 0)
                         {
                         m_html_text = attribText;
                         m_current_hyperlink_length = attribLength;
                         return m_html_text;
                         }
                     // no href in this anchor, so go to next one
-                    else
-                        {
-                        continue;
-                        }
+
+                    continue;
                     }
                 // ...or a redirect in the HTTP meta section
-                else if (html_extract_text::compare_element(m_html_text + 1, HTML_META, false))
+                if (html_extract_text::compare_element(m_html_text + 1, HTML_META, false))
                     {
                     m_html_text += HTML_META.size() + 1;
                     const std::wstring httpEquiv = html_extract_text::read_attribute_as_string(
@@ -2982,7 +2940,7 @@ namespace html_utilities
                         {
                         const wchar_t* url =
                             html_extract_text::find_tag(m_html_text, L"url=", true);
-                        if (url && (url < m_html_text_end))
+                        if ((url != nullptr) && (url < m_html_text_end))
                             {
                             m_html_text = url + 4;
                             if (m_html_text[0] == 0)
@@ -3234,48 +3192,48 @@ namespace html_utilities
             }
 
         size_t query{ 0 };
-        const size_t last_slash = find_last_directory(m_current_url, query);
+        const size_t lastSlash = find_last_directory(m_current_url, query);
 
-        return m_current_url.substr(domainDirectoryPath, (last_slash - domainDirectoryPath));
+        return m_current_url.substr(domainDirectoryPath, (lastSlash - domainDirectoryPath));
         }
 
     //------------------------------------------------------------------
     std::wstring html_url_format::parse_image_name_from_url(std::wstring_view url)
         {
         constexpr static std::wstring_view PHP_IMAGE{ L"image=" };
-        std::wstring image_name;
+        std::wstring imageName;
         if (url.empty())
             {
-            return image_name;
+            return imageName;
             }
-        size_t startPos = url.find(L'?');
+        const size_t startPos = url.find(L'?');
         if (startPos == std::wstring_view::npos)
             {
-            return image_name;
+            return imageName;
             }
-        const auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(),
-                                          PHP_IMAGE.cend(), [](wchar_t lhv, wchar_t rhv)
-                                          { return std::towlower(lhv) == std::towlower(rhv); });
+        auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(), PHP_IMAGE.cend(),
+                                    [](wchar_t lhv, wchar_t rhv)
+                                    { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + PHP_IMAGE.length());
             }
         else
             {
-            return image_name;
+            return imageName;
             }
 
         // see if it is the in front of another command
         const size_t endPos = url.find(L'&');
         if (endPos == std::wstring_view::npos)
             {
-            image_name.assign(url);
+            imageName.assign(url);
             }
         else
             {
-            image_name.assign(url, 0, endPos);
+            imageName.assign(url, 0, endPos);
             }
-        return image_name;
+        return imageName;
         }
 
     //------------------------------------------------------------------
@@ -3289,9 +3247,9 @@ namespace html_utilities
             }
         // move to after the "www." or (if not there) the start of the url
         // (note that this needs to be case-insensitive, hence the std::search)
-        const auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
-                                          [](wchar_t lhv, wchar_t rhv)
-                                          { return std::towlower(lhv) == std::towlower(rhv); });
+        auto foundPos = std::search(url.cbegin(), url.cend(), WWW.cbegin(), WWW.cend(),
+                                    [](wchar_t lhv, wchar_t rhv)
+                                    { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + WWW.length());
@@ -3301,7 +3259,7 @@ namespace html_utilities
             {
             return tld;
             }
-        size_t endPos = url.find_first_of(L"/?", ++startPos);
+        const size_t endPos = url.find_first_of(L"/?", ++startPos);
         if (endPos == std::wstring_view::npos)
             {
             tld.assign(url.substr(startPos));
@@ -3337,24 +3295,23 @@ namespace html_utilities
         {
         // if this is a queried page then see where the command is at
         query_position = url.rfind(L'?');
-        size_t last_slash = url.rfind(L'/');
+        size_t lastSlash = url.rfind(L'/');
 
         // if this page is queried then backtrack to the '/' right before the query
-        if ((query_position != std::wstring::npos) && (last_slash != std::wstring::npos) &&
-            (query_position > 0) && (last_slash > 0) && (last_slash > query_position))
+        if ((query_position != std::wstring::npos) && (lastSlash != std::wstring::npos) &&
+            (query_position > 0) && (lastSlash > 0) && (lastSlash > query_position))
             {
-            last_slash = url.rfind(L'/', query_position - 1);
+            lastSlash = url.rfind(L'/', query_position - 1);
             }
         // see if the slash is just the one after "http:/" or if there is no none at all
-        if ((last_slash != std::wstring::npos && (last_slash > 0) &&
-             (url[last_slash - 1] == L'/')) ||
-            last_slash == std::wstring::npos)
+        if ((lastSlash != std::wstring::npos && (lastSlash > 0) && (url[lastSlash - 1] == L'/')) ||
+            lastSlash == std::wstring::npos)
             {
             // e.g., http://www.website.com/
             url += L'/';
-            last_slash = url.length() - 1;
+            lastSlash = url.length() - 1;
             }
-        return last_slash;
+        return lastSlash;
         }
 
     //------------------------------------------------------------------

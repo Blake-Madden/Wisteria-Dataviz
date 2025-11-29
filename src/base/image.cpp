@@ -1014,7 +1014,7 @@ namespace Wisteria::GraphItems
             {
             img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
-        // Original image would be fully opaque (although it may may have
+        // Original image would be fully opaque (although it may have
         // translucent/transparent pixels). If a custom opacity is being applied,
         // then apply that, but don't bother otherwise. This improves performance, and
         // altering the alpha channel also causes some artifacts to appear

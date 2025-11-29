@@ -144,11 +144,9 @@ namespace lily_of_the_valley
                     }
                 return get_filtered_text();
                 }
-            else
-                {
-                log_message(L"DOC parser: file header not found.");
-                throw msword_header_not_found();
-                }
+
+            log_message(L"DOC parser: file header not found.");
+            throw msword_header_not_found();
             }
 
         return get_filtered_text();
@@ -290,15 +288,13 @@ namespace lily_of_the_valley
                         currentState.m_consecutive_table_tabs_detected = true;
                         continue;
                         }
-                    else
+
+                    if (currentState.m_consecutive_table_tabs_detected)
                         {
-                        if (currentState.m_consecutive_table_tabs_detected)
-                            {
-                            paragraphBuffer[paragraphBuffer.length() - 1] = L'\n';
-                            }
-                        currentState.m_consecutive_table_tabs_detected = false;
-                        currentState.m_is_in_table = false;
+                        paragraphBuffer[paragraphBuffer.length() - 1] = L'\n';
                         }
+                    currentState.m_consecutive_table_tabs_detected = false;
+                    currentState.m_is_in_table = false;
                     }
                 // special handling for control and Latin-1 surrogate characters
                 if (currentChar < 0x20 || (currentChar >= 0x80 && currentChar <= 0x9F))
@@ -747,7 +743,7 @@ namespace lily_of_the_valley
     //----------------------------------------------------
     void word1997_extract_text::load_document(file_system_entry* cfbObj)
         {
-        if (!cfbObj)
+        if (cfbObj == nullptr)
             {
             log_message(L"DOC parser: file system entry missing.");
             throw msword_header_not_found();
@@ -757,20 +753,21 @@ namespace lily_of_the_valley
         const long offset =
             static_cast<long>(read_stream(headerBuffer.data(), headerBuffer.size(), cfbObj));
         const auto flags = read_short(headerBuffer.data(), 10);
-        if (flags & fComplex)
+        if ((flags & fComplex) != 0)
             {
             log_message(L"DOC parser: fast-saved (complex) files are not supported.");
             throw msword_fastsaved();
             }
-        if (flags & fEncrypted)
+        if ((flags & fEncrypted) != 0)
             {
             log_message(L"DOC parser: encrypted files are not supported.");
             throw msword_encrypted();
             }
         // Document is using Unicode
-        if (flags & fExtChar || // MS docs says this "MUST always be 1,"
-                                // so this check is probably only relevant with ancient files.
-            flags & fFarEast)   // Saved from CJK version of Word? Probably Unicode.
+        if (((flags & fExtChar) !=
+             0) || // MS docs says this "MUST always be 1,"
+                   // so this check is probably only relevant with ancient files.
+            ((flags & fFarEast) != 0)) // Saved from CJK version of Word? Probably Unicode.
             {
             m_read_type = charset_type::utf16;
             }
@@ -840,7 +837,7 @@ namespace lily_of_the_valley
     //----------------------------------------------------
     bool word1997_extract_text::load_header(cfb_iostream* str)
         {
-        if (!str)
+        if (str == nullptr)
             {
             return false;
             }
@@ -893,8 +890,8 @@ namespace lily_of_the_valley
 
         // get XBAT info (if there are any [only medium and large files have these])
         const auto numOfXBATs = read_uint(cfbBuf.data(), 72);
-        const auto XBATstart =
-            read_uint(cfbBuf.data(), 68); // NOLINT(readability-identifier-naming)
+        // NOLINTNEXTLINE(readability-identifier-naming)
+        const auto XBATstart = read_uint(cfbBuf.data(), 68);
         if (numOfXBATs * m_sector_size > m_file_length)
             {
             log_message(L"DOC parser: unable to read eXtended Block Allocation Table entry.");
@@ -965,7 +962,7 @@ namespace lily_of_the_valley
                 {
                 auto batSector = read_int(cfbBuffer2, 4 * k);
 
-                if (batSector < 0 || static_cast<size_t>(batSector) >= m_sector_count)
+                if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                     {
                     // Bad XBAT entry
                     log_message(
@@ -991,7 +988,7 @@ namespace lily_of_the_valley
                 {
                 // last value in the XBAT tells where the next one is
                 auto batSector = read_int(cfbBuffer2, 127 * 4);
-                if (batSector < 0 || static_cast<size_t>(batSector) >= m_sector_count)
+                if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                     {
                     break;
                     }
@@ -1012,7 +1009,7 @@ namespace lily_of_the_valley
                     {
                     batSector = read_int(cfbBuffer2, 4 * k);
 
-                    if (batSector < 0 || static_cast<size_t>(batSector) >= m_sector_count)
+                    if (batSector < 0 || std::cmp_greater_equal(batSector, m_sector_count))
                         {
                         // Bad XBAT entry
                         log_message(
@@ -1038,7 +1035,7 @@ namespace lily_of_the_valley
         long sbatCurrent = read_int(cfbBuf.data(), 60);
         // Make sure current BAT block is within range of possible 512-byte sectors in the file.
         // The sectors are zero-indexed, but can't start at zero because that's the file header.
-        if (sbatCurrent > 0 && static_cast<size_t>(sbatCurrent) < m_sector_count)
+        if (sbatCurrent > 0 && std::cmp_less(sbatCurrent, m_sector_count))
             {
             size_t sbatBigSectorsRead{ 0 };
             // 8 SBATs for each 512 sector, so get enough space for that
@@ -1064,7 +1061,7 @@ namespace lily_of_the_valley
                     }
                 // walk the BAT to the next sector
                 sbatCurrent = read_int(m_BAT.data(), static_cast<size_t>(sbatCurrent) * 4);
-                if (sbatCurrent < 0 || static_cast<size_t>(sbatCurrent) >= m_sector_count)
+                if (sbatCurrent < 0 || std::cmp_greater_equal(sbatCurrent, m_sector_count))
                     {
                     break;
                     }

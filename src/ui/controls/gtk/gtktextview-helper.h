@@ -12,8 +12,8 @@
      SPDX-License-Identifier: wxWindows
 @{*/
 
-#ifndef __GTK_TEXTVIEW_PANGO_MARKUP__
-#define __GTK_TEXTVIEW_PANGO_MARKUP__
+#ifndef GTK_TEXTVIEW_PANGO_MARKUP
+#define GTK_TEXTVIEW_PANGO_MARKUP
 
 #ifdef __WXGTK__
 #include <cstring>
@@ -515,4 +515,4 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
 // clang-format on
 
 #endif // __WXGTK__
-#endif // __GTK_TEXTVIEW_PANGO_MARKUP__
+#endif // GTK_TEXTVIEW_PANGO_MARKUP

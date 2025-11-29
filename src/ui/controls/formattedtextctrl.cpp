@@ -513,8 +513,9 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
     g_object_unref(settings);
 #else
     const wxSize paperSize = wxThePrintPaperDatabase->GetSize(m_printData->GetPaperId());
-    const double paperWidthInInches = (paperSize.GetWidth() / 10) * 0.0393700787;
-    const double paperHeightInInches = (paperSize.GetHeight() / 10) * 0.0393700787;
+    const double paperWidthInInches = safe_divide<double>(paperSize.GetWidth(), 10) * 0.0393700787;
+    const double paperHeightInInches =
+        safe_divide<double>(paperSize.GetHeight(), 10) * 0.0393700787;
 
     wxClientDC dc(this);
     const wxFont fixedFont(12, wxFontFamily::wxFONTFAMILY_MODERN, wxFontStyle::wxFONTSTYLE_NORMAL,
@@ -540,7 +541,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
                            expandedRightHeader.length());
         fullHeader.Pad(paddingSize / 2);
         fullHeader += expandedCenterHeader;
-        fullHeader.Pad(paddingSize / 2 + (is_even(paddingSize) ? 0 : 1));
+        fullHeader.Pad((paddingSize / 2) + (is_even(paddingSize) ? 0 : 1));
         fullHeader += expandedRightHeader;
         }
     else
@@ -563,7 +564,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
                            expandedRightFooter.length());
         fullFooter.Pad(paddingSize / 2);
         fullFooter += expandedCenterFooter;
-        fullFooter.Pad(paddingSize / 2 + (is_even(paddingSize) ? 0 : 1));
+        fullFooter.Pad((paddingSize / 2) + (is_even(paddingSize) ? 0 : 1));
         fullFooter += expandedRightFooter;
         }
     else

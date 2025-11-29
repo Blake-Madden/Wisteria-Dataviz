@@ -2145,11 +2145,11 @@ namespace Wisteria::GraphItems
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
 
             const float widthOfWatermark =
-                textWidth * std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees))) -
-                textHeight * std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees)));
+                (textWidth * std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees)))) -
+                (textHeight * std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees))));
             const float heightOfWatermark =
-                textWidth * std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees))) +
-                textHeight * std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees)));
+                (textWidth * std::abs(std::sin(geometry::degrees_to_radians(angleInDegrees)))) +
+                (textHeight * std::abs(std::cos(geometry::degrees_to_radians(angleInDegrees))));
 
             if (widthOfWatermark > boundingBox.GetWidth() ||
                 heightOfWatermark > boundingBox.GetHeight())

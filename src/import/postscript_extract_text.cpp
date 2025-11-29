@@ -44,9 +44,10 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
             const char* const endOfCreator = string_util::strcspn_pointer(creator + 10, "\r\n", 2);
             if (endOfCreator != nullptr && endOfCreator < endSentinel)
                 {
-                if (string_util::strnistr(creator, "dvips", (endOfCreator - creator)) ||
-                    string_util::strnistr(creator, "Radical Eye Software",
-                                          (endOfCreator - creator)))
+                if ((string_util::strnistr(creator, "dvips", (endOfCreator - creator)) !=
+                     nullptr) ||
+                    (string_util::strnistr(creator, "Radical Eye Software",
+                                           (endOfCreator - creator)) != nullptr))
                     {
                     createdByDVIPS = true;
                     }
@@ -77,7 +78,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         i = begin - ps_buffer;
         }
 
-    size_t open_paren_count{ 0 }, close_paren_count{ 0 };
+    size_t openParenCount{ 0 }, closeParenCount{ 0 };
 
     bool umlautMode{ false };
     bool graveMode{ false };
@@ -88,7 +89,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
         switch (*std::next(ps_buffer, i))
             {
         case '%':
-            if (open_paren_count > close_paren_count)
+            if (openParenCount > closeParenCount)
                 {
                 add_character(*std::next(ps_buffer, i));
                 }
@@ -104,34 +105,30 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                         log_message(L"\"%%EndDocument\" element missing in Postscript file.");
                         return get_filtered_text();
                         }
-                    else
-                        {
-                        // skip past the "%%EndDocument" directive
-                        i = (end - ps_buffer) + 13;
-                        continue;
-                        }
+
+                    // skip past the "%%EndDocument" directive
+                    i = (end - ps_buffer) + 13;
+                    continue;
                     }
                 // it's a comment--move to the end of the line
-                else
+
+                while (++i < text_length)
                     {
-                    while (++i < text_length)
+                    if (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
                         {
-                        if (std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
-                            {
-                            break;
-                            }
+                        break;
                         }
                     }
                 }
             break;
         case '(':
-            if (open_paren_count++ > close_paren_count)
+            if (openParenCount++ > closeParenCount)
                 {
                 add_character(*std::next(ps_buffer, i));
                 }
             break;
         case ')':
-            if (open_paren_count > ++close_paren_count)
+            if (openParenCount > ++closeParenCount)
                 {
                 add_character(*std::next(ps_buffer, i));
                 }
@@ -139,7 +136,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
               of the next () set and see the command*/
             else if (i > 0)
                 {
-                char command_char{ L' ' };
+                char commandChar{ L' ' };
                 bool inHyphenJoinMode{ false };
                 bool newLineCommandFound{ false }, newPageFound{ false };
                 inHyphenJoinMode = (*std::next(ps_buffer, i - 1) == '-');
@@ -172,11 +169,8 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                                     L"\"%%EndDocument\" element missing in Postscript file.");
                                 return get_filtered_text();
                                 }
-                            else
-                                {
-                                i = std::next(end, 13 /*the length of "%%EndDocument"*/) -
-                                    ps_buffer;
-                                }
+
+                            i = std::next(end, 13 /*the length of "%%EndDocument"*/) - ps_buffer;
                             }
                         else if (std::strncmp(std::next(ps_buffer, i), "%%Page:", 7) == 0)
                             {
@@ -190,7 +184,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
 
                     if (!std::iswspace(static_cast<wchar_t>(*std::next(ps_buffer, i))))
                         {
-                        command_char = *std::next(ps_buffer, i);
+                        commandChar = *std::next(ps_buffer, i);
                         }
                     }
 
@@ -202,11 +196,11 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                     {
                     add_character(L'\n');
                     }
-                else if ((inHyphenJoinMode || command_char == 'q' || command_char == 'o' ||
-                          command_char == 'l' || command_char == 'm' || command_char == 'n' ||
-                          command_char == 'r' || command_char == 's' ||
-                          (command_char == 'b' && (horizontalPosition <= 7)) ||
-                          (inNegativeBMode && command_char == 'g') || command_char == 't') &&
+                else if ((inHyphenJoinMode || commandChar == 'q' || commandChar == 'o' ||
+                          commandChar == 'l' || commandChar == 'm' || commandChar == 'n' ||
+                          commandChar == 'r' || commandChar == 's' ||
+                          (commandChar == 'b' && (horizontalPosition <= 7)) ||
+                          (inNegativeBMode && commandChar == 'g') || commandChar == 't') &&
                          (i > 0 && *std::next(ps_buffer, i - 1) != 'F'))
                     {
                     // NOOP (just leave the characters together)
@@ -215,16 +209,16 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                     {
                     add_character(L' ');
                     }
-                inNegativeBMode = (command_char == 'b' && horizontalPosition < 0) ||
-                                  (inNegativeBMode && command_char == 'g');
+                inNegativeBMode = (commandChar == 'b' && horizontalPosition < 0) ||
+                                  (inNegativeBMode && commandChar == 'g');
                 }
             break;
         case '\\':
-            if (open_paren_count > close_paren_count)
+            if (openParenCount > closeParenCount)
                 {
                 ++i;
                 char* stopPoint{ nullptr };
-                const wchar_t octalVal =
+                const auto octalVal =
                     static_cast<wchar_t>(std::strtol(std::next(ps_buffer, i), &stopPoint, 8));
                 switch (*std::next(ps_buffer, i))
                     {
@@ -340,7 +334,7 @@ const wchar_t* lily_of_the_valley::postscript_extract_text::operator()(const cha
                 }
             break;
         default:
-            if (open_paren_count > close_paren_count)
+            if (openParenCount > closeParenCount)
                 {
                 // previous \177 flag indicates next character should be umlauted
                 if (umlautMode)

@@ -7,6 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "functionbrowserdlg.h"
+#include "../../import/html_encode.h"
+#include "wx/stc/stc.h"
+#include "wx/tokenzr.h"
 #include "wx/wupdlock.h"
 #include <utility>
 

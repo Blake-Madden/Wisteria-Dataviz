@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef WISTERIA_SETTINGS_H_
-#define WISTERIA_SETTINGS_H_
+#ifndef WISTERIA_SETTINGS_H
+#define WISTERIA_SETTINGS_H
 
 #include "colorbrewer.h"
 #include "version.h"
@@ -273,4 +273,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif // WISTERIA_SETTINGS_H_
+#endif // WISTERIA_SETTINGS_H

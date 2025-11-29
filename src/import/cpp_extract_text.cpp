@@ -47,7 +47,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                     continue;
                     }
                 if (const wchar_t* const end = std::wcsstr(cpp_text, L"*/");
-                    end && end < endSentinel)
+                    (end != nullptr) && end < endSentinel)
                     {
                     add_characters_strip_markup(cpp_text, end - cpp_text);
                     add_characters({ L"\n\n", 2 });
@@ -96,7 +96,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
         // ...or gettext resources
         else if (*cpp_text == L'_' && cpp_text[1] == L'(')
             {
-            if (endSentinel && cpp_text[2] == L'\"')
+            if ((endSentinel != nullptr) && cpp_text[2] == L'\"')
                 {
                 std::advance(cpp_text, 3);
                 }
@@ -115,7 +115,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
                 continue;
                 }
             const wchar_t* const end = string_util::find_unescaped_char(cpp_text, L'\"');
-            if (end && end < endSentinel)
+            if ((end != nullptr) && end < endSentinel)
                 {
                 add_characters_strip_escapes(cpp_text, end - cpp_text);
                 add_characters({ L"\n\n", 2 });
@@ -130,7 +130,7 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
         else if (*cpp_text == L'\"')
             {
             cpp_text = string_util::find_unescaped_char(++cpp_text, L'\"');
-            if (!cpp_text || cpp_text >= endSentinel)
+            if ((cpp_text == nullptr) || cpp_text >= endSentinel)
                 {
                 break;
                 }

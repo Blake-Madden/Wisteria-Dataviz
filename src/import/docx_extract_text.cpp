@@ -26,7 +26,7 @@ namespace lily_of_the_valley
         const wchar_t* const textEnd = html_text + text_length;
 
         const wchar_t* const officeMetaStart = find_element(html_text, textEnd, OFFICE_META, true);
-        if (!officeMetaStart)
+        if (officeMetaStart == nullptr)
             {
             return;
             }
@@ -34,36 +34,36 @@ namespace lily_of_the_valley
         html_extract_text parseHtml;
 
         m_title = read_element_as_string(officeMetaStart, textEnd, TITLE);
-        auto metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
-        if (metaVal)
+        const auto* metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
+        if (metaVal != nullptr)
             {
             m_title.assign(metaVal);
             }
 
         m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT);
         metaVal = parseHtml(m_subject.c_str(), m_subject.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_subject.assign(metaVal);
             }
 
         m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION);
         metaVal = parseHtml(m_description.c_str(), m_description.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_description.assign(metaVal);
             }
 
         m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS);
         metaVal = parseHtml(m_keywords.c_str(), m_keywords.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_keywords.assign(metaVal);
             }
 
         m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR);
         metaVal = parseHtml(m_author.c_str(), m_author.length(), true, false);
-        if (metaVal)
+        if (metaVal != nullptr)
             {
             m_author.assign(metaVal);
             }
@@ -95,7 +95,7 @@ namespace lily_of_the_valley
 
         bool insideOfTableCell = false;
         string_util::case_insensitive_wstring currentTag;
-        while (start && (start < endSentinel))
+        while ((start != nullptr) && (start < endSentinel))
             {
             currentTag.assign(get_element_name(start + 1, true));
             bool textSectionFound = false;
@@ -103,7 +103,7 @@ namespace lily_of_the_valley
             if (currentTag == L"!--")
                 {
                 end = std::wcsstr(start + 1, L"-->");
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
@@ -115,7 +115,7 @@ namespace lily_of_the_valley
             else if (currentTag == L"w:instrText")
                 {
                 end = std::wcsstr(start + 1, L"</w:instrText>");
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
@@ -125,7 +125,7 @@ namespace lily_of_the_valley
             else if (currentTag == L"wp:posOffset")
                 {
                 end = std::wcsstr(start + 1, L"</wp:posOffset>");
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
@@ -194,7 +194,7 @@ namespace lily_of_the_valley
                 else if (currentTag == L"w:ind")
                     {
                     const auto alignment = read_attribute_as_long(start + 1, L"w:left", false);
-                    if (alignment > 0.0f)
+                    if (alignment > 0.0)
                         {
                         add_character(L'\t');
                         }
@@ -221,14 +221,15 @@ namespace lily_of_the_valley
                 /* find the matching >, but watch out for an errant < also in case
                    the previous < wasn't terminated properly*/
                 end = string_util::strcspn_pointer<wchar_t>(start + 1, L"<>", 2);
-                if (!end)
+                if (end == nullptr)
                     {
                     break;
                     }
                 /* If the < tag that we started from is not terminated then feed that in as
                    text instead of treating it like a valid HTML tag.
                    Not common, but it happens.*/
-                else if (end[0] == L'<')
+
+                if (end[0] == L'<')
                     {
                     /* copy over the text from the unterminated < to the currently found
                         < (that we will start from in the next loop*/
@@ -238,14 +239,11 @@ namespace lily_of_the_valley
                     continue;
                     }
                 // more normal behavior, where tag is properly terminated
-                else
-                    {
-                    ++end;
-                    }
+                ++end;
                 }
             // find the next starting tag
             start = std::wcschr(end, L'<');
-            if (!start)
+            if (start == nullptr)
                 {
                 break;
                 }
