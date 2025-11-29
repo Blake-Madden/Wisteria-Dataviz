@@ -52,12 +52,12 @@ namespace Wisteria::UI
             {
             assert(m_mainVarlist && L"Main variable list not created!");
             auto* button = FindWindowById(varList.m_removeId, this);
-            if (button && m_mainVarlist)
+            if (button != nullptr && m_mainVarlist)
                 {
                 button->Enable(varList.m_list->GetSelectedItemCount() > 0);
                 }
             button = FindWindowById(varList.m_addId, this);
-            if (button && m_mainVarlist)
+            if (button != nullptr && m_mainVarlist)
                 {
                 button->Enable(m_mainVarlist->GetSelectedItemCount() > 0);
                 }
@@ -86,7 +86,7 @@ namespace Wisteria::UI
                 }
             }
         const auto selStrings = GetSelectedVariablesInList(list);
-        wxWindowUpdateLocker noUpdates(otherList);
+        const wxWindowUpdateLocker noUpdates(otherList);
         // de-select items in the target list, and then select the item(s) being moved into it
         for (int i = 0; i < otherList->GetItemCount(); ++i)
             {
@@ -120,7 +120,7 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void VariableSelectDlg::RemoveSelectedVariablesFromList(wxListView* list)
         {
-        wxWindowUpdateLocker noUpdates(list);
+        const wxWindowUpdateLocker noUpdates(list);
         long item{ wxNOT_FOUND };
         for (;;)
             {
@@ -253,7 +253,7 @@ namespace Wisteria::UI
         // connect the Add & Remove button events
         for (const auto& varList : m_varLists)
             {
-            assert(varList.m_list && L"User-defined list not created!");
+            wxASSERT_MSG(varList.m_list, L"User-defined list not created!");
             Bind(
                 wxEVT_BUTTON,
                 [&, this]([[maybe_unused]] wxCommandEvent&)

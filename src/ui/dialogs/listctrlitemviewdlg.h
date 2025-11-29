@@ -13,7 +13,6 @@
 #define LISTCTRL_ITEM_VIEW_DLG_H
 
 #include <vector>
-#include <wx/artprov.h>
 #include <wx/grid.h>
 #include <wx/statline.h>
 #include <wx/string.h>

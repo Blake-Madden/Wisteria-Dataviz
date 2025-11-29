@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __LISTCTRL_EX_H__
-#define __LISTCTRL_EX_H__
+#ifndef LISTCTRL_EX_H
+#define LISTCTRL_EX_H
 
 #include <utility>
 #include <wx/busyinfo.h>
@@ -74,7 +74,7 @@ namespace Wisteria::UI
                          const wxValidator& validator = wxDefaultValidator,
                          const wxString& name = L"ListEditComboBox")
             : wxComboBox(parent, id, value, pos, size, choices, style, validator, name),
-              m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
+              m_owner(owner)
             {
             Bind(wxEVT_COMBOBOX, &ListEditComboBox::OnEnter, this);
             Bind(wxEVT_TEXT_ENTER, &ListEditComboBox::OnEnter, this);
@@ -133,7 +133,7 @@ namespace Wisteria::UI
                          int Min = 1, int Max = 100, int initial = 1,
                          const wxString& name = L"ListEditSpinCtrl")
             : wxSpinCtrl(parent, id, value, pos, size, style, Min, Max, initial, name),
-              m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
+              m_owner(owner)
             {
             Bind(wxEVT_KILL_FOCUS, &ListEditSpinCtrl::OnEndEditKillFocus, this, wxID_ANY);
             Bind(wxEVT_CHAR_HOOK, &ListEditSpinCtrl::OnChar, this);
@@ -446,10 +446,8 @@ namespace Wisteria::UI
                 {
                 return pos->second;
                 }
-            else
-                {
-                return DefaultColumnInfo;
-                }
+
+            return DefaultColumnInfo;
             }
 
         /** @brief Sets a column as editable.
@@ -549,10 +547,8 @@ namespace Wisteria::UI
                 {
                 return ColumnInfo::ColumnFilePathTruncationMode::NoTruncation;
                 }
-            else
-                {
-                return pos->second.m_truncateFilePathsMode;
-                }
+
+            return pos->second.m_truncateFilePathsMode;
             }
 
         /// @private
@@ -615,7 +611,7 @@ namespace Wisteria::UI
         /// @brief Copies the list data to the clipboard.
         /// @param onlyIncludeSelectedRows @c true to only copy selected rows.
         /// @param includeColumnHeaders @c true to include the column names.
-        void Copy(bool onlyIncludeSelectedRows, bool includeColumnHeaders);
+        void Copy(bool onlyIncludeSelectedRows, bool includeColumnHeaders) const;
         /// @brief Pastes clipboard contents into the list (if it is editable).
         void Paste();
 
@@ -685,10 +681,10 @@ namespace Wisteria::UI
                 {
                 return wxString{};
                 }
-            wxListItem Item;
-            Item.SetMask(wxLIST_MASK_TEXT);
-            GetColumn(column, Item);
-            return Item.GetText();
+            wxListItem item;
+            item.SetMask(wxLIST_MASK_TEXT);
+            GetColumn(column, item);
+            return item.GetText();
             }
 
         /// @brief Gets the text of the first column of the first selected row.
@@ -702,10 +698,8 @@ namespace Wisteria::UI
                 {
                 return wxString{};
                 }
-            else
-                {
-                return GetItemTextEx(selected, 0);
-                }
+
+            return GetItemTextEx(selected, 0);
             }
 
         /// Advanced version of GetItemText that supports getting it from a specific column.
@@ -714,19 +708,17 @@ namespace Wisteria::UI
         /// @param column The column to get text from.
         /// @returns The text from the specified cell.
         [[nodiscard]]
-        inline wxString GetItemTextEx(const long item, const long column) const
+        wxString GetItemTextEx(const long item, const long column) const
             {
-            if (GetWindowStyle() & wxLC_REPORT)
+            if ((GetWindowStyle() & wxLC_REPORT) != 0)
                 {
                 return (IsVirtual() && m_virtualData != nullptr) ?
                            wxString(m_virtualData->GetItemText(item, column)) :
                            GetItemTextNonVirtual(item, column);
                 }
             // not report view, so this call makes no sense--return blank
-            else
-                {
-                return wxString{};
-                }
+
+            return {};
             }
 
         /// @brief Gets the text for a specified cell, but returns it using a custom
@@ -849,10 +841,8 @@ namespace Wisteria::UI
                 {
                 return static_cast<long>(m_sortedCols[0].first);
                 }
-            else
-                {
-                return -1;
-                }
+
+            return -1;
             }
 
         /// @returns The indices of the sorted columns (or -1 if not sorted).
@@ -961,10 +951,7 @@ namespace Wisteria::UI
 
         /// @brief Sets the watermark for the list when printed.
         /// @param watermark The watermark information.
-        void SetWatermark(const Wisteria::Canvas::Watermark& watermark) noexcept
-            {
-            m_waterMark = watermark;
-            }
+        void SetWatermark(const Wisteria::Canvas::Watermark& watermark) { m_waterMark = watermark; }
 
         /// @returns The printer watermark.
         [[nodiscard]]
@@ -1118,18 +1105,16 @@ namespace Wisteria::UI
                 return GetItemTextEx(item, m_fullFilePathColumn);
                 }
             // or if they have the path split into columns, then piece them together
-            else if (m_fileColumn != wxNOT_FOUND && m_fileColumn < GetColumnCount() &&
-                     m_folderColumn != wxNOT_FOUND && m_folderColumn < GetColumnCount())
+            if (m_fileColumn != wxNOT_FOUND && m_fileColumn < GetColumnCount() &&
+                m_folderColumn != wxNOT_FOUND && m_folderColumn < GetColumnCount())
                 {
                 return GetItemTextEx(item, m_folderColumn) + wxFileName::GetPathSeparator() +
                        GetItemTextEx(item, m_fileColumn);
                 }
-            else
-                {
-                wxFAIL_MSG("Folder and File columns must be specified properly "
-                           "before calling GetItemFilePath().");
-                return wxString{};
-                }
+
+            wxFAIL_MSG("Folder and File columns must be specified properly "
+                       "before calling GetItemFilePath().");
+            return {};
             }
 
         /// @brief Gets a row's colors and font.
@@ -1214,4 +1199,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__LISTCTRL_EX_H__
+#endif // LISTCTRL_EX_H

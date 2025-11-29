@@ -20,13 +20,13 @@
 class HtmlTablePrintout final : public wxPrintout
     {
   public:
-    HtmlTablePrintout(const wxString& title) : wxPrintout(title) {}
+    explicit HtmlTablePrintout(const wxString& title) : wxPrintout(title) {}
 
     void AddTable(const wxString& table)
         {
         std::wstring strippedTable{ table.wc_str() };
         lily_of_the_valley::html_format::strip_hyperlinks(strippedTable, false);
-        m_htmlTables.push_back(strippedTable);
+        m_htmlTables.emplace_back(strippedTable);
         }
 
     [[nodiscard]]
@@ -106,10 +106,7 @@ class HtmlTablePrintout final : public wxPrintout
 
     /// @brief Sets the watermark for the list when printed.
     /// @param watermark The watermark information.
-    void SetWatermark(const Wisteria::Canvas::Watermark& watermark) noexcept
-        {
-        m_waterMark = watermark;
-        }
+    void SetWatermark(const Wisteria::Canvas::Watermark& watermark) { m_waterMark = watermark; }
 
   private:
     /// @returns The margin around the printing area.
@@ -123,7 +120,7 @@ class HtmlTablePrintout final : public wxPrintout
     /// This falls back to a 1:1 ratio upon failure
     void GetScreenToPageScaling(double& scaleX, double& scaleY) const
         {
-        int ppiPrinterX, ppiPrinterY, ppiScreenX, ppiScreenY;
+        int ppiPrinterX{ 0 }, ppiPrinterY{ 0 }, ppiScreenX{ 0 }, ppiScreenY{ 0 };
         GetPPIPrinter(&ppiPrinterX, &ppiPrinterY);
         GetPPIScreen(&ppiScreenX, &ppiScreenY);
 
@@ -141,7 +138,7 @@ class HtmlTablePrintout final : public wxPrintout
 
     void GetPageToScreenScaling(double& scaleX, double& scaleY) const
         {
-        int ppiPrinterX, ppiPrinterY, ppiScreenX, ppiScreenY;
+        int ppiPrinterX{ 0 }, ppiPrinterY{ 0 }, ppiScreenX{ 0 }, ppiScreenY{ 0 };
         GetPPIPrinter(&ppiPrinterX, &ppiPrinterY);
         GetPPIScreen(&ppiScreenX, &ppiScreenY);
 

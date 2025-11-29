@@ -597,10 +597,8 @@ namespace Wisteria::UI
                     continue;
                     }
                 // otherwise, we have our result, so return it
-                else
-                    {
-                    return result > 0;
-                    }
+
+                return result > 0;
                 }
             // all the columns are the same
             return false;
@@ -650,10 +648,8 @@ namespace Wisteria::UI
                     {
                     return result < 0;
                     }
-                else
-                    {
-                    return result > 0;
-                    }
+
+                return result > 0;
                 }
             // all the columns are the same
             return false;
@@ -685,27 +681,23 @@ namespace Wisteria::UI
                 {
                 return row1[m_columnsToCompare[0]] < row2[m_columnsToCompare[0]];
                 }
-            else
+
+            // go through all the columns
+            for (const auto col : m_columnsToCompare)
                 {
-                // go through all the columns
-                for (const auto col : m_columnsToCompare)
+                const int result = row1[col].Compare(row2[col]);
+                // if the cells are equal, then we need to compare the next
+                // column as a tiebreaker
+                if (result == 0)
                     {
-                    const int result = row1[col].Compare(row2[col]);
-                    // if the cells are equal, then we need to compare the next
-                    // column as a tiebreaker
-                    if (result == 0)
-                        {
-                        continue;
-                        }
-                    // otherwise, we have our result, so return it
-                    else
-                        {
-                        return result < 0;
-                        }
+                    continue;
                     }
-                // all the columns are the same
-                return false;
+                // otherwise, we have our result, so return it
+
+                return result < 0;
                 }
+            // all the columns are the same
+            return false;
             }
 
       private:
@@ -725,36 +717,31 @@ namespace Wisteria::UI
 
         /// @private
         [[nodiscard]]
-        inline bool
-        operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
-                   const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
+        bool operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
+                        const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
             {
             assert(!m_columnsToCompare.empty());
             if (m_columnsToCompare.size() == 1)
                 {
                 return row1[m_columnsToCompare[0]] > row2[m_columnsToCompare[0]];
                 }
-            else
+
+            // go through all the columns
+            for (const auto col : m_columnsToCompare)
                 {
-                // go through all the columns
-                for (const auto col : m_columnsToCompare)
+                const int result = row1[col].Compare(row2[col]);
+                // if the cells are equal, then we need to compare the next
+                // column as a tiebreaker
+                if (result == 0)
                     {
-                    const int result = row1[col].Compare(row2[col]);
-                    // if the cells are equal, then we need to compare the next
-                    // column as a tiebreaker
-                    if (result == 0)
-                        {
-                        continue;
-                        }
-                    // otherwise, we have our result, so return it
-                    else
-                        {
-                        return result > 0;
-                        }
+                    continue;
                     }
-                // all the columns are the same
-                return false;
+                // otherwise, we have our result, so return it
+
+                return result > 0;
                 }
+            // all the columns are the same
+            return false;
             }
 
       private:
@@ -1176,10 +1163,8 @@ namespace Wisteria::UI
                 {
                 return GetLabel(cell.m_labelCode);
                 }
-            else
-                {
-                return GetItemTextFormatted(row, column);
-                }
+
+            return GetItemTextFormatted(row, column);
             }
 
         /// @returns The (possibly custom) formatted value of a cell.
@@ -1222,33 +1207,30 @@ namespace Wisteria::UI
                                wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                        percentageLabel;
                 }
-            else
+
+            assert(m_formatNumber);
+            if (cell.IsDisplayingLabel())
                 {
-                assert(m_formatNumber);
-                if (cell.IsDisplayingLabel())
-                    {
-                    return m_formatNumber ?
-                               m_formatNumber->GetFormattedValue(GetLabel(cell.m_labelCode),
-                                                                 cell.GetNumberFormatType()) :
-                               GetLabel(cell.m_labelCode);
-                    }
-                else
-                    {
-                    if (std::isnan(cell.m_numericValue))
-                        {
-                        return {};
-                        }
-                    return m_formatNumber ? m_formatNumber->GetFormattedValue(
-                                                cell.m_numericValue, cell.GetNumberFormatType()) :
-                                            // shouldn't happen, just being robust
-                                            wxNumberFormatter::ToString(
-                                   cell.m_numericValue, cell.GetNumberFormatType().m_precision,
-                                   cell.GetNumberFormatType().m_displayThousandsSeparator ?
-                                                    wxNumberFormatter::Style::Style_WithThousandsSep |
-                                           wxNumberFormatter::Style::Style_NoTrailingZeroes :
-                                                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
-                    }
+                return (m_formatNumber != nullptr) ?
+                           m_formatNumber->GetFormattedValue(GetLabel(cell.m_labelCode),
+                                                             cell.GetNumberFormatType()) :
+                           GetLabel(cell.m_labelCode);
                 }
+
+            if (std::isnan(cell.m_numericValue))
+                {
+                return {};
+                }
+            return (m_formatNumber != nullptr) ?
+                       m_formatNumber->GetFormattedValue(cell.m_numericValue,
+                                                         cell.GetNumberFormatType()) :
+                       // shouldn't happen, just being robust
+                       wxNumberFormatter::ToString(
+                           cell.m_numericValue, cell.GetNumberFormatType().m_precision,
+                           cell.GetNumberFormatType().m_displayThousandsSeparator ?
+                               wxNumberFormatter::Style::Style_WithThousandsSep |
+                                   wxNumberFormatter::Style::Style_NoTrailingZeroes :
+                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
             }
 
         /** @brief Sets the cell's text.

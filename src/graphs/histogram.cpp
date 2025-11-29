@@ -340,7 +340,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         /* if we are creating integer categories, then we need to adjust the range and number of
            groups to fit an even distribution.*/
         const bool isLowestValueBeingAdjusted =
-            (std::floor(static_cast<double>(minVal)) == ConvertToSortableValue(minVal)) &&
+            (std::floor(minVal) == ConvertToSortableValue(minVal)) &&
             !compare_doubles(ConvertToSortableValue(minVal), 0) &&
             (!GetBinsStart() || minVal < GetBinsStart().value());
 
@@ -353,7 +353,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                                      std::min(CalcNumberOfBins(), GetMaxNumberOfBins());
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
             {
-            minVal = std::floor(static_cast<double>(minVal));
+            minVal = std::floor(minVal);
             /* If in integer mode (with rounding) and the lowest value is rounded down,
                then move the min value of the range to one integer less.
                This will create an extra bin for the low value. Normally, adding the lowest value
@@ -367,13 +367,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 {
                 minVal -= 1;
                 }
-            maxVal = std::ceil(static_cast<double>(maxVal));
+            maxVal = std::ceil(maxVal);
 
             // if starting at forced position, then only pad beyond max value if
             // creating integral intervals
             if (GetBinsStart() && !std::isnan(GetBinsStart().value()))
                 {
-                while (safe_modulus<size_t>(static_cast<size_t>(maxVal - minVal), numOfBins))
+                while (safe_modulus<size_t>(static_cast<size_t>(maxVal - minVal), numOfBins) != 0U)
                     {
                     ++maxVal;
                     }
@@ -384,7 +384,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 // then we need to adjust (pad) the min and max values so
                 // that the range is evenly divisible by the number of bins.
                 bool addHigh = true;
-                while (safe_modulus<size_t>(static_cast<size_t>(maxVal - minVal), numOfBins))
+                while (safe_modulus<size_t>(static_cast<size_t>(maxVal - minVal), numOfBins) != 0U)
                     {
                     addHigh ? ++maxVal : --minVal;
                     addHigh = !addHigh;

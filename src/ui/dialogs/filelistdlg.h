@@ -16,7 +16,6 @@
 #include "../controls/thumbnail.h"
 #include "dialogwithhelp.h"
 #include <wx/infobar.h>
-#include <wx/string.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
