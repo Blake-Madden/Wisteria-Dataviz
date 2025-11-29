@@ -85,7 +85,7 @@ namespace Wisteria::UI
                 {
                 m_selected = 0;
                 }
-            else if (std::cmp_greater_equal(selected ,m_choices.GetCount()))
+            else if (std::cmp_greater_equal(selected, m_choices.GetCount()))
                 {
                 m_selected = static_cast<int>(m_choices.GetCount()) - 1;
                 }

@@ -14,8 +14,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
     {
     //----------------------------------------------------------------
     GanttChart::GanttChart(
-        Canvas * canvas,
-        const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
+        Canvas * canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : BarChart(canvas)
         {
         SetColorScheme(colors != nullptr ? colors :
