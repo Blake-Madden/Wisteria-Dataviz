@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "imagemergedlg.h"
+#include "wx/valgen.h"
 #include <wx/radiobox.h>
 #include <wx/richmsgdlg.h>
 

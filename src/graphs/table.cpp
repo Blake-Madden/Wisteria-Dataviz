@@ -51,7 +51,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             {
             return *strVal;
             }
-        else if (const auto dVal{ std::get_if<double>(&m_value) }; dVal != nullptr)
+        if (const auto dVal{ std::get_if<double>(&m_value) }; dVal != nullptr)
             {
             if (std::isnan(*dVal))
                 {
@@ -79,19 +79,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                            *dVal, m_precision, wxNumberFormatter::Style::Style_WithThousandsSep) +
                        ((*dVal < 0) ? wxString{ L")" } : wxString{});
                 }
-            else
+            if (GetSuppressionThreshold().has_value() && *dVal < GetSuppressionThreshold().value())
                 {
-                if (GetSuppressionThreshold().has_value() &&
-                    *dVal < GetSuppressionThreshold().value())
-                    {
-                    return GetSuppressionLabel();
-                    }
-                return wxNumberFormatter::ToString(
-                    *dVal, m_precision, wxNumberFormatter::Style::Style_WithThousandsSep);
+                return GetSuppressionLabel();
                 }
+            return wxNumberFormatter::ToString(*dVal, m_precision,
+                                               wxNumberFormatter::Style::Style_WithThousandsSep);
             }
-        else if (const auto doubleVal{ std::get_if<std::pair<double, double>>(&m_value) };
-                 doubleVal != nullptr)
+        if (const auto doubleVal{ std::get_if<std::pair<double, double>>(&m_value) };
+            doubleVal != nullptr)
             {
             if (std::isnan(doubleVal->first) || std::isnan(doubleVal->second))
                 {
@@ -105,16 +101,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                                    wxNumberFormatter::Style::Style_WithThousandsSep |
                                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
-            else
-                {
-                return wxString::Format(
-                    L"1 : %s", wxNumberFormatter::ToString(
-                                   safe_divide(doubleVal->second, doubleVal->first), m_precision,
-                                   wxNumberFormatter::Style::Style_WithThousandsSep |
-                                       wxNumberFormatter::Style::Style_NoTrailingZeroes));
-                }
+            return wxString::Format(
+                L"1 : %s", wxNumberFormatter::ToString(
+                               safe_divide(doubleVal->second, doubleVal->first), m_precision,
+                               wxNumberFormatter::Style::Style_WithThousandsSep |
+                                   wxNumberFormatter::Style::Style_NoTrailingZeroes));
             }
-        else if (const auto* doubleVal2{ std::get_if<wxDateTime>(&m_value) }; doubleVal2 != nullptr)
+        if (const auto* doubleVal2{ std::get_if<wxDateTime>(&m_value) }; doubleVal2 != nullptr)
             {
             if (!doubleVal2->IsValid())
                 {
@@ -122,10 +115,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 }
             return doubleVal2->FormatDate();
             }
-        else
-            {
-            return {};
-            }
+        return {};
         }
 
     //----------------------------------------------------------------

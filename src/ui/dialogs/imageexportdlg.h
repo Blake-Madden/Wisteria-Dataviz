@@ -22,10 +22,8 @@
 #include <wx/filename.h>
 #include <wx/fontdlg.h>
 #include <wx/image.h>
-#include <wx/mstream.h>
 #include <wx/spinctrl.h>
 #include <wx/tooltip.h>
-#include <wx/valgen.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI

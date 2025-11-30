@@ -14,8 +14,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
     {
     //----------------------------------------------------------------
     GanttChart::GanttChart(
-        Wisteria::Canvas * canvas,
-        const std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
+        Canvas * canvas, const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/)
         : BarChart(canvas)
         {
         SetColorScheme(colors != nullptr ? colors :
@@ -83,9 +82,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                     .ToUTF8());
             }
         // these columns are optional
-        auto resourceColumn =
+        const auto resourceColumn =
             GetDataset()->GetCategoricalColumn(resourceColumnName.value_or(wxString()));
-        auto completionColumn =
+        const auto completionColumn =
             GetDataset()->GetContinuousColumn(completionColumnName.value_or(wxString()));
         // set the grouping column (or keep it as `std::nullopt` if not in use)
         SetGroupColumn(groupColumnName);
@@ -257,7 +256,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                             wxString::Format(_(L"%d%% complete"), taskInfo.m_percentFinished));
                     }
                 // move bar to actual starting date
-                br.SetCustomScalingAxisStartPosition(startPt.value());
+                br.SetCustomScalingAxisStartPosition(startPt);
 
                 // format the decal on the bar
                 wxString decalStr;

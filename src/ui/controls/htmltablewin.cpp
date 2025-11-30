@@ -104,7 +104,7 @@ void HtmlTableWindow::OnPrint([[maybe_unused]] wxCommandEvent& event)
         }
     else
         {
-        wxPrintData pd;
+        const wxPrintData pd;
 #if defined(__WXMSW__) || defined(__WXOSX__)
         dc = new wxPrinterDC(pd);
 #else

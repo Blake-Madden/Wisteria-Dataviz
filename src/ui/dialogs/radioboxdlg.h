@@ -16,7 +16,6 @@
 #include <utility>
 #include <wx/bannerwindow.h>
 #include <wx/dialog.h>
-#include <wx/filename.h>
 #include <wx/html/htmlwin.h>
 #include <wx/wx.h>
 
@@ -80,13 +79,13 @@ namespace Wisteria::UI
             @param selected The radio button to select.*/
         void SetSelection(const int selected)
             {
-            assert(m_choices.GetCount());
-            assert(selected >= 0);
+            wxASSERT(m_choices.GetCount());
+            wxASSERT(selected >= 0);
             if (selected < 0)
                 {
                 m_selected = 0;
                 }
-            else if (selected >= static_cast<int>(m_choices.GetCount()))
+            else if (std::cmp_greater_equal(selected, m_choices.GetCount()))
                 {
                 m_selected = static_cast<int>(m_choices.GetCount()) - 1;
                 }

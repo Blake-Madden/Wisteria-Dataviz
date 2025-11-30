@@ -108,8 +108,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                         LikertSurveyQuestionFormat::ThreePoint);
             }
         // 6 -> 2
-        else if (currentFormat == LikertSurveyQuestionFormat::SixPoint ||
-                 currentFormat == LikertSurveyQuestionFormat::SixPointCategorized)
+        if (currentFormat == LikertSurveyQuestionFormat::SixPoint ||
+            currentFormat == LikertSurveyQuestionFormat::SixPointCategorized)
             {
             Collapse6PointsTo2(data, questionColumns,
                                CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
@@ -117,8 +117,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                                    LikertSurveyQuestionFormat::TwoPoint);
             }
         // 5 -> 3
-        else if (currentFormat == LikertSurveyQuestionFormat::FivePoint ||
-                 currentFormat == LikertSurveyQuestionFormat::FivePointCategorized)
+        if (currentFormat == LikertSurveyQuestionFormat::FivePoint ||
+            currentFormat == LikertSurveyQuestionFormat::FivePointCategorized)
             {
             Collapse5PointsTo3(data, questionColumns,
                                CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
@@ -127,8 +127,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                         LikertSurveyQuestionFormat::ThreePoint);
             }
         // 4 -> 2
-        else if (currentFormat == LikertSurveyQuestionFormat::FourPoint ||
-                 currentFormat == LikertSurveyQuestionFormat::FourPointCategorized)
+        if (currentFormat == LikertSurveyQuestionFormat::FourPoint ||
+            currentFormat == LikertSurveyQuestionFormat::FourPointCategorized)
             {
             Collapse4PointsTo2(data, questionColumns,
                                CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
@@ -137,8 +137,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             }
         // 3 and 2 are already as simple as they are going to get,
         // just ensure their labels are correct
-        else if (currentFormat == LikertSurveyQuestionFormat::ThreePoint ||
-                 currentFormat == LikertSurveyQuestionFormat::ThreePointCategorized)
+        if (currentFormat == LikertSurveyQuestionFormat::ThreePoint ||
+            currentFormat == LikertSurveyQuestionFormat::ThreePointCategorized)
             {
             SetLabels(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
             }
@@ -506,7 +506,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 legend->GetLegendIcons() = {
                     Icons::LegendIcon(Icons::IconShape::Square,
                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40)),
                     Icons::LegendIcon(Icons::IconShape::Square,
                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                       Colors::ColorContrast::ShadeOrTint(GetPositiveColor())),
@@ -524,7 +524,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                       Colors::ColorContrast::ShadeOrTint(GetNegativeColor())),
                     Icons::LegendIcon(Icons::IconShape::Square,
                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40))
                 };
                 legend->SetText(GetPositiveLabel(3) + L"\n" + GetPositiveLabel(2) + L"\n" +
                                 GetPositiveLabel(1) + L"\n" + GetNeutralLabel() + L"\n" +
@@ -536,7 +536,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                 legend->GetLegendIcons() = {
                     Icons::LegendIcon(Icons::IconShape::Square,
                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
+                                      Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40)),
                     Icons::LegendIcon(Icons::IconShape::Square,
                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                       Colors::ColorContrast::ShadeOrTint(GetPositiveColor())),
@@ -551,7 +551,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                                       Colors::ColorContrast::ShadeOrTint(GetNegativeColor())),
                     Icons::LegendIcon(Icons::IconShape::Square,
                                       Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                                      Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40))
                 };
                 legend->SetText(GetPositiveLabel(3) + L"\n" + GetPositiveLabel(2) + L"\n" +
                                 GetPositiveLabel(1) + L"\n" + GetNegativeLabel(3) + L"\n" +
@@ -1988,7 +1988,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
               BarBlock(
                   BarBlockInfo(question.m_negative1Rate)
                       .OutlinePen(wxColour{ 0, 0, 0, 0 })
-                      .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40))
                       .SelectionLabel(GraphItems::Label(GraphItems::GraphItemInfo().Pen(
                           Colors::ColorBrewer::GetColor(Colors::Color::Black))))
                       .Decal(GraphItems::Label(
@@ -2093,7 +2093,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
               BarBlock(
                   BarBlockInfo(question.m_positive3Rate)
                       .OutlinePen(wxColour{ 0, 0, 0, 0 })
-                      .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40f))
+                      .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), .40))
                       .SelectionLabel(GraphItems::Label(GraphItems::GraphItemInfo().Pen(
                           Colors::ColorBrewer::GetColor(Colors::Color::Black))))
                       .Decal(GraphItems::Label(
@@ -2290,7 +2290,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                   BarBlock(
                       BarBlockInfo(sevenPointCategory.m_negative1Rate)
                           .OutlinePen(wxColour{ 0, 0, 0, 0 })
-                          .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetNegativeColor(), .40))
                           .SelectionLabel(GraphItems::Label(GraphItems::GraphItemInfo().Pen(
                               Colors::ColorBrewer::GetColor(Colors::Color::Black))))
                           .Decal(GraphItems::Label(
@@ -2400,7 +2400,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
                   BarBlock(
                       BarBlockInfo(sevenPointCategory.m_positive3Rate)
                           .OutlinePen(wxColour{ 0, 0, 0, 0 })
-                          .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), 0.40f))
+                          .Brush(Colors::ColorContrast::ShadeOrTint(GetPositiveColor(), 0.40))
                           .SelectionLabel(GraphItems::Label(GraphItems::GraphItemInfo().Pen(
                               Colors::ColorBrewer::GetColor(Colors::Color::Black))))
                           .Decal(GraphItems::Label(

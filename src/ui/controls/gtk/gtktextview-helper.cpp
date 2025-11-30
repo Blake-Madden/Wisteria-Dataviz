@@ -38,15 +38,15 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
     wxString text{ L"<span" };
     wxString styleParams{ L" style=\"" };
     // indicators whether a tag is set or not
-    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
-             strikeThroughSet;
+    gboolean bkColorSet{ 0 }, fgColorSet{ 0 }, sizeSet{ 0 },
+        underlineSet{ 0 }, weightSet{ 0 }, styleSet{ 0 }, strikeThroughSet{ 0 };
     // values to write to
     GdkRGBA* bkColor{ nullptr };
     GdkRGBA* fgColor{ nullptr };
     gdouble size{ 0 };
-    gint weight;
+    gint weight{ 0 };
     PangoStyle style;
-    gboolean underline, strikeThrough;
+    gboolean underline{ 0 }, strikeThrough{ 0 };
     gchar* family{ nullptr };
     gchar* font{ nullptr };
     g_object_get(G_OBJECT(tag),
@@ -104,7 +104,7 @@ wxString _GtkTextTagToHtmlSpanTag(const GtkTextTag* tag)
         styleParams += L" text-decoration: ";
         for (const auto& decor : textDecorations)
             { styleParams += decor + L","; }
-        // replace final , with a ';'
+        // replace final , with a ;
         if (styleParams.length())
             { styleParams[styleParams.length() - 1] = L';'; }
         }
@@ -126,15 +126,15 @@ wxString _GtkTextTagToRtfTag(const GtkTextTag* tag,
     {
     wxString text{ L" " };
     // indicators whether a tag is set or not
-    gboolean bkColorSet, fgColorSet, sizeSet, underlineSet, weightSet, styleSet,
-        strikeThroughSet;
+    gboolean bkColorSet{ 0 }, fgColorSet{ 0 }, sizeSet{ 0 },
+        underlineSet{ 0 }, weightSet, styleSet{ 0 }, strikeThroughSet{ 0 };
     // values to write to
     GdkRGBA* bkColor{ nullptr };
     GdkRGBA* fgColor{ nullptr };
     gdouble size{ 0 };
-    gint weight;
+    gint weight{ 0 };
     PangoStyle style;
-    gboolean underline, strikeThrough;
+    gboolean underline{ 0 }, strikeThrough{ 0 };
     gchar* family{ nullptr };
     gchar* font{ nullptr };
     g_object_get(G_OBJECT(tag),
