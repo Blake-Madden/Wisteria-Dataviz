@@ -1724,7 +1724,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         }
 
     //------------------------------------------------------
-    void ListCtrlEx::Copy(const bool onlyIncludeSelectedRows, const bool includeColumnHeaders)
+    void ListCtrlEx::Copy(const bool onlyIncludeSelectedRows, const bool includeColumnHeaders) const
         {
         // note that if the SHIFT key is down, then only the first column will be copied
         wxString selectedFormattedText;
