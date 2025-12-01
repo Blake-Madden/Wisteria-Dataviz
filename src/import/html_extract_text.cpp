@@ -3221,9 +3221,9 @@ namespace html_utilities
             {
             return imageName;
             }
-        auto* foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(), PHP_IMAGE.cend(),
-                                     [](wchar_t lhv, wchar_t rhv)
-                                     { return std::towlower(lhv) == std::towlower(rhv); });
+        auto foundPos = std::search(url.cbegin(), url.cend(), PHP_IMAGE.cbegin(), PHP_IMAGE.cend(),
+                                    [](wchar_t lhv, wchar_t rhv)
+                                    { return std::towlower(lhv) == std::towlower(rhv); });
         if (foundPos != url.cend())
             {
             url = url.substr((foundPos - url.cbegin()) + PHP_IMAGE.length());
