@@ -148,7 +148,7 @@ namespace Wisteria::UI
     class DropThumbnailImageFile final : public wxFileDropTarget
         {
       public:
-        explicit DropThumbnailImageFile(Thumbnail* pOwner = nullptr) noexcept { m_pOwner = pOwner; }
+        explicit DropThumbnailImageFile(Thumbnail* pOwner = nullptr) noexcept : m_pOwner(pOwner) {}
 
         bool OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_unused]] wxCoord y,
                          const wxArrayString& filenames) final;

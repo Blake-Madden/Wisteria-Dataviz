@@ -92,7 +92,7 @@ namespace Wisteria::Graphs
         void ShowcaseScore(const bool showcase) noexcept { m_showcaseScore = showcase; }
 
       private:
-        void RecalcSizes(wxDC& dc) override final;
+        void RecalcSizes(wxDC& dc) final;
         void AdjustAxes();
         void UpdateCustomAxes();
 

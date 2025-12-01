@@ -222,10 +222,8 @@ namespace lily_of_the_valley
                                 currentPosition += 2;
                                 return currentPosition;
                                 }
-                            else
-                                {
-                                return ++currentPosition;
-                                }
+
+                            return ++currentPosition;
                             }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())

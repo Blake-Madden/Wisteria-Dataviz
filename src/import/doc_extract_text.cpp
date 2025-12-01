@@ -83,9 +83,9 @@ namespace lily_of_the_valley
         else if (std::strncmp(buffer.data(), RTF_SIGNATURE.c_str(), RTF_SIGNATURE.length()) == 0)
             {
             log_message(L"DOC file appears to be RTF. Parsing file as RTF.");
-            rtf_extract_text filter_rtf;
-            const wchar_t* const rtfText = filter_rtf(doc_buffer, text_length);
-            add_characters({ rtfText, filter_rtf.get_filtered_text_length() });
+            rtf_extract_text filterRtf;
+            const wchar_t* const rtfText = filterRtf(doc_buffer, text_length);
+            add_characters({ rtfText, filterRtf.get_filtered_text_length() });
             return get_filtered_text();
             }
         // ... or HTML? It happens.

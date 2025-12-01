@@ -70,7 +70,7 @@ namespace lily_of_the_valley
             headerRow.set_values(&m_header_names);
             headerRow.allow_column_resizing(true);
             headerRow.read(text);
-            cell_collapse_quotes<std::wstring> collapseQuotes;
+            const cell_collapse_quotes<std::wstring> collapseQuotes;
             // cppcheck-suppress knownEmptyContainer
             for (auto& header : m_header_names)
                 {
@@ -79,11 +79,11 @@ namespace lily_of_the_valley
 
             const wchar_t* currentPos{ text };
             const wchar_t* lineStart{ nullptr };
-            while (currentPos[0])
+            while (currentPos[0] != 0)
                 {
                 lineStart = currentPos;
                 // find the end of the current line
-                while (currentPos[0])
+                while (currentPos[0] != 0)
                     {
                     if (is_eol(currentPos[0]))
                         {

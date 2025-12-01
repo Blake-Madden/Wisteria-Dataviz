@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "sidebarbook.h"
+#include <algorithm>
 #include <utility>
 #include <wx/wupdlock.h>
 
@@ -267,15 +268,9 @@ wxSize SideBarBook::DoGetBestSize() const
             {
             const wxSize childBestSize(pPage->GetBestSize());
 
-            if (childBestSize.x > bestSize.x)
-                {
-                bestSize.x = childBestSize.x;
-                }
+            bestSize.x = std::max(childBestSize.x, bestSize.x);
 
-            if (childBestSize.y > bestSize.y)
-                {
-                bestSize.y = childBestSize.y;
-                }
+            bestSize.y = std::max(childBestSize.y, bestSize.y);
             }
         }
 
@@ -357,20 +352,14 @@ wxRect SideBarBook::GetPageRect() const
         [[fallthrough]];
     case wxBK_BOTTOM:
         rectPage.height -= size.y + GetInternalBorder();
-        if (rectPage.height < 0)
-            {
-            rectPage.height = 0;
-            }
+        rectPage.height = std::max(rectPage.height, 0);
         break;
     case wxBK_LEFT:
         rectPage.x = size.x + GetInternalBorder();
         [[fallthrough]];
     case wxBK_RIGHT:
         rectPage.width -= size.x + GetInternalBorder();
-        if (rectPage.width < 0)
-            {
-            rectPage.width = 0;
-            }
+        rectPage.width = std::max(rectPage.width, 0);
         break;
     default:
         wxFAIL_MSG(L"unexpected alignment");

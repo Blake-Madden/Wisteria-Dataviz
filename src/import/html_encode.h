@@ -30,39 +30,39 @@ namespace lily_of_the_valley
         [[nodiscard]]
         std::wstring operator()(const std::wstring_view text, const bool encodeSpaces) const
             {
-            std::wstring encoded_text;
+            std::wstring encodedText;
             if (text.empty())
                 {
-                return encoded_text;
+                return encodedText;
                 }
-            encoded_text.reserve(text.length() * 2);
+            encodedText.reserve(text.length() * 2);
             for (size_t i = 0; i < text.length(); ++i)
                 {
                 if (text[i] >= 127)
                     {
-                    encoded_text.append(L"&#")
+                    encodedText.append(L"&#")
                         .append(std::to_wstring(static_cast<uint32_t>(text[i])))
                         .append(L";");
                     }
                 else if (text[i] == L'<')
                     {
-                    encoded_text += L"&#60;";
+                    encodedText += L"&#60;";
                     }
                 else if (text[i] == L'>')
                     {
-                    encoded_text += L"&#62;";
+                    encodedText += L"&#62;";
                     }
                 else if (text[i] == L'\"')
                     {
-                    encoded_text += L"&#34;";
+                    encodedText += L"&#34;";
                     }
                 else if (text[i] == L'&')
                     {
-                    encoded_text += L"&#38;";
+                    encodedText += L"&#38;";
                     }
                 else if (text[i] == L'\'')
                     {
-                    encoded_text += L"&#39;";
+                    encodedText += L"&#39;";
                     }
                 // turn carriage return/line feeds into HTML breaks
                 else if (text[i] == 10 || text[i] == 13)
@@ -70,30 +70,30 @@ namespace lily_of_the_valley
                     // treats CRLF combo as one break
                     if (i < text.length() - 1 && (text[i + 1] == 10 || text[i + 1] == 13))
                         {
-                        encoded_text += L"<p></p>";
+                        encodedText += L"<p></p>";
                         // make one extra step for CRLF combination so
                         // that it counts as only one line break
                         ++i;
                         }
                     else
                         {
-                        encoded_text += L"<p></p>";
+                        encodedText += L"<p></p>";
                         }
                     }
                 else if (encodeSpaces && text[i] == L'\t')
                     {
-                    encoded_text += L"&nbsp;&nbsp;&nbsp;";
+                    encodedText += L"&nbsp;&nbsp;&nbsp;";
                     }
                 else if (encodeSpaces && text[i] == L' ')
                     {
                     if (i > 0 && text[i - 1] == L' ')
                         {
-                        encoded_text += L"&nbsp;";
+                        encodedText += L"&nbsp;";
                         while (i + 1 < text.length())
                             {
                             if (text[i + 1] == L' ')
                                 {
-                                encoded_text += L"&nbsp;";
+                                encodedText += L"&nbsp;";
                                 ++i;
                                 }
                             else
@@ -104,15 +104,15 @@ namespace lily_of_the_valley
                         }
                     else
                         {
-                        encoded_text += text[i];
+                        encodedText += text[i];
                         }
                     }
                 else
                     {
-                    encoded_text += text[i];
+                    encodedText += text[i];
                     }
                 }
-            return encoded_text;
+            return encodedText;
             }
 
         /** @brief Simplified version that encodes a regular string into HTML.
@@ -122,32 +122,32 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::wstring simple_encode(const std::wstring_view text)
             {
-            std::wstring encoded_text;
+            std::wstring encodedText;
             if (text.empty())
                 {
-                return encoded_text;
+                return encodedText;
                 }
-            encoded_text.reserve(text.length() * 2);
+            encodedText.reserve(text.length() * 2);
             for (const auto character : text)
                 {
                 if (character == L'<')
                     {
-                    encoded_text += L"&#60;";
+                    encodedText += L"&#60;";
                     }
                 else if (character == L'>')
                     {
-                    encoded_text += L"&#62;";
+                    encodedText += L"&#62;";
                     }
                 else if (character == L'&')
                     {
-                    encoded_text += L"&#38;";
+                    encodedText += L"&#38;";
                     }
                 else
                     {
-                    encoded_text += character;
+                    encodedText += character;
                     }
                 }
-            return encoded_text;
+            return encodedText;
             }
 
         /** @brief Determines if a block of text has characters in it that
@@ -208,7 +208,7 @@ namespace lily_of_the_valley
                         return;
                         } // give up if this is bogus HTML
                     // find the end of the <html> tag
-                    htmlStart = HtmlText.find(L">", htmlStart);
+                    htmlStart = HtmlText.find(L'>', htmlStart);
                     // give up if this is bogus HTML
                     if (htmlStart == std::wstring::npos)
                         {
@@ -249,7 +249,7 @@ namespace lily_of_the_valley
                     return;
                     }
                 // find the end of the <html> tag
-                htmlStart = HtmlText.find(L">", htmlStart);
+                htmlStart = HtmlText.find(L'>', htmlStart);
                 // give up if this is bogus HTML
                 if (htmlStart == std::wstring::npos)
                     {
@@ -261,7 +261,7 @@ namespace lily_of_the_valley
                 ++headStart;
                 }
             headStart += 5;
-            headStart = HtmlText.find(L">", headStart);
+            headStart = HtmlText.find(L'>', headStart);
             if (headStart == std::wstring::npos)
                 {
                 return;
@@ -289,21 +289,21 @@ namespace lily_of_the_valley
         static void strip_hyperlinks(std::wstring& HtmlText,
                                      const bool preserveInPageBookmarks = true)
             {
-            std::set<std::wstring> BookmarksInCurrentPage;
+            std::set<std::wstring> bookmarksInCurrentPage;
             std::pair<const wchar_t*, std::wstring> foundBookMark{ HtmlText.c_str(),
                                                                    std::wstring() };
             assert(foundBookMark.first);
-            if (!foundBookMark.first)
+            if (foundBookMark.first == nullptr)
                 {
                 return;
                 }
             const wchar_t* const htmlEnd = foundBookMark.first + HtmlText.length();
-            while (preserveInPageBookmarks && foundBookMark.first)
+            while (preserveInPageBookmarks && (foundBookMark.first != nullptr))
                 {
                 foundBookMark = html_extract_text::find_bookmark(foundBookMark.first, htmlEnd);
-                if (foundBookMark.first)
+                if (foundBookMark.first != nullptr)
                     {
-                    BookmarksInCurrentPage.insert(foundBookMark.second);
+                    bookmarksInCurrentPage.insert(foundBookMark.second);
                     foundBookMark.first += foundBookMark.second.length();
                     }
                 else
@@ -320,27 +320,27 @@ namespace lily_of_the_valley
                     {
                     break;
                     }
-                const auto endOfTag = HtmlText.find(L">", start);
+                const auto endOfTag = HtmlText.find(L'>', start);
                 if (endOfTag == std::wstring::npos)
                     {
                     break;
                     }
                 const auto startOfLink = start + 8;
                 std::wstring link = HtmlText.substr(startOfLink, (endOfTag - startOfLink));
-                if (link.length() && link[0] == '\"')
+                if (!link.empty() && link[0] == '\"')
                     {
                     link.erase(0, 1);
                     }
-                if (link.length() && link[link.length() - 1] == '\"')
+                if (!link.empty() && link[link.length() - 1] == '\"')
                     {
                     link.erase(link.length() - 1, 1);
                     }
                 // see if it's a bookmark into the current page
-                if (link.length() && link[0] == '#')
+                if (!link.empty() && link[0] == '#')
                     {
                     link.erase(0, 1);
                     // if the bookmark isn't found in this file then remove the link to it
-                    if (!BookmarksInCurrentPage.contains(link))
+                    if (!bookmarksInCurrentPage.contains(link))
                         {
                         HtmlText.erase(start, (endOfTag - start) + 1);
                         const size_t endOfAnchor = HtmlText.find(L"</a>", start);
@@ -384,7 +384,7 @@ namespace lily_of_the_valley
                     {
                     break;
                     }
-                const size_t endOfTag = HtmlText.find(L">", start);
+                const size_t endOfTag = HtmlText.find(L'>', start);
                 if (endOfTag == std::wstring::npos)
                     {
                     break;
@@ -411,7 +411,7 @@ namespace lily_of_the_valley
             auto start = HtmlText.find(L"<body ");
             if (start != std::wstring::npos)
                 {
-                const auto endOfTag = HtmlText.find(L">", start);
+                const auto endOfTag = HtmlText.find(L'>', start);
                 if (endOfTag == std::wstring::npos)
                     {
                     return;

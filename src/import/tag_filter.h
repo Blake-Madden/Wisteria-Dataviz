@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __TAG_FILTER_H__
-#define __TAG_FILTER_H__
+#ifndef TAG_FILTER_H
+#define TAG_FILTER_H
 
 #include "extract_text.h"
 #include <map>
@@ -99,23 +99,22 @@ namespace lily_of_the_valley
 
             for (size_t i = 0; i < length; /*handled in loop*/)
                 {
-                const auto exclusion_tag_pos =
+                const auto exclusionTagPos =
                     std::find(m_text_filter_tags.cbegin(), m_text_filter_tags.cend(), text + i);
-                if (exclusion_tag_pos != m_text_filter_tags.cend())
+                if (exclusionTagPos != m_text_filter_tags.cend())
                     {
                     sectionsToIncludeMarkers.insert(
                         std::make_pair(currentInclusionStart, i - currentInclusionStart));
                     // find the end tag for the current exclusion block
                     const wchar_t* const endTag =
-                        exclusion_tag_pos->tags_are_identical() ?
-                            std::wcsstr(text + i + exclusion_tag_pos->get_start_tag().length(),
-                                        exclusion_tag_pos->get_end_tag().c_str()) :
+                        exclusionTagPos->tags_are_identical() ?
+                            std::wcsstr(text + i + exclusionTagPos->get_start_tag().length(),
+                                        exclusionTagPos->get_end_tag().c_str()) :
                             // start/end tags are different, so overlapping tags are
                             // OK here and should be checked for
                             string_util::find_matching_close_tag(
-                                text + i + exclusion_tag_pos->get_start_tag().length(),
-                                exclusion_tag_pos->get_start_tag().c_str(),
-                                exclusion_tag_pos->get_end_tag().c_str());
+                                text + i + exclusionTagPos->get_start_tag().length(),
+                                exclusionTagPos->get_start_tag(), exclusionTagPos->get_end_tag());
                     // if not found then exclude the rest of the text;
                     // otherwise, move to the end of that tag and start the next
                     // inclusion block from there.
@@ -123,11 +122,9 @@ namespace lily_of_the_valley
                         {
                         break;
                         }
-                    else
-                        {
-                        currentInclusionStart = i =
-                            (endTag - text) + exclusion_tag_pos->get_end_tag().length();
-                        }
+
+                    currentInclusionStart = i =
+                        (endTag - text) + exclusionTagPos->get_end_tag().length();
                     }
                 else
                     {
@@ -150,13 +147,7 @@ namespace lily_of_the_valley
 
         /// @brief Adds a set of filtering tags.
         /// @param tags The pair of tags to use for blocking out sections of text.
-        void add_filter_tag(const text_filter_tag& tags) noexcept
-            {
-            m_text_filter_tags.push_back(tags);
-            }
-
-        /// @private
-        void add_filter_tag(text_filter_tag&& tags) noexcept { m_text_filter_tags.push_back(tags); }
+        void add_filter_tag(const text_filter_tag& tags) { m_text_filter_tags.push_back(tags); }
 
         /// @brief Removes the filter tags.
         void clear_tags() noexcept { m_text_filter_tags.clear(); }
@@ -168,4 +159,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__TAG_FILTER_H__
+#endif // TAG_FILTER_H

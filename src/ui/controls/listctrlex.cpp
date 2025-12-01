@@ -12,6 +12,8 @@
 #include "../dialogs/listctrlitemviewdlg.h"
 #include "../dialogs/listctrlsortdlg.h"
 #include "../dialogs/radioboxdlg.h"
+#include <algorithm>
+#include <cstddef>
 #include <utility>
 
 wxDEFINE_EVENT(wxEVT_LISTCTRLEX_EDITED, wxCommandEvent);
@@ -902,7 +904,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                             wxRect(currentX, yCoord,
                                                    GetColumnsInfo()[j].m_width -
                                                        (2 * GetCellSidePadding()),
-                                                   GetLineHeight() - (2 * GetCellTopPadding()) -
+                                                   GetLineHeight() -
+                                                       static_cast<long>(2 * GetCellTopPadding()) -
                                                        m_list->GetDPIScaleFactor() /*border*/);
 
                                         // draw cell icon (if there is one)
@@ -1194,9 +1197,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                                &columnHeaderWidth, &columnHeaderHeight);
                     m_columnHeight =
                         std::max<long>(m_columnHeight, columnHeaderHeight + GetCellTopPadding());
-                    m_columnWidths[columnCounter].m_width =
-                        std::max<long>(columnHeaderWidth + (2 * GetCellSidePadding()),
-                                       longestCellText + (2 * GetCellSidePadding()));
+                    m_columnWidths[columnCounter].m_width = std::max<long>(
+                        columnHeaderWidth + (2 * GetCellSidePadding()),
+                        longestCellText + static_cast<long>(2 * GetCellSidePadding()));
                     m_columnWidths[columnCounter].m_included = true;
                     }
                 // are columns too wide to fit on the page?
@@ -1229,7 +1232,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         measureLabel.SplitTextToFitBoundingBox(
                             *dc, wxSize(avgWidth - (2 * GetCellSidePadding()),
                                         (drawingHeight - GetColumnHeight()) -
-                                            (2 * GetCellTopPadding())));
+                                            static_cast<long>(2 * GetCellTopPadding())));
 
                         textHeight = measureLabel.GetBoundingBox(*dc).GetHeight();
                         break;
@@ -1256,7 +1259,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         measureLabel.SplitTextToFitBoundingBox(
                             *dc, wxSize(longestColumn->m_width - (2 * GetCellSidePadding()),
                                         (drawingHeight - GetColumnHeight()) -
-                                            (2 * GetCellTopPadding())));
+                                            static_cast<long>(2 * GetCellTopPadding())));
 
                         textHeight = measureLabel.GetBoundingBox(*dc).GetHeight();
                         }
@@ -1540,7 +1543,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             }
         else
             {
-            wxPrintData pd;
+            const wxPrintData pd;
 #if defined(__WXMSW__) || defined(__WXOSX__)
             dc = new wxPrinterDC(pd);
 #else
@@ -1927,7 +1930,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 }
             // if not found and searching up, then start from the end and
             // try again by going back up to where we started
-            else if ((compVal == -1) && (flags ^ wxFR_DOWN) &&
+            else if ((compVal == -1) && ((flags ^ wxFR_DOWN) != 0) &&
                      (currentlyFocusedItem < GetItemCount() - 1))
                 {
                 for (i = GetItemCount() - 1; i > currentlyFocusedItem; --i)
@@ -2665,10 +2668,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             lastColumn = GetColumnCount() - 1;
             }
-        if (firstColumn < 0)
-            {
-            firstColumn = 0;
-            }
+        firstColumn = std::max<long>(firstColumn, 0);
         if (firstColumn > lastColumn)
             {
             return;
@@ -2678,10 +2678,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             lastRow = GetItemCount() - 1;
             }
-        if (firstRow < 0)
-            {
-            firstRow = 0;
-            }
+        firstRow = std::max<long>(firstRow, 0);
         if (firstRow >= GetItemCount() || firstRow > lastRow)
             {
             return;
@@ -2774,10 +2771,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             lastColumn = GetColumnCount() - 1;
             }
-        if (firstColumn < 0)
-            {
-            firstColumn = 0;
-            }
+        firstColumn = std::max<long>(firstColumn, 0);
         if (firstColumn > lastColumn)
             {
             return;
@@ -2787,10 +2781,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             lastRow = GetItemCount() - 1;
             }
-        if (firstRow < 0)
-            {
-            firstRow = 0;
-            }
+        firstRow = std::max<long>(firstRow, 0);
         if (firstRow >= GetItemCount() || firstRow > lastRow)
             {
             return;
@@ -3116,10 +3107,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             lastColumn = GetColumnCount() - 1;
             }
-        if (firstColumn < 0)
-            {
-            firstColumn = 0;
-            }
+        firstColumn = std::max<long>(firstColumn, 0);
         if (firstColumn > lastColumn)
             {
             return {};
@@ -3129,10 +3117,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             {
             lastRow = GetItemCount() - 1;
             }
-        if (firstRow < 0)
-            {
-            firstRow = 0;
-            }
+        firstRow = std::max<long>(firstRow, 0);
         if (firstRow >= GetItemCount() || firstRow > lastRow)
             {
             return wxString{};

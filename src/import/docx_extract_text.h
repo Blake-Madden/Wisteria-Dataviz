@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 * @{*/
 
-#ifndef __DOCX_EXTRACTOR_H__
-#define __DOCX_EXTRACTOR_H__
+#ifndef DOCX_EXTRACTOR_H
+#define DOCX_EXTRACTOR_H
 
 #include "html_extract_text.h"
 
@@ -38,7 +38,7 @@ namespace lily_of_the_valley
     class word2007_extract_text final : public html_extract_text
         {
       public:
-        word2007_extract_text() noexcept : m_preserve_text_table_layout(false) {}
+        word2007_extract_text() = default;
 
         /** @brief Specifies how to import tables.
             @param preserve Set to @c true to import tables as tab-delimited cells of text.\n
@@ -75,4 +75,4 @@ namespace lily_of_the_valley
 
 /** @}*/
 
-#endif //__DOCX_EXTRACTOR_H__
+#endif // DOCX_EXTRACTOR_H

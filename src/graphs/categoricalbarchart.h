@@ -91,10 +91,10 @@ namespace Wisteria::Graphs
                 This is useful if using a hatched brush, as this color will be solid
                 and show underneath it. Leave as @c nullptr just to use the brush scheme.*/
         explicit CategoricalBarChart(
-            Wisteria::Canvas* canvas,
+            Canvas* canvas,
             const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes = nullptr,
             const std::shared_ptr<Colors::Schemes::ColorScheme>& colors = nullptr)
-            : Wisteria::Graphs::BarChart(canvas)
+            : BarChart(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
                                                 std::make_shared<Brushes::Schemes::BrushScheme>(
@@ -170,14 +170,14 @@ namespace Wisteria::Graphs
         /// @brief Simpler way to get the bar slots since this isn't like a histogram that
         ///     can have gaps in between the bars.
         [[nodiscard]]
-        size_t GetBarSlotCount() const noexcept override final
+        size_t GetBarSlotCount() const noexcept final
             {
             return GetBars().size();
             }
 
-        const Wisteria::Data::Column<wxString>* m_idColumn{ nullptr };
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_weightColumn;
+        const Data::Column<wxString>* m_idColumn{ nullptr };
+        std::vector<Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
+        std::vector<Data::Column<double>>::const_iterator m_weightColumn;
 
         bool m_useIDColumnForBars{ false };
         bool m_useWeightColumn{ false };

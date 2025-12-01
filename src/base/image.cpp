@@ -9,6 +9,7 @@
 
 #include "image.h"
 #include "polygon.h"
+#include <algorithm>
 #include <array>
 #include <wx/rawbmp.h>
 
@@ -22,7 +23,7 @@ namespace Wisteria::GraphItems
             {
             return { 32, 32 };
             }
-        wxXmlNode* docNode = doc.GetRoot();
+        const wxXmlNode* docNode = doc.GetRoot();
         if (docNode == nullptr)
             {
             return { 32, 32 };
@@ -254,9 +255,11 @@ namespace Wisteria::GraphItems
                     {
                     for (int nXO = -radius; nXO <= radius; ++nXO)
                         {
-                        const int nR = imgInData[(nX + nXO) * 3 + (nY + nYO) * nBytesInARow];
-                        const int nG = imgInData[(nX + nXO) * 3 + (nY + nYO) * nBytesInARow + 1];
-                        const int nB = imgInData[(nX + nXO) * 3 + (nY + nYO) * nBytesInARow + 2];
+                        const int nR = imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow)];
+                        const int nG =
+                            imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow) + 1];
+                        const int nB =
+                            imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow) + 2];
 
                         // Find intensity of RGB value and apply intensity level.
                         const int nCurIntensity = std::clamp<int>(
@@ -286,9 +289,9 @@ namespace Wisteria::GraphItems
                            (image.GetWidth() * image.GetHeight() * 3) &&
                        L"Invalid image data index in oil painting effect!");
 
-                imgOutData[(nX) * 3 + (nY)*nBytesInARow] = nSumR[nMaxIndex] / nCurMax;
-                imgOutData[(nX) * 3 + (nY)*nBytesInARow + 1] = nSumG[nMaxIndex] / nCurMax;
-                imgOutData[(nX) * 3 + (nY)*nBytesInARow + 2] = nSumB[nMaxIndex] / nCurMax;
+                imgOutData[(nX * 3) + (nY * nBytesInARow)] = nSumR[nMaxIndex] / nCurMax;
+                imgOutData[(nX * 3) + (nY * nBytesInARow) + 1] = nSumG[nMaxIndex] / nCurMax;
+                imgOutData[(nX * 3) + (nY * nBytesInARow) + 2] = nSumB[nMaxIndex] / nCurMax;
                 }
             }
 
@@ -371,26 +374,27 @@ namespace Wisteria::GraphItems
                 // horizontally oriented glass
                 if (orientation == Orientation::Horizontal)
                     {
-                    y = static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness);
+                    y = static_cast<int>(rowCounter + ((distro(twister) - 0.5) * coarseness));
                     y = findYInBound(y);
                     }
 
                 for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3;
                      columnCounter += 3)
                     {
-                    int x = static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness);
+                    int x =
+                        static_cast<int>(columnCounter + ((distro(twister) - 0.5) * coarseness));
 
                     // generally oriented glass
                     if (orientation == Orientation::Both)
                         {
-                        y = static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness);
+                        y = static_cast<int>(rowCounter + ((distro(twister) - 0.5) * coarseness));
                         y = findYInBound(y);
                         }
 
                     x = findXInBound(x);
 
                     // source pixel
-                    auto w1 = image.GetWidth() * 3 * y + x;
+                    auto w1 = (image.GetWidth() * 3 * y) + x;
                     assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     const auto r = imgInData[w1];
                     const auto g = imgInData[w1 + 1];
@@ -410,14 +414,14 @@ namespace Wisteria::GraphItems
             for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3; columnCounter += 3)
                 {
                 const auto x = findXInBound(
-                    static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness));
+                    static_cast<int>(columnCounter + ((distro(twister) - 0.5) * coarseness)));
                 for (auto rowCounter = 0; rowCounter < image.GetHeight(); ++rowCounter)
                     {
                     const auto y = findYInBound(
-                        static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness));
+                        static_cast<int>(rowCounter + ((distro(twister) - 0.5) * coarseness)));
 
                     // Source pixel
-                    auto w1 = image.GetWidth() * 3 * y + x;
+                    auto w1 = (image.GetWidth() * 3 * y) + x;
                     assert(w1 + 2 < byteCount && L"Invalid index in image buffer!");
                     const auto r = imgInData[w1];
                     const auto g = imgInData[w1 + 1];
@@ -461,7 +465,7 @@ namespace Wisteria::GraphItems
             const auto g = imgInData[index + 1];
             const auto b = imgInData[index + 2];
             // Grayscale
-            const auto intensity = 0.3 * r + 0.6 * g + 0.1 * b;
+            const auto intensity = (0.3 * r) + (0.6 * g) + (0.1 * b);
 
             // Red
             auto tone = (intensity > threshold) ? 255.0 : intensity + 255.0 - threshold;
@@ -476,14 +480,8 @@ namespace Wisteria::GraphItems
             auto dBlue = tone;
 
             tone = thres7;
-            if (dGreen < tone)
-                {
-                dGreen = tone;
-                }
-            if (dBlue < tone)
-                {
-                dBlue = tone;
-                }
+            dGreen = std::max(dGreen, tone);
+            dBlue = std::max(dBlue, tone);
 
             imgOutData[index] = static_cast<unsigned char>(std::clamp(dRed, 0.0, 255.0));
             imgOutData[index + 1] = static_cast<unsigned char>(std::clamp(dGreen, 0.0, 255.0));

@@ -23,6 +23,7 @@
 #include "../graphs/wcurveplot.h"
 #include "../graphs/win_loss_sparkline.h"
 #include "../graphs/wordcloud.h"
+#include <utility>
 
 namespace Wisteria
     {
@@ -828,7 +829,7 @@ namespace Wisteria
             return label;
             }
         // a fully defined label
-        else if (labelNode->IsOk())
+        if (labelNode->IsOk())
             {
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
             label->SetText(ExpandConstants(labelNode->GetProperty(L"text")->AsString()));
@@ -1055,7 +1056,7 @@ namespace Wisteria
                         }
                     return std::nullopt;
                     }
-                else if (funcName.CmpNoCase(L"everythingexcept") == 0)
+                if (funcName.CmpNoCase(L"everythingexcept") == 0)
                     {
                     const wxRegEx columnRE(columnPattern);
                     if (columnRE.IsValid())
@@ -1091,20 +1092,14 @@ namespace Wisteria
                         }
                     return std::nullopt;
                     }
-                else
-                    {
-                    return std::nullopt;
-                    }
-                }
-            else
-                {
+
                 return std::nullopt;
                 }
-            }
-        else
-            {
+
             return std::nullopt;
             }
+
+        return std::nullopt;
         }
 
     //---------------------------------------------------
@@ -1313,7 +1308,7 @@ namespace Wisteria
                         wxString::Format(_(L"Group ID for '%s' not found."), groupValue).ToUTF8());
                     }
 
-                return dataset->GetCategoricalColumnValidN(groupName, groupName, groupID.value());
+                return dataset->GetCategoricalColumnValidN(groupName, groupName, groupID);
                 }
             // dataset or something missing
             return std::nullopt;
@@ -1451,7 +1446,7 @@ namespace Wisteria
                 if (dataset->GetContinuousColumn(columnName) !=
                     dataset->GetContinuousColumns().cend())
                     {
-                    return dataset->GetContinuousMedian(columnName, groupName, groupID.value());
+                    return dataset->GetContinuousMedian(columnName, groupName, groupID);
                     }
                 }
             // dataset or something missing
@@ -1492,8 +1487,8 @@ namespace Wisteria
                     {
                     return dataset->GetCategoricalColumnValidN(columnName);
                     }
-                else if (dataset->GetContinuousColumn(columnName) !=
-                         dataset->GetContinuousColumns().cend())
+                if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
                     {
                     return dataset->GetContinuousColumnValidN(columnName);
                     }
@@ -1532,14 +1527,12 @@ namespace Wisteria
                 if (dataset->GetCategoricalColumn(columnName) !=
                     dataset->GetCategoricalColumns().cend())
                     {
-                    return dataset->GetCategoricalColumnValidN(columnName, groupName,
-                                                               groupID.value());
+                    return dataset->GetCategoricalColumnValidN(columnName, groupName, groupID);
                     }
-                else if (dataset->GetContinuousColumn(columnName) !=
-                         dataset->GetContinuousColumns().cend())
+                if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
                     {
-                    return dataset->GetContinuousColumnValidN(columnName, groupName,
-                                                              groupID.value());
+                    return dataset->GetContinuousColumnValidN(columnName, groupName, groupID);
                     }
                 }
             // dataset or something missing
@@ -1564,14 +1557,12 @@ namespace Wisteria
             columnStr = columnStr.substr(2, columnStr.length() - 4);
             columnStr = ExpandConstants(columnStr);
             const auto calcStr = CalcFormula(columnStr, dataset);
-            if (const auto strVal{ std::get_if<wxString>(&calcStr) }; strVal != nullptr)
+            if (const auto* const strVal{ std::get_if<wxString>(&calcStr) }; strVal != nullptr)
                 {
                 return *strVal;
                 }
-            else
-                {
-                return wxEmptyString;
-                }
+
+            return wxEmptyString;
             }
 
         return columnStr;
@@ -1604,10 +1595,8 @@ namespace Wisteria
                 return total;
                 }
             // dataset or column name missing
-            else
-                {
-                return std::nullopt;
-                }
+
+            return std::nullopt;
             }
         return std::nullopt;
         }
@@ -1638,19 +1627,14 @@ namespace Wisteria
                     {
                     return dataset->GetContinuousTotal(columnName);
                     }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(_(L"%s: column must be continuous when totaling."),
-                                         columnName)
-                            .ToUTF8());
-                    }
+
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: column must be continuous when totaling."), columnName)
+                        .ToUTF8());
                 }
             // dataset or column name missing
-            else
-                {
-                return std::nullopt;
-                }
+
+            return std::nullopt;
             }
         return std::nullopt;
         }
@@ -1683,17 +1667,14 @@ namespace Wisteria
                     const auto [minVal, maxVal] = dataset->GetCategoricalMinMax(columnName);
                     return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
                     }
-                else if (dataset->GetContinuousColumn(columnName) !=
-                         dataset->GetContinuousColumns().cend())
+                if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
                     {
                     const auto [minVal, maxVal] = dataset->GetContinuousMinMax(columnName);
                     return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
                     }
-                else
-                    {
-                    wxLogWarning(L"'%s' column not found in call to MIN or MAX. "
-                                 "A continuous or categorical column was expected.");
-                    }
+                wxLogWarning(L"'%s' column not found in call to MIN or MAX. "
+                             "A continuous or categorical column was expected.");
                 }
             // dataset or column name missing
             else
@@ -1777,48 +1758,43 @@ namespace Wisteria
                     {
                     return wxDateTime::Now().FormatDate();
                     }
-                else if (paramValue == L"fancy")
+                if (paramValue == L"fancy")
                     {
                     return wxDateTime::Now().Format(L"%B %d, %Y");
                     }
                 // which part of the date is requested?
-                else if (paramValue == L"year")
+                if (paramValue == L"year")
                     {
                     return std::to_wstring(wxDateTime::Now().GetYear());
                     }
-                else if (paramValue == L"month")
+                if (paramValue == L"month")
                     {
                     return std::to_wstring(wxDateTime::Now().GetMonth());
                     }
-                else if (paramValue == L"monthname")
+                if (paramValue == L"monthname")
                     {
                     return wxDateTime::GetMonthName(wxDateTime::Now().GetMonth());
                     }
-                else if (paramValue == L"monthshortname")
+                if (paramValue == L"monthshortname")
                     {
                     return wxDateTime::GetMonthName(wxDateTime::Now().GetMonth(),
                                                     wxDateTime::Name_Abbr);
                     }
-                else if (paramValue == L"day")
+                if (paramValue == L"day")
                     {
                     return std::to_wstring(wxDateTime::Now().GetDay());
                     }
-                else if (paramValue == L"dayname")
+                if (paramValue == L"dayname")
                     {
                     return wxDateTime::GetWeekDayName(wxDateTime::Now().GetWeekDay());
                     }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(_(L"%s: unknown parameter passed to Now()."), paramValue)
-                            .ToUTF8());
-                    }
+
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: unknown parameter passed to Now()."), paramValue)
+                        .ToUTF8());
                 }
             // no param, just return full date
-            else
-                {
-                return wxDateTime::Now().Format();
-                }
+            return wxDateTime::Now().Format();
             }
         return wxDateTime::Now().Format();
         }
@@ -1951,7 +1927,7 @@ namespace Wisteria
         {
             const auto foundPos = cmpOperators.find(std::wstring_view(
                 filterNode->GetProperty(L"operator")->AsString().MakeLower().wc_str()));
-            Comparison cmp =
+            const Comparison cmp =
                 (foundPos != cmpOperators.cend() ? foundPos->second : Comparison::Equals);
 
             const auto valuesNode = filterNode->GetProperty(L"values");
@@ -1987,11 +1963,8 @@ namespace Wisteria
 
                 return cFilter;
                 }
-            else
-                {
-                throw std::runtime_error(
-                    _(L"Comparison value for subset filter missing.").ToUTF8());
-                }
+
+            throw std::runtime_error(_(L"Comparison value for subset filter missing.").ToUTF8());
         };
 
         if (subsetsNode->IsOk())
@@ -2013,7 +1986,7 @@ namespace Wisteria
                         throw std::runtime_error(
                             _(L"Only one filter type allowed for a subset.").ToUTF8());
                         }
-                    else if (validFilterTypeNodes == 0 && sectionNode->IsNull())
+                    if (validFilterTypeNodes == 0 && sectionNode->IsNull())
                         {
                         throw std::runtime_error(
                             _(L"Subset missing filters or section definition.").ToUTF8());
@@ -2286,7 +2259,7 @@ namespace Wisteria
                             }
                         }
                     // continuous columns
-                    std::vector<wxString> continuousVars =
+                    const std::vector<wxString> continuousVars =
                         datasetNode->GetProperty(L"continuous-columns")->AsStrings();
                     // categorical columns
                     std::vector<Data::ImportInfo::CategoricalImportInfo> catInfo;
@@ -2493,10 +2466,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, pcRoadmap);
             return pcRoadmap;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for Pro & Con Roadmap.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for Pro & Con Roadmap.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2555,10 +2526,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, ganttChart);
             return ganttChart;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for Gantt chart.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for Gantt chart.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2662,11 +2631,9 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, lrRoadmap);
             return lrRoadmap;
             }
-        else
-            {
-            throw std::runtime_error(
-                _(L"Variables not defined for Linear Regression Roadmap.").ToUTF8());
-            }
+
+        throw std::runtime_error(
+            _(L"Variables not defined for Linear Regression Roadmap.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2773,10 +2740,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, likertChart);
             return likertChart;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for Likert chart.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for Likert chart.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2816,10 +2781,8 @@ namespace Wisteria
 
             return wcurvePlot;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for W-curve plot.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for W-curve plot.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2860,10 +2823,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, candlestickPlot);
             return candlestickPlot;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for candlestick plot.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for candlestick plot.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2898,10 +2859,8 @@ namespace Wisteria
 
             return linePlot;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for line plot.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for line plot.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -2951,11 +2910,8 @@ namespace Wisteria
 
             return linePlot;
             }
-        else
-            {
-            throw std::runtime_error(
-                _(L"Variables not defined for multi-series line plot.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for multi-series line plot.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3037,10 +2993,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, wlSparkline);
             return wlSparkline;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for sparkline.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for sparkline.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3077,10 +3031,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, heatmap);
             return heatmap;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for heatmap.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for heatmap.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -3680,10 +3632,8 @@ namespace Wisteria
             LoadGraph(graphNode, canvas, currentRow, currentColumn, histo);
             return histo;
             }
-        else
-            {
-            throw std::runtime_error(_(L"Variables not defined for histogram.").ToUTF8());
-            }
+
+        throw std::runtime_error(_(L"Variables not defined for histogram.").ToUTF8());
         }
 
     //---------------------------------------------------
@@ -4320,7 +4270,7 @@ namespace Wisteria
                     // single column
                     if (position.has_value())
                         {
-                        table->SetRowSuppression(position.value(), threshold.value(),
+                        table->SetRowSuppression(position.value(), threshold,
                                                  !suppressionLabel.empty() ?
                                                      std::optional<wxString>(suppressionLabel) :
                                                      std::nullopt,
@@ -4331,7 +4281,7 @@ namespace Wisteria
                         {
                         for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
                             {
-                            table->SetRowSuppression(i, threshold.value(),
+                            table->SetRowSuppression(i, threshold,
                                                      !suppressionLabel.empty() ?
                                                          std::optional<wxString>(suppressionLabel) :
                                                          std::nullopt,
@@ -4649,7 +4599,7 @@ namespace Wisteria
                     // single column
                     if (position.has_value())
                         {
-                        table->SetColumnSuppression(position.value(), threshold.value(),
+                        table->SetColumnSuppression(position.value(), threshold,
                                                     !suppressionLabel.empty() ?
                                                         std::optional<wxString>(suppressionLabel) :
                                                         std::nullopt,
@@ -4661,7 +4611,7 @@ namespace Wisteria
                         for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
                             {
                             table->SetColumnSuppression(
-                                i, threshold.value(),
+                                i, threshold,
                                 !suppressionLabel.empty() ?
                                     std::optional<wxString>(suppressionLabel) :
                                     std::nullopt,
@@ -5035,7 +4985,7 @@ namespace Wisteria
                          &table->GetCell(rowPosition.value(), columnPosition.value()) :
                          table->FindCell(cellUpdate->GetProperty(L"value-to-find")->AsString()));
 
-                if (currentCell)
+                if (currentCell != nullptr)
                     {
                     // column count
                     const auto columnCountProperty = cellUpdate->GetProperty(L"column-count");
@@ -5273,7 +5223,7 @@ namespace Wisteria
         const auto foundVal = m_values.find(str);
         if (foundVal != m_values.cend())
             {
-            if (const auto dVal{ std::get_if<double>(&foundVal->second) };
+            if (const auto* const dVal{ std::get_if<double>(&foundVal->second) };
                 dVal != nullptr && !std::isnan(*dVal))
                 {
                 return *dVal;
@@ -5297,13 +5247,14 @@ namespace Wisteria
             const auto foundVal = m_values.find(re.GetMatch(processText.data(), 1));
             if (foundVal != m_values.cend())
                 {
-                if (const auto strVal{ std::get_if<wxString>(&foundVal->second) };
+                if (const auto* const strVal{ std::get_if<wxString>(&foundVal->second) };
                     strVal != nullptr)
                     {
                     replacements.insert_or_assign(std::wstring(processText.substr(start, len)),
                                                   *strVal);
                     }
-                else if (const auto dVal{ std::get_if<double>(&foundVal->second) }; dVal != nullptr)
+                else if (const auto* const dVal{ std::get_if<double>(&foundVal->second) };
+                         dVal != nullptr)
                     {
                     if (std::isnan(*dVal))
                         {
@@ -5325,7 +5276,7 @@ namespace Wisteria
             else
                 {
                 const auto calcStr = CalcFormula(re.GetMatch(processText.data(), 1), nullptr);
-                if (const auto strVal{ std::get_if<wxString>(&calcStr) }; strVal != nullptr)
+                if (const auto* const strVal{ std::get_if<wxString>(&calcStr) }; strVal != nullptr)
                     {
                     replacements.insert_or_assign(std::wstring(processText.substr(start, len)),
                                                   *strVal);
@@ -5387,7 +5338,7 @@ namespace Wisteria
             retColor = wxColour{ colorStr };
             }
 
-        if (opacity != wxALPHA_OPAQUE)
+        if (std::cmp_not_equal(opacity, wxALPHA_OPAQUE))
             {
             retColor = Colors::ColorContrast::ChangeOpacity(retColor, opacity);
             }
@@ -5461,7 +5412,7 @@ namespace Wisteria
             {
             position = positionNode->AsDouble();
             }
-        std::optional<double> doubleStartOffset =
+        const std::optional<double> doubleStartOffset =
             positionNode->HasProperty(L"offset") ?
                 std::optional<double>(positionNode->GetProperty(L"offset")->AsDouble()) :
                 std::nullopt;
@@ -5638,12 +5589,10 @@ namespace Wisteria
                 return std::make_shared<Icons::Schemes::IconScheme>(
                     std::vector<Wisteria::Icons::IconShape>{ iconValue.value() });
                 }
-            else
-                {
-                throw std::runtime_error(wxString::Format(_(L"%s: unknown icon for icon scheme."),
-                                                          iconSchemeNode->AsString())
-                                             .ToUTF8());
-                }
+
+            throw std::runtime_error(wxString::Format(_(L"%s: unknown icon for icon scheme."),
+                                                      iconSchemeNode->AsString())
+                                         .ToUTF8());
             }
 
         return nullptr;

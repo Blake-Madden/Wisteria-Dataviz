@@ -89,7 +89,7 @@ namespace lily_of_the_valley
                 }
             while (end > start)
                 {
-                if (std::iswspace(end[0]))
+                if (std::iswspace(end[0]) != 0)
                     {
                     --end;
                     }
@@ -126,7 +126,7 @@ namespace lily_of_the_valley
         /// @param character The character to review.
         /// @returns @c true if character is either CR or LF.
         [[nodiscard]]
-        inline constexpr bool operator()(const wchar_t character) const noexcept
+        constexpr bool operator()(const wchar_t character) const noexcept
             {
             return (character == 10 || character == 13);
             }
@@ -141,9 +141,9 @@ namespace lily_of_the_valley
         /// @param character The character to review.
         /// @returns @c true if character is either whitespace, a semicolon, or comma.
         [[nodiscard]]
-        inline bool operator()(const wchar_t character) const noexcept
+        bool operator()(const wchar_t character) const noexcept
             {
-            return (std::iswspace(character) || character == L';' || character == L',');
+            return ((std::iswspace(character) != 0) || character == L';' || character == L',');
             }
         };
 

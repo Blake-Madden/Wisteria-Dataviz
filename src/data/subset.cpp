@@ -367,14 +367,14 @@ namespace Wisteria::Data
 
         SetSourceData(fromDataset);
 
-        const ColumnFilter column_filter(GetSource(), columnFilter);
+        const ColumnFilter colFilter(GetSource(), columnFilter);
 
         while (HasMoreRows())
             {
             const auto nextRow = GetNextRowPosition();
             if (nextRow.has_value())
                 {
-                if (column_filter.MeetsCriterion(nextRow.value()))
+                if (colFilter.MeetsCriterion(nextRow.value()))
                     {
                     CopyNextRow();
                     }
@@ -406,9 +406,9 @@ namespace Wisteria::Data
 
         std::vector<ColumnFilter> cFilters;
         cFilters.reserve(columnFilters.size());
-        for (const auto& column_filter_info : columnFilters)
+        for (const auto& columnFilterInfo : columnFilters)
             {
-            cFilters.emplace_back(GetSource(), column_filter_info);
+            cFilters.emplace_back(GetSource(), columnFilterInfo);
             }
 
         while (HasMoreRows())
@@ -417,9 +417,9 @@ namespace Wisteria::Data
             if (nextRow.has_value())
                 {
                 bool hadMatch{ false };
-                for (const auto& column_filter : cFilters)
+                for (const auto& columnFilter : cFilters)
                     {
-                    if (column_filter.MeetsCriterion(nextRow.value()))
+                    if (columnFilter.MeetsCriterion(nextRow.value()))
                         {
                         hadMatch = true;
                         break;
@@ -458,9 +458,9 @@ namespace Wisteria::Data
 
         std::vector<ColumnFilter> cFilters;
         cFilters.reserve(columnFilters.size());
-        for (const auto& column_filter_info : columnFilters)
+        for (const auto& columnFilterInfo : columnFilters)
             {
-            cFilters.emplace_back(GetSource(), column_filter_info);
+            cFilters.emplace_back(GetSource(), columnFilterInfo);
             }
 
         while (HasMoreRows())
@@ -469,10 +469,10 @@ namespace Wisteria::Data
             if (nextRow.has_value())
                 {
                 bool allMatched{ true };
-                for (const auto& column_filter : cFilters)
+                for (const auto& columnFilter : cFilters)
                     {
                     // if any criterion doesn't match, then bail
-                    if (!column_filter.MeetsCriterion(nextRow.value()))
+                    if (!columnFilter.MeetsCriterion(nextRow.value()))
                         {
                         allMatched = false;
                         break;

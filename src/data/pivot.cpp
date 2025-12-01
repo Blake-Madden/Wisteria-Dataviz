@@ -219,7 +219,7 @@ namespace Wisteria::Data
         // write out the data
         for (const auto& pivotedRow : pivotedRows)
             {
-            RowInfo row_info;
+            RowInfo rowInfo;
             size_t currentIdColumnIndex{ 0 };
             if (idColumnsIters.m_IdColumn != nullptr)
                 {
@@ -227,7 +227,7 @@ namespace Wisteria::Data
                 assert(strVal && L"String conversion failure with ID column while pivoting!");
                 if (strVal != nullptr)
                     {
-                    row_info.Id(*strVal);
+                    rowInfo.Id(*strVal);
                     }
                 ++currentIdColumnIndex;
                 }
@@ -246,7 +246,7 @@ namespace Wisteria::Data
                 }
             if (!groupIdsForCurrentRow.empty())
                 {
-                row_info.Categoricals(groupIdsForCurrentRow);
+                rowInfo.Categoricals(groupIdsForCurrentRow);
                 }
             // fill in pivots
             std::vector<double> valuesForCurrentRow;
@@ -257,11 +257,11 @@ namespace Wisteria::Data
                 }
             if (!valuesForCurrentRow.empty())
                 {
-                row_info.Continuous(valuesForCurrentRow);
+                rowInfo.Continuous(valuesForCurrentRow);
                 }
 
             // add everything now
-            pivotedData->AddRow(row_info);
+            pivotedData->AddRow(rowInfo);
             }
 
         return pivotedData;
